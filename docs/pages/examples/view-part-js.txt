@@ -1,0 +1,37 @@
+angular.module('module.views').run(function($sbviews, $compile) {
+    $sbviews.registerPartType('block', {
+        name: 'Block',
+        defaultPart: function() {
+            var part = {
+                type: 'block',
+                header: {
+                    title: undefined,
+                    image: undefined
+                },
+                children: []
+            };
+
+            var titlePart = $sbviews.defaultPart('value');
+            titlePart.info = 'Header Title';
+            part.header.title = titlePart;
+
+            var imagePart = $sbviews.defaultPart('image');
+            imagePart.info = 'images/awards.svg';
+            part.header.image = imagePart;
+            return part;
+        },
+        changePids: function(part, change) {
+            for (var i in part.children)
+                change(part.children[i]);
+        },
+        build: function (scope, part, options) {
+            var block = $(document.createElement('div')).addClass('block');
+            return block;
+        },
+        destroy: function (element) {
+            element.children('.content').children().each(function () {
+                $sbviews.destroy($(this));
+            });
+        }
+    });
+});

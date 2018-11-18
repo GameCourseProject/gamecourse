@@ -1,0 +1,8 @@
+name=s:3:"add";
+headerLink=s:0:"";
+defaultRoleSettings=a:1:{s:11:"landingPage";s:0:"";}
+modules=a:0:{}
+users=a:0:{}
+roles=a:2:{i:0;s:7:"Teacher";i:1;s:7:"Student";}
+rolesSettings=a:2:{s:7:"Teacher";a:1:{s:11:"landingPage";s:1:"/";}s:7:"Student";a:1:{s:11:"landingPage";s:1:"/";}}
+rolesHierarchy=a:2:{i:0;a:1:{s:4:"name";s:7:"Teacher";}i:1;a:1:{s:4:"name";s:7:"Student";}}

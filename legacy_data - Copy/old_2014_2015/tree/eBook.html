@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=latin-1">
+<title>Skill Tree - eBook</title>
+
+
+
+
+<style>
+
+
+body {
+    font-family: calibri, helvetica, arial, sans serif;
+    background: #fefefe;
+    background-image: url(bg.jpg);
+    background-repeat: no-repeat;
+    background-size: 100%;
+    padding:0;
+    margin: 0;
+
+}
+
+
+
+table.badges { 
+    border-spacing: 0; 
+    padding: 0em;
+    width: 100%;
+    background:  #f8f8ec;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    margin-top: 0;
+    border-top: solid 1px #919673;
+    font-size: 12pt;
+}
+
+td.badges { 
+     vertical-align: middle;  
+     text-align: left; 
+     border-top: solid 1px #919673; 
+     padding-left: 0em;
+     padding-right: 0.5em; 
+     padding-top:1em;  
+     padding-bottom: 1em;
+}
+
+
+th.badges { 
+     text-align: left;
+     background: #f2fbc1;
+     padding-left: 12pt;
+     padding-right: 2em; 
+     padding-top:0.5em;  
+     padding-bottom:0.5em;
+
+}
+
+
+td.xp {
+     width: 7em;
+     text-align: center; 
+}
+
+
+th.xp {
+     width: 7em;
+     text-align: center; 
+}
+
+
+
+td.level {
+   width: 12em;
+   text-align: left; 
+}
+
+th.level {   
+   padding:0;
+   margin:0;   
+}
+
+td.badgedescr {
+   vertical-align: middle;
+}
+
+td.name {
+   width: 18em;
+   text-align: left;
+   font-weight: bold;
+}
+
+th.name {
+   width: 18em;
+   padding:0;
+   font-weight: bold;
+}
+
+th.photo {
+   width: 32px;
+   text-align: center;
+   padding:0;
+}
+
+td.photo {
+   width: 32px;
+   text-align: center;
+   padding: 0;
+}
+
+
+td.campus {
+   width: 1em;
+   text-align: center;   
+}
+
+th.campus {   
+   text-align: center;   
+   
+}
+
+
+td.pos {
+   width: 3em;
+   text-align: center; 
+   font-size: 18pt;
+   font-weight: bold;
+   padding: 0;
+}
+
+
+th.pos {
+   text-align: center; 
+   padding: 0;
+}
+
+
+tr.badges:hover {
+    background-color: #f9b67a;
+}
+
+
+atr:nth-child(odd) {
+    background: #ffffdd; }
+
+
+atr:nth-child(even) {
+    background: #ffffee; }
+
+
+a {
+   text-decoration: none;
+   color: #2f80cb;
+}
+
+
+#wrapper {
+    width: 80%; 
+    margin-left: auto;
+    margin-right: auto; 
+    margin-top: 0px;
+}
+
+#table-wrapper {
+    background: #dce4af;
+    margin-top: 50px;
+    border: solid 1px #39486C; 
+    -moz-border-radius: 20px;
+    -webkit-border-radius:20px;
+    -opera-border-radius:20px;
+    -khtml-border-radius:20px;
+    box-shadow:rgba(220,228,175,1) 0px 10px 50px;
+}
+
+#stats-wrapper {
+    background: #dce4af;
+    margin-top: 50px;
+    border: solid 1px #39486C; 
+    -moz-border-radius: 20px;
+    -webkit-border-radius:20px;
+    -opera-border-radius:20px;
+    -khtml-border-radius:20px;
+    box-shadow:rgba(220,228,175,1) 0px 10px 50px;
+}
+
+#top {
+    height: 60px;
+    awidth: 100%;
+    font-size: 24pt;
+    text-align: left;
+    color: yellow;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-left: 10%;
+    background: #9a4900;
+    border-bottom: solid 2px #9a4900;
+    color: gold; #f9b67a;
+}
+
+#bottom {
+    height: 25px;
+    awidth: 100%;
+    font-size: 10pt;
+    text-align: left;
+    color: yellow;
+    padding-top: 4px;
+    padding-left: 10%;
+    background: #9a4900;
+    border-top: solid 2px #9a4900;
+    margin-top: 100px;
+    color:  gold;
+}
+
+
+h1 {
+   font-size: 18pt;
+   margin-left: 12pt;
+   color: brown;
+}
+
+
+h2 {
+   font-size: 16pt;
+   margin: 0;
+   padding: 0;
+   margin-bottom:0.5em;
+   color: brown;
+}
+
+
+.nextlevel {
+     font-size: 10pt;
+     font-weight: normal;
+}
+
+img.badge {
+    vertical-align: middle;
+    width: 48px;
+}
+
+img.largebadge {
+    vertical-align: middle;
+    width: 74px;
+    padding: 5px;
+}
+
+td.badgedescr {
+   font-size: 18pt;
+   font-weight: bold;
+   padding: 5px;
+   padding-left: 0;
+}
+
+.descr {
+   font-size: 14pt;
+   font-weight: normal;
+}
+
+
+.statsline {
+   font-size:10pt;
+   font-weight: normal;
+}
+
+td.badgelist {
+   width: 270px;
+   text-align: left;
+   padding-left: 1em;
+}
+
+th {
+   text-align: left;
+   padding-left: 0;
+}
+
+.goback {
+   font-size: 10pt;
+   margin-right: 12pt;
+   margin-top: 24pt;
+   float: right;
+}
+
+.lastmodified {
+   font-size: 10pt;
+   margin-right: 12pt;
+   margin-top: 24pt;
+   float: right;
+}
+
+
+.extraAvailable {
+   color: darkred;
+   float: right;
+   font-size: 8pt;
+}
+
+
+table.stats {
+   padding:0; 
+   margin:0; 
+   font-size: 14pt;
+}
+
+tr.stats {
+   margin: 0;
+   padding: 0;
+}
+
+
+th.stats {
+   margin: 0;
+   margin-left: 1em;
+   padding: 0;
+   padding-right: 0.5em;
+   color:darkred; 
+}
+
+
+.rule {
+   font-size: 8pt;
+}
+
+.rule line {
+  stroke: #bbb;
+  shape-rendering: crispEdges;
+}
+
+.rule line.axis {
+  stroke: #000;
+}
+
+.line {
+  fill: none;
+  stroke: #2f80cb;
+  stroke-width: 1.5px;
+
+.highlightline {
+  fill: none;
+  stroke: #000000;
+  stroke-width: 1.5px;
+}
+
+
+</style>
+</head>
+
+
+<body>
+
+<div id="top">
+<a href='http://groups.ist.utl.pt/~pcm.daemon/moodle/course/view.php?id=4' style="color: gold;">Skill Tree</a> &ndash; eBook
+</div>
+
+
+<div id="wrapper">
+
+
+
+<a  id="tree" />
+<div id="table-wrapper">
+<div class="goback"><a onclick="history.back();">< back</a></div>
+<h1 style='margin-top:24px;'>eBook</h1>
+<table class="badges" style='padding:2em;'>
+<tr>
+<td>
+
+<p>
+Time to enter the wonderful world of eBook creation! Go to project
+Gutenberg (or some other similar source) and choose a (short!) book
+you like, in plain text. Your task, then, is to produce an ePub
+version of that book. You should include a few images or illustrations
+wherever you find relevant (for instance, at the beginning of each
+chapter), a table of contents and a cover. Also, you should take
+special care with text reflow, etc. For instance, typically the text
+version of the book will have line breaks that you'll need to remove
+for the text to reflow properly. You'll probably find <a href="http://code.google.com/p/sigil/">Sigil</a> and
+<a href="http://calibre-ebook.com/">Calibre</a> of use, for this...
+</p>
+
+
+<p>
+Post the original text (with a link to the source) and the ePub, plus
+a short description of the changes you made. You should present
+original work, and we may ask for improvements/changes before
+accepting the result, especially if the quality or originality
+requirements aren't met.
+</p>
+
+
+</td>
+</tr>
+</table>
+
+</div> <!-- table-wrapper -->
+
+
+
+</div> <!-- wrapper -->
+
+<div id="bottom">
+&copy;2011-2013 Daniel Gon&ccedil;alves, PCM faculty. This page has been automatically generated by course_achievements.py v3.0. If you spot any errors, please contact us.
+</div>
+
+
+</body>
+
+</html>

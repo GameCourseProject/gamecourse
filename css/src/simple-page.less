@@ -1,0 +1,43 @@
+@import "base-settings";
+@import "device-sizes";
+@import "inputs";
+
+body {
+  font-family: @font-family;
+  background-color: @color-primary-1;
+  margin: 0;
+  height: 100%;
+  color: @color-primary-4;
+}
+
+.big-title {
+  font-size: 400%;
+  text-align: center;
+}
+
+.middle-box {
+  background-color: @color-primary-0;
+  margin: 0 auto;
+  @media all and (min-width: @device-sm) {
+    width: @device-sm;
+  }
+  .header {
+    background-color: @color-primary-2;
+    padding: 8px;
+    font-size: 140%;
+  }
+
+  .content {
+    padding: 8px 8px 8px 8px;
+
+    h2 {
+      margin-top: 8px;
+    }
+  }
+
+  .footer {
+    background-color: @color-primary-2;
+    padding: 8px;
+    font-size: 140%;
+  }
+}

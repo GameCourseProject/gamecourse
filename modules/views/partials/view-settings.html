@@ -1,0 +1,26 @@
+View Type: <select ng-options="type.id as type.name for type in types" ng-model="viewType" ng-disabled="viewSettings.module != undefined"></select>
+<span ng-if="viewSettings.module != undefined">(Cannot change the type of views provided by modules)</span>
+<div ng-if="viewType == 0">
+    <button ng-click="gotoEdit();">Edit</button>
+</div>
+<div class="specializations-selection" ng-if="viewType == 1 || viewType == 2">
+    <div style="display: block">Specializations:</div>
+    <div>
+        <ul>
+            <li ng-click="selectOne(one)" ng-repeat="one in viewSpecializations" ng-style="oneSelected == one ? selectedStyle : undefined">{{one.name}} <button ng-if="one.id != 'role.Default'" ng-click="deleteViewOne(one, $event)">Delete</button></li>
+        </ul>
+
+        <select ng-if="missingOne != undefined && missingOne.length > 0" ng-model="selection.missingOneToAdd" ng-options="one.name for one in missingOne"></select>
+        <button ng-if="missingOne != undefined && missingOne.length > 0" ng-click="createViewOne();">Create</button>
+    </div>
+    <div ng-if="viewType == 2 && oneSelected != undefined">
+        when viewed by:
+
+        <ul>
+            <li ng-click="selectTwo(two)" ng-repeat="two in specializationsTwo">{{two.name}} <button ng-if="two.id != 'role.Default'" ng-click="deleteViewTwo(two, $event)">Delete</button></li>
+        </ul>
+
+        <select ng-if="missingTwo != undefined && missingTwo.length > 0" ng-model="selection.missingTwoToAdd" ng-options="two.name for two in missingTwo"></select>
+        <button ng-if="missingTwo != undefined && missingTwo.length > 0" ng-click="createViewTwo();">Create</button>
+    </div>
+</div>

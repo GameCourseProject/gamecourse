@@ -1,0 +1,26 @@
+<a name="Charts"></a>
+<h1>Charts</h1>
+<div class="section">
+    <a name="PartChart"></a>
+    <h2>Part - Chart</h2>
+    <div class="section">
+        <p>This Chart part allows to display different types of charts to the users. There are a 4 types of charts:</p>
+        <ul>
+            <li>Line - draws a line chart</li>
+            <li>Bar - draws a bar chart</li>
+            <li>Star - draws a star plot</li>
+            <li>Progress - draws a progress bar</li>
+        </ul>
+        <p>To create a new chart it is required to register a chart in using a Module in PHP.</p>
+    </div>
+    <a name="ChartRegister"></a>
+    <h2>Register a new chart</h2>
+    <div class="section">
+        <p>To register a new chart, get the <code>chart</code> Module, and then invoke the <code>registerChart($id, $processFunction)</code> method, which receives the new chart id and the process function that will return the values of the chart.</p>
+        <pre class="code">
+$chartsModule = $this->getParent()->getModule('charts');
+$chartsModule->registerChart('xpWorld', function(&$chart, $params, $visitor) {
+    //..
+});</pre>
+    </div>
+</div>

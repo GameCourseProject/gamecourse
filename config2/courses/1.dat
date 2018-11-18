@@ -1,0 +1,8 @@
+name=s:13:"PCM 2016/2017";
+users=a:0:{}
+headerLink=s:15:"./courses/PCM-0";
+defaultRoleSettings=a:1:{s:11:"landingPage";s:12:"/leaderboard";}
+modules=a:10:{i:0;s:2:"xp";i:1;s:6:"skills";i:2;s:6:"badges";i:3;s:5:"quest";i:4;s:6:"charts";i:5;s:5:"views";i:6;s:11:"leaderboard";i:7;s:9:"side-view";i:8;s:7:"profile";i:9;s:8:"overview";}
+roles=a:2:{i:0;s:7:"Teacher";i:1;s:7:"Student";}
+rolesSettings=a:3:{s:7:"Teacher";a:1:{s:11:"landingPage";s:0:"";}s:7:"Student";a:1:{s:11:"landingPage";s:10:"/myprofile";}s:5:"Hello";a:1:{s:11:"landingPage";s:0:"";}}
+rolesHierarchy=a:2:{i:0;a:1:{s:4:"name";s:7:"Teacher";}i:1;a:1:{s:4:"name";s:7:"Student";}}

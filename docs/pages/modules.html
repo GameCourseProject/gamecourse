@@ -1,0 +1,130 @@
+<h1>Modules</h1>
+<div class="section">
+    <a name="ModuleCreation"></a>
+    <h2>Module Creation</h2>
+    <div class="section">
+        <p>Creating a module is necessary if you want to use advanced features on the SmartBoards, like defining functions or directives for Views, or to extend functionality of the SmartBoards in a modular way.</p>
+        <h3>Creating an empty module</h3>
+        <div class="section">
+            <p>All you need to get started is the following code in a file with the name <code>module.EmptyModule.php</code> inside a new directory in the directory of the modules. It is recommended that this directory uses a lowercase name, or it might not work in some systems.</p>
+            <pre class="code">&lt;?php
+use SmartBoards\Module;
+use SmartBoards\ModuleLoader;
+
+class EmptyModule extends Module {
+}
+
+ModuleLoader::registerModule(array(
+    'id' => 'empty',
+    'name' => 'My Empty Module',
+    'version' => '0.1',
+    'factory' => function() {
+        return new EmptyModule();
+    }
+));
+</pre>
+            <p>This code, creates an empty PHP class that is the module and registers it with the module loader, which will load it whenever it is required.</p>
+        </div>
+        <a name="ModuleOnInitialization"></a>
+        <h3>On Initialization</h3>
+        <div class="section">
+            <p>To initialize something when the module initializes the function <code>init()</code> is used. It allows the module to use other features of the SmartBoards core, like Navigation, or setup additional things required for the module.</p>
+            <p>As an example, lets define a new navigation button, which is only available for Administrators of the system. To do this, we start by defining our empty <code>init()</code> function inside the class.</p>
+            <pre class="code">
+class EmptyModule extends Module {
+<span class="highlight">    public function init() {
+    }</span>
+}</pre>
+            <p>Then we state that we need to use something that is part of the Core of the SmartBoards system by appending <code>use SmartBoards\Core</code> near the other use statements. An to conclude it we add the code that checks if the user is an Administrator and in that case add the navigation, resulting in the final code:</p>
+            <pre class="code">&lt;?php
+<span class="highlight">use SmartBoards\Core;</span>
+use SmartBoards\Module;
+use SmartBoards\ModuleLoader;
+
+class <span class="highlight">CustomNavigation</span> extends Module {
+    public function init() {
+<span class="highlight">        $user = Core::getLoggedUser();
+        if (($user != null && $user->isAdmin()))
+            Core::addNavigation('images/gear.svg', 'Técnico', 'http://tecnico.ulisboa.pt');</span>
+    }
+}
+
+ModuleLoader::registerModule(array(
+    'id' => '<span class="highlight">customnav</span>',
+    'name' => '<span class="highlight">Custom Navigation</span>',
+    'version' => '0.1',
+    'factory' => function() {
+        return new <span class="highlight">CustomNavigation</span>();
+    }
+));
+</pre>
+            <p>The example can be downloaded <a href="pages/examples/customnavigation.tar.gz" aria-label="Custom Navigation Module Example">here</a>, ready to use, just needs to be extracted to the modules folder.</p>
+        </div>
+        <a name="ModuleSetupResources"></a>
+        <h3>Setup Resources</h3>
+        <div class="section">
+            <p>If you want to define a plugin that applies CSS or needs Javascript, you need to specify which resources you want to include. This is done using the function <code>setupResources()</code> and using the function <code>addResources()</code> from the Module class to add the resources, which can be entire folders.</p>
+            <pre class="code">
+public function setupResources() {
+    parent::addResources('css/'); // some styles
+    parent::addResources('js/main.js'); // add main.js first
+    parent::addResources('js/'); // other files depend on the main
+}</pre>
+        </div>
+        <a name="OtherClassesFromModule"></a>
+        <h3>Other classes from the Module</h3>
+        <div class="section">
+            <p>To use other classes in the module, you can include them manually, or use the class loader provided by the SmartBoards system. This class loader will load the file if the namespace starts with the name <code>Modules</code> followed by the directory of the plugin, for example, <code>namespace Modules/Views;</code>.</p>
+            <p>The classes can then be created normally and are auto loaded by the system automatically, but considerations on the dependencies of the modules should be taken into account, due to the load order of the classes.</p>
+        </div>
+        <a name="ModuleInteraction"></a>
+        <h3>Interacting with other modules</h3>
+        <div class="section">
+            <p>To interact with other modules we simply request the module we want by using the function <code>getModule($module)</code> from the course. The requested module should be using the class loader way of loading classes, as explained in <a href="#OtherClassesFromModule">Other classes from the Module</a> and provide some kind of API for other modules to interact with it.</p>
+            <p>As an example we can request the module <code>views</code> and get the view handler.</p>
+            <pre class="code">
+public function init() {
+    $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
+}</pre>
+        </div>
+        <a name="ModuleDataSchema"></a>
+        <h3>Defining accessible data in the Data Schema</h3>
+        <div class="section">
+            <p>To define some type in the Data Schema some functions of the class <code>\SmartBoards\DataSchema</code> are used. There are 4 different data types that can be registered. The types and functions used to create the objects to register in the data schema are in the following list:</p>
+            <ul>
+                <li>Value/Field - <code>DataSchema::makeField</code></li>
+                <li>Array - <code>DataSchema::makeArray</code></li>
+                <li>Object - <code>DataSchema::makeObject</code></li>
+                <li>Map - <code>DataSchema::makeMap</code></li>
+            </ul>
+            <p>The functions <code>DataSchema::courseModuleDataFields</code> and <code>DataSchema::courseUserDataFields</code> exist to help create fields for the module and user.</p>
+            <p>After obtaining the objects it is required to register those objects in the schema, using the function <code>DataSchema::register</code>.</p>
+            <pre class="code">
+public function init() {
+    DataSchema::register(array(
+        DataSchema::courseModuleDataFields($this, array(
+            DataSchema::makeArray('levels', null,
+                DataSchema::makeObject('level', null, array(
+                    DataSchema::makeField('minxp', 'Min XP', 2000),
+                    DataSchema::makeField('title', 'Title of the Level', 'Self-Aware')
+                ))
+            )
+        ))
+    ));
+}</pre>
+        </div>
+        <a name="ModuleData"></a>
+        <h3>Accessing Module Data</h3>
+        <div class="section">
+            <p>To access the module data, all that is needed to do is invoke the <code>getData</code> function from module class.</p>
+            <pre class="code">$this->getData()->set('test', true');</pre>
+        </div>
+        <a name="ModuleUserData"></a>
+        <h3>Accessing User Data</h3>
+        <div class="section">
+            <p>To access user data it is necessary to get the user and then invoke the <code>CourseUser::getData</code> function to access the data.</p>
+            <pre class="code">$this->getParent()->getUser(12345)->getData()->set('test', true');</pre>
+            <p>In the example we get the user from the parent of the module, which is the course. Then we get the data from the user, which is wrapped by a DataWrapper, that manages the save automatically.</p>
+        </div>
+    </div>
+</div>

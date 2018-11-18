@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html ng-app="schemaApp">
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../../js/angular.min.js"></script>
+    <script src="clipboard.min.js"></script>
+    <title>SmartBoards Documentation - Schema</title>
+    <style>
+        #fields > ul {
+            max-width: 500px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding-left: 20px;
+        }
+        ul li:not(:last-child) {
+        }
+
+        .schema-path {
+        }
+
+        .schema-path > .general {
+            position: relative;
+            font-style: italic;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            background-color: #ededed;
+            padding: 2px;
+            margin-top: 4px;
+        }
+
+        .schema-path > .children > ul {
+        }
+
+        .valueOf > .schema-path > .general {
+            background-color: #cccccc;
+        }
+
+        .name {
+            font-style: normal;
+        }
+
+        .type {
+            font-weight: bold;
+
+        }
+
+        .description {
+            font-style: normal;
+        }
+
+        .example {
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        .path-copy {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            line-height: 14px;
+        }
+
+        .path-copy > div {
+            display: inline-block;
+            cursor: pointer;
+            line-height: 14px;
+            background-color: rgba(0, 0, 0, 0.04);
+            font-size: 80%;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            vertical-align: middle;
+        }
+
+        .path-copy > div:hover {
+            opacity: 0.8;
+        }
+
+        .path-copy > div:active {
+            opacity: 0.2;
+        }
+
+        .path-copy img {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body ng-controller="SchemaController">
+    <nav><a href="../">Docs</a> | <a href=".">Schema</a> | <a href="../api">API</a></nav>
+    Schema for Course: <select ng-options="course for course in courses" ng-model="course"></select>
+    <script>
+        var app = angular.module('schemaApp', []);
+        app.controller('SchemaController', function($scope, $element, $http, $compile) {
+            $http.get('getSchema.php?list').then(function(data) {
+                $scope.courses = data.data;
+                $scope.course = $scope.courses[0];
+            });
+
+            $scope.$watch('course', function(n, o) {
+                if (n == o)
+                    return;
+
+                var fieldsEl = document.getElementById('fields');
+                if (fieldsEl != undefined)
+                    fieldsEl.remove();
+                $http.get('getSchema.php?course=' + $scope.course).then(function(data) {
+                    $scope.fields = data.data;
+                    $element.append($compile('<field-tree-root id="fields" field-tree-root="fields"></field-tree-root>')($scope));
+                });
+            });
+        });
+
+        app.directive('fieldTreeRoot', function($parse) {
+            return {
+                replace: true,
+                restrict: 'E',
+                scope: true,
+                link: function ($scope, element, attrs) {
+                    $scope.showChildren = false;
+                    $scope.children = $parse(attrs.fieldTreeRoot)($scope);
+                    angular.forEach($scope.children, function(value, key) {
+                        value.path = key;
+                        value.pathExp = key;
+                    });
+                    $scope.toggleAll = function() {
+                        $scope.$broadcast('toggleChildren', $scope.showChildren = !$scope.showChildren);
+                    };
+
+                    $scope.search = function() {
+                        var toSearch = $scope.searchFor;
+                        if (toSearch != '') {
+                            var searches = $scope.searchFor.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&").split(' ');
+                            if (!$scope.showChildren)
+                                $scope.$broadcast('toggleChildren', $scope.showChildren = true);
+                            $scope.$broadcast('checkSearch', searches);
+                        } else {
+                            $scope.$broadcast('toggleChildren', $scope.showChildren = false);
+                            $scope.$broadcast('checkSearch', []);
+                        }
+                    };
+                },
+                templateUrl: 'fieldTreeRoot.html'
+            };
+        });
+
+        app.directive('fieldTree', function($parse, $timeout) {
+            function typeName(type) {
+                return ['Field', 'Array', 'Object', 'Map'][type];
+            }
+
+            return {
+                replace: true,
+                restrict: 'E',
+                scope: true,
+                link: function ($scope, element, attrs) {
+                    $scope.showChildren = false;
+                    $scope.field = $parse(attrs.fieldTree)($scope);
+                    $scope.name = $scope.field.field;
+                    $scope.children = [];
+                    $scope.type = typeName($scope.field.type);
+                    $scope.example = $scope.field.example;
+                    $scope.description = $scope.field.desc;
+                    $scope.path = $scope.field.path;
+                    $scope.pathExp = $scope.field.pathExp;
+
+                    $scope.isContainerKey = false;
+                    if ($scope.containerKey == $scope.field)
+                        $scope.isContainerKey = true;
+                    $scope.containerKey = null;
+
+                    $scope.isContainerValue = false;
+                    if ($scope.containerValue == $scope.field)
+                        $scope.isContainerValue = true;
+                    $scope.containerValue = null;
+
+                    $scope.$on('checkSearch', function($event, searches) {
+                        var match = true;
+                        for (var i = 0; i < searches.length && match; ++i) {
+                            var regex = new RegExp(searches[i], 'gi');
+                            if (!($scope.path.match(regex) != null || ($scope.desc != null && $scope.desc.match(regex) != null)))
+                                match = false;
+                        }
+
+                        if (match)
+                            $scope.$emit('show');
+                        else
+                            $scope.hidden = true;
+                    });
+                    $scope.$on('show', function() {
+                        $scope.hidden = false;
+                    });
+
+                    $timeout(function() {
+                        if ($scope.field.type == 1) {
+                            $scope.containerValue = $scope.field.value;
+                            $scope.children = [];
+                        } else if ($scope.field.type == 2) {
+                            $scope.children = $scope.field.fields;
+                        } else if ($scope.field.type == 3) {
+                            $scope.containerKey = $scope.field.options.key;
+                            $scope.containerValue = $scope.field.options.value;
+                            $scope.children = [];
+                        }
+
+                        function updatePath(value) {
+                            value.path = $scope.path + '.' + value.field;
+                            value.pathExp = $scope.pathExp + (($scope.field.type == 1 || $scope.field.type == 3) ? '[]' : ('.' + value.field));
+                        }
+
+                        angular.forEach($scope.children, updatePath);
+                        if ($scope.containerKey)
+                            updatePath($scope.containerKey);
+                        if ($scope.containerValue)
+                            updatePath($scope.containerValue);
+
+                    });
+
+                    $scope.$on('toggleChildren', function(event, value) {
+                        $scope.showChildren = value;
+                    });
+
+                    $scope.copyField = function($event) {
+                        $event.stopPropagation();
+                    };
+
+                    $scope.copyExpression = function($event) {
+                        $event.stopPropagation();
+                    };
+
+                    $scope.styleHide = {
+                        display: 'none'
+                    };
+                },
+                templateUrl: 'fieldTree.html'
+            };
+        });
+
+        app.directive('ngClipboard', function($parse) {
+            return {
+                scope: true,
+                'link': function($scope, $elem, $attrs) {
+                    var clipboard = new Clipboard($elem[0], {
+                        text: function() {
+                            return $parse($attrs.ngClipboard)($scope);
+                        }
+                    });
+                    $scope.$on('$destroy', function() {
+                        clipboard.destroy();
+                    });
+                }
+            };
+        });
+    </script>
+    <script type="text/ng-template" id="fieldTree.html">
+        <div class="schema-path" ng-style="hidden ? styleHide : undefined">
+            <div class="general" ng-click="showChildren = !showChildren">
+                <div class="path-copy" ng-if="!isContainerKey">
+                    <div ng-clipboard="path" title="Copy to clipboard" ng-click="copyField($event)"><img alt="Save" src="../../images/duplicate.svg"> Field</div>
+                    <div ng-clipboard="pathExp" title="Copy to clipboard" ng-click="copyExpression($event)"><img alt="Save" src="../../images/duplicate.svg"> Expression</div>
+                </div>
+                <div><span class="name">{{(isContainerValue ? 'Value: ' : '') + (isContainerKey ? 'Key: ' : '') + name}}</span> - <span class="type">{{type}}</span></div>
+                <div ng-if="description != null">Description: <span class="description">{{description}}</span></div>
+                <div ng-if="example != null">Example: <span class="example">{{example}}</span></div>
+                <div class="valueOf" ng-if="containerKey != null">
+                    <field-tree field-tree="containerKey"></field-tree>
+                </div>
+                <div class="valueOf" ng-if="containerValue != null">
+                        <field-tree field-tree="containerValue"></field-tree>
+                </div>
+            </div>
+            <div class="children" ng-if="children.length != 0 && children != undefined">
+                <ul>
+                    <li ng-repeat="child in children" ng-style="!showChildren ? styleHide : undefined"><field-tree field-tree="child"></field-tree></li>
+                </ul>
+            </div>
+        </div>
+    </script>
+    <script type="text/ng-template" id="fieldTreeRoot.html">
+        <div>
+            <button ng-click="toggleAll()">Toggle All</button>
+            <label for="searchBox">Search:</label><input id="searchBox" type="text" ng-model="searchFor" ng-change="search()">
+            <ul>
+                <li ng-repeat="child in children"><field-tree field-tree="child"></field-tree></li>
+            </ul>
+        </div>
+    </script>
+</body>
+</html>

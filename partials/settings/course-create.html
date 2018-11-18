@@ -1,0 +1,17 @@
+<div>
+    <label for="course-name" class="label">Name: </label>
+    <input type="text" id="course-name" class="input-text" placeholder="" ng-model="newCourse.courseName">
+</div>
+<div>
+    <div>Creation Mode:</div>
+    <div>
+        <label for="mode-blank">Blank: </label><input type="radio" name="creation-mode" id="mode-blank" ng-model="newCourse.creationMode" value="blank">
+        <label for="mode-similar">Similar to course: </label><input type="radio" name="creation-mode" id="mode-similar"  ng-model="newCourse.creationMode" value="similar">
+    </div>
+    <div ng-if="newCourse.creationMode == 'similar'">
+        Course: <select ng-options="course.name for (id, course) in courses track by id" ng-model="newCourse.course"></select>
+    </div>
+</div>
+<div>
+    <button ng-disabled="newCourse.creationMode == undefined || !isValid(newCourse.courseName) || (newCourse.creationMode == 'similar' && !isValidCourse(newCourse.course))" ng-click="createCourse()">Create</button>
+</div>

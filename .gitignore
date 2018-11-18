@@ -1,0 +1,10 @@
+.idea
+logs/
+config/
+*.css
+legacy_data/
+photos/
+modules/skills/resources/
+modules/quest/resources/
+cache/
+/nbproject/private/

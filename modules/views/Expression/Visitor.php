@@ -1,0 +1,14 @@
+<?php
+namespace Modules\Views\Expression;
+
+abstract class Visitor {
+    public abstract function visitStatementSequence($node);
+    public abstract function visitArgumentSequence($node);
+    public abstract function visitValueNode($node);
+    public abstract function visitGenericUnaryOp($node);
+    public abstract function visitGenericBinaryOp($node);
+    public abstract function visitFunctionOp($node);
+    public abstract function visitDatabasePath($node, $parent, $returnContinuation);
+    public abstract function visitDatabasePathFromParameter($node, $returnContinuation);
+    public abstract function visitParameterNode($node);
+}

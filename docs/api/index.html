@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+    <title>SmartBoards Documentation - API</title>
+    <link rel="stylesheet" href="../css/docs.css"/>
+</head>
+<body>
+    <nav><a href="../">Docs</a> | <a href="../schema">Schema</a> | <a href=".">API</a></nav>
+    <div class="docs">
+        <h1>API</h1>
+        <div class="section">
+            <p>The API allows to get and update any information that is stored by the SmartBoards system.</p>
+            <p>To access the API it is required to have an API Key. There are 2 different types of keys for accessing the data. The first type is bound to the global system, which authenticates queries and updates to global settings. The second type is bound to courses and allows to change course information. Each course key is different.</p>
+            <p>API Endpoint: &lt;SmartboardsBase&gt;/api/</p>
+            <h2>Authorization</h2>
+            <div class="section">
+                <p>There are different ways of sending the authorization key to the server:</p>
+                <h3>HTTP Header</h3>
+                <div class="section">
+                    <p>The key can be sent in the authorization header of the HTTP, like in so many other APIs.</p>
+                    <p>Example on request to <code>http://smartboards/api/</code>:</p>
+					<pre class="code">Authorization: Bearer 1e0ad42e1c66d2324278575ab2c70a46</pre>
+                </div>
+                <h3>GET</h3>
+                <div class="section">
+                    <p>The key can be sent in a GET parameter of the HTTP request.</p>
+                    <p>Example:</p>
+                    <pre class="code">http://smartboards/api/?key=1e0ad42e1c66d2324278575ab2c70a46</pre>
+                </div>
+                <h3>POST</h3>
+                <div class="section">
+                    <p>THe key can be sent in the body of the POST, in a json object with the key.</p>
+                    <p>Example on POST request to <code>http://smartboards/api/</code>:</p>
+                    <pre class="code">{"key": "1e0ad42e1c66d2324278575ab2c70a46"}</pre>
+                </div>
+                <p>The following errors can be generated if something is wrong: </p>
+                <ul>
+                    <li><code>MissingAuth</code> - if no key was provided</li>
+                    <li><code>InvalidKey</code> - if the provided key is invalid</li>
+                </ul>
+            </div>
+            <h2>Request</h2>
+            <div class="section">
+                <p>The Request API function to be called is specified in the GET parameter of the HTTP Request with the key <code>request</code>.</p>
+                <p>Example:</p>
+                <pre class="code">http://smartboards/api/?request=users</pre>
+                <h3>Query (GET)</h3>
+                <div class="section">
+                    <p>A query request allows to get information from the system. It is done using a GET HTTP Request, authorized in the Authorization section, and with the request parameter. Additional paremeters may be required.</p>
+                </div>
+                <h3>Update (POST)</h3>
+                <div class="section">
+                    <p>An update request allows to update information in the system. It is done using a POST HTTP Request, authorized in the Authorization section, and with the request parameter. Additional paremeters may be required.</p>
+                    <p>The body of the POST request must be a JSON object.</p>
+                </div>
+                <p>The following errors can be generated if something is wrong: </p>
+                <ul>
+                    <li><code>MissingRequest</code> - if no request key is specified</li>
+                    <li><code>UnknownRequest</code> - if the request does not match any registered function</li>
+                </ul>
+            </div>
+            <h2>API Functions</h2>
+            <div class="section">
+                <h3>Global Functions</h3>
+                <div class="section">
+                    <p>The Global functions require the Global API Key for authorization.</p>
+                    <p>The following functions are available:</p>
+                    <ul>
+                        <li><code>config</code> - general config of the SmartBoards system</li>
+                        <li><code>users</code> - all users</li>
+                    </ul>
+                    <p>All functions in this section implement Query and Update requests. To update from what is returned use the key <code>update</code> in the JSON payload of the POST request.</p>
+                    <p>Example Update: <code>{"update": {"headerLink":"Hello"}}</code></p>
+                </div>
+                <h3>Course Functions</h3>
+                <div class="section">
+                    <p>The Course functions require the Course API Key for authorization and a <code>course</code> parameter in the GET or POST to specify the course.</p>
+                    <p>The following functions are available:</p>
+                    <ul>
+                        <li><code>course</code> - get course info and users</li>
+                        <li><code>course-user-data</code> - get course user data - requires a <code>user</code> parameter</li>
+                        <li><code>course-module-data</code> - get course module data - requires a <code>module</code> parameter</li>
+                    </ul>
+                    <p>All functions in this section implement Query and Update requests. To update from what is returned use the key <code>update</code> in the JSON payload of the POST request.</p>
+                    <p>Example Update: <code>{"update": {"headerLink":"Hello"}}</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
