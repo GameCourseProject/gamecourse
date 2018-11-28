@@ -1,9 +1,9 @@
 <?php
 $courseUrls = array('https://fenix.tecnico.ulisboa.pt/disciplinas/PCM26/2017-2018/2-semestre/notas');
 //$BACKENDID = 'backend_CbTA8|W6Iz/|W6ImP';
-$BACKENDID = 'backend_CbTA8|W7zFb|W7y6V';
+$BACKENDID = 'backend_CbTA8|W/MbZ|W/MWC';
 //$JSESSIONID = '35CC1D3C136267F95D40398712725EBD.as2';
-$JSESSIONID = 'D2F49A46FA1E0834ADEE0CFFBD767E5E.as2';
+$JSESSIONID = '11C6DDFFA9700E5893DD8A4D68EB9A55.as2';
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;

@@ -6,7 +6,7 @@ app.controller('TestController', function ($scope, $smartboards, $element, $comp
     $smartboards.request('views', 'getEdit', {course: 0, view: 'overview'}, function(data, err) {
         if (err) {
             console.log(err);
-            return
+            return;
         }
 
         $scope.fields = data.fields;

@@ -6,7 +6,7 @@ use SmartBoards\ModuleLoader;
 
 use Modules\Views\ViewHandler;
 
-class Test extends Module {
+class QR extends Module {
 
     public function setupResources() {
         parent::addResources('js/');
@@ -16,25 +16,24 @@ class Test extends Module {
     public function init() {
         $user = Core::getLoggedUser();
         if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
-            Core::addNavigation('images/gear.svg', 'Test', 'course.test', true);
+            Core::addNavigation('images/gear.svg', 'QR', 'course.qr', true);
 
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->registerView($this, 'test', 'Test View', array(
+        $viewHandler->registerView($this, 'qr', 'QR View', array(
             'type' => ViewHandler::VT_SINGLE
         ));
 
     }
 }
 ModuleLoader::registerModule(array(
-    'id' => 'test',
-    'name' => 'Test',
+    'id' => 'qr',
+    'name' => 'QR',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
-        //array('id' => 'xp-levels', 'mode' => 'hard')
     ),
     'factory' => function() {
-        return new Test();
+        return new QR();
     }
 ));
 ?>
