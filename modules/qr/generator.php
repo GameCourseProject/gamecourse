@@ -38,7 +38,8 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
 		// Inserir Base de Dados	
 		
 ?>
-		<div id="tinyQR"><img src="modules/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>
+        <div id="tinyQR"><img src="qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>		
+       <!--div id="tinyQR"><img src="modules/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div-->
 <?php
 	}
 	pg_close($connection);

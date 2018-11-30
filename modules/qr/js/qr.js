@@ -27,8 +27,11 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
         var qrQuantityInput = $('<input>', {type: 'number', id:'qr-quantity', 
                'class': 'input-text', placeholder:'', 'ng-model':'data.qrQuantity'});
         qrGenForm.append($compile(qrQuantityInput)($scope));
-
-        qrGenForm.append($('<button>', {'ng-show': 'data.qrQuantity>0','ng-click': 'generateQR()', text: 'Generate'}));
+        
+        qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
+        href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password">Generate</a>')($scope));
+        
+        /*qrGenForm.append($('<button>', {'ng-show': 'data.qrQuantity>0','ng-click': 'generateQR()', text: 'Generate'}));
         
         //Create QRs and tiny URLs
         $scope.generateQR = function() {
@@ -38,7 +41,7 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
                 console.log("Error with request to get QR: "+response);
             }); 
         };//the database used and the link that the QR is pointing to are still external
-        
+        */
         qrCodesGenerator.append($compile(qrGenForm)($scope));
     });
 
