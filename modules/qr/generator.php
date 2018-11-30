@@ -1,3 +1,10 @@
+<html>
+<head>
+<style>
+#tinyQR  { font-family: Arial, Helvetica; float: left; text-align:center; width: 160px;
+          padding: 0px; border:1px dashed #CCC; margin: 0px 0px 0px 0px; }
+</style>
+</head>
 <?php
 ini_set('display_errors','On');
 include('config.php'); // configuracao base de dados 
@@ -51,4 +58,6 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
 <?php 
 }
 ?>
+</body>
+</html>
 
