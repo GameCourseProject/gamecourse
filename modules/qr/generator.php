@@ -1,17 +1,9 @@
-<html>
-<head>
-<style>
-.tinyQR  { font-family: Arial, Helvetica; float: left; text-align:center; padding: 0px; border:1px dashed #CCC; width:147px; margin: 0px 0px 0px 0px; }
-</style>
-</head>
-<body>
 <?php
 ini_set('display_errors','On');
 include('config.php'); // configuracao base de dados 
 include('password.php'); // valor da password em md5 >>> md5 -s "password" (Mac)
 
-function getTinyURL($url)  
-{  
+function getTinyURL($url){  
 	$ch = curl_init();  
 	$timeout = 5;  
 	curl_setopt($ch,CURLOPT_URL,'http://tinyurl.com/api-create.php?url='.$url);  
@@ -41,32 +33,21 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
 		$url = "http://localhost/qr/index.php?key=".$key;
 		$tinyurl = getTinyURL($url);
 		$sql="INSERT INTO qrcode(qrkey) VALUES ('{$key}');";
-		$result = pg_query($sql) or die(pg_last_error());
+		//$result = pg_query($sql) or die(pg_last_error());
 		
-		// Inserir Base de Dados
-		
+		// Inserir Base de Dados	
 		
 ?>
-		<div id="tinyQR"><img src="qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>
-		<!--
-		<img src="qrcode.php?url=<?=$url?>" />  
-		<div id="tinyQR"><img src="http:/localhost/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>
-		<img src="http:/localhost/qr/qrcode.php?url=<?=$url?>" />  
-		-->
+		<div id="tinyQR"><img src="modules/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>
 <?php
 	}
 	pg_close($connection);
   } else echo "PASSWORD ERRADA!";
 } else {
 ?>
-	<form action="<?=$_SERVER['PHP_SELF']?>" method="post">
-		Quanto QR Codes deseja gerar? <input type="text" name="quantos"><br />
-		Insira uma palavra-passe: <input type="password" name="palavra">
-		<input type="submit" value="Gerar">
+    <p>Something went wrong with QR generation</p>
 	
-	</form>
 <?php 
 }
 ?>
-</body>
-</html>
+
