@@ -37,10 +37,10 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
 		$separator = ';';
 		$key = $datagen.$separator.$password.$separator.$uid;
 		//$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
-		$url = "http://localhost/qr/index.php?key=".$key;
+		$url = "http://localhost/smartboards/modules/qr/index.php?key=".$key;
 		$tinyurl = getTinyURL($url);
 		$sql="INSERT INTO qrcode(qrkey) VALUES ('{$key}');";
-		//$result = pg_query($sql) or die(pg_last_error());
+		$result = pg_query($sql) or die(pg_last_error());
 		
 		// Inserir Base de Dados	
 		
