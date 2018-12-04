@@ -6,6 +6,12 @@
 </style>
 </head>
 <?php
+//namespace Modules\QR;
+//include ('../../classes/ClassLoader.class.php');
+//include ('../../classes/SmartBoards/Course.php');
+//use SmartBoards\Course;
+//require_once('../../classes/SmartBoards/Core.php');
+
 ini_set('display_errors','On');
 include('config.php'); // configuracao base de dados 
 include('password.php'); // valor da password em md5 >>> md5 -s "password" (Mac)
@@ -23,8 +29,9 @@ function getTinyURL($url){
 }
 
 $tinyurl="";
-if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
+if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) && isset($_REQUEST["course"]) ){
   $palavra = md5($_REQUEST["palavra"]);
+  //$course = Course::getCourse($_REQUEST["course"]);
   if($palavra==$password){
     $connection = pg_connect("host=$hostname port=$port user=$dbusername password=$dbpassword dbname=$dbusername") 
 		or die(pg_last_error());
@@ -39,6 +46,8 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) ){
 		//$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
 		$url = "http://localhost/smartboards/modules/qr/index.php?key=".$key;
 		$tinyurl = getTinyURL($url);
+                //echo $course->getModuleData('qr')->get('qrCodes');
+                //echo $course->getModuleData('qr')->getWrapped('qrCodes');
 		$sql="INSERT INTO qrcode(qrkey) VALUES ('{$key}');";
 		$result = pg_query($sql) or die(pg_last_error());
 		

@@ -3,12 +3,7 @@ angular.module('module.qr', []);
 
 angular.module('module.qr').controller('QRController', function ($element, $scope, $sbviews, $compile,$http, $filter) {
     changeTitle('QR', 1);
-    
-    //TO be deleted, now is refreshing everytime so it uses the latest code
-    $scope.$emit('refreshTabs');
-     
-    
-    
+        
     $sbviews.request('qr', {course: $scope.course}, function(data, err) {
         if (err) {
             console.log(err);
@@ -29,19 +24,8 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
         qrGenForm.append($compile(qrQuantityInput)($scope));
         
         qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
-        href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password">Generate</a>')($scope));
-        
-        /*qrGenForm.append($('<button>', {'ng-show': 'data.qrQuantity>0','ng-click': 'generateQR()', text: 'Generate'}));
-        
-        //Create QRs and tiny URLs
-        $scope.generateQR = function() {
-            $http.get('modules/qr/generator.php?quantos='+data.qrQuantity+'&palavra=password').success(function(response) {
-                qrGenForm.append($(response));
-            }).error(function(response){
-                console.log("Error with request to get QR: "+response);
-            }); 
-        };//the database used and the link that the QR is pointing to are still external
-        */
+        href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}">Generate</a>')($scope));
+         
         qrCodesGenerator.append($compile(qrGenForm)($scope));
         
         var participationList = createSection(tabContent, 'Check Participations List');
