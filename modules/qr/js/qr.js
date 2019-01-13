@@ -1,7 +1,7 @@
 angular.module('module.qr', []);
 
 
-angular.module('module.qr').controller('QRController', function ($element, $scope, $sbviews, $compile,$http, $filter) {
+angular.module('module.qr').controller('QRController', function ($element, $scope, $sbviews, $compile,$http) {
     changeTitle('QR', 1);
         
     $sbviews.request('qr', {course: $scope.course}, function(data, err) {
@@ -23,11 +23,13 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
                'class': 'input-text', placeholder:'', 'ng-model':'data.qrQuantity'});
         qrGenForm.append($compile(qrQuantityInput)($scope));
         
-        qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
+        qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \\n\
         href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}">Generate</a>')($scope));
+        //generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}
          
         qrCodesGenerator.append($compile(qrGenForm)($scope));
         
+        //Buttons to show lists of participations and failed attempts
         var participationList = createSection(tabContent, 'Check Participations List');
         participationList.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
         href="modules/qr/report.php">List</a>')($scope));

@@ -1,4 +1,4 @@
-angular.module('module.skills', [])
+angular.module('module.skills', []);
 angular.module('module.skills').controller('SkillPage', function($scope, $smartboards, $stateParams, $compile) {
     $scope.skillName = $stateParams.skillName;
     $smartboards.request('skills', 'page', {course: $scope.course, skillName: $scope.skillName}, function(data, err) {
@@ -27,12 +27,12 @@ angular.module('module.skills').directive('skillBlock', function($state) {
         link: function($scope, $element) {
             $scope.gotoSkillPage = function(skill) {
                 $state.go('course.skill', {'skillName': skill.data.skillName.value});
-            }
+            };
 
             // disable propagation of Post links
             $element.find('a').on('click', function(e) { e.stopPropagation(); });
         }
-    }
+    };
 });
 
 angular.module('module.skills').config(function($stateProvider) {
@@ -71,9 +71,9 @@ angular.module('module.skills').directive('skillStudentImage', function($state) 
                 $element.tooltip({offset: [-150, -65], html: tooltipContent});
                 $scope.tooltipBound = true;
                 $element.trigger('mouseover');
-            }
+            };
         }
-    }
+    };
 });
 
 

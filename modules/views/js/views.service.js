@@ -19,13 +19,14 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
             viewBlock.removeClass('block');
             viewBlock.addClass('view');
-
+            
             var view = {
                 scope: viewScope,
                 element: $compile(viewBlock)(viewScope)
             };
 
-            func(view, undefined);
+            func(view, undefined);           
+            $rootScope.loaded=true;
         });
     };
 

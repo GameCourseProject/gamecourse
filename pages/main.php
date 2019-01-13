@@ -31,6 +31,8 @@ $user = Core::getLoggedUser();
             }]);
 
             app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
+                $rootScope.loaded=false;
+                
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                     if ($rootScope.course != course) {
                         $rootScope.course = $scope.course = course;
@@ -72,7 +74,7 @@ $user = Core::getLoggedUser();
                         {sref: 'home', image: 'images/leaderboard.svg', text: 'Main Page'},
                         {sref: 'courses', image: 'images/leaderboard.svg', text: 'Courses'},
                         <?php if ($user->isAdmin()) echo "{sref: 'settings', image: 'images/gear.svg', text: 'Settings'}," ?>
-                    ]
+                    ];
                 };
 
                 $scope.setNavigation = function(newNav) {
@@ -81,7 +83,7 @@ $user = Core::getLoggedUser();
 
                 $scope.setCourse = function(course) {
                     $scope.course = course;
-                }
+                };
 
                 $scope.defaultNavigation();
                 $rootScope.modulesDir = '<?php echo MODULES_FOLDER; ?>';
@@ -127,7 +129,7 @@ $user = Core::getLoggedUser();
                 });
 
                 $urlRouter.listen();
-            });
+            });          
         </script>
     </head>
     <body ng-controller="SmartBoard">
@@ -146,9 +148,12 @@ $user = Core::getLoggedUser();
             </div>
         </nav>
 
-        <div id="wrapper">
-            <div id="content-wrapper">
-                <div ui-view="main-view"></div>
+        <div id="wrapper">          
+            <div id="content-wrapper">            
+                <div ui-view="main-view"></div>           
+            </div>
+            <div ng-hide="loaded" id="page-loading">
+                    <img style="display:block; margin:0 auto;" src="images/loader.gif">
             </div>
         </div>
     </body>

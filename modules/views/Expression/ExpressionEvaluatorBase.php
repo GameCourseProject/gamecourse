@@ -6,8 +6,7 @@ use Exception;
 
 
 
-class ExpressionEvaluatorBase
-{
+class ExpressionEvaluatorBase{
     public $symbols = array();
     public $terminals = array();
     public $productions = array();
@@ -20,13 +19,9 @@ class ExpressionEvaluatorBase
     public $reduce = 2;
     public $accept = 3;
 
-    function trace()
-    {
+    function trace(){}
 
-    }
-
-    function __construct()
-    {
+    function __construct(){
         //Setup Parser
         
 			$symbol0 = new ParserSymbol("accept", 0);
@@ -267,8 +262,7 @@ class ExpressionEvaluatorBase
 			$table78 = new ParserState(78);
 			$table79 = new ParserState(79);
 
-			$tableDefinition0 = array(
-				
+			$tableDefinition0 = array(		
 					1=>new ParserAction($this->reduce, $table1),
 					3=>new ParserAction($this->none, $table1),
 					4=>new ParserAction($this->none, $table2),
@@ -279,17 +273,14 @@ class ExpressionEvaluatorBase
 				);
 
 			$tableDefinition1 = array(
-				
 					1=>new ParserAction($this->accept)
 				);
 
 			$tableDefinition2 = array(
-				
 					1=>new ParserAction($this->reduce, $table2)
 				);
 
 			$tableDefinition3 = array(
-				
 					1=>new ParserAction($this->reduce, $table3),
 					4=>new ParserAction($this->none, $table7),
 					5=>new ParserAction($this->none, $table3),
@@ -300,7 +291,6 @@ class ExpressionEvaluatorBase
 				);
 
 			$tableDefinition4 = array(
-				
 					7=>new ParserAction($this->none, $table8),
 					12=>new ParserAction($this->shift, $table15),
 					14=>new ParserAction($this->shift, $table11),
@@ -317,7 +307,6 @@ class ExpressionEvaluatorBase
 				);
 
 			$tableDefinition5 = array(
-				
 					1=>new ParserAction($this->reduce, $table8),
 					9=>new ParserAction($this->reduce, $table8),
 					11=>new ParserAction($this->reduce, $table8),
@@ -326,7 +315,6 @@ class ExpressionEvaluatorBase
 				);
 
 			$tableDefinition6 = array(
-				
 					1=>new ParserAction($this->reduce, $table9),
 					9=>new ParserAction($this->reduce, $table9),
 					11=>new ParserAction($this->reduce, $table9),
@@ -1637,7 +1625,6 @@ class ExpressionEvaluatorBase
 			$table79->setActions($tableDefinition79);
 
 			$this->table = array(
-				
 					0=>$table0,
 					1=>$table1,
 					2=>$table2,
@@ -1783,7 +1770,6 @@ class ExpressionEvaluatorBase
         //Setup Lexer
         
 			$this->rules = array(
-				
 					0=>"/^(?:\{)/",
 					1=>"/^(?:%%)/",
 					2=>"/^(?:[%][A-Za-z]+)/",
@@ -1823,244 +1809,198 @@ class ExpressionEvaluatorBase
 				);
 
 			$this->conditions = array(
-				
-					"CONTEXT"=>new LexerConditions(array( 0,1,2,32,33,35), true),
-					"EXPR"=>new LexerConditions(array( 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28), false),
-					"PATH_STATE"=>new LexerConditions(array( 27,29,30,31), false),
-					"INITIAL"=>new LexerConditions(array( 0,1,2,34,35), true)
-				);
-
-
+                            "CONTEXT"=>new LexerConditions(array( 0,1,2,32,33,35), true),
+                            "EXPR"=>new LexerConditions(array( 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28), false),
+                            "PATH_STATE"=>new LexerConditions(array( 27,29,30,31), false),
+                            "INITIAL"=>new LexerConditions(array( 0,1,2,34,35), true)
+			);
     }
 
-    function parserPerformAction(&$thisS, &$yy, $yystate, &$s, $o)
-    {
+    function parserPerformAction(&$thisS, &$yy, $yystate, &$s, $o){
         
 /* this == yyval */
 
-
-switch ($yystate) {
-case 1:
-    return new ValueNode(''); 
+        switch ($yystate) {
+        case 1:
+            return new ValueNode(''); 
+            break;
         
-break;
-case 2:
-    return $s[$o]->text; 
+        case 2:
+            return $s[$o]->text; 
+            break;
         
-break;
-case 3:
-
+        case 3:
             $thisS = $s[$o]->text;
+            break;
         
-break;
-case 4:
-
+        case 4:
             $thisS = new StatementSequence($s[$o-1]->text, $s[$o]->text);
+            break;
         
-break;
-case 5:
-
+        case 5:
             $thisS = new ArgumentSequence($s[$o]->text);
+            break;
         
-break;
-case 6:
-
+        case 6:
             $thisS = new ArgumentSequence($s[$o-2]->text, $s[$o]->text);
+            break;
         
-break;
-case 7: case 31:
-
+        case 7: case 31:
             $thisS = $s[$o-1]->text;
+            break;
         
-break;
-case 8:
-   
+        case 8:
             $thisS = new ValueNode($s[$o]->text);
+            break;
         
-break;
-case 9: case 33:
-
+        case 9: case 33:
             $thisS = new ParameterNode(substr($s[$o]->text, 1));
+            break;
         
-break;
-case 10:
-
+        case 10:
             $thisS = new GenericBinaryOp('+', $s[$o-2]->text, $s[$o]->text);
+            break;
         
-break;
-case 11:
-
+        case 11:
             $thisS = new GenericBinaryOp('-', $s[$o-2]->text, $s[$o]->text);
+            break;
         
-break;
-case 12:
-
+        case 12:
             $thisS = new GenericBinaryOp('*', $s[$o-2]->text, $s[$o]->text);
+            break;
         
-break;
-case 13:
-
+        case 13:
             $thisS =  new GenericBinaryOp('/', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 14:
 
+        break;
+        case 14:
             $thisS =  new GenericBinaryOp('%', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 15:
 
-            $thisS = new GenericBinaryOp('==', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 16:
+        break;
+        case 15:
+                    $thisS = new GenericBinaryOp('==', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('<', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 17:
+        break;
+        case 16:
+                    $thisS = new GenericBinaryOp('<', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('>', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 18:
+        break;
+        case 17:
+                    $thisS = new GenericBinaryOp('>', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('<=', $s[$o-3]->text, $s[$o]->text);
-        
-break;
-case 19:
+        break;
+        case 18:
+                    $thisS = new GenericBinaryOp('<=', $s[$o-3]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('>=', $s[$o-3]->text, $s[$o]->text);
-        
-break;
-case 20:
+        break;
+        case 19:
+                    $thisS = new GenericBinaryOp('>=', $s[$o-3]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('in_array', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 21:
+        break;
+        case 20:
+                    $thisS = new GenericBinaryOp('in_array', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('&&', $s[$o-3]->text, $s[$o]->text);
-        
-break;
-case 22:
+        break;
+        case 21:
+                    $thisS = new GenericBinaryOp('&&', $s[$o-3]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('||', $s[$o-3]->text, $s[$o]->text);
-        
-break;
-case 23:
+        break;
+        case 22:
+                    $thisS = new GenericBinaryOp('||', $s[$o-3]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('&', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 24:
+        break;
+        case 23:
+                    $thisS = new GenericBinaryOp('&', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('|', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 25:
+        break;
+        case 24:
+                    $thisS = new GenericBinaryOp('|', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericBinaryOp('||', $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 26:
+        break;
+        case 25:
+                    $thisS = new GenericBinaryOp('||', $s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new GenericUnaryOp('~', $s[$o]->text);
-        
-break;
-case 27:
+        break;
+        case 26:
+                    $thisS = new GenericUnaryOp('~', $s[$o]->text);
 
-            $thisS = new GenericUnaryOp('!', $s[$o]->text);
-        
-break;
-case 28:
+        break;
+        case 27:
+                    $thisS = new GenericUnaryOp('!', $s[$o]->text);
 
-            $thisS = new GenericUnaryOp('-', $s[$o]->text);
-        
-break;
-case 29:
+        break;
+        case 28:
+                    $thisS = new GenericUnaryOp('-', $s[$o]->text);
 
-            $thisS = new FunctionOp(substr($s[$o-2]->text, 1), null);
-        
-break;
-case 30:
+        break;
+        case 29:
+                    $thisS = new FunctionOp(substr($s[$o-2]->text, 1), null);
 
-            $thisS = new FunctionOp(substr($s[$o-3]->text, 1), $s[$o-1]->text);
-        
-break;
-case 32:
-    $thisS = $s[$o]->text; 
-        
-break;
-case 34:
+        break;
+        case 30:
+                    $thisS = new FunctionOp(substr($s[$o-3]->text, 1), $s[$o-1]->text);
 
-            $thisS = new ValueNode($s[$o]->text);
-        
-break;
-case 35:
+        break;
+        case 32:
+            $thisS = $s[$o]->text; 
 
-            $thisS = new ValueNode((int) ($s[$o]->text));
-        
-break;
-case 36:
-    $thisS = $s[$o]->text; 
-        
-break;
-case 37:
-    $thisS = $s[$o-2]->text . '.' . $s[$o]->text; 
-        
-break;
-case 38:
+        break;
+        case 34:
+                    $thisS = new ValueNode($s[$o]->text);
 
-            $thisS = new ContextSequence($s[$o-1]->text);
-        
-break;
-case 39:
+        break;
+        case 35:
+                    $thisS = new ValueNode((int) ($s[$o]->text));
 
-            $thisS = new ContextSequence($s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 40:
+        break;
+        case 36:
+            $thisS = $s[$o]->text; 
 
-            $thisS = new DatabasePath($s[$o]->text);
-        
-break;
-case 41:
+        break;
+        case 37:
+            $thisS = $s[$o-2]->text . '.' . $s[$o]->text; 
 
-            $thisS = new DatabasePath($s[$o-1]->text, $s[$o]->text);
-        
-break;
-case 42:
+        break;
+        case 38:
+                    $thisS = new ContextSequence($s[$o-1]->text);
 
-            $thisS = new DatabasePath($s[$o-3]->text, $s[$o-2]->text, $s[$o]->text);
-        
-break;
-case 43:
+        break;
+        case 39:
+                    $thisS = new ContextSequence($s[$o-2]->text, $s[$o]->text);
 
-            $thisS = new DatabasePathFromParameter(substr($s[$o-2]->text, 1), $s[$o]->text);
-        
-break;
-case 44:
+        break;
+        case 40:
+                    $thisS = new DatabasePath($s[$o]->text);
 
-            $thisS = new DatabasePathFromParameter(substr($s[$o-1]->text, 1), null, $s[$o]->text);
-        
-break;
-case 45:
+        break;
+        case 41:
+                    $thisS = new DatabasePath($s[$o-1]->text, $s[$o]->text);
 
+        break;
+        case 42:
+                    $thisS = new DatabasePath($s[$o-3]->text, $s[$o-2]->text, $s[$o]->text);
+
+        break;
+        case 43:
+                    $thisS = new DatabasePathFromParameter(substr($s[$o-2]->text, 1), $s[$o]->text);
+
+        break;
+        case 44:
+                    $thisS = new DatabasePathFromParameter(substr($s[$o-1]->text, 1), null, $s[$o]->text);
+
+        break;
+        case 45:
             $thisS = new DatabasePathFromParameter(substr($s[$o-3]->text, 1), $s[$o]->text, $s[$o-2]->text);
+            break;
         
-break;
-case 46:
-
+        case 46:
             $thisS = $s[$o]->text;
-        
-break;
-}
+            break;
+        }
 
     }
 
-    function parserLex()
-    {
+    function parserLex(){
         $token = $this->lexerLex(); // $end = 1
 
         if (isset($token)) {
@@ -2070,18 +2010,15 @@ break;
         return $this->symbols["end"];
     }
 
-    function parseError($str = "", ParserError $hash = null)
-    {
+    function parseError($str = "", ParserError $hash = null){
         throw new Exception($str);
     }
 
-    function lexerError($str = "", LexerError $hash = null)
-    {
+    function lexerError($str = "", LexerError $hash = null){
         throw new Exception($str);
     }
 
-    function parse($input)
-    {
+    function parse($input){
         if (empty($this->table)) {
             throw new Exception("Empty Table");
         }
@@ -2190,12 +2127,9 @@ break;
                         $vstackCount--;
                     }
 
-                    if (is_null($_yy))
-                    {
+                    if (is_null($_yy)){
                         $vstack[] = new ParserValue();
-                    }
-                    else
-                    {
+                    } else{
                         $vstack[] = $_yy;
                     }
                     $vstackCount++;
@@ -2238,8 +2172,7 @@ break;
     public $ranges;
     public $flex = false;
 
-    function setInput($input)
-    {
+    function setInput($input){
         $this->input = $input;
         $this->more = $this->less = $this->done = false;
         $this->yy = new ParserValue();
@@ -2278,8 +2211,7 @@ break;
         return $ch;
     }
 
-    function unput($ch)
-    {
+    function unput($ch){
         $len = strlen($ch);
         $lines = explode("/(?:\r\n?|\n)/", $ch);
         $linesCount = count($lines);
@@ -2456,7 +2388,7 @@ break;
     function LexerPerformAction($avoidingNameCollisions, $YY_START = null)
     {
         
-;
+
 switch($avoidingNameCollisions) {
 case 0:    $this->begin('EXPR'); 
                                 return 9;
@@ -2670,8 +2602,7 @@ class ParserSymbol
     }
 }
 
-class ParserError
-{
+class ParserError{
     public $text;
     public $state;
     public $symbol;
@@ -2679,8 +2610,7 @@ class ParserError
     public $loc;
     public $expected;
 
-    function __construct($text, $state, $symbol, $lineNo, $loc, $expected)
-    {
+    function __construct($text, $state, $symbol, $lineNo, $loc, $expected){
         $this->text = $text;
         $this->state = $state;
         $this->symbol = $symbol;
@@ -2690,32 +2620,27 @@ class ParserError
     }
 }
 
-class LexerError
-{
+class LexerError{
     public $text;
     public $token;
     public $lineNo;
 
-    public function __construct($text, $token, $lineNo)
-    {
+    public function __construct($text, $token, $lineNo){
         $this->text = $text;
         $this->token = $token;
         $this->lineNo = $lineNo;
     }
 }
 
-class ParserState
-{
+class ParserState{
     public $index;
     public $actions = array();
 
-    function __construct($index)
-    {
+    function __construct($index){
         $this->index = $index;
     }
 
-    public function setActions(&$actions)
-    {
+    public function setActions(&$actions){
         $this->actions = $actions;
     }
 }
@@ -2725,8 +2650,7 @@ class ParserRange
     public $x;
     public $y;
 
-    function __construct($x, $y)
-    {
+    function __construct($x, $y){
         $this->x = $x;
         $this->y = $y;
     }

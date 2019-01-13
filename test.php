@@ -13,8 +13,6 @@ use SmartBoards\Core;
 use SmartBoards\Course;
 use SmartBoards\ModuleLoader;
 
-use Flintstone\FlintstoneDB;
-
 Core::denyCLI();
 Core::requireLogin();
 Core::requireSetup();

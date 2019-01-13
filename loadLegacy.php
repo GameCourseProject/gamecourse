@@ -263,15 +263,15 @@ foreach($awards as &$award) {
         $sbAward = null;
         if ($award['what'] == 'Initial Bonus')
             $sbAward = array('type' => 'bonus', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => $award['what']);
-        else if ($award['what'] == 'Grade from Lab')
+        elseif ($award['what'] == 'Grade from Lab')
             $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Lab ' . $award['field2'], 'subtype' => 'lab', 'num' => $award['field2']);
-        else if ($award['what'] == 'Grade from Quiz')
+        elseif ($award['what'] == 'Grade from Quiz')
             $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Quiz ' . $award['field2'], 'subtype' => 'quiz', 'num' => $award['field2']);
-        else if ($award['what'] == 'Grade from Presentation')
+        elseif ($award['what'] == 'Grade from Presentation')
             $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Presentation', 'subtype' => 'presentation');
-        else if ($award['what'] == 'Skill Tree')
+        elseif ($award['what'] == 'Skill Tree')
             $sbAward = array('type' => 'skill', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => $award['field2']);
-        else if (in_array($award['what'], $badgesNames))
+        elseif (in_array($award['what'], $badgesNames))
             $sbAward = array('type' => 'badge', 'reward' => $sbBadges[$award['what']]['xp'][$award['field1']-1], 'date' => (double) $award['time'], 'name' => $award['what'], 'level' => (int) $award['field1']);
 
 
@@ -329,7 +329,7 @@ foreach($users as $userid => $user) {
             $badgeUnlockedLevelTime[$award['name']][$award['level']-1] = $award['date'];
             if (!array_key_exists($award['name'], $badgeUnlockedLevel))
                 $badgeUnlockedLevel[$award['name']] = $award['level'];
-            else if ($badgeUnlockedLevel[$award['name']] < $award['level'])
+            elseif ($badgeUnlockedLevel[$award['name']] < $award['level'])
                 $badgeUnlockedLevel[$award['name']] = $award['level'];
             else {
                 echo 'Should never be here!!! Badge awarded out of order for ', $userid, ', badge ', $award['name'], '<br>';
@@ -338,21 +338,21 @@ foreach($users as $userid => $user) {
                 $userBadges->set('bonusxp', $userBadges->get('bonusxp') + $award['reward']);
             else
                 $userBadges->set('normalxp', $userBadges->get('normalxp') + $award['reward']);
-        } else if ($award['type'] == 'skill') {
+        } elseif ($award['type'] == 'skill') {
             $skillUnlocked[] = $award['name'];
             $userSkills->set('totalxp', $userSkills->get('totalxp') + $award['reward']);
             $countSkills++;
-        } else if ($award['type'] == 'grade') {
+        } elseif ($award['type'] == 'grade') {
             if ($award['subtype'] == 'quiz') {
                 $quizesList->set($award['num'], $award['reward']);
                 $userQuizes->set('totalxp', $userQuizes->get('totalxp') + $award['reward']);
-            } else if ($award['subtype'] == 'lab') {
+            } elseif ($award['subtype'] == 'lab') {
                 $labsList->set($award['num'], $award['reward']);
                 $userLabs->set('totalxp', $userLabs->get('totalxp') + $award['reward']);
             } else {
                 $userPresentation->set('xp', $award['reward']);
             }
-        } else if ($award['type'] == 'bonus') {
+        } elseif ($award['type'] == 'bonus') {
             $userData->set('bonusxp', $userData->get('bonusxp') + $award['reward']);
         }
     }

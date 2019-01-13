@@ -147,9 +147,8 @@ function changeTitle(newTitle, depth, keepOthers, url) {
     $('#page-title').html((finalTitleWithLinks.length != 0 ? ' - ' : '') + finalTitleWithLinks);
 }
 
-app.service('$smartboards', function($http, $q, $ocLazyLoad) {
+app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
     var $smartboards = this;
-
     this.sendFile = function (module, request, fileBuffer, callback) {
         $http.post('info.php?uploadFile&module=' + module + '&request=' + request, fileBuffer, {
             transformRequest: [],
@@ -164,6 +163,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad) {
     };
 
     this.request = function (module, request, data, callback) {
+        $rootScope.loaded=false;
         $http.post('info.php?module=' + module + '&request=' + request, data).then(function(response) {
             if (callback) {
                 if (response.data.data != undefined)
@@ -213,7 +213,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad) {
         } else {
             return $q(function(resolve) {resolve();});
         }
-    }
+    };
 });
 
 app.directive('bindTrustedHtml', ['$compile', function ($compile) {

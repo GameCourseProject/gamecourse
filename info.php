@@ -10,7 +10,6 @@ use SmartBoards\Course;
 use SmartBoards\ModuleLoader;
 use SmartBoards\Settings;
 use SmartBoards\User;
-use SmartBoards\ViewHandler;
 
 Core::denyCLI();
 if (!Core::requireLogin(false))
@@ -19,7 +18,7 @@ if (!Core::requireSetup(false))
     API::error("SmartBoards is not yet setup.", 400);
 Core::init();
 if (!Core::checkAccess(false))
-    API::error("SmartBoards is not yet setup.", 400);
+    API::error("Access denied.", 400);
 
 ModuleLoader::scanModules();
 API::gatherRequestInfo();

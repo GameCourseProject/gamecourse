@@ -21,7 +21,7 @@ class QR extends Module {
         DataSchema::register(array(
             DataSchema::courseModuleDataFields($this, array(
                 DataSchema::makeMap('errors', null, DataSchema::makeField('errorId', 'Error Id', '1'),
-                    DataSchema::makeObject('badge', 'Badge', array(
+                    DataSchema::makeObject('error', 'Error', array(
                         DataSchema::makeField('studentId', 'Student Id', '12345'),
                         DataSchema::makeField('ip', 'IP', '127.0.0.1.'),
                         DataSchema::makeField('qrCode', 'QR Code', '20181129121614;...'),

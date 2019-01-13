@@ -88,7 +88,6 @@ class ModuleLoader {
                         } else if (!array_key_exists($dependency['id'], $loadedModules)) {
                             if (!in_array($dependency['id'], $modulesToLoad))
                                 $notEnabled[] = $dependency['id'];
-
                             $canLoad = false;
                         }
                     }

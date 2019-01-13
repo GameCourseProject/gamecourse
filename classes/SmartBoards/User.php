@@ -1,8 +1,6 @@
 <?php
 namespace SmartBoards;
 
-use Flintstone\FlintstoneDB;
-use Flintstone\Formatter\JsonFormatter;
 use MagicDB\MagicDB;
 use MagicDB\MagicWrapper;
 

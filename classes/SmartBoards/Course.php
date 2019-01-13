@@ -1,10 +1,6 @@
 <?php
 namespace SmartBoards;
 
-use Flintstone\Flintstone;
-use Flintstone\FlintstoneDB;
-use Flintstone\FlintstoneException;
-use Flintstone\Formatter\JsonFormatter;
 use MagicDB\MagicDB;
 use MagicDB\MagicWrapper;
 
@@ -179,7 +175,6 @@ class Course {
             if ($initModules)
                 ModuleLoader::initModules(static::$courses[$cid]);
         }
-
         return static::$courses[$cid];
     }
 

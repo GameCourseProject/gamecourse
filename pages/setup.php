@@ -5,8 +5,6 @@ if (!defined('CONNECTION_STRING'))
 use \SmartBoards\User;
 use \MagicDB\MagicDB;
 
-use Flintstone\Flintstone;
-
 if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_POST)) {
     $courseName = $_POST['course-name'];
     $teacherId = $_POST['teacher-id'];

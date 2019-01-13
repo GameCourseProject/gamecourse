@@ -34,7 +34,6 @@ if ($isCLI) {
 
 $course = Course::getCourse($courseId);
 $users = $course->getUsers()->getKeys();
-//User::getUser(81205)->setUsername('ist181205');
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -59,6 +58,7 @@ foreach($courseUrls as $url) {
     $dom = new DOMDocument(5, 'UTF-8');
     @$dom->loadHTML($body);
     $studentsTable = $dom->getElementsByTagName('table')[0];
+    //TODO add verification, if it couldnt login there wont be a table
     foreach ($studentsTable->getElementsByTagName('tr') as $row) {
         $username = $row->childNodes[0]->nodeValue;
         $studentNumber = $row->childNodes[2]->nodeValue;
