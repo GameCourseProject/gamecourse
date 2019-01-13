@@ -31,7 +31,7 @@ $user = Core::getLoggedUser();
             }]);
 
             app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
-                $rootScope.loaded=false;
+                $rootScope.loaded=true;
                 
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                     if ($rootScope.course != course) {

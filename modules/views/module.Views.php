@@ -81,6 +81,9 @@ class Views extends Module {
 
     public function init() {
         $this->viewHandler = new ViewHandler($this);
+         $this->viewHandler->registerFunction('toInt', function($val) {
+            return new ValueNode((int)$val);
+        });
         $this->viewHandler->registerFunction('value', function($val) {
             return new ValueNode($val->getValue());
         });

@@ -26,7 +26,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             };
 
             func(view, undefined);           
-            $rootScope.loaded=true;
+            //$rootScope.loaded=true;
         });
     };
 

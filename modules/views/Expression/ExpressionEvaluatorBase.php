@@ -3,9 +3,6 @@
 namespace Modules\Views\Expression;
 use Exception;
 
-
-
-
 class ExpressionEvaluatorBase{
     public $symbols = array();
     public $terminals = array();

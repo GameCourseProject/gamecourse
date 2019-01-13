@@ -172,6 +172,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
                     callback(undefined, {status: response.status, description: response.data});
                 else
                     callback(undefined, undefined);
+                $rootScope.loaded=true;
             }
         }, function(response) {
             if (callback)
