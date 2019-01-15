@@ -117,7 +117,9 @@ class Charts extends Module {
                 'values' => $xpValue,
                 'domainX' => array(0, ceil($xpDay/15) * 15),
                 'domainY' => array(0, ceil($xpTotal/500) * 500),
-                'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false)
+                'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false),
+                'labelX' => 'Time (Days)',
+                'labelY' => 'XP'
             );
             CacheSystem::store($cacheId, $chart['info']);
         });
@@ -187,7 +189,9 @@ class Charts extends Module {
                     'domainY' => array(1, $students->size()),
                     'startAtOneY' => true,
                     'invertY' => true,
-                    'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false)
+                    'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false),
+                    'labelX' => 'Time (Days)',
+                    'labelY' => 'Position'
                 );
                 CacheSystem::store($cacheId, $chart['info']);
                 return;
@@ -256,7 +260,9 @@ class Charts extends Module {
                 'domainY' => array(0, $students->size()),
                 'startAtOneY' => true,
                 'invertY' => true,
-                'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false)
+                'spark' => (array_key_exists('spark', $chart['info']) ? $chart['info']['spark'] : false),
+                'labelX' => 'Time (Days)',
+                'labelY' => 'Position'
             );
 
             CacheSystem::store($cacheId, $chart['info']);
@@ -297,7 +303,9 @@ class Charts extends Module {
                 'domainX' => range(0, max(ceil($maxXP/1000) * 1000, 20000), 500),
                 'domainY' => array(0, $maxCount),
                 'highlightValue' => $highlightValue,
-                'shiftBar' => true
+                'shiftBar' => true,
+                'labelX' => 'XP',
+                'labelY' => '# Players'
             );
         });
 
@@ -334,7 +342,9 @@ class Charts extends Module {
                 'values' => $data,
                 'domainX' => range(0, $totalLevels),
                 'domainY' => array(0, $maxCount),
-                'highlightValue' => $highlightValue
+                'highlightValue' => $highlightValue,
+                'labelX' => 'Badges',
+                'labelY' => '# Players'
             );
         });
     }

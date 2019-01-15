@@ -79,6 +79,26 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                 .attr('class', 'rule')
                 .attr('x1', 0)
                 .attr('x2', options.width-options.paddingRightTop-options.paddingLeft);
+
+            //Axis Labels
+            //text label for the xAxis
+            console.log("A");
+            console.log(options);
+            svg.append("text")
+                .attr("transform", "translate(" + (options.width/2) + " ," + (options.height - (options.paddingBottom/5)) + ")")
+                .attr("class", "text label")
+                .style("text-anchor", "middle")
+                .text(options.labelX);
+
+            //text label for the yAxis
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 + (options.paddingLeft/5))
+                .attr("x",0 - (options.height / 2))
+                .attr("dy", "1em")
+                .attr("class", "text label")
+                .style("text-anchor", "middle")
+                .text(options.labelY);
         }
 
         svg.append('path')
@@ -122,6 +142,25 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
             .attr('transform', 'translate(' + options.paddingLeft + ', 0)')
             .attr('class', 'y axis')
             .call(yAxis);
+
+        //Axis Labels
+        //text label for the xAxis
+        svg.append("text")
+            .attr("transform", "translate(" + (options.width/2) + " ," + (options.height - (options.paddingBottom/5)) + ")")
+            .attr("class", "text label")
+            .style("text-anchor", "middle")
+            .text(options.labelX);
+
+        //text label for the yAxis
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 + (options.paddingLeft/5))
+            .attr("x",0 - (options.height / 2))
+            .attr("dy", "1em")
+            .attr("class", "text label")
+            .style("text-anchor", "middle")
+            .text(options.labelY);
+
 
         svg.selectAll('rect')
             .data(data)
@@ -245,11 +284,13 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                             width: size,
                             height: 200,
                             paddingRightTop: 10,
-                            paddingLeft: 50,
-                            paddingBottom: 20,
+                            paddingLeft: 75,
+                            paddingBottom: 45,
                             domainX: part.info.domainX,
                             domainY: part.info.domainY,
-                            spark: part.info.spark
+                            spark: part.info.spark,
+                            labelX: part.info.labelX,
+                            labelY: part.info.labelY
                         };
 
                         if (part.info.spark) {
@@ -273,10 +314,12 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                             width: size,
                             height: 200,
                             paddingRightTop: 10,
-                            paddingLeft: 25,
-                            paddingBottom: 20,
+                            paddingLeft: 50,
+                            paddingBottom: 45,
                             domainX: part.info.domainX,
-                            domainY: part.info.domainY
+                            domainY: part.info.domainY,
+                            labelX: part.info.labelX,
+                            labelY: part.info.labelY,
                         };
 
                         if (part.info.shiftBar != undefined)

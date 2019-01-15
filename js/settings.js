@@ -919,6 +919,28 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
         addInviteDiv.append('<div><button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
         pendingInvites.append(addInviteDiv);
         $compile(pendingInvites)($scope);
+
+        $scope.userUpdateInfo = {};
+        $scope.updateUsername = function() {
+            $smartboards.request('settings', 'users', {updateUsername: $scope.userUpdateInfo}, function(data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+
+                console.log('ok!');
+                $scope.userUpdateInfo = {};
+            });
+        };
+
+        var updateUsernameSection = createSection($($element), 'Update usernames').attr('id', 'update-usernames');
+        var setUsernameDiv = $('<div>');
+        setUsernameDiv.append('<div>Update username: </div>')
+        setUsernameDiv.append('<div><label for="update-id" class="label">IST Id:</label><input type="text" class="input-text" id="update-id" ng-model="userUpdateInfo.id"></div>');
+        setUsernameDiv.append('<div><label for="update-username" class="label">IST Username:</label><input type="text" class="input-text" id="update-username" ng-model="userUpdateInfo.username"></div>');
+        setUsernameDiv.append('<div><button ng-disabled="!isValidString(userUpdateInfo.id) || !isValidString(userUpdateInfo.username)" ng-click="updateUsername()">Update username</button></div>');
+        updateUsernameSection.append(setUsernameDiv);
+        $compile(updateUsernameSection)($scope);
     });
 });
 

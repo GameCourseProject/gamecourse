@@ -290,6 +290,16 @@ API::registerFunction('settings', 'users', function() {
             User::getUser($user)->setAdmin(false);
         }
         return;
+    } else if (API::hasKey('updateUsername')) {
+        $updateUsername = API::getValue('updateUsername');
+        $user = User::getUser($updateUsername['id']);
+        if (!$user->exists())
+            API::error('A user with id ' . $updateUsername['id'] . ' is not registered.');
+        $userWithUsername = User::getUserByUsername($updateUsername['username']);
+        if ($userWithUsername != null && $userWithUsername->getId() != $updateUsername['id'])
+            API::error('A user with username ' . $updateUsername['username'] . ' is already registered.');
+        $user->setUsername($updateUsername['username']);
+        return;
     } else if (API::hasKey('createInvite')) {
         $inviteInfo = API::getValue('createInvite');
         if (User::getUser($inviteInfo['id'])->exists())
