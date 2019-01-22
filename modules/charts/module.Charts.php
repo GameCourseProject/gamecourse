@@ -30,7 +30,6 @@ class Charts extends Module {
                 }
             },
             function(&$chart, $viewParams, $visitor) use (&$viewHandler) {
-                //print_r($chart);
                 //$s = \SmartBoards\Course::$coursesDb->numQueriesExecuted();
                 if ($chart['chartType'] == 'progress') {
                     $chart['info']['value'] = $chart['info']['value']->accept($visitor)->getValue();
@@ -53,7 +52,7 @@ class Charts extends Module {
             $studentsData = $students->map(function($key, $valueWrapped) use ($course) {
                 return (new \SmartBoards\CourseUser($key, $valueWrapped, $course))->getData();
             });
-
+            
             $starParams = $chart['info']['params'];
             $starUser = array();
             $starAverage = array();
@@ -63,7 +62,7 @@ class Charts extends Module {
                 $others = $studentsData->map(function ($key, $valueWrapped) use ($param){
                     return $valueWrapped->getWrappedComplex($param['id']);
                 })->getValue();
-
+                
                 $starUser[$param['id']] = $val;
                 $average = array_sum($others) / $numStudents;
                 $starAverage[$param['id']] =$average;
@@ -131,7 +130,7 @@ class Charts extends Module {
             $students = $course->getUsersWithRole('Student');
 
             $maxDay = 0;
-            $minDay = PHP_INT_MAX;;
+            $minDay = PHP_INT_MAX;
             $baseLine = (new DateTime('2015-01-01'))->getTimestamp();
             $calcDay = function($timestamp) use ($baseLine) {
                 return (int)floor(($timestamp - $baseLine) / (3600 * 24));

@@ -17,7 +17,7 @@ angular.module('module.badges').directive('badgeDirective', function($state) {
                 }
             });
         }
-    }
+    };
 });
 
 angular.module('module.badges').directive('badgeStudentImage', function($state) {

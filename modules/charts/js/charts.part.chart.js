@@ -82,8 +82,6 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
 
             //Axis Labels
             //text label for the xAxis
-            console.log("A");
-            console.log(options);
             svg.append("text")
                 .attr("transform", "translate(" + (options.width/2) + " ," + (options.height - (options.paddingBottom/5)) + ")")
                 .attr("class", "text label")
@@ -174,7 +172,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                 if (options.highlightValue != undefined && d.x == options.highlightValue)
                     return 'highlighted';
                 return 'normal';
-            })
+            });
     }
 
     $sbviews.registerPartType('chart', {
@@ -192,7 +190,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
         },
         build: function(scope, part, options) {
             function createSVGElement(tag) {
-                return document.createElementNS('http://www.w3.org/2000/svg', tag)
+                return document.createElementNS('http://www.w3.org/2000/svg', tag);
             }
 
             var chartWrapper = $(document.createElement('div')).addClass('chart');
@@ -208,7 +206,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
 
                     // Chart Type
                     var chartTypeWrapper = $('<div class="sb-component"></div>');
-                    var chartTypeLabel = $('<label for="part-type">Type</label>')
+                    var chartTypeLabel = $('<label for="part-type">Type</label>');
                     var chartTypeSelect = $('<select id="part-type" ng-model="part.chartType"></select>');
                     chartTypeSelect.append('<option value="line">Line</option>');
                     chartTypeSelect.append('<option value="bar">Bar</option>');
@@ -216,8 +214,11 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     chartTypeSelect.append('<option value="progress">Progress</option>');
                     chartTypeWrapper.append(chartTypeLabel);
                     chartTypeWrapper.append(chartTypeSelect);
+                    var chartTypeFeedback = $('<br><tt>type = {{part.chartType}}</tt><br/>');
+                    chartTypeWrapper.append(chartTypeFeedback);
                     root.append(chartTypeWrapper);
                     watch('part.chartType', function(n) {
+                        //this is not doing anything usefull because it should be changing the child scope
                         if (n == 'star') {
                             scope.part.info.provider = 'starPlot';
                             scope.part.info.params = [];
@@ -226,7 +227,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                             scope.part.info.provider = '';
                         }
                     });
-
+                    
                     // Chart Provider
                     root.append('<sb-input ng-if="part.info.provider != \'starPlot\' && part.chartType != \'progress\'" sb-input="part.info.provider" sb-input-label="Chart Provider"></sb-input>');
                     watch('part.info.provider');
@@ -237,21 +238,22 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
 
                     // Star Params
                     optionsScope.starParams = {};
-                    optionsScope.addParam = function() {
+                    optionsScope.addParam = function(part) {
                         var id = optionsScope.starParams.id;
                         var label = optionsScope.starParams.label;
                         var max = optionsScope.starParams.max;
-                        scope.part.info.params.push({id: id, label: label, max: max});
+                        
+                        part.info.params.push({id: id, label: label, max: max});
 
                         optionsScope.starParams.id = '';
                         optionsScope.starParams.label = '';
                         optionsScope.starParams.max = '';
                     };
-                    optionsScope.removeParam = function(index) {
-                        scope.part.info.params.splice(index, 1);
+                    optionsScope.removeParam = function(index, part) {
+                        part.info.params.splice(index, 1);
                     };
                     var starParamsWrapper = $('<div ng-if="part.info.params != undefined">');
-                    starParamsWrapper.append('<ul><li ng-repeat="param in part.info.params track by $index">{{param.id}} - {{param.label}} - {{param.max}} <button ng-click="removeParam($index)">Remove</button></li></ul>');
+                    starParamsWrapper.append('<ul><li ng-repeat="param in part.info.params track by $index">{{param.id}} - {{param.label}} - {{param.max}} <button ng-click="removeParam($index, part)">Remove</button></li></ul>');
                     root.append(starParamsWrapper);
 
                     var starAddParam = $('<div class="sb-component" ng-if="part.chartType == \'star\'"></div>');
@@ -260,7 +262,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     starAddParamInputs.append('<sb-input sb-input="starParams.id" sb-input-label="Id"></sb-input>');
                     starAddParamInputs.append('<sb-input sb-input="starParams.label" sb-input-label="Label"></sb-input>');
                     starAddParamInputs.append('<sb-input sb-input="starParams.max" sb-input-label="Max"></sb-input>');
-                    starAddParamInputs.append('<button class="sb-component" ng-click="addParam()">Add</button>');
+                    starAddParamInputs.append('<button class="sb-component" ng-click="addParam(part)">Add</button>');
                     starAddParam.append(starAddParamInputs);
                     root.append(starAddParam);
                     watch('part.info.params');
@@ -319,7 +321,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                             domainX: part.info.domainX,
                             domainY: part.info.domainY,
                             labelX: part.info.labelX,
-                            labelY: part.info.labelY,
+                            labelY: part.info.labelY
                         };
 
                         if (part.info.shiftBar != undefined)
@@ -339,7 +341,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                         chart.attr('class', 'chart-star');
 
                         var content = part.info;
-
+                       
                         var svg = d3.select(chart.get(0));
                         svg.attr('width', options.width)
                             .attr('height', options.height);
@@ -373,7 +375,6 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     }
                 });
             }
-
             return chartWrapper;
         },
         destroy: function(element) {
