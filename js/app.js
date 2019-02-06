@@ -164,20 +164,35 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
 
     this.request = function (module, request, data, callback) {
         $rootScope.loaded=false;
+        console.time(data.view);
+        console.log(data);
         $http.post('info.php?module=' + module + '&request=' + request, data).then(function(response) {
             if (callback) {
-                if (response.data.data != undefined)
+                if (response.data.data != undefined){
                     callback(response.data.data, undefined);
-                else if (response.data != '')
+                }
+                else if (response.data != ''){
                     callback(undefined, {status: response.status, description: response.data});
-                else
+                }
+                else{
                     callback(undefined, undefined);
+                }
                 $rootScope.loaded=true;
+                
+                if (data.view=="sideview"){//para quando se faz f5 guardar o time do inicio ao fim
+                    console.timeEnd(data.view);
+                    console.timeEnd();
+                }
+                else if (data.view!=null)
+                    console.timeEnd(data.view);
+                
             }
         }, function(response) {
             if (callback)
                 callback(undefined, {status: response.status, description: response.data.error});
+            $rootScope.loaded=true;
         });
+        
     };
 
     this.loadDependencies = function(dependencies) {

@@ -301,7 +301,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 $scope.templates.splice($scope.templates.indexOf(name), 1);
             });
         };
-    })
+    });
 });
 
 angular.module('module.views').config(function($stateProvider) {
@@ -345,5 +345,5 @@ angular.module('module.views').config(function($stateProvider) {
                 controller: 'ViewEditController'
             }
         }
-    })
+    });
 });

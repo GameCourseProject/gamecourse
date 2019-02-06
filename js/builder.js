@@ -36,7 +36,7 @@ Builder.createPageBlock = function(info, customContentBuilder) {
         }
     }
     return pBlock;
-}
+};
 
 Builder.onBlock = function(type, func) {
     var ctorsForType = Builder.blockCtors[type];
@@ -44,7 +44,7 @@ Builder.onBlock = function(type, func) {
         Builder.blockCtors[type] = [func];
     else
         Builder.blockCtors[type].push(func);
-}
+};
 
 Builder.onPageBlock = function(type, func) {
     var ctorsForType = Builder.pageBlockCtors[type];
@@ -52,7 +52,7 @@ Builder.onPageBlock = function(type, func) {
         Builder.pageBlockCtors[type] = [func];
     else
         Builder.pageBlockCtors[type].push(func);
-}
+};
 
 Builder.buildBlock = function(blockInfo, customContentBuilder) {
     var blockEl = $('<div class="block block-' + blockInfo.type + '"></div>');
@@ -86,11 +86,11 @@ Builder.buildBlock = function(blockInfo, customContentBuilder) {
     }
 
     return blockEl;
-}
+};
 
 Builder.getValue = function (obj, field) {
     return field.split('.').reduce(function (obj,i) { return obj[i]; }, obj);
-}
+};
 
 Builder.buildTable = function(content, columns, buildHeader, tableOptions, settings) {
     var options = $.extend({'rowEditor': undefined}, settings);
@@ -114,7 +114,7 @@ Builder.buildTable = function(content, columns, buildHeader, tableOptions, setti
         table.append(tHeader);
     }
 
-    var tBody = $('<tbody>')
+    var tBody = $('<tbody>');
     for(var i = 0; i < content.length; ++i) {
         var tr = $('<tr>');
         for(var col = 0; col < columns.length; ++col) {
@@ -134,4 +134,4 @@ Builder.buildTable = function(content, columns, buildHeader, tableOptions, setti
         tBody.append(tr);
     }
     return table.append(tBody);
-}
+};

@@ -1,7 +1,7 @@
 angular.module('module.views').service('$sbviews', function($smartboards, $rootScope, $compile, $parse, $timeout) {
     var $sbviews = this;
     this.request = function (view, params, func) {
-        $smartboards.request('views', 'view', $.extend({view: view}, params), function(data, err) {
+        $smartboards.request('views', 'view', $.extend({view: view}, params), function(data, err) {  
             if (err) {
                 func(undefined, err);
                 return;

@@ -320,8 +320,9 @@ class ViewHandler {
     }
 
     public function handle($view) {
-        if (!array_key_exists($view, $this->registeredViews))
+        if (!array_key_exists($view, $this->registeredViews)) {
             API::error('Unknown view: ' . $view, 404);
+        }
 
         $viewParams = array();
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
@@ -416,10 +417,9 @@ class ViewHandler {
             API::error('Unsupported!');
             //$viewData = Core::getViews()->get($view)['view'];
         }
-
         API::response(array(
             'fields' => DataSchema::getFields($viewParams),
             'view' => $viewData
-        ));
+        ));  
     }
 }

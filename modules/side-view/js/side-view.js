@@ -82,7 +82,7 @@ angular.module('module.sideview').controller('SideView', function($scope, $smart
             $(window).scroll(testSticky);
             testSticky();
         });
-    }
+    };
 
     $scope.$on('$stateChangeSuccess', function() {
         $scope.refreshSideView();

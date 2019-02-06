@@ -214,8 +214,6 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     chartTypeSelect.append('<option value="progress">Progress</option>');
                     chartTypeWrapper.append(chartTypeLabel);
                     chartTypeWrapper.append(chartTypeSelect);
-                    var chartTypeFeedback = $('<br><tt>type = {{part.chartType}}</tt><br/>');
-                    chartTypeWrapper.append(chartTypeFeedback);
                     root.append(chartTypeWrapper);
                     watch('part.chartType', function(n) {
                         //this is not doing anything usefull because it should be changing the child scope
