@@ -41,7 +41,7 @@ echo '<pre>';
 $keys = array('id', 'name', 'email');
 $teachers = file_get_contents(LEGACY_DATA_FOLDER . '/teachers.txt');
 $teachers = preg_split('/[\r]?\n/', $teachers, -1, PREG_SPLIT_NO_EMPTY);
-print_r($teachers);
+
 foreach($teachers as &$teacher) {
     $teacher = array_combine($keys, preg_split('/;/', $teacher));
     $user = User::getUser($teacher['id']);
@@ -53,7 +53,7 @@ foreach($teachers as &$teacher) {
     }
     $user->setAdmin(true);
     
-    $courseUser= new CourseUser($teacher['id'],new Course($courseId));
+    $courseUser= new CourseUser($teacher['id'],$course);
     if (!$courseUser->exists()) {
         $courseUser->create($teacher['id'],"Teacher");
         echo 'New teacher ' . $teacher['id'] . "\n";
@@ -61,7 +61,7 @@ foreach($teachers as &$teacher) {
         $courseUser->setRoles("Teacher");
     }
 }
-/*
+
 // Read Students
 $keys = array('id', 'name', 'email', 'campus');
 $students = utf8_encode(file_get_contents(LEGACY_DATA_FOLDER . '/students.txt'));
@@ -70,26 +70,18 @@ foreach($students as &$student) {
     $student = array_combine($keys, preg_split('/;/', $student));
     $user = User::getUser($student['id']);
     if (!$user->exists()) {
-        $user->initialize($student['name'], $student['email']);
-    } else {
-        $user->setName($student['name']);
+        $user->create($student['name']);
         $user->setEmail($student['email']);
-    }
-
-    if ($users->hasKey($student['id'])) {
-        $userWrapped = $users->getWrapped($student['id']);
-        $roles = $users->getWrapped($student['id'])->get('roles', array());
-        if (!in_array('Student', $roles)) {
-            $roles[] = 'Student';
-            $users->getWrapped($student['id'])->set('roles', $roles);
-        }
-        $userWrapped->set('name', $student['name']);
-        $userWrapped->set('email', $student['email']);
     } else {
-        $student['roles'] = array('Student');
-        $users->set($student['id'], $student);
-        echo 'New student ' . $student['id'] . "\n";
+        $user->initialize($student['name'], $student['email']);  
     }
+    
+    $courseUser= new CourseUser($student['id'],$course);
+    if (!$courseUser->exists()) {
+        $courseUser->create($student['id'],"Student",$student['campus']);
+        echo 'New student ' . $student['id'] . "\n";
+    }else
+        $courseUser->addRole("Student");
 }
 
 if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
@@ -98,13 +90,15 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
     $studentsGaveUp = preg_split('/[\r]?\n/', $studentsGaveUp, -1, PREG_SPLIT_NO_EMPTY);
     foreach($studentsGaveUp as &$student) {
         $student = array_combine($keys, preg_split('/;/', $student));
-        if ($users->hasKey($student['id'])) {
+        $courseUser= new CourseUser($student['id'],$course);
+        if ($courseUser->exists()){
+            $courseUser->delete();
             echo 'Student ' . $student['id'] . " gave up\n";
-            $users->delete($student['id']);
+            //$users->delete($student['id']);
         }
     }
 }
-
+/*
 //$course->getUsers()->setValue($users);
 
 // Read Indicators

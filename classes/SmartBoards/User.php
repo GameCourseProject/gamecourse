@@ -15,7 +15,7 @@ class User {
         //$this->userWrapper = $userWrapper;
     }
     public function create($name){
-        Core::$sistemDB->insert("user",["name"=>"'".$name."'","id"=>$this->id]);        
+        Core::$sistemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
     }
     
     public function getId() {
@@ -29,7 +29,7 @@ class User {
 
     public function setName($name) {
         //$this->userWrapper->set('name', $name);
-        Core::$sistemDB->update("user",["name"=>"'".$name."'"],["id"=>$this->id]);
+        Core::$sistemDB->update("user",["name"=>$name],["id"=>$this->id]);
     }
 
     public function getEmail() {
@@ -39,7 +39,7 @@ class User {
 
     public function setEmail($email) {
         //$this->userWrapper->set('email', $email);
-        Core::$sistemDB->update("user",["email"=>"'".$email."'"],["id"=>$this->id]);
+        Core::$sistemDB->update("user",["email"=>$email],["id"=>$this->id]);
         
     }
 
@@ -49,7 +49,7 @@ class User {
     }
 
     public function setUsername($username) {
-        Core::$sistemDB->update("user",["username" => "'".$username."'"],["id"=>$this->id]);
+        Core::$sistemDB->update("user",["username" => $username],["id"=>$this->id]);
         //$this->userWrapper->set('username', $username);
     }
 
@@ -70,7 +70,7 @@ class User {
 
     public function initialize($name, $email) {
         //if (!self::exists()) {
-            Core::$sistemDB->update("user",["name" => "'".$name."'","email" => "'".$email."'"],["id"=>$this->id]);
+            Core::$sistemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
         return $this;
     }
 
@@ -88,7 +88,7 @@ class User {
     public static function getUserByUsername($username) {
         //if (static::$usersDB == null)
         //    static::initDB();
-        $userId=Core::$sistemDB->select("user","id",["username"=>"'".$username."'"]);
+        $userId=Core::$sistemDB->select("user","id",["username"=>$username]);
         if ($userId==null)
             return null;
         else

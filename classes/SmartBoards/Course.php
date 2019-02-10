@@ -42,7 +42,7 @@ class Course {
         //return self::getUsers()->filter(function($key, $valueWrapped) use ($role) {
         //    return (new \SmartBoards\CourseUser($key, $valueWrapped, $this))->hasRole($role);
         //});
-        return Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->cid,"roles"=>"'".$role."'"]);
+        return Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->cid,"roles"=>$role]);
     }
 
     public function getUsersIds() {

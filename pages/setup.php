@@ -20,20 +20,20 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     //Core::$courses = [1=>['name' => $courseName, 'id' => 1, 'active' => true]];
     Core::$pending_invites = [$teacherUsername => ['id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true]];
     
-    $db->insert("course",["name" => "'".$courseName."'"]);
+    $db->insert("course",["name" => $courseName]);
     
     //if you wish to remove these roles you should also remove them from .sql on course_user table
-    $db->insert("role",["name"=>"'Teacher'","hierarchy" => 1,"course" =>1]);
-    $db->insert("role",["name"=>"'Student'","hierarchy" => 2,"course" =>1]);
+    $db->insert("role",["name"=>"Teacher","hierarchy" => 1,"course" =>1]);
+    $db->insert("role",["name"=>"Student","hierarchy" => 2,"course" =>1]);
 
     
     $db->insert("user",["id" => $teacherId,
-                        "name" => "'Teacher'",
-                        "username"=> "'".$teacherUsername."'",
+                        "name" => "Teacher",
+                        "username"=> $teacherUsername,
                         "isAdmin"=> true]);
     $db->insert("course_user",["id" => $teacherId,
                                 "course" => 1,
-                              "roles"=> "'Teacher'"]);
+                              "roles"=> "Teacher"]);
 
                           
     file_put_contents('setup.done','');

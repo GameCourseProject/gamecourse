@@ -11,15 +11,19 @@ class CourseUser extends User{
         parent::__construct($id);
         $this->course = $course;
     }
-    public function create($id,$role=null){
+    public function create($id,$role=null,$campus=""){
         //User must already exist in database
-        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$id]);
+        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$id, "campus"=>$campus]);
         if ($role){
-            Core::$sistemDB->update("course_user",["roles"=>"'".$role."'"],["course"=>$this->course->getId(),"id"=>$id]);
+            Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$id]);
         }
     }
     public function exists() {
         return (Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])!=null);
+    }
+    
+    public function delete(){
+        Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
     //function refreshActivity() {
     //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
@@ -58,17 +62,28 @@ class CourseUser extends User{
         return explode(",",Core::$sistemDB->select("course_user",'roles',["course"=>$this->course->getId(),
                                                                           "id"=>$this->id,]));
     }
-
+    
     function setRoles($roles) {
         //return $this->userWrapper->set('roles', $roles);
-        Core::$sistemDB->update("course_user",["roles"=>"'".$roles."'"],["course"=>$this->course->getId(),
+        Core::$sistemDB->update("course_user",["roles"=>$roles],["course"=>$this->course->getId(),
                                                                           "id"=>$this->id,]);
+    }
+    
+    function addRole($role){
+        //adds Role (instead of replacing) only if it isn't already in user's roles
+        $currRoles=$this->getRoles();
+        if (!in_array($role, $currRoles)){
+            if (empty($currRoles))
+                $this->setRoles($role);
+            else
+                $this->setRoles(implode(',', $currRoles).",".$role); 
+        }
     }
 
     function hasRole($role) {
         return (!empty(Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->course->getId(),
                                                             "id"=>$this->id,
-                                                             "roles"=>"'".$role."'"])));
+                                                             "roles"=>$role])));
     }
 
     function isTeacher() {

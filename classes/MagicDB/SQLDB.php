@@ -14,44 +14,54 @@ class SQLDB {//ToDo use prepared statements
     }
     public function executeQuery($sql){
         try{
-            
-            $result=$this->db->query($sql);
+            $result=$stmt=$this->db->query($sql);
         }catch(PDOException $e ){
-            
             echo $sql . "<br>" . $e->getMessage() . "<br>";//ToDo maybe trhrow again
             throw new \PDOException($e);
         }
         return $result;
     }
+    public function executeQueryWithParams($sql,$data){
+        try{
+            $stmt=$this->db->prepare($sql);
+        
+            $stmt->execute($data);
+            //$result=$this->db->query($sql);
+        }catch(PDOException $e ){
+            echo $sql . "<br>" . $e->getMessage() . "<br>";//ToDo maybe trhrow again
+            throw new \PDOException($e);
+        }
+        return $stmt;
+    }
+    
     public function dataToQuery(&$sql,$data,$separator){
         //takes an array and creates a string with $key=$value(,&).... then adds to sql query str        
         foreach ($data as $key => $value) {
             if ($key=="roles" && $separator=='&&')//'roles' is a set so it works differently
-                $sql.="FIND_IN_SET(".$value.",roles)".$separator;
+                $sql.="FIND_IN_SET( :roles ,roles)".$separator;
             else
-                $sql.=$key.'='.$value.$separator;
-
+                $sql.=$key.'= :'.$key.' '.$separator;
         }
         $sql=substr($sql,0,-(strlen($separator)));
-        //return $sql;   
     }
-    
- 
+
     //functions to construct and execute sql querys
     public function insert($table,$data){
         //example: insert into user set name="Example",id=80000,username=ist1800000;
-        $sql = "insert into ".$table." set ";  
+        $sql="insert into ".$table." set "; 
         $this->dataToQuery($sql,$data,',');
         $sql.=";";     
-        //print_r($sql);
+        
+        // print_r($sql);
+        //print_r($data);
         //print_r(" <<\n>> ");
-        $this->executeQuery($sql);      
+        $this->executeQueryWithParams($sql,$data); 
     }
     public function delete($table,$where){
         $sql="delete from ".$table." where ";
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';
-        $this->executeQuery($sql);  
+        $this->executeQueryWithParams($sql,$where);  
     }
     public function update($table,$data,$where){
         //example: update user set name="Example", email="a@a.a" where id=80000;
@@ -60,9 +70,10 @@ class SQLDB {//ToDo use prepared statements
         $sql.= " where ";
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';
+        $data=array_merge($data,$where);
         //print_r($sql);
         //print_r(" <<\n>> ");
-        $this->executeQuery($sql);  
+        $this->executeQueryWithParams($sql,$data);  
         
     }   
     public function select($table,$field,$where){
@@ -73,7 +84,7 @@ class SQLDB {//ToDo use prepared statements
         $sql.=';';      
         //print_r($sql);
         //print_r(" <<\n>> ");
-        $result = $this->executeQuery($sql);
+        $result = $this->executeQueryWithParams($sql,$where);
         // print_r($result->fetch());
         return $result->fetch()[0];
     } 
@@ -87,7 +98,7 @@ class SQLDB {//ToDo use prepared statements
         $sql.=';';
         //print_r($sql);
         //print_r(" <<\n>> ");
-        $result = $this->executeQuery($sql);
+        $result = $this->executeQueryWithParams($sql,$where);
         //print_r($result->fetchAll(\PDO::FETCH_ASSOC));
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
