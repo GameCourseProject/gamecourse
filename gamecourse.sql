@@ -145,7 +145,8 @@ create table skill(
 );
 create table skill_dependency(
 	dependencyNum int not null,
-	dependency varchar(100) not null,
+	dependencyA varchar(50) not null,
+	dependencyB varchar(50) not null,
 	skillName varchar(50) not null,
 	course int unsigned not null,
 	primary key(dependencyNum,skillName,course),

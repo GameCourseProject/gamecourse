@@ -98,23 +98,22 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
         }
     }
 }
-/*
+
 //$course->getUsers()->setValue($users);
 
 // Read Indicators
 $indicators = json_decode(file_get_contents(LEGACY_DATA_FOLDER . '/indicators.json'), true);
 $indicatorsByNum = array();
 foreach ($indicators as &$indicatorsUser) {
-    $indicatorsByNum[$indicatorsUser['num']] = $indicatorsUser['indicators'];
+    $indicatorsByNum[$indicatorsUser['num']] = $indicatorsUser['indicators'];   
 }
 
 // Read Tree
-$keys = array(
-    'tier', 'name', 'dependencies', 'color', 'xp'
-);
+$keys = array('tier', 'name', 'dependencies', 'color', 'xp');
 $skillTree = file_get_contents(LEGACY_DATA_FOLDER . '/tree.txt');
 $skillTree = preg_split('/[\r]?\n/', $skillTree, -1, PREG_SPLIT_NO_EMPTY);
-$sbSkillTree = array(
+
+/*$sbSkillTree = array(
     't0' => array(
         'reward' => 150,
         'skills' => array()
@@ -131,11 +130,11 @@ $sbSkillTree = array(
         'reward' => 1150,
         'skills' => array()
     )
-);
+);*/
 
 foreach($skillTree as &$skill) {
     $skill = array_combine($keys, preg_split('/;/', $skill));
-    if (strpos($skill['dependencies'], '|') !== FALSE) {
+    if (strpos($skill['dependencies'], '|') !== FALSE) {//2 possible dependencies
         $skill['dependencies'] = preg_split('/[|]/', $skill['dependencies']);
         foreach($skill['dependencies'] as &$dependency) {
             $dependency = preg_split('/[+]/', $dependency);
@@ -146,21 +145,31 @@ foreach($skillTree as &$skill) {
         else
             $skill['dependencies'] = array();
     }
-
-    $tier = 't' . ($skill['tier']-1);
-    unset($skill['tier']);
+    //print_r($skill);
+    //$tier = 't' . ($skill['tier']-1);
+    //unset($skill['tier']);
     unset($skill['xp']);
     $descriptionPage = file_get_contents(LEGACY_DATA_FOLDER . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
 
     $start = strpos($descriptionPage, '<td>') + 4;
     $end = stripos($descriptionPage, '</td>');
     $descriptionPage = substr($descriptionPage, $start, $end - $start);
-
     $skill['page'] = htmlspecialchars(utf8_encode($descriptionPage));
-    $sbSkillTree[$tier]['skills'][] = $skill;
+    //if skill doesn't exit, add it to DB (ToDo consider cases where skill atribute changes)
+    if (Core::$sistemDB->select("skill","*",["skillName"=>$skill["name"],"course"=>$courseId])==null){
+        Core::$sistemDB->insert("skill",["skillName"=>$skill["name"],"color"=>$skill['color'],
+                                         "page"=>$skill['page'],"tier"=>$skill['tier'],"course"=>$courseId]);
+        if (!empty($skill['dependencies'])){
+            for ($i=0; $i<sizeof($skill['dependencies']);$i++){
+                $dep=$skill['dependencies'][$i];
+                Core::$sistemDB->insert("skill_dependency",["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId,
+                                                            "dependencyA"=>$dep[0],"dependencyB"=>$dep[1]]);
+            }
+        }
+    }
+    //$sbSkillTree[$tier]['skills'][] = $skill;
 }
-
-$course->getModuleData('skills')->set('skills', $sbSkillTree);
+//$course->getModuleData('skills')->set('skills', $sbSkillTree);
 
 // Read Levels
 $keys = array(
@@ -169,12 +178,16 @@ $keys = array(
 $levels = file_get_contents(LEGACY_DATA_FOLDER . '/levels.txt');
 $levels = preg_split('/[\r]?\n/', $levels, -1, PREG_SPLIT_NO_EMPTY);
 
-foreach($levels as &$level) {
-    $level = array_combine($keys, preg_split('/;/', $level));
-    $level['minxp'] = (int) $level['minxp'];
+for($i=0;$i<sizeof($levels);$i++){
+    //if level doesn't exit, add it to DB (ToDo consider cases where level atribute changes)
+    if (Core::$sistemDB->select("level","*",["lvlNum"=>$i,"course"=>$courseId])==null){
+        $level = array_combine($keys, preg_split('/;/', $levels[$i]));
+        Core::$sistemDB->insert("level",["lvlNum"=>$i,"minXP"=>(int) $level['minxp'],
+                                         "title"=>$level['title'],"course"=>$courseId]);  
+    }
 }
 
-$course->getModuleData('xp')->set('levels', $levels);
+//$course->getModuleData('xp')->set('levels', $levels);
 
 // Read Achievements/Badges
 $keys = array(
@@ -185,56 +198,39 @@ $achievements = file_get_contents(LEGACY_DATA_FOLDER . '/achievements.txt');
 $achievements = preg_split('/[\r]?\n/', $achievements, -1, PREG_SPLIT_NO_EMPTY);
 $sbBadges = array();
 $totalLevels = 0;
+print_r($achievements);
+
 foreach($achievements as &$achievement) {
     $achievement = array_combine($keys, preg_split('/;/', $achievement));
-
-    $xp = array();
-    $xp[] = abs($achievement['xp1']);
-    if ($achievement['xp2'] != '') {
-        $xp[] = abs($achievement['xp2']);
-        if ($achievement['xp3'] != '')
-            $xp[] = abs($achievement['xp3']);
-    }
-
-    $levelDesc = array();
-    $levelDesc[] = $achievement['desc1'];
-    if (!empty($achievement['desc2'])) {
-        $levelDesc[] = $achievement['desc2'];
-        if (!empty($achievement['desc3']))
-            $levelDesc[] = $achievement['desc3'];
-    }
-
-    $count = array();
-    if (!empty($achievement['count1'])) {
-        $count[] = $achievement['count1'];
-        if (!empty($achievement['count2'])) {
-            $count[] = $achievement['count2'];
-            if (!empty($achievement['count3']))
-                $count[] = $achievement['count3'];
+    
+    $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
+    //if badge doesn't exit, add it to DB
+    if (Core::$sistemDB->select("badge","*",["badgeName"=>$achievement['name'],"course"=>$courseId])==null){
+        Core::$sistemDB->insert("badge",["badgeName"=>$achievement['name'],"course"=>$courseId,
+                                        "badgeDescription"=>$achievement['description'],
+                                        "maxLvl"=>$maxLevel,
+                                        "isExtra"=> ($achievement['xp1'] < 0),
+                                        "isBragging"=>($achievement['xp1'] == 0),
+                                        "isCount"=>($achievement['countBased'] == 'True'),
+                                        "isPost"=>($achievement['postBased'] == 'True'),
+                                        "isPoint"=>($achievement['pointBased'] == 'True')]);
+        for ($i=1;$i<=$maxLevel;$i++){
+            Core::$sistemDB->insert("badge_level",["level"=>$i,"course"=>$courseId,
+                                            "xp"=>abs($achievement['xp'.$i]),
+                                            "description"=>$achievement['desc'.$i],
+                                            "progressNeeded"=>$achievement['count'.$i],
+                                            "badgeName"=>$achievement['name']]);
         }
     }
-
-    $sbBadges[$achievement['name']] = array(
-        'name' => $achievement['name'],
-        'description' => $achievement['description'],
-        'maxLevel' => empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3),
-        'xp' => $xp,
-        'levelDesc' => $levelDesc,
-        'extraCredit' => ($achievement['xp1'] < 0),
-        'braggingRights' => ($achievement['xp1'] == 0),
-        'countBased' => ($achievement['countBased'] == 'True'),
-        'postBased' => ($achievement['postBased'] == 'True'),
-        'pointBased' => ($achievement['pointBased'] == 'True'),
-        'count' => $count
-    );
-    $totalLevels += $sbBadges[$achievement['name']]['maxLevel'];
+    $totalLevels += $maxLevel; 
 }
+Core::$sistemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
 
-$course->getModuleData('badges')->set('badges', $sbBadges);
-$course->getModuleData('badges')->set('totalLevels', $totalLevels);
+//$course->getModuleData('badges')->set('badges', $sbBadges);
+//$course->getModuleData('badges')->set('totalLevels', $totalLevels);
 
-$badgesNames = array_keys($sbBadges);
-
+//$badgesNames = array_keys($sbBadges);
+/*
 // Read Awards
 $keys = array('time', 'userid', 'what', 'field1', 'field2');
 $awards = file_get_contents(LEGACY_DATA_FOLDER . '/awards.txt');

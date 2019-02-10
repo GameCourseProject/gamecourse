@@ -35,7 +35,11 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
                                 "course" => 1,
                               "roles"=> "Teacher"]);
 
-                          
+    Core::$sistemDB->insert("skill_tier",["tier"=>1,"reward"=>150,"course"=>$courseId]);
+    Core::$sistemDB->insert("skill_tier",["tier"=>2,"reward"=>400,"course"=>$courseId]);
+    Core::$sistemDB->insert("skill_tier",["tier"=>3,"reward"=>750,"course"=>$courseId]);
+    Core::$sistemDB->insert("skill_tier",["tier"=>4,"reward"=>1150,"course"=>$courseId]); 
+    
     file_put_contents('setup.done','');
     //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);
 

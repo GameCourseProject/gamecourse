@@ -102,11 +102,4 @@ class SQLDB {//ToDo use prepared statements
         //print_r($result->fetchAll(\PDO::FETCH_ASSOC));
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
-    //public function set($key, $value);
-    //public function get($key);
-    //public function getValue();
-    //public function setValue($value);
-    //public function getType();
-   //public function getKeys();
-    //public function getSize();
 }
