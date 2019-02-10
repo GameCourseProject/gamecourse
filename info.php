@@ -24,24 +24,20 @@ ModuleLoader::scanModules();
 API::gatherRequestInfo();
 
 API::registerFunction('core', 'getCoursesList', function() {
-    $courses = Core::getCourses();
-    $activeCourses = Core::getActiveCourses();
     $user = Core::getLoggedUser();
-
+    
     $myCourses = array();
-    foreach ($courses as $id => &$course) {
-        $active = in_array($id, $activeCourses);
-        if ($active || $user->isAdmin())
-            $course = array('name' => $course, 'id' => $id, 'active' => $active);
-    }
-
+    if ($user->isAdmin())
+        $courses = Core::getCourses();     
+    else
+        $courses=Core::getActiveCourses();
+    //print_r($courses);
     API::response(array('courses' => $courses, 'myCourses' => $myCourses));
 });
 
 API::registerFunction('core', 'getCourseInfo', function() {
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
-
     $user = Core::getLoggedUser();
     $courseUser = $course->getLoggedUser();
     if ($user->isAdmin() || $courseUser->hasRole('Teacher'))
@@ -268,8 +264,8 @@ API::registerFunction('settings', 'tabs', function() {
     $activeCourses = Core::getActiveCourses();
     $courses = Core::getCourses();
     $coursesTabs = array();
-    foreach ($courses as $courseId => $course) {
-        $coursesTabs[] = Settings::buildTabItem($course . (in_array($courseId, $activeCourses) ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $courseId . '\'})', true);
+    foreach ($courses as $course) {
+        $coursesTabs[] = Settings::buildTabItem($course['name'] . (in_array($course, $activeCourses) ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $course['id'] . '\'})', true);
     }
     $tabs = array(
         Settings::buildTabItem('Courses', 'settings.courses', true, $coursesTabs)

@@ -2,6 +2,15 @@
 namespace SmartBoards;
 
 abstract class Module {
+    
+    private $id;
+    private $name;
+    private $version;
+    private $dependencies;
+    private $dir;
+    private $parent;
+    private $resources = array();
+    
     public function __construct() {
     }
 
@@ -62,14 +71,6 @@ abstract class Module {
             return $this->$key = $value;
         }
         trigger_error('Cannot access private property ' . __CLASS__ . '::$' . $key, E_USER_ERROR);
-    }
-
-    private $id;
-    private $name;
-    private $version;
-    private $dependencies;
-    private $dir;
-    private $parent;
-    private $resources = array();
+    } 
 }
 ?>

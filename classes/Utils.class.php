@@ -67,7 +67,7 @@ class Utils {
                 }
             };
 
-            $func($role['name'], $hasChildren, $continue, ...$data);
+            $func($role, $hasChildren, $continue, ...$data);
         }
     }
 

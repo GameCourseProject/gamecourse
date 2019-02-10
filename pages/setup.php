@@ -4,33 +4,38 @@ if (!defined('CONNECTION_STRING'))
 
 use \SmartBoards\User;
 use \MagicDB\MagicDB;
+use \MagicDB\SQLDB;
+use SmartBoards\Core;
 
 if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_POST)) {
     $courseName = $_POST['course-name'];
     $teacherId = $_POST['teacher-id'];
     $teacherUsername = $_POST['teacher-username'];
+ 
+    $db = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
+    $sql = file_get_contents("gamecourse.sql"); 
+    $db->executeQuery($sql);
+    
+    //Core::$active_courses = [1];
+    //Core::$courses = [1=>['name' => $courseName, 'id' => 1, 'active' => true]];
+    Core::$pending_invites = [$teacherUsername => ['id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true]];
+    
+    $db->insert("course",["name" => "'".$courseName."'"]);
+    
+    //if you wish to remove these roles you should also remove them from .sql on course_user table
+    $db->insert("role",["name"=>"'Teacher'","hierarchy" => 1,"course" =>1]);
+    $db->insert("role",["name"=>"'Student'","hierarchy" => 2,"course" =>1]);
 
-    $config = new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'config');
-    $config->set('active-courses', array(0));
-    $config->set('courses', array($courseName));
-    $config->set('theme', 'default');
-    $config->set('pending-invites', array($teacherUsername => array('id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true)));
+    
+    $db->insert("user",["id" => $teacherId,
+                        "name" => "'Teacher'",
+                        "username"=> "'".$teacherUsername."'",
+                        "isAdmin"=> true]);
+    $db->insert("course_user",["id" => $teacherId,
+                                "course" => 1,
+                              "roles"=> "'Teacher'"]);
 
-    $course = (new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'courses'))->get(0);
-    $course->set('name', $courseName);
-    $course->set('headerLink', '');
-    $course->set('defaultRoleSettings', array('landingPage' => ''));
-    $course->set('roles', array('Teacher', 'Student'));
-    $course->set('rolesSettings', array(
-            'Teacher' => array('landingPage' => '/'),
-            'Student' => array('landingPage' => '/'))
-    );
-    $course->set('rolesHierarchy', array(
-        array('name' => 'Teacher'),
-        array('name' => 'Student')));
-    $course->set('modules', array());
-    $course->set('users', array($teacherId => array('id' => $teacherId, 'name' => 'Teacher', 'roles' => array('Teacher'), 'data' => array())));
-
+                          
     file_put_contents('setup.done','');
     //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);
 

@@ -29,11 +29,15 @@ $user = Core::getLoggedUser();
             app.run(['$rootScope', function($rootScope) {
                 $rootScope.user = {id: '<?= $user->getId(); ?>', name: '<?= $user->getName(); ?>'};
             }]);
-
+            
             app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
                 $rootScope.loaded=true;
                 
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
+                    console.log(courseName);
+                    console.log(course);
+                    //console.log($rootScope.course);
+                    //console.log($scope.course);
                     if ($rootScope.course != course) {
                         $rootScope.course = $scope.course = course;
                         $rootScope.courseName = courseName;
@@ -41,6 +45,7 @@ $user = Core::getLoggedUser();
                         if ($scope.course != undefined) {
                             changeTitle(courseName, 0, false);
                             $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function (data) {
+                                console.log(data);
                                 $rootScope.courseName = data.courseName;
                                 changeTitle(data.courseName, 0, true, data.headerLink);
                                 $smartboards.loadDependencies(data.resources).then(function () {
@@ -108,6 +113,7 @@ $user = Core::getLoggedUser();
             app.run(function ($rootScope, $urlRouter, $location) {
                 $urlRouterGlobal = $urlRouter;
                 $locationGlobal = $location;
+                
                 $rootScope.$on('$locationChangeSuccess', function(e) {
                     e.preventDefault();
                     if (firstInitDone) {
@@ -115,7 +121,7 @@ $user = Core::getLoggedUser();
                         return;
                     }
                     firstInitDone = true;
-
+                    
                     e.preventDefault();
                     var path = $location.path();
                     var pathNormalized = path.toLowerCase();

@@ -76,13 +76,13 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
                             image: 'images/awards.svg',
                             title: 'My courses'
                         }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(cid, course) in myCourses"><a ui-sref="course({courseName:course.nameUrl, course: cid})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
+                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(id, course) in myCourses"><a ui-sref="course({courseName:course.nameUrl, course: id})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
                         }).attr('ng-if', 'myCourses != undefined && myCourses.length != 0'));
                         el.append(Builder.buildBlock({
                             image: 'images/awards.svg',
                             title: 'All Courses'
                         }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(cid, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: cid})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
+                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
                         }));
                     }));
                     $compile(pageBlock)($scope);
@@ -92,7 +92,7 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
                             alert(err.description);
                             return;
                         }
-
+                        console.log("app.js:getCourseList",data);
                         $scope.courses = data.courses;
                         for (var i in $scope.courses) {
                             var course = $scope.courses[i];

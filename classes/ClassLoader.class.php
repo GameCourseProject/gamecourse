@@ -7,6 +7,7 @@ spl_autoload_register(function ($class) {
         } else
             include 'classes/' . str_replace('\\', '/', $class) . '.php';
     }
-    else if (file_exists('classes/' . $class . '.class.php'))
+    else if (file_exists('classes/' . $class . '.class.php')) {
         include 'classes/' . $class . '.class.php';
+    }
 });

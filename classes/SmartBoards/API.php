@@ -2,6 +2,12 @@
 namespace SmartBoards;
 
 class API {
+    private static $functions = array();
+    private static $requestModule;
+    private static $requestFunction;
+    private static $values = array();
+    private static $uploadedFile = null;
+    
     public static function getUploadedFile() {
         return static::$uploadedFile;
     }
@@ -66,11 +72,11 @@ class API {
         static::$requestFunction = $_GET['request'];
         unset($_GET['module']);
         unset($_GET['request']);
-
+        
         $values = ($values == null) ? $_GET : array_merge($values, $_GET);
-
+        
         static::$values = $values;
-
+        
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             Course::getCourse(API::getValue('course'));
         }
@@ -109,10 +115,4 @@ class API {
     public static function getValues() {
         return static::$values;
     }
-
-    private static $functions = array();
-    private static $requestModule;
-    private static $requestFunction;
-    private static $values = array();
-    private static $uploadedFile = null;
 }

@@ -20,7 +20,6 @@ class MagicDB implements MagicInterface {
         $this->dbh->exec('CREATE TABLE IF NOT EXISTS _' . $db . ' (p VARCHAR(255), k VARCHAR(255),t TINYINT, v BLOB, PRIMARY KEY(p, k))');
     }
 
-
     function startCommit() {
         if (!$this->commiting) {
             $this->commiting = true;

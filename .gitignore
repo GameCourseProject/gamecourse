@@ -3,7 +3,7 @@ logs/
 config/
 *.css
 legacy_data/
-photos/
+photos/ist*
 modules/skills/resources/
 modules/quest/resources/
 cache/

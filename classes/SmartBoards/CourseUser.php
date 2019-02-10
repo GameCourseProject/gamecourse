@@ -1,19 +1,32 @@
 <?php
 namespace SmartBoards;
 
-class CourseUser {
-    function __construct($id, $userWrapper, $course) {
-        $this->id = $id;
-        $this->userWrapper = $userWrapper;
+class CourseUser extends User{
+    
+    //private $id;
+    private $course;
+    
+    function __construct($id, $course) {
+       // $this->id = $id;
+        parent::__construct($id);
         $this->course = $course;
     }
-
-    function refreshActivity() {
-        $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
-        $this->userWrapper->set('lastActivity', time());
+    public function create($id,$role=null){
+        //User must already exist in database
+        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$id]);
+        if ($role){
+            Core::$sistemDB->update("course_user",["roles"=>"'".$role."'"],["course"=>$this->course->getId(),"id"=>$id]);
+        }
     }
+    public function exists() {
+        return (Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])!=null);
+    }
+    //function refreshActivity() {
+    //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
+    //    $this->userWrapper->set('lastActivity', time());
+    //}
 
-    function getId() {
+    public function getId() {
         return $this->id;
     }
 
@@ -21,15 +34,15 @@ class CourseUser {
         return $this->course;
     }
 
-    public function getPreviousActivity() {
-        return $this->userWrapper->get('previousActivity');
-    }
+    //public function getPreviousActivity() {
+    //    return $this->userWrapper->get('previousActivity');
+    //}
 
     public function getUsername() {
         return User::getUser($this->id)->getUsername();
     }
 
-    function getData($field = null, $wrapped = false) {
+    /*function getData($field = null, $wrapped = false) {
         $data = $this->course->getUserData($this->id);
         if ($data == null)
             return null;
@@ -38,21 +51,24 @@ class CourseUser {
         if ($wrapped)
             return $data->getWrapped($field, null);
         return $data->get($field, null);
-    }
+    }*/
 
     function getRoles() {
-        return $this->userWrapper->get('roles');
+        //return $this->userWrapper->get('roles');
+        return explode(",",Core::$sistemDB->select("course_user",'roles',["course"=>$this->course->getId(),
+                                                                          "id"=>$this->id,]));
     }
 
     function setRoles($roles) {
-        return $this->userWrapper->set('roles', $roles);
+        //return $this->userWrapper->set('roles', $roles);
+        Core::$sistemDB->update("course_user",["roles"=>"'".$roles."'"],["course"=>$this->course->getId(),
+                                                                          "id"=>$this->id,]);
     }
 
     function hasRole($role) {
-        $roles = $this->userWrapper->getWrapped('roles');
-        if ($roles == null)
-            return false;
-        return $roles->has($role);
+        return (!empty(Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->course->getId(),
+                                                            "id"=>$this->id,
+                                                             "roles"=>"'".$role."'"])));
     }
 
     function isTeacher() {
@@ -63,35 +79,29 @@ class CourseUser {
         return $this->hasRole('Student');
     }
 
-    function getBasicInfo() {
-        return $this->userWrapper->getValue();
-    }
+    //function getBasicInfo() {
+    //    return $this->userWrapper->getValue();
+    //}
 
-    function getWrapper() {
-        return $this->userWrapper;
-    }
+    //function getWrapper() {
+    //    return $this->userWrapper;
+    //}
 
-    function getWrappedComplex($complexKey) {
-        return $this->userWrapper->getWrappedComplex($complexKey);
-    }
+    //function getWrappedComplex($complexKey) {
+    //    return $this->userWrapper->getWrappedComplex($complexKey);
+    //}
 
     function getLandingPage() {
-        $userRoles = $this->getRoles();
-        $landingPage = $this->course->getWrapped('defaultRoleSettings')->get('landingPage');
-        $rolesSettings = $this->course->getRolesSettings()->getValue();
-        $this->course->goThroughRoles(function($roleName, $hasChildren, $continue) use (&$landingPage, $userRoles, $rolesSettings) {
-            if (in_array($roleName, $userRoles) && $rolesSettings[$roleName]['landingPage'] != '')
-                $landingPage = $rolesSettings[$roleName]['landingPage'];
+        $userRoles = $this->getRoles();//array w names
+        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()]);
+        $roles=$this->course->getRolesHierarchy();
+        $this->course->goThroughRoles($roles,function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
+            if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {
+                $landingPage = $role['landingPage'];
+                //break?
+            }
             $continue();
         });
         return $landingPage;
     }
-
-    function exists() {
-        return true;
-    }
-
-    private $id;
-    private $userWrapper;
-    private $course;
 }

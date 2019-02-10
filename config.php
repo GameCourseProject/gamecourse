@@ -1,5 +1,5 @@
 <?php
-define('CONNECTION_STRING', 'mysql:host=localhost;dbname=pcm');
+define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecoursenext');
 define('CONNECTION_USERNAME', 'root');
 define('CONNECTION_PASSWORD', '123123');
 define('MODULES_FOLDER', 'modules');

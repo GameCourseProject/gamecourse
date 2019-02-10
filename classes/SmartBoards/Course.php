@@ -5,18 +5,23 @@ use MagicDB\MagicDB;
 use MagicDB\MagicWrapper;
 
 class Course {
-    public static $coursesDb;
-    private static function loadCoursesDb() {
-        static::$coursesDb = new MagicWrapper(new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'courses'));
-    }
+    private $loadedModules = array();
+    //private $db;
+    private static $courses = array();
+    private $cid;
+    //public static $coursesDb;
+    //private static function loadCoursesDb() {
+    //    static::$coursesDb = new MagicWrapper(new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'courses'));
+    //}
+
 
     public function __construct($cid, $create = false) {
-        if (static::$coursesDb == null)
-            static::loadCoursesDb();
+        //if (static::$coursesDb == null)
+        //    static::loadCoursesDb();
         $this->cid = $cid;
-        if ((static::$coursesDb->isNull($cid) || !array_key_exists($cid, Core::getCourses())) && !$create)
+        if ((Core::getCourse($cid)==null) && !$create)
             throw new \RuntimeException('Unknown Course');
-        $this->db = static::$coursesDb->getWrapped($cid);
+        //$this->db = static::$coursesDb->getWrapped($cid);
     }
 
     public function getId() {
@@ -24,85 +29,103 @@ class Course {
     }
 
     public function getName() {
-        return $this->db->get('name');
+        //return $this->db->get('name');
+        return Core::$sistemDB->select("course","name",["id"=>$this->cid]);
     }
 
     public function getUsers() {
-        return $this->db->getWrapped('users');
+        //return $this->db->getWrapped('users');
+        return Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->cid]);
     }
 
     public function getUsersWithRole($role) {
-        return self::getUsers()->filter(function($key, $valueWrapped) use ($role) {
-            return (new \SmartBoards\CourseUser($key, $valueWrapped, $this))->hasRole($role);
-        });
+        //return self::getUsers()->filter(function($key, $valueWrapped) use ($role) {
+        //    return (new \SmartBoards\CourseUser($key, $valueWrapped, $this))->hasRole($role);
+        //});
+        return Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->cid,"roles"=>"'".$role."'"]);
     }
 
     public function getUsersIds() {
-        return $this->db->getWrapped('users')->getKeys();
+        //return $this->db->getWrapped('users')->getKeys();
+        return Core::$sistemDB->selectMuliple("course_user",'id',["course"=>$this->cid]);
     }
 
-    public function setUsers($users) {
-        $this->db->set('users', $users);
-    }
+    //public function setUsers($users) {
+    //    $this->db->set('users', $users);
+    //}
 
     public function getUser($istid) {
-        $users = self::getUsers();
-        if ($users->hasKey($istid))
-            return new CourseUser($istid, $users->getWrapped($istid), $this);
-        return new NullCourseUser($istid, $this);
+       if (sizeOf(Core::$sistemDB->select("course_user",'*',["course"=>$this->cid,"id"=>$istid]))>0)
+               return new CourseUser($istid,$this);
+       else
+           return new NullCourseUser($istid, $this);
+        //$users = self::getUsers();
+        //if ($users->hasKey($istid))
+        //    return new CourseUser($istid, $users->getWrapped($istid), $this);
+        //return new NullCourseUser($istid, $this);
     }
 
-    public function getUserData($istid) {
-        return $this->db->getWrapped('users')->getWrapped($istid)->getWrapped('data');
-    }
+    //public function getUserData($istid) {
+    //    return $this->db->getWrapped('users')->getWrapped($istid)->getWrapped('data');
+    //}
 
     public function getLoggedUser() {
         $user = Core::getLoggedUser();
         if ($user == null)
             return new NullCourseUser(-1, $this);
+
         return self::getUser($user->getId());
     }
 
     public function getHeaderLink() {
-        return $this->db->get('headerLink');
+        //return $this->db->get('headerLink');
+        return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid]);
     }
 
     public function setHeaderLink($link) {
-        return $this->db->set('headerLink', $link);
+        //return $this->db->set('headerLink', $link);
+        Core::$sistemDB->update("course",["headerLink"=>$link],["id" =>$this->cid]);
     }
 
     public function getRoles() {
-        return $this->db->get('roles');
+        //return $this->db->get('roles');
+        return Core::$sistemDB->selectMultiple("role","*",["course"=>$this->cid]);
     }
 
-    public function setRoles($roles) {
-        return $this->db->set('roles', $roles);
+    //public function setRoles($roles) {
+        //return $this->db->set('roles', $roles);
+    //    Core::$sistemDB->update("course",["roles"=>$roles],["id"=>$this->cid]);
+    //}
+
+    public function getRolesHierarchy() {//same as getRoles, but ordered
+        //return $this->db->get('rolesHierarchy');
+        $roles = Core::$sistemDB->selectMultiple("role","*",["course"=>$this->cid]);
+        usort($roles, function($a, $b) { 
+            return $a['hierarchy'] < $b['hierarchy'] ? -1 : 1;
+        });
+        return $roles;
     }
 
-    public function getRolesHierarchy() {
-        return $this->db->get('rolesHierarchy');
-    }
+    //public function setRolesHierarchy($rolesHierarchy) {
+    //    return $this->db->set('rolesHierarchy', $rolesHierarchy);
+    //}
 
-    public function setRolesHierarchy($rolesHierarchy) {
-        return $this->db->set('rolesHierarchy', $rolesHierarchy);
-    }
+    //public function getRolesSettings() {
+    //    return $this->getWrapped('rolesSettings');
+    //}
 
-    public function getRolesSettings() {
-        return $this->getWrapped('rolesSettings');
-    }
-
-    public function getRoleSettings($role) {
-        return $this->getWrapped('rolesSettings')->getWrapped($role);
-    }
+    //public function getRoleSettings($role) {
+    //    return $this->getWrapped('rolesSettings')->getWrapped($role);
+    //}
 
     public function getEnabledModules() {
-        return $this->db->get('modules');
+        return Core::$sistemDB->selectMultiple("enabled_module","moduleId",["course"=>$this->cid]);
+        //array w module names
     }
 
-    public function addModule($module) {
+    public function addModule($module) {//bug? should be adding instead of replacing
         return $this->loadedModules[$module->getId()] = $module;
     }
-
 
     public function getModules() {
         return $this->loadedModules;
@@ -136,37 +159,36 @@ class Course {
             $moduleId = $module->getId();
         else
             return null;
-        return $this->db->getWrapped('moduleData')->getWrapped($moduleId);
+        return Core::$sistemDB->select("module","*",["moduleId"=>$moduleId]);
     }
 
-    public function getWrapper() {
-        return $this->db;
-    }
+   // public function getWrapper() {
+    //    return $this->db;
+    //}
 
-    public function getWrapped($key) {
-        return $this->db->getWrapped($key);
-    }
+    //public function getWrapped($key) {
+    //    return $this->db->getWrapped($key);
+    //}
 
-    public function getAll() {
-        return $this->db->getValue();
-    }
+    //public function getAll() {
+    //    return $this->db->getValue();
+    //}
 
     public function setModuleEnabled($moduleId, $enabled) {
         $modules = self::getEnabledModules();
         if (!$enabled) {
             $key = array_search($moduleId, $modules);
             if ($key !== false) {
-                unset($modules[$key]);
-                $this->db->set('modules', array_values($modules));
+                Core::$sistemDB->delete("enabled_module",["moduleId"=>$moduleId,"course"=>$this->cid]);
             }
         } else if ($enabled && !in_array($moduleId, $modules)) {
             $modules[] = $moduleId;
-            $this->db->set('modules', $modules);
+            Core::$sistemDB->insert("enabled_module",["moduleId"=>$moduleId,"course"=>$this->cid]);
         }
     }
 
-    public function goThroughRoles($func, &...$data) {
-        \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
+    public function goThroughRoles($roles, $func, &...$data) {
+        \Utils::goThroughRoles($roles, $func, ...$data);
     }
 
     public static function getCourse($cid, $initModules = true) {
@@ -179,25 +201,26 @@ class Course {
     }
 
     public static function newCourse($courseName, $copyFrom = null) {
-        if (static::$coursesDb == null)
-            static::loadCoursesDb();
+        //if (static::$coursesDb == null)
+        //    static::loadCoursesDb();
 
-        $courses = Core::getCourses();
-        end($courses);
-        $end = key($courses);
-        $newCourse = 0;
-        if ($end !== NULL)
-            $newCourse = $end + 1;
+        //$courses = Core::getCourses();
+        //end($courses);
+        //$end = key($courses);
+        //$newCourse = 0;
+        //if ($end !== NULL)
+        //    $newCourse = $end + 1;
 
-        if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
-            static::$coursesDb->delete($newCourse);
-
+        //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
+        //    static::$coursesDb->delete($newCourse);
+        Core::$sistemDB->insert("course",["name"=>$courseName]);
+        $newCourse=Core::$sistemDB->select("course","id",["name"=>$courseName]);
         $course = new Course($newCourse, true);
 
-        $courseWrapper = $course->getWrapper();
+        //$courseWrapper = $course->getWrapper();
 
-        $courseWrapper->set('name', $courseName);
-        $courseWrapper->set('users', array());
+        //$courseWrapper->set('name', $courseName);
+        //$courseWrapper->set('users', array());
 
         $courseExists = false;
         $copyFromCourse = null;
@@ -211,7 +234,9 @@ class Course {
         }
 
         if ($copyFrom !== null && $courseExists) {
-            $copyFromWrapper = $copyFromCourse->getWrapper();
+            //$copyFromWrapper = $copyFromCourse->getWrapper();
+            
+            //ToDo
             $keys = array('headerLink', 'defaultRoleSettings', 'modules', 'roles', 'rolesSettings', 'rolesHierarchy', 'moduleData');
             foreach ($keys as $key)
                 $courseWrapper->set($key, $copyFromWrapper->get($key));
@@ -238,8 +263,4 @@ class Course {
         Core::getCoursesWrapped()->set($newCourse, $courseName);
         return $course;
     }
-
-    private $loadedModules = array();
-    private $db;
-    private static $courses = array();
 }

@@ -18,6 +18,7 @@ include 'classes/ClassLoader.class.php';
 use \SmartBoards\Core;
 use \SmartBoards\User;
 use \SmartBoards\Course;
+use \SmartBoards\CourseUser;
 
 $isCLI = Core::isCLI();
 Core::init();
@@ -26,9 +27,9 @@ if(!Core::requireSetup(false))
     die('Please perform setup first!');
 
 if ($isCLI) {
-    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 0);
+    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 1);
 } else {
-    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 0);
+    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 1);
 }
 
 $course = Course::getCourse($courseId);
@@ -40,34 +41,27 @@ echo '<pre>';
 $keys = array('id', 'name', 'email');
 $teachers = file_get_contents(LEGACY_DATA_FOLDER . '/teachers.txt');
 $teachers = preg_split('/[\r]?\n/', $teachers, -1, PREG_SPLIT_NO_EMPTY);
+print_r($teachers);
 foreach($teachers as &$teacher) {
     $teacher = array_combine($keys, preg_split('/;/', $teacher));
     $user = User::getUser($teacher['id']);
     if (!$user->exists()) {
-        $user->initialize($teacher['name'], $teacher['email']);
-        $user->setAdmin(true);
-    } else {
-        $user->setName($teacher['name']);
+        $user->create($teacher['name']);
         $user->setEmail($teacher['email']);
-        $user->setAdmin(true);
-    }
-
-    if ($users->hasKey($teacher['id'])) {
-        $userWrapped = $users->getWrapped($teacher['id']);
-        $roles = $users->getWrapped($teacher['id'])->get('roles', array());
-        if (!in_array('Teacher', $roles)) {
-            $roles[] = 'Teacher';
-            $users->getWrapped($teacher['id'])->set('roles', $roles);
-        }
-        $userWrapped->set('name', $teacher['name']);
-        $userWrapped->set('email', $teacher['email']);
     } else {
-        $teacher['roles'] = array('Teacher');
-        $users->set($teacher['id'], $teacher);
+        $user->initialize($teacher['name'], $teacher['email']);  
+    }
+    $user->setAdmin(true);
+    
+    $courseUser= new CourseUser($teacher['id'],new Course($courseId));
+    if (!$courseUser->exists()) {
+        $courseUser->create($teacher['id'],"Teacher");
         echo 'New teacher ' . $teacher['id'] . "\n";
+    }elseif (!$courseUser->isTeacher()){
+        $courseUser->setRoles("Teacher");
     }
 }
-
+/*
 // Read Students
 $keys = array('id', 'name', 'email', 'campus');
 $students = utf8_encode(file_get_contents(LEGACY_DATA_FOLDER . '/students.txt'));
@@ -435,7 +429,7 @@ foreach($users as $userid => $user) {
     $userDataWrapped->setValue($userData->getValue());
 }
 $course->getWrapped('lastUpdate')->setValue(time());
-
+*/
 echo "Finished!\n";
 echo '</pre>';
 ?>
