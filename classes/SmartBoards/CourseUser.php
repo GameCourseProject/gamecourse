@@ -19,7 +19,7 @@ class CourseUser extends User{
         }
     }
     public function exists() {
-        return (Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])!=null);
+        return (Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])[0]!=null);
     }
     
     public function delete(){
@@ -60,7 +60,7 @@ class CourseUser extends User{
     function getRoles() {
         //return $this->userWrapper->get('roles');
         return explode(",",Core::$sistemDB->select("course_user",'roles',["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id,]));
+                                                                          "id"=>$this->id,])[0]);
     }
     
     function setRoles($roles) {
@@ -108,7 +108,7 @@ class CourseUser extends User{
 
     function getLandingPage() {
         $userRoles = $this->getRoles();//array w names
-        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()]);
+        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()])[0];
         $roles=$this->course->getRolesHierarchy();
         $this->course->goThroughRoles($roles,function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
             if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {

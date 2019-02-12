@@ -30,7 +30,7 @@ class Course {
 
     public function getName() {
         //return $this->db->get('name');
-        return Core::$sistemDB->select("course","name",["id"=>$this->cid]);
+        return Core::$sistemDB->select("course","name",["id"=>$this->cid])[0];
     }
 
     public function getUsers() {
@@ -47,7 +47,8 @@ class Course {
 
     public function getUsersIds() {
         //return $this->db->getWrapped('users')->getKeys();
-        return Core::$sistemDB->selectMuliple("course_user",'id',["course"=>$this->cid]);
+        
+        return array_column(Core::$sistemDB->selectMultiple("course_user",'id',["course"=>$this->cid]),'id');
     }
 
     //public function setUsers($users) {
@@ -55,7 +56,7 @@ class Course {
     //}
 
     public function getUser($istid) {
-       if (sizeOf(Core::$sistemDB->select("course_user",'*',["course"=>$this->cid,"id"=>$istid]))>0)
+       if (!empty(Core::$sistemDB->select("course_user",'*',["course"=>$this->cid,"id"=>$istid])))
                return new CourseUser($istid,$this);
        else
            return new NullCourseUser($istid, $this);
@@ -79,7 +80,7 @@ class Course {
 
     public function getHeaderLink() {
         //return $this->db->get('headerLink');
-        return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid]);
+        return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid])[0];
     }
 
     public function setHeaderLink($link) {
@@ -214,7 +215,7 @@ class Course {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
         //    static::$coursesDb->delete($newCourse);
         Core::$sistemDB->insert("course",["name"=>$courseName]);
-        $newCourse=Core::$sistemDB->select("course","id",["name"=>$courseName]);
+        $newCourse=Core::$sistemDB->select("course","id",["name"=>$courseName])[0];
         $course = new Course($newCourse, true);
 
         //$courseWrapper = $course->getWrapper();

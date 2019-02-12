@@ -33,7 +33,6 @@ if ($isCLI) {
 }
 
 $course = Course::getCourse($courseId);
-$users = $course->getUsers();
 
 echo '<pre>';
 
@@ -94,43 +93,14 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
         if ($courseUser->exists()){
             $courseUser->delete();
             echo 'Student ' . $student['id'] . " gave up\n";
-            //$users->delete($student['id']);
         }
     }
-}
-
-//$course->getUsers()->setValue($users);
-
-// Read Indicators
-$indicators = json_decode(file_get_contents(LEGACY_DATA_FOLDER . '/indicators.json'), true);
-$indicatorsByNum = array();
-foreach ($indicators as &$indicatorsUser) {
-    $indicatorsByNum[$indicatorsUser['num']] = $indicatorsUser['indicators'];   
 }
 
 // Read Tree
 $keys = array('tier', 'name', 'dependencies', 'color', 'xp');
 $skillTree = file_get_contents(LEGACY_DATA_FOLDER . '/tree.txt');
 $skillTree = preg_split('/[\r]?\n/', $skillTree, -1, PREG_SPLIT_NO_EMPTY);
-
-/*$sbSkillTree = array(
-    't0' => array(
-        'reward' => 150,
-        'skills' => array()
-    ),
-    't1' => array(
-        'reward' => 400,
-        'skills' => array()
-    ),
-    't2' => array(
-        'reward' => 750,
-        'skills' => array()
-    ),
-    't3' => array(
-        'reward' => 1150,
-        'skills' => array()
-    )
-);*/
 
 foreach($skillTree as &$skill) {
     $skill = array_combine($keys, preg_split('/;/', $skill));
@@ -145,9 +115,7 @@ foreach($skillTree as &$skill) {
         else
             $skill['dependencies'] = array();
     }
-    //print_r($skill);
-    //$tier = 't' . ($skill['tier']-1);
-    //unset($skill['tier']);
+
     unset($skill['xp']);
     $descriptionPage = file_get_contents(LEGACY_DATA_FOLDER . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
 
@@ -156,7 +124,7 @@ foreach($skillTree as &$skill) {
     $descriptionPage = substr($descriptionPage, $start, $end - $start);
     $skill['page'] = htmlspecialchars(utf8_encode($descriptionPage));
     //if skill doesn't exit, add it to DB (ToDo consider cases where skill atribute changes)
-    if (Core::$sistemDB->select("skill","*",["skillName"=>$skill["name"],"course"=>$courseId])==null){
+    if (Core::$sistemDB->select("skill","*",["skillName"=>$skill["name"],"course"=>$courseId])[0]==null){
         Core::$sistemDB->insert("skill",["skillName"=>$skill["name"],"color"=>$skill['color'],
                                          "page"=>$skill['page'],"tier"=>$skill['tier'],"course"=>$courseId]);
         if (!empty($skill['dependencies'])){
@@ -167,27 +135,21 @@ foreach($skillTree as &$skill) {
             }
         }
     }
-    //$sbSkillTree[$tier]['skills'][] = $skill;
 }
-//$course->getModuleData('skills')->set('skills', $sbSkillTree);
 
 // Read Levels
-$keys = array(
-    'title', 'minxp'
-);
+$keys = array('title', 'minxp');
 $levels = file_get_contents(LEGACY_DATA_FOLDER . '/levels.txt');
 $levels = preg_split('/[\r]?\n/', $levels, -1, PREG_SPLIT_NO_EMPTY);
 
 for($i=0;$i<sizeof($levels);$i++){
     //if level doesn't exit, add it to DB (ToDo consider cases where level atribute changes)
-    if (Core::$sistemDB->select("level","*",["lvlNum"=>$i,"course"=>$courseId])==null){
+    if (empty(Core::$sistemDB->select("level","*",["lvlNum"=>$i,"course"=>$courseId]))){
         $level = array_combine($keys, preg_split('/;/', $levels[$i]));
         Core::$sistemDB->insert("level",["lvlNum"=>$i,"minXP"=>(int) $level['minxp'],
                                          "title"=>$level['title'],"course"=>$courseId]);  
     }
 }
-
-//$course->getModuleData('xp')->set('levels', $levels);
 
 // Read Achievements/Badges
 $keys = array(
@@ -198,22 +160,21 @@ $achievements = file_get_contents(LEGACY_DATA_FOLDER . '/achievements.txt');
 $achievements = preg_split('/[\r]?\n/', $achievements, -1, PREG_SPLIT_NO_EMPTY);
 $sbBadges = array();
 $totalLevels = 0;
-print_r($achievements);
 
 foreach($achievements as &$achievement) {
     $achievement = array_combine($keys, preg_split('/;/', $achievement));
-    
     $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
     //if badge doesn't exit, add it to DB
-    if (Core::$sistemDB->select("badge","*",["badgeName"=>$achievement['name'],"course"=>$courseId])==null){
-        Core::$sistemDB->insert("badge",["badgeName"=>$achievement['name'],"course"=>$courseId,
-                                        "badgeDescription"=>$achievement['description'],
-                                        "maxLvl"=>$maxLevel,
-                                        "isExtra"=> ($achievement['xp1'] < 0),
-                                        "isBragging"=>($achievement['xp1'] == 0),
-                                        "isCount"=>($achievement['countBased'] == 'True'),
-                                        "isPost"=>($achievement['postBased'] == 'True'),
-                                        "isPoint"=>($achievement['pointBased'] == 'True')]);
+    $badgeData = ["maxLvl"=>$maxLevel,
+                  "isExtra"=> ($achievement['xp1'] < 0),
+                  "isBragging"=>($achievement['xp1'] == 0),
+                  "isCount"=>($achievement['countBased'] == 'True'),
+                  "isPost"=>($achievement['postBased'] == 'True'),
+                  "isPoint"=>($achievement['pointBased'] == 'True')];
+    if (Core::$sistemDB->select("badge","*",["badgeName"=>$achievement['name'],"course"=>$courseId])[0]==null){
+        Core::$sistemDB->insert("badge", array_merge($badgeData,
+                                        ["course"=>$courseId,"badgeName"=>$achievement['name'],
+                                        "badgeDescription"=>$achievement['description']]));
         for ($i=1;$i<=$maxLevel;$i++){
             Core::$sistemDB->insert("badge_level",["level"=>$i,"course"=>$courseId,
                                             "xp"=>abs($achievement['xp'.$i]),
@@ -221,205 +182,237 @@ foreach($achievements as &$achievement) {
                                             "progressNeeded"=>$achievement['count'.$i],
                                             "badgeName"=>$achievement['name']]);
         }
+        
     }
+    //this is here because we need xp for the awards 
+    for ($i=1;$i<=$maxLevel;$i++)
+            $sbBadges[$achievement['name']]['xp'][]=abs($achievement['xp'.$i]);
+    $sbBadges[$achievement['name']]=array_merge($sbBadges[$achievement['name']],$badgeData);
     $totalLevels += $maxLevel; 
 }
 Core::$sistemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
 
-//$course->getModuleData('badges')->set('badges', $sbBadges);
-//$course->getModuleData('badges')->set('totalLevels', $totalLevels);
+// Read Indicators
+$indicators = json_decode(file_get_contents(LEGACY_DATA_FOLDER . '/indicators.json'), true);
+$indicatorsByNum = array();
+foreach ($indicators as &$indicatorsUser) {
+    $indicatorsByNum[$indicatorsUser['num']] = $indicatorsUser['indicators'];   
+}
 
-//$badgesNames = array_keys($sbBadges);
-/*
+//used for the awards
+$badgesNames = array_keys($sbBadges);
+$userIds=$course->getUsersIds();
 // Read Awards
 $keys = array('time', 'userid', 'what', 'field1', 'field2');
 $awards = file_get_contents(LEGACY_DATA_FOLDER . '/awards.txt');
 $awards = preg_split('/[\r]?\n/', $awards, -1, PREG_SPLIT_NO_EMPTY);
 
-$awardsPerUser = array();
-foreach($users as $userid => $user) {
-    $awardsPerUser[$userid] = array();
+$userBadge=[];
+$userInfo=[];
+foreach ($userIds as $userId) {
+    $userBadge[$userId] = [];
+    $userInfo[$userId]['totalTreeXP']=0;
+    $userInfo[$userId]['normalBadgeXP']=0;
+    $userInfo[$userId]['extraBadgeXP']=0;
+    $userInfo[$userId]['quizXP']=0;
+    $userInfo[$userId]['labsXP']=0;
+    $userInfo[$userId]['presentationXP']=0;
+    $userInfo[$userId]['bonusXP']=0;
 }
 
 foreach($awards as &$award) {
     $award = array_combine($keys, preg_split('/;/', $award, 5));
-    if (array_key_exists($award['userid'], $awardsPerUser)) {
-        $sbAward = null;
-        if ($award['what'] == 'Initial Bonus')
-            $sbAward = array('type' => 'bonus', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => $award['what']);
-        elseif ($award['what'] == 'Grade from Lab')
-            $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Lab ' . $award['field2'], 'subtype' => 'lab', 'num' => $award['field2']);
-        elseif ($award['what'] == 'Grade from Quiz')
-            $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Quiz ' . $award['field2'], 'subtype' => 'quiz', 'num' => $award['field2']);
-        elseif ($award['what'] == 'Grade from Presentation')
-            $sbAward = array('type' => 'grade', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => 'Presentation', 'subtype' => 'presentation');
-        elseif ($award['what'] == 'Skill Tree')
-            $sbAward = array('type' => 'skill', 'reward' => (int) $award['field1'], 'date' => (double) $award['time'], 'name' => $award['field2']);
-        elseif (in_array($award['what'], $badgesNames))
-            $sbAward = array('type' => 'badge', 'reward' => $sbBadges[$award['what']]['xp'][$award['field1']-1], 'date' => (double) $award['time'], 'name' => $award['what'], 'level' => (int) $award['field1']);
+    
+    if (in_array($award['userid'], $userIds)) {
+        $data = ["course"=>$courseId,"student"=>$award['userid'],
+                 "reward"=>(int) $award['field1'],"awardDate"=>date("Y-m-d H:i:s", (double) $award['time'])];
+        // Initial Bonus
+        if ($award['what'] == 'Initial Bonus') {
+            $name=$award['what'];
+            if (Core::$sistemDB->select("award", "*", ["awardName" => $name, "course" => $courseId, "student" => $award['userid']])[0] == null) {
+                Core::$sistemDB->insert("award", array_merge($data, ["awardName" => $name, "type" => 'bonus']));
+                $userInfo[$award['userid']]['bonusXP']+=$data['reward'];
+            }
+        }
+        //Labs
+        elseif ($award['what'] == 'Grade from Lab') {
+            $name='Lab ' . $award['field2'];
+            if (Core::$sistemDB->select("award", "*", ["awardName" => $name, "course" => $courseId, "student" => $award['userid']])[0] == null) {
+                Core::$sistemDB->insert("award", array_merge($data, 
+                        ["awardName" => $name, "type" => 'grade',
+                         'subtype' => 'lab', 'num' => $award['field2']]));
+                $userInfo[$award['userid']]['labsXP']+=$data['reward'];
+            }
+        }
+        //Quizes
+        elseif ($award['what'] == 'Grade from Quiz') {
+            $name='Quiz ' . $award['field2'];
+            if (Core::$sistemDB->select("award", "*", ["awardName" => $name, "course" => $courseId, "student" => $award['userid']])[0] == null) {
+                Core::$sistemDB->insert("award", array_merge($data, 
+                        ["awardName" => $name, "type" => 'grade',
+                         'subtype' => 'quiz', 'num' => $award['field2']]));
+                $userInfo[$award['userid']]['quizXP']+=$data['reward'];
+            }
+        }
+        //Presentation
+        elseif ($award['what'] == 'Grade from Presentation') {
+            $name='Presentation';
+            if (Core::$sistemDB->select("award", "*", ["awardName" => $name, "course" => $courseId, "student" => $award['userid']])[0] == null) {
+                Core::$sistemDB->insert("award", array_merge($data, 
+                        ["awardName" => $name, "type" => 'grade',
+                         'subtype' => 'presentation']));
+                $userInfo[$award['userid']]['presentationXP']+=$data['reward'];
+            }
+        }
+        //Skill Tree
+        elseif ($award['what'] == 'Skill Tree') {
+            $name=$award['field2'];
+            if (Core::$sistemDB->select("award", "*", ["awardName" => $name, "course" => $courseId, "student" => $award['userid']])[0] == null) {
+                Core::$sistemDB->insert("award", array_merge($data, ["awardName" => $name, "type" => 'skill']));
+                
+                $indicatorsForUser=$indicatorsByNum[$award['userid']];
+                if (!array_key_exists($name, $indicatorsForUser)) {
+                    echo "Did not receive indicator for skill ".$skill. ", for user ".$award['userid']."\n";
+                    continue;
+                }
+                
+                Core::$sistemDB->updateAdd("course_user",["numSkills"=>1,"totalTreeXP"=>$data['reward']],
+                                                ["id"=>$award['userid'],"course"=>$courseId]);
+                $userInfo[$award['userid']]['totalTreeXP']+=$data['reward'];
+               
+                $skillIndicator = $indicatorsForUser[$name];
+                Core::$sistemDB->insert("user_skill",
+                        ["course"=>$courseId,"student"=>$award['userid'],
+                         "skillName"=>$name,"skillTime"=>$data["awardDate"],
+                         "post"=>$skillIndicator[1][0]['url'],"quality"=>(int) $skillIndicator[1][0]['xp']]);
+            }
+        }
+        //Badges
+        elseif (in_array($award['what'], $badgesNames)) {
+            $name=$award['what'];
+            $level=$award['field1'];
+            if (Core::$sistemDB->select("award","*",["awardName"=>$name,"course"=>$courseId,"student"=>$award['userid'],"level"=>$level])[0]==null){
+                $data['reward']=$sbBadges[$award['what']]['xp'][$level - 1];
+                
+                Core::$sistemDB->insert ("award", array_merge ($data,
+                                ["awardName" => $name, "type" => 'badge','level' => $level]));
+                
+                if ($sbBadges[$name]['isExtra']){
+                    $normal=0;
+                    $extra=$data['reward'];
+                }else{
+                    $normal=$data['reward'];
+                    $extra=0;
+                }
+                Core::$sistemDB->updateAdd("course_user",["normalBadgeXP"=>$normal,
+                                                          "extraBadgeXP"=> $extra,
+                                                          "totalBadgeXP"=>$data['reward'],
+                                                          "numBadgeLvls"=>1],
+                                                ["id"=>$award['userid'],"course"=>$courseId]); 
+                $userInfo[$award['userid']]['normalBadgeXP']+=$normal;
+                $userInfo[$award['userid']]['extraBadgeXP']+=$extra;
+                
+            }
+            $badgeLevel = $level;
+            if (key_exists($name, $userBadge[$award['userid']]) && key_exists('level',$userBadge[$award['userid']][$name]))      
+                    $badgeLevel=max($userBadge[$award['userid']][$name]["level"],$level);
 
-
-        if ($sbAward != null) {
-            $awardsPerUser[$award['userid']][] = $sbAward;
-        } else {
+            $userBadge[$award['userid']][$name]["level"]= $badgeLevel;
+                
+            $badge_lvl_time=["badgeLevel"=>$level,"badgeLvlTime"=>$data['awardDate'],
+                                 "badgeName"=>$name,"course"=>$courseId,"student"=>$award['userid']];
+            $userBadge[$award['userid']][$name]['level_time'][$level]=$badge_lvl_time;
+        }
+       else{
             echo '<pre>';
+            echo '<p>Error processing award: </p>';
             print_r($award);
             echo '</pre>';
         }
     }
 }
 
-// Process users
-foreach($users as $userid => $user) {
-    $roles = $users->getWrapped($userid)->get('roles');
-    if (is_null($roles) || !in_array('Student', $roles))
+// Info for each student
+foreach ($userIds as $userId){
+    if (!$course->getUser($userId)->isStudent())
         continue;
-    $userDataWrapped = (new \SmartBoards\CourseUser($userid, $users->getWrapped($userid), $course))->getData();
-    $userData = (new ValueWrapper($userDataWrapped->getValue()));
-    $userData->set('awards', $awardsPerUser[$userid]);
-    $userBadges = $userData->getWrapped('badges');
-	$userBadges->delete('list');
-    $userBadgesList = $userBadges->getWrapped('list');
-    $userSkills = $userData->getWrapped('skills');
-    $userSkillsList = $userSkills->getWrapped('list');
-    $userSkills->setValue(array());
-
-    $userQuizes = $userData->getWrapped('quizes');
-    $quizesList = $userQuizes->getWrapped('list');
-
-    $userLabs = $userData->getWrapped('labs');
-    $labsList = $userLabs->getWrapped('list');
-
-    $userPresentation = $userData->getWrapped('presentation');
-
-    $badgeUnlockedLevel = array();
-    $badgeUnlockedLevelTime = array();
-    foreach ($sbBadges as $badgeName => $badge) {
-        $badgeUnlockedLevelTime[$badgeName] = array();
+    
+    $countedTreeXP=min($userInfo[$userId]['totalTreeXP'],MAX_TREE_XP);
+    $countedBadgeXP=$userInfo[$userId]['normalBadgeXP'] + min($userInfo[$userId]['extraBadgeXP'],MAX_BONUS_BADGES);
+    $totalXP=$countedTreeXP+$countedBadgeXP+$userInfo[$userId]['bonusXP']+
+             $userInfo[$userId]['quizXP']+$userInfo[$userId]['labsXP']+
+             $userInfo[$userId]['presentationXP'];
+    if ($totalXP>0){
+        Core::$sistemDB->updateAdd("course_user",
+            ["countedBadgeXP"=>$countedBadgeXP,"countedTreeXP"=>$countedTreeXP,"XP"=>$totalXP],
+            ["course"=>$courseId,"id"=>$userId]);
+        
+        $realXP=(int)Core::$sistemDB->select("course_user","XP",["course"=>$courseId,"id"=>$userId])[0];
+        
+        Core::$sistemDB->update("course_user",
+            ["level"=>floor($realXP/XP_PER_LEVEL)],
+            ["course"=>$courseId,"id"=>$userId]);
     }
 
-    $userBadges->set('normalxp', 0);
-    $userBadges->set('bonusxp', 0);
-    $userSkills->set('totalxp', 0);
-    $userQuizes->set('totalxp', 0);
-    $userLabs->set('totalxp', 0);
-    $userPresentation->set('xp', 0);
-    $userData->set('bonusxp', 0);
+    //Badges of each student
+    foreach($sbBadges as $badgeName => $badge){
+        $badgeIndicators = $indicatorsByNum[$userId][$badgeName];
 
-    $skillUnlocked = array();
-    $countSkills = 0;
-    foreach($userData->get('awards', array()) as $award) {
-        if ($award['type'] == 'badge') {
-            $badgeUnlockedLevelTime[$award['name']][$award['level']-1] = $award['date'];
-            if (!array_key_exists($award['name'], $badgeUnlockedLevel))
-                $badgeUnlockedLevel[$award['name']] = $award['level'];
-            elseif ($badgeUnlockedLevel[$award['name']] < $award['level'])
-                $badgeUnlockedLevel[$award['name']] = $award['level'];
-            else {
-                echo 'Should never be here!!! Badge awarded out of order for ', $userid, ', badge ', $award['name'], '<br>';
-            }
-            if ($sbBadges[$award['name']]['extraCredit'])
-                $userBadges->set('bonusxp', $userBadges->get('bonusxp') + $award['reward']);
-            else
-                $userBadges->set('normalxp', $userBadges->get('normalxp') + $award['reward']);
-        } elseif ($award['type'] == 'skill') {
-            $skillUnlocked[] = $award['name'];
-            $userSkills->set('totalxp', $userSkills->get('totalxp') + $award['reward']);
-            $countSkills++;
-        } elseif ($award['type'] == 'grade') {
-            if ($award['subtype'] == 'quiz') {
-                $quizesList->set($award['num'], $award['reward']);
-                $userQuizes->set('totalxp', $userQuizes->get('totalxp') + $award['reward']);
-            } elseif ($award['subtype'] == 'lab') {
-                $labsList->set($award['num'], $award['reward']);
-                $userLabs->set('totalxp', $userLabs->get('totalxp') + $award['reward']);
-            } else {
-                $userPresentation->set('xp', $award['reward']);
-            }
-        } elseif ($award['type'] == 'bonus') {
-            $userData->set('bonusxp', $userData->get('bonusxp') + $award['reward']);
+        if (Core::$sistemDB->select("user_badge", "*", ["badgeName" => $badgeName, "course" => $courseId, "student" => $userId])[0] == null)    
+            Core::$sistemDB->insert("user_badge",["badgeName"=>$badgeName,
+                                            "progress"=>(int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0]),
+                                            "course"=>$courseId,"student"=>$userId]);
+        if (key_exists($badgeName,$userBadge[$userId])){
+            Core::$sistemDB->update("user_badge",
+                ["level"=>$userBadge[$userId][$badgeName]['level']],
+                ["badgeName"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
+            for($i=1; $i<=$userBadge[$userId][$badgeName]['level'];$i++){
+                if (empty(Core::$sistemDB->select("badge_level_time", "*", ["badgeLevel"=>$i,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]))) {
+                    Core::$sistemDB->insert("badge_level_time", $userBadge[$userId][$badgeName]['level_time'][$i]);
+                }
+            }        
         }
-    }
-    $userSkills->set('count', $countSkills);
-
-    $userBadges->set('totalxp', $userBadges->get('normalxp') + $userBadges->get('bonusxp'));
-    $userBadges->set('countedxp', $userBadges->get('normalxp') + min($userBadges->get('bonusxp'), MAX_BONUS_BADGES));
-    $userSkills->set('countedxp', min($userSkills->get('totalxp'), MAX_TREE_XP));
-    $userData->set('xp', $userBadges->get('countedxp') + $userSkills->get('countedxp') + $userQuizes->get('totalxp') + $userLabs->get('totalxp') + $userPresentation->get('xp') + $userData->get('bonusxp'));
-    $userData->set('level', floor($userData->get('xp') / XP_PER_LEVEL));
-
-    if (!array_key_exists($userid, $indicatorsByNum)) {
-        foreach ($sbBadges as $badgeName => $badge) {
-            $badgeInfo = array(
-                'level' => 0,
-                'levelTime' => array(),
-                'progressCount' => -1,
-                'progress' => array()
-            );
-            $userBadgesList->set($badgeName, $badgeInfo);
-        }
-        $userSkillsList->setValue(array());
-        continue;
-    }
-
-    $indicatorsForUser = $indicatorsByNum[$userid];
-    $completedLevels = 0;
-    foreach ($sbBadges as $badgeName => $badge) {
-        $badgeIndicators = $indicatorsForUser[$badgeName];
-
-        $progress = array();
-        if ($badge['postBased']) {
-            if ($badge['countBased'] || (is_array($badgeIndicators[1]) && count($badgeIndicators[1]) != 0 && $badgeIndicators[1][0]['action'] == 'graded post')) {
+        if ($badge['isPost']) {
+            if ($badge['isCount'] || (is_array($badgeIndicators[1]) && !empty($badgeIndicators[1]) && $badgeIndicators[1][0]['action'] == 'graded post')) {
                 $postCount = 1;
                 foreach($badgeIndicators[1] as $indicator) {
-                    $progress[] = array(
-                        'quality' => (int) $indicator['xp'],
-                        'post' => $indicator['info'],
-                        'link' => $indicator['url'],
-                        'text' => 'P' . $postCount++
-                    );
+                    $text='P' . $postCount++;
+                    if (empty(Core::$sistemDB->select("progress_indicator", "*", ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId])))    
+                        Core::$sistemDB->insert("progress_indicator",
+                                    ["quality"=>$indicator['xp'],
+                                     "link"=>$indicator['url'],
+                                     'post' => $indicator['info'],
+                                     "indicatorText"=>$text,
+                                     "badgeName"=>$badgeName,
+                                     "course"=>$courseId,"student"=>$userId]);
                 }
             } else {
                 $postCount = 1;
                 foreach($badgeIndicators[1] as $indicator) {
-                    $progress[] = array(
-                        'link' => $indicator['url'],
-                        'text' => 'P' . $postCount++
-                    );
+                    $text='P' . $postCount++;
+                    //should i just use the code above, giving "post" and "quality" null vals?
+                    if (empty(Core::$sistemDB->select("progress_indicator", "*", ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]) ))    
+                        Core::$sistemDB->insert("progress_indicator",
+                                ["link"=>$indicator['url'],
+                                 "indicatorText"=>$text,
+                                 "badgeName"=>$badgeName,
+                                 "course"=>$courseId,"student"=>$userId]);
                 }
             }
-        } else if ($badge['countBased']) {
+        } else if ($badge['isCount']) {
             if (is_array($badgeIndicators[1])) {
                 foreach($badgeIndicators[1] as $indicator) {
-                    $progress[] = array('text' => $indicator['info']);
+                    $text = $indicator['info'];     
+                    if (empty(Core::$sistemDB->select("progress_indicator", "*", ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId])))     
+                        Core::$sistemDB->insert("progress_indicator",
+                                ["indicatorText"=>$text,
+                                 "badgeName"=>$badgeName,
+                                 "course"=>$courseId,"student"=>$userId]);
                 }
             }
-        }
-
-        $badgeInfo = array(
-            'level' => array_key_exists($badgeName, $badgeUnlockedLevel) ? (int) $badgeUnlockedLevel[$badgeName] : 0,
-            'levelTime' => $badgeUnlockedLevelTime[$badgeName],
-            'progressCount' => (int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0]),
-            'progress' => $progress
-        );
-        $userBadgesList->set($badgeName, $badgeInfo);
-        $completedLevels += $badgeInfo['level'];
+        } 
     }
-    $userBadges->set('completedLevels', $completedLevels);
-
-    foreach ($skillUnlocked as $skill) {
-        if (!array_key_exists($skill, $indicatorsForUser)) {
-            echo "Did not receive indicator for skill $skill, for user $userid\n";
-            continue;
-        }
-        $skillIndicator = $indicatorsForUser[$skill];
-        $userSkillsList->set($skill, array('post' => $skillIndicator[1][0]['url'], 'quality' => (int) $skillIndicator[1][0]['xp'], 'time' => (double) $skillIndicator[1][0]['timestamp']));
-    }
-
-    $userDataWrapped->setValue($userData->getValue());
 }
-$course->getWrapped('lastUpdate')->setValue(time());
-*/
 echo "Finished!\n";
 echo '</pre>';
 ?>

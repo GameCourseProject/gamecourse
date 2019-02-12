@@ -49,7 +49,7 @@ create table course_user
     countedTreeXP int unsigned default 0,
     numSkills 	int unsigned default 0,
     totalBadgeXP int unsigned default 0,
-    normslBadgeXP int unsigned default 0,
+    normalBadgeXP int unsigned default 0,
     extraBadgeXP int unsigned default 0,
     countedBadgeXP int unsigned default 0,
     numBadgeLvls int unsigned default 0,
@@ -75,7 +75,7 @@ create table award(
 	awardName varchar(100) not null,
 	level int, #badge level
 	num int,   #lab or quiz number (basically the same thing as lvl)
-	primary key (student,course,awardName),
+	primary key (student,course,awardName,level),
     foreign key(student, course) references course_user(id, course)
 );
 create table module(
@@ -188,8 +188,8 @@ create table badge_level(
 	primary key(level,badgeName,course)
 );
 create table user_badge(
-	level int not null,
-	progress int not null,
+	level int default 0,
+	progress int default 0,
 	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
@@ -198,21 +198,20 @@ create table user_badge(
 	primary key(student,badgeName,course)
 );
 create table progress_indicator(
-	progressNum int not null,
-	quality int,
 	link varchar(255),
-	post varchar(255), #same as link? 
+	post varchar(255), 
+	quality int,
 	indicatorText varchar(50) not null,
 	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
 	foreign key(student,badgeName,course) references user_badge(student,badgeName,course),
-	primary key(progressNum,student,badgeName,course)
+	primary key(indicatorText,student,badgeName,course)
 );
 create table badge_level_time(
+	badgeName varchar(70) not null,
 	badgeLevel int not null,
 	badgeLvlTime timestamp default CURRENT_TIMESTAMP,
-	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
 	foreign key(student,badgeName,course) references user_badge(student,badgeName,course),

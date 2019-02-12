@@ -24,7 +24,7 @@ class User {
 
     public function getName() {
         //return $this->userWrapper->get('name');
-        return Core::$sistemDB->select("user","name",["id"=>$this->id]);
+        return Core::$sistemDB->select("user","name",["id"=>$this->id])[0];
     }
 
     public function setName($name) {
@@ -34,7 +34,7 @@ class User {
 
     public function getEmail() {
         //return $this->userWrapper->get('email');
-        return Core::$sistemDB->select("user","email",["id"=>$this->id]);
+        return Core::$sistemDB->select("user","email",["id"=>$this->id])[0];
     }
 
     public function setEmail($email) {
@@ -45,7 +45,7 @@ class User {
 
     public function getUsername() {
         //return $this->userWrapper->get('username');
-        return Core::$sistemDB->select("user","username",["id"=>$this->id]);
+        return Core::$sistemDB->select("user","username",["id"=>$this->id])[0];
     }
 
     public function setUsername($username) {
@@ -55,7 +55,7 @@ class User {
 
     public function isAdmin() {
         //return $this->userWrapper->get('isAdmin', false);
-        return Core::$sistemDB->select("user","isAdmin",["id"=>$this->id]);
+        return Core::$sistemDB->select("user","isAdmin",["id"=>$this->id])[0];
     }
 
     public function setAdmin($isAdmin) {
@@ -65,7 +65,7 @@ class User {
 
     public function exists() {
         //return !$this->userWrapper->isNull();
-        return (Core::$sistemDB->select("user","*",["id"=>$this->id])!=null);
+        return (Core::$sistemDB->select("user","*",["id"=>$this->id])[0]!=null);
     }
 
     public function initialize($name, $email) {
@@ -88,7 +88,7 @@ class User {
     public static function getUserByUsername($username) {
         //if (static::$usersDB == null)
         //    static::initDB();
-        $userId=Core::$sistemDB->select("user","id",["username"=>$username]);
+        $userId=Core::$sistemDB->select("user","id",["username"=>$username])[0];
         if ($userId==null)
             return null;
         else
