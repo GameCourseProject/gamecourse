@@ -1,8 +1,8 @@
 <?php
 //$BACKENDID = 'backend_CbTA8|W6Iz/|W6ImP';
-$BACKENDID = 'backend_CbTA8|W/MbZ|W/MWC';
+$BACKENDID = 'backend_CbTA8|XGMKH|XGLs2';
 //$JSESSIONID = '35CC1D3C136267F95D40398712725EBD.as2';
-$JSESSIONID = '11C6DDFFA9700E5893DD8A4D68EB9A55.as2';
+$JSESSIONID = '138967BBB25D74F8BBFFD18478EDA09C.as2';
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;
@@ -19,14 +19,14 @@ Core::init();
 $noPhotoHash = md5(file_get_contents('photos/no-photo.png'));
 
 if ($isCLI) {
-    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 0);
+    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 1);
     if (array_key_exists(2, $argv))
         $BACKENDID = $argv[2];
     if (array_key_exists(3, $argv))
         $JSESSIONID = $argv[3];
 
 } else {
-    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 0);
+    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 1);
     if (array_key_exists('backendid', $_GET))
         $BACKENDID = $_GET['backendid'];
     if (array_key_exists('jsessionid', $_GET))
@@ -34,7 +34,7 @@ if ($isCLI) {
 }
 
 $course = Course::getCourse($courseId);
-$users = $course->getUsers()->getKeys();
+$userIds = $course->getUsersIds();
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -43,7 +43,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: JSESSIONID=' . $JSESSIONID . ';BACKENDID=' . $BACKENDID));
 
-foreach($users as $id) {
+foreach($userIds as $id) {
     $username = User::getUser($id)->getUsername();
     if ($username != null) {
         curl_setopt($ch, CURLOPT_URL, 'https://fenix.tecnico.ulisboa.pt/user/photo/' . $username);

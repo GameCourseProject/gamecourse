@@ -1,9 +1,9 @@
 <?php
 $courseUrls = array('https://fenix.tecnico.ulisboa.pt/disciplinas/PCM26/2017-2018/2-semestre/notas');
 //$BACKENDID = 'backend_CbTA8|W6Iz/|W6ImP';
-$BACKENDID = 'backend_CbTA8|W/MbZ|W/MWC';
+$BACKENDID = 'backend_CbTA8|XGMKH|XGLs2';
 //$JSESSIONID = '35CC1D3C136267F95D40398712725EBD.as2';
-$JSESSIONID = '11C6DDFFA9700E5893DD8A4D68EB9A55.as2';
+$JSESSIONID = '138967BBB25D74F8BBFFD18478EDA09C.as2';
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;
@@ -17,15 +17,15 @@ if(!Core::requireSetup(false))
     die('Please perform setup first!');
 
 if ($isCLI) {
-    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 0);
+    $courseId = (array_key_exists(1, $argv) ? $argv[1] : 1);
     $id = 2;
     while(array_key_exists($id, $argv)) {
         $courseUrls[] = $argv[$id];
         $id++;
     }
 } else {
-    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 0);
-    $id = 0;
+    $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 1);
+    $id = 1;
     while(array_key_exists('courseurl' . $id, $_GET)) {
         $courseUrls[] = $_GET['courseurl' . $id];
         $id++;
@@ -33,7 +33,7 @@ if ($isCLI) {
 }
 
 $course = Course::getCourse($courseId);
-$users = $course->getUsers()->getKeys();
+$userIds = $course->getUsersIds();
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -58,6 +58,10 @@ foreach($courseUrls as $url) {
     $dom = new DOMDocument(5, 'UTF-8');
     @$dom->loadHTML($body);
     $studentsTable = $dom->getElementsByTagName('table')[0];
+    if ($studentsTable==null){
+        echo "ERROR: Couldn't find user table, check if cookies in updateUsernames.php are updated";
+        break;
+    }
     //TODO add verification, if it couldnt login there wont be a table
     foreach ($studentsTable->getElementsByTagName('tr') as $row) {
         $username = $row->childNodes[0]->nodeValue;
@@ -76,10 +80,10 @@ foreach($courseUrls as $url) {
     }
 }
 
-foreach($users as $id) {
+foreach($userIds as $id) {
     $user = User::getUser($id);
     if ($user->getUsername() == null) {
-        if ($id < 80000) {
+        if ($id < 100000) {
             echo 'Guessing username for user ' . $id . ' as ist1' . $id . ($isCLI ? "\n" :  '<br>');
             $user->setUsername('ist1' . $id);
         } else {

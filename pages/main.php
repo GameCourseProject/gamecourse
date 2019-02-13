@@ -35,7 +35,7 @@ $user = Core::getLoggedUser();
                 
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                     console.log(courseName);
-                    console.log(course);
+                    console.log("main.php course",course);
                     //console.log($rootScope.course);
                     //console.log($scope.course);
                     if ($rootScope.course != course) {

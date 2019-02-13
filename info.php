@@ -167,12 +167,13 @@ API::registerFunction('settings', 'roles', function() {
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-
+    $fenixLink="";
     if (API::hasKey('headerLink')) {
         $course->setHeaderLink(API::getValue('headerLink'));
         http_response_code(201);
     } else if (API::hasKey('courseFenixLink')) {
-        $course->getWrapper()->set('fenix-link', API::getValue('courseFenixLink'));
+        $fenixLink=API::getValue('courseFenixLink');
+        //$course->getWrapper()->set('fenix-link', API::getValue('courseFenixLink'));
         http_response_code(201);
     } else if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
@@ -206,7 +207,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
     } else {
         $allModules = ModuleLoader::getModules();
         $enabledModules = $course->getModules();
-
+       
         $modulesArr = array();
         foreach ($allModules as $module) {
             $mod = array(
@@ -224,7 +225,8 @@ API::registerFunction('settings', 'courseGlobal', function() {
             'name' => $course->getName(),
             'theme' => Core::getTheme(),
             'headerLink' => $course->getHeaderLink(),
-            'courseFenixLink' => $course->getWrapped('fenix-link')->getValue(),
+            //'courseFenixLink' => $course->getWrapped('fenix-link')->getValue(),
+            'courseFenixLink' =>$fenixLink,
             'modules' => $modulesArr
         );
         API::response($globalInfo);

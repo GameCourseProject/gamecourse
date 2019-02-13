@@ -61,7 +61,7 @@ class API {
             } else
                 $values = json_decode(file_get_contents('php://input'), true);
         }
-
+                    
         if (!array_key_exists('module', $_GET))
             API::error('Must specify a module!');
 
@@ -75,9 +75,14 @@ class API {
         
         $values = ($values == null) ? $_GET : array_merge($values, $_GET);
         
+        
+        
         static::$values = $values;
         
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
+           //echo "<pre>";
+            //print_r($values);       
+            //echo "</pre>";
             Course::getCourse(API::getValue('course'));
         }
         //Course::getCourse(0); // initializes the course

@@ -25,6 +25,9 @@ class ModuleLoader {
             die('Module conflict, two modules with same id: ' . $module['id'] . ' at ' . $module['dir'] . ' and ' . static::$modules[$module['id']]['dir']);
         static::$modules[$module['id']] = $module;
         static::$loadingModuleDir = null;
+        
+        if (empty(Core::$sistemDB->select("module",'*',['moduleId'=>$module['id']])))
+            Core::$sistemDB->insert("module",['moduleId'=>$module['id'],'name'=>$module['name']]);
     }
 
     public static function loadModuleFromDir($moduleDir) {
