@@ -1,7 +1,7 @@
 <?php
 namespace MagicDB;
 
-class SQLDB {//ToDo use prepared statements
+class SQLDB {
     private $db;
     public function __construct($dsn, $username = '', $password = '') {
         try{

@@ -173,6 +173,7 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
                 stateButton.click(function() {
                     $(this).prop('disabled', true);
                     $smartboards.request('settings', 'courseGlobal', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
+                        console.log("enable", data);
                         if (err) {
                             alert(err.description);
                             return;
@@ -244,7 +245,6 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
                 }
             });
         });
-        fenixLinkSettings.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="updateUsernames.php?course={{course}}&courseurl0={{data.courseFenixLink}}">Update Usernames</a>')($scope));
 
         var downloadPhotosSettings = $('<div>');
         downloadPhotosSettings.append('<label for="jsessionid" class="label">JSESSIONID</label>');
@@ -253,9 +253,12 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         downloadPhotosSettings.append('<label for="backendid" class="label">BACKENDID</label>');
         var backendidInput = $('<input>', {type: 'text', id:'backendid', 'class': 'input-text', placeholder:'', 'ng-model':'data.backendid'});
         downloadPhotosSettings.append($compile(backendidInput)($scope));
-        downloadPhotosSettings.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
-
         loadDataSection.append(downloadPhotosSettings);
+        var updateDownloadButtons = $('<div>');
+        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="updateUsernames.php?course={{course}}&courseurl0={{data.courseFenixLink}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Update Usernames</a>')($scope));
+        updateDownloadButtons.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
+
+        loadDataSection.append(updateDownloadButtons);
     });
 });
 
@@ -618,9 +621,8 @@ function setSettingsTitle(title) {
 
 app.controller('Settings', function($scope, $state, $compile, $smartboards) {
     changeTitle('Settings', 0);
-
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
-        $smartboards.request('settings', 'tabs', {course: 0}, function(data, err) {
+        $smartboards.request('settings', 'tabs', {course: 1}, function(data, err) {
             if (err) {
                 console.log(err);
                 return;

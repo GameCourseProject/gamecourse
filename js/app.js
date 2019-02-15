@@ -92,7 +92,6 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
                             alert(err.description);
                             return;
                         }
-                        console.log("app.js:getCourseList",data);
                         $scope.courses = data.courses;
                         for (var i in $scope.courses) {
                             var course = $scope.courses[i];
@@ -165,7 +164,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
     this.request = function (module, request, data, callback) {
         $rootScope.loaded=false;
         console.time(data.view);
-        console.log(data);
+        console.log("app req",data);
         $http.post('info.php?module=' + module + '&request=' + request, data).then(function(response) {
             if (callback) {
                 if (response.data.data != undefined){

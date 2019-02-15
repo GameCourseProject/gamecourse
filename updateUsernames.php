@@ -1,9 +1,7 @@
 <?php
 $courseUrls = array('https://fenix.tecnico.ulisboa.pt/disciplinas/PCM26/2017-2018/2-semestre/notas');
-//$BACKENDID = 'backend_CbTA8|W6Iz/|W6ImP';
-$BACKENDID = 'backend_CbTA8|XGMKH|XGLs2';
-//$JSESSIONID = '35CC1D3C136267F95D40398712725EBD.as2';
-$JSESSIONID = '138967BBB25D74F8BBFFD18478EDA09C.as2';
+$BACKENDID = '';
+$JSESSIONID = '';
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;
@@ -30,6 +28,11 @@ if ($isCLI) {
         $courseUrls[] = $_GET['courseurl' . $id];
         $id++;
     }
+    if (array_key_exists('backendid', $_GET))
+        $BACKENDID = $_GET['backendid'];
+    if (array_key_exists('jsessionid', $_GET))
+        $JSESSIONID = $_GET['jsessionid'];
+
 }
 
 $course = Course::getCourse($courseId);
@@ -41,7 +44,6 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: JSESSIONID=' . $JSESSIONID . ';BACKENDID=' . $BACKENDID));
-
 
 foreach($courseUrls as $url) {
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -59,15 +61,13 @@ foreach($courseUrls as $url) {
     @$dom->loadHTML($body);
     $studentsTable = $dom->getElementsByTagName('table')[0];
     if ($studentsTable==null){
-        echo "ERROR: Couldn't find user table, check if cookies in updateUsernames.php are updated";
+        echo "ERROR: Couldn't find user table, check if cookies are updated <br>";
         break;
     }
-    //TODO add verification, if it couldnt login there wont be a table
     foreach ($studentsTable->getElementsByTagName('tr') as $row) {
         $username = $row->childNodes[0]->nodeValue;
         $studentNumber = $row->childNodes[2]->nodeValue;
-        echo 'user: ' . $username;
-        echo 'id: ' . $studentNumber; 
+       
         if (preg_match('/^ist[0-9]{6}$/', $username)) {
             $user = User::getUser($studentNumber);
             if (!$user->exists())

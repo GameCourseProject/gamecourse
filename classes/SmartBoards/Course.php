@@ -46,8 +46,7 @@ class Course {
     }
 
     public function getUsersIds() {
-        //return $this->db->getWrapped('users')->getKeys();
-        
+        //return $this->db->getWrapped('users')->getKeys();     
         return array_column(Core::$sistemDB->selectMultiple("course_user",'id',["course"=>$this->cid]),'id');
     }
 
@@ -124,7 +123,7 @@ class Course {
         //array w module names
     }
 
-    public function addModule($module) {//bug? should be adding instead of replacing
+    public function addModule($module) {
         return $this->loadedModules[$module->getId()] = $module;
     }
 

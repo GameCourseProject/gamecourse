@@ -36,6 +36,7 @@ API::registerFunction('core', 'getCoursesList', function() {
 });
 
 API::registerFunction('core', 'getCourseInfo', function() {
+    
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
     $user = Core::getLoggedUser();
@@ -272,6 +273,7 @@ API::registerFunction('settings', 'tabs', function() {
     $tabs = array(
         Settings::buildTabItem('Courses', 'settings.courses', true, $coursesTabs)
     );
+    
     API::response($tabs);
 });
 

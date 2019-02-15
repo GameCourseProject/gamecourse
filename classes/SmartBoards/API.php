@@ -74,18 +74,15 @@ class API {
         unset($_GET['request']);
         
         $values = ($values == null) ? $_GET : array_merge($values, $_GET);
-        
-        
-        
+           
         static::$values = $values;
-        
+ 
+        //thiss is commented because it was trying to create course 0 which doesnt exist, not sure if this code is important
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
-           //echo "<pre>";
-            //print_r($values);       
-            //echo "</pre>";
             Course::getCourse(API::getValue('course'));
         }
-        //Course::getCourse(0); // initializes the course
+        
+        //Course::getCourse(1); // initializes the course
     }
 
     public static function processRequest() {
