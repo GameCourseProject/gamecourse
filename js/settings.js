@@ -219,8 +219,11 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         }
 
         var loadDataSection = createSection(tabContent, 'Load Data');
+        var loadLegacy = $('<div><br>');
+        loadLegacy.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="loadLegacy.php?course={{course}}">Load Legacy</a>')($scope));
+        loadDataSection.append(loadLegacy);
         var fenixLinkSettings = $('<div>');
-        fenixLinkSettings.append('<label for="fenix-link" class="label">Fenix Grades Link</label>');
+        fenixLinkSettings.append('<br><label for="fenix-link" class="label">Fenix Grades Link</label>');
         var fenixLinkInput = $('<input>', {type: 'text', id:'fenix-link', 'class': 'input-text', placeholder:'', 'ng-model':'data.courseFenixLink'});
         fenixLinkSettings.append($compile(fenixLinkInput)($scope));
         loadDataSection.append(fenixLinkSettings);

@@ -4,6 +4,11 @@ namespace SmartBoards;
 use \SmartBoards as SmartBoards;
 
 class ModuleLoader {
+    
+    private static $loadingModuleDir = null;
+    private static $modules = array();
+    private static $firstScan = false;
+    
     private static function requireProp($module, $prop) {
         if (!array_key_exists($prop, $module))
             die('Missing ' . $prop . ' in module' . (array_key_exists('id', $module) ? ' ' . $module['id'] : ' from directory ' . static::$loadingModuleDir));
@@ -56,11 +61,11 @@ class ModuleLoader {
         static::$firstScan = true;
     }
 
-    public static function initModules($parent) {
+    public static function initModules($course) {
         if (!static::$firstScan)
             static::scanModules(); 
             
-        $modulesToLoad = $parent->getEnabledModules();
+        $modulesToLoad = $course->getEnabledModules();
         $numModulesToLoad = count($modulesToLoad);
         $loadedModules = array();
         $softDependencies = array();
@@ -132,7 +137,7 @@ class ModuleLoader {
         foreach ($loadedModules as $moduleId => $module) {
             $moduleInfo = static::$modules[$moduleId];
             $module = $moduleInfo['factory']();
-            $module->parent = $parent;
+            $module->parent = $course;
 
             $module->id = $moduleInfo['id'];
             $module->dir = $moduleInfo['dir'];
@@ -140,9 +145,9 @@ class ModuleLoader {
             $module->version = $moduleInfo['version'];
             $module->dependencies = $moduleInfo['dependencies'];
 
-            $module->init();
+            $module->init($course->getId());
             $module->setupResources();
-            $parent->addModule($module);
+            $course->addModule($module);
         }
     }
 
@@ -155,9 +160,5 @@ class ModuleLoader {
     public static function getModules() {
         return static::$modules;
     }
-
-    private static $loadingModuleDir = null;
-    private static $modules = array();
-    private static $firstScan = false;
 }
 ?>

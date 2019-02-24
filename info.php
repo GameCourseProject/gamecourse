@@ -43,7 +43,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $courseUser = $course->getLoggedUser();
     if ($user->isAdmin() || $courseUser->hasRole('Teacher'))
         Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
-
+    //echo "info.php getcourseinfo";
+    //echo API::getValue('course');
     API::response(array(
         'navigation' => Core::getNavigation(),
         'landingPage' => $courseUser->getLandingPage(),
@@ -184,7 +185,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
             http_response_code(400);
         } else {
             $moduleEnabled = ($course->getModule($moduleId) != null);
-
+            
             if ($moduleEnabled && !API::getValue('enabled')) {
                 $modules = $course->getModules();
                 foreach ($modules as $module) {
@@ -201,8 +202,9 @@ API::registerFunction('settings', 'courseGlobal', function() {
                 }
             }
 
-            if ($moduleEnabled != API::getValue('enabled'))
+            if ($moduleEnabled != API::getValue('enabled')) {
                 $course->setModuleEnabled($moduleId, !$moduleEnabled);
+            }
             http_response_code(201);
         }
     } else {

@@ -93,5 +93,4 @@ foreach($userIds as $id) {
 }
 
 curl_close($ch);
-
 ?>

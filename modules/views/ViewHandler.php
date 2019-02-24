@@ -12,10 +12,14 @@ use SmartBoards\DataSchema;
 use SmartBoards\ModuleLoader;
 
 class ViewHandler {
-    const VT_SINGLE = 0;
-    const VT_ROLE_SINGLE = 1;
-    const VT_ROLE_INTERACTION = 2;
-
+    const VT_SINGLE = 1;
+    const VT_ROLE_SINGLE = 2;
+    const VT_ROLE_INTERACTION = 3;
+    private $viewsModule;
+    private $registeredViews = array();
+    private static $defaultViewSettings = ['type' => self::VT_ROLE_SINGLE];
+    private $courseId;
+    
     public function parse($exp) {
         static $parser;
         if ($parser == null)
@@ -28,58 +32,79 @@ class ViewHandler {
     public function parseSelf(&$exp) {
         $exp = $this->parse($exp);
     }
-
-    private $viewsModule;
+    
     public function __construct($viewsModule) {
         $this->viewsModule = $viewsModule;
+        $this->courseId=API::getValue('course');
     }
+    
 
-    private $registeredViews = array();
-    private static $defaultViewSettings = array(
-        'type' => self::VT_ROLE_SINGLE
-    );
 
     public function getRegisteredViews() {
         return $this->registeredViews;
     }
-
-    public function getViews($viewId = null) {
+    
+    public function getViewRoles($viewId){
+        return Core::$sistemDB->selectMultiple("view_role",'*',['viewId'=>$viewId,'course'=>$this->courseId]);
+    }
+    public function getViews($viewId = null) {//supposed to return multiple views if there are specializations
+        if ($viewId==null)
+            return Core::$sistemDB->selectMultiple("view",'*',['course'=>$this->courseId]);
+        else
+            return Core::$sistemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->courseId])[0];
+  
+        /*
         $views = $this->viewsModule->getData()->getWrapped('views');
         if ($viewId != null)
             return $views->getWrapped($viewId)->getWrapped('view');
         else
             return $views;
+         */
     }
 
     public function registerView($module, $viewId, $viewName, $viewSettings = array()) {
         if (array_key_exists($viewId, $this->registeredViews))
             new \Exception('View' . $viewId . ' was previously defined by ' . $this->registeredViews[$viewId]['module']);
 
-        $viewSettings = array_replace_recursive(static::$defaultViewSettings, $viewSettings);
+        $viewSettings = array_replace_recursive(static::$defaultViewSettings, $viewSettings);//type
         $viewSettings['module'] = $module->getId();
         $viewSettings['name'] = $viewName;
         $this->registeredViews[$viewId] = $viewSettings;
-        $views = $this->getViews();
-        $view = $views->get($viewId);
-        if ($view === null) {
+        //$views = $this->getViews();
+        //$view = $views->get($viewId);
+        $view = $this->getViews($viewId);
+        if ($view === null) {//TODO talvez verizicar se e' empty em vez de null
             $viewpid = ViewEditHandler::getRandomPid();
-            $newView = array(
-                'part' => $viewpid,
-                'partlist' => array(
-                    $viewpid => array(
-                        'type' => 'view',
-                        'content' => array(),
-                        'pid' => $viewpid
-                    )
-                )
-            );
-
+            $newView=array_merge($viewSettings,['course'=>$this->courseId,'viewId'=>$viewId]);
+   
+            if ($viewSettings['type'] == self::VT_ROLE_SINGLE)
+                $role='role.Default';
+            else if ($viewSettings['type'] == self::VT_ROLE_INTERACTION)
+                $role='role.Default>role.Default';
+            
+            $viewRole=['course'=>$this->courseId,'viewId'=>$viewId,
+                'pid'=>$viewpid,
+                'role'=>$role,
+                'replacements'=>json_encode([]) ];
+            
+            $part = ['viewId' => $viewId,'course'=>$this->courseId,'role' =>$role,
+                    'type' => 'view',
+                    'partContents' => json_encode([]),
+                    'pid' => $viewpid
+            ];
+            Core::$sistemDB->insert('view',$newView);
+            Core::$sistemDB->insert('view_role',$viewRole);
+            Core::$sistemDB->insert('view_part',$part);
+            
+               /*
             $defaultView = $newView;
             if ($viewSettings['type'] == self::VT_ROLE_SINGLE)
                 $defaultView = array('role.Default' => $newView);
             else if ($viewSettings['type'] == self::VT_ROLE_INTERACTION)
                 $defaultView = array('role.Default' => array('role.Default' => $newView));
             $views->set($viewId, array('settings' => $viewSettings, 'view' => $defaultView));
+             * 
+             */
         }
     }
 
@@ -137,6 +162,7 @@ class ViewHandler {
             $func(...$args);
     }
 
+    //ToDo
     public function processData(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
         $params = $viewParams;
@@ -314,22 +340,26 @@ class ViewHandler {
     }
 
     public function parseView(&$view) {
-        foreach ($view['content'] as &$part) {
+        foreach ($content as &$part) {
             $this->parsePart($part);
         }
     }
-
-    public function handle($view) {
-        if (!array_key_exists($view, $this->registeredViews)) {
+    public function hasRole($view,$role){
+        
+    }
+    public function handle($viewId) {
+        if (!array_key_exists($viewId, $this->registeredViews)) {
             API::error('Unknown view: ' . $view, 404);
         }
 
         $viewParams = array();
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             $course = Course::getCourse((string)API::getValue('course'));
-            $views = $this->getViews()->getWrapped($view)->get('view');
-            $viewType = $this->registeredViews[$view]['type'];
-
+            //$views = $this->getViews()->getWrapped($viewId)->get('view');
+            $view = $this->getViews($viewId);
+            $viewType = $this->registeredViews[$viewId]['type'];
+//todo
+            echo " Handle stop point ";
             if ($viewType == ViewHandler::VT_ROLE_SINGLE || $viewType == ViewHandler::VT_ROLE_INTERACTION) {
                 if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
                     API::requireValues('user');
@@ -392,7 +422,7 @@ class ViewHandler {
                     $roleTwo = null;
                 }
 
-                $parentParts = $this->viewsModule->findParentParts($course, $view, $viewType, $roleOne, $roleTwo);
+                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);
 
                 //echo '<pre>', print_r(round((microtime(true) - $t) * 1000, 1), true), 'ms</pre>';
                 //$t = microtime(true);
@@ -408,9 +438,12 @@ class ViewHandler {
 
             if (API::hasKey('user'))
                 $viewParams['user'] = (string)API::getValue('user');
-
+            
+            $userView['content'] = json_decode($userView['content'],true);
             $this->parseView($userView);
             $this->processView($userView, $viewParams);
+            $userView['content'] = json_encode($userView['content']);
+
             $viewData = $userView;
         } else {
             // general views (plugins not bound to courses)

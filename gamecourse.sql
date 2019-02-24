@@ -1,3 +1,7 @@
+drop table if exists view_template;
+drop table if exists view_part;
+drop table if exists view_role;
+drop table if exists view;
 drop table if exists qr_error;
 drop table if exists qr_participation;
 drop table if exists qr;
@@ -77,19 +81,6 @@ create table award(
 	num int,   #lab or quiz number (basically the same thing as lvl)
 	primary key (student,course,awardName,level),
     foreign key(student, course) references course_user(id, course)
-);
-create table module(
-	moduleId varchar(100) not null primary key,
-	name varchar(100),
-	version varchar(10)
-	#dependencies,directory,parent,resources(files),factory
-);
-create table enabled_module(
-	moduleId varchar(100) not null,
-	course int unsigned not null,
-	primary key(moduleId, course),
-	foreign key(moduleId) references module(moduleId),
-	foreign key(course) references course(id)
 );
 create table level(
 	minXP int unsigned not null,
@@ -216,4 +207,52 @@ create table badge_level_time(
 	student int unsigned not null,
 	foreign key(student,badgeName,course) references user_badge(student,badgeName,course),
 	primary key(badgeLevel,student,badgeName,course)
+);
+
+create table module(
+	moduleId varchar(50) not null primary key,
+	name varchar(50),
+	version varchar(10)#?
+	#dependencies,directory,parent,resources(files),factory
+);
+create table enabled_module(
+	moduleId varchar(50) not null,
+	course int unsigned not null,
+	primary key(moduleId, course),
+	foreign key(moduleId) references module(moduleId),
+	foreign key(course) references course(id)
+);
+
+create table view(	
+	viewId varchar(50),
+	module varchar(50),
+	type enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',
+	course int unsigned not null,
+	name varchar(50),
+	primary key(viewID, course), #(viewId,course) ou pid
+	foreign key(module,course) references enabled_module(moduleId,course)
+);
+create table view_role(
+	pid varchar(40),#or part
+	viewId varchar(50),
+	course int unsigned not null,
+	replacements text, #not sure what's for
+	role varchar(100), #if role interaction separate by '>'. multiple roles separated by ',''
+	primary key(viewId,course,role),
+	foreign key(viewId,course) references view(viewId,course)
+);
+create table view_part(
+	viewId varchar(50),
+	course int unsigned not null,
+	role varchar(100),
+	partContents text,
+	type varchar(50),
+	pid varchar(40), #??, also header,repeat,style,class,type,data,....
+	primary key(pid), 
+	foreign key(viewId,course,role) references view_role(viewId,course,role)
+);
+create table view_template(
+	id varchar(100),
+	content text,
+	primary key(id)
 );

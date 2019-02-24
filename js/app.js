@@ -167,6 +167,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
         console.log("app req",data);
         $http.post('info.php?module=' + module + '&request=' + request, data).then(function(response) {
             if (callback) {
+                console.log("after callback",response);
                 if (response.data.data != undefined){
                     callback(response.data.data, undefined);
                 }

@@ -41,7 +41,7 @@ $user = Core::getLoggedUser();
                         if ($scope.course != undefined) {
                             changeTitle(courseName, 0, false);
                             $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function (data) {
-                                console.log("main getcourse",data);
+                                console.log("main getcourse",data.data);
                                 $rootScope.courseName = data.courseName;
                                 changeTitle(data.courseName, 0, true, data.headerLink);
                                 $smartboards.loadDependencies(data.resources).then(function () {

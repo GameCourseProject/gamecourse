@@ -11,11 +11,11 @@ class CourseUser extends User{
         parent::__construct($id);
         $this->course = $course;
     }
-    public function create($id,$role=null,$campus=""){
+    public function create($role=null,$campus=""){
         //User must already exist in database
-        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$id, "campus"=>$campus]);
+        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
         if ($role){
-            Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$id]);
+            Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
         }
     }
     public function exists() {
@@ -25,10 +25,13 @@ class CourseUser extends User{
     public function delete(){
         Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
-    //function refreshActivity() {
+    function refreshActivity() {
+        $prev = Core::$sistemDB->select("course_user","lastActivity",["id"=>$this->id,"course"=>$this->course->getId()])[0];
+        Core::$sistemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
+        Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);     
     //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
     //    $this->userWrapper->set('lastActivity', time());
-    //}
+    }
 
     public function getId() {
         return $this->id;

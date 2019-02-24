@@ -24,8 +24,9 @@ class Leaderboard extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL)
+        if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
             $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/leaderboard.vt')));
+        }
     }
 
     public function initSettingsTabs() {

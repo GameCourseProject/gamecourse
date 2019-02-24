@@ -1,4 +1,6 @@
 <?php
+$starttime = microtime(true);
+$first  = new DateTime();
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 set_time_limit(300);
@@ -54,7 +56,7 @@ foreach($teachers as &$teacher) {
     
     $courseUser= new CourseUser($teacher['id'],$course);
     if (!$courseUser->exists()) {
-        $courseUser->create($teacher['id'],"Teacher");
+        $courseUser->create("Teacher");
         echo 'New teacher ' . $teacher['id'] . "\n";
     }elseif (!$courseUser->isTeacher()){
         $courseUser->setRoles("Teacher");
@@ -77,7 +79,7 @@ foreach($students as &$student) {
     
     $courseUser= new CourseUser($student['id'],$course);
     if (!$courseUser->exists()) {
-        $courseUser->create($student['id'],"Student",$student['campus']);
+        $courseUser->create("Student",$student['campus']);
         echo 'New student ' . $student['id'] . "\n";
     }else
         $courseUser->addRole("Student");
@@ -414,5 +416,11 @@ foreach ($userIds as $userId){
     }
 }
 echo "Finished!\n";
+$last  = new DateTime();
+$diff = $first->diff( $last );
+echo "Time: ".$diff->format( '%H:%I:%S' ).'<br>';
+$endtime = microtime(true);
+$total=$endtime-$starttime;
+echo "seconds: ".$total;
 echo '</pre>';
 ?>

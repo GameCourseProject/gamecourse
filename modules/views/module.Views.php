@@ -81,9 +81,7 @@ class Views extends Module {
 
     public function init() {
         $this->viewHandler = new ViewHandler($this);
-         $this->viewHandler->registerFunction('toInt', function($val) {
-            return new ValueNode((int)$val);
-        });
+
         $this->viewHandler->registerFunction('value', function($val) {
             return new ValueNode($val->getValue());
         });
@@ -369,11 +367,11 @@ class Views extends Module {
             API::requireValues('view', 'course');
 
             $views = $this->viewHandler->getRegisteredViews();
-            $view = API::getValue('view');
-            if (!array_key_exists($view, $views))
-                API::error('Unknown view ' . $view);
+            $viewId = API::getValue('view');
+            if (!array_key_exists($viewId, $views))
+                API::error('Unknown view ' . $viewId);
 
-            $viewSettings = $views[$view];
+            $viewSettings = $views[$viewId];
 
             $course = Course::getCourse(API::getValue('course'));
             $response = array(
@@ -381,32 +379,52 @@ class Views extends Module {
             );
 
             $response['types'] = array(
-                array('id'=> 0, 'name' => 'Single'),
-                array('id'=> 1, 'name' => 'Role - Single'),
-                array('id'=> 2, 'name' => 'Role - Interaction')
+                array('id'=> 1, 'name' => 'Single'),
+                array('id'=> 2, 'name' => 'Role - Single'),
+                array('id'=> 3, 'name' => 'Role - Interaction')
             );
 
             $type = $viewSettings['type'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
-                $viewSpecializations = $this->viewHandler->getViews()->get($view)['view'];
+                $viewSpecializations = $this->viewHandler->getViewRoles($viewId);
+                //$viewSpecializations = $this->viewHandler->getViews($viewId);
                 $result = array();
-
-                foreach (array_keys($viewSpecializations) as $id)
-                    $result[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
+        
+                $doubleRoles=[];//for views w role interaction
+                //foreach (array_keys($viewSpecializations) as $id)
+                foreach ($viewSpecializations as $role){
+                    $id=$role['role'];
+                    if ($type == ViewHandler::VT_ROLE_INTERACTION) {
+                        $roleTwo= substr($id, strpos($id, '>'), strlen($id));
+                        $roleOne= substr($id, 0, strpos($id, '>'));
+                        $doubleRoles['$roleOne'][]=$roleTwo;
+                    }
+                    else
+                        $result[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
+                }
+          
                 if ($type == ViewHandler::VT_ROLE_INTERACTION) {
-                    foreach($result as &$spec) {
+                    foreach($doubleRoles as $roleOne => $rolesTwo){
+                        $viewedBy = [];
+                        foreach($rolesTwo as $roleTwo ){
+                            $viewedBy[] = array('id' => $roleTwo, 'name' => substr($roleTwo, strpos($roleTwo, '.') + 1));
+                        }
+                        $result[] = array('id' => $roleOne, 'name' => substr($roleOne, strpos($roleOne, '.') + 1),
+                            'viewedBy'=>$viewedBy);
+                        
+                    }
+                    /*foreach($result as &$spec) {
                         $secondKeys = array_keys($viewSpecializations[$spec['id']]);
                         $viewedBy = array();
                         foreach ($secondKeys as $id)
                             $viewedBy[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
                         $spec['viewedBy'] = $viewedBy;
-                    }
+                    }*/
                 }
-                $viewSpecializations = $result;
 
-                $response['viewSpecializations'] = $viewSpecializations;
+                $response['viewSpecializations'] = $result;
                 $response['allIds'] = array();
-                $roles = array_merge(array('Default'), $course->getRoles());
+                $roles = array_merge(array('Default'), array_column($course->getRoles(),'name'));
                 $users = $course->getUsersIds();
                 $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
                 foreach ($roles as $role)
@@ -733,11 +751,15 @@ class Views extends Module {
     }
 
     public function getTemplate($id) {
-        return $this->getData()->getWrapped('templates')->get($id);
+         return Core::$sistemDB->select('view_template','*',['id'=>$id])[0];
+   //     return $this->getData()->getWrapped('templates')->get($id);
     }
 
     public function setTemplate($id, $template) {
-        return $this->getData()->getWrapped('templates')->set($id, $template);
+        //todo decide between unserialize and json decode for when using this data.
+        // remove the unserialie from the callers (simple send the file contents)
+        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>json_encode($template)]);
+   //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }
 }
 
