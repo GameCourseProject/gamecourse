@@ -142,7 +142,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             $state.go('course.settings.views.view.edit-single');
         };
 
-        if ($scope.viewType == 1 || $scope.viewType == 2) {
+        if ($scope.viewType == 2 || $scope.viewType == 3) {
             $scope.missingOne = subtractSpecializations($scope.allIds, $scope.viewSpecializations);
             for (var i = 0; i < $scope.missingOne.length; ++i) {
                 if ($scope.missingOne[i].id.startsWith('special.')) {

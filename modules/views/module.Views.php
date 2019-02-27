@@ -395,14 +395,14 @@ class Views extends Module {
                 foreach ($viewSpecializations as $role){
                     $id=$role['role'];
                     if ($type == ViewHandler::VT_ROLE_INTERACTION) {
-                        $roleTwo= substr($id, strpos($id, '>'), strlen($id));
+                        $roleTwo= substr($id, strpos($id, '>')+1, strlen($id));
                         $roleOne= substr($id, 0, strpos($id, '>'));
-                        $doubleRoles['$roleOne'][]=$roleTwo;
+                        $doubleRoles[$roleOne][]=$roleTwo;
                     }
                     else
                         $result[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
                 }
-          
+                
                 if ($type == ViewHandler::VT_ROLE_INTERACTION) {
                     foreach($doubleRoles as $roleOne => $rolesTwo){
                         $viewedBy = [];

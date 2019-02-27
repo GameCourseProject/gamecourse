@@ -1,9 +1,9 @@
 View Type: <select ng-options="type.id as type.name for type in types" ng-model="viewType" ng-disabled="viewSettings.module != undefined"></select>
 <span ng-if="viewSettings.module != undefined">(Cannot change the type of views provided by modules)</span>
-<div ng-if="viewType == 0">
+<div ng-if="viewType == 1">
     <button ng-click="gotoEdit();">Edit</button>
 </div>
-<div class="specializations-selection" ng-if="viewType == 1 || viewType == 2">
+<div class="specializations-selection" ng-if="viewType == 2 || viewType == 3">
     <div style="display: block">Specializations:</div>
     <div>
         <ul>
@@ -13,7 +13,7 @@ View Type: <select ng-options="type.id as type.name for type in types" ng-model=
         <select ng-if="missingOne != undefined && missingOne.length > 0" ng-model="selection.missingOneToAdd" ng-options="one.name for one in missingOne"></select>
         <button ng-if="missingOne != undefined && missingOne.length > 0" ng-click="createViewOne();">Create</button>
     </div>
-    <div ng-if="viewType == 2 && oneSelected != undefined">
+    <div ng-if="viewType == 3 && oneSelected != undefined">
         when viewed by:
 
         <ul>

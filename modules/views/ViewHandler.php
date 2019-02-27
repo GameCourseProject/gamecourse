@@ -46,10 +46,10 @@ class ViewHandler {
     
     public function getViewWithParts($viewId,$role){//return everything organized like the previous db sistem
         $viewRole=$this->getViewRoles($viewId,$role);
+        $viewRole['replacements']=json_decode($viewRole['replacements'],true);
+        
         $viewParts=Core::$sistemDB->selectMultiple("view_part", '*', 
                 ['viewId' => $viewId, 'course' => $this->courseId, 'role'=>$role]);
-       
-        $viewRole['replacements']=json_decode($viewRole['replacements']);
         
         $viewRole['partlist']=[];
         foreach ($viewParts as $part){
@@ -61,7 +61,7 @@ class ViewHandler {
     }
     
     public function getViewRoles($viewId,$role=null){
-        if ($role == null) {
+        if ($role === null) {
             return Core::$sistemDB->selectMultiple("view_role", '*', ['viewId' => $viewId, 'course' => $this->courseId]);
         } else {
             return Core::$sistemDB->select("view_role", '*', 
