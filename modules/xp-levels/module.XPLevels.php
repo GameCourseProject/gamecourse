@@ -10,6 +10,7 @@ class XPLevels extends Module {
     }
 
     public function init() {
+        /*
         DataSchema::register(array(
             DataSchema::courseUserDataFields(array(
                 DataSchema::makeField('xp', 'XP of the student', 12500),
@@ -36,7 +37,7 @@ class XPLevels extends Module {
                 )
             ))
         ));
-
+*/
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $viewHandler->registerFunction('awardLatestImage', function($award, $skills) {
             $award = $award->getValue(); // get value of continuation

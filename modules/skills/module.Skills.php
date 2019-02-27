@@ -21,6 +21,7 @@ class Skills extends Module {
     }
 
     public function init() {
+        /*
         DataSchema::register(array(
             DataSchema::courseUserDataFields(array(
                 DataSchema::makeObject('skills', null, array(
@@ -61,7 +62,7 @@ class Skills extends Module {
                 )
             ))
         ));
-
+*/
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->registerFunction('skillStyle', function($skill, $user) {

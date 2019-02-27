@@ -12,7 +12,11 @@ use SmartBoards\Settings;
 
 class Views extends Module {
     private $viewHandler;
-
+    
+    public function getCourseId(){
+        return $this->getParent()->getId();
+    }
+    
     public function setupResources() {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
@@ -760,14 +764,14 @@ class Views extends Module {
     }
     
     public function getTemplates(){
-        $temps = Core::$sistemDB->selectMultiple('view_template','*',['course'=>API::getValue('course')]);
+        $temps = Core::$sistemDB->selectMultiple('view_template','*',['course'=>$this->getCourseId()]);
         foreach ($temps as &$temp){
             $temp['content'] = json_decode($temp['content']);
         }
         return $temps;
     }
     public function getTemplate($id) {
-         $temp = Core::$sistemDB->select('view_template','*',['id'=>$id,'course'=>API::getValue('course')]);
+         $temp = Core::$sistemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
          if (!empty($temp)) {
             $temp['content'] = json_decode($temp['content']);
         }
