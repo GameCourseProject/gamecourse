@@ -6,7 +6,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             $element.text(err.description);
             return;
         }
-
+        console.log("view.js ",$scope);
         function subtractSpecializations(one, two) {
             var cpy = one.slice(0);
             for(var i = 0; i < cpy.length; ++i) {
@@ -34,9 +34,9 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.selectOne = function(specializationOne) {
             $scope.oneSelected = specializationOne;
-            if ($scope.viewType == 1) {
+            if ($scope.viewType == 2) {
                 $state.go('course.settings.views.view.edit-role-single', {role: $scope.oneSelected.id});
-            } else if ($scope.viewType == 2) {
+            } else if ($scope.viewType == 3) {
                 $scope.specializationsTwo = specializationOne.viewedBy;
                 $scope.missingTwo = subtractSpecializations($scope.allIds, $scope.specializationsTwo);
                 if ($scope.missingTwo.length > 0)
@@ -49,7 +49,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         };
 
         $scope.createViewOne = function() {
-            if ($scope.viewType == 1) {
+            if ($scope.viewType == 2) {
                 $smartboards.request('views', 'createView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
                     if (err) {
                         alert(err.description);
@@ -62,7 +62,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     if ($scope.missingOne.length > 0)
                         $scope.selection.missingOneToAdd = $scope.missingOne[0];
                 });
-            } else if ($scope.viewType == 2) {
+            } else if ($scope.viewType == 3) {
                 $smartboards.request('views', 'createView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
                     if (err) {
                         alert(err.description);

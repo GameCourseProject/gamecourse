@@ -254,11 +254,12 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                             }
 
                             partsList.append('<option disabled>-- Template --</option>');
+                            console.log("templates ",options.editData);
                             var templates = options.editData.templates;
                             for (var t in templates) {
                                 var template = templates[t];
                                 var option = $(document.createElement('option'));
-                                option.text(t);
+                                option.text(template['id']);
                                 option.val('temp:' + t);
                                 partsList.append(option);
                             }
@@ -268,10 +269,12 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                 var value = partsList.val();
                                 var id = value.substr(5);
                                 var newPart;
-                                if (value.indexOf('part:') == 0)
+                                if (value.indexOf('part:') == 0){
                                     newPart = $sbviews.registeredPartType[id].defaultPart();
+                                }
                                 else if (value.indexOf('temp:') == 0)
-                                    newPart = angular.copy(templates[id]);
+                                    newPart = angular.copy(templates[id]['content']);
+                                console.log('newPart)',newPart);
 
                                 $sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();

@@ -26,7 +26,7 @@ class Overview extends Module {
         ));
 
         if ($viewsModule->getTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/users_overview.vt')));
+            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/users_overview.vt')),$this->getId());
     }
 }
 ModuleLoader::registerModule(array(

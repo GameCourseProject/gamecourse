@@ -120,7 +120,7 @@ class Notifications extends Module {
         });
         
         if ($viewsModule->getTemplate('Notifications Profile - by notifications') == NULL)
-            $viewsModule->setTemplate('Notifications Profile - by notifications', unserialize(file_get_contents(__DIR__ . '/notifications_profile.vt')));
+            $viewsModule->setTemplate('Notifications Profile - by notifications', unserialize(file_get_contents(__DIR__ . '/notifications_profile.vt')),$this->getId());
     }
 }
 

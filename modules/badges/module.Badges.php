@@ -170,7 +170,7 @@ class Badges extends Module {
         });
 
         if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/badges.vt')));
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/badges.vt')),$this->getId());
     }
 }
 

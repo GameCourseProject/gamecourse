@@ -121,8 +121,8 @@ class ViewEditHandler {
 
     static function putTogetherView($view, $parentParts) {
         $partList = &$view['partlist'];
-        if (!array_key_exists('replacements', $view))
-            $view['replacements'] = array();
+        //if ($view[]'replacements'], $view))
+         //   $view['replacements'] = array();
         $replacements = &$view['replacements'];
 
         foreach ($replacements as $part => $replacement)

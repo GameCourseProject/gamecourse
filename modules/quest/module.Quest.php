@@ -493,7 +493,7 @@ class Quest extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         if ($viewsModule != null) {
             if ($viewsModule->getTemplate('Quest Announce - by quest') == NULL)
-                $viewsModule->setTemplate('Quest Announce - by quest', unserialize(file_get_contents(__DIR__ . '/quest_announce.vt')));
+                $viewsModule->setTemplate('Quest Announce - by quest', unserialize(file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId());
         }
     }
 

@@ -36,7 +36,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 func(undefined, err);
                 return;
             }
-
+            console.log("getEdit",data);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.fields = data.fields;
@@ -443,12 +443,13 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     }
 
                     partsList.append('<option disabled>-- Template --</option>');
+                    
                     var templates = toolbarOptions.editData.templates;
                     for (var t in templates) {
                         var template = templates[t];
                         var option = $(document.createElement('option'));
-                        option.text(t);
-                        option.val('temp:' + t);
+                        option.text(template['id']);
+                        option.val('temp:' + template['id']);
                         partsList.append(option);
                     }
 

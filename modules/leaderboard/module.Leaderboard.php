@@ -25,7 +25,7 @@ class Leaderboard extends Module {
         ));
 
         if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
-            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/leaderboard.vt')));
+            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/leaderboard.vt')),$this->getId());
         }
     }
 

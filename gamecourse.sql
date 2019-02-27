@@ -230,16 +230,16 @@ create table view(
 	course int unsigned not null,
 	name varchar(50),
 	primary key(viewID, course), #(viewId,course) ou pid
-	foreign key(module,course) references enabled_module(moduleId,course)
+	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );
 create table view_role(
-	pid varchar(40),#or part
+	part varchar(40),#or part
 	viewId varchar(50),
 	course int unsigned not null,
 	replacements text, #not sure what's for
 	role varchar(100), #if role interaction separate by '>'. multiple roles separated by ',''
 	primary key(viewId,course,role),
-	foreign key(viewId,course) references view(viewId,course)
+	foreign key(viewId,course) references view(viewId,course) on delete cascade
 );
 create table view_part(
 	viewId varchar(50),
@@ -249,10 +249,14 @@ create table view_part(
 	type varchar(50),
 	pid varchar(40), #??, also header,repeat,style,class,type,data,....
 	primary key(pid), 
-	foreign key(viewId,course,role) references view_role(viewId,course,role)
+	foreign key(viewId,course,role) references view_role(viewId,course,role) on delete cascade
 );
 create table view_template(
+	module varchar(50),
+	course int unsigned not null,
 	id varchar(100),
 	content text,
-	primary key(id)
+	#module
+	primary key(id,course),
+	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );

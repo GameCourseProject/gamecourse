@@ -25,7 +25,7 @@ class Profile extends Module {
         ));
 
         if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/summary.vt')));
+            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/summary.vt')),$this->getId());
     }
 
     public function initSettingsTabs() {

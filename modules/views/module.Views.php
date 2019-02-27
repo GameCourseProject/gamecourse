@@ -465,8 +465,9 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            $view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
-
+            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
+            //$view = $this->viewHandler->getViews($viewId);
+            
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
 
@@ -476,7 +477,9 @@ class Views extends Module {
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
 
-                $view = $view->get($info['role']);
+                //$view = $view->get($info['role']);
+                //$view = $this->viewHandler->getViewRoles($viewId, $info['role']);
+                $view = $this->viewHandler->getViewWithParts($viewId, $info['role']);
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['role']);
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
@@ -484,17 +487,23 @@ class Views extends Module {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
                     API::error('Missing roleOne and/or roleTwo in info');
 
-                $view = $view->getWrapped($info['roleOne'])->get($info['roleTwo']);
+                //$view = $view->getWrapped($info['roleOne'])->get($info['roleTwo']);
+                //$view = $this->viewHandler->getViewRoles($viewId, $info['roleOne'].'>'.$info['roleTwo']);
+                $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
-                $view = $view->getValue();
+                //$view = $view->getValue();
+                //$view = $this->viewHandler->getViewRoles($viewId, "");
+                $view = $this->viewHandler->getViewWithParts($viewId, "");           
             }
-
-            //print_r($view);
+            
             $view = ViewEditHandler::putTogetherView($view, $parentParts);//print_r($view);
             $fields = \SmartBoards\DataSchema::getFields(array('course' => $courseId));
-            API::response(array('view' => $view, 'fields' => $fields, 'templates' => $this->getData()->get('templates', array())));
+
+            //$this->getData()->get('templates', array())
+            $templates= $this->getTemplates();
+            API::response(array('view' => $view, 'fields' => $fields, 'templates' =>$templates ));
         });
 
         API::registerFunction('views', 'saveEdit', function() {
@@ -719,13 +728,13 @@ class Views extends Module {
         $finalParents = array();
         $parents = array();
         $course->goThroughRoles(function($role, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
-            if ('role.' . $role == $roleToFind) {
+            if ('role.' . $role['name'] == $roleToFind) {
                 $finalParents = $parents;
                 return;
             }
 
             $parentCopy = $parents;
-            $parentCopy[] = 'role.' . $role;
+            $parentCopy[] = 'role.' . $role['name'];
             $cont($parentCopy);
         }, $parents);
         return array_merge(array('role.Default'), $finalParents);
@@ -749,16 +758,28 @@ class Views extends Module {
     public function &getViewHandler() {
         return $this->viewHandler;
     }
-
+    
+    public function getTemplates(){
+        $temps = Core::$sistemDB->selectMultiple('view_template','*',['course'=>API::getValue('course')]);
+        foreach ($temps as &$temp){
+            $temp['content'] = json_decode($temp['content']);
+        }
+        return $temps;
+    }
     public function getTemplate($id) {
-         return Core::$sistemDB->select('view_template','*',['id'=>$id])[0];
+         $temp = Core::$sistemDB->select('view_template','*',['id'=>$id,'course'=>API::getValue('course')]);
+         if (!empty($temp)) {
+            $temp['content'] = json_decode($temp['content']);
+        }
+         return $temp;
    //     return $this->getData()->getWrapped('templates')->get($id);
     }
 
-    public function setTemplate($id, $template) {
+    public function setTemplate($id, $template, $moduleId) {
         //todo decide between unserialize and json decode for when using this data.
         // remove the unserialie from the callers (simple send the file contents)
-        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>json_encode($template)]);
+        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>json_encode($template),
+                                'course'=>API::getValue('course'),'module'=>$moduleId]);
    //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }
 }

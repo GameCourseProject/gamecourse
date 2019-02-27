@@ -23,7 +23,7 @@ class SideView extends Module {
         ));
 
         if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/side_view.vt')));
+            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/side_view.vt')),$this->getId());
     }
 }
 

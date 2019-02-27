@@ -152,10 +152,10 @@ class Skills extends Module {
         });
 
         if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skill_tree.vt')));
+            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skill_tree.vt')),$this->getId());
 
         if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skills_overview.vt')));
+            $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skills_overview.vt')),$this->getId());
 
         API::registerFunction('skills', 'page', function() {
             API::requireValues('skillName');
