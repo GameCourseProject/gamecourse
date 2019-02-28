@@ -93,9 +93,9 @@ class FenixEdu{
 			$this->accessToken = $_SESSION['accessToken'] = $json->access_token;
 			$this->refreshToken = $_SESSION['refreshToken'] = $json->refresh_token;
 			$this->expirationTime = $_SESSION['expires'] = time() + $json->expires;
-            return true;
+                        return true;
 		} else {
-            return false;
+                        return false;
 		}
 	}
 
