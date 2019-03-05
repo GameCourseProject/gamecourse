@@ -3,15 +3,15 @@ namespace SmartBoards;
 
 class NullCourseUser extends CourseUser {
     function __construct($id, $course) {
-        $userWrapper = new \ValueWrapper(array(
+       /* $userWrapper = new \ValueWrapper(array(
             'id' => $id,
             'name' => 'UserWithNoName',
             'email' => 'User@WithNo@Email',
             'previousActivity' => 0,
             'lastActivity' => 0,
             'roles' => array()
-        ));
-        parent::__construct($id, $userWrapper, $course);
+        ));*/
+        parent::__construct($id, $course);
     }
 
     function refreshActivity() {

@@ -24,7 +24,7 @@ class SQLDB {
     public function executeQueryWithParams($sql,$data){
         try{
             $stmt=$this->db->prepare($sql);
-        
+            //print_r($data);
             $stmt->execute($data);
             //$result=$this->db->query($sql);
         }catch(\PDOException $e ){
@@ -79,7 +79,7 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$data);     
     }   
     public function updateAdd($table,$collumQuantity,$where){
-        //example: update user set name="Example", email="a@a.a" where id=80000;
+        //example: update user set n=n+1 where id=80000;
         $sql = "update ".$table." set ";
         $this->dataToQuery($sql,$collumQuantity,',',true);
         $sql.= " where ";
@@ -101,7 +101,11 @@ class SQLDB {
         //print_r($where);
         $result = $this->executeQueryWithParams($sql,$where);
         //print_r($result->fetch());
-        return $result->fetch();
+        $returnVal=$result->fetch(\PDO::FETCH_ASSOC);
+        if ($field=='*'){
+            return $returnVal;
+        }
+        return $returnVal[$field];
     } 
     public function selectMultiple($table,$field='*',$where=null){
         //example: select * from course where isActive=true;

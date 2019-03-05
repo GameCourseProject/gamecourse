@@ -19,14 +19,14 @@ class CourseUser extends User{
         }
     }
     public function exists() {
-        return (Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])[0]!=null);
+        return (!empty(Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])));
     }
     
     public function delete(){
         Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
     function refreshActivity() {
-        $prev = Core::$sistemDB->select("course_user","lastActivity",["id"=>$this->id,"course"=>$this->course->getId()])[0];
+        $prev = Core::$sistemDB->select("course_user","lastActivity",["id"=>$this->id,"course"=>$this->course->getId()]);
         Core::$sistemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
         Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);     
     //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
@@ -62,8 +62,9 @@ class CourseUser extends User{
 
     function getRoles() {
         //return $this->userWrapper->get('roles');
+        
         return explode(",",Core::$sistemDB->select("course_user",'roles',["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id,])[0]);
+                                                                          "id"=>$this->id,]));
     }
     
     function setRoles($roles) {
@@ -111,9 +112,9 @@ class CourseUser extends User{
 
     function getLandingPage() {
         $userRoles = $this->getRoles();//array w names
-        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()])[0];
-        $roles=$this->course->getRolesHierarchy();
-        $this->course->goThroughRoles($roles,function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
+        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()]);
+        //$roles=$this->course->getRolesHierarchy();
+        $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
             if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {
                 $landingPage = $role['landingPage'];
                 //break?

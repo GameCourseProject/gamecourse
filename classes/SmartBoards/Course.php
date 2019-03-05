@@ -30,7 +30,7 @@ class Course {
 
     public function getName() {
         //return $this->db->get('name');
-        return Core::$sistemDB->select("course","name",["id"=>$this->cid])[0];
+        return Core::$sistemDB->select("course","name",["id"=>$this->cid]);
     }
 
     public function getUsers() {
@@ -79,7 +79,7 @@ class Course {
 
     public function getHeaderLink() {
         //return $this->db->get('headerLink');
-        return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid])[0];
+        return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid]);
     }
 
     public function setHeaderLink($link) {
@@ -187,8 +187,8 @@ class Course {
         }
     }
 
-    public function goThroughRoles($roles, $func, &...$data) {
-        \Utils::goThroughRoles($roles, $func, ...$data);
+    public function goThroughRoles( $func, &...$data) {
+        \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
     }
 
     public static function getCourse($cid, $initModules = true) {
@@ -214,7 +214,7 @@ class Course {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
         //    static::$coursesDb->delete($newCourse);
         Core::$sistemDB->insert("course",["name"=>$courseName]);
-        $newCourse=Core::$sistemDB->select("course","id",["name"=>$courseName])[0];
+        $newCourse=Core::$sistemDB->select("course","id",["name"=>$courseName]);
         $course = new Course($newCourse, true);
 
         //$courseWrapper = $course->getWrapper();

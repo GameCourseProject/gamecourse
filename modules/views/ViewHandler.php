@@ -41,10 +41,34 @@ class ViewHandler {
     public function getRegisteredViews() {
         return $this->registeredViews;
     }
-    
+    //receives array with view info and organizes info to put into DB
+    public function organizeViewData($data){
+        $partList=$data['partlist'];
+        unset($data['partlist']);
+        if (array_key_exists('replacements', $data)){
+            $data['replacements']=json_encode($data['replacements']);
+        }
+        
+        $returnArray=['view_role'=>$data,'view_part'=>[]];
+        foreach ($partList as $part){
+            $view_part=[];
+            $view_part['pid']=$part['pid'];
+            $view_part['type']=$part['type'];
+            unset($part['pid']);
+            unset($part['type']); 
+            $view_part['partContents']=json_encode($part);
+            $returnArray['view_part'][]=$view_part;
+        }
+        
+        return $returnArray;
+    }
+    //gets info from view_role and view_part tables, contructs an array of the view (like in the old system)
     public function getViewWithParts($viewId,$role){//return everything organized like the previous db sistem
         $viewRole=$this->getViewRoles($viewId,$role);
-        $viewRole['replacements']=json_decode($viewRole['replacements'],true);
+
+        if (array_key_exists('replacements', $viewRole))
+            $viewRole['replacements']=json_decode($viewRole['replacements'],true);
+        else $viewRole['replacements']=[];
         
         $viewParts=Core::$sistemDB->selectMultiple("view_part", '*', 
                 ['viewId' => $viewId, 'course' => $this->getCourseId(), 'role'=>$role]);
@@ -57,7 +81,7 @@ class ViewHandler {
         }  
         return $viewRole;
     }
-    
+    //returns all the view_roles for a given view or for the view_role of the given role
     public function getViewRoles($viewId,$role=null){
         if ($role === null) {
             return Core::$sistemDB->selectMultiple("view_role", '*', ['viewId' => $viewId, 'course' => $this->getCourseId()]);
@@ -66,13 +90,12 @@ class ViewHandler {
                     ['viewId' => $viewId, 'course' => $this->getCourseId(),'role'=>$role]);
         }
     }
-    
-    public function getViews($viewId = null) {//supposed to return multiple views if there are specializations
+    //returns all the views or the view of the id given , (old version did the same as getViewRoles
+    public function getViews($viewId = null) {
         if ($viewId==null)
             return Core::$sistemDB->selectMultiple("view",'*',['course'=>$this->getCourseId()]);
         else
-            return Core::$sistemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->getCourseId()])[0];
-  
+            return Core::$sistemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->getCourseId()]);
         /*
         $views = $this->viewsModule->getData()->getWrapped('views');
         if ($viewId != null)
@@ -363,97 +386,79 @@ class ViewHandler {
     }
 
     public function parseView(&$view) {
-        foreach ($content as &$part) {
+        foreach ($view['content'] as &$part) {
             $this->parsePart($part);
         }
     }
     public function hasRole($view,$role){
         
     }
+    public function handleHelper($roleArray, $course,$userRoles){
+        $roleFound = null;
+        $userSpecificView = 'user.' . (string)API::getValue('user');
+        if (array_key_exists($userSpecificView, $roleArray)) {
+            $roleFound = $userSpecificView;                 
+        }else {
+            if (in_array('role.Default', $roleArray)) {
+               $roleFound = 'role.Default';
+            }
+
+            $course->goThroughRoles(function ($role, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
+                if (array_key_exists('role.' . $role['name'], $roleArray) && in_array($role['name'], $userRoles)) {
+                    $roleFound = 'role.' . $role['name'];
+                }
+                if ($hasChildren)
+                    $continue();
+            });
+        }
+        return $roleFound;
+    }
+    
     public function handle($viewId) {
         if (!array_key_exists($viewId, $this->registeredViews)) {
-            API::error('Unknown view: ' . $view, 404);
+            API::error('Unknown view: ' . $viewId, 404);
         }
 
         $viewParams = array();
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             $course = Course::getCourse((string)API::getValue('course'));
+            $viewRoles = array_column($this->getViewRoles($viewId),'role');
             //$views = $this->getViews()->getWrapped($viewId)->get('view');
-            $view = $this->getViews($viewId);
             $viewType = $this->registeredViews[$viewId]['type'];
-//todo
-            echo " Handle stop point ";
-            if ($viewType == ViewHandler::VT_ROLE_SINGLE || $viewType == ViewHandler::VT_ROLE_INTERACTION) {
-                if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
+            
+            $roleOne=$roleTwo=null;
+            if ($viewType == ViewHandler::VT_SINGLE){
+                $view=$this->getViewWithParts($viewId, "");
+                $userView = ViewEditHandler::putTogetherView($view, array());
+            }else{
+                
+                if ($viewType == ViewHandler::VT_ROLE_INTERACTION){
                     API::requireValues('user');
-
-                    $roleOne = null;
-                    $userSpecificView = 'user.' . (string)API::getValue('user');
-                    if (array_key_exists($userSpecificView, $views)) {
-                        $views = $views[$userSpecificView];
-                        $roleOne = $userSpecificView;
-                    } else {
-                        $userView = null;
-                        if (array_key_exists('role.Default', $views))
-                            $userView = $views['role.Default'];
-
-                        $userRoles = $course->getUser((string)API::getValue('user'))->getRoles();
-                        $course->goThroughRoles(function ($roleName, $hasChildren, $continue) use ($userRoles, $views, &$userView, &$roleOne) {
-                            if (array_key_exists('role.' . $roleName, $views) && in_array($roleName, $userRoles)) {
-                                $userView = $views['role.' . $roleName];
-                                $roleOne = 'role.' . $roleName;
-                            }
-
-                            if ($hasChildren)
-                                $continue();
-                        });
-                        $views = $userView;
+                    $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
+                    foreach ($viewRoles as $roleInteraction){
+                        $roles= explode('>',$roleInteraction);
+                        $roleArray[$roles[0]][]=$roles[1];
                     }
-                }
-
-                $roleFound = null;
-                if ($viewType == ViewHandler::VT_ROLE_INTERACTION && array_key_exists('special.Own', $views) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
-                    $userView = $views['special.Own'];
-                    $roleFound = 'special.Own';
-                } else {
-                    $userSpecificView = 'user.' . (string)Core::getLoggedUser()->getId();
-                    if (array_key_exists($userSpecificView, $views)) {
-                        $userView = $views[$userSpecificView];
-                        $roleFound = $userSpecificView;
-                    } else {
-                        $userView = null;
-                        if (array_key_exists('role.Default', $views))
-                            $userView = $views['role.Default'];
-
-                        $userRoles = $course->getLoggedUser()->getRoles();
-                        $course->goThroughRoles(function ($roleName, $hasChildren, $continue) use ($userRoles, $views, &$userView, &$roleFound) {
-                            if (array_key_exists('role.' . $roleName, $views) && in_array($roleName, $userRoles)) {
-                                $userView = $views['role.' . $roleName];
-                                $roleFound = 'role.' . $roleName;
-                            }
-
-                            if ($hasChildren)
-                                $continue();
-                        });
+                    $userRoles=$course->getUser((string)API::getValue('user'))->getRoles();
+                    $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
+                    $roleArray = $roleArray[$roleOne];
+                    
+                    if (array_key_exists('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
+                        $roleTwo = 'special.Own';
                     }
-                }
-
-                if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
-                    $roleTwo = $roleFound;
-                } else {
-                    $roleOne = $roleFound;
-                    $roleTwo = null;
-                }
-
-                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);
-
-                //echo '<pre>', print_r(round((microtime(true) - $t) * 1000, 1), true), 'ms</pre>';
-                //$t = microtime(true);
+                    else {
+                        $roleTwo=$this->handleHelper($roleArray, $course);     
+                    }
+                    $userView=$this->getViewWithParts($viewId, $roleOne.'>'.$roleTwo);
+                }else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
+                    $userRoles = $course->getLoggedUser()->getRoles();
+                    $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
+                    $userView=$this->getViewWithParts($viewId, $roleOne);
+                }  
+                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);   
                 $userView = ViewEditHandler::putTogetherView($userView, $parentParts);
-            } else {
-                $userView = ViewEditHandler::putTogetherView($views, array());
             }
-
+                     
             $viewParams = array(
                 'course' => (string)API::getValue('course'),
                 'viewer' => (string)Core::getLoggedUser()->getId()
@@ -462,10 +467,8 @@ class ViewHandler {
             if (API::hasKey('user'))
                 $viewParams['user'] = (string)API::getValue('user');
             
-            $userView['content'] = json_decode($userView['content'],true);
             $this->parseView($userView);
             $this->processView($userView, $viewParams);
-            $userView['content'] = json_encode($userView['content']);
 
             $viewData = $userView;
         } else {

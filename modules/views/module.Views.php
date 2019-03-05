@@ -502,7 +502,7 @@ class Views extends Module {
                 $view = $this->viewHandler->getViewWithParts($viewId, "");           
             }
             
-            $view = ViewEditHandler::putTogetherView($view, $parentParts);//print_r($view);
+            $view = ViewEditHandler::putTogetherView($view, $parentParts);
             $fields = \SmartBoards\DataSchema::getFields(array('course' => $courseId));
 
             //$this->getData()->get('templates', array())
@@ -523,7 +523,7 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            $view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
+            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
 
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
@@ -586,16 +586,44 @@ class Views extends Module {
             }
 
             $viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
-
+            $viewContent = $this->viewHandler->organizeViewData($viewContent);
+            
             $viewSettings = $views[$viewId];
+            //print_r($viewContent);//array ( part=>,partList=>)
             if ($viewSettings['type'] == ViewHandler::VT_ROLE_SINGLE) {
-                $view->set($info['role'], $viewContent);
+                //$view->set($info['role'], $viewContent);/    
+                $role=$info['role'];
             } else if ($viewSettings['type'] == ViewHandler::VT_ROLE_INTERACTION) {
-                $view->getWrapped($info['roleOne'])->set($info['roleTwo'], $viewContent);
+                //$view->getWrapped($info['roleOne'])->set($info['roleTwo'], $viewContent);
+                $role=$info['roleOne'].'>'.$info['roleTwo'];
             } else {
-                $view->setValue($viewContent);
+                //$view->setValue($viewContent);
+                $role="";
             }
-
+            $viewRoleInfo=['course'=>$courseId,'viewId'=>$viewId,'role'=>$role];
+            
+            //this may be unecessary, unless part or replacements changed
+            Core::$sistemDB->update("view_role",
+                        $viewContent['view_role'],
+                        $viewRoleInfo);
+            $currParts = array_column(Core::$sistemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
+            
+            foreach($viewContent['view_part'] as $part){
+                if (empty(Core::$sistemDB->select("view_part",'*',['pid'=>$part['pid']]))){
+                    Core::$sistemDB->insert('view_part',array_merge($part,$viewRoleInfo));
+                }else{
+                    Core::$sistemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid']]);
+                }
+                $key=array_search($part['pid'], $currParts);
+                if ($key!==false){
+                   unset($currParts[$key]);
+                }
+            }
+            //delete remaining parts on db
+            foreach($currParts as $part){
+                Core::$sistemDB->delete("view_part",['pid'=>$part]);
+            }
+                     
             if (!$testDone)
                 API::response('Saved, but skipping test (no users in role to test or special role)');
         });
@@ -744,17 +772,23 @@ class Views extends Module {
         return array_merge(array('role.Default'), $finalParents);
     }
 
-    private function findViews($view, $viewsToFind, $roleOne = null) {
-        $views = $this->getViewHandler()->getViews($view);
-        if ($roleOne != null)
-            $views = $views->getWrapped($roleOne);
+    private function findViews($viewId, $viewsToFind, $roleOne = null) {
+        //$views = $this->getViewHandler()->getViews($viewId);
+        //if ($roleOne != null) {//this argument always null
+        //$views = $this->getViewHandler()->getViewsRoles($view,$roleOne);
+           // $views = $views->getWrapped($roleOne);
+        //}
 
-        $views = $views->getValue();
-
+        //$views = $views->getValue();
+        //TODO deal with double roles (not sure what will be in $viewToFind n those cases
+        $views = $this->getViewHandler()->getViewRoles($viewId);
+        $viewRoles = array_column($views,'role');
         $viewsFound = array();
         foreach ($viewsToFind as $viewToFind) {
-            if (array_key_exists($viewToFind, $views))
-                $viewsFound[] = $views[$viewToFind];
+            if (in_array($viewToFind, $viewRoles))
+                $viewsFound[]=$this->getViewHandler()->getViewWithParts($viewId, $viewToFind);
+            //if (array_key_exists($viewToFind, $views))
+                //$viewsFound[] = $views[$viewToFind];
         }
         return $viewsFound;
     }
@@ -775,7 +809,7 @@ class Views extends Module {
          if (!empty($temp)) {
             $temp['content'] = json_decode($temp['content']);
         }
-         return $temp;
+        return $temp;
    //     return $this->getData()->getWrapped('templates')->get($id);
     }
 
