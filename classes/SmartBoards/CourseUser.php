@@ -117,7 +117,6 @@ class CourseUser extends User{
         $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
             if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {
                 $landingPage = $role['landingPage'];
-                //break?
             }
             $continue();
         });

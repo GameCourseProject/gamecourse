@@ -186,7 +186,7 @@ class Course {
             Core::$sistemDB->insert("enabled_module",["moduleId"=>$moduleId,"course"=>$this->cid]);
         }
     }
-
+//goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to user reverse order
     public function goThroughRoles( $func, &...$data) {
         \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
     }

@@ -65,8 +65,8 @@ class ViewHandler {
     //gets info from view_role and view_part tables, contructs an array of the view (like in the old system)
     public function getViewWithParts($viewId,$role){//return everything organized like the previous db sistem
         $viewRole=$this->getViewRoles($viewId,$role);
-
-        if (array_key_exists('replacements', $viewRole))
+        
+        if ($viewRole['replacements']!==null)
             $viewRole['replacements']=json_decode($viewRole['replacements'],true);
         else $viewRole['replacements']=[];
         
@@ -119,7 +119,7 @@ class ViewHandler {
         //$views = $this->getViews();
         //$view = $views->get($viewId);
         $view = $this->getViews($viewId);
-        if ($view === null) {//TODO talvez verizicar se e' empty em vez de null
+        if (empty($view)) {//TODO talvez verizicar se e' empty em vez de null
             $viewpid = ViewEditHandler::getRandomPid();
             $courseId=$this->getCourseId();
             $newView=array_merge($viewSettings,['course'=>$courseId,'viewId'=>$viewId]);
@@ -139,6 +139,7 @@ class ViewHandler {
                     'partContents' => json_encode(['content'=>array()]),
                     'pid' => $viewpid
             ];
+            //print_r($newView);
             Core::$sistemDB->insert('view',$newView);
             Core::$sistemDB->insert('view_role',$viewRole);
             Core::$sistemDB->insert('view_part',$part);
@@ -396,15 +397,16 @@ class ViewHandler {
     public function handleHelper($roleArray, $course,$userRoles){
         $roleFound = null;
         $userSpecificView = 'user.' . (string)API::getValue('user');
-        if (array_key_exists($userSpecificView, $roleArray)) {
+        if (in_array($userSpecificView, $roleArray)) {
             $roleFound = $userSpecificView;                 
         }else {
             if (in_array('role.Default', $roleArray)) {
                $roleFound = 'role.Default';
             }
-
+            //this is choosing a role with low hirearchy (maybe change)
             $course->goThroughRoles(function ($role, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
-                if (array_key_exists('role.' . $role['name'], $roleArray) && in_array($role['name'], $userRoles)) {
+                if (in_array('role.' . $role['name'], $roleArray) && in_array($role['name'], $userRoles)) {
+                    
                     $roleFound = 'role.' . $role['name'];
                 }
                 if ($hasChildren)
@@ -431,7 +433,7 @@ class ViewHandler {
                 $view=$this->getViewWithParts($viewId, "");
                 $userView = ViewEditHandler::putTogetherView($view, array());
             }else{
-                
+                //TODO check if everything works with the roles in the handle helper
                 if ($viewType == ViewHandler::VT_ROLE_INTERACTION){
                     API::requireValues('user');
                     $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
@@ -447,15 +449,18 @@ class ViewHandler {
                         $roleTwo = 'special.Own';
                     }
                     else {
-                        $roleTwo=$this->handleHelper($roleArray, $course);     
+                        $roleTwo=$this->handleHelper($roleArray, $course,$userRoles);     
                     }
                     $userView=$this->getViewWithParts($viewId, $roleOne.'>'.$roleTwo);
                 }else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
                     $userRoles = $course->getLoggedUser()->getRoles();
+                    //print_r($userRoles);
                     $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
+                    //print_r($roleOne);
                     $userView=$this->getViewWithParts($viewId, $roleOne);
                 }  
-                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);   
+                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);  
+                // ToDo check if it's parentparts is working for role interaction
                 $userView = ViewEditHandler::putTogetherView($userView, $parentParts);
             }
                      

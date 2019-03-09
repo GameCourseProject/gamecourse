@@ -16,7 +16,7 @@ class SQLDB {
         try{
             $result=$this->db->query($sql);
         }catch(\PDOException $e ){
-            echo $sql . "<br>" . $e->getMessage() . "<br>";//ToDo maybe trhrow again
+            echo $sql . "<br>" . $e->getMessage() . "<br>";
             throw new \PDOException($e);
         }
         return $result;
@@ -59,9 +59,15 @@ class SQLDB {
         //print_r(" <<\n>> ");
         $this->executeQueryWithParams($sql,$data); 
     }
-    public function delete($table,$where){
+    public function delete($table,$where, $likeParams=null){
         $sql="delete from ".$table." where ";
         $this->dataToQuery($sql,$where,'&&');
+        if ($likeParams!=null){
+            foreach($likeParams as $key => $value){
+                $sql.=" && ". $key." like :".$key;
+            }
+            $where=array_merge($where,$likeParams);
+        }
         $sql.=';';
         $this->executeQueryWithParams($sql,$where);  
     }

@@ -121,13 +121,14 @@ class ViewEditHandler {
 
     static function putTogetherView($view, $parentParts) {
         $partList = &$view['partlist'];
-        if (!array_key_exists('replacements', $view))
+ 
+        if ($view['replacements']==null)
             $view['replacements'] = array();
         $replacements = &$view['replacements'];
 
         foreach ($replacements as $part => $replacement)
             $parentParts[$part] = array('pid-point' => $replacement);
-
+        
         $getPart = function($partId) use ($partList, $parentParts) {
             if (array_key_exists($partId, $parentParts)) {
                 $part = &$parentParts[$partId];
@@ -154,7 +155,7 @@ class ViewEditHandler {
                 throw new \Exception('Unknown part: ' . $partId);
             }
         };
-
+        
         $viewPart = $getPart($view['part']);
         $viewPart['replacements'] = $replacements;
         foreach ($viewPart['content'] as &$part) {
