@@ -18,7 +18,11 @@ if (!Core::requireSetup(false)) {
     API::error("SmartBoards is not yet setup.", 400);
 }
 $authorizedEmails = ['alice.dourado@campus.ul.pt'=>100,
-                     'asfasf'=>101   ];
+                     'djvg@campus.ul.pt'=>101,
+                     'fc@campus.ul.pt'=>102,
+                     'javiana@campus.ul.pt'=>103,
+                     'ezorzal@gmail.com'=>104];
+Core::init();
 Core::init();
 ob_start();
 session_start();

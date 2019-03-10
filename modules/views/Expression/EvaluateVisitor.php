@@ -5,6 +5,7 @@ use SmartBoards\Course;
 use SmartBoards\DataRetrieverContinuation;
 use SmartBoards\DataSchema;
 use SmartBoards\User;
+use SmartBoards\Core;
 
 class EvaluateVisitor extends Visitor {
     private $params;
@@ -84,35 +85,56 @@ class EvaluateVisitor extends Visitor {
 
         return $this->viewHandler->callFunction($funcName, $args);
     }
-
-    public function visitContextSequence($node, $valueContinuation) {
+    //for now we're keeping the new functionality in the if and the old in the else
+    //if the context is in a db path, add parameter
+    public function visitContextSequence($node, $valueContinuation, $dbPath=false) {
         $contextKey = $node->getNode()->accept($this)->getValue();
-        $cont = $valueContinuation->followKey($contextKey);
         $next = $node->getNext();
-        if ($next == null)
-            return $cont;
-        else
-            return $next->accept($this, $cont);
+        if ($dbPath){
+            $valueContinuation[$node->getAttribute()]=$contextKey;
+            if ($next == null){
+                
+                return $valueContinuation;
+            } else {
+                return $next->accept($this, $valueContinuation,true);
+            }
+        }else{
+            $cont = $valueContinuation->followKey($contextKey);
+            
+            if ($next == null)
+                return $cont;
+            else
+                return $next->accept($this, $cont);
+        }
     }
-
+    
     public function visitDatabasePath($node, $parent, $returnContinuation) {
         $t = $node->getPath();
         $context = $node->getContext();
-        if ($parent != null)
+
+        $contextArray=null;
+        if ($parent != null) {//ToDO
+            print_r("visitDatabasePath received a parent");
+            print_r($parent);
             $valueCont = $parent->execute($t);
-        else
-            $valueCont = DataSchema::getValueWithContinuation($t, array(), $this->params, false);//DataSchema::getDataContinuation($t, $this->params);
-
-        if ($context != null)
-            $valueCont = $context->accept($this, $valueCont);
-
+        }
+        
+        if ($context != null) {
+            $contextArray = $context->accept($this, [],true);
+        }else{
+            print_r("visitDatabasePath: Context is empty");
+        }
+       
+        // add course => %course to context array
+        if ($t!="user" && $t!="course"){
+            $contextArray['course']=$this->params['course'];
+        }
+        
+        
         $subPath = $node->getSubPath();
-        if ($subPath) {
-            return $subPath->accept($this, $valueCont, $returnContinuation);
-        } else if ($returnContinuation)
-            return $valueCont;
-        else
-            return new ValueNode($valueCont->getValue());
+        
+        // select subpath from t where context
+        return new ValueNode(Core::$sistemDB->select($t,$subPath->getPath(),$contextArray));
     }
 
     public function visitDatabasePathFromParameter($node, $returnContinuation) {

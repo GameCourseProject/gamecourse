@@ -171,6 +171,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
 
     $sbviews.requestEdit($stateParams.view, reqData, function(view, err) {
+        console.log("requestEdit",view);
         if (err) {
             $element.html(err);
             console.log(err);
@@ -187,6 +188,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             saveData.view = $stateParams.view;
             saveData.content = view.get();
             $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
+                console.log("saveEdit",data);
                 btnSave.prop('disabled', false);
                 if (err) {
                     alert(err.description);

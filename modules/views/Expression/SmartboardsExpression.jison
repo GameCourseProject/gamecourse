@@ -29,7 +29,7 @@
                                 /*php $this->begin('PATH_STATE'); */
                                 return 'PATH_SEPARATOR';
                             }
-<EXPR>[A-Za-z]+             {   //js
+<EXPR>[A-Za-z_]+             {   //js
                                 CodeAssistant.setPath(yytext);
                                 this.begin('PATH_STATE');
                                 /*php $this->begin('PATH_STATE'); */
@@ -66,7 +66,7 @@
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
                                 /*php throw new Exception('Unknown character \'' . $this->yy->text . '\', line ' . ($this->yy->lineNo + 1) . ' near pos ' . $this->yy->loc->lastColumn); */
                             }
-<PATH_STATE>[A-Za-z]+       {   //js
+<PATH_STATE>[A-Za-z_]+       {   //js
                                 CodeAssistant.setPath(yytext);
                                 //
                                 return 'PATH';
@@ -86,7 +86,8 @@
                                 this.popState();
                                 /*php $this->popState(); */ return ']';
                             }
-<CONTEXT>[^\]{%]+           return 'TEXT';
+<CONTEXT>[^\]={%]+          return 'TEXT';
+<CONTEXT>"="                return '=';
 <INITIAL>[^{%]+             return 'TEXT';
 .                           {   //js
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
@@ -288,15 +289,26 @@ simplepath
             /*php $$ = $1->text . '.' . $3->text; */
         }
     ;
-
+dbcontext
+    : '[' TEXT '=' block ']'
+        {/*php
+            $$ = new ContextSequence($2.yytext, $4.yytext);
+        */}
+ 
+    | '[' TEXT '=' block ']' dbcontext
+        {/*php
+            $$ = new ContextSequence($2.yytext, $4.yytext, $6.yytext);
+        */}
+    ;
 context
     : '[' block ']'
         {/*php
-            $$ = new ContextSequence($2.yytext);
+            $$ = new ContextSequence(null,$2.yytext);
         */}
+ 
     | '[' block ']' context
         {/*php
-            $$ = new ContextSequence($2.yytext, $4.yytext);
+            $$ = new ContextSequence(null,$2.yytext, $4.yytext);
         */}
     ;
 
@@ -305,11 +317,11 @@ contextpath
         {/*php
             $$ = new DatabasePath($1->text);
         */}
-    | simplepath context
+    | simplepath dbcontext
         {/*php
             $$ = new DatabasePath($1->text, $2->text);
         */}
-    | simplepath context PATH_SEPARATOR contextpath
+    | simplepath dbcontext PATH_SEPARATOR contextpath
         {/*php
             $$ = new DatabasePath($1->text, $2->text, $4->text);
         */}

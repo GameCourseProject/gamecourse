@@ -2,14 +2,20 @@
 namespace Modules\Views\Expression;
 
 class ContextSequence extends Node {
-    private $node;
+    private $attribute;
+    private $node; 
     private $next;
 
-    public function __construct($node, $next = null) {
+    public function __construct($attribute,$node, $next = null) {
+        $this->attribute=$attribute;
         $this->node = $node;
         $this->next = $next;
     }
 
+    public function getAttribute() {
+        return $this->attribute;
+    }
+    
     public function getNode() {
         return $this->node;
     }
@@ -18,7 +24,7 @@ class ContextSequence extends Node {
         return $this->next;
     }
 
-    public function accept($visitor, $valueContinuation = null) {
-        return $visitor->visitContextSequence($this, $valueContinuation);
+    public function accept($visitor, $valueContinuation = null, $dbPath=false) {
+        return $visitor->visitContextSequence($this, $valueContinuation, $dbPath);
     }
 }

@@ -472,6 +472,7 @@ class Views extends Module {
         });
 
         API::registerFunction('views', 'getEdit', function() {
+            
             API::requireCourseAdminPermission();
             API::requireValues('course', 'view');
 
@@ -527,9 +528,10 @@ class Views extends Module {
         });
 
         API::registerFunction('views', 'saveEdit', function() {
+            //echo "saveEDit";
             API::requireCourseAdminPermission();
             API::requireValues('course', 'view');
-
+            
             $courseId = API::getValue('course');
             $viewId = API::getValue('view');
             $viewContent = API::getValue('content');
@@ -560,7 +562,11 @@ class Views extends Module {
             $testDone = false;
             $viewCopy = $viewContent;
             try {
+
+                //replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
+                //echo "after parse";
+                //print_r($viewCopy['content'][0]['info']);
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
 
@@ -576,11 +582,13 @@ class Views extends Module {
                     $viewerId = $this->getUserIdWithRole($course, $info['roleTwo']);
 
                     if ($viewerId != -1 && $userId != -1) {
+                       // echo "processView1";
                         $this->viewHandler->processView($viewCopy, array(
                             'course' => (string)$courseId,
                             'viewer' => (string)$viewerId,
                             'user' => (string)$userId
                         ));
+                        //echo "processView2";
                         $testDone = true;
                     }
                 } else {

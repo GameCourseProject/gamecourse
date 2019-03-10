@@ -76,7 +76,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     });
                 }
             }
-
+            console.log('getEdit-allFields',allFields);
             computeExpandedFields(viewScope.fields, '', '');
 
             viewScope.viewBlock = {
@@ -142,7 +142,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     return redoStack.length > 0;
                 }
             };
-
             func(view, undefined);
         });
     };
