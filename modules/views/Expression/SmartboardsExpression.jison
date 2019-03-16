@@ -86,8 +86,9 @@
                                 this.popState();
                                 /*php $this->popState(); */ return ']';
                             }
-<CONTEXT>[^\]={%]+          return 'TEXT';
+<CONTEXT>[^\]=.{%]+         return 'TEXT';
 <CONTEXT>"="                return '=';
+<CONTEXT>"."                return 'PATH_SEPARATOR';
 <INITIAL>[^{%]+             return 'TEXT';
 .                           {   //js
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
@@ -167,6 +168,10 @@ stmt
     | PARAM
         {/*php
             $$ = new ParameterNode(substr($1.yytext, 1));
+        */}
+    | PARAM PATH_SEPARATOR TEXT
+        {/*php
+            $$ = new ParameterNode(substr($1.yytext, 1),$3.yytext);
         */}
     ;
 exp
@@ -328,9 +333,9 @@ contextpath
     ;
 
 totalpath
-    : PARAM PATH_SEPARATOR contextpath
+    : PARAM PATH_SEPARATOR simplepath
         {/*php
-            $$ = new DatabasePathFromParameter(substr($1.yytext, 1), $3->text);
+            $$ = new ParameterNode(substr($1.yytext, 1), $3->text);
         */}
     | PARAM context
         {/*php

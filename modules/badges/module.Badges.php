@@ -13,7 +13,7 @@ class Badges extends Module {
     }
 
     public function init() {
-        DataSchema::register(array(
+        /*DataSchema::register(array(
             DataSchema::courseUserDataFields(array(
                 DataSchema::makeObject('badges', null, array(
                     DataSchema::makeField('totalxp', 'Total XP', 1000),
@@ -69,7 +69,7 @@ class Badges extends Module {
                 DataSchema::makeField('totalLevels', 'Total number of badge levels', 72)
             ))
         ));
-
+*/
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
 
@@ -165,8 +165,8 @@ class Badges extends Module {
         });
 
         $viewHandler->registerFunction('indicator', function($indicator) {
-            $indicator = $indicator->getValue();
-            return new Modules\Views\Expression\ValueNode($indicator['text'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
+            //$indicator = $indicator->getValue();
+            return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 
         if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)

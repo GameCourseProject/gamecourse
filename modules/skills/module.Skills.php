@@ -3,6 +3,7 @@ use SmartBoards\API;
 use SmartBoards\Module;
 use SmartBoards\DataSchema;
 use SmartBoards\ModuleLoader;
+use SmartBoards\Core;
 
 class Skills extends Module {
 
@@ -66,20 +67,22 @@ class Skills extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->registerFunction('skillStyle', function($skill, $user) {
-            $skill = $skill->getValue();
-            $unlockedSkills = DataSchema::getValue('course.users.user.data.skills.list', array('course.users.user' => $user), array('course' => $this->getParent()->getId()), false);
+            //print_r($skill);
+            //$skill = $skill->getValue();
+            $courseId = $this->getParent()->getId();
+            $unlockedSkills=array_column(Core::$sistemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
+            // user_skill [user,course]
+            //$unlockedSkills = DataSchema::getValue('course.users.user.data.skills.list', array('course.users.user' => $user), array('course' => $this->getParent()->getId()), false);
+            
             if ($unlockedSkills == null)
                 $unlockedSkills = array();
+            $dependencies = Core::$sistemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$skill['name']]);
+            $unlocked = (count($dependencies) == 0);
 
-            $unlocked = (count($skill['dependencies']) == 0);
-
-            foreach($skill['dependencies'] as $dependency) {
+            foreach($dependencies as $dependency) {
                 $unlock = true;
-                foreach($dependency as $singleDep) {
-                    if (!array_key_exists($singleDep, $unlockedSkills)) {
-                        $unlock = false;
-                        break;
-                    }
+                if (!in_array($dependency['dependencyA'], $unlockedSkills) || !in_array($dependency['dependencyB'], $unlockedSkills)) {
+                    $unlock = false;  
                 }
 
                 if ($unlock) {
@@ -90,7 +93,7 @@ class Skills extends Module {
 
             $val = 'background-color: ' . ($unlocked ? $skill['color'] : '#6d6d6d') . '; ';
 
-            if (array_key_exists($skill['name'], $unlockedSkills)) {
+            if (in_array($skill['name'], $unlockedSkills)) {
                 $val .= 'box-shadow: 0 0 30px 5px green;';
             }
 
@@ -103,29 +106,34 @@ class Skills extends Module {
             $students = $course->getUsersWithRole('Student');
             $studentsSkills = array();
             $studentsUsernames = array();
-            foreach ($students as $id => $student) {
-                $studentsSkills[$id] = $course->getUserData($id)->getWrapped('skills')->get('list');
-                $studentsUsernames[$id] = \SmartBoards\User::getUser($id)->getUsername();
+            $studentsArray=[];
+            foreach ($students as $student) {
+                $studentsArray[$student['id']]=$student;
+                $studentsSkills[$student['id']] = Core::$sistemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
+                //$course->getUserData($id)->getWrapped('skills')->get('list');
+                $studentsUsernames[$student['id']] = \SmartBoards\User::getUser($student['id'])->getUsername();
             }
 
-            $students = $students->getValue();
-
-            $tiers = $course->getModuleData('skills')->get('skills');
+            //$students = $students->getValue();
+            //$tiers = $course->getModuleData('skills');
+            $tiers = Core::$sistemDB->selectMultiple("skill_tier",'*',["course"=>$course->getId()]);
 
             $skillsCache = array();
-            foreach ($tiers as $tierNum => $tier) {
-                foreach ($tier['skills'] as $skill) {
+            foreach ($tiers as $tier) {
+                $skills = Core::$sistemDB->selectMultiple("skill",'*',["course"=>$course->getId(),"tier"=>$tier['tier']]);
+                foreach ($skills as $skill) {
                     $skillName = $skill['name'];
                     $skillsCache[$skillName] = array();
                     foreach($studentsSkills as $id => $studentSkills) {
-                        if (is_array($studentSkills) && array_key_exists($skillName, $studentSkills)) {
+                        $studentSkillsNames = array_column($studentSkills, "name");
+                        if (is_array($studentSkills) && array_key_exists($skillName, $studentSkillsNames)) {
                             $skillsCache[$skillName][] = array(
                                 'id' => $id,
-                                'name' => $students[$id]['name'],
-                                'campus' => $students[$id]['campus'],
+                                'name' => $studentsArray[$id]['name'],
+                                'campus' => $studentsArray[$id]['campus'],
                                 'username' => $studentsUsernames[$id],
-                                'timestamp' => $studentSkills[$skillName]['time'],
-                                'when' => date('d-M-Y', $studentSkills[$skillName]['time'])
+                                'timestamp' => $studentSkills['skillTime'],
+                                'when' => date('d-M-Y', $studentSkills['skillTime'])
                             );
                         }
                     }
@@ -134,11 +142,11 @@ class Skills extends Module {
                         return $v1['timestamp'] - $v2['timestamp'];
                     });
 
-                    $final = array();
-                    foreach($skillsCache[$skillName] as $skillArr) {
-                        $final[] = \SmartBoards\DataRetrieverContinuation::buildForArray($skillArr);
-                    }
-                    $skillsCache[$skillName] = $final;
+                    //$final = array();
+                    //foreach($skillsCache[$skillName] as $skillArr) {
+                    //    $final[] = \SmartBoards\DataRetrieverContinuation::buildForArray($skillArr);
+                    //}
+                    //$skillsCache[$skillName] = $final;
                 }
             }
             return new Modules\Views\Expression\ValueNode('');
@@ -157,14 +165,17 @@ class Skills extends Module {
 
         if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
             $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skills_overview.vt')),$this->getId());
-
+        
         API::registerFunction('skills', 'page', function() {
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');
-            $tiers = $this->getParent()->getModuleData('skills')->get('skills');
+            $courseId=$this->getParent()->getId();
+            $tiers = Core::$sistemDB->selectMultiple("skill_tier",'*',["course"=>$courseId]);
+            //$tiers = $this->getParent()->getModuleData('skills')->get('skills');
             if ($skillName) {
-                foreach($tiers as $tierNum => $tier) {
-                    foreach($tier['skills'] as $skill) {
+                foreach($tiers as $tier) {
+                    $skills = Core::$sistemDB->selectMultiple("skill",'*',["course"=>$courseId,"tier"=>$tier['tier']]);
+                    foreach($skills as $skill) {
                         $compressedName = str_replace(' ', '', $skill['name']);
                         if (str_replace(' ', '', $skill['name']) == $skillName) {
                             $page = htmlspecialchars_decode($skill['page']);

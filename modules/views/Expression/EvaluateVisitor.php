@@ -12,15 +12,19 @@ class EvaluateVisitor extends Visitor {
     private $viewHandler;
 
     public function __construct($params, $viewHandler) {
+        //print_r($params);
         $this->params = $params;
         $this->viewHandler = $viewHandler;
     }
 
     public function visitStatementSequence($node) {
+        //print_r($node);
         $text = $node->getNode()->accept($this)->getValue();
         $next = $node->getNext();
-        if ($next != null)
+        if ($next != null) {
+            //print_r($next);
             $text .= $next->accept($this)->getValue();
+        }
         return new ValueNode($text);
     }
 
@@ -109,6 +113,7 @@ class EvaluateVisitor extends Visitor {
     }
     
     public function visitDatabasePath($node, $parent, $returnContinuation) {
+        //print_r($node);
         $t = $node->getPath();
         $context = $node->getContext();
 
@@ -122,7 +127,7 @@ class EvaluateVisitor extends Visitor {
         if ($context != null) {
             $contextArray = $context->accept($this, [],true);
         }else{
-            print_r("visitDatabasePath: Context is empty");
+            //print_r("visitDatabasePath: Context is empty");
         }
        
         // add course => %course to context array
@@ -132,22 +137,33 @@ class EvaluateVisitor extends Visitor {
         
         
         $subPath = $node->getSubPath();
+        if ($subPath!=null){
+            // select subpath from t where context
+            return new ValueNode(Core::$sistemDB->select($t,$subPath->getPath(),$contextArray));
+        }else if ($returnContinuation){//not using continuations, just returning an array
+            return Core::$sistemDB->selectMultiple($t,'*',$contextArray);
+        }
+        else{
+            return new ValueNode(Core::$sistemDB->selectMultiple($t,'*',$contextArray));
+        }
         
-        // select subpath from t where context
-        return new ValueNode(Core::$sistemDB->select($t,$subPath->getPath(),$contextArray));
     }
 
     public function visitDatabasePathFromParameter($node, $returnContinuation) {
+        //print_r($this->params);
+        
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
             throw new \Exception('Unknown variable: ' . $variableName);
         $param = $this->params[$variableName];
-        if (is_null($param) || !is_object($param) || !is_a($param, 'SmartBoards\DataRetrieverContinuation'))
-            throw new \Exception('Variable '  . $variableName . ' in path should be a continuation');
+       // if (is_null($param) || !is_object($param) || !is_a($param, 'SmartBoards\DataRetrieverContinuation'))
+        //    throw new \Exception('Variable '  . $variableName . ' in path should be a continuation');
 
         $context = $node->getContext();
-        if ($context != null)
+        if ($context != null) {
+            print_r("got context in parameter w path");
             $param = $context->accept($this, $param);
+        }   
 
         $path = $node->getPath();
         if ($path == null) {
@@ -155,14 +171,26 @@ class EvaluateVisitor extends Visitor {
                 return $param;
             else
                 return new ValueNode($param->getValue());
-        } else
-            return $path->accept($this, $param, $returnContinuation);
+        } else {//assuming that there is no path, just a key of array
+            //ToDo instead of this, change jison for DatabasePathFromParameter to just be param w key
+            return new ValueNode($param[$path->getPath()]);
+            //return $path->accept($this, $param, $returnContinuation);
+        }
     }
 
     public function visitParameterNode($node) {
+        //print_r($node);
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
             throw new \Exception('Unknown variable: ' . $variableName);
-        return new ValueNode($this->params[$variableName]);
+        $key = $node->getKey();
+        if ($key==null)
+            return new ValueNode($this->params[$variableName]);
+        else{
+            //print_r($key);
+            //print_r($variableName);
+            //print_r($this->params);
+            return new ValueNode($this->params[$variableName][$key]);
+        }
     }
 }

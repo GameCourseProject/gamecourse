@@ -126,12 +126,12 @@ create table skill_tier(
 	foreign key(course) references course(id)
 );
 create table skill(
-	skillName varchar(50) not null,
+	name varchar(50) not null,
 	color varchar(10),
-	page varchar(255),
+	page TEXT,
 	tier int unsigned not null,
 	course int unsigned not null,
-	primary key(skillName,course),
+	primary key(name,course),
 	foreign key(course,tier) references skill_tier(course, tier)
 );
 create table skill_dependency(
@@ -141,24 +141,24 @@ create table skill_dependency(
 	skillName varchar(50) not null,
 	course int unsigned not null,
 	primary key(dependencyNum,skillName,course),
-	foreign key(skillName,course) references skill(skillName, course)
+	foreign key(skillName,course) references skill(name, course)
 );
 create table user_skill(
 	skillTime timestamp default CURRENT_TIMESTAMP,
 	post 	varchar(255) not null,
 	quality int not null,
 	student int unsigned not null,
-	skillName varchar(50) not null,
+	name varchar(50) not null,
 	course int unsigned not null,
-	primary key(student,course,skillName),
+	primary key(student,course,name),
 	foreign key(student, course) references course_user(id, course),
-	foreign key(skillName, course) references skill(skillName, course)
+	foreign key(name, course) references skill(name, course)
 );
 
 create table badge(
 	course int unsigned not null,
-	badgeName varchar(70) not null,
-	badgeDescription  varchar(200) not null,
+	name varchar(70) not null,
+	description  varchar(200) not null,
 	maxLvl int not null,
 	isExtra boolean not null default false,
 	isBragging boolean not null default false,
@@ -166,7 +166,7 @@ create table badge(
 	isPost boolean not null default false,
 	isPoint boolean not null default false,
 	foreign key(course) references course(id),
-	primary key(badgeName, course)
+	primary key(name, course)
 );
 create table badge_level(
 	level int not null,
@@ -175,18 +175,18 @@ create table badge_level(
 	progressNeeded int not null,
 	course int unsigned not null,
 	badgeName varchar(70) not null,
-	foreign key(badgeName, course) references badge(badgeName, course),
+	foreign key(badgeName, course) references badge(name, course),
 	primary key(level,badgeName,course)
 );
 create table user_badge(
 	level int default 0,
 	progress int default 0,
-	badgeName varchar(70) not null,
+	name varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
 	foreign key(student,course) references course_user(id, course),
-	foreign key(badgeName, course) references badge(badgeName, course),
-	primary key(student,badgeName,course)
+	foreign key(name, course) references badge(name, course),
+	primary key(student,name,course)
 );
 create table progress_indicator(
 	link varchar(255),
@@ -196,7 +196,7 @@ create table progress_indicator(
 	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
-	foreign key(student,badgeName,course) references user_badge(student,badgeName,course),
+	foreign key(student,badgeName,course) references user_badge(student,name,course),
 	primary key(indicatorText,student,badgeName,course)
 );
 create table badge_level_time(
@@ -205,15 +205,14 @@ create table badge_level_time(
 	badgeLvlTime timestamp default CURRENT_TIMESTAMP,
 	course int unsigned not null,
 	student int unsigned not null,
-	foreign key(student,badgeName,course) references user_badge(student,badgeName,course),
+	foreign key(student,badgeName,course) references user_badge(student,name,course),
 	primary key(badgeLevel,student,badgeName,course)
 );
 
 create table module(
 	moduleId varchar(50) not null primary key,
-	name varchar(50),
-	version varchar(10)#?
-	#dependencies,directory,parent,resources(files),factory
+	name varchar(50)
+	#maybe add: version,dependencies,directory,parent,resources(files),factory
 );
 create table enabled_module(
 	moduleId varchar(50) not null,
@@ -258,5 +257,6 @@ create table view_template(
 	content text,
 	#module
 	primary key(id,course),
+	#should templates disapear when modules are deleted?
 	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );

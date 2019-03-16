@@ -126,8 +126,8 @@ foreach($skillTree as &$skill) {
     $descriptionPage = substr($descriptionPage, $start, $end - $start);
     $skill['page'] = htmlspecialchars(utf8_encode($descriptionPage));
     //if skill doesn't exit, add it to DB (ToDo consider cases where skill atribute changes)
-    if (empty(Core::$sistemDB->select("skill","*",["skillName"=>$skill["name"],"course"=>$courseId]))){
-        Core::$sistemDB->insert("skill",["skillName"=>$skill["name"],"color"=>$skill['color'],
+    if (empty(Core::$sistemDB->select("skill","*",["name"=>$skill["name"],"course"=>$courseId]))){
+        Core::$sistemDB->insert("skill",["name"=>$skill["name"],"color"=>$skill['color'],
                                          "page"=>$skill['page'],"tier"=>$skill['tier'],"course"=>$courseId]);
         if (!empty($skill['dependencies'])){
             for ($i=0; $i<sizeof($skill['dependencies']);$i++){
@@ -173,9 +173,9 @@ foreach($achievements as &$achievement) {
                   "isCount"=>($achievement['countBased'] == 'True'),
                   "isPost"=>($achievement['postBased'] == 'True'),
                   "isPoint"=>($achievement['pointBased'] == 'True')];
-    if (empty(Core::$sistemDB->select("badge","*",["badgeName"=>$achievement['name'],"course"=>$courseId]))){
+    if (empty(Core::$sistemDB->select("badge","*",["name"=>$achievement['name'],"course"=>$courseId]))){
         Core::$sistemDB->insert("badge", array_merge($badgeData,
-                                        ["course"=>$courseId,"badgeName"=>$achievement['name'],
+                                        ["course"=>$courseId,"name"=>$achievement['name'],
                                         "badgeDescription"=>$achievement['description']]));
         for ($i=1;$i<=$maxLevel;$i++){
             Core::$sistemDB->insert("badge_level",["level"=>$i,"course"=>$courseId,
@@ -285,7 +285,7 @@ foreach($awards as &$award) {
                 $skillIndicator = $indicatorsForUser[$name];
                 Core::$sistemDB->insert("user_skill",
                         ["course"=>$courseId,"student"=>$award['userid'],
-                         "skillName"=>$name,"skillTime"=>$data["awardDate"],
+                         "name"=>$name,"skillTime"=>$data["awardDate"],
                          "post"=>$skillIndicator[1][0]['url'],"quality"=>(int) $skillIndicator[1][0]['xp']]);
             }
         }
@@ -360,14 +360,14 @@ foreach ($userIds as $userId){
     foreach($sbBadges as $badgeName => $badge){
         $badgeIndicators = $indicatorsByNum[$userId][$badgeName];
 
-        if (empty(Core::$sistemDB->select("user_badge", "*", ["badgeName" => $badgeName, "course" => $courseId, "student" => $userId])))    
-            Core::$sistemDB->insert("user_badge",["badgeName"=>$badgeName,
+        if (empty(Core::$sistemDB->select("user_badge", "*", ["name" => $badgeName, "course" => $courseId, "student" => $userId])))    
+            Core::$sistemDB->insert("user_badge",["name"=>$badgeName,
                                             "progress"=>(int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0]),
                                             "course"=>$courseId,"student"=>$userId]);
         if (key_exists($badgeName,$userBadge[$userId])){
             Core::$sistemDB->update("user_badge",
                 ["level"=>$userBadge[$userId][$badgeName]['level']],
-                ["badgeName"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
+                ["name"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
             for($i=1; $i<=$userBadge[$userId][$badgeName]['level'];$i++){
                 if (empty(Core::$sistemDB->select("badge_level_time", "*", ["badgeLevel"=>$i,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]))) {
                     Core::$sistemDB->insert("badge_level_time", $userBadge[$userId][$badgeName]['level_time'][$i]);

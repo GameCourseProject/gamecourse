@@ -215,10 +215,14 @@ class ViewHandler {
         $params = $viewParams;
         if (array_key_exists('data', $part)) {
             foreach ($part['data'] as $k => &$v) {
+                //print_r($k);
+                //print_r($v);
                 if ($v['context'] == 'js')
                     $v['value'] = $v['value']->accept($visitor)->getValue();
                 else if ($v['context'] == 'variable') {
                     $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params) {
+                        if (is_array($continuation) && sizeof($continuation)==1 && array_key_exists(0, $continuation))
+                                $continuation=$continuation[0];
                         $params[$k] = $continuation;
                     }, function($value) use ($k, &$params) {
                         $params[$k] = $value;
@@ -246,6 +250,11 @@ class ViewHandler {
     }
 
     public function processRepeat(&$container, $viewParams, $visitor, $func) {
+  
+       //ToDo make sure everyiting is working, and remake this so thing make more sense
+        //the repeat key is probably not used, by using repeat the atributes of the reapeated table are added to params
+       //but then you can't refer to the repeated entety itself
+        //print_R($container);
         $containerArr = array();
         foreach($container as &$child) {
             if (!array_key_exists('repeat', $child)) {
@@ -254,61 +263,88 @@ class ViewHandler {
                     $containerArr[] = $child;
                 }
             } else {
+                //print_r($child);
                 $repeatKey = $child['repeat']['key'];
 
                 $repeatParams = array();
                 $keys = null;
                 $this->getContinuationOrValue($child['repeat']['for'], $visitor, function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
-                    $keys = $continuation->getKeys();//array_keys($continuation->getValue());
-                    foreach ($keys as $k)
-                        $repeatParams[$k] = array($repeatKey => $continuation->followKey($k), $repeatKey . 'key' => $k);
+                    //print_r($continuation);
+                    $repeatParams= $continuation;
+                    
+                    
+                    //$keys = $continuation->getKeys();//array_keys($continuation->getValue());
+                    //foreach ($keys as $k)
+                    //    $repeatParams[$k] = array($repeatKey => $continuation->followKey($k), $repeatKey . 'key' => $k);
                 }, function($value) use(&$repeatParams, &$keys, $repeatKey) {
+                    print_r("ViewHandler.php: process repeat toDo");
                     if (is_null($value) || !is_array($value))
                         throw new \Exception('Repeat must be an Array or a Continuation.');
                     $keys = array_keys($value);
                     foreach ($keys as $k)
                         $repeatParams[$k] = array($repeatKey => $value[$k], $repeatKey . 'key' => $k);
                 });
-
+                
+                foreach ($repeatParams as &$params){
+                    if (array_key_exists('roles', $params)){
+                        $params['roles']=explode(',',$params['roles']);
+                    }
+                    $params = [$repeatKey => $params];
+                }
+                //ToDo
                 if (array_key_exists('filter', $child['repeat'])) {
                     $filter = $child['repeat']['filter'];
-                    $keys = array_filter($keys, function($arrKey) use($filter, $viewParams, $repeatParams) {
-                        $params = array_merge($viewParams, $repeatParams[$arrKey]);
+                    //print_r($filter);
+                    $repeatParams = array_filter($repeatParams, function($repeatParams) use($filter, $viewParams) {
+                        $params = array_merge($viewParams, $repeatParams);
                         return $filter->accept(new EvaluateVisitor($params, $this))->getValue();
                     });
+                    //print_r($keys);
                 }
-
+                
                 if (array_key_exists('sort', $child['repeat'])) {
                     $sort = $child['repeat']['sort'];
                     $valueExp = $sort['value'];
                     $values = array();
-                    foreach ($keys as $key) {
-                        $values[$key] = $valueExp->accept(new EvaluateVisitor(array_merge($viewParams, $repeatParams[$key]), $this))->getValue();
+                    $i=0;
+                    foreach ($repeatParams as &$params){
+                        //$paramsforEvaluator = [$repeatKey => $params];
+                        $values[$i] = $valueExp->accept(new EvaluateVisitor(array_merge($viewParams, $params), $this))->getValue();
+                        $params['index']=$i;
+                        $i++;  
                     }
 
                     if ($sort['order'] == 'ASC')
-                        usort($keys, function($a, $b) use($values) {
-                            return $values[$a] - $values[$b];
+                        usort($repeatParams, function($a, $b) use($values) {
+                            return $values[$a['index']] - $values[$b['index']];
                         });
                     else
-                        usort($keys, function($a, $b) use($values) {
-                            return $values[$b] - $values[$a];
+                        usort($repeatParams, function($a, $b) use($values) {
+                            return $values[$b['index']] - $values[$a['index']];
                         });
                 }
-
+              
+                
                 unset($child['repeat']);
-                $p = 0;
-                foreach ($keys as $k => $arrKey) {
+                //print_r($repeatParams);
+                $repeatParams= array_values($repeatParams);
+                for($p=0;$p < sizeof($repeatParams);$p++){
+                    
+                    if (array_key_exists('index', $repeatParams[$p])) {
+                        unset($repeatParams[$p]['index']);
+                        
+                    }
+                    //
+                    //$paramsforEvaluator = [$repeatKey => $repeatParams[$p]];
                     $dupChild = $child;
-                    $params = array_merge($viewParams, $repeatParams[$arrKey], array($repeatKey . 'pos' => $p));
-                    $visitor = new EvaluateVisitor($params, $this);
+                    $paramsforEvaluator = array_merge($viewParams, $repeatParams[$p], array($repeatKey . 'pos' => $p));
+     
+                    $visitor = new EvaluateVisitor($paramsforEvaluator, $this);
 
                     if ($this->processIf($dupChild, $visitor)) {
-                        $func($dupChild, $params, $visitor);
+                        $func($dupChild, $paramsforEvaluator, $visitor);
                         $containerArr[] = $dupChild;
                     }
-
-                    ++$p;
                 }
             }
         }

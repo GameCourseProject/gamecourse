@@ -461,14 +461,16 @@ class Views extends Module {
 
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'name', 'part');
-            $this->getData()->getWrapped('templates')->set(API::getValue('name'), API::getValue('part'));
+            API::requireValues('course', 'name', 'part');//json_encode?
+            $this->setTemplate(API::getValue('name'), serialize(API::getValue('part')), "views");//use this course?
+            //$this->getData()->getWrapped('templates')->set(API::getValue('name'), API::getValue('part'));
         });
 
         API::registerFunction('views', 'deleteTemplate', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('name');
-            $this->getData()->getWrapped('templates')->delete(API::getValue('name'));
+            API::requireValues('name','course');
+            Core::$sistemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
+            //$this->getData()->getWrapped('templates')->delete(API::getValue('name'));
         });
 
         API::registerFunction('views', 'getEdit', function() {
@@ -566,7 +568,7 @@ class Views extends Module {
                 //replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
                 //echo "after parse";
-                //print_r($viewCopy['content'][0]['info']);
+                //print_r($viewCopy);
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
 
@@ -665,7 +667,7 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            $view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
+            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
 
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
@@ -835,14 +837,14 @@ class Views extends Module {
     public function getTemplates(){
         $temps = Core::$sistemDB->selectMultiple('view_template','*',['course'=>$this->getCourseId()]);
         foreach ($temps as &$temp){
-            $temp['content'] = json_decode($temp['content']);
+            $temp['content'] = unserialize($temp['content']);
         }
         return $temps;
     }
     public function getTemplate($id) {
          $temp = Core::$sistemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
          if (!empty($temp)) {
-            $temp['content'] = json_decode($temp['content']);
+            $temp['content'] = unserialize($temp['content']);
         }
          return $temp;
    //     return $this->getData()->getWrapped('templates')->get($id);
@@ -851,8 +853,8 @@ class Views extends Module {
     public function setTemplate($id, $template, $moduleId) {
         //todo decide between unserialize and json decode for when using this data.
         // remove the unserialie from the callers (simple send the file contents)
-        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>json_encode($template),
-                                'course'=>API::getValue('course'),'module'=>$moduleId]);
+        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>serialize($template),
+                                'course'=>$this->getCourseId(),'module'=>$moduleId]);
    //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }
 }
