@@ -209,20 +209,22 @@ class ViewHandler {
             $func(...$args);
     }
 
-    //ToDo
+    
     public function processData(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
         $params = $viewParams;
         if (array_key_exists('data', $part)) {
             foreach ($part['data'] as $k => &$v) {
-                //print_r($k);
-                //print_r($v);
                 if ($v['context'] == 'js')
                     $v['value'] = $v['value']->accept($visitor)->getValue();
                 else if ($v['context'] == 'variable') {
                     $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params) {
                         if (is_array($continuation) && sizeof($continuation)==1 && array_key_exists(0, $continuation))
                                 $continuation=$continuation[0];
+                        
+                        if ($continuation instanceof  ValueNode)
+                            $continuation = $continuation->getValue(); 
+                        
                         $params[$k] = $continuation;
                     }, function($value) use ($k, &$params) {
                         $params[$k] = $value;
@@ -251,9 +253,6 @@ class ViewHandler {
 
     public function processRepeat(&$container, $viewParams, $visitor, $func) {
   
-       //ToDo make sure everyiting is working, and remake this so thing make more sense
-        //the repeat key is probably not used, by using repeat the atributes of the reapeated table are added to params
-       //but then you can't refer to the repeated entety itself
         //print_R($container);
         $containerArr = array();
         foreach($container as &$child) {
@@ -291,7 +290,7 @@ class ViewHandler {
                     }
                     $params = [$repeatKey => $params];
                 }
-                //ToDo
+                
                 if (array_key_exists('filter', $child['repeat'])) {
                     $filter = $child['repeat']['filter'];
                     //print_r($filter);
@@ -313,17 +312,16 @@ class ViewHandler {
                         $params['index']=$i;
                         $i++;  
                     }
-
+                    
                     if ($sort['order'] == 'ASC')
                         usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$a['index']] - $values[$b['index']];
+                            return $values[$a['index']] < $values[$b['index']] ? 1 : -1;
                         });
                     else
                         usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$b['index']] - $values[$a['index']];
+                            return $values[$b['index']] > $values[$a['index']] ? 1 : -1;
                         });
                 }
-              
                 
                 unset($child['repeat']);
                 //print_r($repeatParams);

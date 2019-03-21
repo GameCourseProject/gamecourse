@@ -10,37 +10,10 @@ class XPLevels extends Module {
     }
 
     public function init() {
-        /*
-        DataSchema::register(array(
-            DataSchema::courseUserDataFields(array(
-                DataSchema::makeField('xp', 'XP of the student', 12500),
-                DataSchema::makeField('level', 'Level of the student', 12),
-                DataSchema::makeArray('awards', 'Awards',
-                    DataSchema::makeObject('award', 'Award', array(
-                        DataSchema::makeField('type', 'Award type', 'grade'),
-                        DataSchema::makeField('reward', 'Award reward', 600),
-                        DataSchema::makeField('date', 'Award date', 1234567890),
-                        DataSchema::makeField('name', 'Award name', 'Quiz 1'),
-                        DataSchema::makeField('subtype', 'Grade subtype', 'quiz'),
-                        DataSchema::makeField('num', 'Lab or Quiz number', 1),
-                        DataSchema::makeField('level', 'Badge level', 1),
-
-                    ))
-                )
-            )),
-            DataSchema::courseModuleDataFields($this, array(
-                DataSchema::makeArray('levels', null,
-                    DataSchema::makeObject('level', null, array(
-                        DataSchema::makeField('minxp', 'Min XP', 2000),
-                        DataSchema::makeField('title', 'Title of the Level', 'Self-Aware')
-                    ))
-                )
-            ))
-        ));
-*/
+       
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $viewHandler->registerFunction('awardLatestImage', function($award, $skills) {
-            $award = $award->getValue(); // get value of continuation
+            //$award = $award->getValue(); // get value of continuation
 
             switch ($award['type']) {
                 case 'grade':
@@ -51,14 +24,14 @@ class XPLevels extends Module {
                     break;
                 case 'skill':
                     $color = '#fff';
-                    $skillsData = $skills->getValue();
-                    foreach($skillsData as $tid => $tier) {
-                        foreach ($tier['skills'] as $skillName => $skill) {
+                    //$skillsData = $skills->getValue();
+                    foreach($skillsData as $skill) {
+                        
                             if ($skill['name'] == $award['name']) {
                                 $color = $skill['color'];
                                 break 2;
                             }
-                        }
+                        
                     }
                     return new Modules\Views\Expression\ValueNode('<div class="skill" style="background-color: ' . $color . '">');
                 case 'bonus':
@@ -69,7 +42,7 @@ class XPLevels extends Module {
         });
 
         $viewHandler->registerFunction('formatAward', function($award) {
-            $award = $award->getValue(); // get value of continuation
+            //$award = $award->getValue(); // get value of continuation
 
             switch ($award['type']) {
                 case 'grade':
@@ -87,7 +60,7 @@ class XPLevels extends Module {
         });
 
         $viewHandler->registerFunction('formatAwardLatest', function($award) {
-            $award = $award->getValue(); // get value of continuation
+            //$award = $award->getValue(); // get value of continuation
 
             switch ($award['type']) {
                 case 'badge':
@@ -100,8 +73,10 @@ class XPLevels extends Module {
         });
 
         $viewHandler->registerFunction('awardsXP', function($userData) {
-            $mandatory = $userData['xp'] - $userData['skills']['countedxp'] - min($userData['badges']['bonusxp'], 1000);
-            return new Modules\Views\Expression\ValueNode($userData['xp'] . ' total, ' . $mandatory . ' mandatory, ' . $userData['skills']['countedxp'] .  ' from tree, ' . min($userData['badges']['bonusxp'], 1000) . ' bonus');
+            if (is_array($userData) && sizeof($userData)==1 && array_key_exists(0, $userData))
+                $userData=$userData[0];
+            $mandatory = $userData['XP'] - $userData['countedTreeXP'] - min($userData['extraBadgeXP'], 1000);
+            return new Modules\Views\Expression\ValueNode($userData['XP'] . ' total, ' . $mandatory . ' mandatory, ' . $userData['countedTreeXP'] .  ' from tree, ' . min($userData['extraBadgeXP'], 1000) . ' bonus');
         });
     }
 }

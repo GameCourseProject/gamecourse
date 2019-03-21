@@ -49,17 +49,10 @@ class CourseUser extends User{
         return User::getUser($this->id)->getUsername();
     }
 
-    /*function getData($field = null, $wrapped = false) {
-        $data = $this->course->getUserData($this->id);
-        if ($data == null)
-            return null;
-        if ($field == null)
-            return $data;
-        if ($wrapped)
-            return $data->getWrapped($field, null);
-        return $data->get($field, null);
-    }*/
-
+    function  getData($field="*"){
+        return Core::$sistemDB->select("course_user",$field,["course"=>$this->course->getId(),
+                                                                          "id"=>$this->id,]);
+    }
     function getRoles() {
         //return $this->userWrapper->get('roles');
         
@@ -122,4 +115,6 @@ class CourseUser extends User{
         });
         return $landingPage;
     }
+    
+    
 }

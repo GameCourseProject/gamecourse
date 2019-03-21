@@ -57,6 +57,9 @@ create table course_user
     extraBadgeXP int unsigned default 0,
     countedBadgeXP int unsigned default 0,
     numBadgeLvls int unsigned default 0,
+    labsXP int unsigned default 0,
+    quizXP int unsigned default 0,
+    presentationXP int unsigned default 0
     primary key(id, course),
     foreign key(id) references user(id),
     foreign key(course) references course(id)
@@ -72,14 +75,14 @@ create table role(
 create table award(
 	student int unsigned not null,
 	course int unsigned not null,
+	name varchar(100) not null,
 	type varchar(50), #(ex:grade)
+	level int, #badge level
+	num int,   #lab or quiz number (basically the same thing as lvl)
 	subtype varchar(50),
 	reward int unsigned default 0,
 	awardDate timestamp default CURRENT_TIMESTAMP, #para usar defaulr tem que ser timestamp, o SB usa apenas ints em vez de datas
-	awardName varchar(100) not null,
-	level int, #badge level
-	num int,   #lab or quiz number (basically the same thing as lvl)
-	primary key (student,course,awardName,level),
+	primary key (student,course,name,level),
     foreign key(student, course) references course_user(id, course)
 );
 create table level(
@@ -103,6 +106,7 @@ create table qr_error(
 	ip varchar(15) not null,
 	errorDate timestamp default CURRENT_TIMESTAMP,
 	qrCode varchar(61) not null,
+	msg varchar(500),
 	primary key(errorID,qrCode),
 	foreign key(studentID, course) references course_user(id, course),
 	foreign key(qrCode) references qr(qrCode)

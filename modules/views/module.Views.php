@@ -99,7 +99,7 @@ class Views extends Module {
         });
 
         $this->viewHandler->registerFunction('formatDate', function($val) {
-            return new ValueNode(date('d-M-Y', $val));
+            return new ValueNode(date('d-M-Y', strtotime($val)));
         });
 
         $this->viewHandler->registerFunction('if', function($cond, $val1, $val2) {
@@ -257,7 +257,7 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             API::requireValues('course');
 
-            API::response(array('views' => $this->viewHandler->getRegisteredViews(), 'templates' => array_keys($this->getData()->get('templates'))));
+            API::response(array('views' => $this->viewHandler->getRegisteredViews(), 'templates' => array_column($this->getTemplates(),'id')));
         });
 
         API::registerFunction('views', 'createView', function() {
@@ -462,7 +462,7 @@ class Views extends Module {
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');//json_encode?
-            $this->setTemplate(API::getValue('name'), serialize(API::getValue('part')), "views");//use this course?
+            $this->setTemplate(API::getValue('name'), API::getValue('part'), "views");//use this course?
             //$this->getData()->getWrapped('templates')->set(API::getValue('name'), API::getValue('part'));
         });
 

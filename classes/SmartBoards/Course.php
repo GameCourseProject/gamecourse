@@ -76,7 +76,9 @@ class Course {
 
         return self::getUser($user->getId());
     }
-
+    public function getNumBadges(){
+        return Core::$sistemDB->select("course","numBadges",["id"=>$this->cid]);
+    }
     public function getHeaderLink() {
         //return $this->db->get('headerLink');
         return Core::$sistemDB->select("course","headerLink",["id"=>$this->cid]);

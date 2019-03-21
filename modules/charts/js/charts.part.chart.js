@@ -56,7 +56,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
             domain[0] = 1;
             y.domain(domain);
         }
-
+        
         if (!options.spark) {
             svg.append('g')
                 .attr('class', 'x axis')
@@ -216,10 +216,9 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     chartTypeWrapper.append(chartTypeSelect);
                     root.append(chartTypeWrapper);
                     watch('part.chartType', function(n) {
-                        //this is not doing anything usefull because it should be changing the child scope
                         if (n == 'star') {
-                            scope.part.info.provider = 'starPlot';
-                            scope.part.info.params = [];
+                            optionsScope.part.info.provider = 'starPlot';
+                            optionsScope.part.info.params = [];
                         } else {
                             delete scope.part.info.params;
                             scope.part.info.provider = '';
@@ -292,7 +291,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                             labelX: part.info.labelX,
                             labelY: part.info.labelY
                         };
-
+                        
                         if (part.info.spark) {
                             options.width = 50;
                             options.height = 20;
