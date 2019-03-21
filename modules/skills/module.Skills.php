@@ -7,8 +7,9 @@ use SmartBoards\Core;
 
 class Skills extends Module {
 
-    const SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
-    const SKILLS_OVERVIEW_TEMPLATE = 'Skills Overview - by skills';
+    const SKILL_TREE_TEMPLATE = '(old) Skill Tree - by skills';
+    const NEW_SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
+    const SKILLS_OVERVIEW_TEMPLATE = '(old) Skills Overview - by skills';
 
     public function __construct() {
         parent::__construct('skills', 'Skills', '0.1', array(
@@ -162,6 +163,8 @@ class Skills extends Module {
 
         if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
             $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skill_tree.vt')),$this->getId());
+        if ($viewsModule->getTemplate(self::NEW_SKILL_TREE_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::NEW_SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/newskills.txt')),$this->getId());
 
         if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
             $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skills_overview.vt')),$this->getId());

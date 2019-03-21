@@ -176,7 +176,7 @@ foreach($achievements as &$achievement) {
     if (empty(Core::$sistemDB->select("badge","*",["name"=>$achievement['name'],"course"=>$courseId]))){
         Core::$sistemDB->insert("badge", array_merge($badgeData,
                                         ["course"=>$courseId,"name"=>$achievement['name'],
-                                        "badgeDescription"=>$achievement['description']]));
+                                        "description"=>$achievement['description']]));
         for ($i=1;$i<=$maxLevel;$i++){
             Core::$sistemDB->insert("badge_level",["level"=>$i,"course"=>$courseId,
                                             "xp"=>abs($achievement['xp'.$i]),
@@ -418,6 +418,7 @@ foreach ($userIds as $userId){
         } 
     }
 }
+Core::$sistemDB->update("course",["lastUpdate"=>date("Y-m-d H:i:s", time())],["id"=>$courseId]);
 echo "Finished!\n";
 $last  = new DateTime();
 $diff = $first->diff( $last );

@@ -37,7 +37,8 @@ create table course(
 	numBadges  int unsigned default 0,
 	active boolean default true,
 	headerLink varchar(255) default "",
-	defaultLandingPage varchar(100) default ""
+	defaultLandingPage varchar(100) default "",
+	lastUpdate timestamp default CURRENT_TIMESTAMP
 );
 
 create table course_user
@@ -59,7 +60,7 @@ create table course_user
     numBadgeLvls int unsigned default 0,
     labsXP int unsigned default 0,
     quizXP int unsigned default 0,
-    presentationXP int unsigned default 0
+    presentationXP int unsigned default 0,
     primary key(id, course),
     foreign key(id) references user(id),
     foreign key(course) references course(id)

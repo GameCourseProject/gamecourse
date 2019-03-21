@@ -5,7 +5,8 @@ use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 
 class Badges extends Module {
-    const BADGES_TEMPLATE_NAME = 'Badges block - by badges';
+    const BADGES_TEMPLATE_NAME = '(old) Badges block - by badges';
+    const NEW_BADGES_TEMPLATE_NAME = 'Badges block - by badges';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -79,6 +80,7 @@ class Badges extends Module {
 
             $cacheId = $course->getId() . '-' . $course->getWrapped('lastUpdate')->getValue();
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
+            $hasCache=false;
             if ($hasCache) {
                 $badgeCache = $cacheValue;
                 $badges = $course->getModuleData('badges')->getWrapped('badges');
@@ -171,6 +173,10 @@ class Badges extends Module {
 
         if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
             $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/badges.vt')),$this->getId());
+        if ($viewsModule->getTemplate(self::NEW_BADGES_TEMPLATE_NAME) == NULL)
+            $viewsModule->setTemplate(self::NEW_BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/newbadges.txt')),$this->getId());
+   
+        
     }
 }
 
