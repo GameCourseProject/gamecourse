@@ -23,10 +23,10 @@ class SideView extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/side_view.vt')),$this->getId());
-         if ($viewsModule->getTemplate(self::NEW_SIDE_VIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_SIDE_VIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/newsideview.txt')),$this->getId());
+        //if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
+        //    $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/side_view.vt'),$this->getId());
+        if ($viewsModule->getTemplate(self::NEW_SIDE_VIEW_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::NEW_SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/newsideview.txt'),$this->getId());
   
         
     }

@@ -77,84 +77,73 @@ class Badges extends Module {
         $badgeCache = array();
         $viewHandler->registerFunction('userBadgesCache', function() use (&$badgeCache) {
             $course = $this->getParent();
-
-            $cacheId = $course->getId() . '-' . $course->getWrapped('lastUpdate')->getValue();
-            list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
-            $hasCache=false;
+            $courseId=$course->getId();
+            
+            $updated = Core::$sistemDB->select("course","lastUpdate",["id"=>$courseId]);
+            $cacheId = $courseId . '-' . $updated;
+            list($hasCache, $cacheValue) = CacheSystem::get($cacheId);  
             if ($hasCache) {
                 $badgeCache = $cacheValue;
-                $badges = $course->getModuleData('badges')->getWrapped('badges');
-                $badgesNames = $badges->getKeys();
-                foreach ($badgesNames as $badgeName) {
-                    $maxLevel = $badges->getWrapped($badgeName)->get('maxLevel');
-                    for ($i = 0; $i < $maxLevel; ++$i) {
-                        $final = array();
-                        foreach ($badgeCache[$badgeName][$i] as $badgeAward) {
-                            $final[] = \SmartBoards\DataRetrieverContinuation::buildForArray($badgeAward);
-                        }
-                        $badgeCache[$badgeName][$i] = $final;
-                    }
-                }
                 return new Modules\Views\Expression\ValueNode('');
             }
 
             $students = $course->getUsersWithRole('Student');
             $studentsBadges = array();
             $studentsUsernames = array();
-            foreach ($students as $id => $student) { // using $student->get is expensive.. because it is a collection
-                $studentsBadges[$id] = $course->getUserData($id)->getWrapped('badges')->getWrapped('list');
-                $studentsUsernames[$id] = \SmartBoards\User::getUser($id)->getUsername();
-                $studentsNames[$id] = $students->getWrapped($id)->get('name');//\SmartBoards\User::getUser($id)->getUsername();
-                $studentsCampus[$id] = $students->getWrapped($id)->get('campus');//\SmartBoards\User::getUser($id)->getUsername();
+
+            foreach ($students as $student) {
+                $userData = \SmartBoards\User::getUser($student['id'])->getData();
+                $studentsUsernames[$student['id']] = $userData['username'];
+                $studentsNames[$student['id']] = $userData['name'];
+                $studentsCampus[$student['id']] = Core::$sistemDB->select("course_user","campus",["id"=>$student['id']]);
             }
-            $badges = $course->getModuleData('badges')->get('badges');
+            
+            $badges = Core::$sistemDB->selectMultiple("badge",'*',["course"=>$courseId]);
             $badgeCache = array();
             $badgeCacheClean = array();
-
-            foreach ($badges as $badgeName => $badge) {
-                $badgeCache[$badgeName] = array();
-                $badgeCacheClean[$badgeName] = array();
+            foreach ($badges as $badge) {
+                $badgeCache[$badge['name']] = array();
+                $badgeCacheClean[$badge['name']] = array();
                 $badgeProgressCount = array();
                 $badgeLevel = array();
-                for ($i = 0; $i < $badge['maxLevel']; ++$i) {
-                    $badgeCache[$badgeName][$i] = array();
-                    $badgeCacheClean[$badgeName][$i] = array();
-                    foreach ($studentsBadges as $id => $studentBadges) {
-                        $badgeWrapped = $studentBadges->getWrapped($badgeName);
-
+                $badgeStudents = Core::$sistemDB->selectMultiple("user_badge","*",
+                                                    ["course"=>$courseId,"name"=>$badge['name']]);
+                for ($i = 0; $i < $badge['maxLvl']; ++$i) {
+                    $badgeCache[$badge['name']][$i] = array();
+                    $badgeCacheClean[$badge['name']][$i] = array();
+                    foreach ($badgeStudents as $studentBadge) {
+                        $id = $studentBadge['student'];
+            
                         if (!array_key_exists($id, $badgeLevel)) // cache
-                            $badgeLevel[$id] = $badgeWrapped->get('level');
+                            $badgeLevel[$id] = $studentBadge['level'];
+                        
                         if (!array_key_exists($id, $badgeProgressCount)) // cache
-                            $badgeProgressCount[$id] = $badgeWrapped->get('progressCount');
+                            $badgeProgressCount[$id] = $studentBadge['progress'];
 
                         if ($badgeLevel[$id] > $i) {
-                            $badgeCache[$badgeName][$i][] = array(
+                            $timestamp = strtotime(Core::$sistemDB->select("badge_level_time","badgeLvlTime",
+                                    ["badgeName"=>$badge['name'], "student"=> $id, "course"=>$courseId, "badgeLevel"=>$i+1]));
+                            $badgeCache[$badge['name']][$i][] = array(
                                 'id' => $id,
                                 'name' => $studentsNames[$id],
                                 'campus' => $studentsCampus[$id],
                                 'username' => $studentsUsernames[$id],
                                 'progress' => $badgeProgressCount[$id],
-                                'timestamp' => $badgeWrapped->getWrapped('levelTime')->get($i),
-                                'when' => date('d-M-Y', $badgeWrapped->getWrapped('levelTime')->get($i))
+                                'timestamp' => $timestamp,
+                                'when' => date('d-M-Y', $timestamp)
                             );
                         }
                     }
 
-                    usort($badgeCache[$badgeName][$i], function ($v1, $v2) {
+                    usort($badgeCache[$badge['name']][$i], function ($v1, $v2) {
                         return $v1['timestamp'] - $v2['timestamp'];
                     });
-
-                    $badgeCacheClean[$badgeName][$i] = $badgeCache[$badgeName][$i];
-                    $final = array();
-                    foreach ($badgeCache[$badgeName][$i] as $badgeAward) {
-                        $final[] = \SmartBoards\DataRetrieverContinuation::buildForArray($badgeAward);
-                    }
-                    $badgeCache[$badgeName][$i] = $final;
+                    
+                    $badgeCacheClean[$badge['name']][$i] = $badgeCache[$badge['name']][$i];
                 }
             }
-
+            
             CacheSystem::store($cacheId, $badgeCacheClean);
-
             return new Modules\Views\Expression\ValueNode('');
         });
 
@@ -167,16 +156,13 @@ class Badges extends Module {
         });
 
         $viewHandler->registerFunction('indicator', function($indicator) {
-            //$indicator = $indicator->getValue();
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 
-        if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/badges.vt')),$this->getId());
+        //if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
+        //    $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.vt'),$this->getId());
         if ($viewsModule->getTemplate(self::NEW_BADGES_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::NEW_BADGES_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/newbadges.txt')),$this->getId());
-   
-        
+            $viewsModule->setTemplate(self::NEW_BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/newbadges.txt'),$this->getId());   
     }
 }
 

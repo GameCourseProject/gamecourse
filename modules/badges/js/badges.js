@@ -26,14 +26,19 @@ angular.module('module.badges').directive('badgeStudentImage', function($state) 
         link: function($scope, $element, $attrs) {
             $scope.gotoProfile = function(part) {
                 $element.trigger('mouseout');
-                $state.go('course.profile', {'userID': part.data.uid.value});
+                $state.go('course.profile', {'userID': part.data.badgeInfo.value.id});
             };
             $scope.tooltipBound = false;
             $scope.showBadgeTooltip = function(part) {
                 if ($scope.tooltipBound)
                     return;
+                
                 var user = part.data.badgeInfo.value;
-
+//                var progress = part.data.badgeInfo.value.progress;
+//                var badgeDate = part.data.badgeDate.value;
+//                var user = part.data.userData.value;
+//                var campus = part.data.campus.value;
+                
                 var tooltipContent = $('<div>', {'class': 'content'});
                 tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));
                 var tooltipUserInfo = $('<div>', {'class': 'userinfo'});

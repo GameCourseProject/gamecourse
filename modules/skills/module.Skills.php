@@ -161,13 +161,13 @@ class Skills extends Module {
             return new \Modules\Views\Expression\ValueNode($skillsCache[$skillName]);
         });
 
-        if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skill_tree.vt')),$this->getId());
+        //if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
+        //    $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skill_tree.vt'),$this->getId());
         if ($viewsModule->getTemplate(self::NEW_SKILL_TREE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_SKILL_TREE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/newskills.txt')),$this->getId());
+            $viewsModule->setTemplate(self::NEW_SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/newskills.txt'),$this->getId());
 
         if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/skills_overview.vt')),$this->getId());
+            $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skills_overview.vt'),$this->getId());
         
         API::registerFunction('skills', 'page', function() {
             API::requireValues('skillName');

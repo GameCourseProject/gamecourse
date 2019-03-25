@@ -462,7 +462,7 @@ class Views extends Module {
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');//json_encode?
-            $this->setTemplate(API::getValue('name'), API::getValue('part'), "views");//use this course?
+            $this->setTemplate(API::getValue('name'), serialize(API::getValue('part')), "views");//use this course?
             //$this->getData()->getWrapped('templates')->set(API::getValue('name'), API::getValue('part'));
         });
 
@@ -849,11 +849,12 @@ class Views extends Module {
          return $temp;
    //     return $this->getData()->getWrapped('templates')->get($id);
     }
-
+    
+    //receives the template id, its serialized contents and module id, and puts it in the database
     public function setTemplate($id, $template, $moduleId) {
         //todo decide between unserialize and json decode for when using this data.
         // remove the unserialie from the callers (simple send the file contents)
-        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>serialize($template),
+        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>$template,
                                 'course'=>$this->getCourseId(),'module'=>$moduleId]);
    //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }

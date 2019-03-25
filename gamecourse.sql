@@ -48,8 +48,8 @@ create table course_user
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
     roles   set('Student','Teacher') default 'Student',
-    lastActivity int unsigned,
-    prevActivity int unsigned,
+    lastActivity timestamp default CURRENT_TIMESTAMP,
+    prevActivity timestamp default CURRENT_TIMESTAMP,
     totalTreeXP int unsigned default 0,
     countedTreeXP int unsigned default 0,
     numSkills 	int unsigned default 0,
@@ -79,10 +79,10 @@ create table award(
 	name varchar(100) not null,
 	type varchar(50), #(ex:grade)
 	level int, #badge level
-	num int,   #lab or quiz number (basically the same thing as lvl)
+	num int,   #lab or quiz number 
 	subtype varchar(50),
 	reward int unsigned default 0,
-	awardDate timestamp default CURRENT_TIMESTAMP, #para usar defaulr tem que ser timestamp, o SB usa apenas ints em vez de datas
+	awardDate timestamp default CURRENT_TIMESTAMP, 
 	primary key (student,course,name,level),
     foreign key(student, course) references course_user(id, course)
 );

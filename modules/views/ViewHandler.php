@@ -62,6 +62,7 @@ class ViewHandler {
         
         return $returnArray;
     }
+    
     //gets info from view_role and view_part tables, contructs an array of the view (like in the old system)
     public function getViewWithParts($viewId,$role){//return everything organized like the previous db sistem
         $viewRole=$this->getViewRoles($viewId,$role);
@@ -96,13 +97,6 @@ class ViewHandler {
             return Core::$sistemDB->selectMultiple("view",'*',['course'=>$this->getCourseId()]);
         else
             return Core::$sistemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->getCourseId()]);
-        /*
-        $views = $this->viewsModule->getData()->getWrapped('views');
-        if ($viewId != null)
-            return $views->getWrapped($viewId)->getWrapped('view');
-        else
-            return $views;
-         */
     }
     public function getCourseId(){
         return $this->viewsModule->getParent()->getId();
@@ -116,10 +110,8 @@ class ViewHandler {
         $viewSettings['module'] = $module->getId();
         $viewSettings['name'] = $viewName;
         $this->registeredViews[$viewId] = $viewSettings;
-        //$views = $this->getViews();
-        //$view = $views->get($viewId);
         $view = $this->getViews($viewId);
-        if (empty($view)) {//TODO talvez verizicar se e' empty em vez de null
+        if (empty($view)) {
             $viewpid = ViewEditHandler::getRandomPid();
             $courseId=$this->getCourseId();
             $newView=array_merge($viewSettings,['course'=>$courseId,'viewId'=>$viewId]);
@@ -215,16 +207,19 @@ class ViewHandler {
         $params = $viewParams;
         if (array_key_exists('data', $part)) {
             foreach ($part['data'] as $k => &$v) {
-                if ($v['context'] == 'js')
-                    $v['value'] = $v['value']->accept($visitor)->getValue();
-                else if ($v['context'] == 'variable') {
+                if ($v['context'] == 'js') {
+                    $value = $v['value']->accept($visitor)->getValue();
+                    if (is_array($value) && sizeof($value) == 1 && array_key_exists(0, $value))
+                            $value = $value[0];
+                    $v['value'] = $value;
+                } else if ($v['context'] == 'variable') {
                     $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params) {
-                        if (is_array($continuation) && sizeof($continuation)==1 && array_key_exists(0, $continuation))
-                                $continuation=$continuation[0];
-                        
-                        if ($continuation instanceof  ValueNode)
-                            $continuation = $continuation->getValue(); 
-                        
+                        if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
+                            $continuation = $continuation[0];
+
+                        if ($continuation instanceof ValueNode)
+                            $continuation = $continuation->getValue();
+
                         $params[$k] = $continuation;
                     }, function($value) use ($k, &$params) {
                         $params[$k] = $value;
@@ -247,12 +242,12 @@ class ViewHandler {
             $cont($node->accept($visitor, null, true));
         else if (is_a($node, 'Modules\Views\Expression\DatabasePathFromParameter'))
             $cont($node->accept($visitor, true));
-        else
+        else {
             $val($node->accept($visitor)->getValue());
+        }
     }
 
     public function processRepeat(&$container, $viewParams, $visitor, $func) {
-  
         //print_R($container);
         $containerArr = array();
         foreach($container as &$child) {
@@ -262,26 +257,32 @@ class ViewHandler {
                     $containerArr[] = $child;
                 }
             } else {
-                //print_r($child);
                 $repeatKey = $child['repeat']['key'];
-
                 $repeatParams = array();
                 $keys = null;
-                $this->getContinuationOrValue($child['repeat']['for'], $visitor, function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
-                    //print_r($continuation);
+                $this->getContinuationOrValue($child['repeat']['for'], $visitor, 
+                   function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
                     $repeatParams= $continuation;
-                    
-                    
-                    //$keys = $continuation->getKeys();//array_keys($continuation->getValue());
-                    //foreach ($keys as $k)
-                    //    $repeatParams[$k] = array($repeatKey => $continuation->followKey($k), $repeatKey . 'key' => $k);
                 }, function($value) use(&$repeatParams, &$keys, $repeatKey) {
-                    print_r("ViewHandler.php: process repeat toDo");
-                    if (is_null($value) || !is_array($value))
+                    if (is_null($value))
+                        $value = [];
+                    if (!is_array($value)) {
+                         print_r($value);
                         throw new \Exception('Repeat must be an Array or a Continuation.');
-                    $keys = array_keys($value);
-                    foreach ($keys as $k)
-                        $repeatParams[$k] = array($repeatKey => $value[$k], $repeatKey . 'key' => $k);
+                    }
+
+                    //if the $value array is associative it will be put in a sequential array
+                    $isNumericArray=true;
+                    foreach(array_keys($value) as $key){
+                        if (!is_int($key)){
+                            $isNumericArray=false;
+                            break;
+                        }
+                    }
+                    if (!$isNumericArray)
+                        $value= [$value];
+                     
+                    $repeatParams = $value;
                 });
                 
                 foreach ($repeatParams as &$params){
@@ -293,12 +294,10 @@ class ViewHandler {
                 
                 if (array_key_exists('filter', $child['repeat'])) {
                     $filter = $child['repeat']['filter'];
-                    //print_r($filter);
                     $repeatParams = array_filter($repeatParams, function($repeatParams) use($filter, $viewParams) {
                         $params = array_merge($viewParams, $repeatParams);
                         return $filter->accept(new EvaluateVisitor($params, $this))->getValue();
                     });
-                    //print_r($keys);
                 }
                 
                 if (array_key_exists('sort', $child['repeat'])) {
@@ -307,7 +306,6 @@ class ViewHandler {
                     $values = array();
                     $i=0;
                     foreach ($repeatParams as &$params){
-                        //$paramsforEvaluator = [$repeatKey => $params];
                         $values[$i] = $valueExp->accept(new EvaluateVisitor(array_merge($viewParams, $params), $this))->getValue();
                         $params['index']=$i;
                         $i++;  
@@ -324,16 +322,13 @@ class ViewHandler {
                 }
                 
                 unset($child['repeat']);
-                //print_r($repeatParams);
                 $repeatParams= array_values($repeatParams);
                 for($p=0;$p < sizeof($repeatParams);$p++){
                     
                     if (array_key_exists('index', $repeatParams[$p])) {
                         unset($repeatParams[$p]['index']);
-                        
                     }
-                    //
-                    //$paramsforEvaluator = [$repeatKey => $repeatParams[$p]];
+                    
                     $dupChild = $child;
                     $paramsforEvaluator = array_merge($viewParams, $repeatParams[$p], array($repeatKey . 'pos' => $p));
      
@@ -459,7 +454,6 @@ class ViewHandler {
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             $course = Course::getCourse((string)API::getValue('course'));
             $viewRoles = array_column($this->getViewRoles($viewId),'role');
-            //$views = $this->getViews()->getWrapped($viewId)->get('view');
             $viewType = $this->registeredViews[$viewId]['type'];
             
             $roleOne=$roleTwo=null;
@@ -494,7 +488,7 @@ class ViewHandler {
                     $userView=$this->getViewWithParts($viewId, $roleOne);
                 }  
                 $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);  
-                // ToDo check if it's parentparts is working for role interaction
+                // ToDo check if  parentparts is working for role interaction
                 $userView = ViewEditHandler::putTogetherView($userView, $parentParts);
             }
                      

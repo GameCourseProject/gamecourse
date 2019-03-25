@@ -12,17 +12,15 @@ class EvaluateVisitor extends Visitor {
     private $viewHandler;
 
     public function __construct($params, $viewHandler) {
-        //print_r($params);
         $this->params = $params;
         $this->viewHandler = $viewHandler;
+        
     }
 
     public function visitStatementSequence($node) {
-        //print_r($node);
         $text = $node->getNode()->accept($this)->getValue();
         $next = $node->getNext();
         if ($next != null) {
-            //print_r($next);
             $text .= $next->accept($this)->getValue();
         }
         return new ValueNode($text);
@@ -86,9 +84,9 @@ class EvaluateVisitor extends Visitor {
         } else {
             $args = $node->getArgs()->accept($this)->getValue();
         }
-
         return $this->viewHandler->callFunction($funcName, $args);
     }
+    
     //for now we're keeping the new functionality in the if and the old in the else
     //if the context is in a db path, add parameter
     public function visitContextSequence($node, $valueContinuation, $dbPath=false) {
@@ -113,7 +111,6 @@ class EvaluateVisitor extends Visitor {
     }
     
     public function visitDatabasePath($node, $parent, $returnContinuation) {
-        //print_r($node);
         $t = $node->getPath();
         $context = $node->getContext();
 
@@ -126,11 +123,9 @@ class EvaluateVisitor extends Visitor {
         
         if ($context != null) {
             $contextArray = $context->accept($this, [],true);
-        }else{
-            //print_r("visitDatabasePath: Context is empty");
         }
        
-        // add course => %course to context array
+        // add [course => %course] to context array
         if ($t!="user" && $t!="course"){
             $contextArray['course']=$this->params['course'];
         }
@@ -150,8 +145,6 @@ class EvaluateVisitor extends Visitor {
     }
 
     public function visitDatabasePathFromParameter($node, $returnContinuation) {
-        //print_r($this->params);
-        
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
             throw new \Exception('Unknown variable: ' . $variableName);
@@ -161,7 +154,8 @@ class EvaluateVisitor extends Visitor {
 
         $context = $node->getContext();
         if ($context != null) {
-            print_r("got context in parameter w path");
+            //ToDo: change jison for DatabasePathFromParameter to just be param w key
+            throw new \Exception('Unable to use this context ' . $context. " with parameter " . $variableName);
             $param = $context->accept($this, $param);
         }   
 
@@ -179,17 +173,15 @@ class EvaluateVisitor extends Visitor {
     }
 
     public function visitParameterNode($node) {
-        //print_r($node);
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
             throw new \Exception('Unknown variable: ' . $variableName);
         $key = $node->getKey();
-        if ($key==null)
+        if ($key == null) {
             return new ValueNode($this->params[$variableName]);
-        else{
-            //print_r($key);
-            //print_r($variableName);
-            //print_r($this->params);
+        }else{
+            if (!is_string($key))
+                $key= $key->getValue();  
             return new ValueNode($this->params[$variableName][$key]);
         }
     }

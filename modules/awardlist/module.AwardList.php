@@ -43,14 +43,14 @@ class AwardList extends Module {
             return new \Modules\Views\Expression\ValueNode($allAwards);
         });
 
-        if ($viewsModule->getTemplate(self::AWARDS_PROFILE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/awards_profile.vt')),$this->getId());
+        //if ($viewsModule->getTemplate(self::AWARDS_PROFILE_TEMPLATE) == NULL)
+        //    $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/awards_profile.vt'),$this->getId());
         
         if ($viewsModule->getTemplate(self::NEW_AWARDS_PROFILE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_AWARDS_PROFILE_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/newprofileawards.txt')),$this->getId());
+            $viewsModule->setTemplate(self::NEW_AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/newprofileawards.txt'),$this->getId());
         
         if ($viewsModule->getTemplate(self::FULL_AWARDS_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, unserialize(file_get_contents(__DIR__ . '/full_awards.vt')),$this->getId());
+            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/full_awards.vt'),$this->getId());
     }
 }
 ModuleLoader::registerModule(array(

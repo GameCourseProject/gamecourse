@@ -26,7 +26,7 @@ class CourseUser extends User{
         Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
     function refreshActivity() {
-        $prev = Core::$sistemDB->select("course_user","lastActivity",["id"=>$this->id,"course"=>$this->course->getId()]);
+        $prev = $this->getData("lastActivity");
         Core::$sistemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
         Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);     
     //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
@@ -54,10 +54,7 @@ class CourseUser extends User{
                                                                           "id"=>$this->id,]);
     }
     function getRoles() {
-        //return $this->userWrapper->get('roles');
-        
-        return explode(",",Core::$sistemDB->select("course_user",'roles',["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id,]));
+        return explode(",",$this->getData("roles"));
     }
     
     function setRoles($roles) {
@@ -91,22 +88,9 @@ class CourseUser extends User{
         return $this->hasRole('Student');
     }
 
-    //function getBasicInfo() {
-    //    return $this->userWrapper->getValue();
-    //}
-
-    //function getWrapper() {
-    //    return $this->userWrapper;
-    //}
-
-    //function getWrappedComplex($complexKey) {
-    //    return $this->userWrapper->getWrappedComplex($complexKey);
-    //}
-
     function getLandingPage() {
         $userRoles = $this->getRoles();//array w names
         $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()]);
-        //$roles=$this->course->getRolesHierarchy();
         $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
             if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {
                 $landingPage = $role['landingPage'];

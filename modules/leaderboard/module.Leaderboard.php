@@ -25,11 +25,11 @@ class Leaderboard extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
-            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/leaderboard.vt')),$this->getId());
-        }
+        //if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
+        //    $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.vt'),$this->getId());
+        //}
         if ($viewsModule->getTemplate(self::NEW_LEADERBOARD_TEMPLATE_NAME) == NULL) {
-            $viewsModule->setTemplate(self::NEW_LEADERBOARD_TEMPLATE_NAME, unserialize(file_get_contents(__DIR__ . '/newleaderboard.txt')),$this->getId());
+            $viewsModule->setTemplate(self::NEW_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/newleaderboard.txt'),$this->getId());
         }
     }
 

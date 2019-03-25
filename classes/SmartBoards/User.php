@@ -1,16 +1,10 @@
 <?php
 namespace SmartBoards;
 
-//use MagicDB\MagicDB;
-//use MagicDB\MagicWrapper;
-
 class User {
-    //private static $baseDB = null;
-    //private static $usersDB = null;
     protected $id = null;
-    //private $userWrapper = null;
     
-    public function __construct($id){//, $userWrapper) {
+    public function __construct($id){
         $this->id = $id;
         //$this->userWrapper = $userWrapper;
     }
@@ -21,62 +15,50 @@ class User {
     public function getId() {
         return $this->id;
     }
-
-    public function getName() {
-        //return $this->userWrapper->get('name');
-        return Core::$sistemDB->select("user","name",["id"=>$this->id]);
+    
+    public function getData($field='*'){
+        return Core::$sistemDB->select("user",$field,["id"=>$this->id]);
     }
-
+    public function setData($field, $value){
+        Core::$sistemDB->update("user",[$field=>$value],["id"=>$this->id]);
+    }
+    
+    public function getName() {
+        return $this->getData("name");
+    }
     public function setName($name) {
-        //$this->userWrapper->set('name', $name);
-        Core::$sistemDB->update("user",["name"=>$name],["id"=>$this->id]);
+        $this->setData("name",$name);
     }
 
     public function getEmail() {
-        //return $this->userWrapper->get('email');
-        return Core::$sistemDB->select("user","email",["id"=>$this->id]);
+        return $this->getData("email");
     }
-
     public function setEmail($email) {
-        //$this->userWrapper->set('email', $email);
-        Core::$sistemDB->update("user",["email"=>$email],["id"=>$this->id]);
-        
+        $this->setData("email",$email);
     }
 
     public function getUsername() {
-        //return $this->userWrapper->get('username');
-        return Core::$sistemDB->select("user","username",["id"=>$this->id]);
+        return $this->getData("username");
     }
-
     public function setUsername($username) {
-        Core::$sistemDB->update("user",["username" => $username],["id"=>$this->id]);
-        //$this->userWrapper->set('username', $username);
+        $this->setData("username",$username);
     }
 
     public function isAdmin() {
-        //return $this->userWrapper->get('isAdmin', false);
-        return Core::$sistemDB->select("user","isAdmin",["id"=>$this->id]);
+        return $this->getData("isAdmin");
     }
-
     public function setAdmin($isAdmin) {
-        //$this->userWrapper->set('isAdmin', $isAdmin);
-        Core::$sistemDB->update("user",["isAdmin" => $isAdmin],["id"=>$this->id]);
+        $this->setData("isAdmin",$isAdmin);
     }
 
     public function exists() {
-        //return !$this->userWrapper->isNull();
-        return (!empty(Core::$sistemDB->select("user","*",["id"=>$this->id])));
+        return (!empty($this->getData("id")));
     }
 
     public function initialize($name, $email) {
-        //if (!self::exists()) {
             Core::$sistemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
         return $this;
     }
-
-    //public function getWrapper() {
-    //    return $this->userWrapper;
-    //}
 
     public static function getUser($id) {
         //if (static::$usersDB == null)
@@ -107,15 +89,8 @@ class User {
     //    return static::$baseDB->getValue();
    // }
 
-    //public static function getUserDbWrapper() {
-    //    if (static::$usersDB == null)
-    //        static::initDB();
-    //    return static::$usersDB;
-    //}
-
-    private static function initDB() {
+    //private static function initDB() {
         //static::$baseDB = new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'users');
-        //static::$usersDB = new MagicWrapper(static::$baseDB);
-        
-    }
+        //static::$usersDB = new MagicWrapper(static::$baseDB);     
+    //}
 }
