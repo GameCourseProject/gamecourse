@@ -12,8 +12,8 @@ Installation
 
 1. Run the **old python script** (using python 2.7)
 2. Setup a FenixEdu Application, if you don't have one already
-    2.1. In Fenix go to **Personal** &gt; **External Applications** &gt; **Manage Applications**
-    2.2. Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
+  - In Fenix go to **Personal** &gt; **External Applications** &gt; **Manage Applications**
+  - Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
 3. Change the **config.php** constants.
 4. Copy the **old legacy files** to the folder specified in **LEGACY&lowbar;DATA&lowbar;FOLDER**
   - **indicators.json**
@@ -26,10 +26,10 @@ Installation
 5. Create a file with name **teachers.txt** in **LEGACY&lowbar;DATA&lowbar;FOLDER** and add the teachers, one per line, with the format **id;name;email**
 6. Copy the **folders of each skill** in the Skill Tree to **&lt;MODULES&lowbar;FOLDER&gt;/skills/resources**
 7. Install dependencies and run **generate.sh** (this is needed when the less or jison files are updated)
-  7.1. Install Less and Jison from NPM
-  7.2. Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
-  7.3. Set correct **JISON_PHP** path to the Jison PHP port in the **generate.sh** script
-  7.4. Run **generate.sh**
+  - Install Less and Jison from NPM
+  - Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
+  - Set correct **JISON_PHP** path to the Jison PHP port in the **generate.sh** script
+  - Run **generate.sh**
 8. If there is a file called setup.done , delete it
 9. Setup the course by visiting the SmartBoards page
 10. Run **loadLegacy.php** in the console or visit it in your browser
@@ -45,8 +45,8 @@ Setup
 =
 
 1. In the **Settings** page:
-  1. Enable all the modules you want
-  2. Configure the landing page for the default role and header link
+  - Enable all the modules you want
+  - Configure the landing page for the default role and header link
 
 Everything should be good to go! Now you just need to update the SmartBoards if something changes.
 
@@ -57,7 +57,7 @@ Update
 2. Place the updated legacy files in the chosen folder
 3. Run **loadLegacy.php**
 4. If a new user was added to the system:
-  4.1. Configure the cookie values and **downloadPhotos.php** and **updateUsernames.php**
+  - Configure the cookie values and **downloadPhotos.php** and **updateUsernames.php**
 
 Creating a new Course
 =
