@@ -12,10 +12,9 @@ Installation
 
 1. Run the **old python script** (using python 2.7)
 2. Setup a FenixEdu Application, if you don't have one already
-  1. In Fenix go to **Personal** &gt; **External Applications** &gt; **Manage Applications**
-  2. Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
+    2.1. In Fenix go to **Personal** &gt; **External Applications** &gt; **Manage Applications**
+    2.2. Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
 3. Change the **config.php** constants.
-(if using xaamp it should match info in xaamp/phpMyAdmin/config.inc.php)
 4. Copy the **old legacy files** to the folder specified in **LEGACY&lowbar;DATA&lowbar;FOLDER**
   - **indicators.json**
   - **achievements.txt**
@@ -26,17 +25,17 @@ Installation
   - **tree folder with html pages** of skills
 5. Create a file with name **teachers.txt** in **LEGACY&lowbar;DATA&lowbar;FOLDER** and add the teachers, one per line, with the format **id;name;email**
 6. Copy the **folders of each skill** in the Skill Tree to **&lt;MODULES&lowbar;FOLDER&gt;/skills/resources**
-7. Install dependencies and run **generate.sh**
-  1. Install Less and Jison from NPM
-  2. Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
-  3. Set correct **JISON_PHP** path to the Jison PHP port in the **generate.sh** script
-  4. Run **generate.sh**
-if there is a file called setup.done , delete it
-8. Setup the course by visiting the SmartBoards page
-9. Run **loadLegacy.php** in the console or visit it in your browser
-10. Add the Grade page URL from Fenix Course page (the page which lists the Students with their **username**, **number**, name, etc..) to the array in **updateUsernames.php** and run it.
-(also define cookies)
-11. Define the cookie values (**BACKENDID**, **JSESSIONID**) in file **downloadPhotos.php** (use the cookie values from your Fenix's session) and run it.
+7. Install dependencies and run **generate.sh** (this is needed when the less or jison files are updated)
+  7.1. Install Less and Jison from NPM
+  7.2. Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
+  7.3. Set correct **JISON_PHP** path to the Jison PHP port in the **generate.sh** script
+  7.4. Run **generate.sh**
+8. If there is a file called setup.done , delete it
+9. Setup the course by visiting the SmartBoards page
+10. Run **loadLegacy.php** in the console or visit it in your browser
+11. Add the Grade page URL from Fenix Course page (the page which lists the Students with their **username**, **number**, name, etc..) to the array in **updateUsernames.php** 
+12. Get the cookie values (**BACKENDID**, **JSESSIONID**) from fenix and either put them in the **updateUsernames.php** and **downloadPhotos.php** files and run them or run them throug the course settings page
+and run it.
 
 You now have a installed course. Now proceed to setting up the SmartBoard!
 
@@ -58,8 +57,7 @@ Update
 2. Place the updated legacy files in the chosen folder
 3. Run **loadLegacy.php**
 4. If a new user was added to the system:
-  1. Run **updateUsernames.php**
-  2. Configure the cookie values and **downloadPhotos.php**
+  4.1. Configure the cookie values and **downloadPhotos.php** and **updateUsernames.php**
 
 Creating a new Course
 =
