@@ -101,7 +101,9 @@ class Views extends Module {
         $this->viewHandler->registerFunction('formatDate', function($val) {
             return new ValueNode(date('d-M-Y', strtotime($val)));
         });
-
+        $this->viewHandler->registerFunction('timestamp', function($val) {
+            return new ValueNode( strtotime($val) );
+        });
         $this->viewHandler->registerFunction('if', function($cond, $val1, $val2) {
             return new ValueNode($cond ? $val1 :  $val2);
         });

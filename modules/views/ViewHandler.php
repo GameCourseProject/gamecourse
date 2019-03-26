@@ -313,12 +313,13 @@ class ViewHandler {
                     
                     if ($sort['order'] == 'ASC')
                         usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$a['index']] < $values[$b['index']] ? 1 : -1;
+                            return $values[$a['index']] > $values[$b['index']] ? 1 : -1;
                         });
                     else
                         usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$b['index']] > $values[$a['index']] ? 1 : -1;
+                            return $values[$a['index']] < $values[$b['index']] ? 1 : -1;
                         });
+                    
                 }
                 
                 unset($child['repeat']);

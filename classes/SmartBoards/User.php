@@ -12,6 +12,10 @@ class User {
         Core::$sistemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
     }
     
+    public function exists() {
+        return (!empty($this->getData("id")));
+    }
+    
     public function getId() {
         return $this->id;
     }
@@ -49,10 +53,6 @@ class User {
     }
     public function setAdmin($isAdmin) {
         $this->setData("isAdmin",$isAdmin);
-    }
-
-    public function exists() {
-        return (!empty($this->getData("id")));
     }
 
     public function initialize($name, $email) {

@@ -10,6 +10,7 @@ class Skills extends Module {
     const SKILL_TREE_TEMPLATE = '(old) Skill Tree - by skills';
     const NEW_SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
     const SKILLS_OVERVIEW_TEMPLATE = '(old) Skills Overview - by skills';
+    const NEW_SKILLS_OVERVIEW_TEMPLATE = 'Skills Overview - by skills';
 
     public function __construct() {
         parent::__construct('skills', 'Skills', '0.1', array(
@@ -68,13 +69,9 @@ class Skills extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->registerFunction('skillStyle', function($skill, $user) {
-            //print_r($skill);
-            //$skill = $skill->getValue();
             $courseId = $this->getParent()->getId();
             $unlockedSkills=array_column(Core::$sistemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
-            // user_skill [user,course]
-            //$unlockedSkills = DataSchema::getValue('course.users.user.data.skills.list', array('course.users.user' => $user), array('course' => $this->getParent()->getId()), false);
-            
+                  
             if ($unlockedSkills == null)
                 $unlockedSkills = array();
             $dependencies = Core::$sistemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$skill['name']]);
@@ -85,13 +82,11 @@ class Skills extends Module {
                 if (!in_array($dependency['dependencyA'], $unlockedSkills) || !in_array($dependency['dependencyB'], $unlockedSkills)) {
                     $unlock = false;  
                 }
-
                 if ($unlock) {
                     $unlocked = true;
                     break;
                 }
             }
-
             $val = 'background-color: ' . ($unlocked ? $skill['color'] : '#6d6d6d') . '; ';
 
             if (in_array($skill['name'], $unlockedSkills)) {
@@ -106,37 +101,39 @@ class Skills extends Module {
             $course = $this->getParent();
             $students = $course->getUsersWithRole('Student');
             $studentsSkills = array();
-            $studentsUsernames = array();
+            $studentsUserData = array();
             $studentsArray=[];
             foreach ($students as $student) {
                 $studentsArray[$student['id']]=$student;
-                $studentsSkills[$student['id']] = Core::$sistemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
-                //$course->getUserData($id)->getWrapped('skills')->get('list');
-                $studentsUsernames[$student['id']] = \SmartBoards\User::getUser($student['id'])->getUsername();
+                //$studentsSkills[$student['id']] = Core::$sistemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
+                $userData=\SmartBoards\User::getUser($student['id'])->getData();
+                $studentsUserData[$student['id']]['username'] = $userData['username'];
+                $studentsUserData[$student['id']]['name'] = $userData['name'];
             }
-
-            //$students = $students->getValue();
-            //$tiers = $course->getModuleData('skills');
+            
             $tiers = Core::$sistemDB->selectMultiple("skill_tier",'*',["course"=>$course->getId()]);
-
+            
             $skillsCache = array();
             foreach ($tiers as $tier) {
                 $skills = Core::$sistemDB->selectMultiple("skill",'*',["course"=>$course->getId(),"tier"=>$tier['tier']]);
+                
                 foreach ($skills as $skill) {
                     $skillName = $skill['name'];
                     $skillsCache[$skillName] = array();
-                    foreach($studentsSkills as $id => $studentSkills) {
-                        $studentSkillsNames = array_column($studentSkills, "name");
-                        if (is_array($studentSkills) && array_key_exists($skillName, $studentSkillsNames)) {
+                    $skillStudents = Core::$sistemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
+               
+                    foreach($skillStudents as $skillStudent) {
+                            $id= $skillStudent['student'];
+                            $timestamp=  strtotime($skillStudent['skillTime']);
                             $skillsCache[$skillName][] = array(
                                 'id' => $id,
-                                'name' => $studentsArray[$id]['name'],
+                                'name' => $studentsUserData[$id]['name'],
                                 'campus' => $studentsArray[$id]['campus'],
-                                'username' => $studentsUsernames[$id],
-                                'timestamp' => $studentSkills['skillTime'],
-                                'when' => date('d-M-Y', $studentSkills['skillTime'])
+                                'username' => $studentsUserData[$id]['username'],
+                                'timestamp' => $timestamp,
+                                'when' => date('d-M-Y', $timestamp)
                             );
-                        }
+                        
                     }
 
                     usort($skillsCache[$skillName], function($v1, $v2) {
@@ -166,8 +163,11 @@ class Skills extends Module {
         if ($viewsModule->getTemplate(self::NEW_SKILL_TREE_TEMPLATE) == NULL)
             $viewsModule->setTemplate(self::NEW_SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/newskills.txt'),$this->getId());
 
-        if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skills_overview.vt'),$this->getId());
+        //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
+        //    $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skills_overview.vt'),$this->getId());
+        if ($viewsModule->getTemplate(self::NEW_SKILLS_OVERVIEW_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::NEW_SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/newSkillsOverview.txt'),$this->getId());
+        
         
         API::registerFunction('skills', 'page', function() {
             API::requireValues('skillName');
