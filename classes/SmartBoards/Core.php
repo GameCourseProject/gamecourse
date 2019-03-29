@@ -39,26 +39,6 @@ class Core {
         if (static::$sistemDB == null) {
             static::$sistemDB = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
         }
-
-        /*if (static::$mainConfigDB != null)
-            return;
-        /*DataSchema::register(array(
-            DataSchema::userFields(array(
-                //DataSchema::makeField('id', 'User ID', '12345'),
-                DataSchema::makeField('name', 'Name', 'Person Name'),
-                DataSchema::makeField('email', 'Email', 'test@test.com'),
-                DataSchema::makeField('username', 'Username', 'ist112345'),
-            )),
-            DataSchema::courseUserFields(array(
-                DataSchema::makeField('id', 'User ID', '12345'),
-                DataSchema::makeField('name', 'Name', 'Person Name'),
-                DataSchema::makeArray('roles', 'Roles', DataSchema::makeField('role', 'Role', 'Teacher')),
-                DataSchema::makeField('campus', 'Campus', 'A'),
-                DataSchema::makeField('lastActivity', 'Last Activity', '1234567890'),
-                DataSchema::makeField('previousActivity', 'Activity before last activity', '1234567890')
-            ))
-        ));
-        static::initMainConfig();*/
     }
 
     public static function requireSetup($performSetup = true) {
@@ -170,13 +150,8 @@ class Core {
     }
 
     public static function getActiveCourses() {
-        //return static::$mainConfigDB->get('active-courses');
         return static::$sistemDB->selectMultiple("course",'*',["active"=>true]);
     }
-
-    //public static function getActiveCoursesWrapped() {
-    //    return static::$mainConfigDB->getWrapped('active-courses');
-    //}
 
     public static function getPendingInvites() {
         //return static::$mainConfigDB->get('pending-invites');

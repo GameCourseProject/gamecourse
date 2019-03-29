@@ -2,22 +2,21 @@
 namespace SmartBoards;
 
 class CourseUser extends User{
-    
-    //private $id;
+    //$id is in User
     private $course;
     
     function __construct($id, $course) {
-       // $this->id = $id;
         parent::__construct($id);
         $this->course = $course;
     }
+    //adds course_user to DB, User must already exist in DB
     public function create($role=null,$campus=""){
-        //User must already exist in database
         Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
         if ($role){
             Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
         }
     }
+    
     public function exists() {
         return (!empty(Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])));
     }
@@ -25,12 +24,11 @@ class CourseUser extends User{
     public function delete(){
         Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
+    
     function refreshActivity() {
         $prev = $this->getData("lastActivity");
         Core::$sistemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
-        Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);     
-    //    $this->userWrapper->set('previousActivity', $this->userWrapper->get('lastActivity'));
-    //    $this->userWrapper->set('lastActivity', time());
+        Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);
     }
 
     public function getId() {
@@ -48,7 +46,7 @@ class CourseUser extends User{
     public function getUsername() {
         return User::getUser($this->id)->getUsername();
     }
-
+    
     function  getData($field="*"){
         return Core::$sistemDB->select("course_user",$field,["course"=>$this->course->getId(),
                                                                           "id"=>$this->id,]);
@@ -58,13 +56,12 @@ class CourseUser extends User{
     }
     
     function setRoles($roles) {
-        //return $this->userWrapper->set('roles', $roles);
         Core::$sistemDB->update("course_user",["roles"=>$roles],["course"=>$this->course->getId(),
                                                                           "id"=>$this->id,]);
     }
     
+    //adds Role (instead of replacing) only if it isn't already in user's roles
     function addRole($role){
-        //adds Role (instead of replacing) only if it isn't already in user's roles
         $currRoles=$this->getRoles();
         if (!in_array($role, $currRoles)){
             if (empty($currRoles))
@@ -98,7 +95,5 @@ class CourseUser extends User{
             $continue();
         });
         return $landingPage;
-    }
-    
-    
+    }   
 }

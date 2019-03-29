@@ -22,10 +22,8 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     
     $db->insert("course",["name" => $courseName]);
     
-    //if you wish to remove these roles you should also remove them from .sql on course_user table
-    $db->insert("role",["name"=>"Teacher","hierarchy" => 1,"course" =>1]);
-    $db->insert("role",["name"=>"Student","hierarchy" => 2,"course" =>1]);
-
+    
+    \SmartBoards\Course::insertBasicCourseData($db, 1);
     
     $db->insert("user",["id" => $teacherId,
                         "name" => "Teacher",
@@ -35,11 +33,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
                                 "course" => 1,
                               "roles"=> "Teacher"]);
 
-    $db->insert("skill_tier",["tier"=>1,"reward"=>150,"course"=>1]);
-    $db->insert("skill_tier",["tier"=>2,"reward"=>400,"course"=>1]);
-    $db->insert("skill_tier",["tier"=>3,"reward"=>750,"course"=>1]);
-    $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"course"=>1]); 
-    
+
     file_put_contents('setup.done','');
     //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);
 

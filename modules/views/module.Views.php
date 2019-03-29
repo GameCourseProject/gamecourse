@@ -637,10 +637,10 @@ class Views extends Module {
             $currParts = array_column(Core::$sistemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
             
             foreach($viewContent['view_part'] as $part){
-                if (empty(Core::$sistemDB->select("view_part",'*',['pid'=>$part['pid']]))){
+                if (empty(Core::$sistemDB->select("view_part",'*',['pid'=>$part['pid'],'course'=>$courseId]))){
                     Core::$sistemDB->insert('view_part',array_merge($part,$viewRoleInfo));
                 }else{
-                    Core::$sistemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid']]);
+                    Core::$sistemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid'],'course'=>$courseId]);
                 }
                 $key=array_search($part['pid'], $currParts);
                 if ($key!==false){
@@ -649,7 +649,7 @@ class Views extends Module {
             }
             //delete remaining parts on db
             foreach($currParts as $part){
-                Core::$sistemDB->delete("view_part",['pid'=>$part]);
+                Core::$sistemDB->delete("view_part",['pid'=>$part,'course'=>$courseId]);
             }
                      
             if (!$testDone)

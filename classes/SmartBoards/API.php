@@ -33,7 +33,19 @@ class API {
             static::error('API functions overlap - ' . $module . ' - '. $request);
         static::$functions[$module][$request] = $function;
     }
-
+    
+    //only allows acess to admins and users of the course
+    public static function requireCoursePermission() {
+        API::requireValues('course');
+        $courseUser = Course::getCourse(API::getValue('course'))->getLoggedUser();
+        $isCourseUser = (!is_a($courseUser, "SmartBoards\NullCourseUser"));
+        if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
+            API::error('You don\'t have permission acess this course!', 401);
+            //SmartBoards::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (SmartBoards::getLoggedUserID() != null ? SmartBoards::getLoggedUserID() : 'None'));
+        }
+    }
+    
+    //only allows acess to admins and teachers of the course
     public static function requireCourseAdminPermission() {
         API::requireValues('course');
         $courseAdmin = Course::getCourse(API::getValue('course'))->getLoggedUser()->hasRole('Teacher');
@@ -42,7 +54,8 @@ class API {
             //SmartBoards::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (SmartBoards::getLoggedUserID() != null ? SmartBoards::getLoggedUserID() : 'None'));
         }
     }
-
+    
+    //only allows acess to admins
     public static function requireAdminPermission() {
         if (!Core::getLoggedUser()->isAdmin())
             API::error('Insufficient permissions to run this API function', 401);

@@ -47,7 +47,7 @@ create table course_user
     campus 	char(1),
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
-    roles   set('Student','Teacher') default 'Student',
+    roles   set('Watcher','Student','Teacher') default 'Student',
     lastActivity timestamp default CURRENT_TIMESTAMP,
     prevActivity timestamp default CURRENT_TIMESTAMP,
     totalTreeXP int unsigned default 0,
@@ -63,15 +63,16 @@ create table course_user
     presentationXP int unsigned default 0,
     primary key(id, course),
     foreign key(id) references user(id),
-    foreign key(course) references course(id)
+    foreign key(course) references course(id) on delete cascade
 );
 create table role(
 	name varchar(50) not null,
 	landingPage varchar(100) default '/',
 	hierarchy int not null,
 	course int unsigned not null,
+	#isCourseAdmin boolean default false,
 	primary key(name, course),
-	foreign key(course) references course(id)
+	foreign key(course) references course(id) on delete cascade
 );
 create table award(
 	student int unsigned not null,
@@ -84,7 +85,7 @@ create table award(
 	reward int unsigned default 0,
 	awardDate timestamp default CURRENT_TIMESTAMP, 
 	primary key (student,course,name,level),
-    foreign key(student, course) references course_user(id, course)
+    foreign key(student, course) references course_user(id, course) on delete cascade
 );
 create table level(
 	minXP int unsigned not null,
@@ -92,13 +93,13 @@ create table level(
 	lvlNum int unsigned not null,
 	course int unsigned not null,
 	primary key(course,lvlNum),
-	foreign key(course) references course(id)
+	foreign key(course) references course(id) on delete cascade
 );
 
 create table qr(
 	qrCode varchar(61) not null primary key,
 	course int unsigned not null,
-	foreign key(course) references course(id)
+	foreign key(course) references course(id) on delete cascade
 );
 create table qr_error(
 	errorID int not null,
@@ -109,8 +110,8 @@ create table qr_error(
 	qrCode varchar(61) not null,
 	msg varchar(500),
 	primary key(errorID,qrCode),
-	foreign key(studentID, course) references course_user(id, course),
-	foreign key(qrCode) references qr(qrCode)
+	foreign key(studentID, course) references course_user(id, course) ,
+	foreign key(qrCode) references qr(qrCode) 
 );
 create table qr_participation(
 	course int unsigned not null,
@@ -128,7 +129,7 @@ create table skill_tier(
 	reward int unsigned not null,
 	course int unsigned not null,
 	primary key(course,tier),
-	foreign key(course) references course(id)
+	foreign key(course) references course(id) on delete cascade
 );
 create table skill(
 	name varchar(50) not null,
@@ -137,7 +138,7 @@ create table skill(
 	tier int unsigned not null,
 	course int unsigned not null,
 	primary key(name,course),
-	foreign key(course,tier) references skill_tier(course, tier)
+	foreign key(course,tier) references skill_tier(course, tier) on delete cascade
 );
 create table skill_dependency(
 	dependencyNum int not null,
@@ -146,7 +147,7 @@ create table skill_dependency(
 	skillName varchar(50) not null,
 	course int unsigned not null,
 	primary key(dependencyNum,skillName,course),
-	foreign key(skillName,course) references skill(name, course)
+	foreign key(skillName,course) references skill(name, course) on delete cascade
 );
 create table user_skill(
 	skillTime timestamp default CURRENT_TIMESTAMP,
@@ -156,8 +157,8 @@ create table user_skill(
 	name varchar(50) not null,
 	course int unsigned not null,
 	primary key(student,course,name),
-	foreign key(student, course) references course_user(id, course),
-	foreign key(name, course) references skill(name, course)
+	foreign key(student, course) references course_user(id, course) on delete cascade,
+	foreign key(name, course) references skill(name, course) on delete cascade
 );
 
 create table badge(
@@ -170,7 +171,7 @@ create table badge(
 	isCount boolean not null default false,
 	isPost boolean not null default false,
 	isPoint boolean not null default false,
-	foreign key(course) references course(id),
+	foreign key(course) references course(id) on delete cascade,
 	primary key(name, course)
 );
 create table badge_level(
@@ -180,7 +181,7 @@ create table badge_level(
 	progressNeeded int not null,
 	course int unsigned not null,
 	badgeName varchar(70) not null,
-	foreign key(badgeName, course) references badge(name, course),
+	foreign key(badgeName, course) references badge(name, course) on delete cascade,
 	primary key(level,badgeName,course)
 );
 create table user_badge(
@@ -189,8 +190,8 @@ create table user_badge(
 	name varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
-	foreign key(student,course) references course_user(id, course),
-	foreign key(name, course) references badge(name, course),
+	foreign key(student,course) references course_user(id, course) on delete cascade,
+	foreign key(name, course) references badge(name, course) on delete cascade,
 	primary key(student,name,course)
 );
 create table progress_indicator(
@@ -201,7 +202,7 @@ create table progress_indicator(
 	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
-	foreign key(student,badgeName,course) references user_badge(student,name,course),
+	foreign key(student,badgeName,course) references user_badge(student,name,course) on delete cascade,
 	primary key(indicatorText,student,badgeName,course)
 );
 create table badge_level_time(
@@ -210,7 +211,7 @@ create table badge_level_time(
 	badgeLvlTime timestamp default CURRENT_TIMESTAMP,
 	course int unsigned not null,
 	student int unsigned not null,
-	foreign key(student,badgeName,course) references user_badge(student,name,course),
+	foreign key(student,badgeName,course) references user_badge(student,name,course) on delete cascade,
 	primary key(badgeLevel,student,badgeName,course)
 );
 
@@ -223,8 +224,8 @@ create table enabled_module(
 	moduleId varchar(50) not null,
 	course int unsigned not null,
 	primary key(moduleId, course),
-	foreign key(moduleId) references module(moduleId),
-	foreign key(course) references course(id)
+	foreign key(moduleId) references module(moduleId) on delete cascade,
+	foreign key(course) references course(id) on delete cascade
 );
 
 create table view(	
@@ -251,8 +252,8 @@ create table view_part(
 	role varchar(100),
 	partContents text,
 	type varchar(50),
-	pid varchar(40), #??, also header,repeat,style,class,type,data,....
-	primary key(pid), 
+	pid varchar(40), 
+	primary key(pid,course), 
 	foreign key(viewId,course,role) references view_role(viewId,course,role) on delete cascade
 );
 create table view_template(
@@ -262,6 +263,5 @@ create table view_template(
 	content text,
 	#module
 	primary key(id,course),
-	#should templates disapear when modules are deleted?
 	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );

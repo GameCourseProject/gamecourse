@@ -1,8 +1,6 @@
 <?php
-//$BACKENDID = 'backend_CbTA8|W6Iz/|W6ImP';
-$BACKENDID = 'backend_R8C1Q|XGPxV|XGPiN';
-//$JSESSIONID = '35CC1D3C136267F95D40398712725EBD.as2';
-$JSESSIONID = 'AF41D57BDB61602633B84D51A7088B1F.as3';
+$BACKENDID = '';
+$JSESSIONID = '';
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;
@@ -44,7 +42,8 @@ curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: JSESSIONID=' . $JSESSIONID . ';BACKENDID=' . $BACKENDID));
 
 foreach($userIds as $id) {
-    $username = User::getUser($id)->getUsername();
+    $user = User::getUser($id);
+    $username = $user->getUsername();
     if ($username != null) {
         curl_setopt($ch, CURLOPT_URL, 'https://fenix.tecnico.ulisboa.pt/user/photo/' . $username);
         $response = curl_exec($ch);
@@ -56,7 +55,7 @@ foreach($userIds as $id) {
         if ($response === false) {
             die('CURL ERROR: ' . curl_error($ch) . ($isCLI ? "\n" :  '<br>'));
         } else if (strpos($header, '404 Not Found') != 0) {
-            echo 'Photo for ' . $id . ' do not found. Do you have the right username?? (' . $username . ') (' . $users->getWrapped($id)->get('name') . ') ' . ($isCLI ? "\n" :  '<br>');
+            echo 'Photo for ' . $id . ' do not found. Do you have the right username?? (' . $username . ') (' . $user->getName() . ') ' . ($isCLI ? "\n" :  '<br>');
             continue;
         }
 

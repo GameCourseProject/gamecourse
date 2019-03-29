@@ -26,17 +26,30 @@ API::gatherRequestInfo();
 API::registerFunction('core', 'getCoursesList', function() {
     $user = Core::getLoggedUser();
     
-    $myCourses = array();
-    if ($user->isAdmin())
-        $courses = Core::getCourses();     
-    else
-        $courses=Core::getActiveCourses();
-    //print_r($courses);
+    
+    if ($user->isAdmin()) {
+        $courses = Core::getCourses();
+        $myCourses = false;
+    }
+    else {
+        $coursesId = $user->getCourses();
+        
+        $courses=[];
+        foreach($coursesId as $cid){
+            $course = Core::getCourse($cid);
+            if ($course["active"]){
+                $courses[]=$course;
+            }
+        }
+        array_combine(array_column($courses,'id'),$courses);
+        $myCourses = true;
+    }
+
     API::response(array('courses' => $courses, 'myCourses' => $myCourses));
 });
 
 API::registerFunction('core', 'getCourseInfo', function() {
-    
+    API::requireCoursePermission();
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
     $user = Core::getLoggedUser();
@@ -78,26 +91,16 @@ API::registerFunction('settings', 'apiKeyGen', function() {
     API::response(array('key' => $newKey));
 });
 
+//set active/deactivated state
 API::registerFunction('settings', 'setCourseState', function() {
     API::requireCourseAdminPermission();
     API::requireValues('course', 'state');
 
-    $course = API::getValue('course');
+    $courseId = API::getValue('course');
     $state = API::getValue('state');
-
-    if ($state)
-        Core::getActiveCoursesWrapped()->push($course);
-    else {
-        $activeCourses = Core::getActiveCourses();
-        for($i = 0; $i < count($activeCourses); ++$i) {
-            if ($activeCourses[$i] == $course) {
-                unset($activeCourses[$i]);
-                --$i;
-            }
-        }
-        Core::getActiveCoursesWrapped()->setValue(array_values($activeCourses));
-    }
-
+    
+    $course = Course::getCourse($courseId);
+    $course->setActiveState($state);
 });
 
 API::registerFunction('settings', 'roleInfo', function() {
@@ -265,12 +268,10 @@ API::registerFunction('settings', 'global', function() {
 
 API::registerFunction('settings', 'tabs', function() {
     API::requireAdminPermission();
-
-    $activeCourses = Core::getActiveCourses();
     $courses = Core::getCourses();
     $coursesTabs = array();
     foreach ($courses as $course) {
-        $coursesTabs[] = Settings::buildTabItem($course['name'] . (in_array($course, $activeCourses) ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $course['id'] . '\'})', true);
+        $coursesTabs[] = Settings::buildTabItem($course['name'] . ($course['active'] ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $course['id'] . '\'})', true);
     }
     $tabs = array(
         Settings::buildTabItem('Courses', 'settings.courses', true, $coursesTabs)
@@ -335,14 +336,7 @@ API::registerFunction('settings', 'deleteCourse', function() {
 
     $course = API::getValue('course');
 
-    $activeCourses = Core::getActiveCourses();
-    $key = array_search($course, $activeCourses);
-    if ($key !== false) {
-        unset($activeCourses[$key]);
-        Core::getActiveCoursesWrapped()->setValue(array_values($activeCourses));
-    }
-
-    Core::getCoursesWrapped()->delete($course);
+    Course::deleteCourse($course);
 });
 
 /*register_shutdown_function(function() {

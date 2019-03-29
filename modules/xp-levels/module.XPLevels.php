@@ -24,14 +24,11 @@ class XPLevels extends Module {
                     break;
                 case 'skill':
                     $color = '#fff';
-                    //$skillsData = $skills->getValue();
-                    foreach($skillsData as $skill) {
-                        
-                            if ($skill['name'] == $award['name']) {
-                                $color = $skill['color'];
-                                break 2;
-                            }
-                        
+                    foreach($skills as $skill) {
+                        if ($skill['name'] == $award['name']) {
+                            $color = $skill['color'];
+                            break;
+                        }
                     }
                     return new Modules\Views\Expression\ValueNode('<div class="skill" style="background-color: ' . $color . '">');
                 case 'bonus':

@@ -64,23 +64,33 @@ if (array_key_exists('method', $_GET)){
        
        
        if (array_key_exists($email, $authorizedEmails)){
-           $access_token = $client->getAccessToken();
+            $access_token = $client->getAccessToken();
        
-           $_SESSION['accessToken'] = $access_token['access_token'];
-           //$_SESSION['refreshToken'] = 
-           $_SESSION['expires'] = $access_token['created']+$access_token['expires_in'];
+            $_SESSION['accessToken'] = $access_token['access_token'];
+            //$_SESSION['refreshToken'] = 
+            $_SESSION['expires'] = $access_token['created']+$access_token['expires_in'];
        
-           $name=$person['displayName'];
-           $id=$authorizedEmails[$email];
-           $username='guest'.$id;
-           if (empty(Core::$sistemDB->select('user','*',['name'=>$name,'email'=>$email]))){
-               Core::$sistemDB->insert('user',['name'=>$name,'email'=>$email,'id'=>$id,'username'=>$username]);
-           }
-           $_SESSION['username'] = $username;
-           $_SESSION['name'] = $name;
-           $_SESSION['email'] = $email;
-           header('Location: '.'/'.BASE);
-           exit();
+            $name=$person['displayName'];
+            $id=$authorizedEmails[$email];
+            $username='guest'.$id;
+            
+            if (empty(Core::$sistemDB->select('user','id',['name'=>$name,'email'=>$email]))){
+                Core::$sistemDB->insert('user',['name'=>$name,'email'=>$email,'id'=>$id,'username'=>$username]);
+                
+                //the google users are given the role of Watcher in all the courses
+                if (empty( Core::$sistemDB->select('course_user','id',['id'=>$id]) )){
+                    $coursesId = Core::$sistemDB->selectMultiple("course","id");
+                    foreach($coursesId as $cid){
+                        Core::$sistemDB->insert('course_user',['id'=>$id,'course'=>$cid['id'],'roles'=>'Watcher']);
+                    }
+                }
+            }
+            
+            $_SESSION['username'] = $username;
+            $_SESSION['name'] = $name;
+            $_SESSION['email'] = $email;
+            header('Location: '.'/'.BASE);
+            exit();
        }else{
            echo "The email used to Log In is not authorized";
        }

@@ -61,22 +61,20 @@ class User {
     }
 
     public static function getUser($id) {
-        //if (static::$usersDB == null)
-        //    static::initDB();
-        //return new User($id, static::$usersDB->getWrapped((string)$id));
         return new User($id);
     }
 
     public static function getUserByUsername($username) {
-        //if (static::$usersDB == null)
-        //    static::initDB();
         $userId=Core::$sistemDB->select("user","id",["username"=>$username]);
         if ($userId==null)
             return null;
         else
             return new User($userId);
     }
-
+    
+    public function getCourses(){
+        return array_column(Core::$sistemDB->selectMultiple("course_user","course",["id"=>$this->id]),"course");
+    }
    // public static function getAll() {//ToDo
    //     if (static::$usersDB == null)
    //         static::initDB();

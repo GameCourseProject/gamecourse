@@ -26,7 +26,6 @@ class SQLDB {
             $stmt=$this->db->prepare($sql);
             //print_r($data);
             $stmt->execute($data);
-            //$result=$this->db->query($sql);
         }catch(\PDOException $e ){
             echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
             throw new \PDOException($e);
@@ -53,10 +52,6 @@ class SQLDB {
         $sql="insert into ".$table." set "; 
         $this->dataToQuery($sql,$data,',');
         $sql.=";";     
-        
-        //print_r($sql);
-        //print_r($data);
-        //print_r(" <<\n>> ");
         $this->executeQueryWithParams($sql,$data); 
     }
     public function delete($table,$where, $likeParams=null){
@@ -79,9 +74,6 @@ class SQLDB {
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';
         $data=array_merge($data,$where);
-       // print_r($sql);
-        //print_r($data);
-        //print_r(" <<\n>> ");
         $this->executeQueryWithParams($sql,$data);     
     }   
     public function updateAdd($table,$collumQuantity,$where){
@@ -91,9 +83,6 @@ class SQLDB {
         $sql.= " where ";
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';
-        //print_r($sql);
-        //print_r($data);
-        //print_r(" <<\n>> ");
         $this->executeQueryWithParams($sql,$where);     
         
     }
@@ -103,10 +92,7 @@ class SQLDB {
         $sql = "select ".$field." from ".$table." where ";
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';      
-         //{print_r($sql);
-        //print_r($where);
         $result = $this->executeQueryWithParams($sql,$where);
-        //print_r($result->fetch());
         $returnVal=$result->fetch(\PDO::FETCH_ASSOC);
         if ($field=='*'){
             return $returnVal;
@@ -121,10 +107,7 @@ class SQLDB {
             $this->dataToQuery($sql,$where,'&&');   
         }
         $sql.=';';
-        //print_r($sql);
-        //print_r(" <<\n>> ");
         $result = $this->executeQueryWithParams($sql,$where);
-        //print_r($result->fetchAll(\PDO::FETCH_ASSOC));
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

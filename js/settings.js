@@ -687,9 +687,11 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
     };
 
     $scope.deleteCourse = function(course) {
-        if (prompt('Are you sure you want to delete? Type \'DELETE ' + $scope.courses[course].name + '\' to confirm the action') != ('DELETE ' + $scope.courses[course].name))
+        //if (prompt('Are you sure you want to delete? Type \'DELETE ' + $scope.courses[course].name + '\' to confirm the action') != ('DELETE ' + $scope.courses[course].name))
+        //    return;
+        if (prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action') != ('DELETE')){
             return;
-
+        }   
         $smartboards.request('settings', 'deleteCourse', {course: course}, function(data, err) {
             if (err) {
                 alert(err.description);
@@ -697,9 +699,7 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
             }
 
             delete $scope.courses[course];
-
             $scope.$emit('refreshTabs');
-            console.log('ok!');
         });
     };
 
@@ -719,12 +719,13 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
         var courses = data.courses;
         if (Array.isArray(courses)) {
             var newCourses = {};
-            for (var i in courses)
+            for (var i in courses){
+                courses[i]['active'] = courses[i]['active']==='1' ? true : false;
                 newCourses[i] = courses[i];
+            }
             courses = newCourses;
         }
         $scope.courses = courses;
-
         $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.active ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
         $($element).append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
     });
@@ -767,7 +768,7 @@ app.controller('SettingsCourseCreate', function($scope, $state, $compile, $smart
             }
 
             $scope.$emit('refreshTabs');
-            console.log('ok!');
+            $state.go('settings.courses');
         });
     };
 });

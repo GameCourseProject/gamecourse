@@ -76,7 +76,7 @@ class Charts extends Module {
             $userID = $params['user'];
             $course = \SmartBoards\Course::getCourse($params['course']);
             $user = $course->getUser($userID);
-            $cacheId = 'xpEvolution' . $params['course'] . '-' . $user->getData('XP');
+            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$user->getData('XP');
             
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
@@ -141,8 +141,10 @@ class Charts extends Module {
                 $diffDays = ($diff->days * ($diff->invert ? -1 : 1));
                 return $diffDays;
             };
-
-            $cacheId = 'leaderboardEvolution' .  $calcDay(time()) . '-' . $params['course'] . '-' . $userID;
+            
+            //keeps cache of leaderboard of user since the last update
+            $updated = $calcDay(Core::$sistemDB->select("course","lastUpdate",["id"=>$params['course']]));
+            $cacheId = 'leaderboardEvolution' .  $updated . '-' . $params['course'] . '-' . $userID;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
                 $chart['info'] = $cacheValue;
