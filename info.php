@@ -56,8 +56,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $courseUser = $course->getLoggedUser();
     if ($user->isAdmin() || $courseUser->hasRole('Teacher'))
         Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
-    //echo "info.php getcourseinfo";
-    //echo API::getValue('course');
+    
     API::response(array(
         'navigation' => Core::getNavigation(),
         'landingPage' => $courseUser->getLandingPage(),
@@ -110,15 +109,17 @@ API::registerFunction('settings', 'roleInfo', function() {
 
     $role = API::getValue('role');
     if (API::hasKey('landingPage')) {
-        if ($role != 'Default')
-            $course->getRoleSettings(API::getValue('role'))->set('landingPage', API::getValue('landingPage'));
-        else
-            $course->getWrapped('defaultRoleSettings')->set('landingPage', API::getValue('landingPage'));
+        if ($role != 'Default') {
+            $course->setRoleData($role,"landingPage",API::getValue('landingPage'));
+        } else {
+            $course->setLandingPage(API::getValue('landingPage'));
+        }
     } else {
-        if ($role != 'Default')
-            API::response($course->getRoleSettings($role)->getValue());
-        else
-            API::response($course->getWrapped('defaultRoleSettings')->getValue());
+        if ($role != 'Default') {
+            API::response(['landingPage'=>$course->getRoleData($role, "landingPage")]);
+        } else {
+            API::response(['landingPage'=>$course->getLandingPage()]);
+        }
     }
 });
 
@@ -132,18 +133,7 @@ API::registerFunction('settings', 'roles', function() {
         $course->setRoles($hierarchy['roles']);
         $course->setRolesHierarchy($hierarchy['hierarchy']);
         $roles = $hierarchy['roles'];
-
-        $changed = false;
-        $rolesSettings = $course->getRolesSettings();
-        $rolesSettingsVal = $rolesSettings->getValue();
-        foreach ($roles as $role) {
-            if (!array_key_exists($role, $rolesSettingsVal)) {
-                $rolesSettingsVal[$role] = array('landingPage' => '');
-                $changed = true;
-            }
-        }
-        if ($changed)
-            $rolesSettings->setValue($rolesSettingsVal);
+        
         http_response_code(201);
     } else if (API::hasKey('usersRoleChanges')) {
         $course = Course::getCourse(API::getValue('course'));
@@ -156,10 +146,11 @@ API::registerFunction('settings', 'roles', function() {
         $course = Course::getCourse(API::getValue('course'));
         $users = $course->getUsers();
         $usersInfo = [];
-        foreach ($users as $id => $user) {
-            $usersInfo[$id] = array('id' => $id, 'name' => $users->getWrapped($id)->get('name'), 'roles' => $users->getWrapped($id)->get('roles'));
+        foreach ($users as $userData) {
+            $id = $userData['id'];
+            $user = new \SmartBoards\CourseUser($id,$course);
+            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRoles());
         }
-
         $globalInfo = array(
             'users' => $usersInfo,
             'roles' => $course->getRoles(),

@@ -66,8 +66,7 @@ class Utils {
                     static::goThroughRoles($role['children'], $func, ...$data);
                 }
             };
-
-            $func($role, $hasChildren, $continue, ...$data);
+            $func($role['name'], $hasChildren, $continue, ...$data);
         }
     }
 

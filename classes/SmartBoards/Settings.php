@@ -15,11 +15,11 @@ class Settings {
             $course = Course::getCourse(API::getValue('course'));
 
             $childTabs = array();
-            Utils::goThroughRoles($course->getRolesHierarchy(), function($role, $hasChildren, $continue, &$parent) {
+            Utils::goThroughRoles($course->getRolesHierarchy(), function($roleName, $hasChildren, $continue, &$parent) {
                 $children = array();
                 if ($hasChildren)
                     $continue($children);
-                $parent[] = Settings::buildTabItem($role['name'], 'course.settings.roles.role({role:\'' . $role['name'] . '\'})', true, $children);
+                $parent[] = Settings::buildTabItem($roleName, 'course.settings.roles.role({role:\'' . $roleName . '\'})', true, $children);
             }, $childTabs);
 
             $defaultViewTab = Settings::buildTabItem('Default', 'course.settings.roles.role({role:\'Default\'})', true, $childTabs);

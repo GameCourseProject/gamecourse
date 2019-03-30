@@ -434,10 +434,10 @@ class ViewHandler {
                $roleFound = 'role.Default';
             }
             //this is choosing a role with low hirearchy (maybe change)
-            $course->goThroughRoles(function ($role, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
-                if (in_array('role.' . $role['name'], $roleArray) && in_array($role['name'], $userRoles)) {
+            $course->goThroughRoles(function ($roleName, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
+                if (in_array('role.' . $roleName, $roleArray) && in_array($roleName, $userRoles)) {
                     
-                    $roleFound = 'role.' . $role['name'];
+                    $roleFound = 'role.' . $roleName;
                 }
                 if ($hasChildren)
                     $continue();

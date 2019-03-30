@@ -507,7 +507,21 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             }
             parent.append(list);
         }
-
+        
+        //deletes the specified role and all its children
+        function deleteRoleAndChildren(hierarchy, roleToDelete=null){
+            for(var i=0; i<hierarchy.length; i++){
+                var deleteIndex = $scope.data.newRoles.indexOf(hierarchy[i]['name']);
+                if ((!roleToDelete || hierarchy[i]['name'] === roleToDelete) && deleteIndex!==-1){
+                    if ("children" in hierarchy[i])
+                        deleteRoleAndChildren(hierarchy[i]['children']);
+                    
+                    $scope.data.newRoles.splice($.inArray(hierarchy[i]['name'], $scope.data.newRoles), 1);
+                }else if ("children" in hierarchy[i])
+                    deleteRoleAndChildren(hierarchy[i]['children'],roleToDelete);  
+            }
+        }
+        
         if ($scope.data.newRoles == undefined)
             $scope.data.newRoles = $scope.data.roles;
         buildRoles(dd, $scope.data.rolesHierarchy);
@@ -531,11 +545,12 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             if ($scope.data.newRoles == undefined)
                 $scope.data.newRoles = $scope.data.roles;
             $scope.data.newRoles.push(ret[0]);
+            $scope.data.rolesHierarchy = dd.nestable('serialize');
         }).on('removeitem', function (event, data) {
             var roleName = data.name;
             if ($scope.data.newRoles == undefined)
                 $scope.data.newRoles = $scope.data.roles;
-            $scope.data.newRoles.splice($.inArray(roleName, $scope.data.newRoles), 1);
+            deleteRoleAndChildren(dd.nestable('serialize'),roleName);
         });
 
         $scope.addRole = function() {
@@ -546,9 +561,10 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 $scope.data.newRoles = $scope.data.roles;
             $scope.data.newRoles.push(newRole);
             dd.nestable('createRootItem')(newRole, {name: newRole});
+            $scope.data.rolesHierarchy = dd.nestable('serialize');
             //$(dd.children().get(0)).append(buildItem(newRole));
             dd.trigger('change');
-        }
+        };
     });
 });
 
@@ -558,11 +574,9 @@ app.controller('CourseRoleSettingsController', function($scope, $stateParams, $e
             console.log(err);
             return;
         }
-
         $scope.data = data;
 
-        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /profile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, role: $stateParams.role}, 'New landing page is set!');
-
+        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, role: $stateParams.role}, 'New landing page is set!');
         $element.append(input);
     });
 });

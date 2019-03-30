@@ -18,7 +18,7 @@ class CourseUser extends User{
     }
     
     public function exists() {
-        return (!empty(Core::$sistemDB->select("course_user","*",["id"=>$this->id,"course"=>$this->course->getId()])));
+        return (!empty($this->getData('id')));
     }
     
     public function delete(){
@@ -42,22 +42,29 @@ class CourseUser extends User{
     //public function getPreviousActivity() {
     //    return $this->userWrapper->get('previousActivity');
     //}
-
+    public function getName(){
+        return parent::getData("name");
+    }
     public function getUsername() {
-        return User::getUser($this->id)->getUsername();
+        return parent::getData("username");
     }
     
     function  getData($field="*"){
         return Core::$sistemDB->select("course_user",$field,["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id,]);
+                                                                          "id"=>$this->id]);
+    }
+    function setCampus($campus) {
+        return Core::$sistemDB->update("course_user",["campus"=>$campus],
+                ["course"=>$this->course->getId(),"id"=>$this->id]);
     }
     function getRoles() {
         return explode(",",$this->getData("roles"));
     }
     
     function setRoles($roles) {
-        Core::$sistemDB->update("course_user",["roles"=>$roles],["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id,]);
+        $updatedRoles = implode(',', $roles);
+        Core::$sistemDB->update("course_user",["roles"=>$updatedRoles],["course"=>$this->course->getId(),
+                                                                          "id"=>$this->id]);
     }
     
     //adds Role (instead of replacing) only if it isn't already in user's roles
@@ -67,7 +74,7 @@ class CourseUser extends User{
             if (empty($currRoles))
                 $this->setRoles($role);
             else
-                $this->setRoles(implode(',', $currRoles).",".$role); 
+                $this->setRoles(array_merge($currRoles, [$role]));
         }
     }
 
@@ -87,10 +94,13 @@ class CourseUser extends User{
 
     function getLandingPage() {
         $userRoles = $this->getRoles();//array w names
-        $landingPage = Core::$sistemDB->select("course","defaultLandingPage",["id"=> $this->course->getId()]);
-        $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
-            if (in_array($role['name'], $userRoles) && $role['landingPage'] != '') {
-                $landingPage = $role['landingPage'];
+        $landingPage = $this->course->getLandingPage();
+        $this->course->goThroughRoles(function($roleName, $hasChildren, $continue) use (&$landingPage, $userRoles) {
+            if (in_array($roleName, $userRoles) ) {
+                $land = $this->course->getRoleData($roleName, "landingPage");
+                if ($land != ''){
+                    $landingPage= $land;
+                }
             }
             $continue();
         });

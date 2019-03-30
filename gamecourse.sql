@@ -16,6 +16,7 @@ drop table if exists badge_level_time;
 drop table if exists user_badge;
 drop table if exists badge;
 drop table if exists award;
+drop table if exists role_hierarchy;
 drop table if exists role;
 drop table if exists enabled_module;
 drop table if exists module;
@@ -67,12 +68,16 @@ create table course_user
 );
 create table role(
 	name varchar(50) not null,
-	landingPage varchar(100) default '/',
-	hierarchy int not null,
+	landingPage varchar(100) default '',
 	course int unsigned not null,
 	#isCourseAdmin boolean default false,
 	primary key(name, course),
 	foreign key(course) references course(id) on delete cascade
+);
+create table role_hierarchy(
+	course int unsigned not null primary key,
+	hierarchy text,
+	foreign key(course) references course(id)
 );
 create table award(
 	student int unsigned not null,

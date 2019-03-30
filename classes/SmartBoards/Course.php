@@ -34,16 +34,24 @@ class Course {
     public function getHeaderLink() {
         return $this->getData("headerLink");
     }
-    public function getAcctive(){
+    public function getActive(){
         return $this->getData("active");
     }
-
-    public function setHeaderLink($link) {
-        Core::$sistemDB->update("course",["headerLink"=>$link],["id" =>$this->cid]);
+    public function getLandingPage(){
+        return $this->getData("defaultLandingPage");
     }
     
+    public function setData($field, $value){
+        Core::$sistemDB->update("course",[$field=>$value],["id"=>$this->cid]);
+    }
+    public function setHeaderLink($link) {
+        $this->setData("headerLink",$link);
+    }
     public function setActiveState($active){
-        Core::$sistemDB->update("course",["active"=>$active],["id" =>$this->cid]);
+        $this->setData("active",$active);
+    }
+    public function setLandingPage($page){
+        $this->setData("defaultLandingPage",$page);
     }
 
     public function getUsers() {
@@ -83,28 +91,45 @@ class Course {
 
         return self::getUser($user->getId());
     }
-
+    
+    public function setRoleData($name, $field, $value){
+        return Core::$sistemDB->update("role",[$field=>$value],["course"=>$this->cid,"name"=>$name]);
+    }
+    
+    public function getRoleData($name, $field='*'){
+        return Core::$sistemDB->select("role",$field,["course"=>$this->cid,"name"=>$name]);
+    }
+    public function getRolesData($field='*') {
+        return Core::$sistemDB->selectMultiple("role",$field,["course"=>$this->cid]);
+    }
+    //return an array with role names
     public function getRoles() {
-        return Core::$sistemDB->selectMultiple("role","*",["course"=>$this->cid]);
+        return array_column($this->getRolesData(),"name");
     }
 
-    //public function setRoles($roles) {
-        //return $this->db->set('roles', $roles);
-    //    Core::$sistemDB->update("course",["roles"=>$roles],["id"=>$this->cid]);
-    //}
-
-    public function getRolesHierarchy() {//same as getRoles, but ordered
-        //return $this->db->get('rolesHierarchy');
-        $roles = Core::$sistemDB->selectMultiple("role","*",["course"=>$this->cid]);
-        usort($roles, function($a, $b) { 
-            return $a['hierarchy'] < $b['hierarchy'] ? -1 : 1;
-        });
-        return $roles;
+    public function setRoles($newroles) {
+        $oldRoles=$this->getRoles();
+        foreach ($newroles as $role){
+            $inOldRoles=array_search($role, $oldRoles);
+            if ($inOldRoles===false){
+                Core::$sistemDB->insert("role",["name"=>$role,"course"=>$this->cid]);
+            }else{
+                unset($oldRoles[$inOldRoles]);
+            }
+        }
+        foreach($oldRoles as $role){
+            Core::$sistemDB->delete("role",["name"=>$role,"course"=>$this->cid]);
+        }
+    }
+    
+    //returns array with all the roles ordered by hierarchy
+    public function getRolesHierarchy() {
+        return json_decode( Core::$sistemDB->select("role_hierarchy","hierarchy",["course"=>$this->cid]),true);
     }
 
-    //public function setRolesHierarchy($rolesHierarchy) {
-    //    return $this->db->set('rolesHierarchy', $rolesHierarchy);
-    //}
+    public function setRolesHierarchy($rolesHierarchy) {
+        Core::$sistemDB->update("role_hierarchy",["hierarchy"=>json_encode($rolesHierarchy)],["course"=>$this->cid]);
+    }
 
     //public function getRolesSettings() {
     //    return $this->getWrapped('rolesSettings');
@@ -198,14 +223,20 @@ class Course {
     //FixMe, this has a lot of hard coded info
     public static function insertBasicCourseData($db, $courseId){
         //these roles are also specified in the course_user table of gamecourse.sql
-        $db->insert("role",["name"=>"Teacher","hierarchy" => 1,"course" =>$courseId]);
-        $db->insert("role",["name"=>"Student","hierarchy" => 2,"course" =>$courseId]);
-        $db->insert("role",["name"=>"Watcher","hierarchy" => 3,"course" =>$courseId]);
+        
+        $db->insert("role",["name"=>"Teacher","course" =>$courseId]);
+        $db->insert("role",["name"=>"Student","course" =>$courseId]);
+        $db->insert("role",["name"=>"Watcher","course" =>$courseId]);
+        
+        $roles = [["name"=>"Teacher"],["name"=>"Student"],["name"=>"Watcher"]];
+        $db->insert("role_hierarchy",["course"=>$courseId,"hierarchy"=> json_encode($roles)]);
         
         $db->insert("skill_tier",["tier"=>1,"reward"=>150,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>2,"reward"=>400,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>3,"reward"=>750,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"course"=>$courseId]); 
+        
+        
     }
     
     //copies content of a specified table in DB to new rows for the new course
@@ -251,7 +282,7 @@ class Course {
             Course::copyCourseContent("view",$fromId,$courseId);
             Course::copyCourseContent("view_role",$fromId,$courseId);
             Course::copyCourseContent("view_part",$fromId,$courseId);
-           
+           Course::copyCourseContent("role_hierarchy",$fromId,$courseId);
         } else {
             Course::insertBasicCourseData(Core::$sistemDB, $courseId);
         }

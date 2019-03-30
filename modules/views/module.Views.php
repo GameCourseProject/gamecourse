@@ -445,7 +445,7 @@ class Views extends Module {
 
                 $response['viewSpecializations'] = $result;
                 $response['allIds'] = array();
-                $roles = array_merge(array('Default'), array_column($course->getRoles(),'name'));
+                $roles = array_merge(array('Default'), $course->getRoles());
                 $users = $course->getUsersIds();
                 $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
                 foreach ($roles as $role)
@@ -787,14 +787,14 @@ class Views extends Module {
     private function findParents($course, $roleToFind) {
         $finalParents = array();
         $parents = array();
-        $course->goThroughRoles(function($role, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
-            if ('role.' . $role['name'] == $roleToFind) {
+        $course->goThroughRoles(function($roleName, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
+            if ('role.' . $roleName == $roleToFind) {
                 $finalParents = $parents;
                 return;
             }
 
             $parentCopy = $parents;
-            $parentCopy[] = 'role.' . $role['name'];
+            $parentCopy[] = 'role.' . $roleName;
             $cont($parentCopy);
         }, $parents);
         return array_merge(array('role.Default'), $finalParents);

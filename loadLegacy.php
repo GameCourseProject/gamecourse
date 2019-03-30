@@ -79,10 +79,12 @@ foreach($students as &$student) {
     
     $courseUser= new CourseUser($student['id'],$course);
     if (!$courseUser->exists()) {
-        $courseUser->create("Student",$student['campus']);
+        $courseUser->create("Student", $student['campus']);
         echo 'New student ' . $student['id'] . "\n";
-    }else
+    } else {
+        $courseUser->setCampus($student['campus']);
         $courseUser->addRole("Student");
+    }
 }
 
 if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
