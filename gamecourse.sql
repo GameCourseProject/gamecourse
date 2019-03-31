@@ -2,9 +2,6 @@ drop table if exists view_template;
 drop table if exists view_part;
 drop table if exists view_role;
 drop table if exists view;
-drop table if exists qr_error;
-drop table if exists qr_participation;
-drop table if exists qr;
 drop table if exists level;
 drop table if exists skill_dependency;
 drop table if exists user_skill;
@@ -99,34 +96,6 @@ create table level(
 	course int unsigned not null,
 	primary key(course,lvlNum),
 	foreign key(course) references course(id) on delete cascade
-);
-
-create table qr(
-	qrCode varchar(61) not null primary key,
-	course int unsigned not null,
-	foreign key(course) references course(id) on delete cascade
-);
-create table qr_error(
-	errorID int not null,
-	course int unsigned not null,
-	studentID int unsigned not null, 
-	ip varchar(15) not null,
-	errorDate timestamp default CURRENT_TIMESTAMP,
-	qrCode varchar(61) not null,
-	msg varchar(500),
-	primary key(errorID,qrCode),
-	foreign key(studentID, course) references course_user(id, course) ,
-	foreign key(qrCode) references qr(qrCode) 
-);
-create table qr_participation(
-	course int unsigned not null,
-	studentID int  unsigned not null, 
-	classNum int not null,
-	classType varchar(15) not null,
-	qrCode varchar(61) not null,
-	primary key(qrCode),
-	foreign key(qrCode) references qr(qrCode),
-	foreign key(studentID, course) references course_user(id, course)
 );
 
 create table skill_tier(
@@ -239,15 +208,16 @@ create table view(
 	type enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',
 	course int unsigned not null,
 	name varchar(50),
-	primary key(viewID, course), #(viewId,course) ou pid
+	primary key(viewID, course),
 	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );
 create table view_role(
-	part varchar(40),#or part
+	part varchar(40),
 	viewId varchar(50),
 	course int unsigned not null,
-	replacements text, #not sure what's for
-	role varchar(100), #if role interaction separate by '>'. multiple roles separated by ',''
+	replacements text, 
+	role varchar(100), #if role interaction separate by '>'
+
 	primary key(viewId,course,role),
 	foreign key(viewId,course) references view(viewId,course) on delete cascade
 );
@@ -266,7 +236,6 @@ create table view_template(
 	course int unsigned not null,
 	id varchar(100),
 	content text,
-	#module
 	primary key(id,course),
 	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
 );

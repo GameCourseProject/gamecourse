@@ -276,12 +276,15 @@ API::registerFunction('settings', 'users', function() {
 
     if (API::hasKey('setPermissions')) {
         $perm = API::getValue('setPermissions');
+        $prevAdmins = User::getAdmins();
         foreach ($perm['admins'] as $admin) {
-            User::getUser($admin)->setAdmin(true);
+            if (!in_array($admin, $prevAdmins))
+                User::getUser($admin)->setAdmin(true);
         }
 
         foreach ($perm['users'] as $user) {
-            User::getUser($user)->setAdmin(false);
+            if (in_array($user, $prevAdmins))
+                User::getUser($user)->setAdmin(false);
         }
         return;
     } else if (API::hasKey('updateUsername')) {
@@ -308,7 +311,7 @@ API::registerFunction('settings', 'users', function() {
             Core::getPendingInvitesWrapped()->delete($invite);
         return;
     }
-
+    //fixme: pending invites aren't in database
     API::response(array('users' => User::getAllInfo(), 'pendingInvites' => Core::getPendingInvites()));
 });
 

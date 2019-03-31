@@ -6,7 +6,6 @@ class User {
     
     public function __construct($id){
         $this->id = $id;
-        //$this->userWrapper = $userWrapper;
     }
     public function create($name){
         Core::$sistemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
@@ -54,9 +53,12 @@ class User {
     public function setAdmin($isAdmin) {
         $this->setData("isAdmin",$isAdmin);
     }
+    public static function getAdmins(){
+        return array_column(Core::$sistemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');
+    }
 
     public function initialize($name, $email) {
-            Core::$sistemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
+        Core::$sistemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
         return $this;
     }
 
@@ -81,11 +83,9 @@ class User {
    //     return static::$baseDB->getKeys();//array_values(array_keys(static::$baseDB->getValue()));
    // }
 
-   // public static function getAllInfo() {
-   //     if (static::$usersDB == null)
-   //         static::initDB();
-    //    return static::$baseDB->getValue();
-   // }
+    public static function getAllInfo() {
+        return Core::$sistemDB->selectMultiple("user");
+    }
 
     //private static function initDB() {
         //static::$baseDB = new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'users');

@@ -511,8 +511,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         //deletes the specified role and all its children
         function deleteRoleAndChildren(hierarchy, roleToDelete=null){
             for(var i=0; i<hierarchy.length; i++){
-                var deleteIndex = $scope.data.newRoles.indexOf(hierarchy[i]['name']);
-                if ((!roleToDelete || hierarchy[i]['name'] === roleToDelete) && deleteIndex!==-1){
+                if (!roleToDelete || hierarchy[i]['name'] === roleToDelete){
                     if ("children" in hierarchy[i])
                         deleteRoleAndChildren(hierarchy[i]['children']);
                     
@@ -801,13 +800,13 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
 
         $scope.selectedUsersAdmin = [];
         $scope.selectedUsersNonAdmin = [];
+        $scope.saved=false;
 
         $scope.newAdmins = [];
         $scope.newUsers = [];
         for (var i in data.users) {
             var user = data.users[i];
-            user.id = i;
-            if (user.isAdmin)
+            if (user.isAdmin==1)
                 $scope.usersAdmin.push(user);
             else
                 $scope.usersNonAdmin.push(user);
@@ -828,6 +827,8 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
         changeWrapper.append($('<button>', {'ng-if': 'selectedUsersNonAdmin.length > 0', 'ng-click': 'addAdmins()', text: '<-- Add Admin'}));
         changeWrapper.append($('<button>', {'ng-if': 'selectedUsersAdmin.length > 0', 'ng-click': 'removeAdmins()', text: 'Remove Admin -->'}));
         changeWrapper.append($('<button>', {'ng-if': 'newAdmins.length > 0 || newUsers.length > 0', 'ng-click': 'saveChanges()', text: 'Save'}));
+        changeWrapper.append($('<span>', {'ng-if': 'saved && (selectedUsersAdmin.length == 0) && (selectedUsersNonAdmin.length==0)', text: 'Saved Admin List!'}));
+
 
         var nonAdminsWrapper = $('<div>');
         nonAdminsWrapper.append('<div>Users:</div>')
@@ -865,10 +866,10 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
                         break;
                     }
                 }
-
                 if (!found)
                     toAddArr.push(toRemove);
             }
+            $scope.saved=false;
         }
 
         $scope.addAdmins = function() {
@@ -898,7 +899,7 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
                 }
                 $scope.newAdmins = [];
                 $scope.newUsers = [];
-                console.log('ok!');
+                $scope.saved=true;
             });
         };
         $compile(userAdministration)($scope);

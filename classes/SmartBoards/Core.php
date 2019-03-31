@@ -164,7 +164,6 @@ class Core {
 
     public static function getCourses() {
         return static::$sistemDB->selectMultiple("course");
-        //return static::$mainConfigDB->get('courses');     
     }
     public static function getCourse($id) {
         return static::$sistemDB->select("course",'*',['id'=>$id]);  
