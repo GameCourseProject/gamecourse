@@ -14,6 +14,7 @@ drop table if exists user_badge;
 drop table if exists badge;
 drop table if exists award;
 drop table if exists role_hierarchy;
+drop table if exists user_role;
 drop table if exists role;
 drop table if exists enabled_module;
 drop table if exists module;
@@ -45,7 +46,6 @@ create table course_user
     campus 	char(1),
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
-    roles   set('Watcher','Student','Teacher') default 'Student',
     lastActivity timestamp default CURRENT_TIMESTAMP,
     prevActivity timestamp default CURRENT_TIMESTAMP,
     totalTreeXP int unsigned default 0,
@@ -64,12 +64,20 @@ create table course_user
     foreign key(course) references course(id) on delete cascade
 );
 create table role(
-	name varchar(50) not null,
+	role varchar(50) not null,
 	landingPage varchar(100) default '',
 	course int unsigned not null,
 	#isCourseAdmin boolean default false,
-	primary key(name, course),
+	primary key(role, course),
 	foreign key(course) references course(id) on delete cascade
+);
+create table user_role(
+	id int unsigned not null,
+	course  int unsigned not null,
+	role varchar(50) not null,
+	primary key(id, course, role),
+	foreign key(id, course) references course_user(id, course) on delete cascade,
+	foreign key(role, course) references role(role,course)
 );
 create table role_hierarchy(
 	course int unsigned not null primary key,

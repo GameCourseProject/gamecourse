@@ -13,7 +13,8 @@ class CourseUser extends User{
     public function create($role=null,$campus=""){
         Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
         if ($role){
-            Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
+            Core::$sistemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]); 
+            //Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
         }
     }
     
@@ -57,31 +58,46 @@ class CourseUser extends User{
         return Core::$sistemDB->update("course_user",["campus"=>$campus],
                 ["course"=>$this->course->getId(),"id"=>$this->id]);
     }
+    
     function getRoles() {
-        return explode(",",$this->getData("roles"));
+        return array_column(Core::$sistemDB->selectMultiple("user_role","role",
+                ["course"=>$this->course->getId(),"id"=>$this->id]),"role");
+        //return explode(",",$this->getData("roles"));
     }
     
+    //receives array of roles and replaces them in the database
     function setRoles($roles) {
-        $updatedRoles = implode(',', $roles);
-        Core::$sistemDB->update("course_user",["roles"=>$updatedRoles],["course"=>$this->course->getId(),
-                                                                          "id"=>$this->id]);
+        $oldRoles = $this->getRoles();
+        foreach($roles as $role){
+            $found = array_search($role, $oldRoles);
+            //print_r($found);
+            if ($found === false) {
+                Core::$sistemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $role]);
+            } else {
+                unset($oldRoles[$found]);
+            }
+        }
+        //delete the remaining roles
+        foreach ($oldRoles as $role){
+            Core::$sistemDB->delete("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
+        }
+        //$updatedRoles = implode(',', $roles);
+        //Core::$sistemDB->update("course_user",["roles"=>$updatedRoles],["course"=>$this->course->getId(),
+        //                                                                  "id"=>$this->id]);
     }
     
     //adds Role (instead of replacing) only if it isn't already in user's roles
     function addRole($role){
         $currRoles=$this->getRoles();
         if (!in_array($role, $currRoles)){
-            if (empty($currRoles))
-                $this->setRoles($role);
-            else
-                $this->setRoles(array_merge($currRoles, [$role]));
+            Core::$sistemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);      
         }
     }
 
     function hasRole($role) {
-        return (!empty(Core::$sistemDB->selectMultiple("course_user",'*',["course"=>$this->course->getId(),
+        return (!empty(Core::$sistemDB->selectMultiple("user_role",'*',["course"=>$this->course->getId(),
                                                             "id"=>$this->id,
-                                                             "roles"=>$role])));
+                                                             "role"=>$role])));
     }
 
     function isTeacher() {

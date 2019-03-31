@@ -30,9 +30,8 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
                         "username"=> $teacherUsername,
                         "isAdmin"=> true]);
     $db->insert("course_user",["id" => $teacherId,
-                                "course" => 1,
-                              "roles"=> "Teacher"]);
-
+                                "course" => 1,]);
+    $db->insert("user_role",["id"=>$teacherId, "course"=>1,"role"=>"Teacher"]);
 
     file_put_contents('setup.done','');
     //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);

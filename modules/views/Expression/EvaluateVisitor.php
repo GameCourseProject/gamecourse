@@ -14,7 +14,6 @@ class EvaluateVisitor extends Visitor {
     public function __construct($params, $viewHandler) {
         $this->params = $params;
         $this->viewHandler = $viewHandler;
-        
     }
 
     public function visitStatementSequence($node) {
@@ -137,8 +136,7 @@ class EvaluateVisitor extends Visitor {
             return new ValueNode(Core::$sistemDB->select($t,$subPath->getPath(),$contextArray));
         }else if ($returnContinuation){//not using continuations, just returning an array
             return Core::$sistemDB->selectMultiple($t,'*',$contextArray);
-        }
-        else{
+        }else{
             return new ValueNode(Core::$sistemDB->selectMultiple($t,'*',$contextArray));
         }
         

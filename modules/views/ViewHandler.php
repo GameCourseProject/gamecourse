@@ -248,7 +248,6 @@ class ViewHandler {
     }
 
     public function processRepeat(&$container, $viewParams, $visitor, $func) {
-        //print_R($container);
         $containerArr = array();
         foreach($container as &$child) {
             if (!array_key_exists('repeat', $child)) {
@@ -286,9 +285,6 @@ class ViewHandler {
                 });
                 
                 foreach ($repeatParams as &$params){
-                    if (array_key_exists('roles', $params)){
-                        $params['roles']=explode(',',$params['roles']);
-                    }
                     $params = [$repeatKey => $params];
                 }
                 

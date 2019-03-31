@@ -92,10 +92,10 @@ class Badges extends Module {
             $studentsUsernames = array();
 
             foreach ($students as $student) {
-                $userData = \SmartBoards\User::getUser($student['id'])->getData();
+                $userData = Core::$sistemDB->select("course_user natural join user","*",["id"=>$student['id']]);
                 $studentsUsernames[$student['id']] = $userData['username'];
                 $studentsNames[$student['id']] = $userData['name'];
-                $studentsCampus[$student['id']] = Core::$sistemDB->select("course_user","campus",["id"=>$student['id']]);
+                $studentsCampus[$student['id']] = $userData["campus"];
             }
             
             $badges = Core::$sistemDB->selectMultiple("badge",'*',["course"=>$courseId]);
@@ -134,15 +134,12 @@ class Badges extends Module {
                             );
                         }
                     }
-
                     usort($badgeCache[$badge['name']][$i], function ($v1, $v2) {
                         return $v1['timestamp'] - $v2['timestamp'];
                     });
-                    
                     $badgeCacheClean[$badge['name']][$i] = $badgeCache[$badge['name']][$i];
                 }
             }
-            
             CacheSystem::store($cacheId, $badgeCacheClean);
             return new Modules\Views\Expression\ValueNode('');
         });

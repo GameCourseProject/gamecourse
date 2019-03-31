@@ -127,7 +127,7 @@ API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
 
     if (API::hasKey('updateRoleHierarchy')) {
-        // TODO: check deleted roles
+        // TODO: check deleted roles  (what happens when you delete a role that users have)
         $hierarchy = API::getValue('updateRoleHierarchy');
         $course = Course::getCourse(API::getValue('course'));
         $course->setRoles($hierarchy['roles']);

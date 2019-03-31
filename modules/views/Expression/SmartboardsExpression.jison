@@ -76,6 +76,11 @@
                                 //
                                 return 'PATH_SEPARATOR';
                             }
+<PATH_STATE>"+"             {   //js
+                                CodeAssistant.pushPath();//??
+                                //
+                                return 'JOIN';
+                            }
 <PATH_STATE>.               {   //js
                                 this.unput(yytext);
                                 this.popState();
@@ -288,6 +293,11 @@ simplepath
             $$ = $1;
             /*php $$ = $1->text; */
         }
+    | PATH JOIN simplepath
+        {   //js
+            $$ = $1;
+            /*php $$ = $1->text . " natural join " . $3->text; */
+        }    
     | PATH PATH_SEPARATOR simplepath
         {   //js
             $$ = $1 + '.' + $3;

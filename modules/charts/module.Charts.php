@@ -75,9 +75,9 @@ class Charts extends Module {
         $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
             $course = \SmartBoards\Course::getCourse($params['course']);
-            $user = $course->getUser($userID);
-            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$user->getData('XP');
+            $user = (new \SmartBoards\CourseUser($userID, $course));
             
+            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$user->getData('XP');
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
                 $spark = (array_key_exists('spark', $chart['info']) ? true : false);
@@ -90,7 +90,6 @@ class Charts extends Module {
             usort($awards, function($v1,$v2){
                 return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
             });
-
 
             $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['awardDate'])));
             $xpDay = 0;
@@ -157,7 +156,7 @@ class Charts extends Module {
             // calc xp for each student, each day
             foreach ($students as $student) {
                 $awards = \SmartBoards\Core::$sistemDB->selectMultiple("award",'*',['student'=>$student['id']]);
-                //ToDo use a query with order by instead of sorting afterwards
+                //ToDo maybe use a query with order by instead of sorting afterwards
                 usort($awards, function($v1,$v2){
                     return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
                 });

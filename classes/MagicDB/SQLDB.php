@@ -36,9 +36,9 @@ class SQLDB {
     public function dataToQuery(&$sql,$data,$separator,$add=false){
         //takes an array and creates a string with $key=$value(,&).... then adds to sql query str        
         foreach ($data as $key => $value) {
-            if ($key=="roles" && $separator=='&&')//'roles' is a set so it works differently
-                $sql.="FIND_IN_SET( :roles ,roles)".$separator;
-            elseif ($add)
+            //if ($key=="roles" && $separator=='&&')//'roles' is a set so it works differently
+            //    $sql.="FIND_IN_SET( :roles ,roles)".$separator;
+            if ($add)
                 $sql.=$key.'= '.$key.' + '.$value.$separator;             
             else
                 $sql.=$key.'= :'.$key.' '.$separator;
@@ -89,7 +89,8 @@ class SQLDB {
     public function select($table,$field,$where){
     //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
         //example: select id from user where username='ist181205';
-        $sql = "select ".$field." from ".$table." where ";
+        $sql = "select ".$field." from ".$table;
+        $sql.=" where ";
         $this->dataToQuery($sql,$where,'&&');
         $sql.=';';      
         $result = $this->executeQueryWithParams($sql,$where);

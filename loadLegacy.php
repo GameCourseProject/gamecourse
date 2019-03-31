@@ -59,7 +59,7 @@ foreach($teachers as &$teacher) {
         $courseUser->create("Teacher");
         echo 'New teacher ' . $teacher['id'] . "\n";
     }elseif (!$courseUser->isTeacher()){
-        $courseUser->setRoles("Teacher");
+        $courseUser->addRole("Teacher");
     }
 }
 

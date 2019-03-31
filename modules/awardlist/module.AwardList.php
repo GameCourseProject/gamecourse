@@ -30,19 +30,16 @@ class AwardList extends Module {
 
         $course = $this->getParent();
         $viewHandler->registerFunction('getAllAwards', function() use ($course) {
-            //$users = \Smartboards\User::getAllInfo();
-            $students = $course->getUsersWithRole('Student');
             $courseId = $course->getId();
             $allAwards = array();
-            foreach ($students as $student) {
-                $id = $student['id'];
-                $studentAwards = Core::$sistemDB->selectMultiple("award",'*',["course"=>$courseId,"student"=>$id]);
-                
-                foreach ($studentAwards as $award) {
-                    $award['Studentname'] = \SmartBoards\User::getUser($id)->getName();
-                    //$award['username'] = $user['username'];
-                    $allAwards[] = $award;
-                }
+            $awards = Core::$sistemDB->selectMultiple("award",'*',["course"=>$courseId]);
+            $studentNames = [];
+            foreach($awards as $award){
+                $id=$award['student'];
+                if (!array_key_exists($id, $studentNames))
+                    $studentNames[$id]=\SmartBoards\User::getUser($id)->getName();
+                $award['Studentname'] = $studentNames[$id];
+                $allAwards[] = $award;
             }
             return new \Modules\Views\Expression\ValueNode($allAwards);
         });

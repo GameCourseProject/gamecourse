@@ -12,9 +12,7 @@ class XPLevels extends Module {
     public function init() {
        
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->registerFunction('awardLatestImage', function($award, $skills) {
-            //$award = $award->getValue(); // get value of continuation
-
+        $viewHandler->registerFunction('awardLatestImage', function($award, $course) {
             switch ($award['type']) {
                 case 'grade':
                     return new Modules\Views\Expression\ValueNode('<img src="images/quiz.svg">');
@@ -24,12 +22,9 @@ class XPLevels extends Module {
                     break;
                 case 'skill':
                     $color = '#fff';
-                    foreach($skills as $skill) {
-                        if ($skill['name'] == $award['name']) {
-                            $color = $skill['color'];
-                            break;
-                        }
-                    }
+                    $skillColor = \SmartBoards\Core::$sistemDB->select("skill","color",["name"=>$award['name'],"course"=>$course]);
+                    if($skillColor)
+                        $color=$skillColor;
                     return new Modules\Views\Expression\ValueNode('<div class="skill" style="background-color: ' . $color . '">');
                 case 'bonus':
                     return new Modules\Views\Expression\ValueNode('<img src="images/awards.svg">');
@@ -39,8 +34,6 @@ class XPLevels extends Module {
         });
 
         $viewHandler->registerFunction('formatAward', function($award) {
-            //$award = $award->getValue(); // get value of continuation
-
             switch ($award['type']) {
                 case 'grade':
                     return new Modules\Views\Expression\ValueNode('Grade from ' . $award['name']);
@@ -57,8 +50,6 @@ class XPLevels extends Module {
         });
 
         $viewHandler->registerFunction('formatAwardLatest', function($award) {
-            //$award = $award->getValue(); // get value of continuation
-
             switch ($award['type']) {
                 case 'badge':
                     return new Modules\Views\Expression\ValueNode($award['name'] . ' (level ' . $award['level'] . ')');

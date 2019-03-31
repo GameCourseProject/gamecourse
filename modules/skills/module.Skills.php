@@ -111,41 +111,31 @@ class Skills extends Module {
                 $studentsUserData[$student['id']]['name'] = $userData['name'];
             }
             
-            $tiers = Core::$sistemDB->selectMultiple("skill_tier",'*',["course"=>$course->getId()]);
-            
             $skillsCache = array();
-            foreach ($tiers as $tier) {
-                $skills = Core::$sistemDB->selectMultiple("skill",'*',["course"=>$course->getId(),"tier"=>$tier['tier']]);
-                
-                foreach ($skills as $skill) {
-                    $skillName = $skill['name'];
-                    $skillsCache[$skillName] = array();
-                    $skillStudents = Core::$sistemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
+            $skills = Core::$sistemDB->selectMultiple("skill_tier natural join skill",
+                                                    '*',["course"=>$course->getId()]);
+            foreach ($skills as $skill) {
+                $skillName = $skill['name'];
+                $skillsCache[$skillName] = array();
+                $skillStudents = Core::$sistemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
                
-                    foreach($skillStudents as $skillStudent) {
-                            $id= $skillStudent['student'];
-                            $timestamp=  strtotime($skillStudent['skillTime']);
-                            $skillsCache[$skillName][] = array(
-                                'id' => $id,
-                                'name' => $studentsUserData[$id]['name'],
-                                'campus' => $studentsArray[$id]['campus'],
-                                'username' => $studentsUserData[$id]['username'],
-                                'timestamp' => $timestamp,
-                                'when' => date('d-M-Y', $timestamp)
-                            );
-                        
-                    }
-
-                    usort($skillsCache[$skillName], function($v1, $v2) {
-                        return $v1['timestamp'] - $v2['timestamp'];
-                    });
-
-                    //$final = array();
-                    //foreach($skillsCache[$skillName] as $skillArr) {
-                    //    $final[] = \SmartBoards\DataRetrieverContinuation::buildForArray($skillArr);
-                    //}
-                    //$skillsCache[$skillName] = $final;
+                foreach($skillStudents as $skillStudent) {
+                    $id= $skillStudent['student'];
+                    $timestamp=  strtotime($skillStudent['skillTime']);
+                    $skillsCache[$skillName][] = array(
+                        'id' => $id,
+                        'name' => $studentsUserData[$id]['name'],
+                        'campus' => $studentsArray[$id]['campus'],
+                        'username' => $studentsUserData[$id]['username'],
+                        'timestamp' => $timestamp,
+                        'when' => date('d-M-Y', $timestamp)
+                    );    
                 }
+
+                usort($skillsCache[$skillName], function($v1, $v2) {
+                        return $v1['timestamp'] - $v2['timestamp'];
+                });
+                
             }
             return new Modules\Views\Expression\ValueNode('');
         });
@@ -173,26 +163,24 @@ class Skills extends Module {
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');
             $courseId=$this->getParent()->getId();
-            $tiers = Core::$sistemDB->selectMultiple("skill_tier",'*',["course"=>$courseId]);
-            //$tiers = $this->getParent()->getModuleData('skills')->get('skills');
+            
             if ($skillName) {
-                foreach($tiers as $tier) {
-                    $skills = Core::$sistemDB->selectMultiple("skill",'*',["course"=>$courseId,"tier"=>$tier['tier']]);
-                    foreach($skills as $skill) {
-                        $compressedName = str_replace(' ', '', $skill['name']);
-                        if (str_replace(' ', '', $skill['name']) == $skillName) {
-                            $page = htmlspecialchars_decode($skill['page']);
-                            // to support legacy, TODO: Remove this when skill editing is supported in SmartBoards
-                            preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
-                            foreach($matches[0] as $id => $match) {
-                                $linkSkillName = $matches[1][$id];
-                                $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
-                            }
-                            $page = str_replace('src="http:', 'src="https:', $page);
-                            $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $this->getDir() . 'resources/' . $compressedName, $page);
-                            $page = str_replace(' src="' . $compressedName, ' src="' . $this->getDir() . 'resources/' . $compressedName, $page);
-                            API::response(array('name' => $skill['name'], 'description' => $page));
+                $skills = Core::$sistemDB->selectMultiple("skill_tier natural join skill",
+                                '*',["course"=>$courseId]);
+                foreach($skills as $skill) {
+                    $compressedName = str_replace(' ', '', $skill['name']);
+                    if ($compressedName == $skillName) {
+                        $page = htmlspecialchars_decode($skill['page']);
+                        //to support legacy, TODO: Remove this when skill editing is supported in SmartBoards
+                        preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
+                        foreach($matches[0] as $id => $match) {
+                            $linkSkillName = $matches[1][$id];
+                            $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
                         }
+                        $page = str_replace('src="http:', 'src="https:', $page);
+                        $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $this->getDir() . 'resources/' . $compressedName, $page);
+                        $page = str_replace(' src="' . $compressedName, ' src="' . $this->getDir() . 'resources/' . $compressedName, $page);
+                        API::response(array('name' => $skill['name'], 'description' => $page));
                     }
                 }
             }
