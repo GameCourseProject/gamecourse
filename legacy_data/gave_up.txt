@@ -1,0 +1,5 @@
+79465;Amiraldes Xavier;amiraldes@gmail.com;A
+79803;Pedro Panzo;mbotepm@gmail.com;A
+82162;Nuno Lages;nuno.lages@tecnico.ulisboa.pt;A
+73830;Rui Ribeiro;rfrgribeiro@gmail.com;T
+58384;Pedro Castro;p.castro275@gmail.com;A

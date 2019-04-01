@@ -2,7 +2,10 @@
 logs/
 config/
 *.css
-legacy_data/
+legacy_data/n
+legacy_data/old_2014_2015
+legacy_data/old_2016
+legacy_data/moodle.tar.gz
 photos/ist*
 modules/skills/resources/
 modules/quest/resources/
