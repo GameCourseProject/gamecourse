@@ -19,7 +19,6 @@ class Core {
     //public static $active_courses = array();
     //public static $courses = array();   //?
     public static $theme = 'default';
-    public static $pending_invites = array();
     private static $apiKey;
 
     private static $loggedUser = null;
@@ -106,7 +105,7 @@ class Core {
 
     public static function checkAccess($redirect = true) {
         static::init(); // make sure its initialized
-
+        
         if (array_key_exists('user', $_SESSION)) {
             static::$loggedUser = User::getUser($_SESSION['user']);
             return true;
@@ -114,14 +113,17 @@ class Core {
 
         $fenixAuth = static::getFenixAuth();
         $username = $fenixAuth->getUsername();
-  
-        if (static::$pending_invites != null && array_key_exists($username, static::$pending_invites)) {
-            $pendingInvite = static::$pending_invites[$username];
-            $user = User::getUser($pendingInvite['id'])->initialize($fenixAuth->getName(), $fenixAuth->getEmail());
-            $user->setUsername($username);
+        
+        $invites = Core::getPendingInvites();
+        $pending_invites = array_combine(array_column($invites,"username"), $invites);
+        if ( !empty($pending_invites) && array_key_exists($username, $pending_invites)) {
+            $pendingInvite = $pending_invites[$username];
+            $user = User::getUser($pendingInvite['id']);
+            $user->create($fenixAuth->getName());
+            $user->setData(["email"=>$fenixAuth->getEmail(),"username"=>$username]);
             if (array_key_exists('isAdmin', $pendingInvite))
                 $user->setAdmin($pendingInvite['isAdmin']);
-            unset(static::$pending_invites[$username]);
+            Core::removePendingInvites($pendingInvite["id"]);
         }
 
         static::$loggedUser = User::getUserByUsername($username);
@@ -154,13 +156,17 @@ class Core {
     }
 
     public static function getPendingInvites() {
-        //return static::$mainConfigDB->get('pending-invites');
-        return static::$pending_invites;
+        return static::$sistemDB->selectMultiple("pending_invite");
     }
-
-    //public static function getPendingInvitesWrapped() {
-    //    return static::$mainConfigDB->getWrapped('pending-invites');
-    //}
+    public static function pendingInviteExists($id) {
+        return !empty(static::$sistemDB->select("pending_invite",'id',['id'=>$id]));
+    }
+    public static function addPendingInvites($data) {
+        return static::$sistemDB->insert("pending_invite",$data);
+    }
+    public static function removePendingInvites($id) {
+        return static::$sistemDB->delete("pending_invite",["id"=>$id]);
+    }
 
     public static function getCourses() {
         return static::$sistemDB->selectMultiple("course");

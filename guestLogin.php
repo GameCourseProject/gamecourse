@@ -81,7 +81,8 @@ if (array_key_exists('method', $_GET)){
                 if (empty( Core::$sistemDB->select('course_user','id',['id'=>$id]) )){
                     $coursesId = Core::$sistemDB->selectMultiple("course","id");
                     foreach($coursesId as $cid){
-                        Core::$sistemDB->insert('course_user',['id'=>$id,'course'=>$cid['id'],'roles'=>'Watcher']);
+                        Core::$sistemDB->insert('course_user',['id'=>$id,'course'=>$cid['id']]);
+                        Core::$sistemDB->insert("user_role",['id'=>$id,'course'=>$cid['id'],"role"=>"Watcher"]);
                     }
                 }
             }

@@ -1,3 +1,4 @@
+drop table if exists pending_invite;
 drop table if exists view_template;
 drop table if exists view_part;
 drop table if exists view_role;
@@ -225,7 +226,6 @@ create table view_role(
 	course int unsigned not null,
 	replacements text, 
 	role varchar(100), #if role interaction separate by '>'
-
 	primary key(viewId,course,role),
 	foreign key(viewId,course) references view(viewId,course) on delete cascade
 );
@@ -246,4 +246,10 @@ create table view_template(
 	content text,
 	primary key(id,course),
 	foreign key(module,course) references enabled_module(moduleId,course) on delete cascade
+);
+
+create table pending_invite(
+	id 	int unsigned,
+    username varchar(50),
+    primary key(id)
 );

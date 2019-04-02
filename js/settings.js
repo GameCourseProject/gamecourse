@@ -919,20 +919,20 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
             });
         };
         $scope.deleteInvite = function(invite) {
-            $smartboards.request('settings', 'users', {deleteInvite: invite}, function(data, err) {
+            $smartboards.request('settings', 'users', {deleteInvite: invite.id}, function(data, err) {
                 if (err) {
                     console.log(err.description);
                     return;
                 }
 
-                delete $scope.pendingInvites[invite];
+                delete $scope.pendingInvites[invite.username];
                 console.log('ok!');
             });
         };
         $scope.isValidString = function(s) { return s != undefined && s.length > 0};
 
         var pendingInvites = createSection($($element), 'Pending Invites').attr('id', 'pending-invites');
-        pendingInvites.append('<div>Pending: <ul><li ng-repeat="invite in pendingInvites">{{invite.id}}, {{invite.username}}<img src="images/trashcan.svg" ng-click="deleteInvite(invite.username)"></li></ul></div>');
+        pendingInvites.append('<div>Pending: <ul><li ng-if="pendingInvites.length>0" ng-repeat="invite in pendingInvites">{{invite.id}}, {{invite.username}}<img src="images/trashcan.svg" ng-click="deleteInvite(invite)"></li></ul></div>');
         var addInviteDiv = $('<div>');
         addInviteDiv.append('<div>New invite: </div>')
         addInviteDiv.append('<div><label for="invite-id" class="label">IST Id:</label><input type="text" class="input-text" id="invite-id" ng-model="inviteInfo.id"></div>');

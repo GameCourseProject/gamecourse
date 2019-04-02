@@ -22,36 +22,37 @@ class User {
     public function getData($field='*'){
         return Core::$sistemDB->select("user",$field,["id"=>$this->id]);
     }
-    public function setData($field, $value){
-        Core::$sistemDB->update("user",[$field=>$value],["id"=>$this->id]);
+    
+    public function setData($fieldValues){
+        Core::$sistemDB->update("user",$fieldValues,["id"=>$this->id]);
     }
     
     public function getName() {
         return $this->getData("name");
     }
     public function setName($name) {
-        $this->setData("name",$name);
+        $this->setData(["name"=>$name]);
     }
 
     public function getEmail() {
         return $this->getData("email");
     }
     public function setEmail($email) {
-        $this->setData("email",$email);
+        $this->setData(["email"=>$email]);
     }
 
     public function getUsername() {
         return $this->getData("username");
     }
     public function setUsername($username) {
-        $this->setData("username",$username);
+        $this->setData(["username"=>$username]);
     }
 
     public function isAdmin() {
         return $this->getData("isAdmin");
     }
     public function setAdmin($isAdmin) {
-        $this->setData("isAdmin",$isAdmin);
+        $this->setData(["isAdmin"=>$isAdmin]);
     }
     public static function getAdmins(){
         return array_column(Core::$sistemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');

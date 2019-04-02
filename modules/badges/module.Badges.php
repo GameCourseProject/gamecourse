@@ -79,8 +79,10 @@ class Badges extends Module {
             $course = $this->getParent();
             $courseId=$course->getId();
             
+            //if updates become very regular maybe cacheId could just use de day of the update
             $updated = Core::$sistemDB->select("course","lastUpdate",["id"=>$courseId]);
-            $cacheId = $courseId . '-' . $updated;
+            $updated = strtotime($updated);
+            $cacheId = "badges" . $courseId . '-' . $updated;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);  
             if ($hasCache) {
                 $badgeCache = $cacheValue;

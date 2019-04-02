@@ -303,15 +303,18 @@ API::registerFunction('settings', 'users', function() {
             API::error('A user with id ' . $inviteInfo['id'] . ' is already registered.');
         else if (User::getUserByUsername($inviteInfo['username']) != null)
             API::error('A user with username ' . $inviteInfo['username'] . ' is already registered.');
-        Core::getPendingInvitesWrapped()->set($inviteInfo['username'], array('id' => $inviteInfo['id'], 'username' => $inviteInfo['username']));
+        else if (Core::pendingInviteExists($inviteInfo['id']))
+            API::error('A user with username ' . $inviteInfo['username'] . ' is already invited.');
+        else
+            Core::addPendingInvites($inviteInfo);
         return;
     } else if (API::hasKey('deleteInvite')) {
         $invite = API::getValue('deleteInvite');
-        if (Core::getPendingInvitesWrapped()->hasKey($invite))
-            Core::getPendingInvitesWrapped()->delete($invite);
+        
+        if (Core::pendingInviteExists($invite))
+            Core::removePendingInvites($invite);
         return;
     }
-    //fixme: pending invites aren't in database
     API::response(array('users' => User::getAllInfo(), 'pendingInvites' => Core::getPendingInvites()));
 });
 

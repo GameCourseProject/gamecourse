@@ -1,7 +1,7 @@
 <?php
 define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecoursenext');
 define('CONNECTION_USERNAME', 'root');
-define('CONNECTION_PASSWORD', '123123');
+define('CONNECTION_PASSWORD', 'smartpassword');
 define('MODULES_FOLDER', 'modules');
 define('LEGACY_DATA_FOLDER', 'legacy_data');
 define('BASE', 'smartboards');
