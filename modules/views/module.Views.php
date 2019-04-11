@@ -251,7 +251,7 @@ class Views extends Module {
 
             if (API::hasKey('course'))
                 Course::getCourse((string)API::getValue('course'))->getLoggedUser()->refreshActivity();
-
+            
             $this->viewHandler->handle(API::getValue('view'));
         });
 
@@ -285,7 +285,7 @@ class Views extends Module {
                 $roleToFind = $info['roleOne'];
                 $finalParents = $this->findParents($course, $roleToFind);
                 $parentViews = $this->findViews($viewId,$type, array_merge($finalParents, array($roleToFind)));
-//TODO
+
                 if ($type == ViewHandler::VT_ROLE_INTERACTION) {
                     $parentsTwo = array_merge($this->findParents($course, $info['roleTwo']), array($info['roleTwo']));
                     $finalViews = array();

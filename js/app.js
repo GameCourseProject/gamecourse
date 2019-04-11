@@ -169,6 +169,7 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
         $http.post('info.php?module=' + module + '&request=' + request, data).then(function(response) {
             if (callback) {
                 console.log("after callback",response);
+                
                 if (response.data.data != undefined){
                     callback(response.data.data, undefined);
                 }
@@ -189,8 +190,14 @@ app.service('$smartboards', function($http, $q, $ocLazyLoad, $rootScope) {
                 
             }
         }, function(response) {
-            if (callback)
+            if (callback){
+                console.log("error",response);
+                //Reload page if session expires
+                if (!("data" in response) || response.data.error=="Not logged in!"){
+                    location.reload();
+                }
                 callback(undefined, {status: response.status, description: response.data.error});
+            }
             $rootScope.loaded=true;
         });
         

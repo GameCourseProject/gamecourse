@@ -255,8 +255,8 @@ class Course {
         
         //course_user table (add current user)
         $currentUserId=Core::getLoggedUser()->getId();
-        Core::$sistemDB->insert("course_user",["id" => $currentUserId,"course" => $courseId, "roles"=> 'Teacher']);
-
+        Core::$sistemDB->insert("course_user",["id" => $currentUserId,"course" => $courseId]);
+        
         if ($copyFrom !== null){//&& $courseExists) {
             $copyFromCourse = Course::getCourse($copyFrom);
             $fromId=$copyFromCourse->getId();
@@ -280,9 +280,10 @@ class Course {
             Course::copyCourseContent("view_role",$fromId,$courseId);
             Course::copyCourseContent("view_part",$fromId,$courseId);
             Course::copyCourseContent("role_hierarchy",$fromId,$courseId);
-            Course::copyCourseContent("user_role",$fromId,$courseId);
+            
         } else {
             Course::insertBasicCourseData(Core::$sistemDB, $courseId);
+            Core::$sistemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>"Teacher"]);
         }
         return $course;
     }

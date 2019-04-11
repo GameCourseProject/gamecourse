@@ -86,7 +86,7 @@ class Charts extends Module {
                 return;
             }
             $awards = Core::$sistemDB->selectMultiple("award",'*',["student"=>$userID,"course"=>$course->getId()]);
-
+            //ToDo use order by in the query instead of sorting array
             usort($awards, function($v1,$v2){
                 return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
             });

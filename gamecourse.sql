@@ -38,6 +38,7 @@ create table course(
 	active boolean default true,
 	headerLink varchar(255) default "",
 	defaultLandingPage varchar(100) default "",
+	fenixLink varchar(255) default "",
 	lastUpdate timestamp default CURRENT_TIMESTAMP
 );
 
@@ -48,7 +49,7 @@ create table course_user
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
     lastActivity timestamp default CURRENT_TIMESTAMP,
-    prevActivity timestamp default CURRENT_TIMESTAMP,
+    prevActivity timestamp,
     totalTreeXP int unsigned default 0,
     countedTreeXP int unsigned default 0,
     numSkills 	int unsigned default 0,
@@ -61,7 +62,7 @@ create table course_user
     quizXP int unsigned default 0,
     presentationXP int unsigned default 0,
     primary key(id, course),
-    foreign key(id) references user(id),
+    foreign key(id) references user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
 );
 create table role(
@@ -78,12 +79,12 @@ create table user_role(
 	role varchar(50) not null,
 	primary key(id, course, role),
 	foreign key(id, course) references course_user(id, course) on delete cascade,
-	foreign key(role, course) references role(role,course)
+	foreign key(role, course) references role(role,course) on delete cascade
 );
 create table role_hierarchy(
 	course int unsigned not null primary key,
 	hierarchy text,
-	foreign key(course) references course(id)
+	foreign key(course) references course(id) on delete cascade
 );
 create table award(
 	student int unsigned not null,

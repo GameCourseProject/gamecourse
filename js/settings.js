@@ -258,7 +258,7 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         downloadPhotosSettings.append($compile(backendidInput)($scope));
         loadDataSection.append(downloadPhotosSettings);
         var updateDownloadButtons = $('<div>');
-        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="updateUsernames.php?course={{course}}&courseurl0={{data.courseFenixLink}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Update Usernames</a>')($scope));
+        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="updateUsernames.php?course={{course}}&courseurl={{data.courseFenixLink}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Update Usernames</a>')($scope));
         updateDownloadButtons.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
 
         loadDataSection.append(updateDownloadButtons);
@@ -638,7 +638,7 @@ function setSettingsTitle(title) {
 app.controller('Settings', function($scope, $state, $compile, $smartboards) {
     changeTitle('Settings', 0);
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
-        $smartboards.request('settings', 'tabs', {course: 1}, function(data, err) {
+        $smartboards.request('settings', 'tabs', {}, function(data, err) {
             if (err) {
                 console.log(err);
                 return;
@@ -711,7 +711,10 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
                 return;
             }
 
-            delete $scope.courses[course];
+            for (var i in $scope.courses){
+                if ($scope.courses[i].id==course)
+                    delete $scope.courses[i];
+            }
             $scope.$emit('refreshTabs');
         });
     };

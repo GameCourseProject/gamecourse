@@ -76,7 +76,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     });
                 }
             }
-            console.log('getEdit-allFields',allFields);
+            //console.log('getEdit-allFields',allFields);
             computeExpandedFields(viewScope.fields, '', '');
 
             viewScope.viewBlock = {
@@ -643,7 +643,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.changePids = function(part) {
-        console.log("changePid",part);
+        //console.log("changePid",part);
         $sbviews.generatePid(part);
         $sbviews.registeredPartType[part.type].changePids(part, $sbviews.changePids);
     };

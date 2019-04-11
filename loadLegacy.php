@@ -105,6 +105,8 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
 $keys = array('tier', 'name', 'dependencies', 'color', 'xp');
 $skillTree = file_get_contents(LEGACY_DATA_FOLDER . '/tree.txt');
 $skillTree = preg_split('/[\r]?\n/', $skillTree, -1, PREG_SPLIT_NO_EMPTY);
+$skillsInDB= array_column(Core::$sistemDB->selectMultiple("skill","name",["course"=>$courseId]),'name');
+$skillsToUpdate=[];
 
 foreach($skillTree as &$skill) {
     $skill = array_combine($keys, preg_split('/;/', $skill));
@@ -128,9 +130,10 @@ foreach($skillTree as &$skill) {
     $descriptionPage = substr($descriptionPage, $start, $end - $start);
     $skill['page'] = htmlspecialchars(utf8_encode($descriptionPage));
     //if skill doesn't exit, add it to DB (ToDo consider cases where skill atribute changes)
-    if (empty(Core::$sistemDB->select("skill","*",["name"=>$skill["name"],"course"=>$courseId]))){
+    if (empty(Core::$sistemDB->select("skill","name",["name"=>$skill["name"],"course"=>$courseId]))){
         Core::$sistemDB->insert("skill",["name"=>$skill["name"],"color"=>$skill['color'],
                                          "page"=>$skill['page'],"tier"=>$skill['tier'],"course"=>$courseId]);
+        
         if (!empty($skill['dependencies'])){
             for ($i=0; $i<sizeof($skill['dependencies']);$i++){
                 $dep=$skill['dependencies'][$i];
@@ -138,7 +141,33 @@ foreach($skillTree as &$skill) {
                                                             "dependencyA"=>$dep[0],"dependencyB"=>$dep[1]]);
             }
         }
+    }else{
+        $skillsToUpdate[]=$skill['name'];
     }
+}
+
+//update attributes of skills (that aren't new)
+foreach($skillTree as &$skill) {
+    if (in_array($skill['name'], $skillsToUpdate)){
+        Core::$sistemDB->update("skill",["color"=>$skill['color'],"page"=>$skill['page'],"tier"=>$skill['tier']],
+                                                        ["name"=>$skill["name"],"course"=>$courseId]);
+        //update dependencies
+        if (!empty($skill['dependencies'])){
+                for ($i=0; $i<sizeof($skill['dependencies']);$i++){
+                    $dep=$skill['dependencies'][$i];
+                    Core::$sistemDB->update("skill_dependency",["dependencyA"=>$dep[0],"dependencyB"=>$dep[1]],
+                            ["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId]);
+                }
+        }//delete unwanted dependencies
+        else if (!empty(Core::$sistemDB->select("skill_dependency","skillName",["skillName"=>$skill["name"],"course"=>$courseId]))){
+            Core::$sistemDB->delete("skill_dependency",["skillName"=>$skill["name"],"course"=>$courseId]);
+        }
+        unset($skillsInDB[array_search($skill['name'], $skillsInDB)]);
+    }  
+}
+//delete skills that wheren't in the imported data
+foreach ($skillsInDB as $skill){
+    Core::$sistemDB->delete("skill",["name"=>$skill,"course"=>$courseId]);
 }
 
 // Read Levels
@@ -276,7 +305,7 @@ foreach($awards as &$award) {
                 
                 $indicatorsForUser=$indicatorsByNum[$award['userid']];
                 if (!array_key_exists($name, $indicatorsForUser)) {
-                    echo "Did not receive indicator for skill ".$skill. ", for user ".$award['userid']."\n";
+                    echo "Did not receive indicator for skill ".$name. ", for user ".$award['userid']."\n";
                     continue;
                 }
                 
@@ -290,6 +319,7 @@ foreach($awards as &$award) {
                          "name"=>$name,"skillTime"=>$data["awardDate"],
                          "post"=>$skillIndicator[1][0]['url'],"quality"=>(int) $skillIndicator[1][0]['xp']]);
             }
+            
         }
         //Badges
         elseif (in_array($award['what'], $badgesNames)) {

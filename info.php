@@ -23,9 +23,9 @@ if (!Core::checkAccess(false))
 ModuleLoader::scanModules();
 API::gatherRequestInfo();
 
+//return a list of courses that the user is allowed to see
 API::registerFunction('core', 'getCoursesList', function() {
     $user = Core::getLoggedUser();
-    
     
     if ($user->isAdmin()) {
         $courses = Core::getCourses();
@@ -44,7 +44,6 @@ API::registerFunction('core', 'getCoursesList', function() {
         array_combine(array_column($courses,'id'),$courses);
         $myCourses = true;
     }
-
     API::response(array('courses' => $courses, 'myCourses' => $myCourses));
 });
 
@@ -66,13 +65,13 @@ API::registerFunction('core', 'getCourseInfo', function() {
     ));
 });
 
-API::registerFunction('settings', 'courseApiKey', function() {
+API::registerFunction('settings', 'courseApiKey', function() {//ToDo
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
     API::response(array('key' => $course->getWrapped('apiKey')->getValue()));
 });
 
-API::registerFunction('settings', 'courseApiKeyGen', function() {
+API::registerFunction('settings', 'courseApiKeyGen', function() {//ToDo
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
     $newKey = md5(mt_rand() . mt_rand() . mt_rand() . getmypid());
@@ -80,11 +79,11 @@ API::registerFunction('settings', 'courseApiKeyGen', function() {
     API::response(array('key' => $newKey));
 });
 
-API::registerFunction('settings', 'apiKey', function() {
+API::registerFunction('settings', 'apiKey', function() {//ToDo
     API::response(array('key' => Core::getApiKey()->getValue()));
 });
 
-API::registerFunction('settings', 'apiKeyGen', function() {
+API::registerFunction('settings', 'apiKeyGen', function() {//ToDo
     $newKey = md5(mt_rand() . mt_rand() . mt_rand() . getmypid());
     Core::getApiKey()->setValue($newKey);
     API::response(array('key' => $newKey));
@@ -163,13 +162,11 @@ API::registerFunction('settings', 'roles', function() {
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-    $fenixLink="";
     if (API::hasKey('headerLink')) {
         $course->setHeaderLink(API::getValue('headerLink'));
         http_response_code(201);
     } else if (API::hasKey('courseFenixLink')) {
-        $fenixLink=API::getValue('courseFenixLink');
-        //$course->getWrapper()->set('fenix-link', API::getValue('courseFenixLink'));
+        $course->setData("fenixLink",API::getValue('courseFenixLink'));
         http_response_code(201);
     } else if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
@@ -222,8 +219,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
             'name' => $course->getName(),
             'theme' => Core::getTheme(),
             'headerLink' => $course->getHeaderLink(),
-            //'courseFenixLink' => $course->getWrapped('fenix-link')->getValue(),
-            'courseFenixLink' =>$fenixLink,
+            'courseFenixLink' => $course->getData("fenixLink"),
             'modules' => $modulesArr
         );
         API::response($globalInfo);

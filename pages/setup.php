@@ -18,20 +18,20 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     
     //Core::$active_courses = [1];
     //Core::$courses = [1=>['name' => $courseName, 'id' => 1, 'active' => true]];
-    Core::$pending_invites = [$teacherUsername => ['id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true]];
+    //Core::$pending_invites = [$teacherUsername => ['id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true]];
     
     $db->insert("course",["name" => $courseName]);
+    $courseId =$db->select("course",'id',["name"=> $courseName]);
     
-    
-    \SmartBoards\Course::insertBasicCourseData($db, 1);
+    \SmartBoards\Course::insertBasicCourseData($db, $courseId);
     
     $db->insert("user",["id" => $teacherId,
                         "name" => "Teacher",
                         "username"=> $teacherUsername,
                         "isAdmin"=> true]);
     $db->insert("course_user",["id" => $teacherId,
-                                "course" => 1,]);
-    $db->insert("user_role",["id"=>$teacherId, "course"=>1,"role"=>"Teacher"]);
+                                "course" => $courseId,]);
+    $db->insert("user_role",["id"=>$teacherId, "course"=>$courseId,"role"=>"Teacher"]);
 
     file_put_contents('setup.done','');
     //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);
