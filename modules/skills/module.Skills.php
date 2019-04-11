@@ -70,11 +70,11 @@ class Skills extends Module {
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->registerFunction('skillStyle', function($skill, $user) {
             $courseId = $this->getParent()->getId();
-            $unlockedSkills=array_column(Core::$sistemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
+            $unlockedSkills=array_column(Core::$systemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
                   
             if ($unlockedSkills == null)
                 $unlockedSkills = array();
-            $dependencies = Core::$sistemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$skill['name']]);
+            $dependencies = Core::$systemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$skill['name']]);
             $unlocked = (count($dependencies) == 0);
 
             foreach($dependencies as $dependency) {
@@ -105,19 +105,19 @@ class Skills extends Module {
             $studentsArray=[];
             foreach ($students as $student) {
                 $studentsArray[$student['id']]=$student;
-                //$studentsSkills[$student['id']] = Core::$sistemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
+                //$studentsSkills[$student['id']] = Core::$systemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
                 $userData=\SmartBoards\User::getUser($student['id'])->getData();
                 $studentsUserData[$student['id']]['username'] = $userData['username'];
                 $studentsUserData[$student['id']]['name'] = $userData['name'];
             }
             
             $skillsCache = array();
-            $skills = Core::$sistemDB->selectMultiple("skill_tier natural join skill",
+            $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
                                                     '*',["course"=>$course->getId()]);
             foreach ($skills as $skill) {
                 $skillName = $skill['name'];
                 $skillsCache[$skillName] = array();
-                $skillStudents = Core::$sistemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
+                $skillStudents = Core::$systemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
                
                 foreach($skillStudents as $skillStudent) {
                     $id= $skillStudent['student'];
@@ -165,7 +165,7 @@ class Skills extends Module {
             $courseId=$this->getParent()->getId();
             
             if ($skillName) {
-                $skills = Core::$sistemDB->selectMultiple("skill_tier natural join skill",
+                $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
                                 '*',["course"=>$courseId]);
                 foreach($skills as $skill) {
                     $compressedName = str_replace(' ', '', $skill['name']);

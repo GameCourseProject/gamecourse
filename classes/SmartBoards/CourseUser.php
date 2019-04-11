@@ -11,10 +11,10 @@ class CourseUser extends User{
     }
     //adds course_user to DB, User must already exist in DB
     public function create($role=null,$campus=""){
-        Core::$sistemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
+        Core::$systemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
         if ($role){
-            Core::$sistemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]); 
-            //Core::$sistemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
+            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]); 
+            //Core::$systemDB->update("course_user",["roles"=>$role],["course"=>$this->course->getId(),"id"=>$this->id]);
         }
     }
     
@@ -23,13 +23,13 @@ class CourseUser extends User{
     }
     
     public function delete(){
-        Core::$sistemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
+        Core::$systemDB->delete("course_user",["id"=>$this->id,"course"=>$this->course->getId()]);
     }
     
     function refreshActivity() {
         $prev = $this->getData("lastActivity");
-        Core::$sistemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
-        Core::$sistemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);
+        Core::$systemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
+        Core::$systemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);
     }
 
     public function getId() {
@@ -51,16 +51,16 @@ class CourseUser extends User{
     }
     
     function  getData($field="*"){
-        return Core::$sistemDB->select("course_user",$field,["course"=>$this->course->getId(),
+        return Core::$systemDB->select("course_user",$field,["course"=>$this->course->getId(),
                                                                           "id"=>$this->id]);
     }
     function setCampus($campus) {
-        return Core::$sistemDB->update("course_user",["campus"=>$campus],
+        return Core::$systemDB->update("course_user",["campus"=>$campus],
                 ["course"=>$this->course->getId(),"id"=>$this->id]);
     }
     
     function getRoles() {
-        return array_column(Core::$sistemDB->selectMultiple("user_role","role",
+        return array_column(Core::$systemDB->selectMultiple("user_role","role",
                 ["course"=>$this->course->getId(),"id"=>$this->id]),"role");
         //return explode(",",$this->getData("roles"));
     }
@@ -72,17 +72,17 @@ class CourseUser extends User{
             $found = array_search($role, $oldRoles);
             //print_r($found);
             if ($found === false) {
-                Core::$sistemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $role]);
+                Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $role]);
             } else {
                 unset($oldRoles[$found]);
             }
         }
         //delete the remaining roles
         foreach ($oldRoles as $role){
-            Core::$sistemDB->delete("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
+            Core::$systemDB->delete("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
         }
         //$updatedRoles = implode(',', $roles);
-        //Core::$sistemDB->update("course_user",["roles"=>$updatedRoles],["course"=>$this->course->getId(),
+        //Core::$systemDB->update("course_user",["roles"=>$updatedRoles],["course"=>$this->course->getId(),
         //                                                                  "id"=>$this->id]);
     }
     
@@ -90,12 +90,12 @@ class CourseUser extends User{
     function addRole($role){
         $currRoles=$this->getRoles();
         if (!in_array($role, $currRoles)){
-            Core::$sistemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);      
+            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);      
         }
     }
 
     function hasRole($role) {
-        return (!empty(Core::$sistemDB->selectMultiple("user_role",'*',["course"=>$this->course->getId(),
+        return (!empty(Core::$systemDB->selectMultiple("user_role",'*',["course"=>$this->course->getId(),
                                                             "id"=>$this->id,
                                                              "role"=>$role])));
     }

@@ -15,11 +15,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
     $sql = file_get_contents("gamecourse.sql"); 
     $db->executeQuery($sql);
-    
-    //Core::$active_courses = [1];
-    //Core::$courses = [1=>['name' => $courseName, 'id' => 1, 'active' => true]];
-    //Core::$pending_invites = [$teacherUsername => ['id' => $teacherId, 'username' => $teacherUsername, 'isAdmin' => true]];
-    
+    $db->insert("system_info",["theme" => "default"]);
     $db->insert("course",["name" => $courseName]);
     $courseId =$db->select("course",'id',["name"=> $courseName]);
     

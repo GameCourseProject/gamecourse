@@ -1,3 +1,4 @@
+drop table if exists system_info;
 drop table if exists pending_invite;
 drop table if exists view_template;
 drop table if exists view_part;
@@ -65,6 +66,7 @@ create table course_user
     foreign key(id) references user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
 );
+
 create table role(
 	role varchar(50) not null,
 	landingPage varchar(100) default '',
@@ -86,6 +88,7 @@ create table role_hierarchy(
 	hierarchy text,
 	foreign key(course) references course(id) on delete cascade
 );
+
 create table award(
 	student int unsigned not null,
 	course int unsigned not null,
@@ -99,6 +102,7 @@ create table award(
 	primary key (student,course,name,level),
     foreign key(student, course) references course_user(id, course) on delete cascade
 );
+
 create table level(
 	minXP int unsigned not null,
 	title varchar(100),
@@ -253,4 +257,9 @@ create table pending_invite(
 	id 	int unsigned,
     username varchar(50),
     primary key(id)
+);
+
+create table system_info(
+	theme varchar(50) default 'default',
+    primary key(theme)
 );

@@ -80,7 +80,7 @@ class Badges extends Module {
             $courseId=$course->getId();
             
             //if updates become very regular maybe cacheId could just use de day of the update
-            $updated = Core::$sistemDB->select("course","lastUpdate",["id"=>$courseId]);
+            $updated = Core::$systemDB->select("course","lastUpdate",["id"=>$courseId]);
             $updated = strtotime($updated);
             $cacheId = "badges" . $courseId . '-' . $updated;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);  
@@ -94,13 +94,13 @@ class Badges extends Module {
             $studentsUsernames = array();
 
             foreach ($students as $student) {
-                $userData = Core::$sistemDB->select("course_user natural join user","*",["id"=>$student['id']]);
+                $userData = Core::$systemDB->select("course_user natural join user","*",["id"=>$student['id']]);
                 $studentsUsernames[$student['id']] = $userData['username'];
                 $studentsNames[$student['id']] = $userData['name'];
                 $studentsCampus[$student['id']] = $userData["campus"];
             }
             
-            $badges = Core::$sistemDB->selectMultiple("badge",'*',["course"=>$courseId]);
+            $badges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId]);
             $badgeCache = array();
             $badgeCacheClean = array();
             foreach ($badges as $badge) {
@@ -108,7 +108,7 @@ class Badges extends Module {
                 $badgeCacheClean[$badge['name']] = array();
                 $badgeProgressCount = array();
                 $badgeLevel = array();
-                $badgeStudents = Core::$sistemDB->selectMultiple("user_badge","*",
+                $badgeStudents = Core::$systemDB->selectMultiple("user_badge","*",
                                                     ["course"=>$courseId,"name"=>$badge['name']]);
                 for ($i = 0; $i < $badge['maxLvl']; ++$i) {
                     $badgeCache[$badge['name']][$i] = array();
@@ -123,7 +123,7 @@ class Badges extends Module {
                             $badgeProgressCount[$id] = $studentBadge['progress'];
 
                         if ($badgeLevel[$id] > $i) {
-                            $timestamp = strtotime(Core::$sistemDB->select("badge_level_time","badgeLvlTime",
+                            $timestamp = strtotime(Core::$systemDB->select("badge_level_time","badgeLvlTime",
                                     ["badgeName"=>$badge['name'], "student"=> $id, "course"=>$courseId, "badgeLevel"=>$i+1]));
                             $badgeCache[$badge['name']][$i][] = array(
                                 'id' => $id,

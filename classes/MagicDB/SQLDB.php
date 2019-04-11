@@ -70,10 +70,12 @@ class SQLDB {
         //example: update user set name="Example", email="a@a.a" where id=80000;
         $sql = "update ".$table." set ";
         $this->dataToQuery($sql,$data,',');
-        $sql.= " where ";
-        $this->dataToQuery($sql,$where,'&&');
+        if($where){
+            $sql.= " where ";
+            $this->dataToQuery($sql,$where,'&&');
+            $data=array_merge($data,$where);
+        }
         $sql.=';';
-        $data=array_merge($data,$where);
         $this->executeQueryWithParams($sql,$data);     
     }   
     public function updateAdd($table,$collumQuantity,$where){

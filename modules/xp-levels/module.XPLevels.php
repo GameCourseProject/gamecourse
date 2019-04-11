@@ -22,7 +22,7 @@ class XPLevels extends Module {
                     break;
                 case 'skill':
                     $color = '#fff';
-                    $skillColor = \SmartBoards\Core::$sistemDB->select("skill","color",["name"=>$award['name'],"course"=>$course]);
+                    $skillColor = \SmartBoards\Core::$systemDB->select("skill","color",["name"=>$award['name'],"course"=>$course]);
                     if($skillColor)
                         $color=$skillColor;
                     return new Modules\Views\Expression\ValueNode('<div class="skill" style="background-color: ' . $color . '">');

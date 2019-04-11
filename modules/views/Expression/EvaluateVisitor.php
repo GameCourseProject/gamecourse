@@ -133,11 +133,11 @@ class EvaluateVisitor extends Visitor {
         $subPath = $node->getSubPath();
         if ($subPath!=null){
             // select subpath from t where context
-            return new ValueNode(Core::$sistemDB->select($t,$subPath->getPath(),$contextArray));
+            return new ValueNode(Core::$systemDB->select($t,$subPath->getPath(),$contextArray));
         }else if ($returnContinuation){//not using continuations, just returning an array
-            return Core::$sistemDB->selectMultiple($t,'*',$contextArray);
+            return Core::$systemDB->selectMultiple($t,'*',$contextArray);
         }else{
-            return new ValueNode(Core::$sistemDB->selectMultiple($t,'*',$contextArray));
+            return new ValueNode(Core::$systemDB->selectMultiple($t,'*',$contextArray));
         }
         
     }

@@ -85,7 +85,7 @@ class Charts extends Module {
                 $chart['info']['spark'] = $spark;
                 return;
             }
-            $awards = Core::$sistemDB->selectMultiple("award",'*',["student"=>$userID,"course"=>$course->getId()]);
+            $awards = Core::$systemDB->selectMultiple("award",'*',["student"=>$userID,"course"=>$course->getId()]);
             //ToDo use order by in the query instead of sorting array
             usort($awards, function($v1,$v2){
                 return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
@@ -142,7 +142,7 @@ class Charts extends Module {
             };
             
             //keeps cache of leaderboard of user since the last update
-            $updated = $calcDay(Core::$sistemDB->select("course","lastUpdate",["id"=>$params['course']]));
+            $updated = $calcDay(Core::$systemDB->select("course","lastUpdate",["id"=>$params['course']]));
             $cacheId = 'leaderboardEvolution' .  $updated . '-' . $params['course'] . '-' . $userID;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
@@ -155,7 +155,7 @@ class Charts extends Module {
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = \SmartBoards\Core::$sistemDB->selectMultiple("award",'*',['student'=>$student['id']]);
+                $awards = \SmartBoards\Core::$systemDB->selectMultiple("award",'*',['student'=>$student['id']]);
                 //ToDo maybe use a query with order by instead of sorting afterwards
                 usort($awards, function($v1,$v2){
                     return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         

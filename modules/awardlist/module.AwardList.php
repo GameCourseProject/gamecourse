@@ -32,7 +32,7 @@ class AwardList extends Module {
         $viewHandler->registerFunction('getAllAwards', function() use ($course) {
             $courseId = $course->getId();
             $allAwards = array();
-            $awards = Core::$sistemDB->selectMultiple("award",'*',["course"=>$courseId]);
+            $awards = Core::$systemDB->selectMultiple("award",'*',["course"=>$courseId]);
             $studentNames = [];
             foreach($awards as $award){
                 $id=$award['student'];

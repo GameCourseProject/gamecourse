@@ -324,12 +324,12 @@ class Views extends Module {
                 }
 
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
-                    Core::$sistemDB->insert("view_role",
+                    Core::$systemDB->insert("view_role",
                             ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$roleToFind]);
                 //TODO: create parts, deal with role interaction 
                     //$viewSpecializations->set($info['roleOne'], $newView);
                 else if ($type == ViewHandler::VT_ROLE_INTERACTION)
-                    Core::$sistemDB->insert("view_role",
+                    Core::$systemDB->insert("view_role",
                             ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$info['roleOne'].'>'.$info['roleTwo']]);
                     //$viewSpecializations->getWrapped($info['roleOne'])->set($info['roleTwo'], $newView);
 
@@ -364,14 +364,14 @@ class Views extends Module {
                 //print_r($courseId);//$info['roleOne'],$views
                 //Core::$pending_invites->delete("view_role",["viewId"=>,"course"=>,"role"=>])
                 if ($type == ViewHandler::VT_ROLE_SINGLE ) {
-                    Core::$sistemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne']]);
+                    Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne']]);
                     //$views = $viewSpecializations->getValue();
                     //unset($views[$info['roleOne']]);
                     //$viewSpecializations->setValue($views);
                 }else if ($type == ViewHandler::VT_ROLE_INTERACTION && !array_key_exists('roleTwo', $info)) {
-                    Core::$sistemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId],["role"=>$info['roleOne'].'>%']);
+                    Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId],["role"=>$info['roleOne'].'>%']);
                 } else if ($type == ViewHandler::VT_ROLE_INTERACTION) {
-                    Core::$sistemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne'].'>'.$info['roleTwo']]);
+                    Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne'].'>'.$info['roleTwo']]);
                     //$viewSpecializations = $viewSpecializations->getWrapped($info['roleOne']);
                     //$views = $viewSpecializations->getValue();
                     //unset($views[$info['roleTwo']]);
@@ -471,7 +471,7 @@ class Views extends Module {
         API::registerFunction('views', 'deleteTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('name','course');
-            Core::$sistemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
+            Core::$systemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
             //$this->getData()->getWrapped('templates')->delete(API::getValue('name'));
         });
 
@@ -631,16 +631,16 @@ class Views extends Module {
             $viewRoleInfo=['course'=>$courseId,'viewId'=>$viewId,'role'=>$role];
             
             //this may be unecessary, unless part or replacements changed
-            Core::$sistemDB->update("view_role",
+            Core::$systemDB->update("view_role",
                         $viewContent['view_role'],
                         $viewRoleInfo);
-            $currParts = array_column(Core::$sistemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
+            $currParts = array_column(Core::$systemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
             
             foreach($viewContent['view_part'] as $part){
-                if (empty(Core::$sistemDB->select("view_part",'*',['pid'=>$part['pid'],'course'=>$courseId]))){
-                    Core::$sistemDB->insert('view_part',array_merge($part,$viewRoleInfo));
+                if (empty(Core::$systemDB->select("view_part",'*',['pid'=>$part['pid'],'course'=>$courseId]))){
+                    Core::$systemDB->insert('view_part',array_merge($part,$viewRoleInfo));
                 }else{
-                    Core::$sistemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid'],'course'=>$courseId]);
+                    Core::$systemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid'],'course'=>$courseId]);
                 }
                 $key=array_search($part['pid'], $currParts);
                 if ($key!==false){
@@ -649,7 +649,7 @@ class Views extends Module {
             }
             //delete remaining parts on db
             foreach($currParts as $part){
-                Core::$sistemDB->delete("view_part",['pid'=>$part,'course'=>$courseId]);
+                Core::$systemDB->delete("view_part",['pid'=>$part,'course'=>$courseId]);
             }
                      
             if (!$testDone)
@@ -837,14 +837,14 @@ class Views extends Module {
     }
     
     public function getTemplates(){
-        $temps = Core::$sistemDB->selectMultiple('view_template','*',['course'=>$this->getCourseId()]);
+        $temps = Core::$systemDB->selectMultiple('view_template','*',['course'=>$this->getCourseId()]);
         foreach ($temps as &$temp){
             $temp['content'] = unserialize($temp['content']);
         }
         return $temps;
     }
     public function getTemplate($id) {
-         $temp = Core::$sistemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
+         $temp = Core::$systemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
          if (!empty($temp)) {
             $temp['content'] = unserialize($temp['content']);
         }
@@ -856,7 +856,7 @@ class Views extends Module {
     public function setTemplate($id, $template, $moduleId) {
         //todo decide between unserialize and json decode for when using this data.
         // remove the unserialie from the callers (simple send the file contents)
-        Core::$sistemDB->insert('view_template',['id'=>$id,'content'=>$template,
+        Core::$systemDB->insert('view_template',['id'=>$id,'content'=>$template,
                                 'course'=>$this->getCourseId(),'module'=>$moduleId]);
    //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }

@@ -64,14 +64,14 @@ class ViewHandler {
     }
     
     //gets info from view_role and view_part tables, contructs an array of the view (like in the old system)
-    public function getViewWithParts($viewId,$role){//return everything organized like the previous db sistem
+    public function getViewWithParts($viewId,$role){//return everything organized like the previous db system
         $viewRole=$this->getViewRoles($viewId,$role);
         
         if ($viewRole['replacements']!==null)
             $viewRole['replacements']=json_decode($viewRole['replacements'],true);
         else $viewRole['replacements']=[];
         
-        $viewParts=Core::$sistemDB->selectMultiple("view_part", '*', 
+        $viewParts=Core::$systemDB->selectMultiple("view_part", '*', 
                 ['viewId' => $viewId, 'course' => $this->getCourseId(), 'role'=>$role]);
         
         $viewRole['partlist']=[];
@@ -85,18 +85,18 @@ class ViewHandler {
     //returns all the view_roles for a given view or for the view_role of the given role
     public function getViewRoles($viewId,$role=null){
         if ($role === null) {
-            return Core::$sistemDB->selectMultiple("view_role", '*', ['viewId' => $viewId, 'course' => $this->getCourseId()]);
+            return Core::$systemDB->selectMultiple("view_role", '*', ['viewId' => $viewId, 'course' => $this->getCourseId()]);
         } else {
-            return Core::$sistemDB->select("view_role", '*', 
+            return Core::$systemDB->select("view_role", '*', 
                     ['viewId' => $viewId, 'course' => $this->getCourseId(),'role'=>$role]);
         }
     }
     //returns all the views or the view of the id given , (old version did the same as getViewRoles
     public function getViews($viewId = null) {
         if ($viewId==null)
-            return Core::$sistemDB->selectMultiple("view",'*',['course'=>$this->getCourseId()]);
+            return Core::$systemDB->selectMultiple("view",'*',['course'=>$this->getCourseId()]);
         else
-            return Core::$sistemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->getCourseId()]);
+            return Core::$systemDB->select("view",'*',['viewId'=>$viewId,'course'=>$this->getCourseId()]);
     }
     public function getCourseId(){
         return $this->viewsModule->getParent()->getId();
@@ -132,9 +132,9 @@ class ViewHandler {
                     'pid' => $viewpid
             ];
             //print_r($newView);
-            Core::$sistemDB->insert('view',$newView);
-            Core::$sistemDB->insert('view_role',$viewRole);
-            Core::$sistemDB->insert('view_part',$part);
+            Core::$systemDB->insert('view',$newView);
+            Core::$systemDB->insert('view_role',$viewRole);
+            Core::$systemDB->insert('view_part',$part);
             
                /*
             $defaultView = $newView;

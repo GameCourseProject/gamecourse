@@ -8,7 +8,7 @@ class User {
         $this->id = $id;
     }
     public function create($name){
-        Core::$sistemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
+        Core::$systemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
     }
     
     public function exists() {
@@ -20,11 +20,11 @@ class User {
     }
     
     public function getData($field='*'){
-        return Core::$sistemDB->select("user",$field,["id"=>$this->id]);
+        return Core::$systemDB->select("user",$field,["id"=>$this->id]);
     }
     
     public function setData($fieldValues){
-        Core::$sistemDB->update("user",$fieldValues,["id"=>$this->id]);
+        Core::$systemDB->update("user",$fieldValues,["id"=>$this->id]);
     }
     
     public function getName() {
@@ -55,11 +55,11 @@ class User {
         $this->setData(["isAdmin"=>$isAdmin]);
     }
     public static function getAdmins(){
-        return array_column(Core::$sistemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');
+        return array_column(Core::$systemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');
     }
 
     public function initialize($name, $email) {
-        Core::$sistemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
+        Core::$systemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
         return $this;
     }
 
@@ -68,7 +68,7 @@ class User {
     }
 
     public static function getUserByUsername($username) {
-        $userId=Core::$sistemDB->select("user","id",["username"=>$username]);
+        $userId=Core::$systemDB->select("user","id",["username"=>$username]);
         if ($userId==null)
             return null;
         else
@@ -76,7 +76,7 @@ class User {
     }
     
     public function getCourses(){
-        return array_column(Core::$sistemDB->selectMultiple("course_user","course",["id"=>$this->id]),"course");
+        return array_column(Core::$systemDB->selectMultiple("course_user","course",["id"=>$this->id]),"course");
     }
    // public static function getAll() {//ToDo
    //     if (static::$usersDB == null)
@@ -85,7 +85,7 @@ class User {
    // }
 
     public static function getAllInfo() {
-        return Core::$sistemDB->selectMultiple("user");
+        return Core::$systemDB->selectMultiple("user");
     }
 
     //private static function initDB() {

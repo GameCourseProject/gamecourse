@@ -15,15 +15,14 @@ $_FENIX_EDU['api_base_url'] = FENIX_API_BASE_URL;
 $GLOBALS['_FENIX_EDU'] = $_FENIX_EDU;
 
 class Core {
-    public static $sistemDB;
+    public static $systemDB;
     //public static $active_courses = array();
-    //public static $courses = array();   //?
+    //public static $courses = array();   
     public static $theme = 'default';
     private static $apiKey;
 
     private static $loggedUser = null;
     private static $navigation = array();
-    //private static $mainConfigDB = null;
     public static function isCLI() {
         return php_sapi_name() == 'cli';
     }
@@ -35,8 +34,8 @@ class Core {
     }
 
     public static function init() {
-        if (static::$sistemDB == null) {
-            static::$sistemDB = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
+        if (static::$systemDB == null) {
+            static::$systemDB = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
         }
     }
 
@@ -75,7 +74,6 @@ class Core {
             header(sprintf("Location: %s", $authorizationUrl));
             exit();
         }
-
         return $isLoggedIn;
     }
 
@@ -142,41 +140,36 @@ class Core {
     }
 
     public static function getTheme() {
-        //return static::$mainConfigDB->get('theme');
-        return static::$theme;
+        return static::$systemDB->selectMultiple("system_info","theme")[0]["theme"];
     }
 
     public static function setTheme($theme) {
-        //return static::$mainConfigDB->set('theme', $theme);
-        static::$theme=$theme;
+        static::$systemDB->update("system_info",["theme"=>$theme],null);
     }
 
     public static function getActiveCourses() {
-        return static::$sistemDB->selectMultiple("course",'*',["active"=>true]);
+        return static::$systemDB->selectMultiple("course",'*',["active"=>true]);
     }
 
     public static function getPendingInvites() {
-        return static::$sistemDB->selectMultiple("pending_invite");
+        return static::$systemDB->selectMultiple("pending_invite");
     }
     public static function pendingInviteExists($id) {
-        return !empty(static::$sistemDB->select("pending_invite",'id',['id'=>$id]));
+        return !empty(static::$systemDB->select("pending_invite",'id',['id'=>$id]));
     }
     public static function addPendingInvites($data) {
-        return static::$sistemDB->insert("pending_invite",$data);
+        return static::$systemDB->insert("pending_invite",$data);
     }
     public static function removePendingInvites($id) {
-        return static::$sistemDB->delete("pending_invite",["id"=>$id]);
+        return static::$systemDB->delete("pending_invite",["id"=>$id]);
     }
 
     public static function getCourses() {
-        return static::$sistemDB->selectMultiple("course");
+        return static::$systemDB->selectMultiple("course");
     }
     public static function getCourse($id) {
-        return static::$sistemDB->select("course",'*',['id'=>$id]);  
+        return static::$systemDB->select("course",'*',['id'=>$id]);  
     }
-    //public static function getCoursesWrapped() {
-    //    return static::$mainConfigDB->getWrapped('courses');
-    //}
 
     public static function getApiKey() {
         //return static::$mainConfigDB->getWrapped('apiKey');
