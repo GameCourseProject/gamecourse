@@ -139,7 +139,7 @@ class Course {
     
     //returns array w module names
     public function getEnabledModules() {
-        return array_column(Core::$sistemDB->selectMultiple("enabled_module","moduleId",["course"=>$this->cid]),'moduleId'); 
+        return array_column(Core::$sistemDB->selectMultiple("enabled_module","moduleId",["course"=>$this->cid],"moduleId"),'moduleId'); 
     }
 
     public function addModule($module) {

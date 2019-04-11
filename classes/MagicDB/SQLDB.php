@@ -86,13 +86,16 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$where);     
         
     }
-    public function select($table,$field,$where){
+    public function select($table,$field,$where,$orderBy=null){
     //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
         //example: select id from user where username='ist181205';
         $sql = "select ".$field." from ".$table;
         $sql.=" where ";
         $this->dataToQuery($sql,$where,'&&');
-        $sql.=';';      
+        if ($orderBy){
+            $sql.=" order by " . $orderBy;
+        }
+        $sql.=';';
         $result = $this->executeQueryWithParams($sql,$where);
         $returnVal=$result->fetch(\PDO::FETCH_ASSOC);
         if ($field=='*'){
@@ -100,12 +103,15 @@ class SQLDB {
         }
         return $returnVal[$field];
     } 
-    public function selectMultiple($table,$field='*',$where=null){
+    public function selectMultiple($table,$field='*',$where=null,$orderBy=null){
         //example: select * from course where isActive=true;
         $sql = "select ".$field." from ".$table;
         if ($where){
             $sql.=" where ";
             $this->dataToQuery($sql,$where,'&&');   
+        }
+        if ($orderBy){
+            $sql.=" order by " . $orderBy;
         }
         $sql.=';';
         $result = $this->executeQueryWithParams($sql,$where);
