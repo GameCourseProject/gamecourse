@@ -17,9 +17,7 @@ if(!Core::requireSetup(false))
 if ($isCLI) {
     $courseId = (array_key_exists(1, $argv) ? $argv[1] : 1);
     $id = 2;
-    if(array_key_exists($id, $argv)) {
-        $courseUrl = $argv[$id];
-    }
+    $courseUrl = (array_key_exists(2, $argv) ? $argv[2] : "" );
 } else {
     $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 1);
     if(array_key_exists('courseurl', $_GET)) {

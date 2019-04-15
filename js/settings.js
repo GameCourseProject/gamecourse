@@ -60,7 +60,7 @@ function createSectionWithTemplate(parent, title, templateUrl) {
 
 function createChangeButtonIfNone(name, anchor, action, config) {
     var defaults = {
-        'buttonText' : 'Change',
+        'buttonText' : 'Save',
         'statusTextUpdating': 'Updating',
         'enableFunc': undefined,
         'disableFunc': undefined,

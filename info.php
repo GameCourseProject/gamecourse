@@ -89,7 +89,7 @@ API::registerFunction('settings', 'apiKeyGen', function() {//ToDo
     API::response(array('key' => $newKey));
 });
 
-//set active/deactivated state
+//set active/inactive state
 API::registerFunction('settings', 'setCourseState', function() {
     API::requireCourseAdminPermission();
     API::requireValues('course', 'state');
@@ -101,6 +101,7 @@ API::registerFunction('settings', 'setCourseState', function() {
     $course->setActiveState($state);
 });
 
+//see and/or set landing page for a role
 API::registerFunction('settings', 'roleInfo', function() {
     API::requireCourseAdminPermission();
     API::requireValues('role');
@@ -126,9 +127,9 @@ API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
 
     if (API::hasKey('updateRoleHierarchy')) {
-        // TODO: check deleted roles  (what happens when you delete a role that users have)
         $hierarchy = API::getValue('updateRoleHierarchy');
         $course = Course::getCourse(API::getValue('course'));
+        //ToDo: add a prompt to confirm deleting roles (maybe just if they're assigned to users)
         $course->setRoles($hierarchy['roles']);
         $course->setRolesHierarchy($hierarchy['hierarchy']);
         $roles = $hierarchy['roles'];
