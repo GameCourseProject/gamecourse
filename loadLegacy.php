@@ -381,7 +381,7 @@ foreach ($userIds as $userId){
              $userInfo[$userId]['presentationXP'];
     
     //if user has more xp than previously, update all xp info
-    if ($totalXP>Core::$systemDB->select("course_user","XP",["course"=>$courseId,"id"=>$userId])){
+    if ($totalXP!=Core::$systemDB->select("course_user","XP",["course"=>$courseId,"id"=>$userId])){
         Core::$systemDB->update("course_user",
             ["level"=>floor($totalXP/XP_PER_LEVEL),
              "countedBadgeXP"=>$countedBadgeXP,"normalBadgeXP"=>$userInfo[$userId]['normalBadgeXP'],
