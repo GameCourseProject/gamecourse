@@ -90,7 +90,6 @@ class API {
            
         static::$values = $values;
  
-        //thiss is commented because it was trying to create course 0 which doesnt exist, not sure if this code is important
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             Course::getCourse(API::getValue('course'));
         }

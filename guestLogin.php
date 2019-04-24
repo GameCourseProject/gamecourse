@@ -23,7 +23,6 @@ $authorizedEmails = ['alice.dourado@campus.ul.pt'=>100,
                      'javiana@campus.ul.pt'=>103,
                      'ezorzal@gmail.com'=>104];
 Core::init();
-Core::init();
 ob_start();
 session_start();
 $result = ob_get_clean();
@@ -42,7 +41,7 @@ if (array_key_exists('method', $_GET)){
     if ($_GET['method']=='Google'){
         
         if (isset($_SESSION['accessToken'])){
-            //echo "Already Logged In (Session token is set)";//todo add redirect
+            //echo "Already Logged In (Session token is set)";
             header('Location: '.'/'.BASE);
             exit();
         }else{

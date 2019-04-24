@@ -123,6 +123,7 @@ API::registerFunction('settings', 'roleInfo', function() {
     }
 });
 
+//change user roles or role hierarchy
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
 
@@ -160,6 +161,7 @@ API::registerFunction('settings', 'roles', function() {
     }
 });
 
+//main course settings page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
@@ -193,7 +195,6 @@ API::registerFunction('settings', 'courseGlobal', function() {
                         API::error('Must enable all dependencies first.');
                 }
             }
-
             if ($moduleEnabled != API::getValue('enabled')) {
                 $course->setModuleEnabled($moduleId, !$moduleEnabled);
             }
@@ -227,11 +228,13 @@ API::registerFunction('settings', 'courseGlobal', function() {
     }
 });
 
+//get tabs for course settings
 API::registerFunction('settings', 'courseTabs', function() {
     API::requireCourseAdminPermission();
     API::response(Settings::getTabs());
 });
 
+//system settings (theme settings)
 API::registerFunction('settings', 'global', function() {
     API::requireAdminPermission();
 
@@ -254,6 +257,7 @@ API::registerFunction('settings', 'global', function() {
     }
 });
 
+//get tabs for system settings
 API::registerFunction('settings', 'tabs', function() {
     API::requireAdminPermission();
     $courses = Core::getCourses();
@@ -268,6 +272,7 @@ API::registerFunction('settings', 'tabs', function() {
     API::response($tabs);
 });
 
+//system users settings (manage admins, create invites)
 API::registerFunction('settings', 'users', function() {
     API::requireAdminPermission();
 

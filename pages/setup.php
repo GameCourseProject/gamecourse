@@ -2,8 +2,6 @@
 if (!defined('CONNECTION_STRING'))
     return;
 
-use \SmartBoards\User;
-use \MagicDB\MagicDB;
 use \MagicDB\SQLDB;
 use SmartBoards\Core;
 
@@ -30,7 +28,6 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->insert("user_role",["id"=>$teacherId, "course"=>$courseId,"role"=>"Teacher"]);
 
     file_put_contents('setup.done','');
-    //User::getUser($teacherId)->initialize('Teacher', 'teacher@smartboards')->setAdmin(true);
 
     unset($_SESSION['user']); // if the user was logged and the config folder was destroyed..
     return 'setup-done';

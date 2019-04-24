@@ -1,9 +1,6 @@
 <?php
 namespace SmartBoards;
 
-use MagicDB\MagicDB;
-use MagicDB\MagicWrapper;
-
 class Course {
     private $loadedModules = array();
     private static $courses = array();
@@ -11,8 +8,6 @@ class Course {
 
     public function __construct($cid, $create = false) {
         $this->cid = $cid;
-        //if ((Core::getCourse($cid)==null) && !$create)
-        //    throw new \RuntimeException('Unknown Course');
     }
 
     public function getId() {
@@ -56,9 +51,6 @@ class Course {
     }
 
     public function getUsersWithRole($role) {
-        //return self::getUsers()->filter(function($key, $valueWrapped) use ($role) {
-        //    return (new \SmartBoards\CourseUser($key, $valueWrapped, $this))->hasRole($role);
-        //});
         return Core::$systemDB->selectMultiple("course_user natural join user_role",
                                         '*',["course"=>$this->cid,"role"=>$role]);
     }
@@ -66,10 +58,6 @@ class Course {
     public function getUsersIds() { 
         return array_column(Core::$systemDB->selectMultiple("course_user",'id',["course"=>$this->cid]),'id');
     }
-
-    //public function setUsers($users) {
-    //    $this->db->set('users', $users);
-    //}
 
     public function getUser($istid) {
        if (!empty(Core::$systemDB->select("course_user",'id',["course"=>$this->cid,"id"=>$istid])))
@@ -102,9 +90,10 @@ class Course {
     }
     //return an array with role names
     public function getRoles() {
-        return array_column($this->getRolesData(),"role");
+        return array_column($this->getRolesData("role"),"role");
     }
 
+    //receives array of roles to replace in the DB
     public function setRoles($newroles) {
         $oldRoles=$this->getRoles();
         foreach ($newroles as $role){
@@ -124,18 +113,9 @@ class Course {
     public function getRolesHierarchy() {
         return json_decode( Core::$systemDB->select("role_hierarchy","hierarchy",["course"=>$this->cid]),true);
     }
-
     public function setRolesHierarchy($rolesHierarchy) {
         Core::$systemDB->update("role_hierarchy",["hierarchy"=>json_encode($rolesHierarchy)],["course"=>$this->cid]);
     }
-
-    //public function getRolesSettings() {
-    //    return $this->getWrapped('rolesSettings');
-    //}
-
-    //public function getRoleSettings($role) {
-    //    return $this->getWrapped('rolesSettings')->getWrapped($role);
-    //}
     
     //returns array w module names
     public function getEnabledModules() {
@@ -181,10 +161,6 @@ class Course {
         return Core::$systemDB->select("module","*",["moduleId"=>$moduleId]);
     }
 
-    //public function getAll() {
-    //    return $this->db->getValue();
-    //}
-
     public function setModuleEnabled($moduleId, $enabled) {
         $modules = self::getEnabledModules();
         if (!$enabled) {
@@ -198,7 +174,7 @@ class Course {
         }
     }
 
-//goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to user reverse order
+    //goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to use reverse order
     public function goThroughRoles( $func, &...$data) {
         \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
     }
@@ -218,7 +194,7 @@ class Course {
     }
     
     //insert data to tiers and roles tables 
-    //FixMe, this has a lot of hard coded info
+    //FixMe, this has hard coded info
     public static function insertBasicCourseData($db, $courseId){
         
         $db->insert("role",["role"=>"Teacher","course" =>$courseId]);
@@ -232,8 +208,6 @@ class Course {
         $db->insert("skill_tier",["tier"=>2,"reward"=>400,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>3,"reward"=>750,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"course"=>$courseId]); 
-        
-        
     }
     
     //copies content of a specified table in DB to new rows for the new course
@@ -269,10 +243,8 @@ class Course {
                 $newData[$key] = $fromCourseData[$key];
             Core::$systemDB->update("course",$newData,["id"=>$courseId]);
             
-            //role table;
+            //copy content of tables to new course
             Course::copyCourseContent("role",$fromId,$courseId);
-            
-            //copy content of other tables to new course
             Course::copyCourseContent("skill_tier",$fromId,$courseId);
             Course::copyCourseContent("enabled_module",$fromId,$courseId);
             Course::copyCourseContent("view_template",$fromId,$courseId);
@@ -280,7 +252,6 @@ class Course {
             Course::copyCourseContent("view_role",$fromId,$courseId);
             Course::copyCourseContent("view_part",$fromId,$courseId);
             Course::copyCourseContent("role_hierarchy",$fromId,$courseId);
-            
         } else {
             Course::insertBasicCourseData(Core::$systemDB, $courseId);
             Core::$systemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>"Teacher"]);

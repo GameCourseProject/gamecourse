@@ -111,7 +111,6 @@ class ModuleLoader {
                 } else
                     ob_clean();
 
-
                 if ($canLoad) {
                     $loadedModules[$moduleId] = $module;
                     array_splice($modulesToLoad, $m, 1);

@@ -24,48 +24,6 @@ class Skills extends Module {
     }
 
     public function init() {
-        /*
-        DataSchema::register(array(
-            DataSchema::courseUserDataFields(array(
-                DataSchema::makeObject('skills', null, array(
-                    DataSchema::makeField('totalxp', 'Total XP', 1000),
-                    DataSchema::makeField('countedxp', 'XP that counts toward final grade', 1000),
-                    DataSchema::makeField('count', 'Number of complete skills', 4),
-                    DataSchema::makeMap('list', 'Awarded skills', DataSchema::makeField('skillName', 'Skill Name', 'Alien Invasion'),
-                        DataSchema::makeObject('skill', 'Skill', array(
-                            DataSchema::makeField('post', 'Post of awarded skill', 'http://moodle/post'),
-                            DataSchema::makeField('quality', 'Quality of awarded skill', 4),
-                            DataSchema::makeField('time', 'Time of awarded skill', 1234567890)
-                        )),
-                        function() {
-                            return array('abc');
-                        }
-                    )
-                ))
-            )),
-            DataSchema::courseModuleDataFields($this, array(
-                DataSchema::makeMap('skills', null, DataSchema::makeField('tierNum', 'Tier Number', 1),
-                    DataSchema::makeObject('tier', 'Tier', array(
-                        DataSchema::makeField('reward', 'Reward of Skill in Tier', 100),
-                        DataSchema::makeArray('skills', null,
-                            DataSchema::makeObject('skill', null, array(
-                                DataSchema::makeField('name', 'Skill name', 'Alien Invasion'),
-                                DataSchema::makeArray('dependencies', 'All Skill Dependencies',
-                                    DataSchema::makeArray('dependencies', 'Skill Dependencies',
-                                        DataSchema::makeField('dependency', 'Skill Dependency', 'Alien Invasion'))
-                                    ),
-                                DataSchema::makeField('color', 'Skill color', '#f4b300'),
-                                DataSchema::makeField('page', 'Skill page', 'This is a long description of my skill')
-                            ))
-                        )
-                    )),
-                    function() {
-                        return array('abc');
-                    }
-                )
-            ))
-        ));
-*/
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->registerFunction('skillStyle', function($skill, $user) {

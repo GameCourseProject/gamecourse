@@ -141,7 +141,7 @@ class Charts extends Module {
                 return $diffDays;
             };
             
-            //keeps cache of leaderboard of user since the last update
+            //keeps cache of leaderboard chart of user since the last update
             $updated = $calcDay(Core::$systemDB->select("course","lastUpdate",["id"=>$params['course']]));
             $cacheId = 'leaderboardEvolution' .  $updated . '-' . $params['course'] . '-' . $userID;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);

@@ -34,10 +34,6 @@ angular.module('module.badges').directive('badgeStudentImage', function($state) 
                     return;
                 
                 var user = part.data.badgeInfo.value;
-//                var progress = part.data.badgeInfo.value.progress;
-//                var badgeDate = part.data.badgeDate.value;
-//                var user = part.data.userData.value;
-//                var campus = part.data.campus.value;
                 
                 var tooltipContent = $('<div>', {'class': 'content'});
                 tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));

@@ -326,12 +326,11 @@ class Views extends Module {
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
                     Core::$systemDB->insert("view_role",
                             ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$roleToFind]);
-                //TODO: create parts, deal with role interaction 
-                    //$viewSpecializations->set($info['roleOne'], $newView);
+                
+
                 else if ($type == ViewHandler::VT_ROLE_INTERACTION)
                     Core::$systemDB->insert("view_role",
                             ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$info['roleOne'].'>'.$info['roleTwo']]);
-                    //$viewSpecializations->getWrapped($info['roleOne'])->set($info['roleTwo'], $newView);
 
 
                 http_response_code(201);
@@ -354,28 +353,19 @@ class Views extends Module {
 
             $type = $viewSettings['type'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
-                //$viewSpecializations = $this->viewHandler->getViews()->getWrapped($view)->getWrapped('view');
-
+                
                 API::requireValues('info');
                 $info = API::getValue('info');
 
                 if (!array_key_exists('roleOne', $info))
                     API::error('Missing roleOne in info');
-                //print_r($courseId);//$info['roleOne'],$views
-                //Core::$pending_invites->delete("view_role",["viewId"=>,"course"=>,"role"=>])
+                
                 if ($type == ViewHandler::VT_ROLE_SINGLE ) {
                     Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne']]);
-                    //$views = $viewSpecializations->getValue();
-                    //unset($views[$info['roleOne']]);
-                    //$viewSpecializations->setValue($views);
                 }else if ($type == ViewHandler::VT_ROLE_INTERACTION && !array_key_exists('roleTwo', $info)) {
                     Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId],["role"=>$info['roleOne'].'>%']);
                 } else if ($type == ViewHandler::VT_ROLE_INTERACTION) {
                     Core::$systemDB->delete("view_role",["viewId"=>$view,"course"=>$courseId,"role"=>$info['roleOne'].'>'.$info['roleTwo']]);
-                    //$viewSpecializations = $viewSpecializations->getWrapped($info['roleOne']);
-                    //$views = $viewSpecializations->getValue();
-                    //unset($views[$info['roleTwo']]);
-                    //$viewSpecializations->setValue($views);
                 }
 
                 http_response_code(200);
@@ -408,11 +398,9 @@ class Views extends Module {
             $type = $viewSettings['type'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 $viewSpecializations = $this->viewHandler->getViewRoles($viewId);
-                //$viewSpecializations = $this->viewHandler->getViews($viewId);
                 $result = array();
         
                 $doubleRoles=[];//for views w role interaction
-                //foreach (array_keys($viewSpecializations) as $id)
                 foreach ($viewSpecializations as $role){
                     $id=$role['role'];
                     if ($type == ViewHandler::VT_ROLE_INTERACTION) {
@@ -465,14 +453,12 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');//json_encode?
             $this->setTemplate(API::getValue('name'), serialize(API::getValue('part')), "views");//use this course?
-            //$this->getData()->getWrapped('templates')->set(API::getValue('name'), API::getValue('part'));
         });
 
         API::registerFunction('views', 'deleteTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('name','course');
             Core::$systemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
-            //$this->getData()->getWrapped('templates')->delete(API::getValue('name'));
         });
 
         API::registerFunction('views', 'getEdit', function() {
@@ -489,8 +475,6 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
-            //$view = $this->viewHandler->getViews($viewId);
             
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
@@ -501,8 +485,6 @@ class Views extends Module {
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
 
-                //$view = $view->get($info['role']);
-                //$view = $this->viewHandler->getViewRoles($viewId, $info['role']);
                 $view = $this->viewHandler->getViewWithParts($viewId, $info['role']);
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['role']);
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
@@ -511,28 +493,22 @@ class Views extends Module {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
                     API::error('Missing roleOne and/or roleTwo in info');
 
-                //$view = $view->getWrapped($info['roleOne'])->get($info['roleTwo']);
-                //$view = $this->viewHandler->getViewRoles($viewId, $info['roleOne'].'>'.$info['roleTwo']);
                 $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
   
             } else {
                 $parentParts = array();
-                //$view = $view->getValue();
-                //$view = $this->viewHandler->getViewRoles($viewId, "");
                 $view = $this->viewHandler->getViewWithParts($viewId, "");           
             }
             
             $view = ViewEditHandler::putTogetherView($view, $parentParts);
             $fields = \SmartBoards\DataSchema::getFields(array('course' => $courseId));
 
-            //$this->getData()->get('templates', array())
             $templates= $this->getTemplates();
             API::response(array('view' => $view, 'fields' => $fields, 'templates' =>$templates ));
         });
 
         API::registerFunction('views', 'saveEdit', function() {
-            //echo "saveEDit";
             API::requireCourseAdminPermission();
             API::requireValues('course', 'view');
             
@@ -545,7 +521,6 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
 
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
@@ -586,13 +561,11 @@ class Views extends Module {
                     $viewerId = $this->getUserIdWithRole($course, $info['roleTwo']);
 
                     if ($viewerId != -1 && $userId != -1) {
-                       // echo "processView1";
                         $this->viewHandler->processView($viewCopy, array(
                             'course' => (string)$courseId,
                             'viewer' => (string)$viewerId,
                             'user' => (string)$userId
                         ));
-                        //echo "processView2";
                         $testDone = true;
                     }
                 } else {
@@ -619,13 +592,10 @@ class Views extends Module {
             $viewSettings = $views[$viewId];
             //print_r($viewContent);//array ( part=>,partList=>)
             if ($viewSettings['type'] == ViewHandler::VT_ROLE_SINGLE) {
-                //$view->set($info['role'], $viewContent);/    
                 $role=$info['role'];
             } else if ($viewSettings['type'] == ViewHandler::VT_ROLE_INTERACTION) {
-                //$view->getWrapped($info['roleOne'])->set($info['roleTwo'], $viewContent);
                 $role=$info['roleOne'].'>'.$info['roleTwo'];
             } else {
-                //$view->setValue($viewContent);
                 $role="";
             }
             $viewRoleInfo=['course'=>$courseId,'viewId'=>$viewId,'role'=>$role];
@@ -669,7 +639,6 @@ class Views extends Module {
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
-            //$view = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
 
             $viewSettings = $views[$viewId];
             $viewType = $viewSettings['type'];
@@ -807,7 +776,6 @@ class Views extends Module {
            // $views = $views->getWrapped($roleOne);
         //}
         //$views = $views->getValue();
-        //TODO deal with double roles (not sure what will be in $viewToFind n those cases
         $views = $this->getViewHandler()->getViewRoles($viewId);
         $viewRoles = array_column($views,'role');
         $viewsFound = array();
@@ -844,21 +812,17 @@ class Views extends Module {
         return $temps;
     }
     public function getTemplate($id) {
-         $temp = Core::$systemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
-         if (!empty($temp)) {
+        $temp = Core::$systemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
+        if (!empty($temp)) {
             $temp['content'] = unserialize($temp['content']);
         }
-         return $temp;
-   //     return $this->getData()->getWrapped('templates')->get($id);
+        return $temp;
     }
     
     //receives the template id, its serialized contents and module id, and puts it in the database
     public function setTemplate($id, $template, $moduleId) {
-        //todo decide between unserialize and json decode for when using this data.
-        // remove the unserialie from the callers (simple send the file contents)
         Core::$systemDB->insert('view_template',['id'=>$id,'content'=>$template,
                                 'course'=>$this->getCourseId(),'module'=>$moduleId]);
-   //     return $this->getData()->getWrapped('templates')->set($id, $template);
     }
 }
 

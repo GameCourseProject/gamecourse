@@ -14,63 +14,6 @@ class Badges extends Module {
     }
 
     public function init() {
-        /*DataSchema::register(array(
-            DataSchema::courseUserDataFields(array(
-                DataSchema::makeObject('badges', null, array(
-                    DataSchema::makeField('totalxp', 'Total XP', 1000),
-                    DataSchema::makeField('normalxp', 'XP from normal badges', 750),
-                    DataSchema::makeField('bonusxp', 'XP from extra credits badge', 250),
-                    DataSchema::makeField('countedxp', 'XP that counts toward final grade', 1000),
-                    DataSchema::makeField('completedLevels', 'Number of completed levels', 12),
-                    DataSchema::makeMap('list', null, DataSchema::makeField('name', 'Badge name', 'Squire'),
-                        DataSchema::makeObject('badge', 'Badge', array(
-                            DataSchema::makeField('level', 'Badge level', 1),
-                            DataSchema::makeArray('levelTime', 'Badge awards time', DataSchema::makeField('time', 'Badge level award time', 1234567890)),
-                            DataSchema::makeField('progressCount', 'Badge progress count', 5),
-                            DataSchema::makeArray('progress', 'Badge progress indicators',
-                                DataSchema::makeObject('indicator', 'Indicator', array(
-                                    DataSchema::makeField('text', 'Text', 'IL1'),
-                                    DataSchema::makeField('quality', 'Post quality', 4),
-                                    DataSchema::makeField('link', 'Link', 'http://moodle/post'),
-                                    DataSchema::makeField('post', 'Post', 'Re: Squire'),
-                                ))
-                            )
-                        )),
-                        function() {
-                            return array('abc');
-                        }
-                    )
-                ))
-            )),
-            DataSchema::courseModuleDataFields($this, array(
-                DataSchema::makeMap('badges', null, DataSchema::makeField('badgeName', 'Badge Name', 'Squire'),
-                    DataSchema::makeObject('badge', 'Badge', array(
-                        DataSchema::makeField('name', 'Name', 'Squire'),
-                        DataSchema::makeField('description', 'Description', 'Help your colleagues by writing...'),
-                        DataSchema::makeField('maxLevel', 'Max Level', 3),
-                        DataSchema::makeArray('xp', 'XP',
-                            DataSchema::makeField('xp', 'XP for level', 100)
-                        ),
-                        DataSchema::makeArray('levelDesc', 'Level Description',
-                            DataSchema::makeField('levelDesc', 'Description for level', 'get four points')
-                        ),
-                        DataSchema::makeField('extraCredit', 'Is extra credit', 'true'),
-                        DataSchema::makeField('braggingRights', 'Is bragging rights', 'false'),
-                        DataSchema::makeField('countBased', 'Is count based', 'true'),
-                        DataSchema::makeField('postBased', 'Is post based', 'false'),
-                        DataSchema::makeField('pointBased', 'Is point based', 'true'),
-                        DataSchema::makeArray('count', 'Counts needed to unlock',
-                            DataSchema::makeField('count', 'Count needed to unlock level', 4)
-                        )
-                    )),
-                    function() {
-                        return array('abc');
-                    }
-                ),
-                DataSchema::makeField('totalLevels', 'Total number of badge levels', 72)
-            ))
-        ));
-*/
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
 

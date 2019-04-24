@@ -37,7 +37,7 @@ create table course(
 	name 		varchar(100),
 	numBadges  int unsigned default 0,
 	active boolean default true,
-	headerLink varchar(255) default "",
+	headerLink varchar(255) default "",#?
 	defaultLandingPage varchar(100) default "",
 	fenixLink varchar(255) default "",
 	lastUpdate timestamp default CURRENT_TIMESTAMP
@@ -50,7 +50,7 @@ create table course_user
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
     lastActivity timestamp default CURRENT_TIMESTAMP,
-    prevActivity timestamp,
+    prevActivity timestamp,#?
     totalTreeXP int unsigned default 0,
     countedTreeXP int unsigned default 0,
     numSkills 	int unsigned default 0,
@@ -206,7 +206,6 @@ create table badge_level_time(
 create table module(
 	moduleId varchar(50) not null primary key,
 	name varchar(50)
-	#maybe add: version,dependencies,directory,parent,resources(files),factory
 );
 create table enabled_module(
 	moduleId varchar(50) not null,

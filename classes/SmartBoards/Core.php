@@ -1,8 +1,6 @@
 <?php
 namespace SmartBoards;
 
-//use MagicDB\MagicDB;
-//use MagicDB\MagicWrapper;
 use MagicDB\SQLDB; 
 
 require_once 'config.php';
@@ -123,7 +121,7 @@ class Core {
                 $user->setAdmin($pendingInvite['isAdmin']);
             Core::removePendingInvites($pendingInvite["id"]);
         }
-
+        
         static::$loggedUser = User::getUserByUsername($username);
         if (static::$loggedUser != null) {
             $_SESSION['user'] = static::$loggedUser->getId();
@@ -170,7 +168,7 @@ class Core {
     public static function getCourse($id) {
         return static::$systemDB->select("course",'*',['id'=>$id]);  
     }
-
+    //ToDo
     public static function getApiKey() {
         //return static::$mainConfigDB->getWrapped('apiKey');
         return static::$apiKey;
@@ -187,18 +185,4 @@ class Core {
     public static function getNavigation() {
         return static::$navigation;
     }
-
-    //public static function getViews() {//ToDo
-    //    return static::$mainConfigDB->getWrapped('views');
-    //}
-
-    //public static function getConfig() {
-    //    return static::$mainConfigDB;
-    //}
-
-    //private static function initMainConfig() {
-    //    static::$mainConfigDB = new MagicWrapper(new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'config'));
-    //}
-
-
 }

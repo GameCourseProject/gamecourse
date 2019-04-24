@@ -87,9 +87,4 @@ class User {
     public static function getAllInfo() {
         return Core::$systemDB->selectMultiple("user");
     }
-
-    //private static function initDB() {
-        //static::$baseDB = new MagicDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD, 'users');
-        //static::$usersDB = new MagicWrapper(static::$baseDB);     
-    //}
 }
