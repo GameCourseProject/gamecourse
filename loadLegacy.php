@@ -287,11 +287,14 @@ foreach($awards as &$award) {
         //Quizes
         elseif ($award['what'] == 'Grade from Quiz') {
             $name='Quiz ' . $award['field2'];
-            if (empty(Core::$systemDB->select("award", "*", ["name" => $name, "course" => $courseId, "student" => $award['userid']]))) {
+            $awardInDB=Core::$systemDB->select("award", "*", ["name" => $name, "course" => $courseId, "student" => $award['userid']]);
+            if (empty($awardInDB)) {
                 Core::$systemDB->insert("award", array_merge($data, 
                         ["name" => $name, "type" => 'grade',
                          'subtype' => 'quiz', 'num' => $award['field2']]));
                 
+            }elseif($awardInDB["reward"]!=$data["reward"]){
+                Core::$systemDB->update("award",["reward"=>$data["reward"]],["name" => $name, "course" => $courseId, "student" => $award['userid']]);        
             }
             $userInfo[$award['userid']]['quizXP']+=$data['reward'];
         }
@@ -381,9 +384,10 @@ foreach ($userIds as $userId){
              $userInfo[$userId]['presentationXP'];
     
     //if user has more xp than previously, update all xp info
-    if ($totalXP!=Core::$systemDB->select("course_user","XP",["course"=>$courseId,"id"=>$userId])){
+    $userInDB=Core::$systemDB->select("course_user","*",["course"=>$courseId,"id"=>$userId]);
+    if ($totalXP!=$userInDB["XP"] || $userInfo[$userId]['numBadges'] !=  $userInDB["numBadgeLvls"]){
         Core::$systemDB->update("course_user",
-            ["level"=>floor($totalXP/XP_PER_LEVEL),
+            ["level"=>floor($totalXP/XP_PER_LEVEL),"numBadgeLvls"=>$userInfo[$userId]['numBadges'],
              "countedBadgeXP"=>$countedBadgeXP,"normalBadgeXP"=>$userInfo[$userId]['normalBadgeXP'],
              "extraBadgeXP"=>$userInfo[$userId]['extraBadgeXP'],"totalBadgeXP"=>$userInfo[$userId]['totalBadgeXP'],
              "countedTreeXP"=>$countedTreeXP,"totalTreeXP"=>$userInfo[$userId]['totalTreeXP'],
