@@ -440,25 +440,19 @@ foreach ($userIds as $userId){
                         $text = $indicator['info'];
 
                     $found = array_search($text, $oldIndicators);
-                    if ($found!==false)
+                    if ($found !== false)
                         unset($oldIndicators[$found]);
-                    if (empty(Core::$systemDB->select("progress_indicator", "*", ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId])))    
-                        Core::$systemDB->insert("progress_indicator",
-                                    ["quality"=>$quality,
-                                     "link"=>$link,
-                                     'post' => $post,
-                                     "indicatorText"=>$text,
-                                     "badgeName"=>$badgeName,
-                                     "course"=>$courseId,"student"=>$userId]);
-                    //delete this
-                    else
-                        Core::$systemDB->update("progress_indicator",
-                                    ["quality"=>$quality,
-                                     "link"=>$link,
-                                     'post' => $post],
-                                     ["indicatorText"=>$text,
-                                     "badgeName"=>$badgeName,
-                                     "course"=>$courseId,"student"=>$userId]);
+
+                    if (empty(Core::$systemDB->select("progress_indicator", "*", 
+                            ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]))){
+                        Core::$systemDB->insert("progress_indicator", 
+                                    ["quality" => $quality,
+                                    "link" => $link,
+                                    'post' => $post,
+                                    "indicatorText" => $text,
+                                    "badgeName" => $badgeName,
+                                    "course" => $courseId, "student" => $userId]);
+                    }
                 }
                 foreach ($oldIndicators as $delete){
                     Core::$systemDB->delete("progress_indicator",["indicatorText"=>$delete,"badgeName"=>$badgeName,
