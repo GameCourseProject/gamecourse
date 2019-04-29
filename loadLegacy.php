@@ -423,20 +423,25 @@ foreach ($userIds as $userId){
             $post=null;
             $text=null;
             $link=null;
+            
             if (is_array($badgeIndicators[1])) {
+                $oldIndicators = array_column(Core::$systemDB->selectMultiple("progress_indicator",'indicatorText',
+                                ["student"=>$userId,"course"=>$courseId,"badgeName"=>$badgeName]),"indicatorText");
                 $postCount = 1;
                 foreach($badgeIndicators[1] as $indicator) {
-            
-                    if ($badge['isCount'] || ($indicator['action'] == 'graded post')) {
-                        $quality = $indicator['xp'];
-                        $post = $indicator['info']; 
-                    }
                     if ($badge['isPost']) {
+                        if ($badge['isCount'] || ($indicator['action'] == 'graded post')) {
+                            $quality = $indicator['xp'];
+                            $post = $indicator['info']; 
+                        }
                         $text = 'P' . $postCount++;
                         $link=$indicator['url'];
                     } else if ($badge['isCount'])
                         $text = $indicator['info'];
 
+                    $found = array_search($text, $oldIndicators);
+                    if ($found!==false)
+                        unset($oldIndicators[$found]);
                     if (empty(Core::$systemDB->select("progress_indicator", "*", ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId])))    
                         Core::$systemDB->insert("progress_indicator",
                                     ["quality"=>$quality,
@@ -444,6 +449,19 @@ foreach ($userIds as $userId){
                                      'post' => $post,
                                      "indicatorText"=>$text,
                                      "badgeName"=>$badgeName,
+                                     "course"=>$courseId,"student"=>$userId]);
+                    //delete this
+                    else
+                        Core::$systemDB->update("progress_indicator",
+                                    ["quality"=>$quality,
+                                     "link"=>$link,
+                                     'post' => $post],
+                                     ["indicatorText"=>$text,
+                                     "badgeName"=>$badgeName,
+                                     "course"=>$courseId,"student"=>$userId]);
+                }
+                foreach ($oldIndicators as $delete){
+                    Core::$systemDB->delete("progress_indicator",["indicatorText"=>$delete,"badgeName"=>$badgeName,
                                      "course"=>$courseId,"student"=>$userId]);
                 }
             }
