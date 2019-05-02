@@ -19,10 +19,11 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
 
         var qrGenForm = $('<div>\
                         <label for="qr-quantity" class="label">How many QR codes? </label>');
-        var qrQuantityInput = $('<input>', {type: 'number', id:'qr-quantity', 
+        var qrQuantityInput = $('<input>', {type: 'number', id:'qr-quantity', min:'1',
                'class': 'input-text', placeholder:'', 'ng-model':'data.qrQuantity'});
         qrGenForm.append($compile(qrQuantityInput)($scope));
         
+        //FIX the password is password, and it's hardcoded
         qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \\n\
         href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}">Generate</a>')($scope));
         //generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}
@@ -30,25 +31,26 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
         qrCodesGenerator.append($compile(qrGenForm)($scope));
         
         //Buttons to show lists of participations and failed attempts
+        //console.log($scope.course);
         var participationList = createSection(tabContent, 'Check Participations List');
         participationList.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
-        href="modules/qr/report.php">List</a>')($scope));
+        href="modules/qr/report.php?course={{course}}">List</a>')($scope));
         
         var checkFailedAttempts = createSection(tabContent, 'Check failled attemps of QR use');
-        checkFailedAttempts.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
-        href="modules/qr/fails.php">List</a>') ($scope));
-        
+        /*checkFailedAttempts.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
+        href="modules/qr/fails.php?course={{course}}">List</a>') ($scope));
+        */
         data.showingAttempsList=false;
         var errorList = checkFailedAttempts.append($('<button>', {'ng-disabled': 'data.showingAttempsList==true','ng-click': 'showQRAttemptsList()', text: 'Show List'}));
         $scope.showQRAttemptsList = function() {
-            $http.get('modules/qr/fails.php').success(function(response) {
+            $http.get('modules/qr/fails.php?course='+$scope.course).success(function(response) {
                 errorList.append($('<br/>'));
                 errorList.append($(response));
                 data.showingAttempsList=true;
             }).error(function(response){
                 console.log("Error with request to get QR: "+response);
             }); 
-        };//the database used is still external
+        };
         checkFailedAttempts.append($compile(errorList)($scope));
     });
 

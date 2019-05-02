@@ -10,32 +10,45 @@ table, th, td {
 <body>
 <div id="failedAttemps"><table style="margin:2px">
 <?php
-	include('config.php'); // configuracao base de dados
-   $connection = pg_connect("host=$hostname port=$port user=$dbusername password=$dbpassword dbname=$dbusername") or die(pg_last_error());
-	$sql = "SELECT student_id,student_name,campus,msg,datetime,ip FROM student NATURAL JOIN error;";
-	$result = pg_query($connection, $sql) or die(pg_last_error());
+set_include_path(get_include_path() . PATH_SEPARATOR . '../../');
+include ('classes/ClassLoader.class.php');
+include('../../config.php');
+use \SmartBoards\Core;
+
+Core::init();
+
+if (isset($_REQUEST["course"])){
+    $results = Core::$systemDB->executeQuery("select student,name,campus,msg,errorDate,ip "
+                . "from qr_error q natural join course_user u natural join user "
+                . "where student=u.id and course=".$_REQUEST["course"].";");
+}else{
+    $results = Core::$systemDB->executeQuery("select student,name,campus,msg,errorDate,ip "
+                . "from qr_error q natural join course_user u natural join user "
+                . "where student=u.id;");
+}
+
 	$sep = ";"; // separador
 	$campus = "";
-	while($row_array = pg_fetch_assoc($result)) {
+        foreach ($results as $result){
 		/* if($row_array['campus']=="T"){
 			$campus="Taguspark";
 		}else{ $campus="Alameda"; } */
-		$student_name=utf8_decode($row_array['student_name']);
+		//$student_name=utf8_decode($row_array['student_name']);
 
 ?>
         <tr>
-            <th><?="{$row_array['student_id']}"?></th>
-            <th><?="{$student_name}"?></th>
-            <th><?="{$row_array['campus']}"?></th>
-            <th><?="{$row_array['ip']}"?></th>
-            <th><?="{$row_array['msg']}"?></th>
-            <th><?="{$row_array['datetime']}"?></th>
+            <th><?="{$result['student']}"?></th>
+            <th><?="{$result['name']}"?></th>
+            <th><?="{$result['campus']}"?></th>
+            <th><?="{$result['ip']}"?></th>
+            <th><?="{$result['msg']}"?></th>
+            <th><?="{$result['errorDate']}"?></th>
         </tr>
 <?php
     
 		//echo("{$row_array['student_id']}".$sep."{$student_name}".$sep."{$row_array['campus']}".$sep."{$row_array['ip']}".$sep." {$row_array['msg']}".$sep."{$row_array['datetime']}\n"); 
 	}
-	pg_close($connection);
+	//pg_close($connection);
 	// num;nome;A/T;ip;errorMsg;datetime
 ?>
     </table></div></body></html>

@@ -1,12 +1,16 @@
 <?php
+set_include_path(get_include_path() . PATH_SEPARATOR . '../../');
+include ('classes/ClassLoader.class.php');
+include('../../config.php');
+use \SmartBoards\Core;
+use \SmartBoards\Course;
 
-include('config.php'); // configuracao base de dados 
-    $connection = pg_connect("host=$hostname port=$port user=$dbusername password=$dbpassword dbname=$dbusername") or die(pg_last_error());
+Core::init();
 			
 $disciplina_pt = "PCM - Produ&ccedil;&atilde;o de Conte&uacute;dos Multim&eacute;dia";
 $disciplina_en = "Multimedia Content Production";
-$ano_pt="2014/2015";
-$ano_en="2015";
+$ano_pt="2018/2019";
+$ano_en="2019";
 $semestre_pt="2o Semestre";
 $semestre_en="Spring";
 $titulo_pt="XP B&oacute;nus de Participa&ccedil;&atilde;o Activa na Aula";
@@ -16,28 +20,22 @@ $error1_en = "Sorry but you have arrived from an incorrect URL. Your IP was regi
 $error2_en = "Sorry but you have an invalid key. Your IP was registered!";
 $error_student_number_en = "";
 $error_lecture_number_en =  "";
+$class_types=array("Lecture","Invited Lecture");
 
 $error = FALSE;
 
-function inclass($student_id, $connection){
-	
-	$sql = "SELECT student_id FROM student WHERE student_id='{$student_id}';";
-
-	$result = pg_query($connection, $sql);
-	if($result == NULL) $rows = 0;
-	else $rows = pg_num_rows($result);
-	if($rows==1){return TRUE;}else{return FALSE;}
-	
+function inclass($student_id, $courseId){
+   return !empty(Core::$systemDB->select("course_user",'*',["id"=>$student_id, "course"=> $courseId]));	
 }
 
-if(isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["submit"])){
+if(isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["course"]) && isset($_REQUEST["submit"])){
   if(!is_numeric($_REQUEST["aluno"])){
     $error_student_number_en = "Student Number must be a number! Example: 48283";
     $error = TRUE;
   }else if(strlen($_REQUEST["aluno"])<5){
     $error_student_number_en = "Student Number must have 5 numbers! Example: 48283";
     $error = TRUE;
-  }else if(!(inclass($_REQUEST["aluno"], $connection))){
+  }else if(!(inclass($_REQUEST["aluno"], $_REQUEST["course"]))){
     $error_student_number_en = "The student with that Student Number is not enrolled in class.";
     $error = TRUE;
   }else {$error_student_number_en ="";}
@@ -83,36 +81,30 @@ p.error {
 <?php
 if(isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["aula"]) && isset($_REQUEST["submit"]) && !($error)){
 
-	$sql="INSERT INTO participation(qrkey, student_id, class_number, class_type) VALUES ('{$_REQUEST['key']}','{$_REQUEST['aluno']}','{$_REQUEST['aula']}','{$_REQUEST['classtype']}');";
-	$result = pg_query($connection, $sql);
-	if (!$result) {
-  		echo "<br/><span class='error'>Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.</span>\n";
-  		$erro = pg_last_error($connection);
-  		$sql="INSERT INTO error(student_id, ip, qrcode, datetime, msg) VALUES ('{$_REQUEST['aluno']}','{$_SERVER['REMOTE_ADDR']}','{$_REQUEST['key']}',date_trunc('second', current_timestamp), '{$erro}');";
-  		$result = pg_query($connection, $sql);
-  	}else {
-	  echo "<span class='success'>Your active participation was registered.<br />Congratulations! Keep participating. ;)</span>";
-  	}
+    try{
+        Core::$systemDB->insert("participation",["qrkey"=>$_REQUEST["key"],"student"=>$_REQUEST["aluno"],
+                    "course"=>$_REQUEST["course"],"classNumber"=>$_REQUEST['aula'], "classType"=>$_REQUEST['classtype']]);
+        echo "<span class='success'>Your active participation was registered.<br />Congratulations! Keep participating. ;)</span>";
+  	
+    }catch(PDOException $e){
+        echo "<br/><span class='error'>Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.</span>\n";
+  	$erro = $e->getMessage();
+  	$sql="INSERT INTO error(student_id, ip, qrcode, datetime, msg) VALUES ('{$_REQUEST['aluno']}','{$_SERVER['REMOTE_ADDR']}','{$_REQUEST['key']}',date_trunc('second', current_timestamp), '{$erro}');";
+  	Core::$systemDB->insert("qr_error",["student"=>$_REQUEST["aluno"],"course"=>$_REQUEST["course"],
+            "ip"=>$_SERVER['REMOTE_ADDR'],"qrkey"=>$_REQUEST["key"],"msg"=>$erro]);
+    
+    } 
 
-} else if(isset($_REQUEST["key"])){
-	
-
-
+} else if(isset($_REQUEST["key"]) && isset($_REQUEST["course"])){
 // QRCode e valido?
-	$sql = "SELECT qrkey FROM qrcode WHERE qrkey='".$_REQUEST["key"]."';";
-	$result = pg_query($connection, $sql);
-	$rows = pg_num_rows($result);
-	if($rows==1){ $valid=TRUE; }else{ $valid=FALSE; }
+        $valid = !empty(Core::$systemDB->select("qr_code","qrkey",["qrkey"=>$_REQUEST["key"]]));
 
 // QRCode já foi atribuido?
-	$sql = "SELECT qrkey FROM participation WHERE qrkey='".$_REQUEST["key"]."';";
-	$result = pg_query($connection, $sql);
-	$rows = pg_num_rows($result);
-	if($rows==1){ $used=TRUE; }else{ $used=FALSE; }
-
+        $used = !empty(Core::$systemDB->select("participation","qrkey",["qrkey"=>$_REQUEST["key"]]));
 
 ?>
 		<form action="<?=$_SERVER['PHP_SELF']?>" method="get">
+                        <input type="hidden" name="course" value="<?=$_REQUEST['course']?>">
 			<input type="hidden" name="key" value="<?=$_REQUEST['key']?>">
 			Your IST Student Number:<input name="aluno" maxlength="5" size="5" 
 			<?php if(isset($_REQUEST["aluno"])){ ?>
@@ -123,9 +115,9 @@ if(isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["au
 			<select name="classtype">
 <?php
 			$count = count($class_types);
-			for ($i = 0; $i < $count; $i++) {
+                    for ($i = 0; $i < $count; $i++) {
     			echo "<option value='{$class_types[$i]}'>{$class_types[$i]}</option>\n";
-    		}
+                    }
 
 ?>
 			</select><br />
@@ -145,7 +137,6 @@ if(isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["au
 <p class="error"><?=$error1_en?></p>
 <?php
 }
-pg_close($connection);
 ?>
 </body>
 </html>

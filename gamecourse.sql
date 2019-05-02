@@ -262,3 +262,30 @@ create table system_info(
 	theme varchar(50) default 'default',
     primary key(theme)
 );
+
+create table qr_code(
+	qrkey varchar(61) not null primary key,
+	course int unsigned not null,
+	foreign key(course) references course(id) on delete cascade
+);
+create table participation(
+	qrkey varchar(61) not null primary key,
+	student int unsigned not null,
+	course int unsigned not null,
+	classNumber int not null,
+	classType varchar(15) not null,
+	foreign key (qrkey) references qr_code(qrkey),
+	foreign key (student,course) references course_user(id,course)
+);
+create table qr_error (
+    error_id int NOT NULL primary key auto_increment,
+    student int unsigned not null,
+    course int unsigned not null,
+    ip varchar(15) NOT NULL,
+    qrkey varchar(61) not null,
+    errorDate timestamp default CURRENT_TIMESTAMP,
+    #datetime timestamp without time zone NOT NULL,
+    msg varchar(250) NOT NULL,
+    foreign key (qrkey) references qr_code(qrkey),
+    foreign key (student,course) references course_user(id,course)
+);

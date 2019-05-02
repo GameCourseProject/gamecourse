@@ -16,7 +16,7 @@ class SQLDB {
         try{
             $result=$this->db->query($sql);
         }catch(\PDOException $e ){
-            echo $sql . "<br>" . $e->getMessage() . "<br>";
+            //echo $sql . "<br>" . $e->getMessage() . "<br>";
             throw new \PDOException($e);
         }
         return $result;
@@ -26,7 +26,7 @@ class SQLDB {
             $stmt=$this->db->prepare($sql);
             $stmt->execute($data);
         }catch(\PDOException $e ){
-            echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
+            //echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
             throw new \PDOException($e);
         }
         return $stmt;

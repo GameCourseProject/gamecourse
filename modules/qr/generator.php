@@ -6,14 +6,17 @@
 </style>
 </head>
 <?php
-//namespace Modules\QR;
-//include ('../../classes/ClassLoader.class.php');
-//include ('../../classes/SmartBoards/Course.php');
-//use SmartBoards\Course;
-//require_once('../../classes/SmartBoards/Core.php');
+//ini_set('display_errors','On');
+include('../../config.php');
+set_include_path(get_include_path() . PATH_SEPARATOR . '../../');
+include ('classes/ClassLoader.class.php');
 
-ini_set('display_errors','On');
-include('config.php'); // configuracao base de dados 
+use \SmartBoards\Core;
+use \SmartBoards\Course;
+use \SmartBoards\API;
+
+Core::init();
+
 include('password.php'); // valor da password em md5 >>> md5 -s "password" (Mac)
 
 function getTinyURL($url){  
@@ -24,42 +27,47 @@ function getTinyURL($url){
 	curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);  
 	$data = curl_exec($ch);  
 	curl_close($ch);  
- 
+
 	return $data;  
 }
+/*
+if (isset($_REQUEST["course"])){
+    $courseAdmin = (new Course($_REQUEST["course"]))->getLoggedUser()->hasRole('Teacher');
+    print_r(Core::getLoggedUser());
+    if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
+        API::error('You don\'t have permission to request this!', 401);
+    }
+}*/
+
 
 $tinyurl="";
 if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) && isset($_REQUEST["course"]) ){
   $palavra = md5($_REQUEST["palavra"]);
-  //$course = Course::getCourse($_REQUEST["course"]);
-  if($palavra==$password){
-    $connection = pg_connect("host=$hostname port=$port user=$dbusername password=$dbpassword dbname=$dbusername") 
-		or die(pg_last_error());
-	
-	$max = intval($_REQUEST["quantos"]);
-	$datagen=date('YmdHis');
-	for ($i = 1; $i <= $max; $i++) {
-		$uid=uniqid();
+  
+    if($palavra==$password){
+        $courseId= $_REQUEST["course"];
+        $max = intval($_REQUEST["quantos"]);
+        $datagen=date('YmdHis');
+        for ($i = 1; $i <= $max; $i++) {
+            
+            $uid=uniqid();
 
-		$separator = ';';
-		$key = $datagen.$separator.$password.$separator.$uid;
-		//$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
-		$url = "http://localhost/smartboards/modules/qr/index.php?key=".$key;
-		$tinyurl = getTinyURL($url);
-                //echo $course->getModuleData('qr')->get('qrCodes');
-                //echo $course->getModuleData('qr')->getWrapped('qrCodes');
-		$sql="INSERT INTO qrcode(qrkey) VALUES ('{$key}');";
-		$result = pg_query($sql) or die(pg_last_error());
-		
-		// Inserir Base de Dados	
+            $separator = ';';
+            $key = $datagen.$separator.$password.$separator.$uid;
+            //$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
+            $url = "http://".$_SERVER['HTTP_HOST'] .'/'. BASE . "/modules/qr/index.php?course=".$courseId."&key=".$key;
+
+            $tinyurl = getTinyURL($url);
+            // Inserir Base de Dados
+            Core::$systemDB->insert("qr_code",["qrkey"=>$key,"course"=>$courseId]);
+			
 		
 ?>
         <div id="tinyQR"><img src="qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div>		
        <!--div id="tinyQR"><img src="modules/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div-->
 <?php
-	}
-	pg_close($connection);
-  } else echo "PASSWORD ERRADA!";
+        }
+    } else echo "PASSWORD ERRADA!";
 } else {
 ?>
     <p>Something went wrong with QR generation</p>
