@@ -187,11 +187,12 @@ create table progress_indicator(
 	post varchar(255), 
 	quality int,
 	indicatorText varchar(50) not null,
+	indicatorIndex int default 0,#used for indicator that can have repeated indicatorTexts
 	badgeName varchar(70) not null,
 	course int unsigned not null,
 	student int unsigned not null,
 	foreign key(student,badgeName,course) references user_badge(student,name,course) on delete cascade,
-	primary key(indicatorText,student,badgeName,course)
+	primary key(indicatorIndex,indicatorText,student,badgeName,course)
 );
 create table badge_level_time(
 	badgeName varchar(70) not null,

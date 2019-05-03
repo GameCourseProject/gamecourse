@@ -425,9 +425,15 @@ foreach ($userIds as $userId){
             $link=null;
             
             if (is_array($badgeIndicators[1])) {
-                $oldIndicators = array_column(Core::$systemDB->selectMultiple("progress_indicator",'indicatorText',
-                                ["student"=>$userId,"course"=>$courseId,"badgeName"=>$badgeName]),"indicatorText");
+                $oldIndicators = Core::$systemDB->selectMultiple("progress_indicator",'indicatorText,indicatorIndex',
+                                ["student"=>$userId,"course"=>$courseId,"badgeName"=>$badgeName]);
+                $oldIndicatorsTextIndex=[];
+                foreach($oldIndicators as $ind){
+                    $oldIndicatorsTextIndex[$ind["indicatorText"]][]=$ind["indicatorIndex"];
+                }
+                
                 $postCount = 1;
+                $indexes = [];//used for badges w multiple indicators w same text
                 foreach($badgeIndicators[1] as $indicator) {
                     if ($badge['isPost']) {
                         if ($badge['isCount'] || ($indicator['action'] == 'graded post')) {
@@ -438,25 +444,35 @@ foreach ($userIds as $userId){
                         $link=$indicator['url'];
                     } else if ($badge['isCount'])
                         $text = $indicator['info'];
-
-                    $found = array_search($text, $oldIndicators);
-                    if ($found !== false)
-                        unset($oldIndicators[$found]);
-
-                    if (empty(Core::$systemDB->select("progress_indicator", "*", 
-                            ["indicatorText"=>$text,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]))){
-                        Core::$systemDB->insert("progress_indicator", 
-                                    ["quality" => $quality,
-                                    "link" => $link,
-                                    'post' => $post,
-                                    "indicatorText" => $text,
-                                    "badgeName" => $badgeName,
-                                    "course" => $courseId, "student" => $userId]);
+                    
+                    if (key_exists($text, $indexes)){
+                        $indexes[$text]++;
+                    }else{
+                        $indexes[$text]=0;
                     }
+                    $index=$indexes[$text];
+                    
+                    $progressIndicator = ["quality" => $quality,"link" => $link,'post' => $post,
+                                    "indicatorText" => $text,"indicatorIndex"=> $index,
+                                    "badgeName" => $badgeName,"course" => $courseId, "student" => $userId];
+                    
+                    if (key_exists($text, $oldIndicatorsTextIndex)){
+                        $found = array_search($index, $oldIndicatorsTextIndex[$text]);
+                        if ($found !== false) {
+                            unset($oldIndicatorsTextIndex[$text][$found]);
+                        } else {
+                            Core::$systemDB->insert("progress_indicator", $progressIndicator);
+                        }
+                    }else {
+                        Core::$systemDB->insert("progress_indicator", $progressIndicator);
+                    }
+          
                 }
-                foreach ($oldIndicators as $delete){
-                    Core::$systemDB->delete("progress_indicator",["indicatorText"=>$delete,"badgeName"=>$badgeName,
-                                     "course"=>$courseId,"student"=>$userId]);
+                foreach ($oldIndicatorsTextIndex as $deleteText=>$deleteIndexes){
+                    foreach ($deleteIndexes as $deleteIndex)
+                        Core::$systemDB->delete("progress_indicator",
+                                ["indicatorText"=>$deleteText,"indicatorIndex"=>$deleteIndex,
+                                 "badgeName"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
                 }
             }
         }
