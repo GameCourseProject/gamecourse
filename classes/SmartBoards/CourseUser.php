@@ -26,8 +26,6 @@ class CourseUser extends User{
     }
     
     function refreshActivity() {
-        $prev = $this->getData("lastActivity");
-        Core::$systemDB->update("course_user",["prevActivity"=>$prev],["course"=>$this->course->getId(),"id"=>$this->id]);
         Core::$systemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);
     }
 

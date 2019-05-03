@@ -49,8 +49,7 @@ create table course_user
     campus 	char(1),
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
-    lastActivity timestamp default CURRENT_TIMESTAMP,
-    prevActivity timestamp,#?
+    lastActivity timestamp default 0,
     totalTreeXP int unsigned default 0,
     countedTreeXP int unsigned default 0,
     numSkills 	int unsigned default 0,
