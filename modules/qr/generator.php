@@ -15,9 +15,10 @@ use \SmartBoards\Core;
 use \SmartBoards\Course;
 use \SmartBoards\API;
 
+Core::denyCLI();
+Core::requireLogin();
 Core::init();
-
-include('password.php'); // valor da password em md5 >>> md5 -s "password" (Mac)
+Core::checkAccess();
 
 function getTinyURL($url){  
 	$ch = curl_init();  
@@ -30,21 +31,20 @@ function getTinyURL($url){
 
 	return $data;  
 }
-/*
+
 if (isset($_REQUEST["course"])){
-    $courseAdmin = (new Course($_REQUEST["course"]))->getLoggedUser()->hasRole('Teacher');
-    print_r(Core::getLoggedUser());
+    $course = new Course($_REQUEST["course"]);
+    $courseAdmin = $course->getLoggedUser()->hasRole('Teacher');
+    
     if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
         API::error('You don\'t have permission to request this!', 401);
     }
-}*/
+}
 
 
 $tinyurl="";
-if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) && isset($_REQUEST["course"]) ){
-  $palavra = md5($_REQUEST["palavra"]);
-  
-    if($palavra==$password){
+if(isset($_REQUEST["quantos"]) && isset($_REQUEST["course"]) ){
+
         $courseId= $_REQUEST["course"];
         $max = intval($_REQUEST["quantos"]);
         $datagen=date('YmdHis');
@@ -53,7 +53,7 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) && isset($_REQUEST
             $uid=uniqid();
 
             $separator = ';';
-            $key = $datagen.$separator.$password.$separator.$uid;
+            $key = $datagen.$separator.$uid;
             //$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
             $url = "http://".$_SERVER['HTTP_HOST'] .'/'. BASE . "/modules/qr/index.php?course=".$courseId."&key=".$key;
 
@@ -67,7 +67,6 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["palavra"]) && isset($_REQUEST
        <!--div id="tinyQR"><img src="modules/qr/qrcode.php?url=<?=$url?>" alt="<?=$url?>" /><br/><?=substr($tinyurl,7);?></div-->
 <?php
         }
-    } else echo "PASSWORD ERRADA!";
 } else {
 ?>
     <p>Something went wrong with QR generation</p>

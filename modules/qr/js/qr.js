@@ -1,6 +1,5 @@
 angular.module('module.qr', []);
 
-
 angular.module('module.qr').controller('QRController', function ($element, $scope, $sbviews, $compile,$http) {
     changeTitle('QR', 1);
         
@@ -9,7 +8,7 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
             console.log(err);
             return;
         }
-        //$element.append(view.element);
+        $element.append(data.element);// contains what was defined in the view editor, can be empty
 
         var tabContent = $($element);
         $scope.data = data;
@@ -23,9 +22,8 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
                'class': 'input-text', placeholder:'', 'ng-model':'data.qrQuantity'});
         qrGenForm.append($compile(qrQuantityInput)($scope));
         
-        //FIX the password is password, and it's hardcoded
         qrGenForm.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \\n\
-        href="modules/qr/generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}">Generate</a>')($scope));
+        href="modules/qr/generator.php?quantos={{data.qrQuantity}}&course={{course}}">Generate</a>')($scope));
         //generator.php?quantos={{data.qrQuantity}}&palavra=password&course={{course}}
          
         qrCodesGenerator.append($compile(qrGenForm)($scope));

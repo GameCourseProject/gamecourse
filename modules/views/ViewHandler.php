@@ -506,7 +506,7 @@ class ViewHandler {
             //$viewData = Core::getViews()->get($view)['view'];
         }
         API::response(array(
-            'fields' => DataSchema::getFields($viewParams),//not beeing user currently
+            //'fields' => DataSchema::getFields($viewParams),//not beeing user currently
             'view' => $viewData
         ));  
     }

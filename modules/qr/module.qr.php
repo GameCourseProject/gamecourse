@@ -1,20 +1,17 @@
 <?php
 namespace Modules\QR;
 
-use SmartBoards\API;
 use SmartBoards\Core;
-use SmartBoards\DataSchema;
 use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 
 use Modules\Views\ViewHandler;
 
 class QR extends Module {
-
+    
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/');
-        //parent::addResources('generator.php');
     }
 
     public function init() {
@@ -27,7 +24,6 @@ class QR extends Module {
         $viewHandler->registerView($this, 'qr', 'QR View', array(
             'type' => ViewHandler::VT_SINGLE
         ));
-
     }
 }
 ModuleLoader::registerModule(array(
