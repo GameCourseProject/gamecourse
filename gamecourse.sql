@@ -1,3 +1,6 @@
+drop table if exists qr_error;
+drop table if exists participation;
+drop table if exists qr_code;
 drop table if exists system_info;
 drop table if exists pending_invite;
 drop table if exists view_template;
@@ -289,3 +292,4 @@ create table qr_error (
     foreign key (qrkey) references qr_code(qrkey),
     foreign key (student,course) references course_user(id,course)
 );
+
