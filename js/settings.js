@@ -26,7 +26,8 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.users">Users</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.students">Students</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.teachers">Teachers</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.api">API</a></li>')($scope));
@@ -1081,11 +1082,18 @@ app.config(function($stateProvider){
                 controller: 'CourseSettingsAPI'
             }
         }
-    }).state('course.settings.users', {
-        url: '/users',
+    }).state('course.settings.students', {
+        url: '/students',
         views : {
             'tabContent': {
-                template: 'TODO: After retiring legacy scripts, something similar to the user administration in general settings should be added here, to control who has access to the course'
+                controller: 'CourseStudentSettingsController'
+            }
+        }
+    }).state('course.settings.teachers', {
+        url: '/teachers',
+        views : {
+            'tabContent': {
+                controller: 'CourseTeacherSettingsController'
             }
         }
     }).state('course.settings.roles', {

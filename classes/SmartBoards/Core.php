@@ -115,8 +115,7 @@ class Core {
         if ( !empty($pending_invites) && array_key_exists($username, $pending_invites)) {
             $pendingInvite = $pending_invites[$username];
             $user = User::getUser($pendingInvite['id']);
-            $user->create($fenixAuth->getName());
-            $user->setData(["email"=>$fenixAuth->getEmail(),"username"=>$username]);
+            $user->addUserToDB($fenixAuth->getName(), $username, $fenixAuth->getEmail());
             if (array_key_exists('isAdmin', $pendingInvite))
                 $user->setAdmin($pendingInvite['isAdmin']);
             Core::removePendingInvites($pendingInvite["id"]);

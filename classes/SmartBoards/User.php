@@ -7,8 +7,9 @@ class User {
     public function __construct($id){
         $this->id = $id;
     }
-    public function create($name){
-        Core::$systemDB->insert("user",["name"=>$name,"id"=>$this->id]);        
+    
+    public function addUserToDB($name, $username, $email){
+        Core::$systemDB->insert("user",["name"=>$name,"id"=>$this->id,"username"=>$username, "email"=>$email]);       
     }
     
     public function exists() {
@@ -58,8 +59,8 @@ class User {
         return array_column(Core::$systemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');
     }
 
-    public function initialize($name, $email) {
-        Core::$systemDB->update("user",["name" => $name,"email" => $email],["id"=>$this->id]);
+    public function initialize($name, $username,$email) {
+        Core::$systemDB->update("user",["name" => $name,"email" => $email, "username"=>$username],["id"=>$this->id]);
         return $this;
     }
 

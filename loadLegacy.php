@@ -39,9 +39,9 @@ $course = Course::getCourse($courseId);
 
 if (!$isCLI)
     echo '<pre>';
-
+/*
 // Read Teachers
-$keys = array('id', 'name', 'email');
+$keys = array('username','id', 'name', 'email');
 $teachers = file_get_contents(LEGACY_DATA_FOLDER . '/teachers.txt');
 $teachers = preg_split('/[\r]?\n/', $teachers, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -49,16 +49,16 @@ foreach($teachers as &$teacher) {
     $teacher = array_combine($keys, preg_split('/;/', $teacher));
     $user = User::getUser($teacher['id']);
     if (!$user->exists()) {
-        $user->create($teacher['name']);
-        $user->setEmail($teacher['email']);
+        $user->addUserToDB($teacher['username'],$teacher['name'],$teacher['email']);//fixme add username
+        //$user->setEmail($teacher['email']);
     } else {
-        $user->initialize($teacher['name'], $teacher['email']);  
+        $user->initialize($teacher['name'],$teacher['username'], $teacher['email']);  //fixme add username
     }
     //$user->setAdmin(true);
     
     $courseUser= new CourseUser($teacher['id'],$course);
     if (!$courseUser->exists()) {
-        $courseUser->create("Teacher");
+        $courseUser->addCourseUserToDB("Teacher");
         echo 'New teacher ' . $teacher['id'] . "\n";
     }elseif (!$courseUser->isTeacher()){
         $courseUser->addRole("Teacher");
@@ -66,22 +66,22 @@ foreach($teachers as &$teacher) {
 }
 
 // Read Students
-$keys = array('id', 'name', 'email', 'campus');
-$students = utf8_encode(file_get_contents(LEGACY_DATA_FOLDER . '/students.txt'));
+$keys = array('username','id', 'name', 'email', 'campus');
+$students = (file_get_contents(LEGACY_DATA_FOLDER . '/students.txt'));
 $students = preg_split('/[\r]?\n/', $students, -1, PREG_SPLIT_NO_EMPTY);
 foreach($students as &$student) {
     $student = array_combine($keys, preg_split('/;/', $student));
     $user = User::getUser($student['id']);
     if (!$user->exists()) {
-        $user->create($student['name']);
-        $user->setEmail($student['email']);
+        $user->addUserToDB($student['username'],$student['name'],$student['email']);//fixme add username
+        //$user->setEmail($student['email']);
     } else {
-        $user->initialize($student['name'], $student['email']);  
+        $user->initialize($student['name'],$student['username'], $student['email']);  //fixme add username
     }
     
     $courseUser= new CourseUser($student['id'],$course);
     if (!$courseUser->exists()) {
-        $courseUser->create("Student", $student['campus']);
+        $courseUser->addCourseUserToDB("Student", $student['campus']);
         echo 'New student ' . $student['id'] . "\n";
     } else {
         $courseUser->setCampus($student['campus']);
@@ -91,7 +91,7 @@ foreach($students as &$student) {
 
 if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
     $keys = array('id', 'name', 'email', 'campus');
-    $studentsGaveUp = utf8_encode(file_get_contents(LEGACY_DATA_FOLDER . '/gave_up.txt'));
+    $studentsGaveUp = (file_get_contents(LEGACY_DATA_FOLDER . '/gave_up.txt'));
     $studentsGaveUp = preg_split('/[\r]?\n/', $studentsGaveUp, -1, PREG_SPLIT_NO_EMPTY);
     foreach($studentsGaveUp as &$student) {
         $student = array_combine($keys, preg_split('/;/', $student));
@@ -102,7 +102,7 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
         }
     }
 }
-
+*/
 // Read Tree
 $keys = array('tier', 'name', 'dependencies', 'color', 'xp');
 $skillTree = file_get_contents(LEGACY_DATA_FOLDER . '/tree.txt');

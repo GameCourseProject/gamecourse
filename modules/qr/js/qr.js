@@ -29,7 +29,6 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
         qrCodesGenerator.append($compile(qrGenForm)($scope));
         
         //Buttons to show lists of participations and failed attempts
-        //console.log($scope.course);
         var participationList = createSection(tabContent, 'Check Participations List');
         participationList.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
         href="modules/qr/report.php?course={{course}}">List</a>')($scope));

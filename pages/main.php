@@ -21,6 +21,7 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/builder.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
         <script type="text/javascript" src="js/settings.js"></script>
+        <script type="text/javascript" src="js/configurations.js"></script>
         <script type="text/javascript" src="js/d3.min.js"></script>
         <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
         <script type="text/javascript" src="js/tooltip.js"></script>

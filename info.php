@@ -10,6 +10,7 @@ use SmartBoards\Course;
 use SmartBoards\ModuleLoader;
 use SmartBoards\Settings;
 use SmartBoards\User;
+use SmartBoards\CourseUser;
 
 Core::denyCLI();
 if (!Core::requireLogin(false))
@@ -318,6 +319,95 @@ API::registerFunction('settings', 'users', function() {
         return;
     }
     API::response(array('users' => User::getAllInfo(), 'pendingInvites' => Core::getPendingInvites()));
+});
+
+//This updates the student or teachers of the course
+//receives list of users to replace/add and updates the DB
+function updateUsers($list,$role,$course,$courseId,$replace){
+    $updatedUsers="";
+    if ($replace){
+        $prevUsers = array_column(Core::$systemDB->selectMultiple("course_user natural join user_role",'id',
+                       ["course"=>$courseId, "role"=>$role]), "id");
+    }
+    $keys = ['username','id', 'name', 'email'];
+    if ($role == "Student")
+        $keys = array_merge($keys,['campus']);
+    $list = preg_split('/[\r]?\n/', $list, -1, PREG_SPLIT_NO_EMPTY);
+    
+    foreach($list as &$currUser) {
+        $splitList = preg_split('/;/', $currUser);
+        if (sizeOf($splitList) != sizeOf($keys)) {
+            echo "User information was incorrectly formatted";
+            return null;
+        }
+        $currUser = array_combine($keys, $splitList);
+        if ($role == "Teacher")
+            $currUser["campus"]=null;
+        
+        $user = User::getUser($currUser['id']);
+        if (!$user->exists()) {
+            $user->addUserToDB($currUser['name'],$currUser['username'],$currUser['email']);
+        } else {
+            $user->initialize($currUser['name'],$currUser['username'], $currUser['email']); 
+            if ($replace)
+                unset($prevUsers[array_search($currUser['id'], $prevUsers)]);
+        }
+
+        $courseUser= new CourseUser($currUser['id'],$course);
+        if (!$courseUser->exists()) {
+            $courseUser->addCourseUserToDB($role, $currUser['campus']);
+            $updatedUsers.= 'New '.$role.' ' . $currUser['id'] . "\n";
+        } else {
+            $courseUser->setCampus($currUser['campus']);
+            $courseUser->addRole($role);
+        }
+    }
+    if ($replace){
+        foreach($prevUsers as $userToDelete){
+            Core::$systemDB->delete("course_user",["id"=>$userToDelete]);
+            $updatedUsers .= "Deleted ".$role." ".$userToDelete."\n";
+        }
+    }
+    return $updatedUsers;
+}
+
+API::registerFunction('settings', 'courseUsers', function() {
+    API::requireAdminPermission();
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    
+    if (API::hasKey('fullUserList') && API::hasKey('role')) {
+        $studentList = API::getValue('fullUserList');
+        $updatedUsers=updateUsers($studentList,API::getValue('role'),$course,$courseId,true);
+        if ($updatedUsers!==null)
+            API::response(["updatedUsers"=>$updatedUsers ]);
+        return;
+    } else if (API::hasKey('newUsers') && API::hasKey('role')) {
+        $studentList = API::getValue('newUsers');
+        $updatedUsers=updateUsers($studentList,API::getValue('role'),$course,$courseId,false);
+        if ($updatedUsers!==null)
+            API::response(["updatedUsers"=>$updatedUsers ]);
+        return;
+    }else if (API::hasKey('deleteCourseUser')) {
+        $userToDelete = API::getValue('deleteCourseUser');
+        $courseUser= new CourseUser($userToDelete,$course);
+        if ($courseUser->exists()) 
+            Core::$systemDB->delete("course_user",["id"=>$userToDelete]);
+        API::response(["updatedUsers"=>"" ]);
+        return;
+    }
+    
+    if (API::hasKey('role')){
+        $role = API::getValue('role');
+        $users = $course->getUsersWithRole($role);
+        $usersInfo = [];
+        foreach ($users as $userData) {
+            $id = $userData['id'];
+            $user = new \SmartBoards\CourseUser($id,$course);
+            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername());
+        }
+        API::response(array('userList' => $usersInfo ));
+    }
 });
 
 API::registerFunction('settings', 'createCourse', function() {

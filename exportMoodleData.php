@@ -1,4 +1,6 @@
 <?php
+//This script extracts all the posts from the moodle DataBase and inserts it into folders
+//This version uses SmartBoards classes, it only works if Smartboards and Moodle use the same Database
 include 'classes/ClassLoader.class.php';
 
 use \SmartBoards\Core;

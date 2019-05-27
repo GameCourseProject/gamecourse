@@ -10,7 +10,7 @@ class CourseUser extends User{
         $this->course = $course;
     }
     //adds course_user to DB, User must already exist in DB
-    public function create($role=null,$campus=""){
+    public function addCourseUserToDB($role=null,$campus=""){
         Core::$systemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
         if ($role){
             Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
