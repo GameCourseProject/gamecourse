@@ -104,6 +104,7 @@ if (file_exists(LEGACY_DATA_FOLDER . '/gave_up.txt')) {
 }
 */
 // Read Tree
+/*
 $keys = array('tier', 'name', 'dependencies', 'color', 'xp');
 $skillTree = file_get_contents(LEGACY_DATA_FOLDER . '/tree.txt');
 $skillTree = preg_split('/[\r]?\n/', $skillTree, -1, PREG_SPLIT_NO_EMPTY);
@@ -171,7 +172,8 @@ foreach($skillTree as &$skill) {
 foreach ($skillsInDB as $skill){
     Core::$systemDB->delete("skill",["name"=>$skill,"course"=>$courseId]);
 }
-
+*/
+/*
 // Read Levels
 $keys = array('title', 'minxp');
 $levels = file_get_contents(LEGACY_DATA_FOLDER . '/levels.txt');
@@ -185,15 +187,16 @@ for($i=0;$i<sizeof($levels);$i++){
                                          "title"=>$level['title'],"course"=>$courseId]);  
     }
 }
-
+*/
 // Read Achievements/Badges
+/*
 $keys = array(
     'name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 'countBased', 'postBased', 'pointBased',
     'count1', 'count2', 'count3'
 );
 $achievements = file_get_contents(LEGACY_DATA_FOLDER . '/achievements.txt');
 $achievements = preg_split('/[\r]?\n/', $achievements, -1, PREG_SPLIT_NO_EMPTY);
-$sbBadges = array();
+$sbBadges = array();//also used in the rest of the code
 $totalLevels = 0;
 
 foreach($achievements as &$achievement) {
@@ -226,7 +229,19 @@ foreach($achievements as &$achievement) {
     $totalLevels += $maxLevel; 
 }
 Core::$systemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
+*/
 
+//get badges info that is needed when reading awards and for the user_badges
+$DBbadges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId]);
+$sbBadges=[];
+foreach($DBbadges as &$b){
+    $sbBadges[$b["name"]]=$b;
+    for ($i=1;$i<=$b["maxLvl"];$i++){
+        $xp = Core::$systemDB->select("badge_level","xp",["course"=>$courseId,"badgeName"=>$b["name"],"level"=>$i]);
+        $sbBadges[$b["name"]]['xp'][]=$xp;
+    }
+}
+    
 // Read Indicators
 $indicators = json_decode(file_get_contents(LEGACY_DATA_FOLDER . '/indicators.json'), true);
 $indicatorsByNum = array();
@@ -407,7 +422,7 @@ foreach ($userIds as $userId){
         $level = key_exists($badgeName,$userBadge[$userId]) ? $userBadge[$userId][$badgeName]['level'] : 0;
         Core::$systemDB->update("user_badge",
                     ["level"=>$level,
-                    "progress"=>(int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0]) ],
+                    "progress"=>(int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0])],
                     ["name"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
         
         if ($level>0){

@@ -6,8 +6,8 @@ function alertUpdateAndReload(data,err){
         alert(err.description);
         return;
     }
-    if (data.updatedUsers!="")
-        alert(data.updatedUsers);
+    if (data.updatedData!="")
+        alert(data.updatedData);
     location.reload();
 }
 
@@ -22,71 +22,88 @@ function deleteUser(user, $smartboards, $scope) {
     if (confirm("Are you sure you want to DELETE the user with id: "+user+'?'))
         $smartboards.request('settings', 'courseUsers', {course : $scope.course, deleteCourseUser:user}, alertUpdateAndReload);
 }
-
-//sets up the page for managing students or teachers
-function userSettings(role,data, err, $scope,$element,$compile){
+function clearFillBox($scope){
+    if ($scope.newList!=="")
+        $scope.newList="";
+    else if ("file" in $scope.data)
+        $scope.newList=$scope.data.file;
+}
+function constructTextArea($compile,$scope,name,text,width=60){
+    var bigBox = $('<div>',{'class': 'column', style: 'float: left; width: '+width+'%;', 
+           text:text });
+    bigBox.append('<textarea cols="80" rows="25" type="text" style="width: 100%" class="ConfigInputBox" id="newList" ng-model="newList"></textarea>');
+    bigBox.append('<button class="button small" ng-click="replaceData(newList)">Replace '+name+' List</button>');
+    //ToDo: add this button (and delete) back after the system stops using TXTs from legacy_folder
+    //If TXT files are used it's difficult to keep them synced w DB and have the Add/Edit functionality
+//if (name!=="Level")
+    //    bigBox.append('<button class="button small" ng-click="addData(newList)">Add/Edit '+name+'s </button>');
+        //ng-disabled="!isValidString(inviteInfo.id) "
+    bigBox.append('<button class="button small" ng-click="clear()" style="float: right;">Clear/Fill Box</button>');
+    //bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
+    bigBox.append($compile(bigBox)($scope));
+    return bigBox;
+}
+function constructConfigPage(data, err, $scope,$element,$compile,name,text,tabContents,columns){
     if (err) {
-            console.log(err);
-            return;
+        console.log(err);
+        return;
     }
     $scope.data = data;
     var tabContent = $($element);
-    var userSection = createSection(tabContent, 'Manage '+role+'s');
-    $userTabContents=[];
-    var userSectionContent = $('<div>',{'class': 'row'});
-    for (var st in data.userList){
-        $userTabContents.push({ID: data.userList[st].id,Name:data.userList[st].name,Username:data.userList[st].username,
-                "":{id: data.userList[st].id, name:data.userList[st].name,username:data.userList[st].username }});
-    }
-        
-    var columns = ["ID","Name","Username",
-            //This is for the button in the row. ToDo decide if courseUsers should be editable/deletable from this page
-        {field:'', constructor: function(content) {
-                var button = $('<button>', {text: 'Delete', 'class':'button small'});
-                button.click(function() {
-                    $scope.deleteUser(content.id);
-                });
-                return button;
-            }}];
-    var table = Builder.buildTable($userTabContents, columns,true);
+    var configurationSection = createSection(tabContent, 'Manage '+name+'s');
+   
+    
+    var configSectionContent = $('<div>',{'class': 'row'});
+    
+    var table = Builder.buildTable(tabContents, columns,true);
         
     var tableArea = $('<div>',{'class': 'column', style: 'float: left; width: 40%;' });
     tableArea.append(table);
     tableArea.append('</div>');
-    userSectionContent.append(tableArea);
-        
-    //if replace user list
-    $text = "Users must be inserted with the following format: username;id;name;email";
-    if (role == "Student"){
-        $text += ";campus";
-    }
-    var text = 'Users must be inserted with the following format: username;id;name;email;';
-    if (role=='Student'){
-        text+='campus';
-    }
-   
-    var bigBox = $('<div>',{'class': 'column', style: 'float: left; width: 60%;', 
-           text:text });
-    bigBox.append('<textarea cols="80" rows="25" type="text" class="UsersInputBox" id="newUserList" ng-model="newUserList"></textarea>');
-    bigBox.append('<button class="button small" ng-click="replaceUsers(newUserList)">Replace '+role+' List</button>');
-    bigBox.append('<button class="button small" ng-click="addUsers(newUserList)">Add '+role+'s to List</button>');
-        //ng-disabled="!isValidString(inviteInfo.id) "
-    bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
-    bigBox.append($compile(bigBox)($scope));
+    configSectionContent.append(tableArea);
+
+    var bigBox = constructTextArea($compile,$scope,name,text);
     
-    userSectionContent.append(bigBox);
-    userSection.append(userSectionContent);
+    configSectionContent.append(bigBox);
+    configurationSection.append(configSectionContent);
+}
+//sets up the page for managing students or teachers
+function userSettings(role,data, err, $scope,$element,$compile){
+    userTabContents=[];
+    for (var st in data.userList){
+        userTabContents.push({ID: data.userList[st].id,Name:data.userList[st].name,Username:data.userList[st].username});
+               // "":{id: data.userList[st].id}});
+    }
+    var columns = ["ID","Name","Username"];
+            //This is for the button in the row. ToDo decide if courseUsers should be editable/deletable from this page
+        /*{field:'', constructor: function(content) {
+            var button = $('<button>', {text: 'Delete', 'class':'button small'});
+            button.click(function() {
+                $scope.deleteData(content.id);
+            });
+            return button;
+        
+    }}];*/
+    var text = "Users must be inserted with the following format: username;id;name;email";
+    if (role == "Student"){
+        text += ";campus";
+    }
+    $scope.newList=data.file;
+    constructConfigPage(data, err, $scope,$element,$compile,role,text,userTabContents,columns);
 }
 
 app.controller('CourseTeacherSettingsController',function($scope, $stateParams, $element, $smartboards, $compile, $parse){
-    $scope.replaceUsers = function(arg) {
+    $scope.replaceData = function(arg) {
         replaceUsers(arg,"Teacher", $smartboards, $scope);
     };
-    $scope.addUsers = function(arg) {
+    $scope.addData = function(arg) {//Currently not being used
         addUsers(arg,"Teacher", $smartboards, $scope);
     };
-    $scope.deleteUser = function(arg) {
+    $scope.deleteData = function(arg) {//currently not being used
         deleteUser(arg, $smartboards, $scope);
+    };
+    $scope.clear = function(){
+        clearFillBox($scope);
     };
     
     $smartboards.request('settings', 'courseUsers', {course : $scope.course, role: "Teacher"}, function(data,err){
@@ -95,14 +112,17 @@ app.controller('CourseTeacherSettingsController',function($scope, $stateParams, 
 });
 
 app.controller('CourseStudentSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    $scope.replaceUsers = function(arg) {
+    $scope.replaceData = function(arg) {
         replaceUsers(arg,"Student", $smartboards, $scope);
     };
-    $scope.addUsers = function(arg) {
+    $scope.addData = function(arg) {//Currently not being used
         addUsers(arg,"Student", $smartboards, $scope);
     };
-    $scope.deleteUser = function(arg) {
+    $scope.deleteData = function(arg) {//Currently not being used
         deleteUser(arg, $smartboards, $scope);
+    };
+    $scope.clear = function(){
+        clearFillBox($scope);
     };
     
     $smartboards.request('settings', 'courseUsers', {course : $scope.course, role: "Student"}, function(data,err){
@@ -110,79 +130,150 @@ app.controller('CourseStudentSettingsController', function($scope, $stateParams,
     });
 });
 
-//ToDo delete if not necessary
-/*
- * $smartboards.request('settings', 'courseUsers', {course : $scope.course}, function(data, err) {
+app.controller('CourseSkillsSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+    $scope.replaceData = function(arg) {
+        if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
+            $smartboards.request('settings', 'courseSkills', {course : $scope.course, skillsList:arg}, alertUpdateAndReload);
+    };
+    $scope.addData = function(arg) {//Currently not being used
+            $smartboards.request('settings', 'courseSkills', {course : $scope.course, newSkillsList:arg}, alertUpdateAndReload);
+    };
+    $scope.clear = function(){
+        clearFillBox($scope);
+    };
+    
+    $smartboards.request('settings', 'courseSkills', {course : $scope.course}, function(data,err){
         if (err) {
             console.log(err);
             return;
         }
+        var text = "Skills must be in the following format: tier;name;dep1A+dep1B|dep2A+dep2B;color;XP";
+        
         $scope.data = data;
         var tabContent = $($element);
-        var studentSection = createSection(tabContent, 'Students List');
-        
-        //Pop Up for editing the course_user
-        var modal = $('<div>',{'class': 'modal', style:'display:none; position:fixed; z-index:1; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.4);'});
-        var modalContent = $('<div>',{'class': 'modal-content', style:'background-color: #fefefe; margin: 15% auto; padding: 10px; border: 1px solid #888; width: 80%;'});
-        var span = $('<span class="close" style="float: right; font-size: 28px; font-weight: bold;"> &times;</span>');
-        span.click(function() {
-            console.log("clickspan");
-            var modal =document.getElementsByClassName("modal")[0];
-            modal.style.display = "none";
-        });
-        modalContent.append(span);
-        modalContent.append('<br><div id="editPopUpContent"> ToDo</div>');
-        modal.append(modalContent);
-        
-        studentSection.append(modal);
-        //
+        var configurationSection = createSection(tabContent, 'Manage Skills');
 
-        $studentTabContents=[];
-        var studentSectionContent = $('<div>',{'class': 'row'});
-        for (var st in data.studentList){
-            $studentTabContents.push({ID: data.studentList[st].id,Name:data.studentList[st].name,Username:data.studentList[st].username,
-                    "":{id: data.studentList[st].id, name:data.studentList[st].name,username:data.studentList[st].username }});
+        var configSectionContent = $('<div>',{'class': 'row'});
+        
+        //Display skill Tree info (similar to how it appears on the profile)
+        var dataArea = $('<div>',{'class': 'column row', style: 'float: left; width: 50%;' });
+        for (t in data.skillsList ){
+            
+            var tier = data.skillsList[t];
+            var tierArea = $('<div>',{class:"block tier column",text:"Tier "+ t +":\t"+tier.reward+" XP", style: 'float: left; width: 23%;'});
+            
+            for (var i =0; i<tier.skills.length; i++){
+                var skill = tier.skills[i];
+                
+                var skillBlock = $('<div>',{class: "block skill", style:"background-color: "+skill.color+"; color: #ffffff; width: 60px; height:60px"});
+                skillBlock.append('<span style="font-size: 80%">'+skill.name+'</span>');
+                tierArea.append(skillBlock);
+                
+                if ('dependencies' in skill){
+                    for (var d in skill.dependencies){
+                        tierArea.append('<span style="font-size: 70%">'+skill.dependencies[d][0]+' + '+skill.dependencies[d][1]+'</span><br>');
+                    }
+                }
+            }
+            dataArea.append(tierArea);
+        }
+        configSectionContent.append(dataArea);
+ 
+        $scope.newList=data.file;
+        var bigBox = constructTextArea($compile,$scope,"Skill",text,50);
+
+        configSectionContent.append(bigBox);
+        configurationSection.append(configSectionContent);
+    });
+});
+app.controller('CourseBadgesSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+    $scope.replaceData = function(arg) {
+        if (confirm("Are you sure you want to replace all the Badges with the ones on the input box?"))
+            $smartboards.request('settings', 'courseBadges', {course : $scope.course, badgesList:arg}, alertUpdateAndReload);
+    };
+    $scope.clear = function(){
+        clearFillBox($scope);
+    };
+    
+    $smartboards.request('settings', 'courseBadges', {course : $scope.course}, function(data,err){
+        if (err) {
+            console.log(err);
+            return;
         }
         
+        var text = "Badges must in ascending order with the following format: name;description; desc1;desc2;desc3; xp1;xp2;xp3; count?;post?;point?; count1;count2;count3";
+          
+        $scope.data = data;
+        var tabContent = $($element);
+        var configurationSection = createSection(tabContent, 'Manage Badges');
+
+        var configSectionContent = $('<div>',{'class': 'row'});
         
-        var columns = ["ID","Name","Username",
-            //This is for the button in the row. ToDo decide if courseUsers should be editable/deletable from this page
-            {field:'', constructor: function(content) {
-                var button = $('<button>', {text: 'Delete', 'class':'button small'});
-                button.click(function() {
-//
-                    /*var modal =document.getElementsByClassName("modal")[0];
-                    modal.style.display = "block";
-                    var modalContent = document.getElementById("editPopUpContent");
-                    modalContent.innerHTML='<form>';
-                    modalContent.innerHTML +='ID   : <input type="text" name="id" value="'+content.id+'"><br><br>';
-                    modalContent.innerHTML +='</form>';
-//
-                    $scope.deleteStudent(content.id);
-                    
-                });
-                return button;
-            }}];
-        var table = Builder.buildTable($studentTabContents, columns,true);
-        
-        var tableArea = $('<div>',{'class': 'column', style: 'float: left; width: 35%;' });
-        tableArea.append(table);
-        tableArea.append('</div>');
-        studentSectionContent.append(tableArea);
-        
-        
-        //if replace student list
-        var bigBox = $('<div>',{'class': 'column', style: 'float: left; width: 65%;', 
-            text:'Users must be inserted with the following format: username;id;name;email;campus' });
-        bigBox.append('<textarea cols="100" rows="33" type="text" class="UsersInputBox" id="newStudentList" ng-model="newStudentList"></textarea>');
-        bigBox.append('<button class="button small" ng-click="replaceStudents(newStudentList)">Replace Student List</button>');
-        bigBox.append('<button class="button small" ng-click="addStudents(newStudentList)">Add Students to List</button>');
-        //ng-disabled="!isValidString(inviteInfo.id) "
-        bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
-        bigBox.append($compile(bigBox)($scope));
-//submit does part of what is done by loadLegacy
-        studentSectionContent.append(bigBox);
-        studentSection.append(studentSectionContent);
+        //Display skill Badge info (similar to how it appears on the profile but simpler)
+        var dataArea = $('<div>',{'class': 'column badges-page', style: 'padding-right: 10px; float: left; width: 43%;' });
+        for (t in data.badgesList ){
+            var badge = data.badgesList[t];
+            var badgeArea = $('<div>',{'class': 'badge'});
+            badgeArea.append('<strong style="font-size: 110%;">'+badge.name+':&nbsp&nbsp</strong>');
+            badgeArea.append('<span style="font-size: 105%; ">'+badge.description+'</span><br><br>');
+            
+            var imageLevel = $('<div>',{ style:'height: 90px'});
+            imageLevel.append('<img style="float: left" src="badges/'+badge.name.replace(/\s+/g, '')+'-1.png" class="img">');
+            
+            for (var i = 0;i<badge.maxLvl;i++){
+                imageLevel.append('<span>Level '+(i+1)+':&nbsp</span>');
+                imageLevel.append('<span>'+badge.levels[i].description+'&nbsp</span>');
+                imageLevel.append('<span style="float: right">&nbsp'+badge.levels[i].xp+' XP</span>');
+                //if (badge.isCount==true)
+                //    badgeArea.append('<span style="font-size: 95%; ">&nbsp (count='+badge.levels[i].progressNeeded+')</span>');
+                imageLevel.append('<br>');
+            }
+            
+            var count = badge.isCount==true ? "Yes" : "No";
+            imageLevel.append('<span style="font-size: 80%; ">Count Based: '+count+', </span>');
+            var point = badge.isPoint==true ? "Yes" : "No";
+            imageLevel.append('<span style="font-size: 80%; ">Point Based: '+point+', </span>');
+            var post = badge.isPost==true ? "Yes" : "No";
+            imageLevel.append('<span style="font-size: 80%; ">Post Based: '+post+', </span>');
+            var extra = badge.isExtra==true ? "Yes" : "No";  
+            imageLevel.append('<span style="font-size: 80%; ">Extra Credit: '+extra+'.</span><br>');
+            
+            badgeArea.append(imageLevel);
+            dataArea.append(badgeArea);
+        }
+        configSectionContent.append(dataArea);
+ 
+        $scope.newList=data.file;
+        var bigBox = constructTextArea($compile,$scope,"Badge",text,55);
+
+        configSectionContent.append(bigBox);
+        configurationSection.append(configSectionContent);
     });
-  
- */
+});
+app.controller('CourseLevelsSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+    $scope.replaceData = function(arg) {
+        if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
+            $smartboards.request('settings', 'courseLevels', {course : $scope.course, levelList:arg}, alertUpdateAndReload);
+
+    };
+    $scope.clear = function(){
+        clearFillBox($scope);
+    };
+    
+    $smartboards.request('settings', 'courseLevels', {course : $scope.course}, function(data,err){
+        if (err) {
+            console.log(err);
+            return;
+        }
+        
+        var text = "Levels must in ascending order with the following format: title;minimunXP";
+        tabContents=[];
+        for (var st in data.levelList){
+            tabContents.push({Level: data.levelList[st].lvlNum,Title:data.levelList[st].title,"Minimum XP":data.levelList[st].minXP,
+                    "":{level: data.levelList[st].id}});
+        }
+        var columns = ["Level","Title","Minimum XP"];
+        $scope.newList=data.file;
+        constructConfigPage(data, err, $scope,$element,$compile,"Level",text,tabContents,columns);
+    });
+});

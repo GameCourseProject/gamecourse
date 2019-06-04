@@ -26,8 +26,6 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.students">Students</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.teachers">Teachers</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.api">API</a></li>')($scope));
@@ -1094,6 +1092,27 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 controller: 'CourseTeacherSettingsController'
+            }
+        }
+    }).state('course.settings.skills', {
+        url: '/skills',
+        views : {
+            'tabContent': {
+                controller: 'CourseSkillsSettingsController'
+            }
+        }
+    }).state('course.settings.badges', {
+        url: '/badges',
+        views : {
+            'tabContent': {
+                controller: 'CourseBadgesSettingsController'
+            }
+        }
+    }).state('course.settings.levels', {
+        url: '/levels',
+        views : {
+            'tabContent': {
+                controller: 'CourseLevelsSettingsController'
             }
         }
     }).state('course.settings.roles', {

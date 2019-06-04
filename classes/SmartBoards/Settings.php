@@ -13,7 +13,18 @@ class Settings {
     public static function getTabs() {
         if (!static::$tabsInitialized) {
             $course = Course::getCourse(API::getValue('course'));
-
+            $enabledModules = $course->getEnabledModules();
+            $configTabs=[];
+            $configTabs[]= static::buildTabItem('Students','course.settings.students',true );
+            $configTabs[]= static::buildTabItem('Teachers','course.settings.teachers',true );
+            if (in_array("skills", $enabledModules))
+                $configTabs[]= static::buildTabItem('Skill Tree','course.settings.skills',true );
+            if (in_array("badges", $enabledModules))
+                $configTabs[]= static::buildTabItem('Badges','course.settings.badges',true );
+            if (in_array("xp", $enabledModules))
+                $configTabs[]= static::buildTabItem('Levels','course.settings.levels',true );
+            static::addTab(static::buildTabItem('Configurations', 'course.settings.config', false, $configTabs));
+            
             $childTabs = array();
             Utils::goThroughRoles($course->getRolesHierarchy(), function($roleName, $hasChildren, $continue, &$parent) {
                 $children = array();
