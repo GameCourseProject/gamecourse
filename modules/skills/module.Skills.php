@@ -58,17 +58,12 @@ class Skills extends Module {
         $viewHandler->registerFunction('usersSkillsCache', function() use (&$skillsCache) {
             $course = $this->getParent();
             $students = $course->getUsersWithRole('Student');
-            $studentsSkills = array();
-            $studentsUserData = array();
             $studentsArray=[];
             foreach ($students as $student) {
                 $studentsArray[$student['id']]=$student;
-                //$studentsSkills[$student['id']] = Core::$systemDB->selectMultiple("user_skill",'*',["student"=>$student['id'],"course"=>$course->getId()]);
-                $userData=\SmartBoards\User::getUser($student['id'])->getData();
-                $studentsUserData[$student['id']]['username'] = $userData['username'];
-                $studentsUserData[$student['id']]['name'] = $userData['name'];
             }
-            
+            //$studentsArray = array_combine(array_column($students,"id"),$students);
+                    
             $skillsCache = array();
             $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
                                                     '*',["course"=>$course->getId()]);
@@ -82,9 +77,9 @@ class Skills extends Module {
                     $timestamp=  strtotime($skillStudent['skillTime']);
                     $skillsCache[$skillName][] = array(
                         'id' => $id,
-                        'name' => $studentsUserData[$id]['name'],
+                        'name' => $studentsArray[$id]['name'],
                         'campus' => $studentsArray[$id]['campus'],
-                        'username' => $studentsUserData[$id]['username'],
+                        'username' => $studentsArray[$id]['username'],
                         'timestamp' => $timestamp,
                         'when' => date('d-M-Y', $timestamp)
                     );    

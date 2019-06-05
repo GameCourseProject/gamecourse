@@ -37,10 +37,9 @@ class Badges extends Module {
             $studentsUsernames = array();
 
             foreach ($students as $student) {
-                $userData = Core::$systemDB->select("course_user natural join user","*",["id"=>$student['id']]);
-                $studentsUsernames[$student['id']] = $userData['username'];
-                $studentsNames[$student['id']] = $userData['name'];
-                $studentsCampus[$student['id']] = $userData["campus"];
+                $studentsUsernames[$student['id']] = $student['username'];
+                $studentsNames[$student['id']] = $student['name'];
+                $studentsCampus[$student['id']] = $student["campus"];
             }
             
             $badges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId]);

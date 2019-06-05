@@ -51,7 +51,7 @@ class Course {
     }
 
     public function getUsersWithRole($role) {
-        return Core::$systemDB->selectMultiple("course_user natural join user_role",
+        return Core::$systemDB->selectMultiple("user natural join course_user natural join user_role",
                                         '*',["course"=>$this->cid,"role"=>$role]);
     }
 
