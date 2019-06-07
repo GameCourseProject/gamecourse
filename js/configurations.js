@@ -6,8 +6,14 @@ function alertUpdateAndReload(data,err){
         alert(err.description);
         return;
     }
-    if (data.updatedData!="")
-        alert(data.updatedData);
+    
+    if (Object.keys(data.updatedData).length>0){
+        var output="";
+        for (var i in data.updatedData){
+            output+=data.updatedData[i]+'\n';
+        }
+        alert(output);
+    }
     location.reload();
 }
 
@@ -28,17 +34,19 @@ function clearFillBox($scope){
     else if ("file" in $scope.data)
         $scope.newList=$scope.data.file;
 }
-function constructTextArea($compile,$scope,name,text,width=60){
-    var bigBox = $('<div>',{'class': 'column', style: 'float: left; width: '+width+'%;', 
+function constructTextArea($compile,$scope,name,text,width=60,data="newList",){
+    var bigBox = $('<div>',{'class': 'column', style: 'float: right; width: '+width+'%;', 
            text:text });
-    bigBox.append('<textarea cols="80" rows="25" type="text" style="width: 100%" class="ConfigInputBox" id="newList" ng-model="newList"></textarea>');
-    bigBox.append('<button class="button small" ng-click="replaceData(newList)">Replace '+name+' List</button>');
+    
+    var funName = (name=="Tier") ? name : "Data";
+    bigBox.append('<textarea cols="80" rows="25" type="text" style="width: 100%" class="ConfigInputBox" id="newList" ng-model="'+data+'"></textarea>');
+    bigBox.append('<button class="button small" ng-click="replace'+funName+'('+data+')">Replace '+name+' List</button>');
     //ToDo: add this button (and delete) back after the system stops using TXTs from legacy_folder
     //If TXT files are used it's difficult to keep them synced w DB and have the Add/Edit functionality
 //if (name!=="Level")
     //    bigBox.append('<button class="button small" ng-click="addData(newList)">Add/Edit '+name+'s </button>');
         //ng-disabled="!isValidString(inviteInfo.id) "
-    bigBox.append('<button class="button small" ng-click="clear()" style="float: right;">Clear/Fill Box</button>');
+    bigBox.append('<button class="button small" ng-click="clear'+funName+'()" style="float: right;">Clear/Fill Box</button>');
     //bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
     bigBox.append($compile(bigBox)($scope));
     return bigBox;
@@ -69,6 +77,7 @@ function constructConfigPage(data, err, $scope,$element,$compile,name,text,tabCo
 }
 //sets up the page for managing students or teachers
 function userSettings(role,data, err, $scope,$element,$compile){
+    console.log(data);
     userTabContents=[];
     for (var st in data.userList){
         userTabContents.push({ID: data.userList[st].id,Name:data.userList[st].name,Username:data.userList[st].username});
@@ -102,7 +111,7 @@ app.controller('CourseTeacherSettingsController',function($scope, $stateParams, 
     $scope.deleteData = function(arg) {//currently not being used
         deleteUser(arg, $smartboards, $scope);
     };
-    $scope.clear = function(){
+    $scope.clearData = function(){
         clearFillBox($scope);
     };
     
@@ -121,11 +130,12 @@ app.controller('CourseStudentSettingsController', function($scope, $stateParams,
     $scope.deleteData = function(arg) {//Currently not being used
         deleteUser(arg, $smartboards, $scope);
     };
-    $scope.clear = function(){
+    $scope.clearData = function(){
         clearFillBox($scope);
     };
     
     $smartboards.request('settings', 'courseUsers', {course : $scope.course, role: "Student"}, function(data,err){
+        console.log(data);
         userSettings("Student",data,err,$scope,$element,$compile);
     });
 });
@@ -135,11 +145,21 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
             $smartboards.request('settings', 'courseSkills', {course : $scope.course, skillsList:arg}, alertUpdateAndReload);
     };
+    $scope.replaceTier = function(arg) {
+        if (confirm("Are you sure you want to replace all the Tiers with the ones on the input box?"))
+            $smartboards.request('settings', 'courseSkills', {course : $scope.course, tiersList:arg}, alertUpdateAndReload);
+    };
     $scope.addData = function(arg) {//Currently not being used
             $smartboards.request('settings', 'courseSkills', {course : $scope.course, newSkillsList:arg}, alertUpdateAndReload);
     };
-    $scope.clear = function(){
+    $scope.clearData = function(){
         clearFillBox($scope);
+    };
+    $scope.clearTier = function(){//clear textarea of the tiers
+        if ($scope.tierList!=="")
+            $scope.tierList="";
+        else if ("file2" in $scope.data)
+            $scope.tierList=$scope.data.file2;
     };
     
     $smartboards.request('settings', 'courseSkills', {course : $scope.course}, function(data,err){
@@ -156,11 +176,15 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
         var configSectionContent = $('<div>',{'class': 'row'});
         
         //Display skill Tree info (similar to how it appears on the profile)
-        var dataArea = $('<div>',{'class': 'column row', style: 'float: left; width: 50%;' });
+        var dataArea = $('<div>',{'class': 'column row', style: 'float: left; width: 55%;' });
+        
+        var numTiers = Object.keys(data.skillsList).length;
         for (t in data.skillsList ){
             
             var tier = data.skillsList[t];
-            var tierArea = $('<div>',{class:"block tier column",text:"Tier "+ t +":\t"+tier.reward+" XP", style: 'float: left; width: 23%;'});
+            var width = 100 / numTiers -2;
+            
+            var tierArea = $('<div>',{class:"block tier column",text:"Tier "+ t +":\t"+tier.reward+" XP", style: 'float: left; width: '+width+'%;'});
             
             for (var i =0; i<tier.skills.length; i++){
                 var skill = tier.skills[i];
@@ -178,10 +202,15 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
             dataArea.append(tierArea);
         }
         configSectionContent.append(dataArea);
- 
+        
+    
         $scope.newList=data.file;
-        var bigBox = constructTextArea($compile,$scope,"Skill",text,50);
-
+        var bigBox = constructTextArea($compile,$scope,"Skill",text,45);
+        
+        $scope.tierList=data.file2;
+        var bigBox2 = constructTextArea($compile,$scope,"Tier","Tier must be in the following formart: tier;XP",
+                                                        100,"tierList");
+        bigBox.append(bigBox2);                                                
         configSectionContent.append(bigBox);
         configurationSection.append(configSectionContent);
     });
@@ -191,7 +220,7 @@ app.controller('CourseBadgesSettingsController', function($scope, $stateParams, 
         if (confirm("Are you sure you want to replace all the Badges with the ones on the input box?"))
             $smartboards.request('settings', 'courseBadges', {course : $scope.course, badgesList:arg}, alertUpdateAndReload);
     };
-    $scope.clear = function(){
+    $scope.clearData = function(){
         clearFillBox($scope);
     };
     
@@ -254,9 +283,8 @@ app.controller('CourseLevelsSettingsController', function($scope, $stateParams, 
     $scope.replaceData = function(arg) {
         if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
             $smartboards.request('settings', 'courseLevels', {course : $scope.course, levelList:arg}, alertUpdateAndReload);
-
     };
-    $scope.clear = function(){
+    $scope.clearData = function(){
         clearFillBox($scope);
     };
     

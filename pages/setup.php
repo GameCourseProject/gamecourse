@@ -16,7 +16,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->insert("system_info",["theme" => "default"]);
     $db->insert("course",["name" => $courseName]);
     $courseId =$db->select("course",'id',["name"=> $courseName]);
-    
+    \SmartBoards\Course::createCourseLegacyFolder($courseId, $courseName);
     \SmartBoards\Course::insertBasicCourseData($db, $courseId);
     
     $db->insert("user",["id" => $teacherId,

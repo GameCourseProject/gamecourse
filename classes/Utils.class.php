@@ -107,5 +107,23 @@ class Utils {
         else
             unlink($filename);
     }
+    
+    public static function copyFolder($folder,$newLocation){
+        $dir = opendir($folder); 
+        @mkdir($newLocation); 
+        $file = readdir($dir);
+        while($file !== false ) { 
+            if (( $file != '.' ) && ( $file != '..' )) { 
+                if ( is_dir($folder . '/' . $file) ) { 
+                    Utils::copyFolder($folder . '/' . $file,$newLocation . '/' . $file); 
+                } 
+                else { 
+                    copy($folder . '/' . $file,$newLocation . '/' . $file); 
+                } 
+            } 
+            $file = readdir($dir);
+        } 
+        closedir($dir); 
+    }
 }
 ?>

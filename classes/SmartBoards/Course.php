@@ -218,6 +218,23 @@ class Course {
             Core::$systemDB->insert($content, $data);
         }
     }
+    public static function getCourseLegacyFolder($courseId,$courseName=null){
+        if ($courseName===null){
+            $courseName = Course::getCourse($courseId)->getName();
+        }
+        $courseName= preg_replace("/[^a-zA-Z0-9_ ]/","",$courseName);
+        $folder = LEGACY_DATA_FOLDER . '/'.$courseId.'-'.$courseName;
+        return $folder;
+    }
+
+    public static function createCourseLegacyFolder($courseId,$courseName){
+        $folder = Course::getCourseLegacyFolder($courseId,$courseName);
+        if (!file_exists($folder))
+            mkdir($folder);
+        if (!file_exists($folder."/tree"))
+            mkdir($folder."/tree");
+        return $folder;
+    }
     
     public static function newCourse($courseName, $copyFrom = null) {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
@@ -226,6 +243,7 @@ class Course {
         $courseId=Core::$systemDB->select("course","id",["name"=>$courseName]);
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
+        $legacyFolder = Course::createCourseLegacyFolder($courseId,$courseName);
         
         //course_user table (add current user)
         $currentUserId=Core::getLoggedUser()->getId();
@@ -233,7 +251,7 @@ class Course {
         
         if ($copyFrom !== null){//&& $courseExists) {
             $copyFromCourse = Course::getCourse($copyFrom);
-            $fromId=$copyFromCourse->getId();
+            //$fromId=$copyFromCourse->getId();
             
             //course table
             $keys = ['headerLink','defaultLandingPage'];
@@ -244,14 +262,33 @@ class Course {
             Core::$systemDB->update("course",$newData,["id"=>$courseId]);
             
             //copy content of tables to new course
-            Course::copyCourseContent("role",$fromId,$courseId);
-            Course::copyCourseContent("skill_tier",$fromId,$courseId);
-            Course::copyCourseContent("enabled_module",$fromId,$courseId);
-            Course::copyCourseContent("view_template",$fromId,$courseId);
-            Course::copyCourseContent("view",$fromId,$courseId);
-            Course::copyCourseContent("view_role",$fromId,$courseId);
-            Course::copyCourseContent("view_part",$fromId,$courseId);
-            Course::copyCourseContent("role_hierarchy",$fromId,$courseId);
+            Course::copyCourseContent("role",$copyFrom,$courseId);
+            Course::copyCourseContent("skill_tier",$copyFrom,$courseId);
+            Course::copyCourseContent("enabled_module",$copyFrom,$courseId);
+            Course::copyCourseContent("view_template",$copyFrom,$courseId);
+            Course::copyCourseContent("view",$copyFrom,$courseId);
+            Course::copyCourseContent("view_role",$copyFrom,$courseId);
+            Course::copyCourseContent("view_part",$copyFrom,$courseId);
+            Course::copyCourseContent("role_hierarchy",$copyFrom,$courseId);
+            
+            //Should we copy skills, badges, levels? (db, txt, tree folder)
+            //Course::copyCourseContent("skill_tier",$copyFrom,$courseId);//tiers are hardcoded in insertBasicCourseDAta
+            Course::copyCourseContent("skill",$copyFrom,$courseId);
+            Course::copyCourseContent("skill_dependency",$copyFrom,$courseId);
+            Course::copyCourseContent("badge",$copyFrom,$courseId);
+            Course::copyCourseContent("badge_level",$copyFrom,$courseId);
+            Course::copyCourseContent("level",$copyFrom,$courseId);
+            
+            $fromFolder = Course::getCourseLegacyFolder($copyFrom);
+            
+            $fromTree = file_get_contents($fromFolder . "/tree.txt");  
+            file_put_contents($legacyFolder."/tree.txt",$fromTree);
+            $fromBagdes = file_get_contents($fromFolder . "/achievements.txt");  
+            file_put_contents($legacyFolder."/achievements.txt",$fromBagdes);
+            $fromLevels = file_get_contents($fromFolder . "/levels.txt");  
+            file_put_contents($legacyFolder."/levels.txt",$fromLevels);
+
+            \Utils::copyFolder($fromFolder ."/tree",$legacyFolder ."/tree");
         } else {
             Course::insertBasicCourseData(Core::$systemDB, $courseId);
             Core::$systemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>"Teacher"]);
