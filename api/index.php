@@ -66,7 +66,7 @@ function process($thisMethod, $thisRequest, $func) {
 }
 
 function globalAuth($key) {
-    $apiKey = Core::getApiKey()->getValue();
+    $apiKey = Core::getApiKey();
     if ($apiKey === false || $apiKey == null || $apiKey != $key)
         err('InvalidKey');
 }
@@ -79,7 +79,7 @@ function courseAuth($values, $key) {
     } catch (Exception $e) {
         err('UnknownCourse');
     }
-    $apiKey = $course->getWrapped('apiKey')->getValue();
+    $apiKey = $course->getData("apiKey");
     if ($apiKey === false || $apiKey != $key)
         err('InvalidKey');
     return $course;
@@ -102,29 +102,38 @@ function getModule($values) {
 
 process('GET', 'users', function() use ($values, $key) {
     globalAuth($key);
-    echo json_encode(\SmartBoards\User::getUserDbWrapper()->getValue());
+    echo json_encode(\SmartBoards\User::getAllInfo());
 });
 
 process('POST', 'users', function() use ($values, $key) {
     globalAuth($key);
-    $data = \SmartBoards\User::getUserDbWrapper();
+    $data = \SmartBoards\User::getAllInfo();
     if (!array_key_exists('update', $values) || !is_array($values['update']))
         err('MissingUpdate');
-    foreach ($values['update'] as $k => $val) {
-        if ($data->getWrapped($k)->getValue() === false)
-            err('UnknownUpdateKey:' . $k);
+    foreach ($values['update'] as $val) {
+        if (!array_key_exists("id", $val)) {
+            err("The 'id' field wasn't specified " );
+        }
+        try{
+            if (empty(Core::$systemDB->select("user",'*',["id"=>$val["id"]]))){
+                Core::$systemDB->insert("user",$val);
+            }else{
+                Core::$systemDB->update("user",["id"=>$val["id"]],$val);
+            }
+        }catch(PDOException $e){
+            err("Information incorrectly formated");
+        }
     }
-    foreach ($values['update'] as $k => $val)
-        $data->getWrapped($k)->setValue($val);
 });
 
 process('GET', 'config', function() use ($values, $key) {
-    globalAuth($key);
-    echo json_encode(Core::getConfig()->getValue());
+    //old version showed active courses, apikey, courses, pending invite, and theme
+    //globalAuth($key);
+    //echo json_encode(Core::getConfig()->getValue());
 });
 
 process('POST', 'config', function() use ($values, $key) {
-    globalAuth($key);
+    /*globalAuth($key);
     $data = Core::getConfig();
     if (!array_key_exists('update', $values) || !is_array($values['update']))
         err('MissingUpdate');
@@ -136,16 +145,18 @@ process('POST', 'config', function() use ($values, $key) {
     }
     foreach ($values['update'] as $k => $val)
         $data->getWrapped($k)->setValue($val);
+     * 
+     */
 });
 
 process('GET', 'course', function() use ($values, $key) {
+    //old version would give all course info including badge, skills, etc
     $course = courseAuth($values, $key);
-
-    echo json_encode($course->getWrapper()->getValue());
+    echo json_encode($course->getData());
 });
 
 process('POST', 'course', function() use ($values, $key) {
-    $course = courseAuth($values, $key);
+    /*$course = courseAuth($values, $key);
     if (!array_key_exists('update', $values) || !is_array($values['update']))
         err('MissingUpdate');
     foreach ($values['update'] as $k => $val) {
@@ -158,17 +169,17 @@ process('POST', 'course', function() use ($values, $key) {
         if ($k == 'name')
             Core::getCoursesWrapped()->set($course->getId(), $val);
         $course->getWrapped($k)->setValue($val);
-    }
+    }*/
 });
 
 process('GET', 'course-user-data', function() use ($values, $key) {
     $course = courseAuth($values, $key);
     $user = getCourseUser($course, $values);
-    echo json_encode($user->getData()->getValue());
+    echo json_encode($user->getData());
 });
 
 process('POST', 'course-user-data', function() use ($values, $key) {
-    $course = courseAuth($values, $key);
+    /*$course = courseAuth($values, $key);
     $user = getCourseUser($course, $values);
     $userData = $user->getData();
     if (!array_key_exists('update', $values) || !is_array($values['update']))
@@ -179,19 +190,23 @@ process('POST', 'course-user-data', function() use ($values, $key) {
     }
     foreach ($values['update'] as $k => $val)
         $userData->getWrapped($k)->setValue($val);
+     * 
+     */
 });
 
 process('GET', 'course-module-data', function() use ($values, $key) {
-    $course = courseAuth($values, $key);
+    /*$course = courseAuth($values, $key);
     $module = getModule($values);
     $moduleData = $course->getModuleData($module);
     if ($moduleData == null)
         err('UnknownModule');
     echo json_encode($moduleData->getValue());
+     * 
+     */
 });
 
 process('POST', 'course-module-data', function() use ($values, $key) {
-    $course = courseAuth($values, $key);
+    /*$course = courseAuth($values, $key);
     $module = getModule($values);
     $moduleData = $course->getModuleData($module);
     if ($moduleData == null)
@@ -204,6 +219,8 @@ process('POST', 'course-module-data', function() use ($values, $key) {
     }
     foreach ($values['update'] as $k => $val)
         $moduleData->getWrapped($k)->setValue($val);
+     * 
+     */
 });
 
 err('UnknownRequest');

@@ -17,7 +17,6 @@ class Core {
     //public static $active_courses = array();
     //public static $courses = array();   
     public static $theme = 'default';
-    private static $apiKey;
 
     private static $loggedUser = null;
     private static $navigation = array();
@@ -167,10 +166,12 @@ class Core {
     public static function getCourse($id) {
         return static::$systemDB->select("course",'*',['id'=>$id]);  
     }
-    //ToDo
+
     public static function getApiKey() {
-        //return static::$mainConfigDB->getWrapped('apiKey');
-        return static::$apiKey;
+        return static::$systemDB->selectMultiple("system_info","apiKey")[0]["apiKey"];
+    }
+    public static function setApiKey($key) {
+        return static::$systemDB->update("system_info",["apiKey"=>$key]);
     }
 
     public static function getFenixAuth() {

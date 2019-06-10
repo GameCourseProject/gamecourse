@@ -69,24 +69,24 @@ API::registerFunction('core', 'getCourseInfo', function() {
 API::registerFunction('settings', 'courseApiKey', function() {//ToDo
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
-    API::response(array('key' => $course->getWrapped('apiKey')->getValue()));
+    API::response(array('key' => $course->getData('apiKey')));
 });
 
 API::registerFunction('settings', 'courseApiKeyGen', function() {//ToDo
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
     $newKey = md5(mt_rand() . mt_rand() . mt_rand() . getmypid());
-    $course->getWrapped('apiKey')->setValue($newKey);
+    $course->setData('apiKey', $newKey);
     API::response(array('key' => $newKey));
 });
 
 API::registerFunction('settings', 'apiKey', function() {//ToDo
-    API::response(array('key' => Core::getApiKey()->getValue()));
+    API::response(array('key' => Core::getApiKey()));
 });
 
 API::registerFunction('settings', 'apiKeyGen', function() {//ToDo
     $newKey = md5(mt_rand() . mt_rand() . mt_rand() . getmypid());
-    Core::getApiKey()->setValue($newKey);
+    Core::setApiKey($newKey);
     API::response(array('key' => $newKey));
 });
 

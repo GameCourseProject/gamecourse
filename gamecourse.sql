@@ -44,6 +44,7 @@ create table course(
 	headerLink varchar(255) default "",#?
 	defaultLandingPage varchar(100) default "",
 	fenixLink varchar(255) default "",
+	apiKey varchar(50),
 	lastUpdate timestamp default CURRENT_TIMESTAMP
 );
 
@@ -106,7 +107,7 @@ create table award(
     foreign key(student, course) references course_user(id, course) on delete cascade
 );
 
-create table notification(
+create table notification(#ToDo decide if this table is needed
 	student int unsigned not null,
 	course int unsigned not null,
 	name varchar(100) not null,
@@ -275,6 +276,7 @@ create table pending_invite(
 
 create table system_info(
 	theme varchar(50) default 'default',
+	apiKey varchar(50),
     primary key(theme)
 );
 
