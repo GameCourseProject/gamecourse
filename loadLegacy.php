@@ -264,7 +264,6 @@ $userInfo=[];
 foreach ($userIds as $userId) {
     $userBadge[$userId] = [];
     $userInfo[$userId]['totalTreeXP']=0;
-    $userInfo[$userId]['numSkills']=0;
     $userInfo[$userId]['totalBadgeXP']=0;
     $userInfo[$userId]['normalBadgeXP']=0;
     $userInfo[$userId]['extraBadgeXP']=0;
@@ -345,7 +344,6 @@ foreach($awards as &$award) {
                          "post"=>$skillIndicator[1][0]['url'],"quality"=>(int) $skillIndicator[1][0]['xp']]);
             }
             $userInfo[$award['userid']]['totalTreeXP']+=$data['reward'];
-            $userInfo[$award['userid']]['numSkills'] ++;
         }
         //Badges
         elseif (in_array($award['what'], $badgesNames)) {

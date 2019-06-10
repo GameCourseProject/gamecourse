@@ -470,13 +470,14 @@ class ViewHandler {
                     $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
                     $roleArray = $roleArray[$roleOne];
                     
-                    if (array_key_exists('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
+                    if (in_array('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
                         $roleTwo = 'special.Own';
                     }
                     else {
                         $loggedUserRoles = $course->getLoggedUser()->getRoles();
                         $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
                     }
+                    
                     $userView=$this->getViewWithParts($viewId, $roleOne.'>'.$roleTwo);
                 }else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
                     $userRoles = $course->getLoggedUser()->getRoles();

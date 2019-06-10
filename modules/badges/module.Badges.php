@@ -1,6 +1,5 @@
 <?php
 use SmartBoards\Core;
-use SmartBoards\DataSchema;
 use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 

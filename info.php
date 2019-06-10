@@ -324,7 +324,7 @@ API::registerFunction('settings', 'users', function() {
 //This updates the student or teachers of the course
 //receives list of users to replace/add and updates the DB
 function updateUsers($list,$role,$course,$courseId,$replace){
-    $updatedUsers="";
+    $updatedUsers=[];
     if ($replace){
         $prevUsers = array_column(Core::$systemDB->selectMultiple("course_user natural join user_role",'id',
                        ["course"=>$courseId, "role"=>$role]), "id");
@@ -356,7 +356,7 @@ function updateUsers($list,$role,$course,$courseId,$replace){
         $courseUser= new CourseUser($currUser['id'],$course);
         if (!$courseUser->exists()) {
             $courseUser->addCourseUserToDB($role, $currUser['campus']);
-            $updatedUsers.= 'New '.$role.' ' . $currUser['id'] . "\n";
+            $updatedUsers[]= 'New '.$role.' ' . $currUser['id'];
         } else {
             $courseUser->setCampus($currUser['campus']);
             $courseUser->addRole($role);
@@ -367,11 +367,11 @@ function updateUsers($list,$role,$course,$courseId,$replace){
             $roles = Core::$systemDB->selectMultiple("user_role","role",["id"=>$userToDelete,"course"=>$courseId]);
             if (sizeof($roles)>1){//delete just the role
                 Core::$systemDB->delete("user_role",["id"=>$userToDelete,"course"=>$courseId,"role"=>$role]);
-                $updatedUsers .= "Removed role of ".$role." from user ".$userToDelete."\n";
+                $updatedUsers[]= "Removed role of ".$role." from user ".$userToDelete;
             }
             else{//delete the course_user
                 Core::$systemDB->delete("course_user",["id"=>$userToDelete,"course"=>$courseId]);
-                $updatedUsers .= "Deleted ".$role." ".$userToDelete."\n";
+                $updatedUsers[]= "Deleted ".$role." ".$userToDelete;
             }
             
         }

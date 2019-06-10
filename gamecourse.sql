@@ -17,6 +17,7 @@ drop table if exists progress_indicator;
 drop table if exists badge_level_time;
 drop table if exists user_badge;
 drop table if exists badge;
+drop table if exists notification;
 drop table if exists award;
 drop table if exists role_hierarchy;
 drop table if exists user_role;
@@ -53,9 +54,9 @@ create table course_user
     XP 	    int unsigned default 0,
     level 	int unsigned default 0,
     lastActivity timestamp default 0,
+    prevActivity timestamp default 0,
     totalTreeXP int unsigned default 0,
     countedTreeXP int unsigned default 0,
-    numSkills 	int unsigned default 0,
     totalBadgeXP int unsigned default 0,
     normalBadgeXP int unsigned default 0,
     extraBadgeXP int unsigned default 0,
@@ -96,13 +97,24 @@ create table award(
 	course int unsigned not null,
 	name varchar(100) not null,
 	type varchar(50), #(ex:grade)
-	level int, #badge level
+	level int default 0, #badge level
 	num int,   #lab or quiz number 
 	subtype varchar(50),
 	reward int unsigned default 0,
 	awardDate timestamp default CURRENT_TIMESTAMP, 
-	primary key (student,course,name,level),
+	primary key (student,course,name,level,type),
     foreign key(student, course) references course_user(id, course) on delete cascade
+);
+
+create table notification(
+	student int unsigned not null,
+	course int unsigned not null,
+	name varchar(100) not null,
+	level int not null default 0,
+	type varchar(50),
+	#color, badgeprogress, next level, is max level, description,
+	primary key (student,course,name,level,type),
+	foreign key(student,course, name,level,type) references award(student,course,name,level,type) on delete cascade
 );
 
 create table level(

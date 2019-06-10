@@ -6,7 +6,9 @@ use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 
 class Notifications extends Module {
-
+    
+    public $notificationList=[];//contains an array of notfics of current user
+    
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/notifications.css');
@@ -15,112 +17,103 @@ class Notifications extends Module {
     public function init() {
         // TODO: iterate all courses the user is in..
         $course = $this->getParent();
+        $courseId=$course->getId();
         $user = $course->getLoggedUser();
+        $userId = $user->getId();
         if ($user->hasRole('Student')) {
-            $activity = $user->getPreviousActivity();
-            $awards = $user->getData('awards');
+            $activity = $user->getData("prevActivity");
+            
+            $awards = Core::$systemDB->selectMultiple("award",'*',["course"=>$courseId,"student"=>$userId],"awardDate");
             if (is_null($awards) || !is_array($awards))
                 return;
 
             $notificationFor = array_filter($awards, function($award) use ($activity) {
-                return $award['date'] >= $activity;
+                return $award['awardDate'] >= $activity;
             });
 
             $notifications = array();
             foreach ($notificationFor as $award) {
                 if ($award['type'] == 'badge') {
-                    $badgeName = $award['name'];
                     $badgeLevel = $award['level'];
-                    $reward = $award['reward'];
-                    $badges = $course->getModuleData('badges')->get('badges');
-                    $badge = $badges[$badgeName];
-
+                    
                     $notification = array(
                         'type' => 'badge',
-                        'badgeName' => $badgeName,
-                        'badgeLevel' => $badgeLevel,
-                        'reward' => $reward
+                        //'badgeName' => $badgeName,
+                        'level' => $badgeLevel,
+                        //'reward' => $reward
+                        "name"=>$award['name'],
+                        "awardDate" => $award["awardDate"]
                     );
-
-                    // need to find level the user is in, because this badge could not be the last one of this kind
-                    $badges = $user->getData('badges');
-                    $currentBadge = $badges['list'][$badgeName];
-                    if ($badge['maxLevel'] == $currentBadge['level']) {
-                        $notification['maxLevel'] = true;
-                    } else {
-                        $notification['badgeNameNext'] = $badgeName;
-                        $notification['badgeLevelNext'] = $currentBadge['level'] + 1;
-                        if (!array_key_exists($currentBadge['level'], $badge['count'])) {
-                            $notification['badgeProgress'] = $badge['levelDesc'][$currentBadge['level']];
-                        } else if ($currentBadge['progressCount'] != -1) {
-                            $notification['badgeProgress'] = $currentBadge['progressCount'] . ' out of ' . $badge['count'][$currentBadge['level']] . ' points';
-                        } else
-                            $notification['badgeProgress'] = 'What kind of badge is this??' . $badgeName . '-' . $badgeLevel;
-                    }
-
-                    $notifications['badge-' . $badgeName . '-' . $badgeLevel] = $notification;
-                } else if ($award['type'] == 'skill') {
+                    
+                    //$notifications['badge-' . $badgeName . '-' . $badgeLevel] = $notification;
+                    $notifications[]=$notification;
+                    $this->notificationList[]=$notification;
+                } 
+                else if ($award['type'] == 'skill') {
                     $notification = array(
                         'type' => 'skill',
-                        'skillName' => $award['name'],
-                        'reward' => $award['reward']
+                        //'skillName' => $award['name'],
+                        //'reward' => $award['reward']
+                        "name"=>$award['name'],
+                        "awardDate" => $award["awardDate"]
                     );
-
-                    $skillData = $course->getModuleData('skills');
-                    $sbTiers = $skillData->get('skills');
-                    foreach ($sbTiers as $tierNum => $tier) {
-                        foreach($tier['skills'] as $skill) {
-                            if ($skill['name'] == $award['name']) {
-                                $notification['color'] = $skill['color'];
-                                break;
-                            }
-                        }
-                    }
-
-                    $notifications['skill-' . $award['name']] = $notification;
+                    
+                    //$notifications['skill-' . $award['name']] = $notification;
+                    //$notifications[]=$notification;
+                    $this->notificationList[]=$notification;
                 }
             }
 
             if (count($notifications) > 0) {
-                $notificationList = new ValueWrapper($this->getData()->get('list'));
-                $userNotifications = $notificationList->getWrapped($user->getId());
-                foreach ($notifications as $id => $notification)
-                    $userNotifications->set($id, $notification);
-                $this->getData()->set('list', $notificationList->getValue());
+                /*
+                //delete old notifications
+                Core::$systemDB->delete("notification",["course"=>$courseId,"student"=>$userId]);
+                //set new notifications
+                foreach($notifications as $notif){
+                    Core::$systemDB->insert("notification", array_merge($notif,["course"=>$courseId,"student"=>$userId,]));
+                }*/
             }
         }
-
+        
         $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerFunction('checkNotifications', function($user) {
-            $pendingNotifications = $this->getData()->getWrapped('list')->get($user, array());
+        $viewHandler = $viewsModule->getViewHandler();//
+        $viewHandler->registerFunction('checkNotifications', function($userId) {
+            $pendingNotifications=$this->notificationList;
+            
+            //$courseId = $this->getParent()->getId();
+            //$pendingNotifications = Core::$systemDB->selectMultiple("notification",'*',["course"=>$courseId,"student"=>$userId]);
             return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
         });
 
-        $viewHandler->registerFunction('getNotifications', function($user) {
-            $pendingNotifications = $this->getData()->getWrapped('list')->get($user, array());
-
-            $notifications = array();
+        $viewHandler->registerFunction('getNotifications', function($userId) {
+            $pendingNotifications=$this->notificationList;
+            //$courseId = $this->getParent()->getId();
+            //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",'*',
+            //                                                    ["course"=>$courseId,"student"=>$userId]);
+            
+            /*$notifications = array();
             foreach($pendingNotifications as $id => $notification) {
                 $notifications[$id] = SmartBoards\DataRetrieverContinuation::buildForArray($notification);
             }
 
-            return SmartBoards\DataRetrieverContinuation::buildForArray($notifications);
+            return SmartBoards\DataRetrieverContinuation::buildForArray($notifications);*/
+            return new \Modules\Views\Expression\ValueNode($pendingNotifications);
         });
 
         API::registerFunction('notifications', 'removeNotification', function() {
-            $id = API::getValue('notification');
-            $istID = Core::getLoggedUser()->getId();
+            /*$id = API::getValue('notification');
+            $userId = Core::getLoggedUser()->getId();
             $moduleData = $this->getData();
             $notifications = $moduleData->getWrapped('list')->get($istID);
             if (array_key_exists($id, $notifications)) {
                 unset($notifications[$id]);
                 $moduleData->getWrapped('list')->set($istID, $notifications);
-            }
+            }*/
         });
         
         if ($viewsModule->getTemplate('Notifications Profile - by notifications') == NULL)
-            $viewsModule->setTemplate('Notifications Profile - by notifications', unserialize(file_get_contents(__DIR__ . '/notifications_profile.vt')),$this->getId());
+            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications_profile.vt'),$this->getId());
+        
     }
 }
 
@@ -128,6 +121,9 @@ ModuleLoader::registerModule(array(
     'id' => 'notifications',
     'name' => 'Notifications',
     'version' => '0.1',
+    'dependencies' => array(
+        array('id' => 'views', 'mode' => 'hard')
+    ),
     'factory' => function() {
         return new Notifications();
     }

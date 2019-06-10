@@ -280,25 +280,25 @@ class Views extends Module {
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
                 $info = API::getValue('info');
-                //$viewSpecializations = $this->viewHandler->getViews()->getWrapped($viewId)->getWrapped('view');
 
-                $roleToFind = $info['roleOne'];
-                $finalParents = $this->findParents($course, $roleToFind);
-                $parentViews = $this->findViews($viewId,$type, array_merge($finalParents, array($roleToFind)));
-
+                $finalParents = $this->findParents($course, $info['roleOne']);
+                $parentViews = $this->findViews($viewId,$type, array_merge($finalParents, array($info['roleOne'])));
+                
                 if ($type == ViewHandler::VT_ROLE_INTERACTION) {
-                    $parentsTwo = array_merge($this->findParents($course, $info['roleTwo']), array($info['roleTwo']));
+                    //$parentsTwo = array_merge($this->findParents($course, $info['roleTwo']), array($info['roleTwo']));
                     $finalViews = array();
-                    
                     foreach ($parentViews as $viewsRoleOne) {
-                        foreach ($parentsTwo as $role) {
+                        $separatorPos = strpos( $viewsRoleOne['role'], '>');
+                        $roleOne = substr( $viewsRoleOne['role'], 0, $separatorPos);
+                        $roleTwo = substr( $viewsRoleOne['role'], $separatorPos+1, strlen($viewsRoleOne['role']));
+                        if (($roleTwo == "role.Default") && ($roleOne==$roleTwo || $roleOne==$info["roleOne"])){
+                            $finalViews[]=$viewsRoleOne;
+                        }
+                        /*foreach ($parentsTwo as $role) {
                             if($role== substr( $viewsRoleOne['role'], 0, strpos( $viewsRoleOne['role'], '>'))){
                                 $finalViews[]=$viewsRoleOne;
                             }
-                            //if (array_key_exists($role, $viewsRoleOne)) {
-                            //    $finalViews[] = $viewsRoleOne[$role];
-                            //}
-                        }
+                        }*/
                     }
                     $parentViews = $finalViews;
                 }
@@ -306,8 +306,7 @@ class Views extends Module {
                 if ($sizeParents > 0) {
                     $newView = array(
                         'part' => $parentViews[$sizeParents - 1]['part'],
-                        'partlist' => array(
-                        )
+                        'partlist' => []
                     );
                 } else {
                     $viewpid = ViewEditHandler::getRandomPid();
@@ -325,7 +324,7 @@ class Views extends Module {
 
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
                     Core::$systemDB->insert("view_role",
-                            ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$roleToFind]);
+                            ["viewId"=>$viewId,"course"=>$courseId,"part"=>$newView['part'],"role"=>$info['roleOne']]);
                 
 
                 else if ($type == ViewHandler::VT_ROLE_INTERACTION)
@@ -422,13 +421,6 @@ class Views extends Module {
                             'viewedBy'=>$viewedBy);
                         
                     }
-                    /*foreach($result as &$spec) {
-                        $secondKeys = array_keys($viewSpecializations[$spec['id']]);
-                        $viewedBy = array();
-                        foreach ($secondKeys as $id)
-                            $viewedBy[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
-                        $spec['viewedBy'] = $viewedBy;
-                    }*/
                 }
 
                 $response['viewSpecializations'] = $result;
@@ -544,8 +536,6 @@ class Views extends Module {
 
                 //replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
-                //echo "after parse";
-                //print_r($viewCopy);
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
 
@@ -724,16 +714,23 @@ class Views extends Module {
                 $parentViews = $this->findViews($viewId,$viewType, $finalParents);
             else
                 $parentViews = $this->findViews($viewId,$viewType, array_merge($finalParents, array($roleOne)));
-            
+
             if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {   
-                $parentsTwo = $this->findParents($course, $roleTwo);
-                $finalViews = array();
+                //$parentsTwo = $this->findParents($course, $roleTwo);
+                $finalViews = [];
                 foreach ($parentViews as $viewsRoleOne) {
+                        $separatorPos = strpos( $viewsRoleOne['role'], '>');
+                        $viewRoleOne = substr( $viewsRoleOne['role'], 0, $separatorPos);
+                        $viewRoleTwo = substr( $viewsRoleOne['role'], $separatorPos+1, strlen($viewsRoleOne['role']));
+                        if (($viewRoleTwo == "role.Default") && ($viewRoleOne==$viewRoleTwo || $viewRoleOne==$roleOne)){
+                            $finalViews[]=$viewsRoleOne;
+                    }
+                    /*
                     foreach ($parentsTwo as $role) {
                         if($role== substr( $viewsRoleOne['role'], 0, strpos( $viewsRoleOne['role'], '>'))){
                                 $finalViews[]=$viewsRoleOne;
                         }
-                    }
+                    }*/
                 }
                 $parentViews = $finalViews;
             }
