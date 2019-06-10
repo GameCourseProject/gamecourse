@@ -17,7 +17,6 @@ function comparePNGImages($img, $img2) {
             }
         }
     }
-
     return true;
 }
 
@@ -39,7 +38,7 @@ class Quest extends Module {
 
     public function init() {
         $user = $this->getParent()->getLoggedUser();
-        $questData = $this->getData();
+        /*$questData = $this->getData();
         if (!$questData->hasKey('activeQuest')) {
             $questData->set('activeQuest', -1);
             $questData->set('quests', array());
@@ -66,48 +65,20 @@ class Quest extends Module {
                 }
             }
             Core::addNavigation($this->getDir() . 'images/quest.svg', 'Quest', 'course.quest', true, $subtext);
-        }
+        }*/
 
-        DataSchema::register(array(
-            DataSchema::courseModuleDataFields($this, array(
-                DataSchema::makeField('activeQuest', 'Identifier of active quest (-1 if no active quest)', '1'),
-                DataSchema::makeMap('quests', 'Quests', DataSchema::makeField('questId', 'Quest Identifier', '1'),
-                    DataSchema::makeObject('quest', 'Quest', array(
-                        DataSchema::makeField('currentLevel', 'Current Level', 0),
-                        DataSchema::makeField('startTime', 'Start time', 1234567890),
-                        DataSchema::makeField('endTime', 'End time', 1234567890),
-                        DataSchema::makeField('timeout', 'Seconds between levels', 3600),
-                        DataSchema::makeField('rateLimit', 'Number of tries per hour', 20),
-                        DataSchema::makeMap('levels', 'Levels Keywords to Number Map', DataSchema::makeField('levelKeyword', 'Level keyword', 'beginning'),
-                            DataSchema::makeField('levelNumber', 'Level number', '0')
-                        ),
-                        DataSchema::makeMap('levelsInfo', 'Levels Information', DataSchema::makeField('levelNumber', 'Level number', '0'),
-                            DataSchema::makeObject('level', 'Level', array(
-                                DataSchema::makeField('title', 'Level Title', 'Beginning'),
-                                DataSchema::makeField('page', 'Level Page', 'This is an example page'),
-                                DataSchema::makeField('requiresValidation', 'Is validation required to proceed?', 'true'),
-                                DataSchema::makeObject('validation', 'Validation information', array(
-                                    DataSchema::makeField('type', 'Validation type', 'png'),
-                                    DataSchema::makeField('solution', 'Validation solution', 'solution.png')
-                                )),
-                            ))
-                        )
-                    ))
-                )
-            ))
-        ));
 
         API::registerFunction('quest', 'level', function() {
             API::requireValues('level');
 
             $userId = Core::getLoggedUser()->getId();
-            $quest = $this->getData()->getValue();
+            /*$quest = $this->getData()->getValue();
 
             $activeQuest = $quest['activeQuest'];
             $resourceFolder = MODULES_FOLDER . '/quest/resources/' . $activeQuest . '/';
-            if ($activeQuest < 0)
+            if ($activeQuest < 0)*/
                 API::response(array('error' => 'No quest running!'));
-
+/*
             $quest = $quest['quests'][$activeQuest];
 
             $globalUser = Core::getLoggedUser();
@@ -174,22 +145,22 @@ class Quest extends Module {
 
                 $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
                 API::response(array('error' => self::LEVEL_NO_EXIST));
-            }
+            }*/
         });
 
         API::registerFunction('quest', 'questSolution', function() {
             API::requireValues('level');
 
             $userId = Core::getLoggedUser()->getId();
-            $levelKeyword = API::getValue('level');
+            /*$levelKeyword = API::getValue('level');
 
             $quest = $this->getData()->getValue();
             $activeQuest = $quest['activeQuest'];
             $resourceFolder = MODULES_FOLDER . '/quest/resources/' . $activeQuest . '/';
 
-            if ($activeQuest < 0)
+            if ($activeQuest < 0)*/
                 API::response(array('error' => 'No quest running!'));
-
+/*
             $quest = $quest['quests'][$activeQuest];
             $questWrapped = $this->getData()->getWrapped('quests')->getWrapped($activeQuest);
             $timeout = $quest['timeout'];
@@ -253,7 +224,7 @@ class Quest extends Module {
             } else {
                 $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
                 API::response(array('error' => self::LEVEL_NO_EXIST));
-            }
+            }*/
         });
 
         API::registerFunction('quest', 'questInfo', function() {
@@ -261,12 +232,12 @@ class Quest extends Module {
             API::requireValues('quest');
 
             $selectedQuest = API::getValue('quest');
-
+/*
             $questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+             */   API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
 
             $resources = array();
             $folder = MODULES_FOLDER . '/quest/resources/' . $selectedQuest . '/';
@@ -296,7 +267,7 @@ class Quest extends Module {
                 'startTime' => $quest['startTime'],
                 'endTime' => $quest['endTime'],
                 'resources' => $resources
-            ));
+            ));*/
         });
 
         API::registerFunction('quest', 'saveLevels', function() {
@@ -306,18 +277,18 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $levelsInfo = API::getValue('levels');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+            */    API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['levelsInfo'] = $levelsInfo;
             $levels = array();
             foreach ($levelsInfo as $num => $level) {
                 $levels[$level['keyword']] = $num;
             }
             $quest['levels'] = $levels;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'setLevel', function() {
@@ -327,13 +298,13 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $level = API::getValue('level');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+             */   API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['currentLevel'] = $level;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'setRateLimit', function() {
@@ -343,13 +314,13 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $rateLimit = API::getValue('rateLimit');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+            */    API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['rateLimit'] = $rateLimit;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'setTimeout', function() {
@@ -359,13 +330,13 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $timeout = API::getValue('timeout');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+             */   API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['timeout'] = $timeout;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'setStartTime', function() {
@@ -375,13 +346,13 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $startTime = API::getValue('startTime');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+            */    API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['startTime'] = $startTime;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'setEndTime', function() {
@@ -391,13 +362,13 @@ class Quest extends Module {
             $selectedQuest = API::getValue('quest');
             $endTime = API::getValue('endTime');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+            */    API::error('Unknown quest', 404);
 
-            $quest = $questModuleData['quests'][$selectedQuest];
+            /*$quest = $questModuleData['quests'][$selectedQuest];
             $quest['endTime'] = $endTime;
-            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);
+            $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
         API::registerFunction('quest', 'resetStats', function() {
@@ -406,18 +377,18 @@ class Quest extends Module {
 
             $selectedQuest = API::getValue('quest');
 
-            $questModuleData = $this->getData()->getValue();
+            /*$questModuleData = $this->getData()->getValue();
             if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-                API::error('Unknown quest', 404);
+             */   API::error('Unknown quest', 404);
 
-            $this->getData()->getWrapped('quests')->getWrapped($selectedQuest)->set('info', array('lastSolution' => 0, 'users'=>array('tries' => array(), 'visits' => array(), 'solution' => array())));
+            //$this->getData()->getWrapped('quests')->getWrapped($selectedQuest)->set('info', array('lastSolution' => 0, 'users'=>array('tries' => array(), 'visits' => array(), 'solution' => array())));
         });
 
         API::registerFunction('quest', 'uploadResource', function() {
             API::requireCourseAdminPermission();
             API::requireValues('resource', 'quest');
 
-            $fileName = str_replace('/', '_', API::getValue('resource'));
+            /*$fileName = str_replace('/', '_', API::getValue('resource'));
             if ($fileName == '.')
                 API::error('Stop hacking please..!', 418);
 
@@ -431,14 +402,14 @@ class Quest extends Module {
             $folder = MODULES_FOLDER . '/quest/resources/' . $quest . '/';
             if (!file_exists($folder))
                 mkdir($folder, 777, true);
-            file_put_contents($folder . $fileName, API::getUploadedFile());
+            file_put_contents($folder . $fileName, API::getUploadedFile());*/
         });
 
         API::registerFunction('quest', 'deleteResource', function() {
             API::requireCourseAdminPermission();
             API::requireValues('resource', 'quest');
 
-            $fileName = str_replace('/', '_', API::getValue('resource'));
+            /*$fileName = str_replace('/', '_', API::getValue('resource'));
             if ($fileName == '.')
                 API::error('Stop hacking please..!', 418);
 
@@ -450,13 +421,13 @@ class Quest extends Module {
             $quest = $quest;
             $file = MODULES_FOLDER . '/quest/resources/' . $quest . '/' . $fileName;
             if (file_exists($file))
-                unlink($file);
+                unlink($file);*/
         });
 
         API::registerFunction('quest', 'settings', function() {
             API::requireCourseAdminPermission();
 
-            if (API::hasKey('activeQuest')) {
+            /*if (API::hasKey('activeQuest')) {
                 $this->getData()->set('activeQuest', API::getValue('activeQuest'));
             } else if (API::hasKey('deleteQuest')) {
                 $quest = API::getValue('deleteQuest');
@@ -486,34 +457,34 @@ class Quest extends Module {
                 $activeQuest = $this->getData()->get('activeQuest');
                 $quests = array_keys($this->getData()->get('quests', array()));
                 API::response(array('activeQuest' => $activeQuest, 'quests' => $quests));
-            }
+            }*/
         });
 
 
         $viewsModule = $this->getParent()->getModule('views');
         if ($viewsModule != null) {
             if ($viewsModule->getTemplate('Quest Announce - by quest') == NULL)
-                $viewsModule->setTemplate('Quest Announce - by quest', unserialize(file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId());
+                $viewsModule->setTemplate('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId());
         }
     }
 
     public function cleanModuleData() {
-        $questData = $this->getData()->getValue();
+        /*$questData = $this->getData()->getValue();
         foreach ($questData['quests'] as &$quest) {
             unset($quest['info']);
         }
-        $this->getData()->setValue($questData);
+        $this->getData()->setValue($questData);*/
     }
 
     public function initSettingsTabs() {
-        $quest = $this->getData()->getValue();
+        /*$quest = $this->getData()->getValue();
         $quests = array_keys($quest['quests']);
         $questsTabs = array();
         foreach($quests as $q) {
             $questsTabs[] = Settings::buildTabItem('Quest ' . ($q + 1), 'course.settings.quest.info({quest:\'' . ($q + 1) . '\'})', true);
         }
 
-        Settings::addTab(Settings::buildTabItem('Quests', 'course.settings.quest', true, $questsTabs));
+        Settings::addTab(Settings::buildTabItem('Quests', 'course.settings.quest', true, $questsTabs));*/
     }
 
     public function getLastSolution($quest) {
@@ -521,7 +492,7 @@ class Quest extends Module {
     }
 
     public function canTry($quest, $user, $rateLimit) {
-        $questInfo = $quest['info'];
+        /*$questInfo = $quest['info'];
         if (!array_key_exists('tries', $questInfo['users']))
             $questInfo['users']['tries'] = array();
         $tries = $questInfo['users']['tries'];
@@ -538,31 +509,31 @@ class Quest extends Module {
                 $count++;
         }
 
-        return $count < $rateLimit;
+        return $count < $rateLimit;*/
     }
 
     public function saveVisit($quest, $user, $time, $level) {
-        $questInfo = $quest->get('info');
+        /*$questInfo = $quest->get('info');
         $visits = &$questInfo['users']['visits'];
         if (!array_key_exists($user, $visits))
             $visits[$user] = array();
         $visits[$user][] = array($time, $level);
-        $quest->set('info', $questInfo);
+        $quest->set('info', $questInfo);*/
     }
 
     public function saveTry($quest, $user, $time, $try, $desc = 'notFound') {
-        $questInfo = $quest->get('info');
+        /*$questInfo = $quest->get('info');
         if (!array_key_exists('tries', $questInfo['users']))
             $questInfo['users']['tries'] = array();
         $tries = &$questInfo['users']['tries'];
         if (!array_key_exists($user, $tries))
             $visits[$user] = array();
         $tries[$user][] = array($time, $try, $desc);
-        $quest->set('info', $questInfo);
+        $quest->set('info', $questInfo);*/
     }
 
     public function saveSolution($quest, $user, $level, $time, $verification, $newSolution) {
-        $questInfo = $quest->get('info');
+        /*$questInfo = $quest->get('info');
         $solution = &$questInfo['users']['solution'];
         if (!array_key_exists($level, $solution))
             $solution[$level] = array();
@@ -571,7 +542,7 @@ class Quest extends Module {
             $questInfo['lastSolution'] = $time;
 
         $solution[$level][] = array($user, $time, $verification);
-        $quest->set('info', $questInfo);
+        $quest->set('info', $questInfo);*/
     }
 }
 

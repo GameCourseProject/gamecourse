@@ -1,7 +1,6 @@
 <?php
 use SmartBoards\API;
 use SmartBoards\Core;
-use SmartBoards\Course;
 use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 
