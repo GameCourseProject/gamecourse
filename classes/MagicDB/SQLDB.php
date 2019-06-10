@@ -23,7 +23,7 @@ class SQLDB {
     }
     public function executeQueryWithParams($sql,$data){
         try{
-            $stmt=$this->db->prepare($sql);
+            $stmt=$this->db->prepare($sql);            
             $stmt->execute($data);
         }catch(\PDOException $e ){
             //echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
@@ -66,7 +66,7 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$where);  
     }
     
-    public function update($table,$data,$where){
+    public function update($table,$data,$where=null){
         //example: update user set name="Example", email="a@a.a" where id=80000;
         $sql = "update ".$table." set ";
         $this->dataToQuery($sql,$data,',');
