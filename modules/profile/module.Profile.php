@@ -6,8 +6,7 @@ use Modules\Views\ViewHandler;
 
 class Profile extends Module {
 
-    const STUDENT_SUMMARY_TEMPLATE = '(old) Student Summary - by profile';
-    const NEW_STUDENT_SUMMARY_TEMPLATE = 'Student Summary - by profile';
+    const STUDENT_SUMMARY_TEMPLATE = 'Student Summary - by profile';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -25,12 +24,9 @@ class Profile extends Module {
             'type' => ViewHandler::VT_ROLE_INTERACTION
         ));
 
-        //if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
-        //    $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/summary.vt'),$this->getId());
-        if ($viewsModule->getTemplate(self::NEW_STUDENT_SUMMARY_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/newprofilesummary.txt'),$this->getId());
-  
-        
+        if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'),$this->getId());
+       
     }
 
     public function initSettingsTabs() {

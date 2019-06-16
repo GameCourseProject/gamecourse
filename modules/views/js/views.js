@@ -286,9 +286,28 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             alert(err.description);
             return;
         }
+        
+        var viewsArea = createSection($($element),"View List");
+        viewsArea.append($compile('<div ng-repeat="(id, view) in views">{{view.name}} (view id: {{id}}, module:{{view.module}})</div>')($scope));
+    
+        var TemplateArea = createSection($($element),"View Templates");
+        var tempList = $('<ul>', {class:"templates-list"});
+        tempList.append($compile('<li ng-repeat="template in templates">{{template}}'+
+                '<button ng-click="deleteTemplate(template)">Delete</button>'+
+                '<button ng-click="exportTemplate(template)">Export</button></li>')($scope));
 
+        TemplateArea.append(tempList);
+  
         angular.extend($scope, data);
-
+        $scope.exportTemplate = function(name){
+            $smartboards.request('views', 'exportTemplate', {course: $scope.course, name: name}, function(data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                alert("File created: " + data.filename +  "\n"+ "To use it move to a module folder and edit the module file");
+            });
+        };
         $scope.deleteTemplate = function(name) {
             var result = prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action');
             if (result != 'DELETE')
@@ -311,7 +330,7 @@ angular.module('module.views').config(function($stateProvider) {
         url: '/view',
         views: {
             'tabContent@course.settings': {
-                template: '<div ng-repeat="(id, view) in views">{{view.name}} (view id: {{id}}, module:{{view.module}})</div><ul class="templates-list"><strong>Templates</strong><li ng-repeat="template in templates">{{template}} <button ng-click="deleteTemplate(template)">Delete</button></li></ul>',
+                //template: '<div ng-repeat="(id, view) in views">{{view.name}} (view id: {{id}}, module:{{view.module}})</div><ul class="templates-list"><strong>Templates</strong><li ng-repeat="template in templates">{{template}} <button ng-click="deleteTemplate(template)">Delete</button></li></ul>',
                 controller: 'ViewsList'
             }
         }

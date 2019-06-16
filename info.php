@@ -379,6 +379,7 @@ function updateUsers($list,$role,$course,$courseId,$replace){
     return $updatedUsers;
 }
 
+//update courseUsers from the Students or Teacher configuration pages
 API::registerFunction('settings', 'courseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -438,13 +439,14 @@ API::registerFunction('settings', 'courseUsers', function() {
     }
 });
 
+//update list of course levels, from the levels configuration page
 API::registerFunction('settings', 'courseLevels', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $levels = Core::$systemDB->selectMultiple("level",'lvlNum,title,minXP',["course"=>$courseId],"lvlNum");
     $numOldLevels=sizeof($levels);
     $folder = Course::getCourseLegacyFolder($courseId);
-    
+
     if (API::hasKey('levelList')) {
         $keys = array('title', 'minxp');
         $levelInput=API::getValue('levelList');
@@ -583,6 +585,7 @@ function updateSkills($list,$courseId,$replace, $folder){
     API::response(["updatedData"=>$updatedData ]);
     return;
 }
+//update list of skills of the course skill tree, from the skills configuration page
 API::registerFunction('settings', 'courseSkills', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -644,10 +647,11 @@ API::registerFunction('settings', 'courseSkills', function() {
     API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText));
 });
 
+//update list of badges for course, from the badges configuration page
 API::registerFunction('settings', 'courseBadges', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $folder = Course::getCourseLegacyFolder($courseId);
+    $folder = LEGACY_DATA_FOLDER;// Course::getCourseLegacyFolder($courseId);
     
     if (API::hasKey('badgesList')) {
         $keys = ['name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 

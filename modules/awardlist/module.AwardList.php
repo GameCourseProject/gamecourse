@@ -8,10 +8,8 @@ use Modules\Views\ViewHandler;
 
 class AwardList extends Module {
 
-    const AWARDS_PROFILE_TEMPLATE = '(old) Awards Profile - by awards';
-    const NEW_AWARDS_PROFILE_TEMPLATE = 'Awards Profile - by awards';
-    const FULL_AWARDS_TEMPLATE = '(old) Full Award List - by awards';
-    const NEW_FULL_AWARDS_TEMPLATE = 'Full Award List - by awards';
+    const AWARDS_PROFILE_TEMPLATE = 'Awards Profile - by awards';
+    const FULL_AWARDS_TEMPLATE = 'Full Award List - by awards';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -44,17 +42,11 @@ class AwardList extends Module {
             return new \Modules\Views\Expression\ValueNode($allAwards);
         });
 
-        //if ($viewsModule->getTemplate(self::AWARDS_PROFILE_TEMPLATE) == NULL)
-        //    $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/awards_profile.vt'),$this->getId());
-        
-        if ($viewsModule->getTemplate(self::NEW_AWARDS_PROFILE_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/newprofileawards.txt'),$this->getId());
-        
-        //if ($viewsModule->getTemplate(self::FULL_AWARDS_TEMPLATE) == NULL)
-        //    $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/full_awards.vt'),$this->getId());
-        
-        if ($viewsModule->getTemplate(self::NEW_FULL_AWARDS_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/newFullAwards.txt'),$this->getId());  
+        if ($viewsModule->getTemplate(self::AWARDS_PROFILE_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'),$this->getId());
+ 
+        if ($viewsModule->getTemplate(self::FULL_AWARDS_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'),$this->getId());  
     }
 }
 ModuleLoader::registerModule(array(

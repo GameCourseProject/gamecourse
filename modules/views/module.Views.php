@@ -452,6 +452,16 @@ class Views extends Module {
             API::requireValues('name','course');
             Core::$systemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
         });
+        
+        API::registerFunction('views', 'exportTemplate', function() {
+            API::requireCourseAdminPermission();
+            API::requireValues('name','course');
+            $name = API::getValue('name');
+            $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", $name) . ".txt";
+            file_put_contents($filename,Core::$systemDB->select("view_template","content",["course"=>API::getValue('course'),"id"=>$name])); 
+            API::response(array('filename' => $filename ));
+            
+        });
 
         API::registerFunction('views', 'getEdit', function() {
             

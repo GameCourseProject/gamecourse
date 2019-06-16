@@ -4,8 +4,7 @@ use SmartBoards\Module;
 use SmartBoards\ModuleLoader;
 
 class Badges extends Module {
-    const BADGES_TEMPLATE_NAME = '(old) Badges block - by badges';
-    const NEW_BADGES_TEMPLATE_NAME = 'Badges block - by badges';
+    const BADGES_TEMPLATE_NAME = 'Badges block - by badges';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -99,10 +98,8 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 
-        //if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
-        //    $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.vt'),$this->getId());
-        if ($viewsModule->getTemplate(self::NEW_BADGES_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::NEW_BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/newbadges.txt'),$this->getId());   
+        if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }
 

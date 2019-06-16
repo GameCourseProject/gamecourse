@@ -8,8 +8,7 @@ use SmartBoards\Settings;
 use Modules\Views\ViewHandler;
 
 class Leaderboard extends Module {
-    const LEADERBOARD_TEMPLATE_NAME = '(old) Leaderboard - by leaderboard';
-    const NEW_LEADERBOARD_TEMPLATE_NAME = 'Leaderboard - by leaderboard';
+    const LEADERBOARD_TEMPLATE_NAME = 'Leaderboard - by leaderboard';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -25,11 +24,8 @@ class Leaderboard extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        //if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
-        //    $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.vt'),$this->getId());
-        //}
-        if ($viewsModule->getTemplate(self::NEW_LEADERBOARD_TEMPLATE_NAME) == NULL) {
-            $viewsModule->setTemplate(self::NEW_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/newleaderboard.txt'),$this->getId());
+        if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
+            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'),$this->getId());
         }
     }
 

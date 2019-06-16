@@ -111,7 +111,7 @@ class Notifications extends Module {
         });
         
         if ($viewsModule->getTemplate('Notifications Profile - by notifications') == NULL)
-            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications_profile.vt'),$this->getId());
+            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'),$this->getId());
         
     }
 }

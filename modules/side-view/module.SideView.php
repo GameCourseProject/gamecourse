@@ -8,8 +8,7 @@ use Modules\Views\ViewHandler;
 
 class SideView extends Module {
 
-    const SIDE_VIEW_TEMPLATE = '(old) Side View - by sideview';
-    const NEW_SIDE_VIEW_TEMPLATE = 'Side View - by sideview';
+    const SIDE_VIEW_TEMPLATE = 'Side View - by sideview';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -23,10 +22,8 @@ class SideView extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        //if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
-        //    $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/side_view.vt'),$this->getId());
-        if ($viewsModule->getTemplate(self::NEW_SIDE_VIEW_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::NEW_SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/newsideview.txt'),$this->getId());
+        if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
+            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'),$this->getId());
   
         
     }

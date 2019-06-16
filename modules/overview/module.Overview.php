@@ -8,8 +8,7 @@ use Modules\Views\ViewHandler;
 
 class Overview extends Module {
 
-    const USERS_OVERVIEW_TEMPLATE_NAME = '(old) Users Overview - by overview';
-    const NEW_USERS_OVERVIEW_TEMPLATE_NAME = 'Users Overview - by overview';
+    const USERS_OVERVIEW_TEMPLATE_NAME = 'Users Overview - by overview';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -26,10 +25,8 @@ class Overview extends Module {
             'type' => ViewHandler::VT_SINGLE
         ));
 
-        //if ($viewsModule->getTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
-        //    $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/users_overview.vt'),$this->getId());
-        if ($viewsModule->getTemplate(self::NEW_USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::NEW_USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/newUsersOverview.txt'),$this->getId());  
+        if ($viewsModule->getTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
+            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'),$this->getId());
     }
 }
 ModuleLoader::registerModule(array(
