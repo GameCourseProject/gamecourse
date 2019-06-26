@@ -413,7 +413,7 @@ API::registerFunction('settings', 'courseUsers', function() {
         $userToDelete = API::getValue('deleteCourseUser');
         $courseUser= new CourseUser($userToDelete,$course);
         if ($courseUser->exists()) 
-            Core::$systemDB->delete("course_user",["id"=>$userToDelete]);
+            Core::$systemDB->delete("course_user",["id"=>$userToDelete, "course"=>$courseId]);
         API::response(["updatedData"=>"" ]);
         return;
     }
@@ -475,7 +475,7 @@ API::registerFunction('settings', 'courseLevels', function() {
         //Delete levels when given a smaller list of new levels
         if ($lvlDiff>0){
             for($i=$numNewLevels;$i<$numOldLevels;$i++){
-                Core::$systemDB->delete("level",["lvlNum"=>$i]);
+                Core::$systemDB->delete("level",["lvlNum"=>$i, "course"=>$courseId]);
                 $updatedData[]= "Deleted Level: " .$i;
             }
         }
