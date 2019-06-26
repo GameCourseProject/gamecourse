@@ -207,30 +207,24 @@ class ViewHandler {
         $params = $viewParams;
         if (array_key_exists('data', $part)) {
             foreach ($part['data'] as $k => &$v) {
-                if ($v['context'] == 'js') {
-                    $value = $v['value']->accept($visitor)->getValue();
-                    if (is_array($value) && sizeof($value) == 1 && array_key_exists(0, $value))
-                            $value = $value[0];
-                    $v['value'] = $value;
-                } else if ($v['context'] == 'variable') {
-                    $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params) {
-                        if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
-                            $continuation = $continuation[0];
+                $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params, &$v) {
+                    if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
+                        $continuation = $continuation[0];
 
-                        if ($continuation instanceof ValueNode)
-                            $continuation = $continuation->getValue();
+                    if ($continuation instanceof ValueNode)
+                        $continuation = $continuation->getValue();
 
-                        $params[$k] = $continuation;
-                    }, function($value) use ($k, &$params) {
-                        $params[$k] = $value;
-                    });
-                } else {
-                    throw new \RuntimeException('Unknown data context: ' . $v['context']);
-                }
+                    $params[$k] = $continuation;
+                }, function($value) use ($k, &$params, &$v) {
+                    $params[$k] = $value;
+                });
             }
-
             if ($params != $viewParams)
                 $actualVisitor = new EvaluateVisitor($params, $this);
+        }
+        //adding all parameters to $part (so they can be used in js)
+        foreach ($params as $k => $val){
+            $part['data'][$k]["value"]=$val;
         }
 
         if ($func != null && is_callable($func))

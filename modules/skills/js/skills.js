@@ -53,13 +53,13 @@ angular.module('module.skills').directive('skillStudentImage', function($state) 
         link: function($scope, $element, $attrs) {
             $scope.gotoProfile = function(part) {
                 $element.trigger('mouseout');
-                $state.go('course.profile', {'userID': part.data.uid.value});
+                $state.go('course.profile', {'userID': part.data.student.value.id});
             };
             $scope.tooltipBound = false;
             $scope.showSkillTooltip = function(part) {
                 if ($scope.tooltipBound)
                     return;
-                var user = part.data.info.value;
+                var user = part.data.student.value;
 
                 var tooltipContent = $('<div>', {'class': 'content'});
                 tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));

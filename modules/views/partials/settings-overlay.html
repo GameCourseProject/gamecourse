@@ -44,7 +44,7 @@
     <sb-checkbox ng-if="options.allowData" sb-checkbox="part.data" sb-checkbox-label="Enable Data" sb-checkbox-default="{}" sb-checkbox-info="The Data defines variables for the element, which are useful to complement the Events or for the Expressions of the various settings." sb-checkbox-link="./docs/#ViewsStyleMiscData">
         <div ng-repeat="(key, data) in part.data">
             <sb-expression sb-expression="part.data[key].value" sb-expression-label="{{key}}"><!--
-                --><select ng-model="part.data[key].context"><option value="js">JavaScript</option><option value="variable">Variable</option></select><!--
+                <!--select ng-model="part.data[key].context"><option value="js">JavaScript</option><option value="variable">Variable</option></select--><!--
                 --><button ng-click="delete(part.data, key)">Remove</button><!--
             --></sb-expression>
         </div>

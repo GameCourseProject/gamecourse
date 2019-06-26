@@ -25,7 +25,7 @@ angular.module('module.leaderboard').directive('leaderboardTable', function($sta
     return {
         link: function($scope) {
             $scope.gotoProfile = function(row) {
-                $state.go('course.profile', {'userID': row.data.uid.value});
+                $state.go('course.profile', {'userID': row.data.student.value.id});
             };
         }
     };
