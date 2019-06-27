@@ -68,8 +68,10 @@ foreach($courses as $course){
     if (strpos( $course["shortname"], "PCM" )===false){
         continue;
     }
-    echo "Looking at course " . $course['fullname'] . "<br>";
+    echo "Extracting course " . $course['fullname'] . "<br>";
+    $course["shortname"]= str_replace('/', '-', $course["shortname"]);
     $courseFolder=$folder .'/'. $course['id'].'-'.$course["shortname"];
+    $courseFolder=preg_replace("/\s+$/","",$courseFolder);
     if (!file_exists($courseFolder))
         mkdir($courseFolder);
     
@@ -77,7 +79,8 @@ foreach($courses as $course){
     foreach($forums as $forum){
         //echo "Looking at forum " . $forum['name'] . "<br>";
         $forum["name"]= str_replace('/', '-', $forum["name"]);
-        $forumFolder=$courseFolder .'/'. $forum['id'].'-'.preg_replace("/[^a-zA-Z0-9_ ]/","",$forum["name"]);
+        $forumFolder=$courseFolder .'/'. $forum['id'].'-'.preg_replace("/[^-A-z0-9_ ]/","",$forum["name"]);
+        $forumFolder=preg_replace("/\s+$/","",$forumFolder);
         if (!file_exists($forumFolder))
             mkdir($forumFolder);
         
@@ -85,7 +88,8 @@ foreach($courses as $course){
         foreach($discussions as $discussion){
             //echo "Looking at discussion " . $discussion['name'] . "<br>";
             $discussion["name"]= str_replace('/', '-', $discussion["name"]);
-            $discussionFolder=$forumFolder .'/'. $discussion['id'].'-'.preg_replace("/[^a-zA-Z0-9_ ]/","",$discussion["name"]);
+            $discussionFolder=$forumFolder .'/'. $discussion['id'].'-'.preg_replace("/[^-A-z0-9_ ]/","",$discussion["name"]);
+            $discussionFolder=preg_replace("/\s+$/","",$discussionFolder);
             if (!file_exists($discussionFolder))
                 mkdir($discussionFolder);
             
@@ -109,7 +113,8 @@ foreach($courses as $course){
     foreach($peerforums as $forum){
         //echo "Looking at peerforum " . $forum['name'] . "<br>";
         $forum["name"]= str_replace('/', '-', $forum["name"]);
-        $forumFolder=$courseFolder .'/'. $forum['id'].'-'.preg_replace("/[^a-zA-Z0-9_ ]/","",$forum["name"]);
+        $forumFolder=$courseFolder .'/'. $forum['id'].'-'.preg_replace("/[^-A-z0-9_ ]/","",$forum["name"]);
+        $forumFolder=preg_replace("/\s+$/","",$forumFolder);
         if (!file_exists($forumFolder))
             mkdir($forumFolder);
         
@@ -117,7 +122,8 @@ foreach($courses as $course){
         foreach($discussions as $discussion){
             //echo "Looking at discussion " . $discussion['name'] . "<br>";
             $discussion["name"]= str_replace('/', '-', $discussion["name"]);
-            $discussionFolder=$forumFolder .'/'. $discussion['id'].'-'.preg_replace("/[^a-zA-Z0-9_ ]/","",$discussion["name"]);
+            $discussionFolder=$forumFolder .'/'. $discussion['id'].'-'.preg_replace("/[^-A-z0-9_ ]/","",$discussion["name"]);
+            $discussionFolder=preg_replace("/\s+$/","",$discussionFolder);
             if (!file_exists($discussionFolder))
                 mkdir($discussionFolder);
             
