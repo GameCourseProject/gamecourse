@@ -23,9 +23,6 @@ class Course {
     public function getNumBadges(){
         return $this->getData("numBadges");
     }
-    public function getHeaderLink() {
-        return $this->getData("headerLink");
-    }
     public function getActive(){
         return $this->getData("active");
     }
@@ -35,9 +32,6 @@ class Course {
     
     public function setData($field, $value){
         Core::$systemDB->update("course",[$field=>$value],["id"=>$this->cid]);
-    }
-    public function setHeaderLink($link) {
-        $this->setData("headerLink",$link);
     }
     public function setActiveState($active){
         $this->setData("active",$active);
@@ -111,10 +105,10 @@ class Course {
     
     //returns array with all the roles ordered by hierarchy
     public function getRolesHierarchy() {
-        return json_decode( Core::$systemDB->select("role_hierarchy","hierarchy",["course"=>$this->cid]),true);
+        return json_decode( Core::$systemDB->select("course","roleHierarchy",["id"=>$this->cid]),true);
     }
     public function setRolesHierarchy($rolesHierarchy) {
-        Core::$systemDB->update("role_hierarchy",["hierarchy"=>json_encode($rolesHierarchy)],["course"=>$this->cid]);
+        Core::$systemDB->update("course",["roleHierarchy"=>json_encode($rolesHierarchy)],["id"=>$this->cid]);
     }
     
     //returns array w module names
@@ -202,7 +196,7 @@ class Course {
         $db->insert("role",["role"=>"Watcher","course" =>$courseId]);
         
         $roles = [["name"=>"Teacher"],["name"=>"Student"],["name"=>"Watcher"]];
-        $db->insert("role_hierarchy",["course"=>$courseId,"hierarchy"=> json_encode($roles)]);
+        $db->update("course",["roleHierarchy"=> json_encode($roles)],["id"=>$courseId]);
         
         $db->insert("skill_tier",["tier"=>1,"reward"=>150,"course"=>$courseId]);
         $db->insert("skill_tier",["tier"=>2,"reward"=>400,"course"=>$courseId]);
@@ -254,7 +248,7 @@ class Course {
             //$fromId=$copyFromCourse->getId();
             
             //course table
-            $keys = ['headerLink','defaultLandingPage'];
+            $keys = ['defaultLandingPage',"roleHierarchy", "numBadges"];
             $fromCourseData = $copyFromCourse->getData();//Core::$systemDB->select("course",'*',["id"=>$fromId]);
             $newData=[];
             foreach ($keys as $key)
@@ -269,7 +263,6 @@ class Course {
             Course::copyCourseContent("view",$copyFrom,$courseId);
             Course::copyCourseContent("view_role",$copyFrom,$courseId);
             Course::copyCourseContent("view_part",$copyFrom,$courseId);
-            Course::copyCourseContent("role_hierarchy",$copyFrom,$courseId);
             
             //Should we copy skills, badges, levels? (db, txt, tree folder)
             //Course::copyCourseContent("skill_tier",$copyFrom,$courseId);//tiers are hardcoded in insertBasicCourseDAta

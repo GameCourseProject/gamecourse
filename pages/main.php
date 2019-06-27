@@ -47,7 +47,9 @@ $user = Core::getLoggedUser();
                                     return;
                                 }
                                 $rootScope.courseName = data.courseName;
-                                changeTitle(data.courseName, 0, true, data.headerLink);
+                                
+                                var path = 'courses/' + courseName + '-' + course ;
+                                changeTitle(data.courseName, 0, true, path);
                                 $smartboards.loadDependencies(data.resources).then(function () {
                                     if (reloadState)
                                         $urlRouter.sync();

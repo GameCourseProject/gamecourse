@@ -130,37 +130,13 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
 
         var tabContent = $($element);
         $scope.data = data;
-
-        // General configuration
-        var generalConfiguration = createSection(tabContent, 'General Configuration');
-
-        var headerLinkSettings = $('<div>');
-        headerLinkSettings.append('<label for="header-link" class="label">Header Link</label>');
-        var headerLinkInput = $('<input>', {type: 'text', id:'header-link', 'class': 'input-text', placeholder:'', 'ng-model':'data.headerLink'});
-        headerLinkSettings.append($compile(headerLinkInput)($scope));
-        generalConfiguration.append(headerLinkSettings);
-
-        $('#header-link').bind('change paste keyup', function() {
-            var input = $(this);
-            createChangeButtonIfNone('header-link', headerLinkInput, function (status) {
-                $smartboards.request('settings', 'courseGlobal', {course: $scope.course, headerLink: $scope.data.headerLink}, function(data, err) {
-                    if (err) {
-                        status.text('Error, please try again!');
-                        input.prop('disabled', false);
-                        return;
-                    }
-
-                    status.text('New header link is set!');
-                    input.prop('disabled', false);
-                });
-            }, {
-                createMode: 'after',
-                disableFunc: function () {
-                    input.prop('disabled', true);
-                }
-            });
-        });
-
+        
+        var courseInfo = createSection(tabContent, 'Info');
+        var infoDiv = $('<div>');
+        infoDiv.append($compile('<p>Course Name: '+$scope.data.name+'</p>') ($scope));
+        infoDiv.append($compile('<p>Course ID: '+$scope.course+'</p>') ($scope));
+        courseInfo.append(infoDiv);
+        
         // Modules
         var columns = ['c1', {field:'c2', constructor: function(content) {
             if(typeof content === 'string' || content instanceof String)
@@ -221,34 +197,8 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         var loadLegacy = $('<div><br>');
         loadLegacy.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="loadLegacy.php?course={{course}}">Load Legacy</a>')($scope));
         loadDataSection.append(loadLegacy);
-        var fenixLinkSettings = $('<div>');
-        fenixLinkSettings.append('<br><label for="fenix-link" class="label">Fenix Grades Link</label>');
-        var fenixLinkInput = $('<input>', {type: 'text', id:'fenix-link', 'class': 'input-text', placeholder:'', 'ng-model':'data.courseFenixLink'});
-        fenixLinkSettings.append($compile(fenixLinkInput)($scope));
-        loadDataSection.append(fenixLinkSettings);
 
-        $('#fenix-link').bind('change paste keyup', function() {
-            var input = $(this);
-            createChangeButtonIfNone('fenix-link', fenixLinkInput, function (status) {
-                $smartboards.request('settings', 'courseGlobal', {course: $scope.course, courseFenixLink: $scope.data.courseFenixLink}, function(data, err) {
-                    if (err) {
-                        status.text('Error, please try again!');
-                        input.prop('disabled', false);
-                        return;
-                    }
-
-                    status.text('New Fenix Grades Link is set!');
-                    input.prop('disabled', false);
-                });
-            }, {
-                createMode: 'after',
-                disableFunc: function () {
-                    input.prop('disabled', true);
-                }
-            });
-        });
-
-        var downloadPhotosSettings = $('<div>');
+        var downloadPhotosSettings = $('<br><div>');
         downloadPhotosSettings.append('<label for="jsessionid" class="label">JSESSIONID</label>');
         var jsessionidInput = $('<input>', {type: 'text', id:'jsessionid', 'class': 'input-text', placeholder:'', 'ng-model':'data.jsessionid'});
         downloadPhotosSettings.append($compile(jsessionidInput)($scope));
@@ -257,8 +207,7 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         downloadPhotosSettings.append($compile(backendidInput)($scope));
         loadDataSection.append(downloadPhotosSettings);
         var updateDownloadButtons = $('<div>');
-        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="updateUsernames.php?course={{course}}&courseurl={{data.courseFenixLink}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Update Usernames</a>')($scope));
-        updateDownloadButtons.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
+        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
 
         loadDataSection.append(updateDownloadButtons);
     });

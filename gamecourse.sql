@@ -19,7 +19,6 @@ drop table if exists user_badge;
 drop table if exists badge;
 drop table if exists notification;
 drop table if exists award;
-drop table if exists role_hierarchy;
 drop table if exists user_role;
 drop table if exists role;
 drop table if exists enabled_module;
@@ -41,10 +40,9 @@ create table course(
 	name 		varchar(100),
 	numBadges  int unsigned default 0,
 	active boolean default true,
-	headerLink varchar(255) default "",#?
 	defaultLandingPage varchar(100) default "",
-	fenixLink varchar(255) default "",
 	apiKey varchar(50),
+	roleHierarchy text,
 	lastUpdate timestamp default CURRENT_TIMESTAMP
 );
 
@@ -86,11 +84,6 @@ create table user_role(
 	primary key(id, course, role),
 	foreign key(id, course) references course_user(id, course) on delete cascade,
 	foreign key(role, course) references role(role,course) on delete cascade
-);
-create table role_hierarchy(
-	course int unsigned not null primary key,
-	hierarchy text,
-	foreign key(course) references course(id) on delete cascade
 );
 
 create table award(

@@ -61,7 +61,6 @@ API::registerFunction('core', 'getCourseInfo', function() {
         'navigation' => Core::getNavigation(),
         'landingPage' => $courseUser->getLandingPage(),
         'courseName' => $course->getName(),
-        'headerLink' => $course->getHeaderLink(),
         'resources' => $course->getModulesResources()
     ));
 });
@@ -165,14 +164,7 @@ API::registerFunction('settings', 'roles', function() {
 //main course settings page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
-    if (API::hasKey('headerLink')) {
-        $course->setHeaderLink(API::getValue('headerLink'));
-        http_response_code(201);
-    } else if (API::hasKey('courseFenixLink')) {
-        $course->setData("fenixLink",API::getValue('courseFenixLink'));
-        http_response_code(201);
-    } else if (API::hasKey('module') && API::hasKey('enabled')) {
+    $course = Course::getCourse(API::getValue('course'));if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
         $module = ModuleLoader::getModule($moduleId);
         if ($module == null) {
@@ -221,8 +213,6 @@ API::registerFunction('settings', 'courseGlobal', function() {
         $globalInfo = array(
             'name' => $course->getName(),
             'theme' => Core::getTheme(),
-            'headerLink' => $course->getHeaderLink(),
-            'courseFenixLink' => $course->getData("fenixLink"),
             'modules' => $modulesArr
         );
         API::response($globalInfo);

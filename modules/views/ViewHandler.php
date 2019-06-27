@@ -223,9 +223,12 @@ class ViewHandler {
                 $actualVisitor = new EvaluateVisitor($params, $this);
         }
         //adding all parameters to $part (so they can be used in js)
-        foreach ($params as $k => $val){
-            $part['data'][$k]["value"]=$val;
+        if (array_key_exists("events", $part) || array_key_exists("directive", $part)){
+            foreach ($params as $k => $val){
+                $part['data'][$k]["value"]=$val;
+            }
         }
+        
 
         if ($func != null && is_callable($func))
             $func($params, $actualVisitor);
