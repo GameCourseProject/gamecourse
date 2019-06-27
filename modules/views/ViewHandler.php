@@ -131,7 +131,6 @@ class ViewHandler {
                     'partContents' => json_encode(['content'=>array()]),
                     'pid' => $viewpid
             ];
-            //print_r($newView);
             Core::$systemDB->insert('view',$newView);
             Core::$systemDB->insert('view_role',$viewRole);
             Core::$systemDB->insert('view_part',$part);
