@@ -6,6 +6,7 @@ angular.module('module.badges').directive('badgeDirective', function($state) {
         link: function($scope, $element, $attrs) {
             $element.find('.badge-extra').hide();
             $element.click(function() {
+                console.log("click");
                 var isVisible = $(this).find('.badge-extra').is(':visible');
                 $('.badge-extra:visible').hide();
                 if (!isVisible) {
