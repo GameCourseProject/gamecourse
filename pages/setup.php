@@ -13,19 +13,18 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
     $sql = file_get_contents("gamecourse.sql"); 
     $db->executeQuery($sql);
-    $db->insert("system_info",["theme" => "default"]);
-    $db->insert("course",["name" => $courseName]);
-    $courseId =$db->select("course",'id',["name"=> $courseName]);
+    $courseId=1;
+    $db->insert("course",["name" => $courseName, "id"=>$courseId]);
     \SmartBoards\Course::createCourseLegacyFolder($courseId, $courseName);
-    \SmartBoards\Course::insertBasicCourseData($db, $courseId);
+    $roleId = \SmartBoards\Course::insertBasicCourseData($db, $courseId);
     
-    $db->insert("user",["id" => $teacherId,
+    $db->insert("game_course_user",["id" => $teacherId,
                         "name" => "Teacher",
                         "username"=> $teacherUsername,
                         "isAdmin"=> true]);
     $db->insert("course_user",["id" => $teacherId,
                                 "course" => $courseId,]);
-    $db->insert("user_role",["id"=>$teacherId, "course"=>$courseId,"role"=>"Teacher"]);
+    $db->insert("user_role",["id"=>$teacherId, "course"=>$courseId,"role"=>$roleId]);
 
     file_put_contents('setup.done','');
 

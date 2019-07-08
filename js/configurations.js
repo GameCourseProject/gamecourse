@@ -195,7 +195,13 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
                 
                 if ('dependencies' in skill){
                     for (var d in skill.dependencies){
-                        tierArea.append('<span style="font-size: 70%">'+skill.dependencies[d][0]+' + '+skill.dependencies[d][1]+'</span><br>');
+                        var deps = '<span style="font-size: 70%">';
+                        for (var dElement in skill.dependencies[d]){
+                            deps += skill.dependencies[d][dElement] + ' + ';
+                        }
+                        deps = deps.slice(0,-2);
+                        deps += '</span><br>';
+                        tierArea.append(deps);
                     }
                 }
             }
@@ -249,10 +255,10 @@ app.controller('CourseBadgesSettingsController', function($scope, $stateParams, 
             var imageLevel = $('<div>',{ style:'height: 90px'});
             imageLevel.append('<img style="float: left" src="badges/'+badge.name.replace(/\s+/g, '')+'-1.png" class="img">');
             
-            for (var i = 0;i<badge.maxLvl;i++){
+            for (var i = 0;i<badge.maxLevel;i++){
                 imageLevel.append('<span>Level '+(i+1)+':&nbsp</span>');
                 imageLevel.append('<span>'+badge.levels[i].description+'&nbsp</span>');
-                imageLevel.append('<span style="float: right">&nbsp'+badge.levels[i].xp+' XP</span>');
+                imageLevel.append('<span style="float: right">&nbsp'+badge.levels[i].reward+' XP</span>');
                 //if (badge.isCount==true)
                 //    badgeArea.append('<span style="font-size: 95%; ">&nbsp (count='+badge.levels[i].progressNeeded+')</span>');
                 imageLevel.append('<br>');
@@ -296,8 +302,9 @@ app.controller('CourseLevelsSettingsController', function($scope, $stateParams, 
         
         var text = "Levels must in ascending order with the following format: title;minimunXP";
         tabContents=[];
+        console.log(data.levelList);
         for (var st in data.levelList){
-            tabContents.push({Level: data.levelList[st].lvlNum,Title:data.levelList[st].title,"Minimum XP":data.levelList[st].minXP,
+            tabContents.push({Level: data.levelList[st].number,Title:data.levelList[st].description,"Minimum XP":data.levelList[st].goal,
                     "":{level: data.levelList[st].id}});
         }
         var columns = ["Level","Title","Minimum XP"];

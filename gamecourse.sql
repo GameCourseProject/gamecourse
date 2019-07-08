@@ -1,10 +1,14 @@
+drop table if exists quiz;
+drop table if exists lab;
+drop table if exists presentation;
+drop table if exists bonus;
 drop table if exists view_template;
 drop table if exists course_template;
 drop table if exists view_template;
-drop table if exists template;
 drop table if exists view_parameter;
 drop table if exists parameters;
 drop table if exists view;
+drop table if exists template;
 drop table if exists page;
 drop table if exists skill_dependency;
 drop table if exists dependency;
@@ -19,7 +23,7 @@ drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
 drop table if exists dictionary;
-drop table if exists enabled_module;
+drop table if exists course_module;
 drop table if exists module;
 drop table if exists user_role;
 drop table if exists role;
@@ -53,17 +57,16 @@ create table course_user
     lastActivity timestamp default 0,
     previousActivity timestamp default 0,
     primary key(id, course),
-    foreign key(id) references user(id) on delete cascade,
+    foreign key(id) references game_course_user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
 );
 
 create table role(
 	id 		int unsigned auto_increment primary key,
-	role varchar(50) not null,
+	name varchar(50) not null,
 	landingPage varchar(100) default '',
 	course int unsigned not null,
 	#isCourseAdmin boolean default false,
-	primary key(role, course),
 	foreign key(course) references course(id) on delete cascade
 );
 create table user_role(
@@ -72,7 +75,7 @@ create table user_role(
 	role int unsigned not null,
 	primary key(id, course, role),
 	foreign key(id, course) references course_user(id, course) on delete cascade,
-	foreign key(role) references role(name) on delete cascade
+	foreign key(role) references role(id) on delete cascade
 );
 
 create table module(
@@ -80,9 +83,10 @@ create table module(
 	name varchar(50),
 	description varchar(100)
 );
-create table enabled_module(
+create table course_module(
 	moduleId varchar(50) not null,
 	course int unsigned not null,
+	isEnabled boolean default false,
 	primary key(moduleId, course),
 	foreign key(moduleId) references module(moduleId) on delete cascade,
 	foreign key(course) references course(id) on delete cascade
@@ -102,20 +106,20 @@ create table award(
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
-	description varchar(100),
+	description varchar(100) not null,
 	module varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
-	moduleInstance int unsigned not null,#id of badge/skill/quiz/lab/presentation/bonus
+	moduleInstance int unsigned ,#id of badge/skill (will be null for other types)
 	reward int unsigned default 0,
 	date timestamp default CURRENT_TIMESTAMP, 
 	isEnabled boolean default true,
     foreign key(user, course) references course_user(id, course) on delete cascade,
-    foreign key(module,course) references enabled_module(moduleId,course) on delete set null 
+    foreign key(module,course) references course_module(moduleId,course)
 );
+
 create table notification(
 	id int unsigned auto_increment primary key,
 	award int unsigned not null,
 	checked boolean default false,
-	primary key (student,course,name,level,type),
 	foreign key(award) references award(id) on delete cascade
 );
 
@@ -123,22 +127,24 @@ create table participation(
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
-	description varchar(100),
+	description varchar(100) not null,
+	indicator varchar(20),
 	module 	varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
-	moduleInstance int unsigned not null,#id of badge/skill/quiz/lab/presentation/bonus
+	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
-	date timestamp default CURRENT_TIMESTAMP, 
+	date timestamp, 
 	isEnabled boolean default true,
     foreign key(user, course) references course_user(id, course) on delete cascade,
-    foreign key(module,course) references enabled_module(moduleId,course) on delete set null 
+    foreign key(module,course) references course_module(moduleId,course)
 );
+
 create table grade(
 	id 		int unsigned auto_increment primary key,
 	participation int unsigned not null,
-	user 	int unsigned not null,
+	user 	int unsigned,
 	course 	int unsigned not null,
 	grade 	int unsigned not null,
-    foreign key(user, course) references course_user(id, course) on delete cascade,
+    foreign key(user, course) references course_user(id, course) on delete set null,
     foreign key(participation) references participation(id) on delete cascade
 );
 
@@ -212,13 +218,24 @@ create table page(
 	theme varchar(50),
 	foreign key(course) references course(id) on delete cascade
 );
+create table template(
+	id int unsigned auto_increment primary key,
+	name varchar(100) not null,#
+	role varchar(100) not null,
+	partType enum ('view','aspect','block','text','image','table','heardRow','row','header','instance'),
+	parent int unsigned,
+	viewIndex int unsigned,
+	isGlobal boolean default false,
+	aspectClass int unsigned,
+	foreign key (parent) references template(id) on delete cascade
+);
 create table view(
 	id int unsigned auto_increment primary key,
 	pageId int unsigned not null,
 	role varchar(100) not null,
 	partType enum ('aspect','block','text','image','table','heardRow','row','header','instance'),
 	parent int unsigned,
-	index int unsigned,
+	viewIndex int unsigned,
 	template int unsigned,
 	foreign key (parent) references view(id) on delete cascade,
 	foreign key (template) references template(id) on delete cascade,
@@ -232,30 +249,20 @@ create table parameters(
 	class varchar(70), 
 	style varchar(150),
 	link varchar(255),
-	if varchar(255)
+	ifCondition varchar(255)
 );
-create table view_parameter(
+create table view_parameters(
 	viewId int unsigned,
 	parametersId int unsigned,
 	primary key(viewId,parametersId),
 	foreign key (viewId) references view(id) on delete cascade,
 	foreign key (parametersId) references parameters(id) on delete cascade
 );
-create table template(
-	id int unsigned auto_increment primary key,
-	name varchar(100) not null,#
-	role varchar(100) not null,
-	partType enum ('view','aspect','block','text','image','table','heardRow','row','header','instance'),
-	parent int unsigned,
-	index int unsigned,
-	isGlobal boolean default false,
-	aspectClass int unsigned,
-	foreign key (parent) references template(id) on delete cascade
-);
-create table view_template(
+
+create table template_parameters(
 	templateId int unsigned,
 	parametersId int unsigned,
-	primary key(viewId,parametersId),
+	primary key(templateId,parametersId),
 	foreign key (templateId) references template(id) on delete cascade,
 	foreign key (parametersId) references parameters(id) on delete cascade
 );
@@ -266,3 +273,4 @@ create table course_template(
 	foreign key (template) references template(id) on delete cascade,
 	foreign key (course) references course(id) on delete cascade
 );
+

@@ -9,7 +9,7 @@ class User {
     }
     
     public function addUserToDB($name, $username, $email){
-        Core::$systemDB->insert("user",["name"=>$name,"id"=>$this->id,"username"=>$username, "email"=>$email]);       
+        Core::$systemDB->insert("game_course_user",["name"=>$name,"id"=>$this->id,"username"=>$username, "email"=>$email]);       
     }
     
     public function exists() {
@@ -21,11 +21,11 @@ class User {
     }
     
     public function getData($field='*'){
-        return Core::$systemDB->select("user",$field,["id"=>$this->id]);
+        return Core::$systemDB->select("game_course_user",$field,["id"=>$this->id]);
     }
     
     public function setData($fieldValues){
-        Core::$systemDB->update("user",$fieldValues,["id"=>$this->id]);
+        Core::$systemDB->update("game_course_user",$fieldValues,["id"=>$this->id]);
     }
     
     public function getName() {
@@ -56,11 +56,11 @@ class User {
         $this->setData(["isAdmin"=>$isAdmin]);
     }
     public static function getAdmins(){
-        return array_column(Core::$systemDB->selectMultiple("user",'id',["isAdmin"=>true]),'id');
+        return array_column(Core::$systemDB->selectMultiple("game_course_user",'id',["isAdmin"=>true]),'id');
     }
 
     public function initialize($name, $username,$email) {
-        Core::$systemDB->update("user",["name" => $name,"email" => $email, "username"=>$username],["id"=>$this->id]);
+        Core::$systemDB->update("game_course_user",["name" => $name,"email" => $email, "username"=>$username],["id"=>$this->id]);
         return $this;
     }
 
@@ -69,7 +69,7 @@ class User {
     }
 
     public static function getUserByUsername($username) {
-        $userId=Core::$systemDB->select("user","id",["username"=>$username]);
+        $userId=Core::$systemDB->select("game_course_user","id",["username"=>$username]);
         if ($userId==null)
             return null;
         else
@@ -86,6 +86,6 @@ class User {
    // }
 
     public static function getAllInfo() {
-        return Core::$systemDB->selectMultiple("user");
+        return Core::$systemDB->selectMultiple("game_course_user");
     }
 }

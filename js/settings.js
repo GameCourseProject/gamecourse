@@ -690,7 +690,7 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
             courses = newCourses;
         }
         $scope.courses = courses;
-        $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.active ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
+        $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.active ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
         $($element).append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
     });
 });
@@ -744,7 +744,7 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
             return;
         }
 
-        $scope.pendingInvites = data.pendingInvites;
+        //$scope.pendingInvites = data.pendingInvites;
 
         $scope.usersAdmin = [];
         $scope.usersNonAdmin = [];
@@ -855,7 +855,7 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
         };
         $compile(userAdministration)($scope);
 
-        $scope.inviteInfo = {};
+        /*$scope.inviteInfo = {};
         $scope.createInvite = function() {
             $smartboards.request('settings', 'users', {createInvite: $scope.inviteInfo}, function(data, err) {
                 if (err) {
@@ -879,10 +879,10 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
                 delete $scope.pendingInvites[invite.username];
                 console.log('ok!');
             });
-        };
+        };*/
         $scope.isValidString = function(s) { return s != undefined && s.length > 0};
 
-        var pendingInvites = createSection($($element), 'Pending Invites').attr('id', 'pending-invites');
+        /*var pendingInvites = createSection($($element), 'Pending Invites').attr('id', 'pending-invites');
         pendingInvites.append('<div>Pending: <ul><li ng-if="pendingInvites.length>0" ng-repeat="invite in pendingInvites">{{invite.id}}, {{invite.username}}<img src="images/trashcan.svg" ng-click="deleteInvite(invite)"></li></ul></div>');
         var addInviteDiv = $('<div>');
         addInviteDiv.append('<div>New invite: </div>')
@@ -890,7 +890,7 @@ app.controller('SettingsUsers', function($scope, $state, $compile, $smartboards,
         addInviteDiv.append('<div><label for="invite-username" class="label">IST Username:</label><input type="text" class="input-text" id="invite-username" ng-model="inviteInfo.username"></div>');
         addInviteDiv.append('<div><button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
         pendingInvites.append(addInviteDiv);
-        $compile(pendingInvites)($scope);
+        $compile(pendingInvites)($scope);*/
 
         $scope.userUpdateInfo = {};
         $scope.updateUsername = function() {

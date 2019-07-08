@@ -109,6 +109,7 @@ class Core {
         $fenixAuth = static::getFenixAuth();
         $username = $fenixAuth->getUsername();
         
+        /*
         $invites = Core::getPendingInvites();
         $pending_invites = array_combine(array_column($invites,"username"), $invites);
         if ( !empty($pending_invites) && array_key_exists($username, $pending_invites)) {
@@ -119,7 +120,7 @@ class Core {
                 $user->setAdmin($pendingInvite['isAdmin']);
             Core::removePendingInvites($pendingInvite["id"]);
         }
-        
+        */
         static::$loggedUser = User::getUserByUsername($username);
         if (static::$loggedUser != null) {
             $_SESSION['user'] = static::$loggedUser->getId();
@@ -135,19 +136,19 @@ class Core {
         return static::$loggedUser;
     }
 
-    public static function getTheme() {
+    /*public static function getTheme() {
         return static::$systemDB->selectMultiple("system_info","theme")[0]["theme"];
-    }
+    }*/
 
-    public static function setTheme($theme) {
-        static::$systemDB->update("system_info",["theme"=>$theme],null);
-    }
+   // public static function setTheme($theme) {
+        //static::$systemDB->update("system_info",["theme"=>$theme],null);
+    //}
 
     public static function getActiveCourses() {
         return static::$systemDB->selectMultiple("course",'*',["active"=>true]);
     }
 
-    public static function getPendingInvites() {
+    /*public static function getPendingInvites() {
         return static::$systemDB->selectMultiple("pending_invite");
     }
     public static function pendingInviteExists($id) {
@@ -158,7 +159,7 @@ class Core {
     }
     public static function removePendingInvites($id) {
         return static::$systemDB->delete("pending_invite",["id"=>$id]);
-    }
+    }*/
 
     public static function getCourses() {
         return static::$systemDB->selectMultiple("course");

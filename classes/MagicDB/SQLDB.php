@@ -23,23 +23,28 @@ class SQLDB {
     }
     public function executeQueryWithParams($sql,$data){
         try{
-            $stmt=$this->db->prepare($sql);            
+            $stmt=$this->db->prepare($sql);   
             $stmt->execute($data);
         }catch(\PDOException $e ){
-            //echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
+            echo "<br>". $sql . "<br>" . $e->getMessage() . "<br>";
+            print_r(array_values($data));
             throw new \PDOException($e);
         }
         return $stmt;
     }
     
-    public function dataToQuery(&$sql,$data,$separator,$add=false){
+    public function dataToQuery(&$sql,&$data,$separator,$add=false){
         //takes an array and creates a string with $key=$value(,&).... then adds to sql query str        
         foreach ($data as $key => $value) {
             if ($add)
-                $sql.=$key.'= '.$key.' + '.$value.$separator;             
+                $sql.=$key.'= '.$key.' + '.$value.$separator;     
+            elseif ($value===null && $separator =="&&")
+                $sql .= $key . " is ?" . $separator;
             else
-                $sql.=$key.'= :'.$key.' '.$separator;
+                $sql.=$key.'= ? '.$separator;
+                //$sql.=$key.'= :'.$key.' '.$separator;
         }
+        $data=array_values($data);
         $sql=substr($sql,0,-(strlen($separator)));
     }
 
@@ -74,6 +79,7 @@ class SQLDB {
             $sql.= " where ";
             $this->dataToQuery($sql,$where,'&&');
             $data=array_merge($data,$where);
+           
         }
         $sql.=';';
         $this->executeQueryWithParams($sql,$data);     
@@ -103,6 +109,8 @@ class SQLDB {
         if ($field=='*' or strpos($field,',')){
             return $returnVal;
         }
+        if ($pos=strpos($field,".")!==false)
+            return $returnVal[substr($field,$pos+1)];
         return $returnVal[$field];
     } 
     public function selectMultiple($table,$field='*',$where=null,$orderBy=null){
@@ -118,5 +126,11 @@ class SQLDB {
         $sql.=';';
         $result = $this->executeQueryWithParams($sql,$where);
         return $result->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    
+    //this returns the last auto_increment id after an insertion in the DB
+    public function getLastId(){
+        $result=$this->executeQuery("SELECT LAST_INSERT_ID();");
+        return $result->fetch()[0];       
     }
 }

@@ -31,8 +31,13 @@ class ModuleLoader {
         static::$modules[$module['id']] = $module;
         static::$loadingModuleDir = null;
         
-        if (empty(Core::$systemDB->select("module",'*',['moduleId'=>$module['id']])))
-            Core::$systemDB->insert("module",['moduleId'=>$module['id'],'name'=>$module['name']]);
+        if (empty(Core::$systemDB->select("module", '*', ['moduleId' => $module['id']]))) {
+            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name']]);
+            $courses= array_column(Core::$systemDB->selectMultiple("course","id"),"id");
+            foreach ($courses as $course) {
+                Core::$systemDB->insert("course_module",["course"=>$course,"moduleId"=>$module['id']]);
+            }
+        }
     }
 
     public static function loadModuleFromDir($moduleDir) {

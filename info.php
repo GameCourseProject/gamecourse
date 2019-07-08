@@ -209,10 +209,10 @@ API::registerFunction('settings', 'courseGlobal', function() {
             );
             $modulesArr[$module['id']] = $mod;
         }
-
+        
         $globalInfo = array(
             'name' => $course->getName(),
-            'theme' => Core::getTheme(),
+            'theme' => $GLOBALS['theme'],
             'modules' => $modulesArr
         );
         API::response($globalInfo);
@@ -243,8 +243,8 @@ API::registerFunction('settings', 'global', function() {
             $themes[] = array('name' => $themeDirName, 'preview' => file_exists($themeDir . '/preview.png'));
         }
         $themesDir->close();
-
-        API::response(array('theme' => Core::getTheme(), 'themes' => $themes));
+        
+        API::response(array('theme' => $GLOBALS['theme'], 'themes' => $themes));
     }
 });
 
@@ -254,7 +254,7 @@ API::registerFunction('settings', 'tabs', function() {
     $courses = Core::getCourses();
     $coursesTabs = array();
     foreach ($courses as $course) {
-        $coursesTabs[] = Settings::buildTabItem($course['name'] . ($course['active'] ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $course['id'] . '\'})', true);
+        $coursesTabs[] = Settings::buildTabItem($course['name'] . ($course['isActive'] ? '' : ' - Inactive'), 'settings.courses.course({course:\'' . $course['id'] . '\'})', true);
     }
     $tabs = array(
         Settings::buildTabItem('Courses', 'settings.courses', true, $coursesTabs)
@@ -290,7 +290,7 @@ API::registerFunction('settings', 'users', function() {
             API::error('A user with username ' . $updateUsername['username'] . ' is already registered.');
         $user->setUsername($updateUsername['username']);
         return;
-    } else if (API::hasKey('createInvite')) {
+    } /*else if (API::hasKey('createInvite')) {
         $inviteInfo = API::getValue('createInvite');
         if (User::getUser($inviteInfo['id'])->exists())
             API::error('A user with id ' . $inviteInfo['id'] . ' is already registered.');
@@ -307,17 +307,18 @@ API::registerFunction('settings', 'users', function() {
         if (Core::pendingInviteExists($invite))
             Core::removePendingInvites($invite);
         return;
-    }
-    API::response(array('users' => User::getAllInfo(), 'pendingInvites' => Core::getPendingInvites()));
+    }*/
+    API::response(array('users' => User::getAllInfo()));//, 'pendingInvites' => Core::getPendingInvites()));
 });
 
 //This updates the student or teachers of the course
 //receives list of users to replace/add and updates the DB
 function updateUsers($list,$role,$course,$courseId,$replace){
     $updatedUsers=[];
+    $roleId = Course::getRoleId($role, $courseId);
     if ($replace){
         $prevUsers = array_column(Core::$systemDB->selectMultiple("course_user natural join user_role",'id',
-                       ["course"=>$courseId, "role"=>$role]), "id");
+                       ["course"=>$courseId, "role"=>$roleId]), "id");
     }
     $keys = ['username','id', 'name', 'email'];
     if ($role == "Student")
@@ -345,18 +346,19 @@ function updateUsers($list,$role,$course,$courseId,$replace){
 
         $courseUser= new CourseUser($currUser['id'],$course);
         if (!$courseUser->exists()) {
-            $courseUser->addCourseUserToDB($role, $currUser['campus']);
+            $courseUser->addCourseUserToDB($roleId, $currUser['campus']);
             $updatedUsers[]= 'New '.$role.' ' . $currUser['id'];
         } else {
             $courseUser->setCampus($currUser['campus']);
-            $courseUser->addRole($role);
+            if ($courseUser->addRole($roleId)===true)
+                $updatedUsers[]= "Added role of ".$role." to user ".$currUser['id'];
         }
     }
     if ($replace){
         foreach($prevUsers as $userToDelete){
             $roles = Core::$systemDB->selectMultiple("user_role","role",["id"=>$userToDelete,"course"=>$courseId]);
             if (sizeof($roles)>1){//delete just the role
-                Core::$systemDB->delete("user_role",["id"=>$userToDelete,"course"=>$courseId,"role"=>$role]);
+                Core::$systemDB->delete("user_role",["id"=>$userToDelete,"course"=>$courseId,"role"=>$roleId]);
                 $updatedUsers[]= "Removed role of ".$role." from user ".$userToDelete;
             }
             else{//delete the course_user
@@ -433,17 +435,19 @@ API::registerFunction('settings', 'courseUsers', function() {
 API::registerFunction('settings', 'courseLevels', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $levels = Core::$systemDB->selectMultiple("level",'lvlNum,title,minXP',["course"=>$courseId],"lvlNum");
+    $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
+                    'number,description,goal,id',["course"=>$courseId, "levelId"=>null],"number");
+    //print_r($levels);
+    $levelsByNum = array_combine(array_column($levels,"number") , $levels);
     $numOldLevels=sizeof($levels);
     $folder = Course::getCourseLegacyFolder($courseId);
 
     if (API::hasKey('levelList')) {
-        $keys = array('title', 'minxp');
+        $keys = array('title', 'goal');
         $levelInput=API::getValue('levelList');
         $levelList = preg_split('/[\r]?\n/', $levelInput, -1, PREG_SPLIT_NO_EMPTY);  
         $numNewLevels=sizeof($levelList);
         $updatedData=[];
-        $availableLevels = array_column($levels, "lvlNum");
         for($i=0;$i<$numNewLevels;$i++){
             //if level doesn't exit, add it to DB 
             $splitInfo =preg_split('/;/', $levelList[$i]);
@@ -452,20 +456,20 @@ API::registerFunction('settings', 'courseLevels', function() {
                 return null;
             }
             $level = array_combine($keys, $splitInfo);
-            if (!in_array($i, $availableLevels)){
-                Core::$systemDB->insert("level",["lvlNum"=>$i,"minXP"=>(int) $level['minxp'],
-                                                 "title"=>$level['title'],"course"=>$courseId]);  
+            if (!array_key_exists($i, $levelsByNum)){
+                Core::$systemDB->insert("level",["number"=>$i,"goal"=>(int) $level['goal'],
+                                                 "description"=>$level['title'],"course"=>$courseId]);  
                 $updatedData[]= "New Level: " .$i;
             }else{
-                Core::$systemDB->update("level",["minXP"=>(int) $level['minxp'],"title"=>$level['title']],
-                                                ["course"=>$courseId,"lvlNum"=>$i]);
+                Core::$systemDB->update("level",["goal"=>(int) $level['goal'],"description"=>$level['title']],
+                                                ["id" => $levelsByNum[$i]['id']]);
             }
         }
         $lvlDiff=$numOldLevels-$numNewLevels;
         //Delete levels when given a smaller list of new levels
         if ($lvlDiff>0){
             for($i=$numNewLevels;$i<$numOldLevels;$i++){
-                Core::$systemDB->delete("level",["lvlNum"=>$i, "course"=>$courseId]);
+                Core::$systemDB->delete("level",["id" => $levelsByNum[$i]['id']]);
                 $updatedData[]= "Deleted Level: " .$i;
             }
         }
@@ -478,11 +482,47 @@ API::registerFunction('settings', 'courseLevels', function() {
     API::response(array('levelList' => $levels, "file"=>$file ));
 });
 
-function updateSkills($list,$courseId,$replace, $folder){
+//returns array with all dependencies of a skill
+function getSkillDependencies($skillId){
+    $depArray=[];
+    $deps = Core::$systemDB->selectMultiple(
+        "dependency d join skill_dependency on dependencyId=id join skill s on s.id=normalSkill",
+        "d.id,name",["superSkill"=>$skillId]);
+            
+    foreach ($deps as $d){
+        $depArray[$d['id']][]=$d['name'];
+    }
+    //$depArray = array_filp($depArray);array_com
+    //$depArray = array_values($depArray);   
+    return $depArray;
+}
+
+function insertSkillDependencyElements($depElements,$depId,$skillsArray,$tree){
+    
+    foreach ($depElements as $depElement){
+        if (array_key_exists($depElement, $skillsArray)){
+            $requiredSkillId=$skillsArray[$depElement]['id'];
+        }else{
+            $requiredSkillId = Core::$systemDB->select("skill","id",["name"=>$depElement,"treeId"=>$tree]);
+            if ($requiredSkillId==null){
+                //echo "On skill '".$skill["name"]."' used dependecy of undefined skill";
+                return null;
+            }
+        }
+        Core::$systemDB->insert("skill_dependency",["dependencyId"=>$depId,"normalSkill"=>$requiredSkillId]);
+    }       
+    return true;
+}
+
+function updateSkills($list,$tree,$replace, $folder){
+    //for now names of skills are unique inside a course
+    //if they start to be able to differ, this function needs to be updated
     $keys = array('tier', 'name', 'dependencies', 'color', 'xp');
     $skillTree = preg_split('/[\r]?\n/', $list, -1, PREG_SPLIT_NO_EMPTY);
-    $skillsInDB= array_column(Core::$systemDB->selectMultiple("skill","name",["course"=>$courseId]),'name');
-    $skillsToDelete= $skillsInDB;
+    $skillsInDB= Core::$systemDB->selectMultiple("skill","id,name,tier,treeId",["treeId"=>$tree]);
+    $skillsToDelete= array_column($skillsInDB,'name');
+    $skilldInDBNames = array_combine($skillsToDelete,$skillsInDB);
+    
     $updatedData=[];
     
     foreach($skillTree as &$skill) {
@@ -491,8 +531,8 @@ function updateSkills($list,$courseId,$replace, $folder){
             echo "Skills information was incorrectly formatted";
             return null;
         }
-        $skill = array_combine($keys, preg_split('/;/', $skill));
-        if (strpos($skill['dependencies'], '|') !== FALSE) {//2 possible dependencies
+        $skill = array_combine($keys, $splitInfo);
+        if (strpos($skill['dependencies'], '|') !== FALSE) {//multiple dependency sets
             $skill['dependencies'] = preg_split('/[|]/', $skill['dependencies']);
             foreach($skill['dependencies'] as &$dependency) {
                 $dependency = preg_split('/[+]/', $dependency);
@@ -500,9 +540,15 @@ function updateSkills($list,$courseId,$replace, $folder){
         } else {
             if (strpos($skill['dependencies'], '+') !== FALSE)
                 $skill['dependencies'] = array(preg_split('/[+]/', $skill['dependencies']));
+            elseif (strlen($skill['dependencies']) > 0) {
+                $deps = [];
+                $deps[] = [$skill['dependencies']];
+                $skill['dependencies']=$deps;
+            } 
             else
                 $skill['dependencies'] = array();
         }
+        
         unset($skill['xp']);//Not being used because xp is defined by tier (FIX?)
 
         $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
@@ -516,57 +562,66 @@ function updateSkills($list,$courseId,$replace, $folder){
         $descriptionPage = substr($descriptionPage, $start, $end - $start);
         $skill['page'] = htmlspecialchars(utf8_encode($descriptionPage));
 
-        if (!in_array($skill["name"], $skillsInDB)){
+        if (!array_key_exists($skill["name"], $skilldInDBNames)){
+            
             //new skill, insert in DB
             try{
                 Core::$systemDB->insert("skill",["name"=>$skill["name"],"color"=>$skill['color'],
-                                         "page"=>$skill['page'],"tier"=>$skill['tier'],"course"=>$courseId]);
+                                         "page"=>$skill['page'],"tier"=>$skill['tier'],"treeId"=>$tree]);
+                $skillId = Core::$systemDB->getLastId();
+                
                 if (!empty($skill['dependencies'])){
                     for ($i=0; $i<sizeof($skill['dependencies']);$i++){
-                        $dep=$skill['dependencies'][$i];
-                        Core::$systemDB->insert("skill_dependency",["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId,
-                                                                    "dependencyA"=>$dep[0],"dependencyB"=>$dep[1]]);
+                        Core::$systemDB->insert("dependency",["superSkill"=>$skillId]);
+                        $dependencyId = Core::$systemDB->getLastId();
+                        $deps=$skill['dependencies'][$i];
+                        if (!insertSkillDependencyElements($deps,$dependencyId,$skilldInDBNames,$tree)){
+                            echo "On skill '".$skill["name"]."' used dependecy of undefined skill";
+                            return null;
+                        }
                     }
                 }
                 $updatedData[]= "New skill: ".$skill["name"];
-            } catch (PDOException $e){
+            } 
+            catch (PDOException $e){
                 echo "Error: Cannot add skills with tier=".$skill["tier"]." since it doesn't exist.";
                 return;
             }
-        }else{
+        }else{            
             //skill that exists in DB, update its info
             Core::$systemDB->update("skill",["color"=>$skill['color'],"page"=>$skill['page'],"tier"=>$skill['tier']],
-                                                            ["name"=>$skill["name"],"course"=>$courseId]);
+                                                            ["name"=>$skill["name"],"treeId"=>$tree]);
             //update dependencies
-            $dependenciesinDB= array_column(Core::$systemDB->selectMultiple("skill_dependency","dependencyNum",["skillName"=>$skill["name"],"course"=>$courseId]),"dependencyNum");
-
+            $skill['id'] = $skilldInDBNames[$skill["name"]]['id'];
+            
+            $dependenciesinDB = getSkillDependencies($skill['id']);
+                    //array_column(Core::$systemDB->selectMultiple("skill_dependency","dependencyNum",["skillName"=>$skill["name"],"course"=>$courseId]),"dependencyNum");
+            
             $numOldDependencies=sizeof($dependenciesinDB);
             $numNewDependencies=sizeof($skill['dependencies']);
-            for($i=0;$i<$numNewDependencies;$i++){
-                $dep=$skill['dependencies'][$i];
-                if (!in_array($i, $dependenciesinDB)){
-                    Core::$systemDB->insert("skill_dependency",["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId,
-                                                                "dependencyA"=>$dep[0],"dependencyB"=>$dep[1]]);
+            foreach ($skill['dependencies'] as $depSet){
+                $dependencyIndex=array_search($depSet, $dependenciesinDB);
+                if ($dependencyIndex!==false){
+                    unset($dependenciesinDB[$dependencyIndex]);
                 }else{
-                    Core::$systemDB->update("skill_dependency",["dependencyA"=>$dep[0],"dependencyB"=>$dep[1]],
-                                ["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId]);
+                    Core::$systemDB->insert("dependency",["superSkill"=>$skill['id']]);
+                    $depSetId = Core::$systemDB->getLastId();
+                    if (!insertSkillDependencyElements($depSet,$depSetId,$skilldInDBNames,$tree)){
+                        echo "On skill '".$skill["name"]."' used dependecy of undefined skill";
+                        return null;
+                    }
                 }
             }
-            $depDiff=$numOldDependencies-$numNewDependencies;
-
-            if ($depDiff>0){
-                for($i=$numNewDependencies;$i<$numOldDependencies;$i++){
-                    Core::$systemDB->delete("skill_dependency",["dependencyNum"=>$i,"skillName"=>$skill["name"],"course"=>$courseId]);
-
-                }
+            foreach ($dependenciesinDB as $depId => $dep){
+                Core::$systemDB->delete("dependency",["id"=>$depId]);
             }
             unset($skillsToDelete[array_search($skill['name'], $skillsToDelete)]);
         }
     }
-    //delete skills that wheren't in the imported data
+    //delete skills that weren't in the imported data
     if ($replace){
         foreach ($skillsToDelete as $skill){
-            Core::$systemDB->delete("skill",["name"=>$skill,"course"=>$courseId]);
+            Core::$systemDB->delete("skill",["name"=>$skill,"treeId"=>$tree]);
             $updatedData[]= "Deleted skill: ".$skill;
         } 
         file_put_contents($folder . '/tree.txt', $list);
@@ -581,13 +636,18 @@ API::registerFunction('settings', 'courseSkills', function() {
     $courseId=API::getValue('course');
     $folder = Course::getCourseLegacyFolder($courseId);
     
+    //For now we only have 1 skill tree per course, if we have more this line needs to change
+    $tree = Core::$systemDB->select("skill_tree","id",["course",$courseId]);
+    
     if (API::hasKey('skillsList')) {
-        updateSkills(API::getValue('skillsList'), $courseId, true, $folder);
+        updateSkills(API::getValue('skillsList'), $tree, true, $folder);
         return;
     }if (API::hasKey('tiersList')) {
         $keys = array('tier', 'reward');
         $tiers = preg_split('/[\r]?\n/', API::getValue('tiersList'), -1, PREG_SPLIT_NO_EMPTY);
-        $tiersInDB= array_column(Core::$systemDB->selectMultiple("skill_tier","tier",["course"=>$courseId]),'tier');
+        
+        $tiersInDB= array_column(Core::$systemDB->selectMultiple("skill_tier","tier",
+                                        ["treeId"=>$tree]),'tier');
         $tiersToDelete= $tiersInDB;
         $updatedData=[];
 
@@ -599,15 +659,17 @@ API::registerFunction('settings', 'courseSkills', function() {
             }
             $tier = array_combine($keys, preg_split('/;/', $tier));
             if (!in_array($tier["tier"], $tiersInDB)){
-                Core::$systemDB->insert("skill_tier",["tier"=>$tier["tier"],"course"=>$courseId,"reward"=>$tier["reward"]]);
+                Core::$systemDB->insert("skill_tier",
+                        ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$tree]);
                 $updatedData[]= "Added Tier ".$tier["tier"];
             }else{
-                Core::$systemDB->update("skill_tier",["reward"=>$tier["reward"]],["tier"=>$tier["tier"],"course"=>$courseId]);           
+                Core::$systemDB->update("skill_tier",["reward"=>$tier["reward"]],
+                                        ["tier"=>$tier["tier"],"treeId"=>$tree]);           
                 unset($tiersToDelete[array_search($tier['tier'], $tiersToDelete)]);
             }
         }
         foreach ($tiersToDelete as $tierToDelete){
-            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"course"=>$courseId]);
+            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"treeId"=>$tree]);
             $updatedData[]= "Deleted Tier ".$tierToDelete." and all its skills. The Skill List may need to be updated";
         }
         API::response(["updatedData"=>$updatedData ]);
@@ -617,19 +679,18 @@ API::registerFunction('settings', 'courseSkills', function() {
         return;
     }*/
     $tierText="";
-    $tiers = Core::$systemDB->selectMultiple("skill_tier",'tier,reward',["course"=>$courseId],"tier");
+    $tiers = Core::$systemDB->selectMultiple("skill_tier",'tier,reward',
+                                ["treeId"=>$tree],"tier");
     $tiersAndSkills=[];
-    foreach ($tiers as &$t){
-        $skills = Core::$systemDB->selectMultiple("skill",'tier,name,color',["course"=>$courseId, "tier"=>$t["tier"]],"name");
+    foreach ($tiers as &$t){//add page, have deps working, have 3 3 dependencies
+        $skills = Core::$systemDB->selectMultiple("skill",'id,tier,name,color',
+                                            ["treeId"=>$tree, "tier"=>$t["tier"]],"name");
         $tiersAndSkills[$t["tier"]]=array_merge($t,["skills" => $skills]);
         $tierText.=$t["tier"].';'.$t["reward"]."\n";
     }
     foreach ($tiersAndSkills as &$t){
         foreach ($t["skills"] as &$s){
-            $deps=Core::$systemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$s["name"]]);
-            foreach ($deps as $d){
-                $s['dependencies'][]=[$d["dependencyA"],$d["dependencyB"]];
-            }
+            $s['dependencies'] = getSkillDependencies($s['id']);
         }
     }
     $file = @file_get_contents($folder . '/tree.txt');
@@ -642,65 +703,88 @@ API::registerFunction('settings', 'courseBadges', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $folder = LEGACY_DATA_FOLDER;// Course::getCourseLegacyFolder($courseId);
+    $badges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId],"name");
     
     if (API::hasKey('badgesList')) {
         $keys = ['name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 
             'countBased', 'postBased', 'pointBased','count1', 'count2', 'count3'];
         $achievements = preg_split('/[\r]?\n/', API::getValue('badgesList'), -1, PREG_SPLIT_NO_EMPTY);
-        $badgesInDB = array_column(Core::$systemDB->selectMultiple("badge",'name',["course"=>$courseId]),"name");
-        $badgesToDelete = $badgesInDB;
+        
+        $badgesToDelete = array_column($badges,'name');
+        $badgesInDB = array_combine($badgesToDelete,$badges);
         $totalLevels = 0;
         $updatedData=[];
 
         foreach($achievements as &$achievement) {
-            $achievement = array_combine($keys, preg_split('/;/', $achievement));
+            $splitInfo =preg_split('/;/', $achievement);
+            if (sizeOf($splitInfo) != sizeOf($keys)) {
+                echo "Badges information was incorrectly formatted";
+                return null;
+            }
+            $achievement = array_combine($keys, $splitInfo);
             $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
             //if badge doesn't exit, add it to DB
-            $badgeData = ["maxLvl"=>$maxLevel,"name"=>$achievement['name'],
+            $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
                           "course"=>$courseId,"description"=>$achievement['description'],
                           "isExtra"=> ($achievement['xp1'] < 0),
                           "isBragging"=>($achievement['xp1'] == 0),
                           "isCount"=>($achievement['countBased'] == 'True'),
                           "isPost"=>($achievement['postBased'] == 'True'),
                           "isPoint"=>($achievement['pointBased'] == 'True')];
-            if (!in_array($achievement['name'],$badgesInDB)){
+            if (!array_key_exists($achievement['name'],$badgesInDB)){
             //if (empty(Core::$systemDB->select("badge","*",["name"=>$achievement['name'],"course"=>$courseId]))){
                 Core::$systemDB->insert("badge",$badgeData);
+                $badgeId=Core::$systemDB->getLastId();
                 for ($i=1;$i<=$maxLevel;$i++){
-                    Core::$systemDB->insert("badge_level",["level"=>$i,"course"=>$courseId,
-                                            "xp"=>abs($achievement['xp'.$i]),
+                    Core::$systemDB->insert("level",["number"=>$i,"course"=>$courseId,
                                             "description"=>$achievement['desc'.$i],
-                                            "progressNeeded"=>$achievement['count'.$i],
-                                            "badgeName"=>$achievement['name']]);
+                                            "goal"=>$achievement['count'.$i]]);
+                    $levelId=Core::$systemDB->getLastId();
+                    Core::$systemDB->insert("badge_has_level",["badgeId"=>$badgeId,"levelId"=>$levelId,
+                                            "reward"=>abs($achievement['xp'.$i])]);
                 }  
                 $updatedData[]= "New badge: ".$achievement["name"];
             }else{
                 Core::$systemDB->update("badge",$badgeData,["course"=>$courseId,"name"=>$achievement["name"]]);
-                
-                for ($i=1;$i<=$maxLevel;$i++){
-                    Core::$systemDB->update("badge_level",["xp"=>abs($achievement['xp'.$i]),
-                                            "description"=>$achievement['desc'.$i],
-                                            "progressNeeded"=>$achievement['count'.$i]],
-                            ["course"=>$courseId,"badgeName"=>$achievement["name"],"level"=>$i]);
+                $badge = $badgesInDB[$achievement['name']];
+                for ($i=1;$i<=$badge["maxLevel"];$i++){
+                    $badgeLevel = Core::$systemDB->select("badge_has_level join level on id=levelId","*",
+                            ["number"=>$i,"course"=>$courseId, "badgeId"=>$badge['id']]);
+                    
+                    Core::$systemDB->update("level",["description"=>$achievement['desc'.$i],
+                                            "goal"=>$achievement['count'.$i]],["id"=>$badgeLevel['id']]);
+                    
+                    Core::$systemDB->update("badge_has_level",["reward"=>abs($achievement['xp'.$i])],
+                            ["levelId"=>$badgeLevel['id'],"badgeId"=>$badge['id']]);
                 }
+                //ToDo: consider cases where maxLevel changes 
                 unset($badgesToDelete[array_search($achievement['name'], $badgesToDelete)]);
             }
             $totalLevels += $maxLevel; 
         }
         foreach ($badgesToDelete as $badgeToDelete){
-            Core::$systemDB->delete("badge",["course"=>$courseId,"name"=>$badgeToDelete]);
+            $badge = $badgesInDB[$badgeToDelete];
+            $badgeLevels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId","id",
+                            ["course"=>$courseId, "badgeId"=>$badge['id']]);
+            foreach($badgeLevels as $level){
+                Core::$systemDB->delete("level",["id"=>$level['id']]);
+            }
+            Core::$systemDB->delete("badge",["id"=>$badge['id']]);
             $updatedData[]= "Deleted badge: ".$badgeToDelete;
         }
-        Core::$systemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
+        //Core::$systemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
         
         file_put_contents($folder . '/achievements.txt',API::getValue('badgesList'));
         API::response(["updatedData"=>$updatedData ]);
         return;
     }
     
-    $badges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId],"name");
+    
     foreach($badges as &$badge){
-        $levels = Core::$systemDB->selectMultiple("badge_level",'*',["course"=>$courseId, "badgeName"=>$badge["name"]],"level");
+        //$levels = Core::$systemDB->selectMultiple("badge_level",'*',["course"=>$courseId, "badgeName"=>$badge["name"]],"level");
+        $levels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId","*",
+                            ["course"=>$courseId, "badgeId"=>$badge['id']]);
+
         foreach ($levels as $level){
             $badge["levels"][]=$level;
         }
@@ -739,4 +823,3 @@ API::registerFunction('settings', 'deleteCourse', function() {
 });*/
 
 API::processRequest();
-?>

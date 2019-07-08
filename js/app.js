@@ -76,13 +76,13 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
                             image: 'images/awards.svg',
                             title: 'My courses'
                         }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
+                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
                         }).attr('ng-if', 'usingMyCourses ==true'));//'myCourses != undefined && myCourses.length != 0'));
                         el.append(Builder.buildBlock({
                             image: 'images/awards.svg',
                             title: 'All Courses'
                         }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.active ? \'\' : \' - Inactive\'}}</a></li></ul>');
+                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
                         }).attr('ng-if', 'usingMyCourses ==false'));
                     }));
                     $compile(pageBlock)($scope);

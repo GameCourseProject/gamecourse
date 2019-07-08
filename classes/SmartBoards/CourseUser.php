@@ -10,10 +10,10 @@ class CourseUser extends User{
         $this->course = $course;
     }
     //adds course_user to DB, User must already exist in DB
-    public function addCourseUserToDB($role=null,$campus=""){
+    public function addCourseUserToDB($roleId=null,$campus=""){
         Core::$systemDB->insert("course_user",["course"=>$this->course->getId(),"id"=>$this->id, "campus"=>$campus]);
-        if ($role){
-            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
+        if ($roleId){
+            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId]);
         }
     }
     
@@ -82,17 +82,19 @@ class CourseUser extends User{
     }
     
     //adds Role (instead of replacing) only if it isn't already in user's roles
-    function addRole($role){
+    function addRole($roleId){
         $currRoles=$this->getRoles();
-        if (!in_array($role, $currRoles)){
-            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);      
+        if (!in_array($roleId, $currRoles)){
+            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId]);  
+            return true;
         }
+        return false;
     }
 
     function hasRole($role) {
-        return (!empty(Core::$systemDB->selectMultiple("user_role",'*',["course"=>$this->course->getId(),
-                                                            "id"=>$this->id,
-                                                             "role"=>$role])));
+        $roleId = Course::getRoleId($role, $this->course->getId());
+        return (!empty(Core::$systemDB->selectMultiple("user_role",'*',
+            ["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId])));
     }
     function isTeacher() {
         return $this->hasRole('Teacher');

@@ -98,8 +98,8 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 
-        if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
+        //if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
+        //    $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }
 

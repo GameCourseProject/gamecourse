@@ -11,7 +11,7 @@ $user = Core::getLoggedUser();
         <base href="<?php echo Utils::createBase(); ?>" target="_blank">
         <title data-base="SmartBoards">SmartBoards</title>
         <link rel="stylesheet" type="text/css" href="css/jquery.nestable.css" />
-        <link rel="stylesheet" type="text/css" href="themes/<?php echo Core::getTheme(); ?>/main.css" />
+        <link rel="stylesheet" type="text/css" href="themes/<?php  echo $GLOBALS['theme'] ?>/main.css" />
 
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/angular.min.js"></script>
