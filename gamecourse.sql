@@ -1,14 +1,10 @@
-drop table if exists quiz;
-drop table if exists lab;
-drop table if exists presentation;
-drop table if exists bonus;
-drop table if exists view_template;
+
 drop table if exists course_template;
-drop table if exists view_template;
+drop table if exists template_parameter;
 drop table if exists view_parameter;
-drop table if exists parameters;
+drop table if exists parameter;
 drop table if exists view;
-drop table if exists template;
+drop table if exists view_template;
 drop table if exists page;
 drop table if exists skill_dependency;
 drop table if exists dependency;
@@ -123,12 +119,11 @@ create table notification(
 	foreign key(award) references award(id) on delete cascade
 );
 
-create table participation(
+create table participation(#for now this is just used for badges
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
-	description varchar(100) not null,
-	indicator varchar(20),
+	description varchar(50) not null,
 	module 	varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
 	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
@@ -141,10 +136,10 @@ create table participation(
 create table grade(
 	id 		int unsigned auto_increment primary key,
 	participation int unsigned not null,
-	user 	int unsigned,
-	course 	int unsigned not null,
+	evaluator 	int unsigned,
+	course 	int unsigned,
 	grade 	int unsigned not null,
-    foreign key(user, course) references course_user(id, course) on delete set null,
+    foreign key(evaluator, course) references course_user(id, course) on delete set null,
     foreign key(participation) references participation(id) on delete cascade
 );
 
@@ -205,9 +200,9 @@ create table dependency(
 );
 create table skill_dependency(
 	dependencyId int unsigned not null,
-	normalSkill int unsigned not null,
+	normalSkillId int unsigned not null,
 	foreign key (dependencyId) references dependency(id) on delete cascade,
-	foreign key(normalSkill) references skill(id) on delete cascade
+	foreign key(normalSkillId) references skill(id) on delete cascade
 );
 
 create table page(
@@ -218,16 +213,16 @@ create table page(
 	theme varchar(50),
 	foreign key(course) references course(id) on delete cascade
 );
-create table template(
+create table view_template(
 	id int unsigned auto_increment primary key,
 	name varchar(100) not null,#
-	role varchar(100) not null,
+	role varchar(100),
 	partType enum ('view','aspect','block','text','image','table','heardRow','row','header','instance'),
 	parent int unsigned,
 	viewIndex int unsigned,
 	isGlobal boolean default false,
 	aspectClass int unsigned,
-	foreign key (parent) references template(id) on delete cascade
+	foreign key (parent) references view_template(id) on delete cascade
 );
 create table view(
 	id int unsigned auto_increment primary key,
@@ -238,39 +233,33 @@ create table view(
 	viewIndex int unsigned,
 	template int unsigned,
 	foreign key (parent) references view(id) on delete cascade,
-	foreign key (template) references template(id) on delete cascade,
+	foreign key (template) references view_template(id) on delete cascade,
 	foreign key(pageId) references page(id) on delete cascade
 );
-create table parameters(
+create table parameter(
 	id int unsigned auto_increment primary key,
-	loopData varchar(255), 
-	variables varchar(500),
-	value varchar(255),
-	class varchar(70), 
-	style varchar(150),
-	link varchar(255),
-	ifCondition varchar(255)
+	type enum ('loopData','variables','value','class','style','link','if','events') not null,
+	value varchar(500) not null
 );
-create table view_parameters(
+create table view_parameter(
 	viewId int unsigned,
-	parametersId int unsigned,
-	primary key(viewId,parametersId),
+	parameterId int unsigned,
+	primary key(viewId,parameterId),
 	foreign key (viewId) references view(id) on delete cascade,
-	foreign key (parametersId) references parameters(id) on delete cascade
+	foreign key (parameterId) references parameter(id) on delete cascade
 );
-
-create table template_parameters(
+create table template_parameter(
 	templateId int unsigned,
-	parametersId int unsigned,
-	primary key(templateId,parametersId),
-	foreign key (templateId) references template(id) on delete cascade,
-	foreign key (parametersId) references parameters(id) on delete cascade
+	parameterId int unsigned,
+	primary key(templateId,parameterId),
+	foreign key (templateId) references view_template(id) on delete cascade,
+	foreign key (parameterId) references parameter(id) on delete cascade
 );
 create table course_template(
 	template int unsigned,
 	course 	int unsigned,
 	primary key (template,course),
-	foreign key (template) references template(id) on delete cascade,
+	foreign key (template) references view_template(id) on delete cascade,
 	foreign key (course) references course(id) on delete cascade
 );
 

@@ -59,7 +59,6 @@ foreach ($indicators as &$indicatorsUser) {
 
 //used for the awards
 $badgesNames = array_keys($sbBadges);
-//$badgesNames = array_column($DBbadges,"name");
 $userIds=$course->getUsersIds();
 // Read Awards
 $keys = array('time', 'userid', 'what', 'field1', 'field2');
@@ -179,19 +178,7 @@ foreach ($userIds as $userId){
         $badgeIndicators = $indicatorsByNum[$userId][$badgeName];
     
         $level = key_exists($badgeName,$userBadge[$userId]) ? $userBadge[$userId][$badgeName]['level'] : 0;
-        /*Core::$systemDB->update("user_badge",
-                    ["level"=>$level,
-                    "progress"=>(int)($badgeIndicators[0] == 'False' ? -1 : $badgeIndicators[0])],
-                    ["name"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
-        
-        if ($level>0){
-            for($i=1; $i<=$userBadge[$userId][$badgeName]['level'];$i++){
-                if (empty(Core::$systemDB->select("badge_level_time", "*", ["badgeLevel"=>$i,"badgeName" => $badgeName, "course" => $courseId, "student" => $userId]))) {
-                    Core::$systemDB->insert("badge_level_time", $userBadge[$userId][$badgeName]['level_time'][$i]);
-                }
-            }        
-        }
-        */
+
         if ($badge['isPost'] || $badge['isCount']){
             
             $quality =null;
@@ -228,11 +215,9 @@ foreach ($userIds as $userId){
                     }
                     $index=$indexes[$text];
                     
-                    //$progressIndicator = ["quality" => $quality,"link" => $link,'post' => $post,
-                    //                "indicatorText" => $text,"indicatorIndex"=> $index,
-                    //                "badgeName" => $badgeName,"course" => $courseId, "student" => $userId];
-                    $progressIndicator = ["post" => $link,"indicator" => $text,"module"=>"badges",
-                                    "moduleInstance" => $badge['id'],"course" => $courseId, "user" => $userId];
+                    $progressIndicator = ["post" => $link,"description" => $text,"module"=>"badges",
+                        "date"=>date("Y-m-d H:i:s",$indicator["timestamp"]),"user" => $userId,
+                        "moduleInstance" => $badge['id'],"course" => $courseId];
                     if (key_exists($text, $oldIndicatorsTextIndex)){
                         $found = array_search($index, $oldIndicatorsTextIndex[$text]);
                         if ($found !== false) {
@@ -249,9 +234,6 @@ foreach ($userIds as $userId){
                 foreach ($oldIndicatorsTextIndex as $deleteText=>$deleteIndexes){
                     foreach ($deleteIndexes as $deleteIndex)
                         Core::$systemDB->delete("participation",["id"=>$deleteIndex]);
-                        //Core::$systemDB->delete("progress_indicator",
-                         //       ["indicatorText"=>$deleteText,"indicatorIndex"=>$deleteIndex,
-                           //      "badgeName"=>$badgeName,"course"=>$courseId,"student"=>$userId]);
                 }
             }
         }

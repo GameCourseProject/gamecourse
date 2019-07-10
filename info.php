@@ -486,7 +486,7 @@ API::registerFunction('settings', 'courseLevels', function() {
 function getSkillDependencies($skillId){
     $depArray=[];
     $deps = Core::$systemDB->selectMultiple(
-        "dependency d join skill_dependency on dependencyId=id join skill s on s.id=normalSkill",
+        "dependency d join skill_dependency on dependencyId=id join skill s on s.id=normalSkillId",
         "d.id,name",["superSkill"=>$skillId]);
             
     foreach ($deps as $d){
@@ -509,7 +509,7 @@ function insertSkillDependencyElements($depElements,$depId,$skillsArray,$tree){
                 return null;
             }
         }
-        Core::$systemDB->insert("skill_dependency",["dependencyId"=>$depId,"normalSkill"=>$requiredSkillId]);
+        Core::$systemDB->insert("skill_dependency",["dependencyId"=>$depId,"normalSkillId"=>$requiredSkillId]);
     }       
     return true;
 }
