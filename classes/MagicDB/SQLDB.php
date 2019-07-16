@@ -33,18 +33,24 @@ class SQLDB {
         return $stmt;
     }
     
-    public function dataToQuery(&$sql,&$data,$separator,$add=false){
+    public function dataToQuery(&$sql,&$data,$separator,$whereNot=[],$add=false){
         //takes an array and creates a string with $key=$value(,&).... then adds to sql query str        
         foreach ($data as $key => $value) {
             if ($add)
                 $sql.=$key.'= '.$key.' + '.$value.$separator;     
-            elseif ($value===null && $separator =="&&")
-                $sql .= $key . " is ?" . $separator;
+            elseif ($value === null && $separator == "&&") 
+                $sql .= $key . " is ? " . $separator;
             else
-                $sql.=$key.'= ? '.$separator;
-                //$sql.=$key.'= :'.$key.' '.$separator;
+                $sql .= $key . '= ? ' . $separator;
+            //$sql.=$key.'= :'.$key.' '.$separator;
         }
-        $data=array_values($data);
+        foreach ($whereNot as $key => $value){
+            if ($value === null && $separator == "&&") 
+                $sql.= $key . " is not ? " .$separator;
+            else
+                $sql .= $key . "!= ? " . $separator;
+        }
+        $data=array_values(array_merge($data,$whereNot));
         $sql=substr($sql,0,-(strlen($separator)));
     }
 
@@ -58,9 +64,9 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$data); 
     }
     
-    public function delete($table,$where, $likeParams=null){
+    public function delete($table,$where, $likeParams=null,$whereNot=[]){
         $sql="delete from ".$table." where ";
-        $this->dataToQuery($sql,$where,'&&');
+        $this->dataToQuery($sql,$where,'&&',$whereNot);
         if ($likeParams!=null){
             foreach($likeParams as $key => $value){
                 $sql.=" && ". $key." like :".$key;
@@ -71,35 +77,34 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$where);  
     }
     
-    public function update($table,$data,$where=null){
+    public function update($table,$data,$where=null,$whereNot=[]){
         //example: update user set name="Example", email="a@a.a" where id=80000;
         $sql = "update ".$table." set ";
         $this->dataToQuery($sql,$data,',');
         if($where){
             $sql.= " where ";
-            $this->dataToQuery($sql,$where,'&&');
-            $data=array_merge($data,$where);
-           
+            $this->dataToQuery($sql,$where,'&&', $whereNot);
+            $data= array_merge($data,$where);
         }
         $sql.=';';
         $this->executeQueryWithParams($sql,$data);     
     }   
-    public function updateAdd($table,$collumQuantity,$where){
+    public function updateAdd($table,$collumQuantity,$where,$whereNot=[]){
         //example: update user set n=n+1 where id=80000;
         $sql = "update ".$table." set ";
-        $this->dataToQuery($sql,$collumQuantity,',',true);
+        $this->dataToQuery($sql,$collumQuantity,',',[],true);
         $sql.= " where ";
-        $this->dataToQuery($sql,$where,'&&');
+        $this->dataToQuery($sql,$where,'&&', $whereNot);
         $sql.=';';
         $this->executeQueryWithParams($sql,$where); 
     }
     
-    public function select($table,$field,$where,$orderBy=null){
+    public function select($table,$field,$where,$orderBy=null,$whereNot=[]){
     //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
         //example: select id from user where username='ist181205';
         $sql = "select ".$field." from ".$table;
         $sql.=" where ";
-        $this->dataToQuery($sql,$where,'&&');
+        $this->dataToQuery($sql,$where,'&&', $whereNot);
         if ($orderBy){
             $sql.=" order by " . $orderBy;
         }
@@ -113,12 +118,12 @@ class SQLDB {
             return $returnVal[substr($field,$pos+1)];
         return $returnVal[$field];
     } 
-    public function selectMultiple($table,$field='*',$where=null,$orderBy=null){
+    public function selectMultiple($table,$field='*',$where=null,$orderBy=null,$whereNot=[]){
         //example: select * from course where isActive=true;
         $sql = "select ".$field." from ".$table;
         if ($where){
             $sql.=" where ";
-            $this->dataToQuery($sql,$where,'&&');   
+            $this->dataToQuery($sql,$where,'&&', $whereNot);
         }
         if ($orderBy){
             $sql.=" order by " . $orderBy;

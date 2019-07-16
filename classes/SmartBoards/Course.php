@@ -86,7 +86,7 @@ class Course {
     }
     //return an array with role names
     public function getRoles() {
-        return array_column($this->getRolesData("role"),"role");
+        return array_column($this->getRolesData("name"),"name");
     }
 
     //receives array of roles to replace in the DB
@@ -159,6 +159,8 @@ class Course {
 
     public function setModuleEnabled($moduleId, $enabled) {
         Core::$systemDB->update("course_module",["isEnabled"=>$enabled],["course"=>$this->cid,"moduleId"=>$moduleId]);
+        if (!$enabled)
+            Core::$systemDB->delete("page",["module"=>$moduleId, "course"=>$this->cid]);
     }
 
     //goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to use reverse order

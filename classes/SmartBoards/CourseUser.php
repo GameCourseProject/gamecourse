@@ -30,7 +30,7 @@ class CourseUser extends User{
         $lastlast = Core::$systemDB->select("course_user","lastActivity",["course"=>$this->course->getId(),"id"=>$this->id]);
         //this is updating the prevActivity (used to decide what notification to show)
         //if you whish to only show notification on the profile page, then you should only refresh activity in that page
-        Core::$systemDB->update("course_user",["prevActivity"=> $lastlast],["course"=>$this->course->getId(),"id"=>$this->id]);
+        Core::$systemDB->update("course_user",["previousActivity"=> $lastlast],["course"=>$this->course->getId(),"id"=>$this->id]);
         
         Core::$systemDB->update("course_user",["lastActivity"=> date("Y-m-d H:i:s",time())],["course"=>$this->course->getId(),"id"=>$this->id]);
     }

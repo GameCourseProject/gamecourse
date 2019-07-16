@@ -121,8 +121,8 @@ class ViewEditHandler {
 
     static function putTogetherView($view, $parentParts) {
         $partList = &$view['partlist'];
- 
-        if ($view['replacements']==null)
+        
+        if (!array_key_exists("replacements", $view) || $view['replacements']==null)
             $view['replacements'] = array();
         $replacements = &$view['replacements'];
 
@@ -162,6 +162,7 @@ class ViewEditHandler {
             static::putTogetherPart($part, $getPart);
         }
         return $viewPart;
+        
     }
 
     static function getRandomPid() {

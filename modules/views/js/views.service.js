@@ -11,7 +11,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             viewScope.view = data.view;
 
             viewScope.viewBlock = {
-                type: 'block',
+                partType: 'block',
                 noHeader: true,
                 children: viewScope.view.content
             };
@@ -46,12 +46,12 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var changing = false;
 
             var allFields = [];
-            function computeExpandedFields(obj, parent, parentExp, isParentContainer) {
+            /*function computeExpandedFields(obj, parent, parentExp, isParentContainer) {
                 function handle(val, parent) {
                     var fieldNameForExp = (isParentContainer ? '[]' : val.field);
                     var fieldObj = {field: parent + val.field, fieldExp: parentExp + fieldNameForExp, desc: val.desc, example: val.example, leaf: false};
                     allFields.push(fieldObj);
-                    switch (val.type) {
+                    switch (val.partType) {
                         case 0:
                             fieldObj.leaf = true;
                             break;
@@ -78,12 +78,12 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             }
             //console.log('getEdit-allFields',allFields);
             computeExpandedFields(viewScope.fields, '', '');
-
+*/
             viewScope.viewBlock = {
-                type: 'block',
+                partType: 'block',
                 noHeader: true,
-                children: viewScope.view.content,
-                pid: viewScope.view.pid,
+                children: viewScope.view.children,
+                pid: viewScope.view.id,
                 origin: viewScope.view.origin
             };
 
@@ -152,7 +152,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.build = function(scope, what, options) {
+        console.log(what);
+        console.log(scope);
         var part = $parse(what)(scope);
+        console.log(part);
         return this.buildElement(scope, part, options);
     };
 
@@ -160,17 +163,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         var options = $.extend({}, options);
 
         if (options.type != undefined)
-            part.type = options.type;
+            part.partType = options.partType;
 
-        if (this.registeredPartType[part.type] == undefined) {
-            console.error('Unknown part type: ' + part.type);
+        if (this.registeredPartType[part.partType] == undefined) {
+            console.error('Unknown part type: ' + part.partType);
             return;
         }
 
         var partScope = parentScope.$new(true);
         partScope.part = part;
-
-        var element = this.registeredPartType[part.type].build(partScope, part, options);
+        if (part.partType!="instance")
+            var element = this.registeredPartType[part.partType].build(partScope, part, options);
+        //ToDo: build instance
         this.applyCommonFeatures(partScope, part, element, options);
         element.data('scope', partScope);
 
@@ -186,7 +190,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         if (scope == null || scope.part == null)
             return;
 
-        this.registeredPartType[scope.part.type].destroy(element, scope.part);
+        this.registeredPartType[scope.part.partType].destroy(element, scope.part);
         scope.$destroy();
         element.remove();
     };
@@ -645,7 +649,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     this.changePids = function(part) {
         //console.log("changePid",part);
         $sbviews.generatePid(part);
-        $sbviews.registeredPartType[part.type].changePids(part, $sbviews.changePids);
+        $sbviews.registeredPartType[part.partType].changePids(part, $sbviews.changePids);
     };
 
     this.notifyChanged = function(part, options) {
@@ -661,7 +665,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.createCheckboxAndInput = function (scope, watch, elId, text, path, defaultVal, fn) {
         var root = $('<div>');
-        root.append('<label for="' + elId + '">' + text + ':</label><input id="' + elId + '" type="checkbox" ng-checked="part.' + path + ' != undefined" ng-click="toggleProperty(part, \'' + path + '\', \'' + defaultVal + '\')">');
+        root.append('<label for="' + elId + '">' + text + ':</label><input id="' + elId + '" partType="checkbox" ng-checked="part.' + path + ' != undefined" ng-click="toggleProperty(part, \'' + path + '\', \'' + defaultVal + '\')">');
         root.append('<input ng-if="part.' + path + ' != undefined" ng-model="part.' + path + '"><br>');
         watch('part.' + path, fn);
         return $compile(root)(scope);

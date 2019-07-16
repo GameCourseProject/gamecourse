@@ -25,7 +25,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         angular.extend($scope, data);
 
-        $scope.viewType = $scope.viewSettings.type;
+        $scope.viewType = $scope.viewSettings.roleType;
 
         $scope.selection = {};
         $scope.selectedStyle = {
@@ -286,13 +286,13 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             alert(err.description);
             return;
         }
-        
+        console.log(data);
         var viewsArea = createSection($($element),"View List");
         viewsArea.append($compile('<div ng-repeat="(id, view) in views">{{view.name}} (view id: {{id}}, module:{{view.module}})</div>')($scope));
     
         var TemplateArea = createSection($($element),"View Templates");
         var tempList = $('<ul>', {class:"templates-list"});
-        tempList.append($compile('<li ng-repeat="template in templates">{{template}}'+
+        tempList.append($compile('<li ng-repeat="template in templates">{{template.name}}'+
                 '<button ng-click="deleteTemplate(template)">Delete</button>'+
                 '<button ng-click="exportTemplate(template)">Export</button></li>')($scope));
 
@@ -335,7 +335,7 @@ angular.module('module.views').config(function($stateProvider) {
             }
         }
     }).state('course.settings.views.view', {
-        url: '/{view:[A-Za-z]+}',
+        url: '/{view:[A-z0-9]+}',
         views: {
             'tabContent@course.settings': {
                 template: 'abc',

@@ -4,7 +4,7 @@ angular.module('module.views').run(function($sbviews, $compile) {
         name: 'Image',
         defaultPart: function() {
             return {
-                type: 'image',
+                partType: 'image',
                 valueType: 'text',
                 info: 'images/awards.svg'
             };
@@ -42,7 +42,7 @@ angular.module('module.views').run(function($sbviews, $compile) {
         },
         destroy: function(element) {
         }
-    }
+    };
     imagePartDef.build = valuePartDef.build;
 
     $sbviews.registerPartType('image', imagePartDef);

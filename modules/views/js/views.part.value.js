@@ -3,7 +3,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         name: 'Value',
         defaultPart: function() {
             return {
-                type: 'value',
+                partType: 'value',
                 valueType: 'text',
                 info: 'Text'
             };
@@ -21,14 +21,14 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
 
                     if (p == undefined)
                         return undefined;
-                    else if (p.type == undefined)
+                    else if (p.partType == undefined)
                         return p[v];
-                    else if (p.type == 1 && p.value.field == v) {
+                    else if (p.partType == 1 && p.value.field == v) {
                         contexts[soFar] = ['TODO: ASK FOR KEY']; // TODO: ASK FOR KEY
                         return p.value;
-                    } else if (p.type == 2)
+                    } else if (p.partType == 2)
                         return p.fields[v];
-                    else if (p.type == 3 && p.options.value.field == v) {
+                    else if (p.partType == 3 && p.options.value.field == v) {
                         contexts[soFar] = p.options.keys;
                         return p.options.value;
                     } else
@@ -64,7 +64,8 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
             }
 
             var element = this.createElement(scope, part, options);
-
+            console.log(this);
+            console.log(element);
             if (options.edit) {
                 var optionsDivEl;
                 function buildOptions(optionsScope, watch) {

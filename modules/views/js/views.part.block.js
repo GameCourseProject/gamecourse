@@ -274,7 +274,7 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                 }
                                 else if (value.indexOf('temp:') == 0)
                                     newPart = angular.copy(templates[id]['content']);
-                                console.log('newPart)',newPart);
+                                console.log('newPart',newPart);
 
                                 $sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();

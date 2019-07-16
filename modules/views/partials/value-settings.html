@@ -1,14 +1,14 @@
 <div class="sb-component">
-    <label for="value-type">Type</label><!--
-    --><select id="value-type" ng-model="part.valueType" ng-change="updateType()">
+    <!--label for="value-type">Type</label>
+    <select id="value-type" ng-model="part.valueType" ng-change="updateType()">
         <option value="text" ng-select>Text</option>
         <option value="field">Field</option>
         <option value="expression">Expression</option>
-    </select>
+    </select-->
 </div>
-<sb-input ng-if="part.valueType == 'text'" sb-input="part.info" sb-input-label="Text"></sb-input>
-<sb-input ng-if="part.valueType == 'field'" sb-input="part.info.field" sb-input-label="Field"></sb-input>
-<sb-expression ng-if="part.valueType == 'expression'" sb-expression="part.info" sb-expression-label="Expression"></sb-expression>
+<!--sb-input ng-if="part.valueType == 'text'" sb-input="part.info" sb-input-label="Text"></sb-input>
+<!--sb-input ng-if="part.valueType == 'field'" sb-input="part.info.field" sb-input-label="Field"></sb-input-->
+<sb-expression sb-expression="part.info" sb-expression-label="Expression"></sb-expression>
 <div class="value-filtered-fields" ng-if="part.valueType == 'field' && (filteredResults.length != 1 || filteredResults[0].field !== part.info.field)">
     <div ng-repeat="result in filteredResults" ng-click="part.info.field = result.field">
         <div class="field">{{result.field}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>

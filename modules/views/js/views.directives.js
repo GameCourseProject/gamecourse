@@ -274,7 +274,7 @@ angular.module('module.views').directive('sbMenu', function() {
                         left: position.left
                     };
                 }
-            }
+            };
 
             $scope.needVariable = {display: 'none'};
             $scope.updateVisibility = function(visible) {

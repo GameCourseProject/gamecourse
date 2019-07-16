@@ -20,6 +20,7 @@ class Views extends Module {
     public function setupResources() {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
+        parent::addResources('js/views.part.text.js');
         parent::addResources('js/views.part.value.js');
         parent::addResources('Expression/SmartboardsExpression.js');
         parent::addResources('js/');
@@ -258,8 +259,8 @@ class Views extends Module {
         API::registerFunction('views', 'listViews', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course');
-
-            API::response(array('views' => $this->viewHandler->getRegisteredViews(), 'templates' => array_column($this->getTemplates(),'id')));
+            
+            API::response(array('views' => $this->viewHandler->getRegisteredViews(), 'templates' => $this->getTemplates()));
         });
 
         API::registerFunction('views', 'createView', function() {
@@ -275,7 +276,7 @@ class Views extends Module {
             $course = Course::getCourse($courseId);
             $viewSettings = $views[$viewId];
 
-            $type = $viewSettings['type'];
+            $type = $viewSettings['roleType'];
 
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
@@ -350,7 +351,7 @@ class Views extends Module {
             $viewSettings = $views[$view];
             $courseId = API::getValue('course');
 
-            $type = $viewSettings['type'];
+            $type = $viewSettings['roleType'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 
                 API::requireValues('info');
@@ -375,7 +376,7 @@ class Views extends Module {
 
         API::registerFunction('views', 'getInfo', function() {
             API::requireValues('view', 'course');
-
+            
             $views = $this->viewHandler->getRegisteredViews();
             $viewId = API::getValue('view');
             if (!array_key_exists($viewId, $views))
@@ -394,7 +395,7 @@ class Views extends Module {
                 array('id'=> 3, 'name' => 'Role - Interaction')
             );
 
-            $type = $viewSettings['type'];
+            $type = $viewSettings['roleType'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 $viewSpecializations = $this->viewHandler->getViewRoles($viewId);
                 $result = array();
@@ -470,20 +471,20 @@ class Views extends Module {
 
             $courseId = API::getValue('course');
             $viewId = API::getValue('view');
-
-
+            
             $views = $this->viewHandler->getRegisteredViews();
             if (!array_key_exists($viewId, $views))
                 API::error('Unknown view ' . $viewId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
             
-            $viewSettings = $views[$viewId];
-            $viewType = $viewSettings['type'];
+            $viewSettings = $views[$viewId];//set id
+            $viewType = $viewSettings['roleType'];
 
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                 API::requireValues('info');
                 $info = API::getValue('info');
+
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
 
@@ -497,13 +498,12 @@ class Views extends Module {
 
                 $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
-  
             } else {
                 $parentParts = array();
                 $view = $this->viewHandler->getViewWithParts($viewId, "");           
             }
             
-            $view = ViewEditHandler::putTogetherView($view, $parentParts);
+            //$view = ViewEditHandler::putTogetherView($view, $parentParts);
             $fields = \SmartBoards\DataSchema::getFields(array('course' => $courseId));
 
             $templates= $this->getTemplates();
@@ -525,7 +525,7 @@ class Views extends Module {
             $course = \SmartBoards\Course::getCourse($courseId);
 
             $viewSettings = $views[$viewId];
-            $viewType = $viewSettings['type'];
+            $viewType = $viewSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -591,9 +591,9 @@ class Views extends Module {
             
             $viewSettings = $views[$viewId];
             //print_r($viewContent);//array ( part=>,partList=>)
-            if ($viewSettings['type'] == ViewHandler::VT_ROLE_SINGLE) {
+            if ($viewSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
                 $role=$info['role'];
-            } else if ($viewSettings['type'] == ViewHandler::VT_ROLE_INTERACTION) {
+            } else if ($viewSettings['roleType'] == ViewHandler::VT_ROLE_INTERACTION) {
                 $role=$info['roleOne'].'>'.$info['roleTwo'];
             } else {
                 $role="";
@@ -641,7 +641,7 @@ class Views extends Module {
             $course = \SmartBoards\Course::getCourse($courseId);
 
             $viewSettings = $views[$viewId];
-            $viewType = $viewSettings['type'];
+            $viewType = $viewSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -812,10 +812,14 @@ class Views extends Module {
     }
     
     public function getTemplates(){
-        $temps = Core::$systemDB->selectMultiple('view_template','*',['course'=>$this->getCourseId()]);
-        foreach ($temps as &$temp){
-            $temp['content'] = unserialize($temp['content']);
-        }
+        //gets normal templates of this course
+        //ToDO: get global templates, get meta-views
+        $temps = Core::$systemDB->selectMultiple('view_template join course_template on template=id',
+                '*',['course'=>$this->getCourseId(), "parent"=>null],null,["partType"=>"view"]);
+        
+        //foreach ($temps as &$temp){
+          //  $temp['content'] = unserialize($temp['content']);
+        //}
         return $temps;
     }
     public function getTemplate($id) {

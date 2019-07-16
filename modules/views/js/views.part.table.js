@@ -3,7 +3,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
         name: 'Table',
         defaultPart: function () {
             var part = {
-                type: 'table',
+                partType: 'table',
                 columns: [{sortMode: 'def'}],
                 headerRows: [],
                 rows: [{values: []}]

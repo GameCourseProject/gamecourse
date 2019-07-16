@@ -211,6 +211,8 @@ create table page(
 	roleType enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',	
 	name varchar(50) not null,
 	theme varchar(50),
+	module varchar(50),
+	foreign key(module, course) references course_module(moduleId,course) on delete cascade,
 	foreign key(course) references course(id) on delete cascade
 );
 create table view_template(
@@ -238,7 +240,7 @@ create table view(
 );
 create table parameter(
 	id int unsigned auto_increment primary key,
-	type enum ('loopData','variables','value','class','style','link','if','events') not null,
+	type enum ('loopData','variables','value','class','style','link','if','events') not null,#angular directive?
 	value varchar(500) not null
 );
 create table view_parameter(

@@ -9,7 +9,9 @@ echo '<pre>';
 
 Core::init();
 
-$queries=0;/*
+$queries=0;
+$arr=[];
+/*
 function lookAtTemplateChildren($parent,$ident, &$queries){
     $children = Core::$systemDB->selectMultiple("view_template","*",["parent"=>$parent],"viewIndex");
     $queries++;
@@ -69,7 +71,7 @@ function lookAtPages($courseId, &$queries){
         print_r("<br>");
     } 
 }*/
-function lookAtTemplateChildren($parent,$parts,$ident, &$queries, $template_params){
+function lookAtTemplateChildren($parent,$parts,$ident, &$queries, $template_params, &$arr) {
      if (!array_key_exists($parent, $parts))
             return;
     foreach($parts[$parent] as $child){
@@ -84,20 +86,22 @@ function lookAtTemplateChildren($parent,$parts,$ident, &$queries, $template_para
             }
         }
         print_r("<br>");
-        lookAtTemplateChildren($child['id'],$parts,$ident+1, $queries, $template_params);
+        lookAtTemplateChildren($child['id'],$parts,$ident+1, $queries, $template_params, $arr);
     }
 }
-function lookAtChildren($parent,$children,$ident, &$queries, $templates, $view_params, $template_params){
+function lookAtChildren($parent,$children,$ident, &$queries, $templates, $view_params, $template_params, &$arr){
     if (!array_key_exists($parent, $children))
             return;
     foreach($children[$parent] as $child){
         print_r(str_repeat("\t",$ident));
         print_r($child['partType']."-".$child['id']."  ");
+        $arr[$child['id']]=["type"=>$child['partType'],"children"=>[]];
         if (array_key_exists($child['id'], $view_params)){
             $params = $view_params[$child['id']];
         
             foreach($params as $param){
                 print_r($param["type"].": ".$param["value"].", ");
+                $arr[$child['id']]["params"][]=$param;
             }
         }
         print_r("<br>");
@@ -108,14 +112,14 @@ function lookAtChildren($parent,$children,$ident, &$queries, $templates, $view_p
             //it should find alternatives if exact role isnt found
             if (array_key_exists($child["role"], $aspects)) {
                 $asp=$aspects[$child["role"]];
-                lookAtTemplateChildren($asp["id"],$asp["parts"],$ident+1, $queries, $template_params);
+                lookAtTemplateChildren($asp["id"],$asp["parts"],$ident+1, $queries, $template_params, $arr);
             }
         }
         else
-            lookAtChildren($child['id'],$children,$ident+1, $queries, $templates, $view_params, $template_params);
+            lookAtChildren($child['id'],$children,$ident+1, $queries, $templates, $view_params, $template_params, $arr[$child['id']]["children"]);
     }
 }
-function lookAtPages($courseId, &$queries, $templates, $view_params, $template_params){
+function lookAtPages($courseId, &$queries, $templates, $view_params, $template_params, &$arr){
     $views = Core::$systemDB->selectMultiple("page p left join view v on p.id=pageId",
             "pageId,name,v.id,role,partType,parent,viewIndex,template",["course"=>$courseId],"viewIndex,id");
     $queries++;
@@ -132,10 +136,12 @@ function lookAtPages($courseId, &$queries, $templates, $view_params, $template_p
     
     foreach($pageViews as $id =>$p){
         print_r("\tPage: ".$p["name"]."-".$id."<br><br>");
+        $arr[$id]=["name"=>$p["name"]];
         foreach($p['aspects'] as $role => $asp){
             print_r("<br>\t\tAspect: ".$role."-".$asp['id']."<br>");
+            $arr[$id][$role]=[];
             if (array_key_exists("parts", $asp))
-                lookAtChildren($asp['id'],$asp['parts'],3, $queries, $templates, $view_params, $template_params);
+                lookAtChildren($asp['id'],$asp['parts'],3, $queries, $templates, $view_params, $template_params,$arr[$id][$role]);
         }
         print_r("<br>");
     } 
@@ -174,10 +180,12 @@ foreach ($templates as $t){
 $templates = [$templateAaspectClasses, $templateViews];
 
 print_r("Pages Of Course 1:<br>");
-lookAtPages(1, $queries, $templates, $view_params, $template_params);
+$arr["pages course 1"]=[];
+lookAtPages(1, $queries, $templates, $view_params, $template_params,$arr["pages course 1"]);
 print_r("Pages Of Course 2:<br>");
-lookAtPages(2, $queries, $templates, $view_params, $template_params);
-
+$arr["pages course 2"]=[];
+lookAtPages(2, $queries, $templates, $view_params, $template_params,$arr["pages course 2"]);
+print_r($arr);
 
 //print_r("Pages Of Course 1:<br>");
 //lookAtPages(1, $queries);
