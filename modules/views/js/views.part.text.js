@@ -11,7 +11,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         },
         build: function(scope, part, options) {
             var valuePartDef = this;
-
+            
             scope.placeholder = undefined;
             scope.placeholderValue = undefined;
 
@@ -76,14 +76,17 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 element = $(document.createElement('a')).addClass('value').attr('href', part.link);
             else
                 element = $(document.createElement('span')).addClass('value');
-
+            console.log("text create element",part);
+            if (part.parameters != undefined && part.parameters.value!=undefined){
+                part.info=part.parameters.value;
+            }
             if (part.info === '' || scope.placeholderValue === '') {
                 element.text('(Empty Value)');
                 element.addClass('red');
             } 
             else 
                 element.html(part.info);
-
+            console.log(part);
             return element;
         },
         destroy: function(element) {

@@ -33,9 +33,9 @@ class ViewEditHandler {
             });
         }
 
-        if ($part['type'] == 'value' || $part['type'] == 'image')
+        if ($part['partType'] == 'value' || $part['partType'] == 'image')
             static::breakValue($part, $savePart);
-        else if ($part['type'] == 'table') {
+        else if ($part['partType'] == 'table') {
             static::breakRows($part['headerRows'], $savePart);
             static::breakRows($part['rows'], $savePart);
 
@@ -69,7 +69,7 @@ class ViewEditHandler {
         }
 
         $savePart($view);
-        $brokenView['replacements'] = array_key_exists('replacements', $view) ? $view['replacements'] : array();
+        //$brokenView['replacements'] = array_key_exists('replacements', $view) ? $view['replacements'] : array();
 
         return $brokenView;
     }
@@ -111,9 +111,9 @@ class ViewEditHandler {
             });
         }
 
-        if ($part['type'] == 'value' || $part['type'] == 'image')
+        if ($part['partType'] == 'value' || $part['partType'] == 'image')
             static::putTogetherValue($part, $getPart);
-        else if ($part['type'] == 'table') {
+        else if ($part['partType'] == 'table') {
             static::putTogetherRows($part['headerRows'], $getPart);
             static::putTogetherRows($part['rows'], $getPart);
         }

@@ -41,6 +41,48 @@ class ViewHandler {
     public function getRegisteredViews() {
         return $this->registeredViews;
     }
+    public function arrumarACasa($viewPart){
+    //insert data into DB, should check previous data and update/delete stuff   
+               
+        if ($viewPart["partType"]!="aspect"){
+            //ToDo: other parameter besides value (loopData, if,style, class, etc)
+            $parameter = Core::$systemDB->select("parameter","id",["type"=>"value","value"=>$viewPart["info"]]);
+            if (empty($parameter)){
+                Core::$systemDB->insert("parameter",["type"=>"value","value"=>$viewPart["info"]]);
+                $parameter=Core::$systemDB->getLastId();
+            }
+            
+            //insert/update views
+            if (array_key_exists("id", $viewPart)){
+                //already in DB, may need update
+                Core::$systemDB->update("view",["viewIndex"=>$viewPart["viewIndex"],
+                        "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"]],
+                        ["id"=>$viewPart["id"]]);      
+            }else{
+                //not in DB, insert it
+                Core::$systemDB->insert("view",["pageId"=>$viewPart["pageId"],
+                "parent"=>$viewPart["parent"],"role"=>$viewPart["role"],
+                "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
+                $viewPart["id"]=Core::$systemDB->getLastId();
+            }
+            if (empty(Core::$systemDB->select("view_parameter","*",["viewId"=>$viewPart["id"],"parameterId"=>$parameter])))
+                Core::$systemDB->insert("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$parameter]);
+            //ToDo:: delete views
+        }
+        if (array_key_exists("children", $viewPart)){
+                foreach ($viewPart["children"] as $key => $child){
+                $child["pageId"]=$viewPart["pageId"];
+                $child["parent"]=$viewPart["id"];
+                $child["role"]=$viewPart["role"];
+                $child["viewIndex"]=$key;
+                $this->arrumarACasa($child);
+
+            }
+        }
+        
+        
+        //return $partList;
+    }
     //receives array with view info and organizes info to put into DB
     public function organizeViewData($data){
         $partList=$data['partlist'];
@@ -53,9 +95,9 @@ class ViewHandler {
         foreach ($partList as $part){
             $view_part=[];
             $view_part['pid']=$part['pid'];
-            $view_part['type']=$part['type'];
+            $view_part['partType']=$part['partType'];
             unset($part['pid']);
-            unset($part['type']); 
+            unset($part['partType']); 
             $view_part['partContents']=json_encode($part);
             $returnArray['view_part'][]=$view_part;
         }
@@ -64,28 +106,29 @@ class ViewHandler {
     }
     //Go through views and update array with parameters info
     public function lookAtChildren($parent,&$children, $view_params, &$organizedView){
-
         if (!array_key_exists($parent, $children))
             return;
+        $i=0;
         foreach($children[$parent] as &$child){
+            $child["parameters"]=[];
             if (array_key_exists($child['id'], $view_params)){
                 $params = $view_params[$child['id']];
-                $child["parameters"]=[];
                 foreach($params as $param){
                     $child["parameters"][$param["type"]]=$param["value"];
                 }
             }
-            $organizedView["children"][$child['viewIndex']] = $child;
-            $organizedView["children"][$child['viewIndex']]["children"]=[];
+            $organizedView["children"][] = array_merge($child,["children"=>[]]);
             //ToDo: instances
-            $this->lookAtChildren($child['id'],$children, $view_params, $organizedView["children"][$child['viewIndex']]);
+            $this->lookAtChildren($child['id'],$children, $view_params, $organizedView["children"][$i]);
+            $i++;
         }
+        
     }
 
     //gets info from view_role and view_part tables, contructs an array of the view (like in the old system)
     public function getViewWithParts($viewId,$role){//return everything organized like the previous db system
         $views = Core::$systemDB->selectMultiple("view",
-            "*",["pageId"=>$viewId, "role"=>$role],"viewIndex,id");
+            "*",["pageId"=>$viewId, "role"=>$role],"parent,viewIndex");
 
         $viewsByParent=[];
         foreach ($views as $v){
@@ -111,9 +154,9 @@ class ViewHandler {
         $organizedView["children"]=[];
         if (array_key_exists("parts", $viewsByParent))
             $this->lookAtChildren($viewsByParent['id'],$viewsByParent['parts'], $view_params, $organizedView);        
-        //print_r($viewsByParent);
-        //print_R($organizedView);
+        //print_r($organizedView);
         return $organizedView;
+        
         /*$viewRole=$this->getViewRoles($viewId,$role);
         
         //if ($viewRole['replacements']!==null)
@@ -199,6 +242,7 @@ class ViewHandler {
         if (array_key_exists($view['id'], $this->registeredViews))
             new \Exception('View' . $viewName . ' (id='.$view['id'].' is aready defined.');
         $this->registeredViews[$view['id']] = $viewSettings;
+        return $view["id"];
     }
 
     public function registerFunction($funcName, $processFunc) {
@@ -409,7 +453,7 @@ class ViewHandler {
             if (array_key_exists('class', $part))
                 $part['class'] = $part['class']->accept($visitor)->getValue();
 
-            $this->callPartProcess($part['type'], $part, $viewParams, $visitor);
+            $this->callPartProcess($part['partType'], $part, $viewParams, $visitor);
         });
     }
 
@@ -457,8 +501,8 @@ class ViewHandler {
 
         $this->parseRepeat($part);
         $this->parseIf($part);
-
-        $this->callPartParse($part['type'], $part);
+        
+        $this->callPartParse($part['partType'], $part);
     }
 
     public function parseView(&$view) {
@@ -534,7 +578,7 @@ class ViewHandler {
                     $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
                     $userView=$this->getViewWithParts($viewId, $roleOne);
                 }  
-                //$parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);  
+                $parentParts = $this->viewsModule->findParentParts($course, $viewId, $viewType, $roleOne, $roleTwo);  
                 // ToDo check if  parentparts is working for role interaction
                 $userView = ViewEditHandler::putTogetherView($userView, $parentParts);
             }

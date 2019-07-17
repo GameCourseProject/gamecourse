@@ -131,7 +131,32 @@ class Views extends Module {
         $this->viewHandler->registerFunction('getModules', function() use ($course) {
             return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
         });
+        $this->viewHandler->registerPartType('text', null, null,
+            function(&$value) {
+                if (array_key_exists('link', $value))
+                    $this->viewHandler->parseSelf($value['link']);
 
+                //if ($value['valueType'] == 'expression')
+                    $this->viewHandler->parseSelf($value['info']);
+            },
+            function(&$value, $viewParams, $visitor) {
+                if (array_key_exists('link', $value))
+                    $value['link'] = $value['link']->accept($visitor)->getValue();
+
+                /*if ($value['valueType'] == 'field') {
+                    $context = array_key_exists('context', $value['info']) ? $value['info']['context'] : array();
+                    $fieldValue = \SmartBoards\DataSchema::getValue($value['info']['field'], $context, $viewParams, false);
+                    if (array_key_exists('format', $value['info']))
+                        $fieldValue = str_replace('%v', $fieldValue, $value['info']['format']);
+                    $value['valueType'] = 'text';
+                    $value['info'] = $fieldValue;
+                } else if ($value['valueType'] == 'expression') {*/
+                    $value['valueType'] = 'text';
+                    $value['info'] = $value['info']->accept($visitor)->getValue();
+                //}
+            }
+        );
+        
         $this->viewHandler->registerPartType('value', null, null,
             function(&$value) {
                 if (array_key_exists('link', $value))
@@ -253,7 +278,17 @@ class Views extends Module {
             if (API::hasKey('course'))
                 Course::getCourse((string)API::getValue('course'))->getLoggedUser()->refreshActivity();
             
-            $this->viewHandler->handle(API::getValue('view'));
+            $viewId = API::getValue('view');
+            //If this request can come from  js file that only knows the name of the view
+            if (!is_int($viewId)){
+                foreach ($this->viewHandler->getRegisteredViews() as $id => $viewData){
+                    if ($viewData["name"]==$viewId){
+                        $viewId=$id;
+                        break;
+                    }
+                }
+            }
+            $this->viewHandler->handle($viewId);
         });
 
         API::registerFunction('views', 'listViews', function() {
@@ -585,10 +620,12 @@ class Views extends Module {
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
                 $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
             }
-
-            $viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
-            $viewContent = $this->viewHandler->organizeViewData($viewContent);
             
+            //$viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
+            $this->viewHandler->arrumarACasa($viewContent);
+            //print_r($viewContent);
+            //$viewContent = $this->viewHandler->organizeViewData($viewContent);
+            return;
             $viewSettings = $views[$viewId];
             //print_r($viewContent);//array ( part=>,partList=>)
             if ($viewSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
@@ -601,10 +638,10 @@ class Views extends Module {
             $viewRoleInfo=['course'=>$courseId,'viewId'=>$viewId,'role'=>$role];
             
             //this may be unecessary, unless part or replacements changed
-            Core::$systemDB->update("view_role",
-                        $viewContent['view_role'],
-                        $viewRoleInfo);
-            $currParts = array_column(Core::$systemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
+            //Core::$systemDB->update("view_role",
+             //           $viewContent['view_role'],
+              //          $viewRoleInfo);
+            //$currParts = array_column(Core::$systemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
             
             foreach($viewContent['view_part'] as $part){
                 if (empty(Core::$systemDB->select("view_part",'*',['pid'=>$part['pid'],'course'=>$courseId]))){
