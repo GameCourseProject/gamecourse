@@ -205,38 +205,49 @@ create table skill_dependency(
 	foreign key(normalSkillId) references skill(id) on delete cascade
 );
 
+create table view(
+	id int unsigned auto_increment primary key,
+	#pageId int unsigned not null,
+	aspectClass int,
+	role varchar(100) not null,
+	partType enum ('aspect','block','text','image','table','heardRow','row','header','templateRef'),
+	parent int unsigned,
+	viewIndex int unsigned,
+	#template int unsigned,
+	foreign key (parent) references view(id) on delete cascade
+	#foreign key (template) references view_template(id) on delete cascade,
+	#foreign key(pageId) references page(id) on delete cascade
+);
 create table page(
 	id int unsigned auto_increment primary key,
 	course int unsigned not null,
 	roleType enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',	
 	name varchar(50) not null,
 	theme varchar(50),
-	module varchar(50),
-	foreign key(module, course) references course_module(moduleId,course) on delete cascade,
+	viewId int unsigned,
+	#module varchar(50),
+	#foreign key(module, course) references course_module(moduleId,course) on delete cascade,
+	foreign key(viewId) references view(id) on delete set null,
 	foreign key(course) references course(id) on delete cascade
 );
-create table view_template(
+create table template(
 	id int unsigned auto_increment primary key,
 	name varchar(100) not null,#
-	role varchar(100),
-	partType enum ('view','aspect','block','text','image','table','heardRow','row','header','instance'),
-	parent int unsigned,
-	viewIndex int unsigned,
+	roleType enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION'),
+	course int unsigned not null,
 	isGlobal boolean default false,
-	aspectClass int unsigned,
-	foreign key (parent) references view_template(id) on delete cascade
+	foreign key (course) references course(id) on delete cascade
 );
-create table view(
-	id int unsigned auto_increment primary key,
-	pageId int unsigned not null,
-	role varchar(100) not null,
-	partType enum ('aspect','block','text','image','table','heardRow','row','header','instance'),
-	parent int unsigned,
-	viewIndex int unsigned,
-	template int unsigned,
-	foreign key (parent) references view(id) on delete cascade,
-	foreign key (template) references view_template(id) on delete cascade,
-	foreign key(pageId) references page(id) on delete cascade
+create table view_template(
+	viewId int unsigned primary key,
+	templateId int unsigned,
+	foreign key (templateId) references template(id) on delete cascade,
+	foreign key (viewId) references view(id) on delete cascade
+);
+create table aspect_class(
+	viewId int unsigned primary key,
+	aspect int unsigned,
+	foreign key (viewId) references view(id) on delete cascade
 );
 create table parameter(
 	id int unsigned auto_increment primary key,
@@ -250,18 +261,3 @@ create table view_parameter(
 	foreign key (viewId) references view(id) on delete cascade,
 	foreign key (parameterId) references parameter(id) on delete cascade
 );
-create table template_parameter(
-	templateId int unsigned,
-	parameterId int unsigned,
-	primary key(templateId,parameterId),
-	foreign key (templateId) references view_template(id) on delete cascade,
-	foreign key (parameterId) references parameter(id) on delete cascade
-);
-create table course_template(
-	template int unsigned,
-	course 	int unsigned,
-	primary key (template,course),
-	foreign key (template) references view_template(id) on delete cascade,
-	foreign key (course) references course(id) on delete cascade
-);
-

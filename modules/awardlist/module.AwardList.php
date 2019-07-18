@@ -22,7 +22,7 @@ class AwardList extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
+        $viewHandler->registerPage($this, 'awardlist', 'Award List View', array(
             'type' => ViewHandler::VT_SINGLE
         ));
 

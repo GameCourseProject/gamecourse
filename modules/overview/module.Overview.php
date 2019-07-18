@@ -21,7 +21,7 @@ class Overview extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerView($this, 'overview', 'Overview View', array(
+        $viewHandler->registerPage($this, 'overview', 'Overview View', array(
             'type' => ViewHandler::VT_SINGLE
         ));
 

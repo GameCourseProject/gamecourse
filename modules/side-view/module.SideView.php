@@ -18,7 +18,7 @@ class SideView extends Module {
     public function init() {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerView($this, 'sideview', 'Side View', array(
+        $viewHandler->registerPage($this, 'sideview', 'Side View', array(
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 

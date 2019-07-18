@@ -76,8 +76,8 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 element = $(document.createElement('a')).addClass('value').attr('href', part.link);
             else
                 element = $(document.createElement('span')).addClass('value');
-            console.log("text create element",part);
-            if (part.parameters != undefined && part.parameters.value!=undefined){
+            console.log("text create element",part.info);
+            if ((part.info==undefined) && (part.parameters != undefined && part.parameters.value!=undefined)){
                 part.info=part.parameters.value;
             }
             if (part.info === '' || scope.placeholderValue === '') {
@@ -86,7 +86,6 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
             } 
             else 
                 element.html(part.info);
-            console.log(part);
             return element;
         },
         destroy: function(element) {

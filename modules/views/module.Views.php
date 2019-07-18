@@ -29,7 +29,7 @@ class Views extends Module {
 
     public function initSettingsTabs() {
         $childTabs = array();
-        $views = $this->viewHandler->getRegisteredViews();
+        $views = $this->viewHandler->getRegisteredPages();
         foreach($views as $viewId => $view)
             $childTabs[] = Settings::buildTabItem($view['name'], 'course.settings.views.view({view:\'' . $viewId . '\'})', true);
         Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $childTabs));
@@ -281,7 +281,7 @@ class Views extends Module {
             $viewId = API::getValue('view');
             //If this request can come from  js file that only knows the name of the view
             if (!is_int($viewId)){
-                foreach ($this->viewHandler->getRegisteredViews() as $id => $viewData){
+                foreach ($this->viewHandler->getRegisteredPages() as $id => $viewData){
                     if ($viewData["name"]==$viewId){
                         $viewId=$id;
                         break;
@@ -294,15 +294,16 @@ class Views extends Module {
         API::registerFunction('views', 'listViews', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course');
-            
-            API::response(array('views' => $this->viewHandler->getRegisteredViews(), 'templates' => $this->getTemplates()));
+            $templates=$this->getTemplates(true);
+            API::response(array('views' => $this->viewHandler->getRegisteredPages(), 
+                'templates' => $templates[0], "globals"=>$templates[1]));
         });
 
         API::registerFunction('views', 'createView', function() {
             API::requireCourseAdminPermission();
             API::requireValues('view', 'course');
 
-            $views = $this->viewHandler->getRegisteredViews();
+            $views = $this->viewHandler->getRegisteredPages();
             $viewId = API::getValue('view');
             if (!array_key_exists($viewId, $views))
                 API::error('Unknown view ' . $viewId);
@@ -378,7 +379,7 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             API::requireValues('view', 'course');
 
-            $views = $this->viewHandler->getRegisteredViews();
+            $views = $this->viewHandler->getRegisteredPages();
             $view = API::getValue('view');
             if (!array_key_exists($view, $views))
                 API::error('Unknown view ' . $view);
@@ -412,16 +413,16 @@ class Views extends Module {
         API::registerFunction('views', 'getInfo', function() {
             API::requireValues('view', 'course');
             
-            $views = $this->viewHandler->getRegisteredViews();
-            $viewId = API::getValue('view');
-            if (!array_key_exists($viewId, $views))
-                API::error('Unknown view ' . $viewId);
+            $pages = $this->viewHandler->getRegisteredPages();
+            $pageId = API::getValue('view');
+            if (!array_key_exists($pageId, $pages))
+                API::error('Unknown page ' . $pageId);
 
-            $viewSettings = $views[$viewId];
+            $pageSettings = $pages[$pageId];
 
             $course = Course::getCourse(API::getValue('course'));
             $response = array(
-                'viewSettings' => $viewSettings,
+                'viewSettings' => $pageSettings,
             );
 
             $response['types'] = array(
@@ -430,10 +431,11 @@ class Views extends Module {
                 array('id'=> 3, 'name' => 'Role - Interaction')
             );
 
-            $type = $viewSettings['roleType'];
+            $type = $pageSettings['roleType'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
-                $viewSpecializations = $this->viewHandler->getViewRoles($viewId);
-                $result = array();
+                
+                $viewSpecializations = $this->viewHandler->getAspects($pageSettings["viewId"]);
+                $result = [];
         
                 $doubleRoles=[];//for views w role interaction
                 foreach ($viewSpecializations as $role){
@@ -505,16 +507,16 @@ class Views extends Module {
             API::requireValues('course', 'view');
 
             $courseId = API::getValue('course');
-            $viewId = API::getValue('view');
-            
-            $views = $this->viewHandler->getRegisteredViews();
-            if (!array_key_exists($viewId, $views))
-                API::error('Unknown view ' . $viewId, 404);
+            $pageId = API::getValue('view');
+         
+            $pages = $this->viewHandler->getRegisteredPages();
+            if (!array_key_exists($pageId, $pages))
+                API::error('Unknown view ' . $pageId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
             
-            $viewSettings = $views[$viewId];//set id
-            $viewType = $viewSettings['roleType'];
+            $pageSettings = $pages[$pageId];//set id
+            $viewType = $pageSettings['roleType'];
 
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                 API::requireValues('info');
@@ -523,19 +525,19 @@ class Views extends Module {
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
 
-                $view = $this->viewHandler->getViewWithParts($viewId, $info['role']);
-                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['role']);
+                $view = $this->viewHandler->getViewWithParts($pageSettings["viewId"], $info['role']);
+                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['role']);
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
                 $info = API::getValue('info');
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
                     API::error('Missing roleOne and/or roleTwo in info');
 
-                $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
-                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
+                $view = $this->viewHandler->getViewWithParts($pageId, $info['roleOne'].'>'.$info['roleTwo']);
+                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
-                $view = $this->viewHandler->getViewWithParts($viewId, "");           
+                $view = $this->viewHandler->getViewWithParts($pageId, "");           
             }
             
             //$view = ViewEditHandler::putTogetherView($view, $parentParts);
@@ -550,17 +552,17 @@ class Views extends Module {
             API::requireValues('course', 'view');
             
             $courseId = API::getValue('course');
-            $viewId = API::getValue('view');
+            $pageId = API::getValue('view');
             $viewContent = API::getValue('content');
 
-            $views = $this->viewHandler->getRegisteredViews();
-            if (!array_key_exists($viewId, $views))
-                API::error('Unknown view ' . $viewId, 404);
+            $pages = $this->viewHandler->getRegisteredPages();
+            if (!array_key_exists($pageId, $pages))
+                API::error('Unknown view ' . $pageId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
 
-            $viewSettings = $views[$viewId];
-            $viewType = $viewSettings['roleType'];
+            $pageSettings = $pages[$pageId];
+            $viewType = $pageSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -616,9 +618,9 @@ class Views extends Module {
 
             $parentParts = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
-                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['role']);
+                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['role']);
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
-                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
+                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['roleOne'], $info['roleTwo']);
             }
             
             //$viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
@@ -626,16 +628,16 @@ class Views extends Module {
             //print_r($viewContent);
             //$viewContent = $this->viewHandler->organizeViewData($viewContent);
             return;
-            $viewSettings = $views[$viewId];
+            
             //print_r($viewContent);//array ( part=>,partList=>)
-            if ($viewSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
+            if ($pageSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
                 $role=$info['role'];
-            } else if ($viewSettings['roleType'] == ViewHandler::VT_ROLE_INTERACTION) {
+            } else if ($pageSettings['roleType'] == ViewHandler::VT_ROLE_INTERACTION) {
                 $role=$info['roleOne'].'>'.$info['roleTwo'];
             } else {
                 $role="";
             }
-            $viewRoleInfo=['course'=>$courseId,'viewId'=>$viewId,'role'=>$role];
+            $viewRoleInfo=['course'=>$courseId,'viewId'=>$pageId,'role'=>$role];
             
             //this may be unecessary, unless part or replacements changed
             //Core::$systemDB->update("view_role",
@@ -671,7 +673,7 @@ class Views extends Module {
             $viewId = API::getValue('view');
             $viewContent = API::getValue('content');
 
-            $views = $this->viewHandler->getRegisteredViews();
+            $views = $this->viewHandler->getRegisteredPages();
             if (!array_key_exists($viewId, $views))
                 API::error('Unknown view ' . $viewId, 404);
 
@@ -848,12 +850,15 @@ class Views extends Module {
         return $this->viewHandler;
     }
     
-    public function getTemplates(){
+    public function getTemplates($includeGlobals=false){
         //gets normal templates of this course
-        //ToDO: get global templates, get meta-views
-        $temps = Core::$systemDB->selectMultiple('view_template join course_template on template=id',
-                '*',['course'=>$this->getCourseId(), "parent"=>null],null,["partType"=>"view"]);
-        
+        //ToDO: get global templates
+        $temps = Core::$systemDB->selectMultiple('template',
+                '*',['course'=>$this->getCourseId()]);
+        if ($includeGlobals) {
+            $globalTemp = Core::$systemDB->selectMultiple("template", "*", ["isGlobal" => true]);
+            return [$temps, $globalTemp];
+        }
         //foreach ($temps as &$temp){
           //  $temp['content'] = unserialize($temp['content']);
         //}

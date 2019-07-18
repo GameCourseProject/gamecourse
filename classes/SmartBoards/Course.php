@@ -159,8 +159,11 @@ class Course {
 
     public function setModuleEnabled($moduleId, $enabled) {
         Core::$systemDB->update("course_module",["isEnabled"=>$enabled],["course"=>$this->cid,"moduleId"=>$moduleId]);
-        if (!$enabled)
-            Core::$systemDB->delete("page",["module"=>$moduleId, "course"=>$this->cid]);
+        if (!$enabled){
+            //ToDo:do something about views that use this module?
+            //  Core::$systemDB->delete("page",["module"=>$moduleId, "course"=>$this->cid]);
+        }
+          
     }
 
     //goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to use reverse order

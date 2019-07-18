@@ -20,7 +20,7 @@ class Profile extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerView($this, 'profile', 'Profile View', array(
+        $viewHandler->registerPage($this, 'profile', 'Profile View', array(
             'type' => ViewHandler::VT_ROLE_INTERACTION
         ));
 

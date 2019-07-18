@@ -20,7 +20,7 @@ class Leaderboard extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerView($this,'Leaderboard View', ViewHandler::VT_ROLE_SINGLE);
+        $viewHandler->registerPage($this,'Leaderboard View', ViewHandler::VT_ROLE_SINGLE);
         
         //if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
         //    $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'),$this->getId());
