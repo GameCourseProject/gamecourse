@@ -155,14 +155,14 @@ class ViewEditHandler {
                 throw new \Exception('Unknown part: ' . $partId);
             }
         };
-        
-        $viewPart = $getPart($view['part']);
-        $viewPart['replacements'] = $replacements;
-        foreach ($viewPart['content'] as &$part) {
-            static::putTogetherPart($part, $getPart);
-        }
-        return $viewPart;
-        
+        //print_r($view);
+        //$viewPart = $getPart($view['viewId']);
+        //$viewPart['replacements'] = $replacements;
+        //foreach ($viewPart['content'] as &$part) {
+       //     static::putTogetherPart($part, $getPart);
+       // }
+       // return $viewPart;
+        return $view;  
     }
 
     static function getRandomPid() {

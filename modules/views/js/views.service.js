@@ -9,11 +9,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
-
             viewScope.viewBlock = {
                 partType: 'block',
                 noHeader: true,
-                children: viewScope.view.content
+                children: viewScope.view.children
             };
 
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
@@ -153,7 +152,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.build = function(scope, what, options) {
         console.log(what);
-        console.log(scope);
+        //console.log(scope);
         var part = $parse(what)(scope);
         console.log(part);
         return this.buildElement(scope, part, options);

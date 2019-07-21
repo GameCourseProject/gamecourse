@@ -137,7 +137,7 @@ class Views extends Module {
                     $this->viewHandler->parseSelf($value['link']);
 
                 //if ($value['valueType'] == 'expression')
-                    $this->viewHandler->parseSelf($value['info']);
+                $this->viewHandler->parseSelf($value['parameters']["value"]);
             },
             function(&$value, $viewParams, $visitor) {
                 if (array_key_exists('link', $value))
@@ -152,7 +152,7 @@ class Views extends Module {
                     $value['info'] = $fieldValue;
                 } else if ($value['valueType'] == 'expression') {*/
                     $value['valueType'] = 'text';
-                    $value['info'] = $value['info']->accept($visitor)->getValue();
+                    $value['parameters']["value"] = $value['parameters']["value"]->accept($visitor)->getValue();
                 //}
             }
         );
@@ -822,8 +822,9 @@ class Views extends Module {
            // $views = $views->getWrapped($roleOne);
         //}
         //$views = $views->getValue();
-        $views = $this->getViewHandler()->getViewRoles($viewId);
-        $viewRoles = array_column($views,'role');
+        $aspects = $this->getViewHandler()->getAspects(null,$viewId); 
+        //$views = $this->getViewHandler()->getViewRoles($viewId);
+        $viewRoles = array_column($aspects,'role');
         $viewsFound = array();
         if ($type== ViewHandler::VT_ROLE_INTERACTION){
             $rolesFound=[];

@@ -20,21 +20,6 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
             if (options.edit) {
                 var optionsDivEl;
                 function buildOptions(optionsScope, watch) {
-                    var previewDiv;
-                    function buildPreviewDiv() {
-                        var newPreviewDiv = $(document.createElement('div')).addClass('preview');
-                        newPreviewDiv.append($(document.createElement('strong')).text('Preview: '));
-                        newPreviewDiv.append(valuePartDef.createElement(optionsScope, optionsScope.part, {edit: true, preview: true}));
-                        if (previewDiv != undefined)
-                            previewDiv.replaceWith(newPreviewDiv);
-                        previewDiv = newPreviewDiv;
-                        return previewDiv;
-                    }
-
-                    optionsScope.updateType = function () {
-                        optionsScope.part.info = 'ExpValue';
-                        optionsScope.contexts = {};
-                    };
 
                     var optionsDiv = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
                     $compile(optionsDiv)(optionsScope);
@@ -43,7 +28,6 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                     }, 50);
                     watch('part.valueType');
                     watch('part.info', function() {
-                        buildPreviewDiv();
                     });
 
                     if (optionsDivEl == undefined)
@@ -76,8 +60,8 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 element = $(document.createElement('a')).addClass('value').attr('href', part.link);
             else
                 element = $(document.createElement('span')).addClass('value');
-            console.log("text create element",part.info);
-            if ((part.info==undefined) && (part.parameters != undefined && part.parameters.value!=undefined)){
+            
+            if ((part.info==undefined || part.info=="") && (part.parameters != undefined && part.parameters.value!=undefined)){
                 part.info=part.parameters.value;
             }
             if (part.info === '' || scope.placeholderValue === '') {
