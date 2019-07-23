@@ -8,18 +8,18 @@
 </div>
 <!--sb-input ng-if="part.valueType == 'text'" sb-input="part.info" sb-input-label="Text"></sb-input>
 <!--sb-input ng-if="part.valueType == 'field'" sb-input="part.info.field" sb-input-label="Field"></sb-input-->
-<sb-expression sb-expression="part.info" sb-expression-label="Expression"></sb-expression>
-<div class="value-filtered-fields" ng-if="part.valueType == 'field' && (filteredResults.length != 1 || filteredResults[0].field !== part.info.field)">
-    <div ng-repeat="result in filteredResults" ng-click="part.info.field = result.field">
+<sb-expression sb-expression="part.parameters.value" sb-expression-label="Expression"></sb-expression>
+<div class="value-filtered-fields" ng-if="part.valueType == 'field' && (filteredResults.length != 1 || filteredResults[0].field !== part.parameters.value.field)">
+    <div ng-repeat="result in filteredResults" ng-click="part.parameters.value.field = result.field">
         <div class="field">{{result.field}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>
     </div>
 </div>
 <div ng-repeat="(context, keys) in contexts">
     {{context}}
-    <select ng-options="key for key in keys track by key" ng-model="part.info.context[context]"></select>
+    <select ng-options="key for key in keys track by key" ng-model="part.parameters.value.context[context]"></select>
 </div>
-<sb-checkbox ng-if="part.valueType == 'field'" sb-checkbox="part.info.format" sb-checkbox-label="Enable Format" sb-checkbox-default="'%v'">
-    <sb-input sb-input="part.info.format" sb-input-label="Format"></sb-input>
+<sb-checkbox ng-if="part.valueType == 'field'" sb-checkbox="part.parameters.value.format" sb-checkbox-label="Enable Format" sb-checkbox-default="'%v'">
+    <sb-input sb-input="part.parameters.value.format" sb-input-label="Format"></sb-input>
 </sb-checkbox>
 <sb-checkbox sb-checkbox="part.link" sb-checkbox-label="Enable Link" sb-checkbox-default="" sb-checkbox-info="Defines a link on the element for the reader to follow.">
     <sb-expression sb-expression="part.link" sb-expression-label="Link"></sb-expression>

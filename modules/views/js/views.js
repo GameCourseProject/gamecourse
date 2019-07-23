@@ -6,7 +6,6 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             $element.text(err.description);
             return;
         }
-        console.log("view.js ",$scope);
         function subtractSpecializations(one, two) {
             var cpy = one.slice(0);
             for(var i = 0; i < cpy.length; ++i) {
@@ -171,7 +170,6 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
 
     $sbviews.requestEdit($stateParams.view, reqData, function(view, err) {
-        console.log("requestEdit",view);
         if (err) {
             $element.html(err);
             console.log(err);
@@ -188,7 +186,6 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             saveData.view = $stateParams.view;
             saveData.content = view.get();
             $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
-                console.log("saveEdit",data);
                 btnSave.prop('disabled', false);
                 if (err) {
                     alert(err.description);
@@ -200,6 +197,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 else {
                     alert('Saved!');
                     initialViewContent = angular.copy(saveData.content);
+                    location.reload();//reloading to prevent bug that kept adding new parts over again
                 }
             });
         });
@@ -222,7 +220,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 viewScope.view = data.view;
 
                 viewScope.viewBlock = {
-                    type: 'block',
+                    partType: 'block',
                     noHeader: true,
                     children: viewScope.view.content
                 };
@@ -286,7 +284,6 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             alert(err.description);
             return;
         }
-        console.log(data);
         var viewsArea = createSection($($element),"Pages");
         viewsArea.append($compile('<div ng-repeat="(id, view) in views">{{view.name}} (page id: {{id}})'+
                 '<button ng-click="">Edit</button> '+

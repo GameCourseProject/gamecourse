@@ -136,24 +136,14 @@ class Views extends Module {
                 if (array_key_exists('link', $value))
                     $this->viewHandler->parseSelf($value['link']);
 
-                //if ($value['valueType'] == 'expression')
                 $this->viewHandler->parseSelf($value['parameters']["value"]);
             },
             function(&$value, $viewParams, $visitor) {
                 if (array_key_exists('link', $value))
                     $value['link'] = $value['link']->accept($visitor)->getValue();
-
-                /*if ($value['valueType'] == 'field') {
-                    $context = array_key_exists('context', $value['info']) ? $value['info']['context'] : array();
-                    $fieldValue = \SmartBoards\DataSchema::getValue($value['info']['field'], $context, $viewParams, false);
-                    if (array_key_exists('format', $value['info']))
-                        $fieldValue = str_replace('%v', $fieldValue, $value['info']['format']);
-                    $value['valueType'] = 'text';
-                    $value['info'] = $fieldValue;
-                } else if ($value['valueType'] == 'expression') {*/
-                    $value['valueType'] = 'text';
-                    $value['parameters']["value"] = $value['parameters']["value"]->accept($visitor)->getValue();
-                //}
+                
+                $value['valueType'] = 'text';
+                $value['parameters']["value"] = $value['parameters']["value"]->accept($visitor)->getValue();
             }
         );
         
@@ -188,24 +178,15 @@ class Views extends Module {
                 if (array_key_exists('link', $image))
                     $this->viewHandler->parseSelf($image['link']);
 
-                if ($image['valueType'] == 'expression')
-                    $this->viewHandler->parseSelf($image['info']);
+                $this->viewHandler->parseSelf($image['parameters']["value"]);
             },
             function(&$image, $viewParams, $visitor) {
                 if (array_key_exists('link', $image))
                     $image['link'] = $image['link']->accept($visitor)->getValue();
 
-                if ($image['valueType'] == 'field') {
-                    $context = array_key_exists('context', $image['info']) ? $image['info']['context'] : array();
-                    $fieldValue = \SmartBoards\DataSchema::getValue($image['info']['field'], $context, $viewParams, false);
-                    if (array_key_exists('format', $image['info']))
-                        $fieldValue = str_replace('%v', $fieldValue, $image['info']['format']);
-                    $image['valueType'] = 'text';
-                    $value['info'] = $fieldValue;
-                } else if ($image['valueType'] == 'expression') {
-                    $image['valueType'] = 'text';
-                    $image['info'] = $image['info']->accept($visitor)->getValue();
-                }
+                $image['edit'] = false;
+                $image['parameters']["value"] = $image['parameters']["value"]->accept($visitor)->getValue();
+                    // $image['info'] = $image['parameters']["value"]->accept($visitor)->getValue();
             }
         );
 
@@ -258,6 +239,7 @@ class Views extends Module {
                 }
             },
             function(&$block, $viewParams, $visitor) {
+                
                 if (array_key_exists('header', $block)) {
                     $this->viewHandler->processPart($block['header']['title'], $viewParams, $visitor);
                     $this->viewHandler->processPart($block['header']['image'], $viewParams, $visitor);
@@ -583,6 +565,7 @@ class Views extends Module {
 
                 //replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
+                //print_r("here");
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
 
@@ -615,7 +598,13 @@ class Views extends Module {
             } catch (\Exception $e) {
                 API::error('Error saving view: ' . $e->getMessage());
             }
+            
+            $this->viewHandler->arrumarACasa($viewContent);
+            
+            if (!$testDone)
+                API::response('Saved, but skipping test (no users in role to test or special role)');
 
+            return;
             $parentParts = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                 $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['role']);
@@ -624,10 +613,9 @@ class Views extends Module {
             }
             
             //$viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
-            $this->viewHandler->arrumarACasa($viewContent);
+           
             //print_r($viewContent);
             //$viewContent = $this->viewHandler->organizeViewData($viewContent);
-            return;
             
             //print_r($viewContent);//array ( part=>,partList=>)
             if ($pageSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
@@ -661,8 +649,7 @@ class Views extends Module {
                 Core::$systemDB->delete("view_part",['pid'=>$part,'course'=>$courseId]);
             }
                      
-            if (!$testDone)
-                API::response('Saved, but skipping test (no users in role to test or special role)');
+            
         });
 
         API::registerFunction('views', 'previewEdit', function() {

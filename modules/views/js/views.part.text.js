@@ -4,7 +4,10 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         defaultPart: function() {
             return {
                 partType: 'text',
-                info: 'Text'
+                //info: 'Text'
+                parameters: {
+                    value: 'Text'
+                }
             };
         },
         changePids: function(part, change) {
@@ -23,11 +26,10 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
 
                     var optionsDiv = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
                     $compile(optionsDiv)(optionsScope);
-                    $timeout(function() {
-                        optionsDiv.find('.preview').replaceWith(buildPreviewDiv());
-                    }, 50);
+
                     watch('part.valueType');
-                    watch('part.info', function() {
+                    watch('part.parameters.value', function() {
+                        valuePartDef.createElement(optionsScope, optionsScope.part, {edit: true, preview: true});
                     });
 
                     if (optionsDivEl == undefined)
@@ -61,15 +63,15 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
             else
                 element = $(document.createElement('span')).addClass('value');
             
-            if ((part.info==undefined || part.info=="") && (part.parameters != undefined && part.parameters.value!=undefined)){
+            /*if ((part.info==undefined || part.info=="") && (part.parameters != undefined && part.parameters.value!=undefined)){
                 part.info=part.parameters.value;
-            }
-            if (part.info === '' || scope.placeholderValue === '') {
+            }*/
+            if (part.parameters.value === '' || scope.placeholderValue === '') {
                 element.text('(Empty Value)');
                 element.addClass('red');
             } 
             else 
-                element.html(part.info);
+                element.html(part.parameters.value);
             return element;
         },
         destroy: function(element) {

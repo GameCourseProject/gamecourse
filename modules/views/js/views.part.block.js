@@ -3,7 +3,7 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
         name: 'Block',
         defaultPart: function() {
             var part = {
-                type: 'block',
+                partType: 'block',
                 header: {
                     title: undefined,
                     image: undefined
@@ -11,12 +11,12 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                 children: []
             };
 
-            var titlePart = $sbviews.defaultPart('value');
-            titlePart.info = 'Header Title';
+            var titlePart = $sbviews.defaultPart('text');
+            titlePart.parameters.value = 'Header Title';
             part.header.title = titlePart;
 
             var imagePart = $sbviews.defaultPart('image');
-            imagePart.info = 'images/awards.svg';
+            imagePart.parameters.value = 'images/awards.svg';
             part.header.image = imagePart;
             return part;
         },
@@ -37,8 +37,8 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                 var blockHeader = $(document.createElement('div')).addClass('header');
                 if (part.header.anchor && !options.edit)
                     blockHeader.append('<a name="' + part.header.anchor + '"></a>')
-                blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {type: 'image'})));
-                blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {type: 'value'})).addClass('title'));
+                blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {partType: 'image'})));
+                blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {partType: 'text'})).addClass('title'));
                 block.append(blockHeader);
             }
 
@@ -178,8 +178,8 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                         var header = n;
                         if (header != undefined) {
                             blockHeader = $(document.createElement('div')).addClass('header');
-                            blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {type: 'image'})));
-                            blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {type: 'value'})).addClass('title'));
+                            blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {partType: 'image'})));
+                            blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {partType: 'text'})).addClass('title'));
                             block.prepend(blockHeader);
                             $sbviews.notifyChanged(part, options);
                         } else {
@@ -254,7 +254,6 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                             }
 
                             partsList.append('<option disabled>-- Template --</option>');
-                            console.log("templates ",options.editData);
                             var templates = options.editData.templates;
                             for (var t in templates) {
                                 var template = templates[t];
@@ -274,7 +273,6 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                 }
                                 else if (value.indexOf('temp:') == 0)
                                     newPart = angular.copy(templates[id]['content']);
-                                console.log('newPart',newPart);
 
                                 $sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();

@@ -125,7 +125,7 @@ class EvaluateVisitor extends Visitor {
         }
        
         // add [course => %course] to context array
-        if ($t!="user" && $t!="course"){
+        if ($t!="game_course_user" && $t!="course"){
             $contextArray['course']=$this->params['course'];
         }
         

@@ -41,50 +41,107 @@ class ViewHandler {
     public function getRegisteredPages() {
         return $this->registeredPages;
     }
-    public function arrumarACasa($viewPart, $aspectClass=null){
-    //insert data into DB, should check previous data and update/delete stuff   
-    //ToDo: check if works with blocks containing parts
-
+    
+    public function addViewParameter($type,$value,$viewId){    
+        $parmOfView = Core::$systemDB->select("parameter join view_parameter on id=parameterId",
+                    "id,value",["type"=>$type, "viewId"=>$viewId]);
+        if (!empty($parmOfView)){
+            if ($parmOfView["value"]!=$value)
+                Core::$systemDB->delete("view_parameter",["viewId"=>$viewId,"parameterId"=>$parmOfView["id"]]);
+            else //the view is already associated with this parameter
+                return;
+        }
         
+        $parameter = Core::$systemDB->select("parameter","id",["type"=>$type,"value"=>$value]);
+        
+        if (empty($parameter)){
+            Core::$systemDB->insert("parameter",["type"=>$type,"value"=>$value]);
+            $parameter=Core::$systemDB->getLastId();
+        }            
+        if (empty(Core::$systemDB->select("view_parameter","*",["viewId"=>$viewId,"parameterId"=>$parameter])))
+            Core::$systemDB->insert("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter]);
+    }
+    
+    public function arrumarACasa($viewPart, $aspectClass=null, &$partsInDB=null){
+    //insert data into DB, should check previous data and update/delete stuff   
         if ($viewPart["partType"]!="aspect"){
-            //ToDo: other parameter besides value (loopData, if,style, class, etc)
-            $parameter = Core::$systemDB->select("parameter","id",["type"=>"value","value"=>$viewPart["info"]]);
-            if (empty($parameter)){
-                Core::$systemDB->insert("parameter",["type"=>"value","value"=>$viewPart["info"]]);
-                $parameter=Core::$systemDB->getLastId();
-            }
             //get aspect class
             
             //insert/update views
             if (array_key_exists("id", $viewPart)){
                 //already in DB, may need update
+                //index is probably the only thing that can be updated
+                //ToDo: only update if there were changes
                 Core::$systemDB->update("view",["viewIndex"=>$viewPart["viewIndex"],
                         "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"]],
-                        ["id"=>$viewPart["id"]]);      
+                        ["id"=>$viewPart["id"]]);   
+                unset($partsInDB[$viewPart["id"]]);
             }else{
                 //not in DB, insert it
                 Core::$systemDB->insert("view",["aspectClass"=>$aspectClass,
                 "parent"=>$viewPart["parent"],"role"=>$viewPart["role"],
                 "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
-            }
-            if (empty(Core::$systemDB->select("view_parameter","*",["viewId"=>$viewPart["id"],"parameterId"=>$parameter])))
-                Core::$systemDB->insert("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$parameter]);
+            }         
+           
+            if (array_key_exists("parameters", $viewPart)){
+                foreach ($viewPart["parameters"] as $type => $param){
+                    $this->addViewParameter($type,$param,$viewPart["id"]);
+                }
+            }            
             //ToDo:: delete views
             
             $viewPart["aspectClass"]=$aspectClass;
-        }
+        }//else print_r($viewPart);
         if (array_key_exists("children", $viewPart)){
-                foreach ($viewPart["children"] as $key => $child){
+            
+            $children = Core::$systemDB->selectMultiple("view","*",["parent"=>$viewPart["id"]]);
+            $children = array_combine(array_column($children,"id"),$children);
+            foreach ($viewPart["children"] as $key => $child){
+                if ($child["partType"]=="header"){
+                    unset($children[$child["id"]]);
+                    continue;
+                }
                 $child["parent"]=$viewPart["id"];
                 $child["role"]=$viewPart["role"];
                 $child["viewIndex"]=$key;
-                $this->arrumarACasa($child, $viewPart["aspectClass"]);
+                $this->arrumarACasa($child, $viewPart["aspectClass"],$children);
+            }
+            foreach ($children as $deleted){
+                Core::$systemDB->delete("view",["id"=>$deleted["id"]]);
             }
         }
-        
-        
-        //return $partList;
+        //deal with header of block
+        if ($viewPart["partType"]=="block") {
+            $header = Core::$systemDB->select("view","id",["parent"=>$viewPart["id"], "partType"=>"header"]);
+            if (array_key_exists("header", $viewPart)){
+                if(empty($header)){ //insert
+                    Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
+                        "partType"=>"header","aspectClass"=>$aspectClass,"role"=>$viewPart["role"]]);
+                    $headerId = Core::$systemDB->getLastId();
+                    Core::$systemDB->insert("view",["parent"=>$headerId, 
+                        "partType"=>"image","aspectClass"=>$aspectClass,"role"=>$viewPart["role"],"viewIndex"=>0]);
+                    $imageId= Core::$systemDB->getLastId();
+                    $this->addViewParameter("value",$viewPart["header"]["image"]["parameters"]["value"],$imageId);
+                    Core::$systemDB->insert("view",["parent"=>$headerId, 
+                        "partType"=>"text","aspectClass"=>$aspectClass,"role"=>$viewPart["role"],"viewIndex"=>1]);
+                    $titleId= Core::$systemDB->getLastId();
+                    $this->addViewParameter("value",$viewPart["header"]["title"]["parameters"]["value"],$titleId);
+                }else{//update
+                    //probably no reason to update the image and title views, just updating parameters
+                    $headerParts = Core::$systemDB->selectMultiple("view","*",["parent"=>$header]);
+                    foreach($headerParts as $part){
+                        if ($part["partType"]=="text")
+                            $type="title";
+                        else $type = "image";
+                        $this->addViewParameter("value",$viewPart["header"][$type]["info"],$part["id"]);
+                    }
+                }
+            }
+            else if (!empty($header)){
+                Core::$systemDB->delete("view",["parent"=>$viewPart["id"], "partType"=>"header"]);
+            }
+        }
     }
     //receives array with view info and organizes info to put into DB
     public function organizeViewData($data){
@@ -149,16 +206,23 @@ class ViewHandler {
     
     //Go through views and update array with parameters info (this does all the necessary queries)
     public function lookAtChildrenWQueries($parent,&$organizedView){
-        $children=Core::$systemDB->selectMultiple("view","*",["parent"=>$parent],"viewIndex");
-        
+        $children=Core::$systemDB->selectMultiple("view","*",["parent"=>$parent],"viewIndex");  
         $view_params=$this->getViewParameters(["parent"=>$parent]);
         
         for($i=0;$i<count($children);$i++){
-        //foreach($children as $child){
             $child=$children[$i];
             $this->lookAtParameter($child,$view_params,$organizedView);
-            $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);       
+            $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);        
         }    
+        if ($organizedView["partType"]=="block"){
+            if ($organizedView["children"][0]["partType"]=="header"){
+                $organizedView["header"]=[];
+                $organizedView["header"]["image"]=$organizedView["children"][0]["children"][0];
+                $organizedView["header"]["title"]=$organizedView["children"][0]["children"][1];
+                unset($organizedView["children"][0]);
+                $organizedView["children"]= array_values($organizedView["children"]);
+            }
+        } 
     }
     //contructs an array of the view with all it's children
     public function getViewWithParts($anAspectId,$role){//return everything organized like the previous db system
@@ -192,7 +256,6 @@ class ViewHandler {
             if (array_key_exists("parts", $viewsByParent))
                 $this->lookAtChildren($viewsByParent['id'],$viewsByParent['parts'], $view_params, $organizedView);  
         }
-        //print_r($organizedView);
         return $organizedView;   
     }
     

@@ -33,8 +33,8 @@ class ViewEditHandler {
             });
         }
 
-        if ($part['partType'] == 'value' || $part['partType'] == 'image')
-            static::breakValue($part, $savePart);
+        //if ($part['partType'] == 'value' || $part['partType'] == 'image')
+        //    static::breakValue($part, $savePart);
         else if ($part['partType'] == 'table') {
             static::breakRows($part['headerRows'], $savePart);
             static::breakRows($part['rows'], $savePart);
@@ -111,8 +111,8 @@ class ViewEditHandler {
             });
         }
 
-        if ($part['partType'] == 'value' || $part['partType'] == 'image')
-            static::putTogetherValue($part, $getPart);
+        //if ($part['partType'] == 'value' || $part['partType'] == 'image')
+        //    static::putTogetherValue($part, $getPart);
         else if ($part['partType'] == 'table') {
             static::putTogetherRows($part['headerRows'], $getPart);
             static::putTogetherRows($part['rows'], $getPart);

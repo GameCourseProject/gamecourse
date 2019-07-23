@@ -151,16 +151,17 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.build = function(scope, what, options) {
-        console.log(what);
+        //console.log(what);
         //console.log(scope);
         var part = $parse(what)(scope);
-        console.log(part);
+        //console.log(part);
         return this.buildElement(scope, part, options);
     };
 
     this.buildElement = function(parentScope, part, options) {
         var options = $.extend({}, options);
-
+        if (options.edit && part.partType=="image")
+            part.edit=true;
         if (options.type != undefined)
             part.partType = options.partType;
 
@@ -171,7 +172,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
         var partScope = parentScope.$new(true);
         partScope.part = part;
-        if (part.partType!="instance")
+        if (part.partType!="templateRef")
             var element = this.registeredPartType[part.partType].build(partScope, part, options);
         //ToDo: build instance
         this.applyCommonFeatures(partScope, part, element, options);
@@ -646,7 +647,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.changePids = function(part) {
-        //console.log("changePid",part);
         $sbviews.generatePid(part);
         $sbviews.registeredPartType[part.partType].changePids(part, $sbviews.changePids);
     };

@@ -1,12 +1,15 @@
 angular.module('module.views').run(function($sbviews, $compile) {
-    var valuePartDef = $sbviews.registeredPartType['value'];
+    var valuePartDef = $sbviews.registeredPartType['text'];
     var imagePartDef = {
         name: 'Image',
         defaultPart: function() {
             return {
                 partType: 'image',
-                valueType: 'text',
-                info: 'images/awards.svg'
+                edit: true,
+                //info: 'images/awards.svg'
+                parameters: {
+                    value: 'images/awards.svg'
+                }
             };
         },
         changePids: function(part, change) {
@@ -16,19 +19,16 @@ angular.module('module.views').run(function($sbviews, $compile) {
                 return valuePartDef.createElement(scope, part, options);
             var img;
 
-            var emptyValue = (part.info === '' || scope.placeholderValue === '');
-            var fieldError = (part.valueType == 'field' && (scope.placeholder === undefined || scope.placeholderValue === ''));
-
-            if (emptyValue || fieldError) {
+            var emptyValue = (part.parameters.value === '' || scope.placeholderValue === '');
+            
+            if (emptyValue) {
                 img = $(document.createElement('div')).attr('class', 'placeholder red');
-            } else if (part.valueType == 'expression') {
+            } else if (part.edit) {
                 img = $(document.createElement('div')).attr('class', 'placeholder');
-            } else if (part.valueType == 'text') {
-                img = $(document.createElement('img')).attr('src', part.info);
-            } else if (part.valueType == 'field') {
-                img = $(document.createElement('img')).attr('src', scope.placeholderValue);
-            }
-
+            } else //if (part.valueType == 'text') {
+                img = $(document.createElement('img')).attr('src', part.parameters.value);
+            
+            
             var root;
             if (part.link != undefined && !options.edit) {
                 root = $(document.createElement('a')).attr({href: part.link});
