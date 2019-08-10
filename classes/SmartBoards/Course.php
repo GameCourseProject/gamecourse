@@ -203,7 +203,7 @@ class Course {
         $db->update("course",["roleHierarchy"=> json_encode($roles)],["id"=>$courseId]);
         
         $skillTree=1;
-        $db->insert("skill_tree",["course"=>$courseId, "id"=>$skillTree]);
+        $db->insert("skill_tree",["course"=>$courseId, "id"=>$skillTree, "maxReward"=>DEFAULT_MAX_TREE_XP]);
         $db->insert("skill_tier",["tier"=>1,"reward"=>150,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>2,"reward"=>400,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);

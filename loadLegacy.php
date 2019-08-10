@@ -82,7 +82,7 @@ foreach($awards as &$award) {
         if ($award['what'] == 'Initial Bonus') {
             $name= $award['what'];
             if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
-                Core::$systemDB->insert("award", array_merge($data, ["description" => $name, "module" => 'bonus']));
+                Core::$systemDB->insert("award", array_merge($data, ["description" => $name, "type" => 'bonus']));
                 
             }
         }
@@ -91,7 +91,7 @@ foreach($awards as &$award) {
             $name='Lab ' . $award['field2'];
             if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 Core::$systemDB->insert("award", array_merge($data, 
-                        ["description" => $name, "module" => 'labs']));
+                        ["description" => $name, "type" => 'labs']));
             }
         }
         //Quizes
@@ -100,7 +100,7 @@ foreach($awards as &$award) {
             $awardInDB=Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]);
             if (empty($awardInDB)) {
                 Core::$systemDB->insert("award", array_merge($data, 
-                        ["description" => $name, "module" => 'quiz']));
+                        ["description" => $name, "type" => 'quiz']));
             }elseif($awardInDB["reward"]!=$data["reward"]){
                 Core::$systemDB->update("award",["reward"=>$data["reward"]],["description" => $name, "course" => $courseId, "user" => $award['userid']]);        
             }
@@ -110,7 +110,7 @@ foreach($awards as &$award) {
             $name='Presentation';
             if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 Core::$systemDB->insert("award", array_merge($data, 
-                        ["description" => $name, 'module' => 'presentation']));
+                        ["description" => $name, "type" => 'presentation']));
             }
         }
         //Skill Tree
@@ -120,7 +120,7 @@ foreach($awards as &$award) {
                 $skillInstance = Core::$systemDB->select("skill s natural join skill_tier join skill_tree t on t.id=s.treeId",
                         "s.id",["name"=>$name,"course"=>$courseId]);
                 Core::$systemDB->insert("award", array_merge($data, 
-                        ["description" => $name, "module" => 'skills',"moduleInstance"=>$skillInstance]));
+                        ["description" => $name, "type" => 'skills',"moduleInstance"=>$skillInstance]));
                 
                 $indicatorsForUser=$indicatorsByNum[$award['userid']];
                 if (!array_key_exists($name, $indicatorsForUser)) {
@@ -139,7 +139,7 @@ foreach($awards as &$award) {
             
             if (empty(Core::$systemDB->select("award","*",["description"=>$name,"course"=>$courseId,"user"=>$award['userid']]))){ 
                 Core::$systemDB->insert ("award", array_merge ($data,
-                                ["description" => $name, "module" => 'badges', "moduleInstance"=>$moduleInstance]));
+                                ["description" => $name, "type" => 'badges', "moduleInstance"=>$moduleInstance]));
             }
                 
             $badgeLevel = $level;
@@ -189,7 +189,7 @@ foreach ($userIds as $userId){
             if (is_array($badgeIndicators[1])) {
                 
                 $oldIndicators = Core::$systemDB->selectMultiple("participation",'*',
-                                ["user"=>$userId,"course"=>$courseId,"module"=>"badges","moduleInstance"=>$badge['id']]);
+                                ["user"=>$userId,"course"=>$courseId,"type"=>"badges","moduleInstance"=>$badge['id']]);
                 $oldIndicatorsTextIndex=[];
                 foreach($oldIndicators as $ind){
                     $oldIndicatorsTextIndex[$ind["indicator"]][]=$ind["id"];
@@ -215,7 +215,7 @@ foreach ($userIds as $userId){
                     }
                     $index=$indexes[$text];
                     
-                    $progressIndicator = ["post" => $link,"description" => $text,"module"=>"badges",
+                    $progressIndicator = ["post" => $link,"description" => $text,"type"=>"badges",
                         "date"=>date("Y-m-d H:i:s",$indicator["timestamp"]),"user" => $userId,
                         "moduleInstance" => $badge['id'],"course" => $courseId];
                     if (key_exists($text, $oldIndicatorsTextIndex)){

@@ -14,5 +14,5 @@ $GLOBALS['theme']="default";
 
 define('XP_PER_LEVEL', 1000);
 define('MAX_BONUS_BADGES', 1000);
-define('MAX_TREE_XP', 5000);
+define('DEFAULT_MAX_TREE_XP', 5000);
 ?>

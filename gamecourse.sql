@@ -1,11 +1,13 @@
 
-drop table if exists course_template;
-drop table if exists template_parameter;
+drop trigger if exists parameterDelete;
+drop trigger if exists viewDelete;
 drop table if exists view_parameter;
 drop table if exists parameter;
-drop table if exists view;
+drop table if exists aspect_class;
 drop table if exists view_template;
+drop table if exists template;
 drop table if exists page;
+drop table if exists view;
 drop table if exists skill_dependency;
 drop table if exists dependency;
 drop table if exists skill;
@@ -103,13 +105,11 @@ create table award(
 	user 	int unsigned not null,
 	course 	int unsigned not null,
 	description varchar(100) not null,
-	module varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
+	type varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
 	moduleInstance int unsigned ,#id of badge/skill (will be null for other types)
 	reward int unsigned default 0,
-	date timestamp default CURRENT_TIMESTAMP, 
-	isEnabled boolean default true,
-    foreign key(user, course) references course_user(id, course) on delete cascade,
-    foreign key(module,course) references course_module(moduleId,course)
+	date timestamp default CURRENT_TIMESTAMP,
+    foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
 create table notification(
@@ -124,13 +124,19 @@ create table participation(#for now this is just used for badges
 	user 	int unsigned not null,
 	course 	int unsigned not null,
 	description varchar(50) not null,
-	module 	varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
+	type 	varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
 	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
-	date timestamp, 
-	isEnabled boolean default true,
-    foreign key(user, course) references course_user(id, course) on delete cascade,
-    foreign key(module,course) references course_module(moduleId,course)
+	date timestamp,
+    foreign key(user, course) references course_user(id, course) on delete cascade
+);
+
+create table award_participation(
+	award int unsigned,
+	participation int unsigned,
+	primary key (award,participation),
+    foreign key(award) references award(id) on delete cascade,
+    foreign key(participation) references participation(id) on delete cascade
 );
 
 create table grade(
@@ -175,6 +181,7 @@ create table level(
 create table skill_tree(
 	id 		int unsigned auto_increment primary key,
 	course int unsigned not null,
+	maxReward int unsigned,
 	foreign key(course) references course(id) on delete cascade
 );
 create table skill_tier(
@@ -261,3 +268,23 @@ create table view_parameter(
 	foreign key (viewId) references view(id) on delete cascade,
 	foreign key (parameterId) references parameter(id) on delete cascade
 );
+
+# if no view is using a parameter then delete it
+create trigger parameterDelete before delete on view_parameter
+	for each row
+		BEGIN
+		declare paramCount int;
+		set paramCount = (select count(*) from view_parameter where parameterId=OLD.parameterId);
+		if (paramCount=1)
+		then
+			delete from parameter where id=OLD.parameterId;
+		END if;
+
+		end;
+
+#delete view_parameter of view (same as on delete cascade but it works for triggers)
+create trigger viewDelete before delete on view
+	for each row
+	BEGIN
+			delete from view_parameter where viewId=OLD.id;
+	end;
