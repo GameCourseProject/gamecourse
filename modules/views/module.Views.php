@@ -13,10 +13,6 @@ use SmartBoards\Settings;
 class Views extends Module {
     private $viewHandler;
     
-    public function getCourseId(){
-        return $this->getParent()->getId();
-    }
-    
     public function setupResources() {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
@@ -87,29 +83,30 @@ class Views extends Module {
     public function init() {
         $this->viewHandler = new ViewHandler($this);
 
-        $this->viewHandler->registerFunction('value', function($val) {
+        //functions of views' expression language
+        $this->viewHandler->registerFunction('system','value', function($val) {
             return new ValueNode($val->getValue());
         });
 
-        $this->viewHandler->registerFunction('urlify', function($val) {
+        $this->viewHandler->registerFunction('system','urlify', function($val) {
             return new ValueNode(str_replace(' ', '', $val));
         });
 
-        $this->viewHandler->registerFunction('time', function() {
+        $this->viewHandler->registerFunction('system','time', function() {
             return new ValueNode(time());
         });
 
-        $this->viewHandler->registerFunction('formatDate', function($val) {
+        $this->viewHandler->registerFunction('system','formatDate', function($val) {
             return new ValueNode(date('d-M-Y', strtotime($val)));
         });
-        $this->viewHandler->registerFunction('timestamp', function($val) {
+        $this->viewHandler->registerFunction('system','timestamp', function($val) {
             return new ValueNode( strtotime($val) );
         });
-        $this->viewHandler->registerFunction('if', function($cond, $val1, $val2) {
+        $this->viewHandler->registerFunction('system','if', function($cond, $val1, $val2) {
             return new ValueNode($cond ? $val1 :  $val2);
         });
 
-        $this->viewHandler->registerFunction('size', function($val) {
+        $this->viewHandler->registerFunction('system','size', function($val) {
             if (is_null($val))
                 return new ValueNode(0);
             if (is_array($val))
@@ -118,19 +115,21 @@ class Views extends Module {
                 return new ValueNode(strlen($val));
         });
 
-        $this->viewHandler->registerFunction('abs', function($val) { return new ValueNode(abs($val)); });
-        $this->viewHandler->registerFunction('min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
-        $this->viewHandler->registerFunction('max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });
-        $this->viewHandler->registerFunction('int', function($val1) { return new ValueNode(intval($val1)); });
+        $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });
+        $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
+        $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });
+        $this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
 
         $course = $this->getParent();
-        $this->viewHandler->registerFunction('isModuleEnabled', function($module) use ($course) {
+        $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
             return new ValueNode($course->getModule($module) != null);
         });
 
-        $this->viewHandler->registerFunction('getModules', function() use ($course) {
+        $this->viewHandler->registerFunction('system','getModules', function() use ($course) {
             return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
         });
+        
+        //parts
         $this->viewHandler->registerPartType('text', null, null,
             function(&$value) {
                 if (array_key_exists('link', $value))

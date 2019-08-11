@@ -12,7 +12,7 @@ class XPLevels extends Module {
     public function init() {
        
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->registerFunction('awardLatestImage', function($award, $course) {
+        /*$viewHandler->registerFunction('awardLatestImage', function($award, $course) {
             switch ($award['type']) {
                 case 'grade':
                     return new Modules\Views\Expression\ValueNode('<img src="images/quiz.svg">');
@@ -65,7 +65,7 @@ class XPLevels extends Module {
                 $userData=$userData[0];
             $mandatory = $userData['XP'] - $userData['countedTreeXP'] - min($userData['extraBadgeXP'], 1000);
             return new Modules\Views\Expression\ValueNode($userData['XP'] . ' total, ' . $mandatory . ' mandatory, ' . $userData['countedTreeXP'] .  ' from tree, ' . min($userData['extraBadgeXP'], 1000) . ' bonus');
-        });
+        });*/
     }
 }
 

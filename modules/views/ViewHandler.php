@@ -322,17 +322,23 @@ class ViewHandler {
         $this->registeredPages[$page['id']] = $pageSettings;
     }
 
-    public function registerFunction($funcName, $processFunc) {
-        if (array_key_exists($funcName, $this->registeredFunctions))
-            new \Exception('Function ' . $funcName . ' already exists');
+    public function registerFunction($funcLib,$funcName, $processFunc) {
+        //ToDO: save on dictionary table ?
+        if (!array_key_exists($funcLib, $this->registeredFunctions))
+            $this->registeredFunctions[$funcLib]=[];
+        if (array_key_exists($funcLib, $this->registeredFunctions[$funcLib]))
+            new \Exception('Function ' . $funcName . ' already exists in library '. $funcLib);
 
-        $this->registeredFunctions[$funcName] = $processFunc;
+        $this->registeredFunctions[$funcLib][$funcName] = $processFunc;
     }
 
-    public function callFunction($funcName, $args) {
-        if (!array_key_exists($funcName, $this->registeredFunctions))
-            throw new \Exception('Function ' . $funcName . ' is not defined');
-        return $this->registeredFunctions[$funcName](...$args);
+    public function callFunction($funcLib, $funcName, $args, $context=null) {
+        if (!array_key_exists($funcLib, $this->registeredFunctions))
+            throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
+        if (!array_key_exists($funcName, $this->registeredFunctions[$funcLib]))
+            throw new \Exception('Function ' . $key . ' is not defined in library '. $funcLib);
+        //ToDo: if context -> add it to args
+        return $this->registeredFunctions[$funcLib][$funcName](...$args);
     }
 
     
@@ -570,6 +576,7 @@ class ViewHandler {
     }
 
     public function parsePart(&$part) {
+        //parse ["data"] or ["variables"]
         $this->parseData($part);
         if (array_key_exists('style', $part))
             $this->parseSelf($part['style']);
@@ -586,6 +593,7 @@ class ViewHandler {
         foreach ($view['children'] as &$part) {
             $this->parsePart($part);
         }
+        //print_r($view);
     }
     
     //go throgh roles of a view to find the role of the user
@@ -651,7 +659,8 @@ class ViewHandler {
                     }
                     
                     $userView=$this->getViewWithParts($pageId, $roleOne.'>'.$roleTwo);
-                }else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
+                }
+                else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
                     $userRoles = $course->getLoggedUser()->getRoles();
                     $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
                     $userView=$this->getViewWithParts($page["viewId"], $roleOne);

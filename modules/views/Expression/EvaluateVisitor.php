@@ -1,10 +1,6 @@
 <?php
 namespace Modules\Views\Expression;
 
-use SmartBoards\Course;
-use SmartBoards\DataRetrieverContinuation;
-use SmartBoards\DataSchema;
-use SmartBoards\User;
 use SmartBoards\Core;
 
 class EvaluateVisitor extends Visitor {
@@ -83,7 +79,21 @@ class EvaluateVisitor extends Visitor {
         } else {
             $args = $node->getArgs()->accept($this)->getValue();
         }
-        return $this->viewHandler->callFunction($funcName, $args);
+        $context = $node->getContext();
+        if ($context==null){
+            return $this->viewHandler->callFunction($node->getLib(),$funcName, $args);
+        }else{
+            $context = $node->getContext()->accept($this)->getValue();
+            $lib=$node->getLib();
+            if($node->getLib()==null){
+                //gets the lib name of the previous function 
+                //ex: users.getUser().name in que function name gets users lib
+                $lib=$node->getContext()->getLib();
+            }
+            return $this->viewHandler->callFunction($lib,$funcName, $args, $context);
+        }
+        
+        //return $this->viewHandler->callFunction($funcName, $args);
     }
     
     //for now we're keeping the new functionality in the if and the old in the else

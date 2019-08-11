@@ -24,7 +24,7 @@ class Skills extends Module {
     public function init() {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerFunction('skillStyle', function($skill, $user) {
+        /*$viewHandler->registerFunction('skillStyle', function($skill, $user) {
             $courseId = $this->getParent()->getId();
             $unlockedSkills=array_column(Core::$systemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
                   
@@ -98,7 +98,7 @@ class Skills extends Module {
         $viewHandler->registerFunction('studentsWithSkill', function($skillName) use (&$skillsCache) {
             return new \Modules\Views\Expression\ValueNode($skillsCache[$skillName]);
         });
-
+*/
         //if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
         //    $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'),$this->getId());
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)

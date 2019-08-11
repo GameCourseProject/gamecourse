@@ -17,6 +17,9 @@ abstract class Module {
     public function getId() {
         return $this->id;
     }
+    public function getCourseId(){
+        return $this->getParent()->getId();
+    }
 
     public function getName() {
         return $this->name;

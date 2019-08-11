@@ -21,18 +21,17 @@
                                 return 'STRING';
                             }
 <EXPR>"in"                  return 'IN'
-<EXPR>[$][A-Za-z]+          return 'FUNCTION'
 <EXPR>','                   return ','
 <EXPR>"."                   {   //js
                                 CodeAssistant.pushPath();
-                                this.begin('PATH_STATE');
-                                /*php $this->begin('PATH_STATE'); */
+                                // //this.begin('PATH_STATE');
+                                ///*php $this->begin('PATH_STATE'); */
                                 return 'PATH_SEPARATOR';
                             }
 <EXPR>[A-Za-z_]+             {   //js
                                 CodeAssistant.setPath(yytext);
-                                this.begin('PATH_STATE');
-                                /*php $this->begin('PATH_STATE'); */
+                                ////this.begin('PATH_STATE');
+                                ///*php $this->begin('PATH_STATE'); */
                                 return 'PATH';
                             }
 <EXPR>\s+                   /* skip whitespace */
@@ -174,10 +173,6 @@ stmt
         {/*php
             $$ = new ParameterNode(substr($1.yytext, 1));
         */}
-    | PARAM PATH_SEPARATOR TEXT
-        {/*php
-            $$ = new ParameterNode(substr($1.yytext, 1),$3.yytext);
-        */}
     ;
 exp
     : exp '+' exp
@@ -256,18 +251,15 @@ exp
         {/*php
             $$ = new GenericUnaryOp('-', $2.yytext);
         */}
-    | FUNCTION '(' ')'
-        {/*php
-            $$ = new FunctionOp(substr($1.yytext, 1), null);
-        */}
-    | FUNCTION '(' arglist ')'
-        {/*php
-            $$ = new FunctionOp(substr($1.yytext, 1), $3.yytext);
-        */}
     | '(' exp ')'
         {/*php
             $$ = $2.yytext;
         */}
+    | function
+        {   //js
+            CodeAssistant.reset();
+            /*php $$ = $1->text; */
+        }
     | totalpath
         {   //js
             CodeAssistant.reset();
@@ -284,79 +276,34 @@ exp
     | NUMBER
         {/*php
             $$ = new ValueNode((int) ($1.yytext));
-        */}
+        */}   
     ;
-
-simplepath
-    : PATH
-        {   //js
-            $$ = $1;
-            /*php $$ = $1->text; */
-        }
-    | PATH JOIN simplepath
-        {   //js
-            $$ = $1;
-            /*php $$ = $1->text . " natural join " . $3->text; */
-        }    
-    | PATH PATH_SEPARATOR simplepath
-        {   //js
-            $$ = $1 + '.' + $3;
-            /*php $$ = $1->text . '.' . $3->text; */
-        }
-    ;
-dbcontext
-    : '[' TEXT '=' block ']'
+function
+    : PATH PATH_SEPARATOR PATH
         {/*php
-            $$ = new ContextSequence($2.yytext, $4.yytext);
+            $$ = new FunctionOp($3.yytext, null, $1.yytext);
         */}
  
-    | '[' TEXT '=' block ']' dbcontext
+    | PATH PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
-            $$ = new ContextSequence($2.yytext, $4.yytext, $6.yytext);
+            $$ = new FunctionOp($3.yytext, $5.yytext, $1.yytext);
         */}
-    ;
-context
-    : '[' block ']'
+    | PARAM PATH_SEPARATOR PATH
         {/*php
-            $$ = new ContextSequence(null,$2.yytext);
+            $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
         */}
  
-    | '[' block ']' context
+    | PARAM PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
-            $$ = new ContextSequence(null,$2.yytext, $4.yytext);
+            $$ = new FunctionOp($3.yytext, $5.yytext, null,$1.yytext);
         */}
-    ;
-
-contextpath
-    : simplepath
+    | function PATH_SEPARATOR PATH
         {/*php
-            $$ = new DatabasePath($1->text);
+            $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
         */}
-    | simplepath dbcontext
+ 
+    | function PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
-            $$ = new DatabasePath($1->text, $2->text);
-        */}
-    | simplepath dbcontext PATH_SEPARATOR contextpath
-        {/*php
-            $$ = new DatabasePath($1->text, $2->text, $4->text);
-        */}
-    ;
-
-totalpath
-    : PARAM PATH_SEPARATOR simplepath
-        {/*php
-            $$ = new ParameterNode(substr($1.yytext, 1), $3->text);
-        */}
-    | PARAM context
-        {/*php
-            $$ = new DatabasePathFromParameter(substr($1.yytext, 1), null, $2->text);
-        */}
-    | PARAM context PATH_SEPARATOR contextpath
-        {/*php
-            $$ = new DatabasePathFromParameter(substr($1.yytext, 1), $4->text, $2->text);
-        */}
-    | contextpath
-        {/*php
-            $$ = $1->text;
+            $$ = new FunctionOp($3.yytext, $5.yytext, null,$1.yytext);
         */}
     ;
