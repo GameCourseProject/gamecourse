@@ -17,9 +17,21 @@ class Badges extends Module {
         $viewHandler = $viewsModule->getViewHandler();
         
         $viewHandler->registerFunction('badges','getBadge', function($name=null) { 
-            $badge =(Core::$systemDB->select("badge","description",["course"=>$this->getCourseId(), "name"=>$name]));    
-            return new ValueNode($badge);
+            $badge =(Core::$systemDB->select("badge","*",["course"=>$this->getCourseId(), "name"=>$name]));    
+            return $badge;
         });
+        $viewHandler->registerFunction('badges','description', function($badge) {
+            //$badge could be badge array or badge id?
+            if (is_array($badge)){
+                $desc = $badge["description"];
+            }
+            else{
+                //is this case necessary?
+                $desc = (Core::$systemDB->select("badge","description",["id"=>$badge]));
+            }
+            return new ValueNode($desc);
+        });
+        
         /*$badgeCache = array();
         $viewHandler->registerFunction("badges",'userBadgesCache', function() use (&$badgeCache) {
             $course = $this->getParent();

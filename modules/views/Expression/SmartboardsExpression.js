@@ -250,12 +250,22 @@ case 36:
             this.$ = new FunctionOp($$[$0-3].yytext, $$[$0-1].yytext, $$[$0-5].yytext);
         */
 break;
-case 37: case 39:
+case 37:
+/*php
+            this.$ = new FunctionOp($$[$0].yytext, null, null,new ParameterNode(substr($$[$0-2].yytext, 1)));
+        */
+break;
+case 38:
+/*php
+            this.$ = new FunctionOp($$[$0-3].yytext, $$[$0-1].yytext, null,new ParameterNode(substr($$[$0-5].yytext, 1)));
+        */
+break;
+case 39:
 /*php
             this.$ = new FunctionOp($$[$0].yytext, null, null,$$[$0-2].yytext);
         */
 break;
-case 38: case 40:
+case 40:
 /*php
             this.$ = new FunctionOp($$[$0-3].yytext, $$[$0-1].yytext, null,$$[$0-5].yytext);
         */

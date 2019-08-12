@@ -18,6 +18,9 @@ class FunctionOp extends Node {
     public function getLib() {
         return $this->lib;
     }
+    public function setLib($lib) {
+        return $this->lib=$lib;
+    }
     public function getContext() {
         return $this->context;
     }

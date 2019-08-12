@@ -290,12 +290,12 @@ function
         */}
     | PARAM PATH_SEPARATOR PATH
         {/*php
-            $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
+            $$ = new FunctionOp($3.yytext, null, null,new ParameterNode(substr($1.yytext, 1)));
         */}
  
     | PARAM PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
-            $$ = new FunctionOp($3.yytext, $5.yytext, null,$1.yytext);
+            $$ = new FunctionOp($3.yytext, $5.yytext, null,new ParameterNode(substr($1.yytext, 1)));
         */}
     | function PATH_SEPARATOR PATH
         {/*php

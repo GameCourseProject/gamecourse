@@ -348,7 +348,9 @@ class ViewHandler {
             throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
         if (!array_key_exists($funcName, $this->registeredFunctions[$funcLib]))
             throw new \Exception('Function ' . $key . ' is not defined in library '. $funcLib);
-        //ToDo: if context -> add it to args
+        
+        if ($context!==null)
+            array_unshift($args,$context);
         return $this->registeredFunctions[$funcLib][$funcName](...$args);
     }
 
@@ -424,15 +426,23 @@ class ViewHandler {
         if ($func != null && is_callable($func))
             $func($params, $actualVisitor);
     }
-
+//fixme
     private function getContinuationOrValue(&$node, &$visitor, $cont, $val) {
-        if (is_a($node, 'Modules\Views\Expression\DatabasePath'))
+        /*if (is_a($node, 'Modules\Views\Expression\DatabasePath'))
             $cont($node->accept($visitor, null, true));
         else if (is_a($node, 'Modules\Views\Expression\DatabasePathFromParameter'))
-            $cont($node->accept($visitor, true));
-        else {
-            $val($node->accept($visitor)->getValue());
+            $cont($node->accept($visitor, true));*/
+        $lib=null;
+        if (is_a($node,'Modules\Views\Expression\FunctionOp')){
+            $lib=$node->getLib();
         }
+        $visitedNode = $node->accept($visitor);
+        if (!is_array($visitedNode)){
+            $visitedNode = $visitedNode->getValue();
+        }else if ($lib!==null){
+           $visitedNode["libraryOfVariable"]=$lib;
+        }
+        $val($visitedNode);
     }
 
     public function processRepeat(&$container, $viewParams, $visitor, $func) {
@@ -565,8 +575,11 @@ class ViewHandler {
 
     public function parseVariables(&$part) {
         if (array_key_exists('variables', $part)) {
-            foreach ($part['variables'] as $k => &$v)
+            foreach ($part['variables'] as $k => &$v){
+                
                 $this->parseSelf($v['value']);
+  
+            }  
         }
     }
 

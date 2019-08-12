@@ -80,6 +80,7 @@ class EvaluateVisitor extends Visitor {
             $args = $node->getArgs()->accept($this)->getValue();
         }
         $context = $node->getContext();
+        
         if ($context==null){
             return $this->viewHandler->callFunction($node->getLib(),$funcName, $args);
         }else{
@@ -88,7 +89,7 @@ class EvaluateVisitor extends Visitor {
             if($node->getLib()==null){
                 //gets the lib name of the previous function 
                 //ex: users.getUser().name in que function name gets users lib
-                $lib=$node->getContext()->getLib();
+                $lib=$context["libraryOfVariable"];
             }
             return $this->viewHandler->callFunction($lib,$funcName, $args, $context);
         }

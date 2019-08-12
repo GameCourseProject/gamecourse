@@ -1,7 +1,6 @@
 <?php
 /* Jison generated parser */
-namespace Modules\Views\Expression
-;
+namespace Modules\Views\Expression;
 use Exception;
 
 
@@ -1815,12 +1814,22 @@ case 36:
             $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, $s[$o-5]->text);
         
 break;
-case 37: case 39:
+case 37:
+
+            $thisS = new FunctionOp($s[$o]->text, null, null,new ParameterNode(substr($s[$o-2]->text, 1)));
+        
+break;
+case 38:
+
+            $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, null,new ParameterNode(substr($s[$o-5]->text, 1)));
+        
+break;
+case 39:
 
             $thisS = new FunctionOp($s[$o]->text, null, null,$s[$o-2]->text);
         
 break;
-case 38: case 40:
+case 40:
 
             $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, null,$s[$o-5]->text);
         
