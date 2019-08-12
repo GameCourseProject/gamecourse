@@ -227,7 +227,7 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
 
                             partSpecificMenu.append(header);
 
-                            el.children('.title').after($compile(partSpecificMenu)(optionsScope));
+                            el.children('.partSpecific').after($compile(partSpecificMenu)(optionsScope));
                         }
                     },
                     toolFunctions: {

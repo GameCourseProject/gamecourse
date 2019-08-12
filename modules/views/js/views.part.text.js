@@ -42,7 +42,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
 
                 function bindToolbar() {
                     $sbviews.bindToolbar(element, scope, part, options, { overlayOptions: {callbackFunc: function(el, execClose, optionsScope, watch) {
-                        el.children('.title').after(buildOptions(optionsScope, watch));
+                        el.children('.partSpecific').after(buildOptions(optionsScope, watch));
                     }, closeFunc: function() {
                         var newEl = valuePartDef.createElement(scope, part, options);
                         element.replaceWith(newEl);

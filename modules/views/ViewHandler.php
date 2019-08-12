@@ -42,7 +42,8 @@ class ViewHandler {
         return $this->registeredPages;
     }
     
-    public function addViewParameter($type,$value,$viewId){    
+    public function addViewParameter($type,$value,$viewId){   
+        
         $parmOfView = Core::$systemDB->select("parameter join view_parameter on id=parameterId",
                     "id,value",["type"=>$type, "viewId"=>$viewId]);
         if (!empty($parmOfView)){
@@ -88,7 +89,12 @@ class ViewHandler {
                 foreach ($viewPart["parameters"] as $type => $param){
                     $this->addViewParameter($type,$param,$viewPart["id"]);
                 }
-            }            
+            }       
+            if (array_key_exists("variables", $viewPart)){
+                $value = json_encode($viewPart["variables"]);
+                $this->addViewParameter("variables",$value,$viewPart["id"]);
+            }  
+        
             //ToDo:: delete views
             
             $viewPart["aspectClass"]=$aspectClass;
@@ -177,6 +183,7 @@ class ViewHandler {
                 continue;
             $view_params[$p["viewId"]][]=$p;
         }
+        //print_r($view_params)
         return $view_params;
     }
     
@@ -185,7 +192,11 @@ class ViewHandler {
         if (array_key_exists($child['id'], $view_params)){
             $params = $view_params[$child['id']];
             foreach($params as $param){
-                $child["parameters"][$param["type"]]=$param["value"];
+                if ($param["type"]=="variables"){
+                    $child["variables"]= json_decode($param["value"],true);
+                }
+                else
+                    $child["parameters"][$param["type"]]=$param["value"];
             }
         }
         $organizedView["children"][] = array_merge($child,["children"=>[]]);
@@ -382,11 +393,11 @@ class ViewHandler {
     }
 
     
-    public function processData(&$part, $viewParams, $visitor, $func = null) {
+    public function processVariables(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
         $params = $viewParams;
-        if (array_key_exists('data', $part)) {
-            foreach ($part['data'] as $k => &$v) {
+        if (array_key_exists('variables', $part)) {
+            foreach ($part['variables'] as $k => &$v) {
                 $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params, &$v) {
                     if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
                         $continuation = $continuation[0];
@@ -405,7 +416,7 @@ class ViewHandler {
         //adding all parameters to $part (so they can be used in js)
         if (array_key_exists("events", $part) || array_key_exists("directive", $part)){
             foreach ($params as $k => $val){
-                $part['data'][$k]["value"]=$val;
+                $part['variables'][$k]["value"]=$val;
             }
         }
         
@@ -530,7 +541,8 @@ class ViewHandler {
     }
 
     public function processPart(&$part, $viewParams, $visitor) {
-        $this->processData($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
+        $this->processVariables($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
+            //print_r($viewParams);
             if (array_key_exists('style', $part))
                 $part['style'] = $part['style']->accept($visitor)->getValue();
             if (array_key_exists('class', $part))
@@ -551,9 +563,9 @@ class ViewHandler {
         }*/
     }
 
-    public function parseData(&$part) {
-        if (array_key_exists('data', $part)) {
-            foreach ($part['data'] as $k => &$v)
+    public function parseVariables(&$part) {
+        if (array_key_exists('variables', $part)) {
+            foreach ($part['variables'] as $k => &$v)
                 $this->parseSelf($v['value']);
         }
     }
@@ -577,7 +589,7 @@ class ViewHandler {
 
     public function parsePart(&$part) {
         //parse ["data"] or ["variables"]
-        $this->parseData($part);
+        $this->parseVariables($part);
         if (array_key_exists('style', $part))
             $this->parseSelf($part['style']);
         if (array_key_exists('class', $part))
@@ -590,6 +602,7 @@ class ViewHandler {
     }
 
     public function parseView(&$view) {
+        //print_r($view);
         foreach ($view['children'] as &$part) {
             $this->parsePart($part);
         }

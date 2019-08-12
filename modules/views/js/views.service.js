@@ -109,7 +109,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 get: function() {
                     viewScope.view.origin = viewScope.viewBlock.origin;
                     viewScope.view.pid = viewScope.viewBlock.pid;
-                    viewScope.view.content = viewScope.viewBlock.children;
+                    //viewScope.view.content = viewScope.viewBlock.children;
                     return viewScope.view;
                 },
                 undo: function() {
@@ -367,14 +367,14 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         optionsScope.missingEvents.push(type);
                     };
 
-                    // Data
-                    optionsScope.data = {
+                    // Variables
+                    optionsScope.variables = {
                         dataKey: undefined
                     };
 
-                    optionsScope.addData = function() {
-                        optionsScope.part.data[optionsScope.data.dataKey] = {value: '', context: 'js'};
-                        optionsScope.data.dataKey = '';
+                    optionsScope.addVariable = function() {
+                        optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
+                        optionsScope.variables.dataKey = '';
                     };
 
                     $timeout(function() {
@@ -598,7 +598,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 defaultOptions.overlayOptions.allowRepeat = true;
                 defaultOptions.overlayOptions.allowIf = true;
                 defaultOptions.overlayOptions.allowEvents = true;
-                defaultOptions.overlayOptions.allowData = true;
+                defaultOptions.overlayOptions.allowVariables = true;
             }
 
             toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);

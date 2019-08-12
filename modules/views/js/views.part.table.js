@@ -77,7 +77,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     },
                     overlayOptions: {
                         allowEvents: true,
-                        allowData: true
+                        allowVariables: true
                     }
                 });
             }
@@ -402,7 +402,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                                 var partSpecificMenu = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"></sb-menu>');
                                 partSpecificMenu.append(root);
                                 watch('part.sortmode');
-                                el.children('.title').after($compile(partSpecificMenu)(optionsScope));
+                                el.children('.partSpecific').after($compile(partSpecificMenu)(optionsScope));
                             }
                         },
                         tools: {},
@@ -439,7 +439,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             allowClass: true,
                             allowRepeat: true,
                             allowEvents: true,
-                            allowData: true,
+                            allowVariables: true,
                             allowIf: true
                         }, tools: {},
                         editData: options.editData
@@ -568,7 +568,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                             watch('part.sort');
                             watch('part.filterBox');
-                            el.children('.title').after($compile(partSpecificMenu)(optionsScope));
+                            el.children('.partSpecific').after($compile(partSpecificMenu)(optionsScope));
                         }
                     }
                 });
