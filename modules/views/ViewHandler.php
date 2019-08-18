@@ -225,7 +225,7 @@ class ViewHandler {
             $this->lookAtParameter($child,$view_params,$organizedView);
             $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);        
         }    
-        if ($organizedView["partType"]=="block"){
+        if ($organizedView["partType"]=="block" && sizeof($organizedView["children"])>0){
             if ($organizedView["children"][0]["partType"]=="header"){
                 $organizedView["header"]=[];
                 $organizedView["header"]["image"]=$organizedView["children"][0]["children"][0];
@@ -347,7 +347,7 @@ class ViewHandler {
         if (!array_key_exists($funcLib, $this->registeredFunctions))
             throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
         if (!array_key_exists($funcName, $this->registeredFunctions[$funcLib]))
-            throw new \Exception('Function ' . $key . ' is not defined in library '. $funcLib);
+            throw new \Exception('Function ' . $funcName . ' is not defined in library '. $funcLib);
         
         if ($context!==null)
             array_unshift($args,$context);
@@ -432,32 +432,39 @@ class ViewHandler {
             $cont($node->accept($visitor, null, true));
         else if (is_a($node, 'Modules\Views\Expression\DatabasePathFromParameter'))
             $cont($node->accept($visitor, true));*/
+        //print_R($node);
         $lib=null;
+        $visitedNode = $node->accept($visitor)->getValue();
         if (is_a($node,'Modules\Views\Expression\FunctionOp')){
             $lib=$node->getLib();
         }
-        $visitedNode = $node->accept($visitor);
-        if (!is_array($visitedNode)){
-            $visitedNode = $visitedNode->getValue();
-        }else if ($lib!==null){
-           $visitedNode["libraryOfVariable"]=$lib;
+        
+        if (is_array($visitedNode) && $lib!==null){
+            if ($visitedNode["type"]=="object")
+                $visitedNode["value"]["libraryOfVariable"]=$lib;
+            else {//type == collection
+                foreach ($visitedNode["value"] as &$element){
+                    $element["libraryOfVariable"]=$lib;
+                }
+            }
         }
+        //print_R($visitedNode);
         $val($visitedNode);
     }
 
-    public function processRepeat(&$container, $viewParams, $visitor, $func) {
+    public function processLoop(&$container, $viewParams, $visitor, $func) {
         $containerArr = array();
         foreach($container as &$child) {
-            if (!array_key_exists('repeat', $child)) {
+            if (!array_key_exists('loopData', $child["parameters"])) {
                 if ($this->processIf($child, $visitor)) {
                     $func($child, $viewParams, $visitor);
                     $containerArr[] = $child;
                 }
             } else {
-                $repeatKey = $child['repeat']['key'];
+                $repeatKey = "item";
                 $repeatParams = array();
                 $keys = null;
-                $this->getContinuationOrValue($child['repeat']['for'], $visitor, 
+                $this->getContinuationOrValue($child['parameters']['loopData'], $visitor, 
                    function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
                     $repeatParams= $continuation;
                 }, function($value) use(&$repeatParams, &$keys, $repeatKey) {
@@ -467,7 +474,7 @@ class ViewHandler {
                          print_r($value);
                         throw new \Exception('Repeat must be an Array or a Continuation.');
                     }
-
+                    $value=$value["value"];
                     //if the $value array is associative it will be put in a sequential array
                     $isNumericArray=true;
                     foreach(array_keys($value) as $key){
@@ -481,11 +488,12 @@ class ViewHandler {
                      
                     $repeatParams = $value;
                 });
-                
+                $i=0;
                 foreach ($repeatParams as &$params){
                     $params = [$repeatKey => $params];
+                    $i++;
                 }
-                
+                /*
                 if (array_key_exists('filter', $child['repeat'])) {
                     $filter = $child['repeat']['filter'];
                     $repeatParams = array_filter($repeatParams, function($repeatParams) use($filter, $viewParams) {
@@ -514,18 +522,15 @@ class ViewHandler {
                             return $values[$a['index']] < $values[$b['index']] ? 1 : -1;
                         });
                 }
-                
-                unset($child['repeat']);
+                */
+                //unset($child['repeat']);
                 $repeatParams= array_values($repeatParams);
                 for($p=0;$p < sizeof($repeatParams);$p++){
                     
-                    if (array_key_exists('index', $repeatParams[$p])) {
-                        unset($repeatParams[$p]['index']);
-                    }
+                    $loopParam = [$repeatKey => ["type"=>"object", "value"=>$repeatParams[$p][$repeatKey]]];
                     
                     $dupChild = $child;
-                    $paramsforEvaluator = array_merge($viewParams, $repeatParams[$p], array($repeatKey . 'pos' => $p));
-     
+                    $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
                     $visitor = new EvaluateVisitor($paramsforEvaluator, $this);
 
                     if ($this->processIf($dupChild, $visitor)) {
@@ -552,7 +557,6 @@ class ViewHandler {
 
     public function processPart(&$part, $viewParams, $visitor) {
         $this->processVariables($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
-            //print_r($viewParams);
             if (array_key_exists('style', $part))
                 $part['style'] = $part['style']->accept($visitor)->getValue();
             if (array_key_exists('class', $part))
@@ -564,7 +568,7 @@ class ViewHandler {
 
     public function processView(&$view, $viewParams) {
         $visitor = new EvaluateVisitor($viewParams, $this);
-        $this->processRepeat($view['children'], $viewParams, $visitor, function(&$part, $viewParams, $visitor) {
+        $this->processLoop($view['children'], $viewParams, $visitor, function(&$part, $viewParams, $visitor) {
             $this->processPart($part, $viewParams, $visitor);
 
         });
@@ -583,15 +587,17 @@ class ViewHandler {
         }
     }
 
-    public function parseRepeat(&$part) {
-        if (array_key_exists('repeat', $part)) {
-            $this->parseSelf($part['repeat']['for']);
+    public function parseLoop(&$part) {
+        if (array_key_exists('loopData', $part["parameters"])) {
+            $this->parseSelf($part['parameters']['loopData']);
 
-            if (array_key_exists('filter', $part['repeat']))
+            //ToDo
+            /*if (array_key_exists('filter', $part['repeat']))
                 $this->parseSelf($part['repeat']['filter']);
 
             if (array_key_exists('sort', $part['repeat']))
-                $this->parseSelf($part['repeat']['sort']['value']);
+                $this->parseSelf($part['repeat']['sort']['value']);*/
+            
         }
     }
 
@@ -608,7 +614,7 @@ class ViewHandler {
         if (array_key_exists('class', $part))
             $this->parseSelf($part['class']);
 
-        $this->parseRepeat($part);
+        $this->parseLoop($part);
         $this->parseIf($part);
         
         $this->callPartParse($part['partType'], $part);

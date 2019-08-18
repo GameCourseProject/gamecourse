@@ -66,7 +66,7 @@ class Views extends Module {
     }
 
     private function processTableRows(&$rows, $viewParams, $visitor) {
-        $this->viewHandler->processRepeat($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
+        $this->viewHandler->processLoop($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
             $this->viewHandler->processData($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
                 if (array_key_exists('style', $row))
                     $row['style'] = $row['style']->accept($visitor)->getValue();
@@ -245,7 +245,7 @@ class Views extends Module {
                 }
 
                 if (array_key_exists('children', $block)) {
-                    $this->viewHandler->processRepeat($block['children'], $viewParams, $visitor, function(&$child, $viewParams, $visitor) {
+                    $this->viewHandler->processLoop($block['children'], $viewParams, $visitor, function(&$child, $viewParams, $visitor) {
                         $this->viewHandler->processPart($child, $viewParams, $visitor);
                     });
                 }
@@ -518,7 +518,7 @@ class Views extends Module {
                 $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
-                $view = $this->viewHandler->getViewWithParts($pageId, "");           
+                $view = $this->viewHandler->getViewWithParts($pageId, "");  
             }
             
             //$view = ViewEditHandler::putTogetherView($view, $parentParts);

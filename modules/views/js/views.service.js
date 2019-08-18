@@ -169,15 +169,15 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             console.error('Unknown part type: ' + part.partType);
             return;
         }
-
+        
         var partScope = parentScope.$new(true);
         partScope.part = part;
         if (part.partType!="templateRef")
             var element = this.registeredPartType[part.partType].build(partScope, part, options);
-        //ToDo: build instance
+        //ToDo: build instance/templateref
+        
         this.applyCommonFeatures(partScope, part, element, options);
         element.data('scope', partScope);
-
         return element;
     };
 
@@ -187,9 +187,9 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.destroy = function(element) {
         var scope = element.data('scope');
+        
         if (scope == null || scope.part == null)
             return;
-
         this.registeredPartType[scope.part.partType].destroy(element, scope.part);
         scope.$destroy();
         element.remove();
@@ -223,9 +223,11 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             $compile(element)(scope);
             element.removeAttr(part.directive);
         }
+        
     };
 
     this.openOverlay = function(callbackFunc, closeFunc) {
+        
         var overlay = $('<div class="settings-overlay">');
         var overlayCenter = $('<div class="settings-overlay-center"></div>');
         overlay.append(overlayCenter);
@@ -281,7 +283,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var optionsScope = scope.$new();
             optionsScope.editData = toolbarOptions.editData;
             optionsScope.part = angular.copy(part);
-
             optionsScope.toggleProperty = function(part, path, defaultValue) {
                 if (defaultValue == undefined)
                     defaultValue = '';
@@ -326,17 +327,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     }, true);
                 }
                 $sbviews.openOverlay(function(el, execClose) {
+                    
                     optionsScope.closeOverlay = function() {
                         execClose();
                     };
-
+                    
                     var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                     $compile(container)(optionsScope);
                     el.append(container);
                     watch('part.class');
                     watch('part.directive');
                     watch('part.style');
-                    watch('part.repeat');
+                    watch('part.parameters.loopData');
                     watch('part.if');
                     watch('part.events');
                     watch('part.data');
@@ -367,6 +369,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         optionsScope.missingEvents.push(type);
                     };
 
+ 
                     // Variables
                     optionsScope.variables = {
                         dataKey: undefined
@@ -376,13 +379,13 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
                         optionsScope.variables.dataKey = '';
                     };
-
+                    
                     $timeout(function() {
                         if (options.callbackFunc != undefined)
                             options.callbackFunc(container.next(), execClose, optionsScope, watch);
                     }, 50);
                 }, function(cancel) {
-                    if (cancel != undefined && optionsScope.part.repeat != undefined && optionsScope.part.repeat.for == '') {
+                    if (cancel != undefined && optionsScope.part.parameters.loopData != undefined && optionsScope.part.parameters.loopData == '') {
                         cancel();
                         alert('Repeat Elements expression cannot be empty. Be sure it is an Array or Continuation.');
                         return;
@@ -402,7 +405,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             options.closeFunc();
                     }
                 });
-            })
+            });
+            
         }));
 
         if (toolbarOptions.layoutEditor) {
@@ -415,6 +419,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
         if (toolbarOptions.tools.canDelete) {
             toolbar.append($sbviews.createTool('Remove', 'images/trashcan.svg', function() {
+                
                 toolbarOptions.toolFunctions.remove(part);
             }));
         }
@@ -615,6 +620,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
             element.addClass('highlight');
             element.append(myToolbar);
+            //console.log("mouse somehting",part);
+            //console.log("mouse somehting",element.data());
         });
 
         element.on('mouseleave', function(e) {

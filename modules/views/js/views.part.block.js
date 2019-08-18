@@ -8,7 +8,8 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                     title: undefined,
                     image: undefined
                 },
-                children: []
+                children: [],
+                parameters: {}
             };
 
             var titlePart = $sbviews.defaultPart('text');

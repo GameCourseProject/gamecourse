@@ -84,17 +84,25 @@ class EvaluateVisitor extends Visitor {
         if ($context==null){
             return $this->viewHandler->callFunction($node->getLib(),$funcName, $args);
         }else{
-            $context = $node->getContext()->accept($this)->getValue();
+            $contextVal=$context->accept($this)->getValue();
             $lib=$node->getLib();
             if($node->getLib()==null){
                 //gets the lib name of the previous function 
-                //ex: users.getUser().name in que function name gets users lib
-                $lib=$context["libraryOfVariable"];
+                //ex: users.getUser().name in the function 'name' gets users lib
+                if (is_a($context, "Modules\Views\Expression\FunctionOp")) {
+                    $lib = $context->getLib();
+                    $node->setLib($lib);
+                } 
+                if ($lib==null){
+                    if ($contextVal["type"] == "object")
+                        $lib = $contextVal["value"]["libraryOfVariable"];
+                    else {//type == collection
+                        $lib = $contextVal["value"][0]["libraryOfVariable"];
+                    }
+                }
             }
-            return $this->viewHandler->callFunction($lib,$funcName, $args, $context);
+            return $this->viewHandler->callFunction($lib,$funcName, $args, $contextVal);
         }
-        
-        //return $this->viewHandler->callFunction($funcName, $args);
     }
     
     //for now we're keeping the new functionality in the if and the old in the else

@@ -28,6 +28,9 @@
                                 ///*php $this->begin('PATH_STATE'); */
                                 return 'PATH_SEPARATOR';
                             }
+<EXPR>"null"                return 'NULL'
+<EXPR>"true"                return 'TRUE'
+<EXPR>"false"               return 'FALSE'
 <EXPR>[A-Za-z_]+             {   //js
                                 CodeAssistant.setPath(yytext);
                                 ////this.begin('PATH_STATE');
@@ -265,6 +268,18 @@ exp
             CodeAssistant.reset();
             /*php $$ = $1->text; */
         }
+    | NULL
+        {/*php
+            $$ = new ValueNode(null);
+        */}
+    | TRUE
+        {/*php
+            $$ = new ValueNode(1);
+        */}
+    | FALSE
+        {/*php
+            $$ = new ValueNode(0);
+        */}
     | PARAM
         {/*php
             $$ = new ParameterNode(substr($1.yytext, 1));

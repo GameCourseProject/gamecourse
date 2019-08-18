@@ -4,22 +4,22 @@
     <sb-checkbox ng-if="options.allowIf" sb-checkbox="part.if" sb-checkbox-label="Enable If" sb-checkbox-default="" sb-checkbox-info="The If allows to show/hide the element. The element is only shown when the If expression evaluates to true." sb-checkbox-link="./docs/#ViewsDOMIf">
         <sb-expression sb-expression="part.if" sb-expression-label="Condition"></sb-expression>
     </sb-checkbox>
-    <sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.repeat" sb-checkbox-label="Enable Repeat" sb-checkbox-default="{'for': '', 'key': 'key'}" sb-checkbox-info="Repeat allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
-        <sb-expression sb-expression="part.repeat.for" sb-expression-label="Elements"></sb-expression>
-        <sb-input sb-input="part.repeat.key" sb-input-label="Key"></sb-input>
+    <sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.parameters.loopData" sb-checkbox-label="Enable Loop" sb-checkbox-default="" sb-checkbox-info="Repeat allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
+        <sb-expression sb-expression="part.parameters.loopData" sb-expression-label="Loop Data"></sb-expression>
+        <!--sb-input sb-input="part.repeat.key" sb-input-label="Key"></sb-input>
         <sb-checkbox sb-checkbox="part.repeat.filter" sb-checkbox-label="Enable Filter" sb-checkbox-default="'{1 == 1}'" sb-checkbox-info="Filters the Elements according to the Filter expression.">
             <sb-expression sb-expression="part.repeat.filter" sb-expression-label="Filter"></sb-expression>
         </sb-checkbox>
         <sb-checkbox sb-checkbox="part.repeat.sort" sb-checkbox-label="Enable Sort" sb-checkbox-default="{value: '{0}', order: 'ASC'}" sb-checkbox-info="Sorts the Elements according to the their Value and the sorting Order.">
             <sb-expression sb-expression="part.repeat.sort.value" sb-expression-label="Value"></sb-expression>
             <div class="sb-component"><!--
-                --><label for="order-select">Order</label><!--
-                --><select id="order-select" ng-model="part.repeat.sort.order">
+                <label for="order-select">Order</label><!--
+                    <select id="order-select" ng-model="part.repeat.sort.order">
                     <option value="ASC">Ascending</option>
                     <option value="DESC">Descending</option>
                 </select><!--
-            --></div>
-        </sb-checkbox>
+            </div>
+        </sb-checkbox-->
     </sb-checkbox>
 </sb-menu>
 

@@ -72,6 +72,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
             } 
             else 
                 element.html(part.parameters.value);
+            element.data("scope",scope);
             return element;
         },
         destroy: function(element) {
