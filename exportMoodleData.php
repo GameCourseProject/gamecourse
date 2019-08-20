@@ -7,7 +7,7 @@ use \SmartBoards\Core;
 
 Core::init();
 
-$courses = Core::$systemDB->selectMultiple("mdl_course","id,shortname,fullname");
+$courses = Core::$systemDB->selectMultiple("mdl_course",null,"id,shortname,fullname");
 $users = Core::$systemDB->selectMultiple("mdl_user");
 $userMap = array_combine(array_column($users, "id"), $users);
 
@@ -75,7 +75,7 @@ foreach($courses as $course){
     if (!file_exists($courseFolder))
         mkdir($courseFolder);
     
-    $forums = Core::$systemDB->selectMultiple("mdl_forum","id,name",["course"=>$course['id']]);
+    $forums = Core::$systemDB->selectMultiple("mdl_forum",["course"=>$course['id']],"id,name");
     foreach($forums as $forum){
         //echo "Looking at forum " . $forum['name'] . "<br>";
         $forum["name"]= str_replace('/', '-', $forum["name"]);
@@ -84,7 +84,7 @@ foreach($courses as $course){
         if (!file_exists($forumFolder))
             mkdir($forumFolder);
         
-        $discussions = Core::$systemDB->selectMultiple("mdl_forum_discussions","id,name",["forum"=>$forum['id']]);
+        $discussions = Core::$systemDB->selectMultiple("mdl_forum_discussions",["forum"=>$forum['id']],"id,name");
         foreach($discussions as $discussion){
             //echo "Looking at discussion " . $discussion['name'] . "<br>";
             $discussion["name"]= str_replace('/', '-', $discussion["name"]);
@@ -93,19 +93,19 @@ foreach($courses as $course){
             if (!file_exists($discussionFolder))
                 mkdir($discussionFolder);
             
-            $posts = Core::$systemDB->selectMultiple("mdl_forum_posts","id",["discussion"=>$discussion['id']]);
+            $posts = Core::$systemDB->selectMultiple("mdl_forum_posts",["discussion"=>$discussion['id']],"id");
             //message,id,userid,parent,created
             foreach($posts as $post){
                 if ($post["id"]==8262){//the content of this post makes an out of memory error
                     continue;
                 }
-                $post = Core::$systemDB->select("mdl_forum_posts","message,id,userid,parent,created",["id"=>$post['id']]);
+                $post = Core::$systemDB->select("mdl_forum_posts",["id"=>$post['id']],"message,id,userid,parent,created");
                 computePost($post, $userMap, $discussion, $forum, $course, $discussionFolder);
             }
         }
     }
     try {
-        $peerforums = Core::$systemDB->selectMultiple("mdl_peerforum","id,name",["course"=>$course['id']]);
+        $peerforums = Core::$systemDB->selectMultiple("mdl_peerforum",["course"=>$course['id']],"id,name");
     } catch (Exception $ex) {
         $peerforums=[];
     }
@@ -118,7 +118,7 @@ foreach($courses as $course){
         if (!file_exists($forumFolder))
             mkdir($forumFolder);
         
-        $discussions = Core::$systemDB->selectMultiple("mdl_peerforum_discussions","id,name",["peerforum"=>$forum['id']]);
+        $discussions = Core::$systemDB->selectMultiple("mdl_peerforum_discussions",["peerforum"=>$forum['id']],"id,name");
         foreach($discussions as $discussion){
             //echo "Looking at discussion " . $discussion['name'] . "<br>";
             $discussion["name"]= str_replace('/', '-', $discussion["name"]);
@@ -127,10 +127,10 @@ foreach($courses as $course){
             if (!file_exists($discussionFolder))
                 mkdir($discussionFolder);
             
-            $posts = Core::$systemDB->selectMultiple("mdl_peerforum_posts","id",["discussion"=>$discussion['id']]);
+            $posts = Core::$systemDB->selectMultiple("mdl_peerforum_posts",["discussion"=>$discussion['id']],"id");
             //message,id,userid,parent,created
             foreach($posts as $post){
-                $post = Core::$systemDB->select("mdl_peerforum_posts","message,id,userid,parent,created",["id"=>$post['id']]);
+                $post = Core::$systemDB->select("mdl_peerforum_posts",["id"=>$post['id']],"message,id,userid,parent,created");
                 computePost($post, $userMap, $discussion, $forum, $course, $discussionFolder);
             }
         }

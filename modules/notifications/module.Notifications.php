@@ -22,7 +22,7 @@ class Notifications extends Module {
         if ($user->hasRole('Student')) {
             $activity = $user->getData("prevActivity");
             
-            $awards = Core::$systemDB->selectMultiple("award",'*',["course"=>$courseId,"student"=>$userId],"awardDate");
+            $awards = Core::$systemDB->selectMultiple("award",["course"=>$courseId,"student"=>$userId],"awardDate");
             if (is_null($awards) || !is_array($awards))
                 return;
 
@@ -80,14 +80,14 @@ class Notifications extends Module {
             $pendingNotifications=$this->notificationList;
             
             //$courseId = $this->getParent()->getId();
-            //$pendingNotifications = Core::$systemDB->selectMultiple("notification",'*',["course"=>$courseId,"student"=>$userId]);
+            //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
             return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
         });
 
         $viewHandler->registerFunction('getNotifications', function($userId) {
             $pendingNotifications=$this->notificationList;
             //$courseId = $this->getParent()->getId();
-            //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",'*',
+            //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
             //                                                    ["course"=>$courseId,"student"=>$userId]);
             
             /*$notifications = array();

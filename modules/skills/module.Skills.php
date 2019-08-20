@@ -26,11 +26,11 @@ class Skills extends Module {
         $viewHandler = $viewsModule->getViewHandler();
         /*$viewHandler->registerFunction('skillStyle', function($skill, $user) {
             $courseId = $this->getParent()->getId();
-            $unlockedSkills=array_column(Core::$systemDB->selectMultiple("user_skill","name",["course"=>$courseId,"student"=> $user]),"name");
+            $unlockedSkills=array_column(Core::$systemDB->selectMultiple("user_skill",["course"=>$courseId,"student"=> $user],"name"),"name");
                   
             if ($unlockedSkills == null)
                 $unlockedSkills = array();
-            $dependencies = Core::$systemDB->selectMultiple("skill_dependency",'*',["course"=>$courseId,"skillName"=>$skill['name']]);
+            $dependencies = Core::$systemDB->selectMultiple("skill_dependency",["course"=>$courseId,"skillName"=>$skill['name']]);
             $unlocked = (count($dependencies) == 0);
 
             foreach($dependencies as $dependency) {
@@ -64,11 +64,11 @@ class Skills extends Module {
                     
             $skillsCache = array();
             $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
-                                                    '*',["course"=>$course->getId()]);
+                                                   ["course"=>$course->getId()]);
             foreach ($skills as $skill) {
                 $skillName = $skill['name'];
                 $skillsCache[$skillName] = array();
-                $skillStudents = Core::$systemDB->selectMultiple("user_skill",'*',["name"=>$skillName,"course"=>$course->getId()]);
+                $skillStudents = Core::$systemDB->selectMultiple("user_skill",["name"=>$skillName,"course"=>$course->getId()]);
                
                 foreach($skillStudents as $skillStudent) {
                     $id= $skillStudent['student'];
@@ -111,7 +111,7 @@ class Skills extends Module {
             
             if ($skillName) {
                 $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
-                                '*',["course"=>$courseId]);
+                                ["course"=>$courseId]);
                 foreach($skills as $skill) {
                     $compressedName = str_replace(' ', '', $skill['name']);
                     if ($compressedName == $skillName) {

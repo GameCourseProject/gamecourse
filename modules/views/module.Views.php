@@ -86,7 +86,7 @@ class Views extends Module {
         $type=$award["value"]["type"];
         if ($type=="badge"){
             return Core::$systemDB->select($type,
-                        "name",["id"=>$award["value"]["moduleInstance"]]);
+                        ["id"=>$award["value"]["moduleInstance"]],"name");
         }
         if  ($type=="skill")
             return $award["value"]["description"];
@@ -168,14 +168,14 @@ class Views extends Module {
                 if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
                     $where["name"]=$moduleInstance;
                     $table = "award a join ".$type." m on moduleInstance=m.id";
-                    return $this->createNode(Core::$system->selectMultiple($table,"a.*,m.name",$where),"collection");
+                    return $this->createNode(Core::$system->selectMultiple($table,$where,"a.*,m.name"),"collection");
                 }
             }
-            return $this->createNode(Core::$systemDB->selectMultiple("award","*", $where,null,[], $whereDate),"collection");
+            return $this->createNode(Core::$systemDB->selectMultiple("award",$where,"*",null,[], $whereDate),"collection");
         });
         $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
             if ($item=="user"){
-                $username = Core::$systemDB->select("game_course_user","username",["id"=>$award["value"]["user"]]);
+                $username = Core::$systemDB->select("game_course_user",["id"=>$award["value"]["user"]],"username");
                 return new ValueNode("photos/".$username.".png");
             }
             else{//$item=="type
@@ -191,7 +191,7 @@ class Views extends Module {
                     case 'skill':
                         $name = $this->getModuleNameOfAward($award);
                         $color = '#fff';
-                        $skillColor = Core::$systemDB->select("skill","color",["id"=>$award['value']["moduleInstance"]]);
+                        $skillColor = Core::$systemDB->select("skill",["id"=>$award['value']["moduleInstance"]],"color");
                         if($skillColor)
                             $color=$skillColor;
                         //needs width and height , should have them if it has latest-awards class in a profile
@@ -573,7 +573,7 @@ class Views extends Module {
             API::requireValues('name','course');
             $name = API::getValue('name');
             $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", $name) . ".txt";
-            file_put_contents($filename,Core::$systemDB->select("view_template","content",["course"=>API::getValue('course'),"id"=>$name])); 
+            file_put_contents($filename,Core::$systemDB->select("view_template",["course"=>API::getValue('course'),"id"=>$name],"content")); 
             API::response(array('filename' => $filename ));
             
         });
@@ -726,10 +726,10 @@ class Views extends Module {
             //Core::$systemDB->update("view_role",
              //           $viewContent['view_role'],
               //          $viewRoleInfo);
-            //$currParts = array_column(Core::$systemDB->selectMultiple("view_part",'pid',$viewRoleInfo),'pid');
+            //$currParts = array_column(Core::$systemDB->selectMultiple("view_part",$viewRoleInfo,'pid'),'pid');
             
             foreach($viewContent['view_part'] as $part){
-                if (empty(Core::$systemDB->select("view_part",'*',['pid'=>$part['pid'],'course'=>$courseId]))){
+                if (empty(Core::$systemDB->select("view_part",['pid'=>$part['pid'],'course'=>$courseId]))){
                     Core::$systemDB->insert('view_part',array_merge($part,$viewRoleInfo));
                 }else{
                     Core::$systemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid'],'course'=>$courseId]);
@@ -937,9 +937,9 @@ class Views extends Module {
         //gets normal templates of this course
         //ToDO: get global templates
         $temps = Core::$systemDB->selectMultiple('template',
-                '*',['course'=>$this->getCourseId()]);
+                ['course'=>$this->getCourseId()]);
         if ($includeGlobals) {
-            $globalTemp = Core::$systemDB->selectMultiple("template", "*", ["isGlobal" => true]);
+            $globalTemp = Core::$systemDB->selectMultiple("template",["isGlobal" => true]);
             return [$temps, $globalTemp];
         }
         //foreach ($temps as &$temp){
@@ -948,7 +948,7 @@ class Views extends Module {
         return $temps;
     }
     public function getTemplate($id) {
-        $temp = Core::$systemDB->select('view_template','*',['id'=>$id,'course'=>$this->getCourseId()]);
+        $temp = Core::$systemDB->select('view_template',['id'=>$id,'course'=>$this->getCourseId()]);
         if (!empty($temp)) {
             $temp['content'] = unserialize($temp['content']);
         }

@@ -162,13 +162,7 @@ create table badge(
 	isPoint boolean not null default false,
 	foreign key(course) references course(id) on delete cascade
 );
-create table badge_has_level(#this table exists to prevent empty parameters on level table
-	levelId 	int unsigned,
-	badgeId 	int unsigned,
-	reward 		int unsigned,
-	foreign key(badgeId) references badge(id) on delete cascade,
-	primary key(levelId,badgeId)
-);
+
 create table level(
 	id 		int unsigned auto_increment primary key,
 	number int not null,
@@ -176,6 +170,15 @@ create table level(
 	goal int not null,
 	description varchar(200),
 	foreign key(course) references course(id) on delete cascade
+);
+
+create table badge_has_level(#this table exists to prevent empty parameters on level table
+	levelId 	int unsigned,
+	badgeId 	int unsigned,
+	reward 		int unsigned,
+	foreign key(badgeId) references badge(id) on delete cascade,
+	foreign key(levelId) references level(id) on delete cascade,
+	primary key(levelId,badgeId)
 );
 
 create table skill_tree(
@@ -268,6 +271,8 @@ create table view_parameter(
 	foreign key (viewId) references view(id) on delete cascade,
 	foreign key (parameterId) references parameter(id) on delete cascade
 );
+
+#ToDO add trigger when delete level or badge -> delete bagde_has_level
 
 # if no view is using a parameter then delete it
 create trigger parameterDelete before delete on view_parameter

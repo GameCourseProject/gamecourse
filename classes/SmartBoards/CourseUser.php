@@ -27,7 +27,7 @@ class CourseUser extends User{
     
     //updates the lastActivity of user to current time, and prevActivity to previous val of activity
     function refreshActivity() {
-        $lastlast = Core::$systemDB->select("course_user","lastActivity",["course"=>$this->course->getId(),"id"=>$this->id]);
+        $lastlast = Core::$systemDB->select("course_user",["course"=>$this->course->getId(),"id"=>$this->id],"lastActivity");
         //this is updating the prevActivity (used to decide what notification to show)
         //if you whish to only show notification on the profile page, then you should only refresh activity in that page
         Core::$systemDB->update("course_user",["previousActivity"=> $lastlast],["course"=>$this->course->getId(),"id"=>$this->id]);
@@ -51,7 +51,7 @@ class CourseUser extends User{
     }
     
     function  getData($field="*"){
-        return Core::$systemDB->select("course_user",$field,["course"=>$this->course->getId(),"id"=>$this->id]);
+        return Core::$systemDB->select("course_user",["course"=>$this->course->getId(),"id"=>$this->id],$field);
     }
     
     function setCampus($campus) {
@@ -60,8 +60,8 @@ class CourseUser extends User{
     }
     
     function getRoles() {
-        return array_column(Core::$systemDB->selectMultiple("user_role","role",
-                ["course"=>$this->course->getId(),"id"=>$this->id]),"role");
+        return array_column(Core::$systemDB->selectMultiple("user_role",
+                ["course"=>$this->course->getId(),"id"=>$this->id],"role"),"role");
     }
     
     //receives array of roles and replaces them in the database
@@ -93,7 +93,7 @@ class CourseUser extends User{
 
     function hasRole($role) {
         $roleId = Course::getRoleId($role, $this->course->getId());
-        return (!empty(Core::$systemDB->selectMultiple("user_role",'*',
+        return (!empty(Core::$systemDB->selectMultiple("user_role",
             ["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId])));
     }
     function isTeacher() {

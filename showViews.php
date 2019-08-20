@@ -13,11 +13,11 @@ $queries=0;
 $arr=[];
 /*
 function lookAtTemplateChildren($parent,$ident, &$queries){
-    $children = Core::$systemDB->selectMultiple("view_template","*",["parent"=>$parent],"viewIndex");
+    $children = Core::$systemDB->selectMultiple("view_template",["parent"=>$parent],"*","viewIndex");
     $queries++;
     foreach($children as $child){
         $params = Core::$systemDB->selectMultiple("template_parameter join parameter on id=parameterId",
-                "*",["templateId"=>$child['id']]);
+                ["templateId"=>$child['id']]);
         $queries++;
         print_r(str_repeat("\t",$ident));
         print_r($child['partType']."-".$child['id']."  ");
@@ -30,11 +30,11 @@ function lookAtTemplateChildren($parent,$ident, &$queries){
     }
 }
 function lookAtChildren($parent,$ident, &$queries){
-    $children = Core::$systemDB->selectMultiple("view","*",["parent"=>$parent],"viewIndex");
+    $children = Core::$systemDB->selectMultiple("view",["parent"=>$parent],"*","viewIndex");
     $queries++;
     foreach($children as $child){
         $params = Core::$systemDB->selectMultiple("view_parameter join parameter on id=parameterId",
-                "*",["viewId"=>$child['id']]);
+                ["viewId"=>$child['id']]);
         $queries++;
         print_r(str_repeat("\t",$ident));
         print_r($child['partType']."-".$child['id']."  ");
@@ -44,11 +44,11 @@ function lookAtChildren($parent,$ident, &$queries){
         print_r("<br>");
         if($child['partType']=="instance"){
             //aspect class
-            $template = Core::$systemDB->select("view_template","*",["id"=>$child['template']]);
+            $template = Core::$systemDB->select("view_template",["id"=>$child['template']]);
             $queries++;
             //this is a simplification, is just looking for exact role, 
             //it should find alternatives if exact role isnt found
-            $aspect = Core::$systemDB->select("view_template","*",["parent"=>$template['id'],"role"=>$child["role"]]);
+            $aspect = Core::$systemDB->select("view_template",["parent"=>$template['id'],"role"=>$child["role"]]);
             $queries++;
             lookAtTemplateChildren($aspect['id'], $ident+1,$queries);
         }
@@ -57,11 +57,11 @@ function lookAtChildren($parent,$ident, &$queries){
     }
 }
 function lookAtPages($courseId, &$queries){
-    $pages = Core::$systemDB->selectMultiple("page","*",["course"=>$courseId]);
+    $pages = Core::$systemDB->selectMultiple("page",["course"=>$courseId]);
     $queries++;
     foreach($pages as $p){
         print_r("\tPage: ".$p["name"]."-".$p['id']."<br><br>");
-        $aspects = Core::$systemDB->selectMultiple("view","*",["pageId"=>$p['id'],"partType"=>"aspect"]);
+        $aspects = Core::$systemDB->selectMultiple("view",["pageId"=>$p['id'],"partType"=>"aspect"]);
         $queries++;
         foreach($aspects as $asp){
             print_r("<br>\t\tAspect: ".$asp["role"]."-".$asp['id']."<br>");
@@ -121,7 +121,7 @@ function lookAtChildren($parent,$children,$ident, &$queries, $templates, $view_p
 }
 function lookAtPages($courseId, &$queries, $templates, $view_params, $template_params, &$arr){
     $views = Core::$systemDB->selectMultiple("page p left join view v on p.id=pageId",
-            "pageId,name,v.id,role,partType,parent,viewIndex,template",["course"=>$courseId],"viewIndex,id");
+            ["course"=>$courseId],"pageId,name,v.id,role,partType,parent,viewIndex,template","viewIndex,id");
     $queries++;
     
     $pageViews=[];
@@ -149,7 +149,7 @@ function lookAtPages($courseId, &$queries, $templates, $view_params, $template_p
 //type must be "view" or "template"
 function getParameters($type="view", &$queries){
     $db_params = Core::$systemDB->selectMultiple($type."_parameter right join parameter on id=parameterId",
-        $type."Id,id,type,value",[]);
+        [],$type."Id,id,type,value");
     $queries++;
     $params=[];
     foreach($db_params as $p){
@@ -164,7 +164,7 @@ $view_params=getParameters("view",$queries);
 $template_params=getParameters("template",$queries);
 
 
-$templates = Core::$systemDB->selectMultiple("view_template","*",[],"viewIndex,id");
+$templates = Core::$systemDB->selectMultiple("view_template",null,"*","viewIndex,id");
 $templateAaspectClasses= array_column($templates,"aspectClass", 'id');
 $queries++;
 

@@ -136,23 +136,16 @@ class Core {
         return static::$loggedUser;
     }
 
-    /*public static function getTheme() {
-        return static::$systemDB->selectMultiple("system_info","theme")[0]["theme"];
-    }*/
-
-   // public static function setTheme($theme) {
-        //static::$systemDB->update("system_info",["theme"=>$theme],null);
-    //}
-
+    
     public static function getActiveCourses() {
-        return static::$systemDB->selectMultiple("course",'*',["active"=>true]);
+        return static::$systemDB->selectMultiple("course",["active"=>true]);
     }
 
     /*public static function getPendingInvites() {
         return static::$systemDB->selectMultiple("pending_invite");
     }
     public static function pendingInviteExists($id) {
-        return !empty(static::$systemDB->select("pending_invite",'id',['id'=>$id]));
+        return !empty(static::$systemDB->select("pending_invite",['id'=>$id],'id'));
     }
     public static function addPendingInvites($data) {
         return static::$systemDB->insert("pending_invite",$data);
@@ -165,11 +158,11 @@ class Core {
         return static::$systemDB->selectMultiple("course");
     }
     public static function getCourse($id) {
-        return static::$systemDB->select("course",'*',['id'=>$id]);  
+        return static::$systemDB->select("course",['id'=>$id]);  
     }
 
     public static function getApiKey() {
-        return static::$systemDB->selectMultiple("system_info","apiKey")[0]["apiKey"];
+        return static::$systemDB->selectMultiple("system_info",null,"apiKey")[0]["apiKey"];
     }
     public static function setApiKey($key) {
         return static::$systemDB->update("system_info",["apiKey"=>$key]);

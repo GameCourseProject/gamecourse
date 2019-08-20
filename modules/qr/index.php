@@ -25,7 +25,7 @@ $class_types=array("Lecture","Invited Lecture");
 $error = FALSE;
 
 function inclass($student_id, $courseId){
-   return !empty(Core::$systemDB->select("course_user",'*',["id"=>$student_id, "course"=> $courseId]));	
+   return !empty(Core::$systemDB->select("course_user",["id"=>$student_id, "course"=> $courseId]));	
 }
 
 if(isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["course"]) && isset($_REQUEST["submit"])){
@@ -97,10 +97,10 @@ if(isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["au
 
 } else if(isset($_REQUEST["key"]) && isset($_REQUEST["course"])){
 // QRCode e valido?
-        $valid = !empty(Core::$systemDB->select("qr_code","qrkey",["qrkey"=>$_REQUEST["key"]]));
+        $valid = !empty(Core::$systemDB->select("qr_code",["qrkey"=>$_REQUEST["key"]],"qrkey"));
 
 // QRCode já foi atribuido?
-        $used = !empty(Core::$systemDB->select("participation","qrkey",["qrkey"=>$_REQUEST["key"]]));
+        $used = !empty(Core::$systemDB->select("participation",["qrkey"=>$_REQUEST["key"]],"qrkey"));
 
 ?>
 		<form action="<?=$_SERVER['PHP_SELF']?>" method="get">

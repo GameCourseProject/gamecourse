@@ -21,7 +21,7 @@ class User {
     }
     
     public function getData($field='*'){
-        return Core::$systemDB->select("game_course_user",$field,["id"=>$this->id]);
+        return Core::$systemDB->select("game_course_user",["id"=>$this->id],$field);
     }
     
     public function setData($fieldValues){
@@ -56,7 +56,7 @@ class User {
         $this->setData(["isAdmin"=>$isAdmin]);
     }
     public static function getAdmins(){
-        return array_column(Core::$systemDB->selectMultiple("game_course_user",'id',["isAdmin"=>true]),'id');
+        return array_column(Core::$systemDB->selectMultiple("game_course_user",["isAdmin"=>true],'id'),'id');
     }
 
     public function initialize($name, $username,$email) {
@@ -69,7 +69,7 @@ class User {
     }
 
     public static function getUserByUsername($username) {
-        $userId=Core::$systemDB->select("game_course_user","id",["username"=>$username]);
+        $userId=Core::$systemDB->select("game_course_user",["username"=>$username],"id");
         if ($userId==null)
             return null;
         else
@@ -77,7 +77,7 @@ class User {
     }
     
     public function getCourses(){
-        return array_column(Core::$systemDB->selectMultiple("course_user","course",["id"=>$this->id]),"course");
+        return array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"course"),"course");
     }
    // public static function getAll() {//ToDo
    //     if (static::$usersDB == null)

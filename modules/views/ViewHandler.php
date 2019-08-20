@@ -45,7 +45,7 @@ class ViewHandler {
     public function addViewParameter($type,$value,$viewId){   
         
         $parmOfView = Core::$systemDB->select("parameter join view_parameter on id=parameterId",
-                    "id,value",["type"=>$type, "viewId"=>$viewId]);
+                    ["type"=>$type, "viewId"=>$viewId],"id,value");
         if (!empty($parmOfView)){
             if ($parmOfView["value"]!=$value)
                 Core::$systemDB->delete("view_parameter",["viewId"=>$viewId,"parameterId"=>$parmOfView["id"]]);
@@ -53,13 +53,13 @@ class ViewHandler {
                 return;
         }
         
-        $parameter = Core::$systemDB->select("parameter","id",["type"=>$type,"value"=>$value]);
+        $parameter = Core::$systemDB->select("parameter",["type"=>$type,"value"=>$value],"id");
         
         if (empty($parameter)){
             Core::$systemDB->insert("parameter",["type"=>$type,"value"=>$value]);
             $parameter=Core::$systemDB->getLastId();
         }            
-        if (empty(Core::$systemDB->select("view_parameter","*",["viewId"=>$viewId,"parameterId"=>$parameter])))
+        if (empty(Core::$systemDB->select("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter])))
             Core::$systemDB->insert("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter]);
     }
     
@@ -101,7 +101,7 @@ class ViewHandler {
         }//else print_r($viewPart);
         if (array_key_exists("children", $viewPart)){
             
-            $children = Core::$systemDB->selectMultiple("view","*",["parent"=>$viewPart["id"]]);
+            $children = Core::$systemDB->selectMultiple("view",["parent"=>$viewPart["id"]]);
             $children = array_combine(array_column($children,"id"),$children);
             foreach ($viewPart["children"] as $key => $child){
                 if ($child["partType"]=="header"){
@@ -119,7 +119,7 @@ class ViewHandler {
         }
         //deal with header of block
         if ($viewPart["partType"]=="block") {
-            $header = Core::$systemDB->select("view","id",["parent"=>$viewPart["id"], "partType"=>"header"]);
+            $header = Core::$systemDB->select("view",["parent"=>$viewPart["id"], "partType"=>"header"],"id");
             if (array_key_exists("header", $viewPart)){
                 if(empty($header)){ //insert
                     Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
@@ -135,7 +135,7 @@ class ViewHandler {
                     $this->addViewParameter("value",$viewPart["header"]["title"]["parameters"]["value"],$titleId);
                 }else{//update
                     //probably no reason to update the image and title views, just updating parameters
-                    $headerParts = Core::$systemDB->selectMultiple("view","*",["parent"=>$header]);
+                    $headerParts = Core::$systemDB->selectMultiple("view",["parent"=>$header]);
                     foreach($headerParts as $part){
                         if ($part["partType"]=="text")
                             $type="title";
@@ -176,7 +176,7 @@ class ViewHandler {
         //ToDo: check if this query could be done in a more eficient way
         $db_params = Core::$systemDB->selectMultiple(
                 "view v left join view_parameter on viewId=v.id right join parameter p on p.id=parameterId",
-            "viewId,p.id,type,value",$where);
+            $where,"viewId,p.id,type,value");
         $view_params=[];
         foreach($db_params as $p){
             if ($p["viewId"]==null)
@@ -217,7 +217,7 @@ class ViewHandler {
     
     //Go through views and update array with parameters info (this does all the necessary queries)
     public function lookAtChildrenWQueries($parent,&$organizedView){
-        $children=Core::$systemDB->selectMultiple("view","*",["parent"=>$parent],"viewIndex");  
+        $children=Core::$systemDB->selectMultiple("view",["parent"=>$parent],"*","viewIndex");  
         $view_params=$this->getViewParameters(["parent"=>$parent]);
         
         for($i=0;$i<count($children);$i++){
@@ -238,7 +238,7 @@ class ViewHandler {
     //contructs an array of the view with all it's children
     public function getViewWithParts($anAspectId,$role){//return everything organized like the previous db system
         //ToDo: template references
-        $anAspect = Core::$systemDB->select("view","*",["id"=>$anAspectId]);
+        $anAspect = Core::$systemDB->select("view",["id"=>$anAspectId]);
         
         if ($anAspect["aspectClass"]==null){//only 1 aspect exists
             //this has a lot of queries (select all children, each of their params and children)
@@ -249,7 +249,7 @@ class ViewHandler {
         }
         else{//multiple aspects exist
             $viewsOfAspect= Core::$systemDB->selectMultiple("aspect_class left join view on id=viewId",
-                    "*",["aspect"=>$anAspect["aspectClass"],"role"=>$role],"parent,viewIndex");
+                    ["aspect"=>$anAspect["aspectClass"],"role"=>$role],"*","parent,viewIndex");
                 
             $view_params=$this->getViewParameters(["aspectClass"=>$anAspect["aspectClass"],"role"=>$role]);
             
@@ -272,10 +272,10 @@ class ViewHandler {
     
     public function getAspects($anAspeptId){
         
-        $asp=Core::$systemDB->select("view","*",["id"=>$anAspeptId]);
+        $asp=Core::$systemDB->select("view",["id"=>$anAspeptId]);
         if ($asp["aspectClass"]!=null){
             //there are other aspects
-            $aspects= Core::$systemDB->selectMultiple("aspect_class left join view on viewId=id","*",
+            $aspects= Core::$systemDB->selectMultiple("aspect_class left join view on viewId=id",
                     ["aspect"=>$asp["aspectClass"]]);
             return $aspects;
         }
@@ -284,22 +284,22 @@ class ViewHandler {
     //returns all the aspects for a given view or for the given role
     public function getViewRoles($viewId,$role=null){
         if ($role === null) {
-            return Core::$systemDB->selectMultiple("view","*",["pageId"=>$viewId, "partType"=>"aspect"]);
-            //return Core::$systemDB->selectMultiple("view_role", '*', ['viewId' => $viewId, 'course' => $this->getCourseId()]);
+            return Core::$systemDB->selectMultiple("view",["pageId"=>$viewId, "partType"=>"aspect"]);
+            //return Core::$systemDB->selectMultiple("view_role", ['viewId' => $viewId, 'course' => $this->getCourseId()]);
         } else {
-            return Core::$systemDB->select("view","*",["pageId"=>$viewId, "role"=>$role, "partType"=>"aspect"]);
-            //return Core::$systemDB->select("view_role", '*', 
+            return Core::$systemDB->select("view",["pageId"=>$viewId, "role"=>$role, "partType"=>"aspect"]);
+            //return Core::$systemDB->select("view_role",  
             //        ['viewId' => $viewId, 'course' => $this->getCourseId(),'role'=>$role]);
         }
     }
     //returns all pages or page of the name given
     public function getPages($pageName = null) {
         if ($pageName == null) {
-            //return Core::$systemDB->selectMultiple("view", '*', ['course' => $this->getCourseId()]);
-            return Core::$systemDB->selectMultiple("page","*",['course' => $this->getCourseId()]);
+            //return Core::$systemDB->selectMultiple("view", ['course' => $this->getCourseId()]);
+            return Core::$systemDB->selectMultiple("page",['course' => $this->getCourseId()]);
         } else {
-            //return Core::$systemDB->select("view", '*', ['viewId' => $viewId, 'course' => $this->getCourseId()]);
-            return Core::$systemDB->select("page","*",["name"=>$pageName,'course' => $this->getCourseId()]);
+            //return Core::$systemDB->select("view", ['viewId' => $viewId, 'course' => $this->getCourseId()]);
+            return Core::$systemDB->select("page",["name"=>$pageName,'course' => $this->getCourseId()]);
         }
     }
     public function getCourseId(){
@@ -661,7 +661,7 @@ class ViewHandler {
         $viewParams = array();
         if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
             $course = Course::getCourse((string)API::getValue('course'));
-            $page = Core::$systemDB->select("page","*",["id"=>$pageId]);
+            $page = Core::$systemDB->select("page",["id"=>$pageId]);
             $viewRoles = array_column($this->getAspects($page["viewId"]),'role');
             $viewType = $this->registeredPages[$pageId]['roleType'];
             

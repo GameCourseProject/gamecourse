@@ -73,12 +73,12 @@ if (array_key_exists('method', $_GET)){
             $id=$authorizedEmails[$email];
             $username='guest'.$id;
             
-            if (empty(Core::$systemDB->select('user','id',['name'=>$name,'email'=>$email]))){
+            if (empty(Core::$systemDB->select('user',['name'=>$name,'email'=>$email],'id'))){
                 Core::$systemDB->insert('user',['name'=>$name,'email'=>$email,'id'=>$id,'username'=>$username]);
                 
                 //the google users are given the role of Watcher in all the courses
-                if (empty( Core::$systemDB->select('course_user','id',['id'=>$id]) )){
-                    $coursesId = Core::$systemDB->selectMultiple("course","id");
+                if (empty( Core::$systemDB->select('course_user',['id'=>$id],'id') )){
+                    $coursesId = Core::$systemDB->selectMultiple("course",null,"id");
                     foreach($coursesId as $cid){
                         Core::$systemDB->insert('course_user',['id'=>$id,'course'=>$cid['id']]);
                         Core::$systemDB->insert("user_role",['id'=>$id,'course'=>$cid['id'],"role"=>"Watcher"]);

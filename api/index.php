@@ -115,7 +115,7 @@ process('POST', 'users', function() use ($values, $key) {
             err("The 'id' field wasn't specified " );
         }
         try{
-            if (empty(Core::$systemDB->select("user",'*',["id"=>$val["id"]]))){
+            if (empty(Core::$systemDB->select("user",["id"=>$val["id"]]))){
                 Core::$systemDB->insert("user",$val);
             }else{
                 Core::$systemDB->update("user",["id"=>$val["id"]],$val);

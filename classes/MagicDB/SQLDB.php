@@ -106,7 +106,7 @@ class SQLDB {
         $this->executeQueryWithParams($sql,$where); 
     }
     
-    public function select($table,$field,$where,$orderBy=null,$whereNot=[],$whereCompare=[]){
+    public function select($table,$where,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[]){
     //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
         //example: select id from user where username='ist181205';
         $sql = "select ".$field." from ".$table;
@@ -125,7 +125,7 @@ class SQLDB {
             return $returnVal[substr($field,$pos+1)];
         return $returnVal[$field];
     } 
-    public function selectMultiple($table,$field='*',$where=null,$orderBy=null,$whereNot=[],$whereCompare=[]){
+    public function selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[]){
         //example: select * from course where isActive=true;
         $sql = "select ".$field." from ".$table;
         if ($where){

@@ -39,13 +39,13 @@ if (!$isCLI)
 $legacyFolder = Course::getCourseLegacyFolder($courseId);
 
 //get badges info that is needed when reading awards and for the user_badges
-$DBbadges = Core::$systemDB->selectMultiple("badge",'*',["course"=>$courseId]);
+$DBbadges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId]);
 $sbBadges=[];
 foreach($DBbadges as &$b){
     $sbBadges[$b["name"]]=$b;
     for ($i=1;$i<=$b["maxLevel"];$i++){
         $xp = Core::$systemDB->select("level join badge_has_level on id=levelId",
-                "reward",["course"=>$courseId,"badgeId"=>$b["id"],"number"=>$i]);
+                ["course"=>$courseId,"badgeId"=>$b["id"],"number"=>$i],"reward");
         $sbBadges[$b["name"]]['xp'][]=$xp;
     }
 }
@@ -81,7 +81,7 @@ foreach($awards as &$award) {
         // Initial Bonus
         if ($award['what'] == 'Initial Bonus') {
             $name= $award['what'];
-            if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
+            if (empty(Core::$systemDB->select("award", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 Core::$systemDB->insert("award", array_merge($data, ["description" => $name, "type" => 'bonus']));
                 
             }
@@ -89,7 +89,7 @@ foreach($awards as &$award) {
         //Labs
         elseif ($award['what'] == 'Grade from Lab') {
             $name='Lab ' . $award['field2'];
-            if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
+            if (empty(Core::$systemDB->select("award", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 Core::$systemDB->insert("award", array_merge($data, 
                         ["description" => $name, "type" => 'labs']));
             }
@@ -97,7 +97,7 @@ foreach($awards as &$award) {
         //Quizes
         elseif ($award['what'] == 'Grade from Quiz') {
             $name='Quiz ' . $award['field2'];
-            $awardInDB=Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]);
+            $awardInDB=Core::$systemDB->select("award", ["description" => $name, "course" => $courseId, "user" => $award['userid']]);
             if (empty($awardInDB)) {
                 Core::$systemDB->insert("award", array_merge($data, 
                         ["description" => $name, "type" => 'quiz']));
@@ -108,7 +108,7 @@ foreach($awards as &$award) {
         //Presentation
         elseif ($award['what'] == 'Grade from Presentation') {
             $name='Presentation';
-            if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
+            if (empty(Core::$systemDB->select("award",["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 Core::$systemDB->insert("award", array_merge($data, 
                         ["description" => $name, "type" => 'presentation']));
             }
@@ -116,9 +116,9 @@ foreach($awards as &$award) {
         //Skill Tree
         elseif ($award['what'] == 'Skill Tree') {
             $name=$award['field2'];
-            if (empty(Core::$systemDB->select("award", "*", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
+            if (empty(Core::$systemDB->select("award", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 $skillInstance = Core::$systemDB->select("skill s natural join skill_tier join skill_tree t on t.id=s.treeId",
-                        "s.id",["name"=>$name,"course"=>$courseId]);
+                        ["name"=>$name,"course"=>$courseId],"s.id");
                 Core::$systemDB->insert("award", array_merge($data, 
                         ["description" => $name, "type" => 'skill',"moduleInstance"=>$skillInstance]));
                 
@@ -134,10 +134,10 @@ foreach($awards as &$award) {
             $level=$award['field1'];
             $badgeName = $award['what'];
             $name=$badgeName . " (level ".$level.")";
-            $moduleInstance = Core::$systemDB->select("badge",'id',["name"=>$badgeName, "course",$courseId]);
+            $moduleInstance = Core::$systemDB->select("badge",["name"=>$badgeName, "course",$courseId],'id');
             $data['reward']=$sbBadges[$badgeName]['xp'][$level - 1];
             
-            if (empty(Core::$systemDB->select("award","*",["description"=>$name,"course"=>$courseId,"user"=>$award['userid']]))){ 
+            if (empty(Core::$systemDB->select("award",["description"=>$name,"course"=>$courseId,"user"=>$award['userid']]))){ 
                 Core::$systemDB->insert ("award", array_merge ($data,
                                 ["description" => $name, "type" => 'badge', "moduleInstance"=>$moduleInstance]));
             }
@@ -188,11 +188,12 @@ foreach ($userIds as $userId){
             
             if (is_array($badgeIndicators[1])) {
                 
-                $oldIndicators = Core::$systemDB->selectMultiple("participation",'*',
+                $oldIndicators = Core::$systemDB->selectMultiple("participation",
                                 ["user"=>$userId,"course"=>$courseId,"type"=>"badge","moduleInstance"=>$badge['id']]);
                 $oldIndicatorsTextIndex=[];
                 foreach($oldIndicators as $ind){
-                    $oldIndicatorsTextIndex[$ind["indicator"]][]=$ind["id"];
+                    //print_r($ind);
+                    $oldIndicatorsTextIndex[$ind["description"]][]=$ind["id"];
                 }
                 
                 $postCount = 1;
