@@ -79,7 +79,20 @@ class Views extends Module {
             });
         });
     }
-
+    //auxiliar functions for the expression language functions
+    public function getModuleNameOfAward($award){
+        if (array_key_exists("name",$award["value"]))
+            return $award["value"]["name"];
+        $type=$award["value"]["type"];
+        if ($type=="badge"){
+            return Core::$systemDB->select($type,
+                        "name",["id"=>$award["value"]["moduleInstance"]]);
+        }
+        if  ($type=="skill")
+            return $award["value"]["description"];
+        return null;
+    }
+    
     public function init() {
         $this->viewHandler = new ViewHandler($this);
 
@@ -121,13 +134,96 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
 
         $course = $this->getParent();
+        $courseId = $course->getId();
         $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
             return new ValueNode($course->getModule($module) != null);
         });
-
         $this->viewHandler->registerFunction('system','getModules', function() use ($course) {
             return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
         });
+        
+        //functions of awards library
+        $this->viewHandler->registerFunction('awards','getAllAwards', 
+        function($user=null,$type=null,$moduleInstance=null,$initialDate=null,$finalDate=null) use ($courseId){
+            $where = ["course"=>$courseId];
+            if ($user !== null) {
+                $where["user"]=$this->getUserId($user);
+            }
+            //expected date format DD/MM/YYY needs to be converted to YYYY-MM-DD
+            $whereDate=[];
+            if ($initialDate !== null) {
+                $date = implode("-",array_reverse(explode("/",$initialDate)));
+                array_push($whereDate,["date",">",$date]);
+            }
+            if ($finalDate !== null) {
+                //tecnically the final date on the results will be the day before the one given
+                //because the timestamp is of that day at midnigth
+                $date = implode("-",array_reverse(explode("/",$initialDate)));
+                array_push($whereDate,["date","<",$date]);
+            }
+            
+            if ($type !== null) {
+                $where["type"]=$type;
+                //should only use module instance if the type is specified (so we know if we should use skils or badges)
+                if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
+                    $where["name"]=$moduleInstance;
+                    $table = "award a join ".$type." m on moduleInstance=m.id";
+                    return $this->createNode(Core::$system->selectMultiple($table,"a.*,m.name",$where),"collection");
+                }
+            }
+            return $this->createNode(Core::$systemDB->selectMultiple("award","*", $where,null,[], $whereDate),"collection");
+        });
+        $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
+            if ($item=="user"){
+                $username = Core::$systemDB->select("game_course_user","username",["id"=>$award["value"]["user"]]);
+                return new ValueNode("photos/".$username.".png");
+            }
+            else{//$item=="type
+                switch ($award["value"]['type']) {
+                    case 'grade':
+                        return new ValueNode('<img src="images/quiz.svg">');
+                    case 'badge':
+                        $name = $this->getModuleNameOfAward($award);
+                        $level = substr($award["value"]["description"],-2,1);//assuming that level are always single digit
+                        $imgName = str_replace(' ', '', $name . '-' . $level);
+                        return new ValueNode('<img src="badges/' . $imgName . '.png">');
+                        break;
+                    case 'skill':
+                        $name = $this->getModuleNameOfAward($award);
+                        $color = '#fff';
+                        $skillColor = Core::$systemDB->select("skill","color",["id"=>$award['value']["moduleInstance"]]);
+                        if($skillColor)
+                            $color=$skillColor;
+                        //needs width and height , should have them if it has latest-awards class in a profile
+                        return new ValueNode('<div class="skill" style="background-color: ' . $color . '">');
+                    case 'bonus':
+                        return new ValueNode('<img src="images/awards.svg">');
+                    default:
+                        return new ValueNode('<img src="images/quiz.svg">');
+                }
+            }
+            return new ValueNode($award["value"]["description"]);
+        });
+        $this->viewHandler->registerFunction('awards','description',function($award){
+            return new ValueNode($award["value"]["description"]);
+        });
+        $this->viewHandler->registerFunction('awards','moduleInstance',function($award){
+            return new ValueNode($this->getModuleNameOfAward($award));
+        });
+        $this->viewHandler->registerFunction('awards','reward',function($award){
+            return new ValueNode($award["value"]["reward"]);
+        });
+        $this->viewHandler->registerFunction('awards','type',function($award){
+            return new ValueNode($award["value"]["type"]);
+        });
+        $this->viewHandler->registerFunction('awards','date',function($award){
+            $date = implode("/",array_reverse(explode("-",explode(" ",$award["value"]["date"])[0])));
+            return new ValueNode($date);
+        });
+        $this->viewHandler->registerFunction('awards','user',function($award){
+            return new ValueNode($award["value"]["user"]);
+        });
+        
         
         //parts
         $this->viewHandler->registerPartType('text', null, null,

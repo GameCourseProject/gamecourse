@@ -1,5 +1,6 @@
 <?php
 namespace SmartBoards;
+use Modules\Views\Expression\ValueNode;
 
 abstract class Module {
     
@@ -55,7 +56,17 @@ abstract class Module {
     public function getResources() {
         return $this->resources;
     }
-
+    //functions that are used in the modules in the functions of the expression language
+    public function getUserId($user){
+        if (is_array($user))
+            return $user["id"];
+        else
+            return $id=$user;
+    }
+    public function createNode($value,$type="object"){
+        return new ValueNode(["type"=>$type,"value"=>$value]);
+    }
+    
     public function init() {
     }
 

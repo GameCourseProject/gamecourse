@@ -20,7 +20,7 @@ class Badges extends Module {
             $badgeArray = Core::$systemDB->select("badge","*",$where); 
             $type = "object";
         }
-        return new ValueNode(["type"=>$type,"value"=>$badgeArray]);
+        return $this->createNode($badgeArray, $type);
     }
     
     public function getLevel($levelNum,$badge){
@@ -52,19 +52,13 @@ class Badges extends Module {
             $level["libraryOfVariable"] = "badges";
             $level=array_merge($badge["value"],$level);
         }
-        
-        return new ValueNode(["type"=>$type,"value"=>$level]);
+        return $this->createNode($level, $type);
     }
-    public function getUserId($user){
-        if (is_array($user))
-            return $user["id"];
-        else
-            return $id=$user;
-    }
+    
     public function getLevelNum($badge,$user) {
         $id=$this->getUserId($user);
         $badgeId=$badge["value"]["id"];
-        $levelNum=Core::$systemDB->select("award","count(*)",["user"=>$id,"type"=>"badges","moduleInstance"=>$badgeId]);
+        $levelNum=Core::$systemDB->select("award","count(*)",["user"=>$id,"type"=>"badge","moduleInstance"=>$badgeId]);
         return (int)$levelNum;
     }
 
@@ -85,10 +79,13 @@ class Badges extends Module {
             return $this->getBadge(false,["name"=>$name]);
         });
         
-        $viewHandler->registerFunction('badges','getCountBadges', function($user) {     
+        $viewHandler->registerFunction('badges','getCountBadges', function($user=null) {  
+            if ($user===null){
+                return new ValueNode(Core::$systemDB->select("badge","sum(maxLevel)",["course"=>$this->getCourseId()]));
+            }
             $id=$this->getUserId($user);
             return new ValueNode( Core::$systemDB->select("award","count(*)",
-                    ["course"=>$this->getCourseId(),"type"=>"badges","user"=>$id]) );
+                    ["course"=>$this->getCourseId(),"type"=>"badge","user"=>$id]) );
         });
         
         //get atribute of badge
