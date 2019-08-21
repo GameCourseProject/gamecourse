@@ -41,9 +41,11 @@ class Course {
     }
 
     public function getUsers() {
-        return Core::$systemDB->selectMultiple("course_user",["course"=>$this->cid]);
+        return Core::$systemDB->selectMultiple("course_user natural join game_course_user",
+                ["course"=>$this->cid]);
     }
-
+    
+    //receives name of role and gets all the course_users w that role
     public function getUsersWithRole($role) {
         return Core::$systemDB->selectMultiple(
                 "game_course_user u natural join course_user cu natural join user_role ur join role r on r.id=ur.role",
@@ -88,7 +90,9 @@ class Course {
     public function getRoles() {
         return array_column($this->getRolesData("name"),"name");
     }
-
+    public static function getRoleId($role,$courseId){
+        return Core::$systemDB->select("role",["course"=>$courseId,"name"=>$role],"id");
+    }
     //receives array of roles to replace in the DB
     public function setRoles($newroles) {
         $oldRoles=$this->getRoles();
@@ -184,11 +188,6 @@ class Course {
         unset(static::$courses[$courseId]);
         Core::$systemDB->delete("course",["id"=>$courseId]);
     }
-    
-    public static function getRoleId($role,$courseId){
-        return Core::$systemDB->select("role",["course"=>$courseId,"name"=>$role],"id");
-    }
-
 
     //insert data to tiers and roles tables 
     //FixMe, this has hard coded info

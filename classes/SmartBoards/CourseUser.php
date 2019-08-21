@@ -3,7 +3,7 @@ namespace SmartBoards;
 
 class CourseUser extends User{
     //$id is in User
-    private $course;
+    private $course;//course object
     
     function __construct($id, $course) {
         parent::__construct($id);
@@ -49,19 +49,23 @@ class CourseUser extends User{
     public function getUsername() {
         return parent::getData("username");
     }
-    
+    //gets data from course_user table
     function  getData($field="*"){
         return Core::$systemDB->select("course_user",["course"=>$this->course->getId(),"id"=>$this->id],$field);
     }
-    
+    //gets data from course_user e game_course_user tables
+    function  getAllData($field="*"){
+        return Core::$systemDB->select("course_user natural join game_course_user",
+                ["course"=>$this->course->getId(),"id"=>$this->id],$field);
+    }
     function setCampus($campus) {
         return Core::$systemDB->update("course_user",["campus"=>$campus],
                 ["course"=>$this->course->getId(),"id"=>$this->id]);
     }
     
     function getRoles() {
-        return array_column(Core::$systemDB->selectMultiple("user_role",
-                ["course"=>$this->course->getId(),"id"=>$this->id],"role"),"role");
+        return array_column(Core::$systemDB->selectMultiple("user_role u join role r on role=r.id",
+                ["u.course"=>$this->course->getId(),"u.id"=>$this->id],"name"),"name");
     }
     
     //receives array of roles and replaces them in the database
@@ -70,14 +74,16 @@ class CourseUser extends User{
         foreach($roles as $role){
             $found = array_search($role, $oldRoles);
             if ($found === false) {
-                Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $role]);
+                $id=Course::getRoleId($role,$this->course->getId());
+                Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $id]);
             } else {
                 unset($oldRoles[$found]);
             }
         }
         //delete the remaining roles
         foreach ($oldRoles as $role){
-            Core::$systemDB->delete("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$role]);
+            $id=Course::getRoleId($role,$this->course->getId());
+            Core::$systemDB->delete("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$id]);
         }
     }
     

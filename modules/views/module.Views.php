@@ -80,17 +80,54 @@ class Views extends Module {
         });
     }
     //auxiliar functions for the expression language functions
-    public function getModuleNameOfAward($award){
-        if (array_key_exists("name",$award["value"]))
-            return $award["value"]["name"];
-        $type=$award["value"]["type"];
+    public function getModuleNameOfAwardOrParticipation($object,$award=true){
+        if (array_key_exists("name",$object["value"]))
+            return $object["value"]["name"];
+        $type=$object["value"]["type"];
         if ($type=="badge"){
-            return Core::$systemDB->select($type,
-                        ["id"=>$award["value"]["moduleInstance"]],"name");
+            return Core::$systemDB->select($type,["id"=>$object["value"]["moduleInstance"]],"name");
         }
-        if  ($type=="skill")
-            return $award["value"]["description"];
+        if  ($type=="skill"){
+            if ($award)
+                return $object["value"]["description"];
+            else
+                return Core::$systemDB->select($type,["id"=>$object["value"]["moduleInstance"]],"name");
+        }            
         return null;
+    }
+    public function getDate($object){
+        $date = implode("/",array_reverse(explode("-",explode(" ",$object["value"]["date"])[0])));
+        return new ValueNode($date);
+    }
+    public function getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance,$where=[],$object="award"){
+        if ($user !== null) {
+            $where["user"]=$this->getUserId($user);
+        }
+        //expected date format DD/MM/YYY needs to be converted to YYYY-MM-DD
+        $whereDate=[];
+        if ($initialDate !== null) {
+            $date = implode("-",array_reverse(explode("/",$initialDate)));
+            array_push($whereDate,["date",">",$date]);
+        }
+        if ($finalDate !== null) {
+            //tecnically the final date on the results will be the day before the one given
+            //because the timestamp is of that day at midnigth
+            $date = implode("-",array_reverse(explode("/",$finalDate)));
+            array_push($whereDate,["date","<",$date]);
+        }
+            
+        if ($type !== null) {
+            $where["type"]=$type;
+            //should only use module instance if the type is specified (so we know if we should use skils or badges)
+            if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
+                $where["name"]=$moduleInstance;
+                $where["a.course"]=$courseId;
+                $table = $object." a join ".$type." m on moduleInstance=m.id";
+                return $this->createNode(Core::$systemDB->selectMultiple($table,$where,"a.*,m.name"),"collection");
+            }
+        }
+        $where["course"]=$courseId;
+        return $this->createNode(Core::$systemDB->selectMultiple($object,$where,"*",null,[], $whereDate),"collection");
     }
     
     public function init() {
@@ -141,38 +178,55 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','getModules', function() use ($course) {
             return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
         });
+        //functions of users library
+        $this->viewHandler->registerFunction('users','getAllUsers',function($role=null,$courseId=null) use ($course){
+            //the courseId argument won't be used (for now) since we already know the course of the view
+            if ($courseId!==null){
+                $course = new Course($courseId);
+            }
+            if ($role==null)
+                return $this->createNode($course->getUsers(),"collection");
+            else
+                return $this->createNode($course->getUsersWithRole($role),"collection");
+        });
+        $this->viewHandler->registerFunction('users','getUser',function($id) use ($course){
+            return $this->createNode($course->getUser($id)->getAllData());
+        });
+        $this->viewHandler->registerFunction('users','campus',function($user){
+            return new ValueNode($user["value"]["campus"]);
+        });
+        $this->viewHandler->registerFunction('users','email',function($user){
+            return new ValueNode($user["value"]["email"]);
+        });
+        $this->viewHandler->registerFunction('users','id',function($user){
+            return new ValueNode($user["value"]["id"]);
+        });
+        $this->viewHandler->registerFunction('users','isAdmin',function($user){
+            return new ValueNode($user["value"]["isAdmin"]);
+        });
+        $this->viewHandler->registerFunction('users','lastActivity',function($user){
+            return new ValueNode($user["value"]["lastActivity"]);
+        });
+        $this->viewHandler->registerFunction('users','name',function($user){
+            return new ValueNode($user["value"]["name"]);
+        });
+        $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
+            return $this->createNode((new \SmartBoards\CourseUser($user["value"]["id"], $course))->getRoles(),
+                                    "collection");
+        });
+        $this->viewHandler->registerFunction('users','username',function($user){
+            return new ValueNode($user["value"]["username"]);
+        });
+        $this->viewHandler->registerFunction('users','picture',function($user){
+            return new ValueNode("photos/".$user["value"]["username"].".png");
+        });
         
         //functions of awards library
         $this->viewHandler->registerFunction('awards','getAllAwards', 
         function($user=null,$type=null,$moduleInstance=null,$initialDate=null,$finalDate=null) use ($courseId){
-            $where = ["course"=>$courseId];
-            if ($user !== null) {
-                $where["user"]=$this->getUserId($user);
-            }
-            //expected date format DD/MM/YYY needs to be converted to YYYY-MM-DD
-            $whereDate=[];
-            if ($initialDate !== null) {
-                $date = implode("-",array_reverse(explode("/",$initialDate)));
-                array_push($whereDate,["date",">",$date]);
-            }
-            if ($finalDate !== null) {
-                //tecnically the final date on the results will be the day before the one given
-                //because the timestamp is of that day at midnigth
-                $date = implode("-",array_reverse(explode("/",$initialDate)));
-                array_push($whereDate,["date","<",$date]);
-            }
-            
-            if ($type !== null) {
-                $where["type"]=$type;
-                //should only use module instance if the type is specified (so we know if we should use skils or badges)
-                if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
-                    $where["name"]=$moduleInstance;
-                    $table = "award a join ".$type." m on moduleInstance=m.id";
-                    return $this->createNode(Core::$system->selectMultiple($table,$where,"a.*,m.name"),"collection");
-                }
-            }
-            return $this->createNode(Core::$systemDB->selectMultiple("award",$where,"*",null,[], $whereDate),"collection");
+            return $this->getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance);
         });
+        
         $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
             if ($item=="user"){
                 $username = Core::$systemDB->select("game_course_user",["id"=>$award["value"]["user"]],"username");
@@ -183,13 +237,13 @@ class Views extends Module {
                     case 'grade':
                         return new ValueNode('<img src="images/quiz.svg">');
                     case 'badge':
-                        $name = $this->getModuleNameOfAward($award);
+                        $name = $this->getModuleNameOfAwardOrParticipation($award);
                         $level = substr($award["value"]["description"],-2,1);//assuming that level are always single digit
                         $imgName = str_replace(' ', '', $name . '-' . $level);
                         return new ValueNode('<img src="badges/' . $imgName . '.png">');
                         break;
                     case 'skill':
-                        $name = $this->getModuleNameOfAward($award);
+                        $name = $this->getModuleNameOfAwardOrParticipation($award);
                         $color = '#fff';
                         $skillColor = Core::$systemDB->select("skill",["id"=>$award['value']["moduleInstance"]],"color");
                         if($skillColor)
@@ -208,7 +262,7 @@ class Views extends Module {
             return new ValueNode($award["value"]["description"]);
         });
         $this->viewHandler->registerFunction('awards','moduleInstance',function($award){
-            return new ValueNode($this->getModuleNameOfAward($award));
+            return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
         });
         $this->viewHandler->registerFunction('awards','reward',function($award){
             return new ValueNode($award["value"]["reward"]);
@@ -217,13 +271,49 @@ class Views extends Module {
             return new ValueNode($award["value"]["type"]);
         });
         $this->viewHandler->registerFunction('awards','date',function($award){
-            $date = implode("/",array_reverse(explode("-",explode(" ",$award["value"]["date"])[0])));
-            return new ValueNode($date);
+            return $this->getDate($award);
         });
         $this->viewHandler->registerFunction('awards','user',function($award){
             return new ValueNode($award["value"]["user"]);
         });
         
+        //functions of the participation library
+        $this->viewHandler->registerFunction('participations','getAllParticipations', 
+        function($user=null,$type=null,$moduleInstance=null,$rating=null,$evaluator=null,$initialDate=null,$finalDate=null) use ($courseId){
+            $where=[];
+            if ($rating !== null) {
+                $where["rating"]=$rating;
+            }
+            if ($evaluator !== null) {
+                $where["evaluator"]=$evaluator;
+            }
+            return $this->getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance,$where,"participation");
+        });
+        
+        $this->viewHandler->registerFunction('participations','date',function($participation){
+            return $this->getDate($participation);
+        });
+        $this->viewHandler->registerFunction('participations','description',function($participation){
+            return new ValueNode($participation["value"]["description"]);
+        });
+        $this->viewHandler->registerFunction('participations','evaluator',function($participation){
+            return new ValueNode($participation["value"]["evaluator"]);
+        });
+        $this->viewHandler->registerFunction('participations','moduleInstance',function($participation){
+            return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation,false));
+        });
+        $this->viewHandler->registerFunction('participations','post',function($participation){
+            return new ValueNode($participation["value"]["post"]);
+        });
+        $this->viewHandler->registerFunction('participations','rating',function($participation){
+            return new ValueNode($participation["value"]["post"]);
+        });
+        $this->viewHandler->registerFunction('participations','type',function($participation){
+            return new ValueNode($participation["value"]["type"]);
+        });
+        $this->viewHandler->registerFunction('participations','user',function($participation){
+            return new ValueNode($participation["value"]["user"]);
+        });
         
         //parts
         $this->viewHandler->registerPartType('text', null, null,

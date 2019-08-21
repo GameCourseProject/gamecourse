@@ -13,8 +13,8 @@ drop table if exists dependency;
 drop table if exists skill;
 drop table if exists skill_tier;
 drop table if exists skill_tree;
-drop table if exists level;
 drop table if exists badge_has_level;
+drop table if exists level;
 drop table if exists badge;
 drop table if exists grade;
 drop table if exists participation;
@@ -128,6 +128,9 @@ create table participation(#for now this is just used for badges
 	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
 	date timestamp,
+	rating int,
+	evaluator int unsigned,
+	foreign key(evaluator,course) references course_user(id,course) on delete cascade, #needs triger to set eval to null
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 

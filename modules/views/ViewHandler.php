@@ -438,12 +438,15 @@ class ViewHandler {
         if (is_a($node,'Modules\Views\Expression\FunctionOp')){
             $lib=$node->getLib();
         }
-        
+       // print_r($visitedNode);
         if (is_array($visitedNode) && $lib!==null){
+            
             if ($visitedNode["type"]=="object")
                 $visitedNode["value"]["libraryOfVariable"]=$lib;
             else {//type == collection
                 foreach ($visitedNode["value"] as &$element){
+                    if (!is_array($element))
+                        break;
                     $element["libraryOfVariable"]=$lib;
                 }
             }
@@ -526,11 +529,15 @@ class ViewHandler {
                 //unset($child['repeat']);
                 $repeatParams= array_values($repeatParams);
                 for($p=0;$p < sizeof($repeatParams);$p++){
-                    
-                    $loopParam = [$repeatKey => ["type"=>"object", "value"=>$repeatParams[$p][$repeatKey]]];
+                    $value=$repeatParams[$p][$repeatKey];
+                    if (!is_array($value))
+                        $loopParam = [$repeatKey => $value];
+                    else
+                        $loopParam = [$repeatKey => ["type"=>"object", "value"=>$value]];
                     
                     $dupChild = $child;
                     $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
+                    
                     $visitor = new EvaluateVisitor($paramsforEvaluator, $this);
 
                     if ($this->processIf($dupChild, $visitor)) {
