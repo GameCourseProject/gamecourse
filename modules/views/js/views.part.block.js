@@ -33,6 +33,12 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                 change(part.children[i]);
         },
         build: function (scope, part, options) {
+            if (Array.isArray(part.parameters)){
+                //when a block is saved with empty parameters it becomes an array instead of object
+                //this changes them back (so it doesnt cause problems)
+                part.parameters={};
+            }
+                
             var block = $(document.createElement('div')).addClass('block');
             if (part.header) {
                 var blockHeader = $(document.createElement('div')).addClass('header');

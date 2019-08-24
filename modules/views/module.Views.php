@@ -95,41 +95,17 @@ class Views extends Module {
         }            
         return null;
     }
+    //gets timestamps and converts it to DD/MM/YYYY
     public function getDate($object){
         $date = implode("/",array_reverse(explode("-",explode(" ",$object["value"]["date"])[0])));
         return new ValueNode($date);
     }
-    public function getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance,$where=[],$object="award"){
-        if ($user !== null) {
-            $where["user"]=$this->getUserId($user);
-        }
-        //expected date format DD/MM/YYY needs to be converted to YYYY-MM-DD
-        $whereDate=[];
-        if ($initialDate !== null) {
-            $date = implode("-",array_reverse(explode("/",$initialDate)));
-            array_push($whereDate,["date",">",$date]);
-        }
-        if ($finalDate !== null) {
-            //tecnically the final date on the results will be the day before the one given
-            //because the timestamp is of that day at midnigth
-            $date = implode("-",array_reverse(explode("/",$finalDate)));
-            array_push($whereDate,["date","<",$date]);
-        }
-            
-        if ($type !== null) {
-            $where["type"]=$type;
-            //should only use module instance if the type is specified (so we know if we should use skils or badges)
-            if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
-                $where["name"]=$moduleInstance;
-                $where["a.course"]=$courseId;
-                $table = $object." a join ".$type." m on moduleInstance=m.id";
-                return $this->createNode(Core::$systemDB->selectMultiple($table,$where,"a.*,m.name"),"collection");
-            }
-        }
-        $where["course"]=$courseId;
-        return $this->createNode(Core::$systemDB->selectMultiple($object,$where,"*",null,[], $whereDate),"collection");
+    //get award or participations from DB
+    public function getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object="award"){
+        
+        $awardParticipation = $this->getAwardOrParticipation($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object);
+        return $this->createNode($awardParticipation,"collection");
     }
-    
     public function init() {
         $this->viewHandler = new ViewHandler($this);
 
@@ -224,7 +200,7 @@ class Views extends Module {
         //functions of awards library
         $this->viewHandler->registerFunction('awards','getAllAwards', 
         function($user=null,$type=null,$moduleInstance=null,$initialDate=null,$finalDate=null) use ($courseId){
-            return $this->getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance);
+            return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate);
         });
         
         $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
@@ -287,7 +263,7 @@ class Views extends Module {
             if ($evaluator !== null) {
                 $where["evaluator"]=$evaluator;
             }
-            return $this->getAwardOrParticipationAux($courseId,$user,$initialDate,$finalDate,$type,$moduleInstance,$where,"participation");
+            return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where,"participation");
         });
         
         $this->viewHandler->registerFunction('participations','date',function($participation){
@@ -721,7 +697,7 @@ class Views extends Module {
             $courseId = API::getValue('course');
             $pageId = API::getValue('view');
             $viewContent = API::getValue('content');
-
+            
             $pages = $this->viewHandler->getRegisteredPages();
             if (!array_key_exists($pageId, $pages))
                 API::error('Unknown view ' . $pageId, 404);

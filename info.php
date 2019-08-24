@@ -487,7 +487,7 @@ function getSkillDependencies($skillId){
     $depArray=[];
     $deps = Core::$systemDB->selectMultiple(
         "dependency d join skill_dependency on dependencyId=id join skill s on s.id=normalSkillId",
-        ["superSkill"=>$skillId],"d.id,name");
+        ["superSkillId"=>$skillId],"d.id,name");
             
     foreach ($deps as $d){
         $depArray[$d['id']][]=$d['name'];
@@ -572,7 +572,7 @@ function updateSkills($list,$tree,$replace, $folder){
                 
                 if (!empty($skill['dependencies'])){
                     for ($i=0; $i<sizeof($skill['dependencies']);$i++){
-                        Core::$systemDB->insert("dependency",["superSkill"=>$skillId]);
+                        Core::$systemDB->insert("dependency",["superSkillId"=>$skillId]);
                         $dependencyId = Core::$systemDB->getLastId();
                         $deps=$skill['dependencies'][$i];
                         if (!insertSkillDependencyElements($deps,$dependencyId,$skilldInDBNames,$tree)){
@@ -604,7 +604,7 @@ function updateSkills($list,$tree,$replace, $folder){
                 if ($dependencyIndex!==false){
                     unset($dependenciesinDB[$dependencyIndex]);
                 }else{
-                    Core::$systemDB->insert("dependency",["superSkill"=>$skill['id']]);
+                    Core::$systemDB->insert("dependency",["superSkillId"=>$skill['id']]);
                     $depSetId = Core::$systemDB->getLastId();
                     if (!insertSkillDependencyElements($depSet,$depSetId,$skilldInDBNames,$tree)){
                         echo "On skill '".$skill["name"]."' used dependecy of undefined skill";

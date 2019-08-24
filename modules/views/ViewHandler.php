@@ -42,23 +42,28 @@ class ViewHandler {
         return $this->registeredPages;
     }
     
-    public function addViewParameter($type,$value,$viewId){   
-        
-        $parmOfView = Core::$systemDB->select("parameter join view_parameter on id=parameterId",
+    //receives parameter and viewid, and adds what is necessary to DB
+    public function addViewParameter($type,$value,$viewId,$parmOfView=null){   
+        if ($parmOfView===null){
+            $parmOfView = Core::$systemDB->select("parameter join view_parameter on id=parameterId",
                     ["type"=>$type, "viewId"=>$viewId],"id,value");
+        }
+        
         if (!empty($parmOfView)){
             if ($parmOfView["value"]!=$value)
+                //the view_param has a parm w dif val, we delete the view_param, 
+                // if the param isnt used by any others,a trigger will delete it
                 Core::$systemDB->delete("view_parameter",["viewId"=>$viewId,"parameterId"=>$parmOfView["id"]]);
             else //the view is already associated with this parameter
                 return;
         }
-        
         $parameter = Core::$systemDB->select("parameter",["type"=>$type,"value"=>$value],"id");
-        
+        //if param doesnt exist, insert it
         if (empty($parameter)){
             Core::$systemDB->insert("parameter",["type"=>$type,"value"=>$value]);
             $parameter=Core::$systemDB->getLastId();
         }            
+        //param is not yet associatd with this view
         if (empty(Core::$systemDB->select("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter])))
             Core::$systemDB->insert("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter]);
     }
@@ -84,17 +89,31 @@ class ViewHandler {
                 "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
             }         
-           
+            $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
+                    ["viewId"=>$viewPart["id"]],"type,value,id");
+            $paramesToDelete= array_combine(array_column($oldParameters, "type"),$oldParameters);
             if (array_key_exists("parameters", $viewPart)){
                 foreach ($viewPart["parameters"] as $type => $param){
-                    $this->addViewParameter($type,$param,$viewPart["id"]);
+                    $viewParam=null;
+                    if (array_key_exists($type, $paramesToDelete)) {
+                        $viewParam=$paramesToDelete[$type];
+                        unset($paramesToDelete[$type]);
+                    }
+                    $this->addViewParameter($type,$param,$viewPart["id"],$viewParam);
                 }
             }       
             if (array_key_exists("variables", $viewPart)){
                 $value = json_encode($viewPart["variables"]);
-                $this->addViewParameter("variables",$value,$viewPart["id"]);
+                $viewParam=null;
+                if (array_key_exists("variables", $paramesToDelete)) {
+                    $viewParam=$paramesToDelete["variables"];
+                    unset($paramesToDelete["variables"]);
+                }
+                $this->addViewParameter("variables",$value,$viewPart["id"],$viewParam);
             }  
-        
+            foreach($paramesToDelete as $type => $param){
+                Core::$systemDB->delete("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$param["id"]]);
+            }
             //ToDo:: delete views
             
             $viewPart["aspectClass"]=$aspectClass;
@@ -438,7 +457,7 @@ class ViewHandler {
         if (is_a($node,'Modules\Views\Expression\FunctionOp')){
             $lib=$node->getLib();
         }
-       // print_r($visitedNode);
+        //print_r($visitedNode);
         if (is_array($visitedNode) && $lib!==null){
             
             if ($visitedNode["type"]=="object")
@@ -537,7 +556,7 @@ class ViewHandler {
                     
                     $dupChild = $child;
                     $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
-                    
+                    //print_r($paramsforEvaluator);
                     $visitor = new EvaluateVisitor($paramsforEvaluator, $this);
 
                     if ($this->processIf($dupChild, $visitor)) {

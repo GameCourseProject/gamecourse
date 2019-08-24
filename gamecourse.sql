@@ -208,8 +208,8 @@ create table skill(
 );
 create table dependency(
 	id 	int unsigned auto_increment primary key,
-	superSkill int unsigned not null,
-	foreign key(superSkill) references skill(id) on delete cascade
+	superSkillId int unsigned not null,
+	foreign key(superSkillId) references skill(id) on delete cascade
 );
 create table skill_dependency(
 	dependencyId int unsigned not null,

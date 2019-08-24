@@ -125,16 +125,20 @@ class SQLDB {
             return $returnVal[substr($field,$pos+1)];
         return $returnVal[$field];
     } 
-    public function selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[]){
+    public function selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[],$group=null){
         //example: select * from course where isActive=true;
         $sql = "select ".$field." from ".$table;
         if ($where){
             $sql.=" where ";
             $this->dataToQuery($sql,$where,'&&', $whereNot,$whereCompare);
         }
+        if ($group){
+            $sql.=" group by ". $group;
+        }
         if ($orderBy){
             $sql.=" order by " . $orderBy;
         }
+        
         $sql.=';';
         $result = $this->executeQueryWithParams($sql,$where);
         return $result->fetchAll(\PDO::FETCH_ASSOC);

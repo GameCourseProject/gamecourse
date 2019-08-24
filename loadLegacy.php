@@ -119,14 +119,22 @@ foreach($awards as &$award) {
             if (empty(Core::$systemDB->select("award", ["description" => $name, "course" => $courseId, "user" => $award['userid']]))) {
                 $skillInstance = Core::$systemDB->select("skill s natural join skill_tier join skill_tree t on t.id=s.treeId",
                         ["name"=>$name,"course"=>$courseId],"s.id");
-                Core::$systemDB->insert("award", array_merge($data, 
-                        ["description" => $name, "type" => 'skill',"moduleInstance"=>$skillInstance]));
+                $skillData = array_merge($data,["description" => $name, "type" => 'skill',"moduleInstance"=>$skillInstance]);
+                Core::$systemDB->insert("award", $skillData);
+                
+                $awardId = Core::$systemDB->getLastId();
+                unset($skillData["reward"]);
                 
                 $indicatorsForUser=$indicatorsByNum[$award['userid']];
                 if (!array_key_exists($name, $indicatorsForUser)) {
                     echo "Did not receive indicator for skill ".$name. ", for user ".$award['userid']."\n";
                     continue;
                 }
+                $skillIndicator = $indicatorsForUser[$name];
+                Core::$systemDB->insert("participation", array_merge($skillData,
+                        //["award"=>$awardId,"post"=>$skillIndicator[1][0]['url']   ]));
+                        ["post"=>$skillIndicator[1][0]['url']   ]));
+               
             }
         }
         //Badges
