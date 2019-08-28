@@ -16,6 +16,7 @@ drop table if exists skill_tree;
 drop table if exists badge_has_level;
 drop table if exists level;
 drop table if exists badge;
+drop table if exists badges_config;
 drop table if exists grade;
 drop table if exists participation;
 drop table if exists notification;
@@ -152,6 +153,12 @@ create table grade(
     foreign key(participation) references participation(id) on delete cascade
 );
 
+create table badges_config(
+	maxBonusReward 	int not null,
+	course int unsigned primary key,
+	foreign key(course) references course(id) on delete cascade
+);
+
 create table badge(
 	id 		int unsigned auto_increment primary key,
 	name varchar(70) not null,
@@ -221,7 +228,7 @@ create table skill_dependency(
 create table view(
 	id int unsigned auto_increment primary key,
 	#pageId int unsigned not null,
-	aspectClass int,
+	#aspectClass int,
 	role varchar(100) not null,
 	partType enum ('aspect','block','text','image','table','heardRow','row','header','templateRef'),
 	parent int unsigned,
@@ -259,7 +266,7 @@ create table view_template(
 );
 create table aspect_class(
 	viewId int unsigned primary key,
-	aspect int unsigned,
+	aspectClass int unsigned,
 	foreign key (viewId) references view(id) on delete cascade
 );
 create table parameter(

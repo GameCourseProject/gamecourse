@@ -1,10 +1,10 @@
 <div class="title"><span>Part Settings</span><img title="Close" src="images/close.svg" ng-click="closeOverlay()"><a target="_blank" href="./docs/#ViewsPartSettings"><img title="Help" src="images/help.svg"></a></div>
 
 <sb-menu sb-menu-title="DOM Manipulations/Conditions" sb-menu-icon="images/gear.svg">
-    <sb-checkbox ng-if="options.allowIf" sb-checkbox="part.if" sb-checkbox-label="Enable If" sb-checkbox-default="" sb-checkbox-info="The If allows to show/hide the element. The element is only shown when the If expression evaluates to true." sb-checkbox-link="./docs/#ViewsDOMIf">
-        <sb-expression sb-expression="part.if" sb-expression-label="Condition"></sb-expression>
+    <sb-checkbox ng-if="options.allowIf" sb-checkbox="part.parameters.if" sb-checkbox-label="Enable If" sb-checkbox-default="" sb-checkbox-info="The If allows to show/hide the element. The element is only shown when the If expression evaluates to true." sb-checkbox-link="./docs/#ViewsDOMIf">
+        <sb-expression sb-expression="part.parameters.if" sb-expression-label="Condition"></sb-expression>
     </sb-checkbox>
-    <sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.parameters.loopData" sb-checkbox-label="Enable Loop" sb-checkbox-default="" sb-checkbox-info="Repeat allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
+    <sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.parameters.loopData" sb-checkbox-label="Enable Loop" sb-checkbox-default="" sb-checkbox-info="Loop allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
         <sb-expression sb-expression="part.parameters.loopData" sb-expression-label="Loop Data"></sb-expression>
         <!--sb-input sb-input="part.repeat.key" sb-input-label="Key"></sb-input>
         <sb-checkbox sb-checkbox="part.repeat.filter" sb-checkbox-label="Enable Filter" sb-checkbox-default="'{1 == 1}'" sb-checkbox-info="Filters the Elements according to the Filter expression.">

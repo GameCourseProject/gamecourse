@@ -45,18 +45,18 @@ class SQLDB {
             //$sql.=$key.'= :'.$key.' '.$separator;
         }
         $data=array_values($data);
-        foreach ($whereNot as $key => $value){
-            if ($value === null && $separator == "&&") 
-                $sql.= $key . " is not ? " .$separator;
+        foreach ($whereNot as $not){// [key , value] 
+            if ($not[1] === null && $separator == "&&") 
+                $sql.= $not[0] . " is not ? " .$separator;
             else
-                $sql .= $key . "!= ? " . $separator;
-            array_push($data,$value);
+                $sql .= $not[0] . "!= ? " . $separator;
+            array_push($data,$not[1]);
         }
         
         foreach ($whereCompare as $keyCompVal){
             //ex: ["key","<",5]]
             $sql.= $keyCompVal[0] . $keyCompVal[1] ." ? ".$separator;
-            array_push($data,$keyCompVal[3]);
+            array_push($data,$keyCompVal[2]);
         }
         $sql=substr($sql,0,-(strlen($separator)));
     }
