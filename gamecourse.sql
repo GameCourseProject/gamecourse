@@ -230,7 +230,7 @@ create table view(
 	#pageId int unsigned not null,
 	#aspectClass int,
 	role varchar(100) not null,
-	partType enum ('aspect','block','text','image','table','heardRow','row','header','templateRef'),
+	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef'),
 	parent int unsigned,
 	viewIndex int unsigned,
 	#template int unsigned,

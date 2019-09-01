@@ -19,6 +19,7 @@ class ViewHandler {
     private $registeredPages = array();
     
     private $registeredFunctions = array();
+    private $registeredLibFunctions = array();
     private $registeredPartTypes = array();
     
     public function parse($exp) {
@@ -95,8 +96,9 @@ class ViewHandler {
                     ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],
                     "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
-                Core::$systemDB->insert("aspect_class",
-                    ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
+                if ($viewPart["aspectClass"])
+                    Core::$systemDB->insert("aspect_class",
+                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
             }     
             if (!$basicUpdate){
                 $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
@@ -126,7 +128,30 @@ class ViewHandler {
                 }
             }
         }//else print_r($viewPart);
+        if ($viewPart["partType"]=="table"){
+            foreach($viewPart["headerRows"] as $headRow){
+                $rowPart=$headRow;
+                $rowPart["partType"]="headerRow";
+                foreach($headRow["values"] as $rowElement){
+                    $rowPart["children"][] = $rowElement["value"];
+                }
+                unset($rowPart["values"]);
+                $viewPart["children"][]=$rowPart;
+            }
+            foreach($viewPart["rows"] as $row){
+                $rowPart=$row;
+                $rowPart["partType"]="row";
+                foreach($row["values"] as $rowElement){
+                    $rowPart["children"][] = $rowElement["value"];
+                }
+                unset($rowPart["values"]);
+                $viewPart["children"][]=$rowPart;
+            }
+            unset($viewPart["rows"]);
+            unset($viewPart["headerRows"]);
+        }
         if (array_key_exists("children", $viewPart)){
+            
             $children = null;
             if (!$basicUpdate){
                 $children = Core::$systemDB->selectMultiple("view",["parent"=>$viewPart["id"]]);
@@ -251,6 +276,27 @@ class ViewHandler {
         //print_r($view_params);
         return $view_params;
     }
+    function lookAtTable(&$organizedView){
+        if ($organizedView["partType"]=="table" && sizeof($organizedView["children"])>0){
+            $organizedView["rows"]=[];
+            $organizedView["headerRows"]=[];
+            foreach($organizedView["children"] as $row){
+                //print_r($row);
+                $rowType = $row["partType"]."s";
+                $values=[];
+                foreach($row["children"] as $cell){
+                    $values[]=["value"=>$cell];
+                }
+                unset($row["children"]);
+               
+                $organizedView[$rowType][]= array_merge($row,["values"=>$values]);
+            }
+            for ($i=0;$i<(sizeof($organizedView["rows"])+sizeof($organizedView["headerRows"]));$i++){
+                unset($organizedView["children"][$i]);
+            }
+            $organizedView["columns"]=sizeof($organizedView["rows"][0]["values"]);
+        } 
+    }
     function lookAtHeader(&$organizedView){
         if ($organizedView["partType"]=="block" && sizeof($organizedView["children"])>0){
             if ($organizedView["children"][0]["partType"]=="header"){
@@ -289,6 +335,7 @@ class ViewHandler {
             $this->lookAtChildren($child['id'],$children, $view_params, $organizedView["children"][$i]);    
         }
         $this->lookAtHeader($organizedView);
+        $this->lookAtTable($organizedView);
     }
     
     //Go through views and update array with parameters info (receives parents and uses queries to get the rest)
@@ -303,6 +350,7 @@ class ViewHandler {
             $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);        
         }    
         $this->lookAtHeader($organizedView);
+        $this->lookAtTable($organizedView);
     }
     //gets aspect view and its aspectClass
     public function getAspect($aspectId){
@@ -358,6 +406,7 @@ class ViewHandler {
             if (array_key_exists("parts", $viewsByParent))
                 $this->lookAtChildren($viewsByParent['id'],$viewsByParent['parts'], $view_params, $organizedView);  
         }
+        //print_r($organizedView);
         return $organizedView;   
     }
     
@@ -416,23 +465,36 @@ class ViewHandler {
 
     public function registerFunction($funcLib,$funcName, $processFunc) {
         //ToDO: save on dictionary table ?
-        if (!array_key_exists($funcLib, $this->registeredFunctions))
-            $this->registeredFunctions[$funcLib]=[];
-        if (array_key_exists($funcLib, $this->registeredFunctions[$funcLib]))
-            new \Exception('Function ' . $funcName . ' already exists in library '. $funcLib);
+        if ($funcLib==null ){            
+            if (array_key_exists($funcName, $this->registeredFunctions))
+                new \Exception('Function ' . $funcName . ' already exists.');
+            $this->registeredFunctions[$funcName] = $processFunc;
+        }else{
+            if (!array_key_exists($funcLib, $this->registeredLibFunctions))
+            $this->registeredLibFunctions[$funcLib]=[];
+            if (array_key_exists($funcLib, $this->registeredLibFunctions[$funcLib]))
+                new \Exception('Function ' . $funcName . ' already exists in library '. $funcLib);
 
-        $this->registeredFunctions[$funcLib][$funcName] = $processFunc;
+            $this->registeredLibFunctions[$funcLib][$funcName] = $processFunc;
+        }
+        
     }
 
     public function callFunction($funcLib, $funcName, $args, $context=null) {
-        if (!array_key_exists($funcLib, $this->registeredFunctions))
-            throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
-        if (!array_key_exists($funcName, $this->registeredFunctions[$funcLib]))
-            throw new \Exception('Function ' . $funcName . ' is not defined in library '. $funcLib);
-        
+        if ($funcLib==null ){            
+            if (!array_key_exists($funcName, $this->registeredFunctions))
+                throw new \Exception("Function " . $funcName . " doesn't exists.");
+            $fun = $this->registeredFunctions[$funcName];            
+        }else{
+            if (!array_key_exists($funcLib, $this->registeredLibFunctions))
+                throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
+            if (!array_key_exists($funcName, $this->registeredLibFunctions[$funcLib]))
+                throw new \Exception('Function ' . $funcName . ' is not defined in library '. $funcLib);
+            $fun = $this->registeredLibFunctions[$funcLib][$funcName];
+        }
         if ($context!==null)
             array_unshift($args,$context);
-        return $this->registeredFunctions[$funcLib][$funcName](...$args);
+        return $fun(...$args);
     }
 
     

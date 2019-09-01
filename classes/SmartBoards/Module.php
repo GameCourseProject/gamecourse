@@ -81,7 +81,7 @@ abstract class Module {
     
     public function getUserId($user){
         if (is_array($user))
-            return $user["id"];
+            return $user["value"]["id"];
         else
             return $id=$user;
     }

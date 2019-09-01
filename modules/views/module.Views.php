@@ -55,19 +55,19 @@ class Views extends Module {
             if (array_key_exists('class', $row))
                 $this->viewHandler->parseSelf($row['class']);
 
-            $this->viewHandler->parseData($row);
+            $this->viewHandler->parseVariables($row);
 
             foreach($row['values'] as &$cell)
                 $this->viewHandler->parsePart($cell['value']);
 
-            $this->viewHandler->parseRepeat($row);
+            $this->viewHandler->parseLoop($row);
             $this->viewHandler->parseIf($row);
         }
     }
 
     private function processTableRows(&$rows, $viewParams, $visitor) {
         $this->viewHandler->processLoop($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
-            $this->viewHandler->processData($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
+            $this->viewHandler->processVariables($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
                 if (array_key_exists('style', $row))
                     $row['style'] = $row['style']->accept($visitor)->getValue();
                 if (array_key_exists('class', $row))
@@ -361,25 +361,11 @@ class Views extends Module {
                 $this->putTogetherTableRows($table['rows'], $getPart);
             },
             function(&$table) {
-                for($i = 0; $i < count($table['columns']); ++$i) {
-                    $column = &$table['columns'][$i];
-                    if (array_key_exists('style', $column))
-                        $this->viewHandler->parseSelf($column['style']);
-                    if (array_key_exists('class', $column))
-                        $this->viewHandler->parseSelf($column['class']);
-                }
-
+                //print_r($table);
                 $this->parseTableRows($table['headerRows']);
                 $this->parseTableRows($table['rows']);
             },
             function(&$table, $viewParams, $visitor) {
-                for($i = 0; $i < count($table['columns']); ++$i) {
-                    $column = &$table['columns'][$i];
-                    if (array_key_exists('style', $column))
-                        $column['style'] = $column['style']->accept($visitor)->getValue();
-                    if (array_key_exists('class', $column))
-                        $column['class'] = $column['class']->accept($visitor)->getValue();
-                }
                 $this->processTableRows($table['headerRows'], $viewParams, $visitor);
                 $this->processTableRows($table['rows'], $viewParams, $visitor);
             }
@@ -491,10 +477,8 @@ class Views extends Module {
                     
                     if ($parent["aspectClass"]==null){
                         $aspectClass = Core::$systemDB->select("aspect_class",[],"max(aspectClass)")+1;
-                        //ToDo:: take into acount deletions, select max(aspectClass)?
                         $parent["aspectClass"]=$aspectClass;
                         //update aspectClass of parent view in DB
-                        //print_r($parent);
                         Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$parent["id"]]);
                         $this->viewHandler->updateViewAndChildren($parent, true);
                     }
@@ -509,7 +493,7 @@ class Views extends Module {
                 } else {
                     $newView = ["role"=>$role, "partType"=>"aspect", 
                             "aspectClass"=>null,"parent"=>null,"viewIndex"=>null];
-                    $this->viewHandler->updateViewAndChildren($newView, false, true);
+                    $this->viewHandler->updateViewAndChildren($newView);
                 }
                 http_response_code(201);
                 return;
@@ -773,7 +757,7 @@ class Views extends Module {
             }
             
             $this->viewHandler->updateViewAndChildren($viewContent);
-            
+            //print_r($viewContent);
             if (!$testDone)
                 API::response('Saved, but skipping test (no users in role to test or special role)');
 

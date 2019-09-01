@@ -278,137 +278,140 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.createToolbar = function(scope, part, toolbarOptions) {
         var toolbar = $(document.createElement('div')).addClass('edit-toolbar');
+        
+        if (!toolbarOptions.tools.noSettings){
+            toolbar.append($sbviews.createTool('Edit Settings', 'images/gear.svg', function() {
+                var optionsScope = scope.$new();
+                optionsScope.editData = toolbarOptions.editData;
+                optionsScope.part = angular.copy(part);
+                optionsScope.toggleProperty = function(part, path, defaultValue) {
+                    if (defaultValue == undefined)
+                        defaultValue = '';
 
-        toolbar.append($sbviews.createTool('Edit Settings', 'images/gear.svg', function() {
-            var optionsScope = scope.$new();
-            optionsScope.editData = toolbarOptions.editData;
-            optionsScope.part = angular.copy(part);
-            optionsScope.toggleProperty = function(part, path, defaultValue) {
-                if (defaultValue == undefined)
-                    defaultValue = '';
+                    var obj = part;
+                    var key = path;
 
-                var obj = part;
-                var key = path;
+                    var pathKeys = path.split('.');
+                    if (pathKeys.length > 1) {
+                        key = pathKeys.pop();
+                        obj = pathKeys.reduce(function (obj,i) { return obj[i]; }, part);
+                    }
 
-                var pathKeys = path.split('.');
-                if (pathKeys.length > 1) {
-                    key = pathKeys.pop();
-                    obj = pathKeys.reduce(function (obj,i) { return obj[i]; }, part);
-                }
+                    if (obj[key] == undefined)
+                        obj[key] = defaultValue;
+                    else
+                        delete obj[key];
+                };
 
-                if (obj[key] == undefined)
-                    obj[key] = defaultValue;
-                else
-                    delete obj[key];
-            };
+                optionsScope.delete = function (obj, k) {
+                    delete obj[k];
+                };
 
-            optionsScope.delete = function (obj, k) {
-                delete obj[k];
-            };
+                var options = toolbarOptions.overlayOptions;
+                optionsScope.options = options;
 
-            var options = toolbarOptions.overlayOptions;
-            optionsScope.options = options;
-
-            $timeout(function() { // this is needed because the scope was created in the same digest..
-                function watch(path, fn) {
-                    optionsScope.$watch(path, function(n, o) {
-                        if (n != o) {
-                            var notifiedPart = part;
-                            if (toolbarOptions.notifiedPart != null)
-                                notifiedPart = toolbarOptions.notifiedPart;
-                            $sbviews.notifyChanged(notifiedPart, {view: toolbarOptions.view});
-                            if (notifiedPart == part) {
-                                optionsScope.part.pid = part.pid;
-                                optionsScope.part.origin = part.origin;
+                $timeout(function() { // this is needed because the scope was created in the same digest..
+                    function watch(path, fn) {
+                        optionsScope.$watch(path, function(n, o) {
+                            if (n != o) {
+                                var notifiedPart = part;
+                                if (toolbarOptions.notifiedPart != null)
+                                    notifiedPart = toolbarOptions.notifiedPart;
+                                $sbviews.notifyChanged(notifiedPart, {view: toolbarOptions.view});
+                                if (notifiedPart == part) {
+                                    optionsScope.part.pid = part.pid;
+                                    optionsScope.part.origin = part.origin;
+                                }
+                                if (fn != undefined)
+                                    fn(n, o);
                             }
-                            if (fn != undefined)
-                                fn(n, o);
-                        }
-                    }, true);
-                }
-                $sbviews.openOverlay(function(el, execClose) {
-                    
-                    optionsScope.closeOverlay = function() {
-                        execClose();
-                    };
-                    
-                    var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
-                    $compile(container)(optionsScope);
-                    el.append(container);
-                    watch('part.class');
-                    watch('part.directive');
-                    watch('part.style');
-                    watch('part.parameters.loopData');
-                    watch('part.if');
-                    watch('part.events');
-                    watch('part.data');
-
-                    // Events
-                    var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
-                    var missingEvents = [];
-                    if (optionsScope.part.events != undefined) {
-                        for (var i in events) {
-                            var event = events[i];
-                            if (optionsScope.part.events[event] == undefined)
-                                missingEvents.push(event);
-                        }
-                    } else {
-                        missingEvents = events;
+                        }, true);
                     }
-                    optionsScope.missingEvents = missingEvents;
-                    optionsScope.events = {
-                        eventToAdd: undefined
-                    };
-                    optionsScope.addEvent = function() {
-                        var eventType = optionsScope.events.eventToAdd;
-                        optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
-                        optionsScope.part.events[eventType] = '';
-                    };
+                    $sbviews.openOverlay(function(el, execClose) {
 
-                    optionsScope.addEventToMissing = function(type) {
-                        optionsScope.missingEvents.push(type);
-                    };
+                        optionsScope.closeOverlay = function() {
+                            execClose();
+                        };
 
- 
-                    // Variables
-                    optionsScope.variables = {
-                        dataKey: undefined
-                    };
+                        var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
+                        $compile(container)(optionsScope);
+                        el.append(container);
+                        watch('part.class');
+                        watch('part.directive');
+                        watch('part.style');
+                        watch('part.parameters.loopData');
+                        watch('part.if');
+                        watch('part.events');
+                        watch('part.data');
 
-                    optionsScope.addVariable = function() {
-                        optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
-                        optionsScope.variables.dataKey = '';
-                    };
-                    
-                    $timeout(function() {
-                        if (options.callbackFunc != undefined)
-                            options.callbackFunc(container.next(), execClose, optionsScope, watch);
-                    }, 50);
-                }, function(cancel) {
-                    if (cancel != undefined && optionsScope.part.parameters.loopData != undefined && optionsScope.part.parameters.loopData == '') {
-                        cancel();
-                        alert('Repeat Elements expression cannot be empty. Be sure it is an Array or Continuation.');
-                        return;
-                    }
+                        // Events
+                        var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
+                        var missingEvents = [];
+                        if (optionsScope.part.events != undefined) {
+                            for (var i in events) {
+                                var event = events[i];
+                                if (optionsScope.part.events[event] == undefined)
+                                    missingEvents.push(event);
+                            }
+                        } else {
+                            missingEvents = events;
+                        }
+                        optionsScope.missingEvents = missingEvents;
+                        optionsScope.events = {
+                            eventToAdd: undefined
+                        };
+                        optionsScope.addEvent = function() {
+                            var eventType = optionsScope.events.eventToAdd;
+                            optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
+                            optionsScope.part.events[eventType] = '';
+                        };
 
-                    if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                        optionsScope.addEventToMissing = function(type) {
+                            optionsScope.missingEvents.push(type);
+                        };
+
+
+                        // Variables
+                        optionsScope.variables = {
+                            dataKey: undefined
+                        };
+
+                        optionsScope.addVariable = function() {
+                            optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
+                            optionsScope.variables.dataKey = '';
+                        };
+
                         $timeout(function() {
-                            objSync(part, optionsScope.part);
+                            if (options.callbackFunc != undefined)
+                                options.callbackFunc(container.next(), execClose, optionsScope, watch);
+                        }, 50);
+                    }, function(cancel) {
+                        console.log("close settings",optionsScope.part);
+                        if (cancel != undefined && optionsScope.part.parameters.loopData != undefined && optionsScope.part.parameters.loopData == '') {
+                            cancel();
+                            alert('Repeat Elements expression cannot be empty. Be sure it is an Array or Continuation.');
+                            return;
+                        }
 
+                        if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                            $timeout(function() {
+                                objSync(part, optionsScope.part);
+
+                                optionsScope.$destroy();
+                                if (options.closeFunc != undefined)
+                                    options.closeFunc();
+                            });
+                        } else {
                             optionsScope.$destroy();
                             if (options.closeFunc != undefined)
                                 options.closeFunc();
-                        });
-                    } else {
-                        optionsScope.$destroy();
-                        if (options.closeFunc != undefined)
-                            options.closeFunc();
-                    }
+                        }
+                    });
                 });
-            });
-            
-        }));
 
+            }));
+        }
+        
         if (toolbarOptions.layoutEditor) {
             var tool = $sbviews.createTool('Edit Layout', 'images/layout-edit.svg', function() {
                 if (toolbarOptions.toolFunctions.layoutEdit)
@@ -591,6 +594,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     allowStyle: true
                 },
                 tools: {
+                    noSettings: false,
                     canSwitch: false,
                     canDelete: false,
                     canDuplicate: false,
@@ -605,7 +609,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 defaultOptions.overlayOptions.allowEvents = true;
                 defaultOptions.overlayOptions.allowVariables = true;
             }
-
+            if (element.hasClass('view')) {
+                toolOptions.noSettings = true;
+            }
+            
             toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
             toolbarOptions.editData = editData;
 
@@ -621,7 +628,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             element.addClass('highlight');
             element.append(myToolbar);
             //console.log("mouse somehting",part);
-            //console.log("mouse somehting",element.data());
+           //console.log("mouse somehting",element);
         });
 
         element.on('mouseleave', function(e) {
