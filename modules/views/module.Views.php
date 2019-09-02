@@ -50,10 +50,10 @@ class Views extends Module {
     private function parseTableRows(&$rows) {
         for($i = 0; $i < count($rows); ++$i) {
             $row = &$rows[$i];
-            if (array_key_exists('style', $row))
-                $this->viewHandler->parseSelf($row['style']);
-            if (array_key_exists('class', $row))
-                $this->viewHandler->parseSelf($row['class']);
+            if (array_key_exists('style', $row["parameters"]))
+                $this->viewHandler->parseSelf($row["parameters"]['style']);
+            if (array_key_exists('class', $row["parameters"]))
+                $this->viewHandler->parseSelf($row["parameters"]['class']);
 
             $this->viewHandler->parseVariables($row);
 
@@ -68,10 +68,10 @@ class Views extends Module {
     private function processTableRows(&$rows, $viewParams, $visitor) {
         $this->viewHandler->processLoop($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
             $this->viewHandler->processVariables($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
-                if (array_key_exists('style', $row))
-                    $row['style'] = $row['style']->accept($visitor)->getValue();
-                if (array_key_exists('class', $row))
-                    $row['class'] = $row['class']->accept($visitor)->getValue();
+                if (array_key_exists('style', $row["parameters"]))
+                    $row['style'] = $row["parameters"]['style']->accept($visitor)->getValue();
+                if (array_key_exists('class', $row["parameters"]))
+                    $row['class'] = $row["parameters"]['class']->accept($visitor)->getValue();
 
                 foreach($row['values'] as &$cell) {
                     $this->viewHandler->processPart($cell['value'], $viewParams, $visitor);
@@ -144,8 +144,10 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });
         $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
         $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });
-        $this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
-
+        //$this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
+        $this->viewHandler->registerFunction(null,'int', function($val1) { return new ValueNode(intval($val1)); });
+        $this->viewHandler->registerFunction(null,'integer', function($val1) { return new ValueNode(intval($val1)); });
+        
         $course = $this->getParent();
         $courseId = $course->getId();
         $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
@@ -719,10 +721,8 @@ class Views extends Module {
             $testDone = false;
             $viewCopy = $viewContent;
             try {
-
                 //replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
-                //print_r("here");
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
 
@@ -760,53 +760,7 @@ class Views extends Module {
             //print_r($viewContent);
             if (!$testDone)
                 API::response('Saved, but skipping test (no users in role to test or special role)');
-
             return;
-            $parentParts = array();
-            if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
-                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['role']);
-            } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
-                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['roleOne'], $info['roleTwo']);
-            }
-            
-            //$viewContent = ViewEditHandler::breakView($viewContent, $parentParts);
-           
-            //print_r($viewContent);
-            //$viewContent = $this->viewHandler->organizeViewData($viewContent);
-            
-            //print_r($viewContent);//array ( part=>,partList=>)
-            if ($pageSettings['roleType'] == ViewHandler::VT_ROLE_SINGLE) {
-                $role=$info['role'];
-            } else if ($pageSettings['roleType'] == ViewHandler::VT_ROLE_INTERACTION) {
-                $role=$info['roleOne'].'>'.$info['roleTwo'];
-            } else {
-                $role="";
-            }
-            $viewRoleInfo=['course'=>$courseId,'viewId'=>$pageId,'role'=>$role];
-            
-            //this may be unecessary, unless part or replacements changed
-            //Core::$systemDB->update("view_role",
-             //           $viewContent['view_role'],
-              //          $viewRoleInfo);
-            //$currParts = array_column(Core::$systemDB->selectMultiple("view_part",$viewRoleInfo,'pid'),'pid');
-            
-            foreach($viewContent['view_part'] as $part){
-                if (empty(Core::$systemDB->select("view_part",['pid'=>$part['pid'],'course'=>$courseId]))){
-                    Core::$systemDB->insert('view_part',array_merge($part,$viewRoleInfo));
-                }else{
-                    Core::$systemDB->update('view_part',array_merge($part,$viewRoleInfo),['pid'=>$part['pid'],'course'=>$courseId]);
-                }
-                $key=array_search($part['pid'], $currParts);
-                if ($key!==false){
-                   unset($currParts[$key]);
-                }
-            }
-            //delete remaining parts on db
-            foreach($currParts as $part){
-                Core::$systemDB->delete("view_part",['pid'=>$part,'course'=>$courseId]);
-            }
-                     
-            
         });
 
         API::registerFunction('views', 'previewEdit', function() {
@@ -814,17 +768,17 @@ class Views extends Module {
             API::requireValues('course', 'view');
 
             $courseId = API::getValue('course');
-            $viewId = API::getValue('view');
+            $pageId = API::getValue('view');
             $viewContent = API::getValue('content');
 
-            $views = $this->viewHandler->getRegisteredPages();
-            if (!array_key_exists($viewId, $views))
-                API::error('Unknown view ' . $viewId, 404);
+            $pages = $this->viewHandler->getRegisteredPages();
+            if (!array_key_exists($pageId, $pages))
+                API::error('Unknown page ' . $pageId, 404);
 
             $course = \SmartBoards\Course::getCourse($courseId);
 
-            $viewSettings = $views[$viewId];
-            $viewType = $viewSettings['roleType'];
+            $pageSettings = $pages[$pageId];
+            $viewType = $pageSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {

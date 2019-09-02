@@ -28,6 +28,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             }
         },
         build: function (scope, part, options) {
+            if (Array.isArray(part.parameters)){
+                //when a table is saved with empty parameters it becomes an array instead of object
+                //this changes them back (so it doesnt cause problems)
+                part.parameters={};
+            }
             var tableDiv = $(document.createElement('div')).addClass('table');
             var table = $(document.createElement('table'));
 
@@ -146,23 +151,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             table.append(tbody);
             tableDiv.append(table);
 
-            if (!options.edit && part.sort != undefined && part.sort) {
-                var sortList = [];
-                var headers = {};
-                for (var cidx = 0; cidx < part.columns; ++cidx) {
-                    var column = {};//part.columns[cidx];
-                    /*if (column.sortMode == 'asc')
-                        sortList.push([cidx, 0]);
-                    else if (column.sortMode == 'desc')
-                        sortList.push([cidx, 1]);
-                    else if (column.sortMode == 'disabled') {
-                        if (headers[cidx] == undefined)
-                            headers[cidx] = {};
-                        headers[cidx].sorter = false;
-                    }*/
-                }
-
-                table.tablesorter({sortList: sortList, headers: headers});
+            if (!options.edit ){//&& part.sort != undefined && part.sort) 
+                table.tablesorter({sortList: [], headers: {} });
             }
 
             if (part.filterBox != undefined && !options.edit) {

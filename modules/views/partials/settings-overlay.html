@@ -42,8 +42,8 @@
     <sb-checkbox ng-if="options.allowStyle" sb-checkbox="part.style" sb-checkbox-label="Enable Style" sb-checkbox-default="" sb-checkbox-info="The Style is used for styling the element. The Style expression accepts CSS rules to be applied to the element." sb-checkbox-link="./docs/#ViewsStyleMiscStyle">
         <sb-expression sb-expression="part.style" sb-expression-label="Style"></sb-expression>
     </sb-checkbox>
-    <sb-checkbox ng-if="options.allowClass" sb-checkbox="part.class" sb-checkbox-label="Enable Class" sb-checkbox-default="" sb-checkbox-info="The Class is used for styling the element. It makes the element use a certain CSS class defined in a CSS file." sb-checkbox-link="./docs/#ViewsStyleMiscClass">
-        <sb-expression sb-expression="part.class" sb-expression-label="Class"></sb-expression>
+    <sb-checkbox ng-if="options.allowClass" sb-checkbox="part.parameters.class" sb-checkbox-label="Enable HTML Class" sb-checkbox-default="" sb-checkbox-info="The Class is used for styling the element. It makes the element use a certain CSS class defined in a CSS file." sb-checkbox-link="./docs/#ViewsStyleMiscClass">
+        <sb-expression sb-expression="part.parameters.class" sb-expression-label="Class"></sb-expression>
     </sb-checkbox>
     <sb-checkbox ng-if="options.allowDirective" sb-checkbox="part.directive" sb-checkbox-label="Enable Angular Directive" sb-checkbox-info="The angular directive allows to define anything to be run in Javascript for the element being initialized. It is should be used primarily to defined functions for Events. To define the directive it is required to create/edit a Javascript file." sb-checkbox-default="" sb-checkbox-link="./docs/#ViewsStyleMiscAngularDirective">
         <sb-input sb-input="part.directive" sb-input-label="Directive name"></sb-input>

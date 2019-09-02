@@ -481,17 +481,18 @@ class ViewHandler {
     }
 
     public function callFunction($funcLib, $funcName, $args, $context=null) {
-        if ($funcLib==null ){            
-            if (!array_key_exists($funcName, $this->registeredFunctions))
-                throw new \Exception("Function " . $funcName . " doesn't exists.");
+        //check if it's a function not associated with a library
+        if (array_key_exists($funcName, $this->registeredFunctions)){
             $fun = $this->registeredFunctions[$funcName];            
-        }else{
+        }
+        else if ($funcLib!=null){
             if (!array_key_exists($funcLib, $this->registeredLibFunctions))
                 throw new \Exception('Called function ' . $funcName . ' on an unexistent library '. $funcLib);
             if (!array_key_exists($funcName, $this->registeredLibFunctions[$funcLib]))
                 throw new \Exception('Function ' . $funcName . ' is not defined in library '. $funcLib);
             $fun = $this->registeredLibFunctions[$funcLib][$funcName];
-        }
+        }else
+            throw new \Exception("Function " . $funcName . " doesn't exists.");
         if ($context!==null)
             array_unshift($args,$context);
         return $fun(...$args);
@@ -577,10 +578,10 @@ class ViewHandler {
             $cont($node->accept($visitor, true));*/
         //print_R($node);
         $lib=null;
-        $visitedNode = $node->accept($visitor)->getValue();
         if (is_a($node,'Modules\Views\Expression\FunctionOp')){
             $lib=$node->getLib();
         }
+        $visitedNode = $node->accept($visitor)->getValue();
         //print_r($visitedNode);
         if (is_array($visitedNode) && $lib!==null){
             
@@ -707,10 +708,10 @@ class ViewHandler {
 
     public function processPart(&$part, $viewParams, $visitor) {
         $this->processVariables($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
-            if (array_key_exists('style', $part))
-                $part['style'] = $part['style']->accept($visitor)->getValue();
-            if (array_key_exists('class', $part))
-                $part['class'] = $part['class']->accept($visitor)->getValue();
+            if (array_key_exists('style', $part["parameters"]))
+                $part['style'] = $part["parameters"]['style']->accept($visitor)->getValue();
+            if (array_key_exists('class', $part["parameters"]))
+                $part['class'] = $part["parameters"]['class']->accept($visitor)->getValue();
 
             $this->callPartProcess($part['partType'], $part, $viewParams, $visitor);
         });
@@ -759,10 +760,10 @@ class ViewHandler {
     public function parsePart(&$part) {
         //parse ["data"] or ["variables"]
         $this->parseVariables($part);
-        if (array_key_exists('style', $part))
-            $this->parseSelf($part['style']);
-        if (array_key_exists('class', $part))
-            $this->parseSelf($part['class']);
+        if (array_key_exists('style', $part["parameters"]))
+            $this->parseSelf($part["parameters"]['style']);
+        if (array_key_exists('class', $part["parameters"]))
+            $this->parseSelf($part["parameters"]['class']);
 
         $this->parseLoop($part);
         $this->parseIf($part);

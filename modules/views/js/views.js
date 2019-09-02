@@ -222,7 +222,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 viewScope.viewBlock = {
                     partType: 'block',
                     noHeader: true,
-                    children: viewScope.view.content
+                    children: viewScope.view.children
                 };
 
                 var viewBlock = $sbviews.build(viewScope, 'viewBlock');

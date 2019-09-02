@@ -336,7 +336,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
                         el.append(container);
-                        watch('part.class');
+                        watch('part.parameters.class');
                         watch('part.directive');
                         watch('part.style');
                         watch('part.parameters.loopData');
