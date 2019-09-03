@@ -17,7 +17,6 @@ class Views extends Module {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
         parent::addResources('js/views.part.text.js');
-        parent::addResources('js/views.part.value.js');
         parent::addResources('Expression/SmartboardsExpression.js');
         parent::addResources('js/');
         parent::addResources('css/views.css');
@@ -450,7 +449,7 @@ class Views extends Module {
                 $info = API::getValue('info');
                 
                 $finalParents = $this->findParents($course, $info['roleOne']);
-                $parentViews = $this->findViews($pageId,$pageSettings,$type, array_merge($finalParents, array($info['roleOne'])));
+                $parentView = $this->findView($pageSettings["viewId"],$type, array_merge($finalParents, array($info['roleOne'])));
                 
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
                     $role=$info['roleOne'];
@@ -473,23 +472,21 @@ class Views extends Module {
                     }
                     $parentViews = $finalViews;
                 }
-                $sizeParents = count($parentViews);
-                if ($sizeParents > 0) {
-                    $parent = $parentViews[$sizeParents - 1];
-                    
-                    if ($parent["aspectClass"]==null){
+                //$sizeParents = count($parentViews);
+                if ($parentView !=null) {
+                    if ($parentView["aspectClass"]==null){
                         $aspectClass = Core::$systemDB->select("aspect_class",[],"max(aspectClass)")+1;
-                        $parent["aspectClass"]=$aspectClass;
+                        $parentView["aspectClass"]=$aspectClass;
                         //update aspectClass of parent view in DB
-                        Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$parent["id"]]);
-                        $this->viewHandler->updateViewAndChildren($parent, true);
+                        
+                        Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$parentView["id"]]);
+                        $this->viewHandler->updateViewAndChildren($parentView, true);
                     }
                     $newView = ["role"=>$role, "partType"=>"aspect"];
                     Core::$systemDB->insert("view",$newView);
                     $newView["id"]=Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("aspect_class",["aspectClass"=>$parent["aspectClass"], "viewId"=>$newView["id"]]);
-                    $newView = array_merge($parent,$newView);
-                
+                    Core::$systemDB->insert("aspect_class",["aspectClass"=>$parentView["aspectClass"], "viewId"=>$newView["id"]]);
+                    $newView = array_merge($parentView,$newView);
                     $this->viewHandler->updateViewAndChildren($newView, false, true);
                     
                 } else {
@@ -596,8 +593,7 @@ class Views extends Module {
                             $viewedBy[] = array('id' => $roleTwo, 'name' => substr($roleTwo, strpos($roleTwo, '.') + 1));
                         }
                         $result[] = array('id' => $roleOne, 'name' => substr($roleOne, strpos($roleOne, '.') + 1),
-                            'viewedBy'=>$viewedBy);
-                        
+                            'viewedBy'=>$viewedBy);                        
                     }
                 }
 
@@ -618,11 +614,48 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             // TODO: implement change.. for pages that can change type, currently, none
         });
-
+        API::registerFunction('views', 'getTemplateContent', function() {
+            API::requireCourseAdminPermission();
+            API::requireValues('role', 'id', 'roleType','course');
+            $templateId = API::getValue("id");
+            $role = API::getValue("role");
+            $courseId = API::getValue("course");
+            $roleType=API::getValue("roleType");
+            
+            $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
+                    ["partType"=>"aspect","templateId"=>$templateId]);
+            
+            $possibleRoles = array_merge($this->findParents(new Course($courseId), $role),[$role]);//parent roles
+            //gets view of specified role or its closest parent role
+            $view = $this->findView($anAspect["id"],$roleType, $possibleRoles);
+            
+            //print_r($view);
+            API::response(array('template' => $view["children"][0] ));
+        });
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');//json_encode?
-            $this->setTemplate(API::getValue('name'), serialize(API::getValue('part')), "views");//use this course?
+            $templateName = API::getValue('name');
+            $content = API::getValue('part');
+            $courseId=API::getValue("course");
+             
+            $aspect = ["role"=>$content["role"], "partType"=>"aspect"];
+            Core::$systemDB->insert("view",$aspect);
+            $aspect["id"]=Core::$systemDB->getLastId();
+            $aspect["aspectClass"]=null;
+            $aspect["children"][]=$content;
+            $this->viewHandler->updateViewAndChildren($aspect, false, true);
+            
+            if (strpos($content["role"], '>') !== false) {
+                //dual role
+                $roleType = ViewHandler::VT_ROLE_INTERACTION;
+            }else $roleType = ViewHandler::VT_ROLE_SINGLE;
+            
+             
+            Core::$systemDB->insert("template",["course"=>$courseId,"name"=>$templateName,"roleType"=>$roleType]);
+            $templateId = Core::$systemDB->getLastId();
+            
+            Core::$systemDB->insert("view_template",["viewId"=>$aspect["id"],"templateId"=>$templateId]);
         });
 
         API::registerFunction('views', 'deleteTemplate', function() {
@@ -635,8 +668,8 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             API::requireValues('name','course');
             $name = API::getValue('name');
-            $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", $name) . ".txt";
-            file_put_contents($filename,Core::$systemDB->select("view_template",["course"=>API::getValue('course'),"id"=>$name],"content")); 
+            //$filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", $name) . ".txt";
+            //file_put_contents($filename,Core::$systemDB->select("view_template",["course"=>API::getValue('course'),"id"=>$name],"content")); 
             API::response(array('filename' => $filename ));
             
         });
@@ -914,14 +947,15 @@ class Views extends Module {
         return array_merge(array('role.Default'), $finalParents);
     }
 
-    private function findViews($pageId,$pageSettings,$type, $viewsToFind, $roleOne = null) {
+    //gets view of the class of $anAspectId, with the last matching role of $rolesWanted 
+    private function findView($anAspectId,$type, $rolesWanted, $roleOne = null) {
         //$views = $this->getViewHandler()->getViews($viewId);
         //if ($roleOne != null) {//this argument always null
         //$views = $this->getViewHandler()->getViewsRoles($view,$roleOne);
            // $views = $views->getWrapped($roleOne);
         //}
         //$views = $views->getValue();
-        $aspects = $this->getViewHandler()->getAspects($pageSettings["viewId"]); 
+        $aspects = $this->getViewHandler()->getAspects($anAspectId); 
         //$views = $this->getViewHandler()->getViewRoles($viewId);
         $viewRoles = array_column($aspects,'role');
         $viewsFound = array();
@@ -929,21 +963,21 @@ class Views extends Module {
             $rolesFound=[];
             foreach ($viewRoles as $dualRole) {
                 $role = substr($dualRole,0, strpos($dualRole, '>'));
-                if (in_array($role, $viewsToFind) && !in_array($role, $rolesFound)){
-                    $viewsFound[]=$this->getViewHandler()->getViewWithParts($pageId, $dualRole);
+                if (in_array($role, $rolesWanted) && !in_array($role, $rolesFound)){
+                    $viewsFound[]=$this->getViewHandler()->getViewWithParts($anAspectId, $dualRole);
                     $rolesFound[]=$dualRole;
                 }
             }
         }
         else{
-            foreach ($viewsToFind as $viewToFind) {
-                if (in_array($viewToFind, $viewRoles))
-                    $viewsFound[]=$this->getViewHandler()->getViewWithParts($pageId, $viewToFind);
-                //if (array_key_exists($viewToFind, $views))
-                    //$viewsFound[] = $views[$viewToFind];
+            foreach (array_reverse($rolesWanted) as $role) {
+                if (in_array($role, $viewRoles)) {
+                    return $this->getViewHandler()->getViewWithParts($anAspectId, $role);
+                }
             }
+            return null;
         }
-        return $viewsFound;
+        //return $viewsFound;
     }
 
     public function &getViewHandler() {

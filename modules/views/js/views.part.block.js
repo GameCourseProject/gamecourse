@@ -1,4 +1,4 @@
-angular.module('module.views').run(function($sbviews, $compile, $timeout) {
+angular.module('module.views').run(function($smartboards,$sbviews, $compile, $timeout) {
     $sbviews.registerPartType('block', {
         name: 'Block',
         defaultPart: function() {
@@ -245,7 +245,20 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                     return;
                                 addOverlay(el);
                             });
-
+                            
+                            
+                            function addTemplatelist(listElement){
+                                listElement.append('<option disabled>-- Template --</option>');
+                                var templates = options.editData.templates;
+                                for (var t in templates) {
+                                    var template = templates[t];
+                                    var option = $(document.createElement('option'));
+                                    option.text(template["name"]+" ("+template['id']+")");
+                                    option.val('temp:' + t);
+                                    listElement.append(option);
+                                }
+                            }
+                            
                             var addPartsDiv = $(document.createElement('div')).addClass('add-parts');
                             addPartsDiv.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
                             var partsList = $(document.createElement('select')).attr('id', 'partList');
@@ -259,28 +272,11 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                     partsList.append(option);
                                 }
                             }
-
-                            partsList.append('<option disabled>-- Template --</option>');
                             var templates = options.editData.templates;
-                            for (var t in templates) {
-                                var template = templates[t];
-                                var option = $(document.createElement('option'));
-                                option.text(template['id']);
-                                option.val('temp:' + t);
-                                partsList.append(option);
-                            }
-
-                            var addButton = $(document.createElement('button')).text('Add');
-                            addButton.click(function() {
-                                var value = partsList.val();
-                                var id = value.substr(5);
-                                var newPart;
-                                if (value.indexOf('part:') == 0){
-                                    newPart = $sbviews.registeredPartType[id].defaultPart();
-                                }
-                                else if (value.indexOf('temp:') == 0)
-                                    newPart = angular.copy(templates[id]['content']);
-
+                            addTemplatelist(partsList);
+                            
+                            function addPart(newPart){
+                                console.log("newPart", newPart);
                                 $sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();
                                 part.children.push(newPart);
@@ -288,14 +284,55 @@ angular.module('module.views').run(function($sbviews, $compile, $timeout) {
                                 $sbviews.notifyChanged(part, options);
                                 blockContent.append(newChild);
                                 addOverlay(newChild);
+                            }
+                            
+                            var addButton = $(document.createElement('button')).text('Add');
+                            addButton.click(function() {                                
+                                var value = partsList.val();
+                                var index = value.substr(5);
+                                var newPart = [];
+                                if (value.indexOf('part:') == 0){
+                                    newPart = $sbviews.registeredPartType[index].defaultPart();
+                                    addPart(newPart);
+                                }
+                                else if (value.indexOf('temp:') == 0){     
+                                    templates[index].role=part.role;
+                                    $smartboards.request('views', 'getTemplateContent', templates[index], function (data, err) {
+                                        if (err) {
+                                            alert(err.description);
+                                            return;
+                                        }
+                                        console.log("getTemp", data.template);
+                                        addPart(data.template);
+                                    });                                    
+                                }                                
                             });
 
-                            addPartsDiv.append('<label for="partList">Add New Part:</label>')
+                            addPartsDiv.append('<label for="partList">Add New Part:</label><br>')
                             addPartsDiv.append(partsList);
                             addPartsDiv.append(addButton);
+                            
+                            var addTemplateRef = $(document.createElement('div')).addClass('add-parts');
+                            addTemplateRef.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
+                            var templateList = $(document.createElement('select')).attr('id', 'partList');
+                            addTemplatelist(templateList);
+                            var addTemplateButton = $(document.createElement('button')).text('Add');
+                            addTemplateButton.click(function() {
+                                var value = templateList.val();
+                                var id = value.substr(5);
+                                
+                                    //newPart = angular.copy(templates[id]['content']);
+                                    console.log("newTemplateRef",templates[id]);
+                                    //get template contents
+                                
+                            });
+                            addTemplateRef.append('<label for="partList">Add Template Reference:</label><br>')
+                            addTemplateRef.append(templateList);
+                            addTemplateRef.append(addTemplateButton);
 
                             block.append(addPartsDiv);
-                            block.append('')
+                            block.append(addTemplateRef);                            
+                            block.append('');
                         },
                         layoutEditEnd: function() {
                             block.children('.content').find('.block-edit-overlay').remove();

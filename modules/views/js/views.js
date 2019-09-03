@@ -293,8 +293,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         TemplateArea.append($compile('<div ng-repeat="template in templates">{{template.name}}'+
                 '<button ng-click="">Edit</button> '+
                 '<button ng-click="">Globalize</button> '+
-                '<button ng-click="deleteTemplate(template.name)">Delete</button> '+
-                '<button ng-click="exportTemplate(template.name)">Export</button></div>')($scope));
+                '<button ng-click="deleteTemplate(template.id)">Delete</button> '+
+                '<button ng-click="exportTemplate(template.id)">Export</button></div>')($scope));
         //ToDo: add edit and turn global buttons
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.append($compile('<div ng-repeat="template in globals">{{template.name}} '+
@@ -302,8 +302,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         //ToDo: add behaviour to button
         
         angular.extend($scope, data);
-        $scope.exportTemplate = function(name){
-            $smartboards.request('views', 'exportTemplate', {course: $scope.course, name: name}, function(data, err) {
+        $scope.exportTemplate = function(id){
+            $smartboards.request('views', 'exportTemplate', {course: $scope.course, id: id}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;

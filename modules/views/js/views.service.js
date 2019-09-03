@@ -12,7 +12,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             viewScope.viewBlock = {
                 partType: 'block',
                 noHeader: true,
-                children: viewScope.view.children
+                children: viewScope.view.children,
+                role: viewScope.view.children[0].role
             };
 
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
@@ -83,7 +84,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 noHeader: true,
                 children: viewScope.view.children,
                 pid: viewScope.view.id,
-                origin: viewScope.view.origin
+                origin: viewScope.view.origin,
+                role : viewScope.view.children[0].role
             };
 
             function build() {
@@ -459,7 +461,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     for (var t in templates) {
                         var template = templates[t];
                         var option = $(document.createElement('option'));
-                        option.text(template['id']);
+                        option.text(template["name"]+" ("+template['id']+")");
                         option.val('temp:' + template['id']);
                         partsList.append(option);
                     }
@@ -683,7 +685,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         watch('part.' + path, fn);
         return $compile(root)(scope);
     };
-
+    
     // updates the original to have the same keys has copy
     function objSync(original, copy) {
         var originalKeys = Object.keys(original);

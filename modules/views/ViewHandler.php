@@ -72,7 +72,7 @@ class ViewHandler {
     //receives view and updates the DB with its info
     //propagates changes in the main view to all its children
 //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts)
-    public function updateViewAndChildren(&$viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
+    public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
     //insert data into DB, should check previous data and update/delete stuff   
         if ($viewPart["partType"]!="aspect" ){            
             //insert/update views
