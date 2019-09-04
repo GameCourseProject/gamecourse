@@ -27,7 +27,7 @@ class Views extends Module {
         $views = $this->viewHandler->getRegisteredPages();
         foreach($views as $viewId => $view)
             $childTabs[] = Settings::buildTabItem($view['name'], 'course.settings.views.view({view:\'' . $viewId . '\'})', true);
-        Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $childTabs));
+        Settings::addTab(Settings::buildTabItem('Pages', 'course.settings.views', true, $childTabs));
     }
 
     private function breakTableRows(&$rows, &$savePart) {
@@ -475,7 +475,7 @@ class Views extends Module {
                 //$sizeParents = count($parentViews);
                 if ($parentView !=null) {
                     if ($parentView["aspectClass"]==null){
-                        $aspectClass = Core::$systemDB->select("aspect_class",[],"max(aspectClass)")+1;
+                        $aspectClass = $this->newAspectClassNum();
                         $parentView["aspectClass"]=$aspectClass;
                         //update aspectClass of parent view in DB
                         
@@ -638,38 +638,46 @@ class Views extends Module {
             $templateName = API::getValue('name');
             $content = API::getValue('part');
             $courseId=API::getValue("course");
-             
-            $aspect = ["role"=>$content["role"], "partType"=>"aspect"];
-            Core::$systemDB->insert("view",$aspect);
-            $aspect["id"]=Core::$systemDB->getLastId();
-            $aspect["aspectClass"]=null;
-            $aspect["children"][]=$content;
-            $this->viewHandler->updateViewAndChildren($aspect, false, true);
             
-            if (strpos($content["role"], '>') !== false) {
-                //dual role
-                $roleType = ViewHandler::VT_ROLE_INTERACTION;
-            }else $roleType = ViewHandler::VT_ROLE_SINGLE;
+            $roleType = $this->getRoleType($content["role"]);
+            if ($roleType==ViewHandler::VT_ROLE_INTERACTION) {
+                $defaultRole ="role.Default>role.Default";
+                $isDefault = ($content["role"]==$defaultRole);
+            }else {
+                $defaultRole ="role.Default";
+                $isDefault = ($content["role"]==$defaultRole);
+            }
+            $aspects= [["role"=>$content["role"], "partType"=>"aspect"]];
+            if (!$isDefault){
+                $aspects[]=["role"=>$defaultRole, "partType"=>"aspect"];
+                $aspectClass = $this->newAspectClassNum();
+            }else $aspectClass = null;
             
-             
-            Core::$systemDB->insert("template",["course"=>$courseId,"name"=>$templateName,"roleType"=>$roleType]);
-            $templateId = Core::$systemDB->getLastId();
-            
-            Core::$systemDB->insert("view_template",["viewId"=>$aspect["id"],"templateId"=>$templateId]);
+            $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
         });
 
         API::registerFunction('views', 'deleteTemplate', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('name','course');
-            Core::$systemDB->delete("view_template",["course"=>API::getValue('course'),"id"=>API::getValue('name')]);
+            API::requireValues('id','course');
+            $id=API::getValue('id');
+            $views = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
+            foreach($views as $view){//aspect views of template or templateReferences
+                Core::$systemDB->delete("view",["id"=>$view["viewId"]]);
+            }
+            Core::$systemDB->delete("template",["id"=>$id]);
         });
         
         API::registerFunction('views', 'exportTemplate', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('name','course');
-            $name = API::getValue('name');
-            //$filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", $name) . ".txt";
-            //file_put_contents($filename,Core::$systemDB->select("view_template",["course"=>API::getValue('course'),"id"=>$name],"content")); 
+            API::requireValues('id',"name",'course');
+            $templateId = API::getValue('id');
+            //get aspect
+            $aspect=Core::$systemDB->select("view_template join view on viewId=id",
+                    ["partType"=>"aspect","templateId"=>$templateId]);
+            //will get all the aspects (and contents) of the template
+            $views = $this->viewHandler->getViewWithParts($aspect["id"]);
+            $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", API::getValue('name'))."-".$templateId . ".txt";
+            file_put_contents($filename, json_encode($views)); 
             API::response(array('filename' => $filename ));
             
         });
@@ -998,18 +1006,49 @@ class Views extends Module {
         //}
         return $temps;
     }
-    public function getTemplate($id) {
-        $temp = Core::$systemDB->select('view_template',['id'=>$id,'course'=>$this->getCourseId()]);
-        if (!empty($temp)) {
-            $temp['content'] = unserialize($temp['content']);
-        }
+    //gets template by name
+    public function getTemplate($name) {
+        $temp = Core::$systemDB->select('template',['name'=>$name,'course'=>$this->getCourseId()]);
         return $temp;
     }
     
-    //receives the template id, its serialized contents and module id, and puts it in the database
-    public function setTemplate($id, $template, $moduleId) {
-        Core::$systemDB->insert('view_template',['id'=>$id,'content'=>$template,
-                                'course'=>$this->getCourseId(),'module'=>$moduleId]);
+    //receives the template name, its encoded contents, and puts it in the database
+    public function setTemplate($name, $template) {
+        $aspects = json_decode($template,true);
+        //print_R($aspects);
+        $aspectClass=null;
+        if (sizeof($aspects)>1)
+            $aspectClass= $this->newAspectClassNum();
+        
+        $roleType = $this->getRoleType($aspects[0]["role"]);
+        $this->setTemplateHelper($aspects, $aspectClass,$this->getCourseId(), $name, $roleType);
+    }
+    //inserts data into template and view_template tables
+    function setTemplateHelper($aspects,$aspectClass,$courseId,$name,$roleType,$content=null){
+        foreach($aspects as &$aspect){
+            $aspect["aspectClass"]=$aspectClass;
+            Core::$systemDB->insert("view",["role"=>$aspect["role"],"partType"=>$aspect["partType"]]);
+            $aspect["id"]=Core::$systemDB->getLastId();
+            if ($aspectClass!==null)
+                Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$aspect["id"]]);
+            if ($content)
+                $aspect["children"][]=$content;
+            $this->viewHandler->updateViewAndChildren($aspect, false, true); 
+        }
+        
+        Core::$systemDB->insert("template",["course"=>$courseId,"name"=>$name,"roleType"=>$roleType]);
+        $templateId = Core::$systemDB->getLastId();
+        Core::$systemDB->insert("view_template",["viewId"=>$aspects[0]["id"],"templateId"=>$templateId]);
+    }
+    
+    function newAspectClassNum(){
+        return Core::$systemDB->select("aspect_class",[],"max(aspectClass)")+1;
+    }
+    
+    function getRoleType($role){
+        if (strpos($role, '>') !== false) {//dual role
+            return ViewHandler::VT_ROLE_INTERACTION;
+        }else return ViewHandler::VT_ROLE_SINGLE;
     }
 }
 

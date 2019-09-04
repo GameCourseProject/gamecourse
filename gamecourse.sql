@@ -18,6 +18,7 @@ drop table if exists level;
 drop table if exists badge;
 drop table if exists badges_config;
 drop table if exists grade;
+drop table if exists award_participation;
 drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
@@ -143,16 +144,6 @@ create table award_participation(
     foreign key(participation) references participation(id) on delete cascade
 );
 
-create table grade(
-	id 		int unsigned auto_increment primary key,
-	participation int unsigned not null,
-	evaluator 	int unsigned,
-	course 	int unsigned,
-	grade 	int unsigned not null,
-    foreign key(evaluator, course) references course_user(id, course) on delete set null,
-    foreign key(participation) references participation(id) on delete cascade
-);
-
 create table badges_config(
 	maxBonusReward 	int not null,
 	course int unsigned primary key,
@@ -233,6 +224,7 @@ create table view(
 	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef'),
 	parent int unsigned,
 	viewIndex int unsigned,
+	label varchar(50),
 	#template int unsigned,
 	foreign key (parent) references view(id) on delete cascade
 	#foreign key (template) references view_template(id) on delete cascade,

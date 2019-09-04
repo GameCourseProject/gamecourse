@@ -94,9 +94,8 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.deleteViewOne = function(what, $event) {
             $event.stopPropagation();
-            var result = prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action');
-            if (result != 'DELETE')
-                return;
+            if (!confirm("Are you sure you want to delete?"))
+                return
 
             $smartboards.request('views', 'deleteView', {view: $stateParams.view, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
                 if (err) {
@@ -119,9 +118,8 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.deleteViewTwo = function(what, $event) {
             $event.stopPropagation();
-            var result = prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action');
-            if (result != 'DELETE')
-                return;
+            if (!confirm("Are you sure you want to delete?"))
+                return
 
             $smartboards.request('views', 'deleteView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
                 if (err) {
@@ -293,8 +291,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         TemplateArea.append($compile('<div ng-repeat="template in templates">{{template.name}}'+
                 '<button ng-click="">Edit</button> '+
                 '<button ng-click="">Globalize</button> '+
-                '<button ng-click="deleteTemplate(template.id)">Delete</button> '+
-                '<button ng-click="exportTemplate(template.id)">Export</button></div>')($scope));
+                '<button ng-click="deleteTemplate(template)">Delete</button> '+
+                '<button ng-click="exportTemplate(template)">Export</button></div>')($scope));
         //ToDo: add edit and turn global buttons
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.append($compile('<div ng-repeat="template in globals">{{template.name}} '+
@@ -302,8 +300,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         //ToDo: add behaviour to button
         
         angular.extend($scope, data);
-        $scope.exportTemplate = function(id){
-            $smartboards.request('views', 'exportTemplate', {course: $scope.course, id: id}, function(data, err) {
+        $scope.exportTemplate = function(template){
+            $smartboards.request('views', 'exportTemplate', {course:$scope.course, id: template.id,name:template.name}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
@@ -311,18 +309,16 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 alert("File created: " + data.filename +  "\n"+ "To use it move to a module folder and edit the module file");
             });
         };
-        $scope.deleteTemplate = function(name) {
-            var result = prompt('Are you sure you want to delete '+name+'? Type \'DELETE\' to confirm the action');
-            if (result != 'DELETE')
-                return;
-
-            $smartboards.request('views', 'deleteTemplate', {course: $scope.course, name: name}, function(data, err) {
+        $scope.deleteTemplate = function(template) {
+            if (!confirm("Are you sure you want to delete the template '"+template.name+"'?"))
+                return
+            $smartboards.request('views', 'deleteTemplate', {course: $scope.course, id: template.id}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
                 }
 
-                $scope.templates.splice($scope.templates.indexOf(name), 1);
+                $scope.templates.splice($scope.templates.indexOf(template), 1);
             });
         };
     });

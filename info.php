@@ -173,7 +173,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
         } else {
             $moduleEnabled = ($course->getModule($moduleId) != null);
             
-            if ($moduleEnabled && !API::getValue('enabled')) {
+            if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
                 $modules = $course->getModules();
                 foreach ($modules as $module) {
                     $dependencies = $module->getDependencies();
@@ -182,7 +182,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
                             API::error('Must disable all modules that depend on this one first.');
                     }
                 }
-            } else if(!$moduleEnabled && API::getValue('enabled')) {
+            } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                 foreach ($module['dependencies'] as $dependency) {
                     if ($dependency['mode'] != 'optional' && $course->getModule($dependency['id']) == null)
                         API::error('Must enable all dependencies first.');

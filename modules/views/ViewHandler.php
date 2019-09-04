@@ -71,7 +71,7 @@ class ViewHandler {
     
     //receives view and updates the DB with its info
     //propagates changes in the main view to all its children
-//$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts)
+//$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), change in aspectclass
     public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
     //insert data into DB, should check previous data and update/delete stuff   
         if ($viewPart["partType"]!="aspect" ){            
@@ -90,17 +90,16 @@ class ViewHandler {
                     Core::$systemDB->insert("aspect_class",
                         ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
                 }
-            }else{
-                //not in DB, insert it
+            }else{//not in DB, insert it
                 Core::$systemDB->insert("view",
                     ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],
                     "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
-                if ($viewPart["aspectClass"])
+                if ($viewPart["aspectClass"]!==null)
                     Core::$systemDB->insert("aspect_class",
                         ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
             }     
-            if (!$basicUpdate){
+            if (!$basicUpdate){//update parameters
                 $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
                     ["viewId"=>$viewPart["id"]],"type,value,id");
                 $paramesToDelete= array_combine(array_column($oldParameters, "type"),$oldParameters);
@@ -151,7 +150,6 @@ class ViewHandler {
             unset($viewPart["headerRows"]);
         }
         if (array_key_exists("children", $viewPart)){
-            
             $children = null;
             if (!$basicUpdate){
                 $children = Core::$systemDB->selectMultiple("view",["parent"=>$viewPart["id"]]);
@@ -174,30 +172,32 @@ class ViewHandler {
         //deal with header of block
         if ($viewPart["partType"]=="block") {
             $header = Core::$systemDB->select("view",["parent"=>$viewPart["id"], "partType"=>"header"],"id");
-            //print_r($viewPart);
             if (array_key_exists("header", $viewPart)){//if there is a header
                 if(!$basicUpdate && empty($header)){ //insert (header is not in DB)
                     Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
                         "partType"=>"header","role"=>$viewPart["role"]]);
                     $headerId = Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$headerId]);
                     
                     Core::$systemDB->insert("view",["parent"=>$headerId, 
                         "partType"=>"image","role"=>$viewPart["role"],"viewIndex"=>0]);
                     $imageId= Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$imageId]);
                     if (array_key_exists("value", $viewPart["header"]["image"]["parameters"]))
                         $this->addViewParameter("value",$viewPart["header"]["image"]["parameters"]["value"],$imageId);
                     
                     Core::$systemDB->insert("view",["parent"=>$headerId, 
                         "partType"=>"text","role"=>$viewPart["role"],"viewIndex"=>1]);
                     $titleId= Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$titleId]);
                     if (array_key_exists("value", $viewPart["header"]["title"]["parameters"]))
                         $this->addViewParameter("value",$viewPart["header"]["title"]["parameters"]["value"],$titleId);
+                    
+                    if($viewPart["aspectClass"]!==null){
+                        Core::$systemDB->insert("aspect_class",
+                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$headerId]);
+                        Core::$systemDB->insert("aspect_class",
+                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$imageId]);
+                        Core::$systemDB->insert("aspect_class",
+                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$titleId]);
+                    }
                 }else if (!empty($header)){//update (header is in DB)
                     //in most cases just updating parameters
                     $headerParts = Core::$systemDB->selectMultiple("view",["parent"=>$header]);
@@ -373,43 +373,47 @@ class ViewHandler {
         }
         return [$asp];
     }
-    //contructs an array of the view with all it's children
-    public function getViewWithParts($anAspectId,$role){//return everything organized like the previous db system
-        //ToDo: template references
+    //contructs an array of the view with all it's children, if there isn't a role returns array of view arrays
+    //ToDO template references
+    public function getViewWithParts($anAspectId,$role=null){
         $anAspect = $this->getAspect($anAspectId);
         if ($anAspect["aspectClass"]===null){//only 1 aspect exists
             //this has a lot of queries (select all children, each of their params and children)
             //this happens because null aspectClass when there's only one aspect
             $organizedView=$anAspect;
             $organizedView["children"]=[];
-            $this->lookAtChildrenWQueries($anAspect["id"],$organizedView);          
+            $this->lookAtChildrenWQueries($anAspect["id"],$organizedView);     
+            $aspectsViews = [$organizedView];
         }
         else{//multiple aspects exist
+            $where = ["aspectClass"=>$anAspect["aspectClass"]];
+            if ($role)
+                $where["role"]=$role;
             //gets all the views of the aspect (using aspectclass and role)
             $viewsOfAspect= Core::$systemDB->selectMultiple("aspect_class left join view on id=viewId",
-                    ["aspectClass"=>$anAspect["aspectClass"],"role"=>$role],
+                    $where,
                     "id,role,partType,parent,viewIndex,aspectClass","parent,viewIndex");
             
-            $view_params=$this->getViewParameters(["aspectClass"=>$anAspect["aspectClass"],"role"=>$role]);
-            //print_r($view_params);
-            $viewsByParent=[];
+            $view_params=$this->getViewParameters($where);
+            $aspectsViews=[];
+            $parts=[];
             foreach ($viewsOfAspect as $v){
                 if ($v['partType']=="aspect")
-                    $viewsByParent = $v;
+                    $aspectsViews[] = $v;
                 else
-                    $viewsByParent['parts'][$v['parent']][]= $v;
+                    $parts[$v['parent']][]= $v;
             }
-            
-            $organizedView=$viewsByParent;
-            unset($organizedView["parts"]);
-            $organizedView["children"]=[];
-            if (array_key_exists("parts", $viewsByParent))
-                $this->lookAtChildren($viewsByParent['id'],$viewsByParent['parts'], $view_params, $organizedView);  
+            foreach($aspectsViews as &$organizedView){
+                $organizedView["children"]=[];
+                if (sizeof($parts)>0)
+                    $this->lookAtChildren($organizedView['id'],$parts, $view_params, $organizedView); 
+            }
         }
-        //print_r($organizedView);
-        return $organizedView;   
+        if ($role)
+           return $organizedView;
+        else
+           return $aspectsViews; 
     }
-    
     
     //returns all the aspects for a given view or for the given role
     public function getViewRoles($viewId,$role=null){
@@ -848,9 +852,9 @@ class ViewHandler {
                     $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
                     $userView=$this->getViewWithParts($page["viewId"], $roleOne);
                 }  
-                $parentParts = $this->viewsModule->findParentParts($course, $pageId, $viewType, $roleOne, $roleTwo);  
+                //$parentParts = $this->viewsModule->findParentParts($course, $pageId, $viewType, $roleOne, $roleTwo);  
                 // ToDo check if  parentparts is working for role interaction
-                $userView = ViewEditHandler::putTogetherView($userView, $parentParts);
+                //$userView = ViewEditHandler::putTogetherView($userView, $parentParts);
             }
                      
             $viewParams = array(

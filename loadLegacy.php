@@ -131,9 +131,12 @@ foreach($awards as &$award) {
                     continue;
                 }
                 $skillIndicator = $indicatorsForUser[$name];
+                //should eventually add evaluator (when that info becomes available)
                 Core::$systemDB->insert("participation", array_merge($skillData,
-                        //["award"=>$awardId,"post"=>$skillIndicator[1][0]['url']   ]));
-                        ["post"=>$skillIndicator[1][0]['url']   ]));
+                        ["rating"=>$skillIndicator[0],"post"=>$skillIndicator[1][0]['url'],
+                        "post"=>$skillIndicator[1][0]['url']   ]));
+                Core::$systemDB->insert("award_participation",["award"=>$awardId,
+                    "participation"=>Core::$systemDB->getLastId()]);
                
             }
         }
@@ -226,16 +229,18 @@ foreach ($userIds as $userId){
                     
                     $progressIndicator = ["post" => $link,"description" => $text,"type"=>"badge",
                         "date"=>date("Y-m-d H:i:s",$indicator["timestamp"]),"user" => $userId,
-                        "moduleInstance" => $badge['id'],"course" => $courseId];
+                        "moduleInstance" => $badge['id'],"course" => $courseId, "rating"=>$quality];
                     if (key_exists($text, $oldIndicatorsTextIndex)){
                         $found = array_search($index, $oldIndicatorsTextIndex[$text]);
                         if ($found !== false) {
                             unset($oldIndicatorsTextIndex[$text][$found]);
                         } else {
-                            insertParticipation($progressIndicator,$quality,$courseId);
+                            Core::$systemDB->insert("participation", $progressIndicator);
+                            //insertParticipation($progressIndicator,$quality,$courseId);
                         }
                     }else {
-                        insertParticipation($progressIndicator,$quality,$courseId);
+                        Core::$systemDB->insert("participation", $progressIndicator);
+                        //insertParticipation($progressIndicator,$quality,$courseId);
 
                     }
           
