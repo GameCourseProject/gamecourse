@@ -33,6 +33,21 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                 change(part.children[i]);
         },
         build: function (scope, part, options) {
+            function deleteIds(newPart){
+                delete newPart.id;
+                for (var c in newPart.children){
+                    deleteIds(newPart.children[c]);
+                }
+                for (var r in newPart.rows){
+                    deleteIds(newPart.rows[r]);
+                }
+                for (var r in newPart.headerRows){
+                    deleteIds(newPart.headerRows[r]);
+                }
+                for (var c in newPart.values){
+                    deleteIds(newPart.values[c].value);
+                }
+            }
             if (Array.isArray(part.parameters)){
                 //when a block is saved with empty parameters it becomes an array instead of object
                 //this changes them back (so it doesnt cause problems)
@@ -142,7 +157,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     });
                     child.append(overlay);
                 }
-
+                
                 childOptions = $sbviews.editOptions(options, {
                     toolOptions: {
                         canDelete: true,
@@ -162,7 +177,9 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         duplicate: function(obj) {
                             var idx = part.children.indexOf(obj);
                             var newPart = $.extend(true, {}, obj);
-                            $sbviews.changePids(newPart);
+                            //$sbviews.changePids(newPart);
+                            deleteIds(newPart);
+                            delete newPart.viewIndex;
                             part.children.splice(idx, 0, newPart);
                             var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
                             $(blockContent.children().get(idx)).before(newPartEl);
@@ -277,7 +294,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             
                             function addPart(newPart){
                                 console.log("newPart", newPart);
-                                $sbviews.changePids(newPart);
+                                deleteIds(newPart);
+                                //$sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();
                                 part.children.push(newPart);
                                 var newChild = $sbviews.buildElement(scope, newPart, childOptions);

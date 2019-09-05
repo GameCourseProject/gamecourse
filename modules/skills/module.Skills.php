@@ -9,7 +9,7 @@ class Skills extends Module {
 
     const SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
     const SKILLS_OVERVIEW_TEMPLATE = 'Skills Overview - by skills';
-
+    
     public function __construct() {
         parent::__construct('skills', 'Skills', '0.1', array(
             array('id' => 'views', 'mode' => 'hard')
@@ -30,24 +30,24 @@ class Skills extends Module {
         $restrictions["d.superSkillId"] = $superSkill["value"]["id"];
         
         $skills = Core::$systemDB->selectMultiple($table,$restrictions,"s.*,t.*",null,[],[],"s.id");
-        return $this->createNode($skills, "collection");
+        return $this->createNode($skills, 'skillTrees',"collection");
     }
     public function getSkillsAux($restrictions,$joinOn){
         $skills = Core::$systemDB->selectMultiple(
             "skill_dependency join dependency on id=dependencyId join "
             ."skill s on s.id=".$joinOn." natural join tier t join skill_tree tr on tr.id=treeId",
             $restrictions,"s.*,t.*",null,[],[],"s.id");
-        return $this->createNode($skills, "collection");
+        return $this->createNode($skills, 'skillTrees',"collection");
     }
     //returns collection of skills that depend of the given skill
     public function getSkillsDependantof($skill,$restrictions=[]){
         $restrictions["normalSkillId"] = $skill["value"]["id"];
-        return $this->getSkillsAux($restrictions, "superSkillId");
+        return $this->getSkillsAux($restrictions, 'skillTrees',"superSkillId");
     }
     //returns collection of skills that ae required by the given skill
     public function getSkillsRequiredBy($skill,$restrictions=[]){
         $restrictions["superSkillId"] = $skill["value"]["id"];
-        return $this->getSkillsAux($restrictions, "normalSkillId");
+        return $this->getSkillsAux($restrictions, 'skillTrees',"normalSkillId");
     }
     //
     
@@ -88,12 +88,12 @@ class Skills extends Module {
         $viewHandler->registerFunction('skillTrees','getTree', function($id) { 
             //this is slightly pointless if the skill tree only has id and course
             //but it could eventualy have more atributes
-            return $this->createNode(Core::$systemDB->select("skill_tree",["id"=>$id]));
+            return $this->createNode(Core::$systemDB->select("skill_tree",["id"=>$id]),'skillTrees');
         });
         $courseId = $this->getParent()->getId();
         //skillTrees.trees, returns collection w all trees
         $viewHandler->registerFunction('skillTrees','trees', function() use ($courseId){ 
-            return $this->createNode(Core::$systemDB->selectMultiple("skill_tree",["course"=>$courseId]),"collection");
+            return $this->createNode(Core::$systemDB->selectMultiple("skill_tree",["course"=>$courseId]),'skillTrees',"collection");
         });
         //skillTrees.getAllSkills(...) or %tree.getAllSkills(...),returns collection
         $viewHandler->registerFunction('skillTrees','getAllSkills', 
@@ -123,45 +123,47 @@ class Skills extends Module {
                 }
                 return $this->createNode(Core::$systemDB->selectMultiple(
                         "skill s natural join skill_tier t join skill_tree tr on tr.id=treeId",
-                        $skillWhere,"s.*,t.*"),"collection");
+                        $skillWhere,"s.*,t.*"),'skillTrees',"collection");
         });
         //%tree.getSkill(name), returns skill object
         $viewHandler->registerFunction('skillTrees','getSkill', 
             function($tree,$name) { 
                 return $this->createNode(Core::$systemDB->select("skill natural join skill_tier",
-                        ["treeId"=>$tree["value"]["id"],"name"=>$name]));
+                        ["treeId"=>$tree["value"]["id"],"name"=>$name]),'skillTrees');
         });
         //%tree.getTier(number), returns tier object
         $viewHandler->registerFunction('skillTrees','getTier', 
             function($tree,$number) { 
                 return $this->createNode(Core::$systemDB->select("skill_tier",
-                        ["treeId"=>$tree["value"]["id"],"tier"=>$number]));
+                        ["treeId"=>$tree["value"]["id"],"tier"=>$number]),'skillTrees');
         });
         //%tree.tiers, returns collection w all tiers of the tree
         $viewHandler->registerFunction('skillTrees','tiers', function($tree) { 
             return $this->createNode(Core::$systemDB->selectMultiple("skill_tier",
-                                        ["treeId"=>$tree["value"]["id"]]),
+                                        ["treeId"=>$tree["value"]["id"]]),'skillTrees',
                                     "collection");
         });
         //%tier.skills, returns collection w all skills of the tier
         $viewHandler->registerFunction('skillTrees','skills', function($tier) use ($courseId){ 
             return $this->createNode(Core::$systemDB->selectMultiple("skill natural join skill_tier",
                                         ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]]),
-                                    "collection");
+                                    'skillTrees',"collection");
         });
         //%tier.nextTier, returns tier object
         $viewHandler->registerFunction('skillTrees','nextTier', 
             function($tier) { 
             //ToDo: next tier of max tier
                 return $this->createNode(Core::$systemDB->select("skill_tier",
-                        ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]+1]));
+                        ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]+1]),
+                        'skillTrees');
         });
         //%tier.previousTier, returns tier object
         $viewHandler->registerFunction('skillTrees','previousTier', 
             function($tier) { 
             //ToDo: prev tier of min tier
                 return $this->createNode(Core::$systemDB->select("skill_tier",
-                        ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]-1]));
+                        ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]-1]),
+                        'skillTrees');
         });
         //%tier.reward or %skill.reward
         $viewHandler->registerFunction('skillTrees','reward', function($arg) { 
@@ -199,7 +201,7 @@ class Skills extends Module {
         //%skill.dependsOf,return colection of dependencies, each has a colection of skills
         $viewHandler->registerFunction('skillTrees','dependsOf', function($skill) { 
             $dep = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["value"]["id"]]);
-            return $this->createNode($dep, "collection");
+            return $this->createNode($dep,'skillTrees', "collection");
         });
         //%skill.requiredBy, returns collection of skills that depend on the given skill
         $viewHandler->registerFunction('skillTrees','requiredBy', function($skill) { 
@@ -210,11 +212,11 @@ class Skills extends Module {
             $depSkills = Core::$systemDB->selectMultiple(
                     "skill_dependency join skill s on s.id=normalSkillId",
                     ["dependencyId"=>$dep["value"]["id"]],"s.*");
-            return $this->createNode($depSkills, "collection");
+            return $this->createNode($depSkills,'skillTrees', "collection");
         });
         //%dependency.superSkill, returns skill object
         $viewHandler->registerFunction('skillTrees','superSkill', function($dep) { 
-            return $this->createNode($dep["value"]["superSkill"]);
+            return $this->createNode($dep["value"]["superSkill"],'skillTrees');
         });
         
         /*$viewHandler->registerFunction('skillStyle', function($skill, $user) {

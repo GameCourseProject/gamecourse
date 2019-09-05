@@ -2,6 +2,7 @@
 namespace Modules\Views;
 
 use Modules\Views\Expression\ValueNode;
+use Modules\Views\Expression\EvaluateVisitor;
 use SmartBoards\API;
 use SmartBoards\Core;
 use SmartBoards\Course;
@@ -101,13 +102,18 @@ class Views extends Module {
     }
     //get award or participations from DB
     public function getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object="award"){
-        
         $awardParticipation = $this->getAwardOrParticipation($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object);
-        return $this->createNode($awardParticipation,"collection");
+        return $this->createNode($awardParticipation,$object+"s","collection");
+    }
+    public function toInt($val, $funName){
+        if(is_array($val))
+                throw new \Exception("'."+$funName+"' can only be called over string.");
+        return new ValueNode(intval($val)); 
     }
     public function init() {
         $this->viewHandler = new ViewHandler($this);
-
+        $course = $this->getParent();
+        $courseId = $course->getId();
         //functions of views' expression language
         $this->viewHandler->registerFunction('system','value', function($val) {
             return new ValueNode($val->getValue());
@@ -144,11 +150,59 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
         $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });
         //$this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
-        $this->viewHandler->registerFunction(null,'int', function($val1) { return new ValueNode(intval($val1)); });
-        $this->viewHandler->registerFunction(null,'integer', function($val1) { return new ValueNode(intval($val1)); });
         
-        $course = $this->getParent();
-        $courseId = $course->getId();
+        $this->viewHandler->registerFunction(null,'int', function($val) { return $this->toInt($val,"int");});
+        $this->viewHandler->registerFunction(null,'integer', function($val) { return $this->toInt($val,"integer"); });
+        $this->viewHandler->registerFunction(null,'sort', function($collection,$order,$keys) use ($courseId){ 
+            if (!is_array($collection) || !array_key_exists("type", $collection) || $collection["type"]!="collection"){
+                throw new \Exception("The function .sort() must be called over a collection");
+            }
+            $keys = explode(";",$keys);
+            $i=0;
+            foreach ($keys as &$key){
+                if(!array_key_exists($key, $collection["value"][0])){
+                    //key is not a parameter of objects in collection, it should be an expression of the language
+                    if(strpos($key, "{")!==0)
+                            $key = "{".$key."}";
+                    
+                    $this->viewHandler->parseSelf($key);
+                    foreach($collection["value"] as &$object){
+                        $viewParams = array(
+                            'course' => (string)$courseId,
+                            'viewer' => (string)Core::getLoggedUser()->getId(),
+                            'item' => $this->createNode($object,$object["libraryOfVariable"])->getValue(),
+                            'index'=>$i
+                        );
+                        $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
+                        $value = $key->accept($visitor)->getValue();
+                        
+                        $object["sortVariable".$i]=$value;
+                    }
+                    $key="sortVariable".$i;
+                }
+                $i++;
+            }
+            if ($order=="asc" || $order=="ascending"){
+                usort($collection["value"], function($a, $b) use($keys) {
+                    foreach($keys as $key){
+                        if ($a[$key] > $b[$key]) return 1;
+                        else if ($a[$key] < $b[$key]) return -1;
+                    }return 1;
+                });
+            }else if ($order=="des" || $order=="descending"){
+                usort($collection["value"], function($a, $b)  use($keys) {
+                    foreach($keys as $key){
+                        if ($a[$key] < $b[$key]) return 1;
+                        else if ($a[$key] > $b[$key]) return -1;
+                    } return 1;
+                });
+            }else{
+                throw new \Exception("On function .sort(order,keys), the order must be ascending or descending.");
+            }  
+            return new ValueNode($collection);
+        });
+        
+        
         $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
             return new ValueNode($course->getModule($module) != null);
         });
@@ -162,12 +216,12 @@ class Views extends Module {
                 $course = new Course($courseId);
             }
             if ($role==null)
-                return $this->createNode($course->getUsers(),"collection");
+                return $this->createNode($course->getUsers(),'users',"collection");
             else
-                return $this->createNode($course->getUsersWithRole($role),"collection");
+                return $this->createNode($course->getUsersWithRole($role),'users',"collection");
         });
         $this->viewHandler->registerFunction('users','getUser',function($id) use ($course){
-            return $this->createNode($course->getUser($id)->getAllData());
+            return $this->createNode($course->getUser($id)->getAllData(),'users');
         });
         $this->viewHandler->registerFunction('users','campus',function($user){
             return new ValueNode($user["value"]["campus"]);
@@ -189,7 +243,7 @@ class Views extends Module {
         });
         $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
             return $this->createNode((new \SmartBoards\CourseUser($user["value"]["id"], $course))->getRoles(),
-                                    "collection");
+                                    "users", "collection");
         });
         $this->viewHandler->registerFunction('users','username',function($user){
             return new ValueNode($user["value"]["username"]);
@@ -761,8 +815,7 @@ class Views extends Module {
 
             $testDone = false;
             $viewCopy = $viewContent;
-            try {
-                //replaces expressions with objects of Expression language
+            try {//replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
                 if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                     $viewerId = $this->getUserIdWithRole($course, $info['role']);
@@ -1015,7 +1068,6 @@ class Views extends Module {
     //receives the template name, its encoded contents, and puts it in the database
     public function setTemplate($name, $template) {
         $aspects = json_decode($template,true);
-        //print_R($aspects);
         $aspectClass=null;
         if (sizeof($aspects)>1)
             $aspectClass= $this->newAspectClassNum();

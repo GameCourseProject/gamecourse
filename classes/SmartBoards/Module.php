@@ -86,7 +86,14 @@ abstract class Module {
             return $id=$user;
     }
     //create value node of an object or collection
-    public function createNode($value,$type="object"){
+    public function createNode($value,$lib=null,$type="object"){
+        if($type=="collection"){
+            foreach($value as &$v){
+                $v["libraryOfVariable"]=$lib;
+            }
+        }else{
+            $value["libraryOfVariable"]=$lib;
+        }
         return new ValueNode(["type"=>$type,"value"=>$value]);
     }
     //get award or participations from DB, (moduleInstance can be name or id

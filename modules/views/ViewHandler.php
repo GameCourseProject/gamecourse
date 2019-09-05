@@ -548,7 +548,7 @@ class ViewHandler {
         $params = $viewParams;
         if (array_key_exists('variables', $part)) {
             foreach ($part['variables'] as $k => &$v) {
-                $this->getContinuationOrValue($v['value'], $visitor, function($continuation) use ($k, &$params, &$v) {
+                $this->getNodeValue($v['value'], $visitor, /*function($continuation) use ($k, &$params, &$v) {
                     if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
                         $continuation = $continuation[0];
 
@@ -556,7 +556,7 @@ class ViewHandler {
                         $continuation = $continuation->getValue();
 
                     $params[$k] = $continuation;
-                }, function($value) use ($k, &$params, &$v) {
+              },*/ function($value) use ($k, &$params, &$v) {
                     $params[$k] = $value;
                 });
             }
@@ -574,8 +574,8 @@ class ViewHandler {
         if ($func != null && is_callable($func))
             $func($params, $actualVisitor);
     }
-//fixme
-    private function getContinuationOrValue(&$node, &$visitor, $cont, $val) {
+//fixme //gets value of node (funtion, colection or object)
+    private function getNodeValue(&$node, &$visitor, $val) {
         /*if (is_a($node, 'Modules\Views\Expression\DatabasePath'))
             $cont($node->accept($visitor, null, true));
         else if (is_a($node, 'Modules\Views\Expression\DatabasePathFromParameter'))
@@ -586,6 +586,7 @@ class ViewHandler {
             $lib=$node->getLib();
         }
         $visitedNode = $node->accept($visitor)->getValue();
+        
         //print_r($visitedNode);
         if (is_array($visitedNode) && $lib!==null){
             
@@ -615,10 +616,10 @@ class ViewHandler {
                 $repeatKey = "item";
                 $repeatParams = array();
                 $keys = null;
-                $this->getContinuationOrValue($child['parameters']['loopData'], $visitor, 
-                   function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
+                $this->getNodeValue($child['parameters']['loopData'], $visitor, 
+                   /*function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
                     $repeatParams= $continuation;
-                }, function($value) use(&$repeatParams, &$keys, $repeatKey) {
+              },*/function($value) use(&$repeatParams, &$keys, $repeatKey) {
                     if (is_null($value))
                         $value = [];
                     if (!is_array($value)) {
@@ -651,8 +652,8 @@ class ViewHandler {
                         $params = array_merge($viewParams, $repeatParams);
                         return $filter->accept(new EvaluateVisitor($params, $this))->getValue();
                     });
-                }
-                
+                }*/
+                /*
                 if (array_key_exists('sort', $child['repeat'])) {
                     $sort = $child['repeat']['sort'];
                     $valueExp = $sort['value'];
@@ -867,6 +868,7 @@ class ViewHandler {
             
             $this->parseView($userView);
             $this->processView($userView, $viewParams);
+             
 
             $viewData = $userView;
         } else {
@@ -874,9 +876,11 @@ class ViewHandler {
             API::error('Unsupported!');
             //$viewData = Core::getViews()->get($view)['view'];
         }
+        
         API::response(array(
             //'fields' => DataSchema::getFields($viewParams),//not beeing user currently
             'view' => $viewData
         ));  
+        
     }
 }

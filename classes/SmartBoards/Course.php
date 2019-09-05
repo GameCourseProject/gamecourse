@@ -208,6 +208,7 @@ class Course {
         $db->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"treeId"=>$skillTree]); 
         
+        $db->insert("badges_config",["maxBonusReward"=>MAX_BONUS_BADGES,"course"=>$courseId]);
         return $roleId;
     }
     

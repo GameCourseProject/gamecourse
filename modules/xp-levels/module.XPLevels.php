@@ -57,7 +57,7 @@ class XPLevels extends Module {
         $levelWhere = ["course"=>$courseId, "badgeId"=>null];
         $viewHandler->registerFunction('xp','allLevels',function()use ($levelWhere){
             $levels = Core::$systemDB->selectMultiple(LEVEL_TABLE,$levelWhere);
-            return $this->createNode($levels, "collection");
+            return $this->createNode($levels, 'xp',"collection");
         });
         $viewHandler->registerFunction('xp','getLevel',function($user=null,$number=null,$goal=null)use ($levelWhere){
             if ($user!==null){
@@ -75,7 +75,7 @@ class XPLevels extends Module {
 
             $level = Core::$systemDB->select(LEVEL_TABLE,$where);
             
-            return $this->createNode($level);
+            return $this->createNode($level, 'xp');
         });
         $viewHandler->registerFunction('xp','getBadgesXP',function($user) use ($courseId){
             $userId=$this->getUserId($user);

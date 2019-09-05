@@ -20,7 +20,7 @@ class Badges extends Module {
             $badgeArray = Core::$systemDB->select("badge",$where); 
             $type = "object";
         }
-        return $this->createNode($badgeArray, $type);
+        return $this->createNode($badgeArray, 'badges',$type);
     }
     
     public function getLevel($levelNum,$badge){
@@ -52,7 +52,7 @@ class Badges extends Module {
             $level["libraryOfVariable"] = "badges";
             $level=array_merge($badge["value"],$level);
         }
-        return $this->createNode($level, $type);
+        return $this->createNode($level, 'badges',$type);
     }
     
     public function getLevelNum($badge,$user) {

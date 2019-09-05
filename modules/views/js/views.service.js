@@ -13,7 +13,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 partType: 'block',
                 noHeader: true,
                 children: viewScope.view.children,
-                role: viewScope.view.children[0].role
+                role: viewScope.view.role
             };
 
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
@@ -85,7 +85,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 children: viewScope.view.children,
                 pid: viewScope.view.id,
                 origin: viewScope.view.origin,
-                role : viewScope.view.children[0].role
+                role: viewScope.view.role
             };
 
             function build() {
@@ -629,8 +629,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
             element.addClass('highlight');
             element.append(myToolbar);
-            //console.log("mouse somehting",part);
-           //console.log("mouse somehting",element);
+            //console.log("mouseover",part);
         });
 
         element.on('mouseleave', function(e) {
