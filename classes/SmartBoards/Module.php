@@ -89,9 +89,10 @@ abstract class Module {
     public function createNode($value,$lib=null,$type="object"){
         if($type=="collection"){
             foreach($value as &$v){
-                $v["libraryOfVariable"]=$lib;
+                if (is_array($v) && ($lib!==null || !array_key_exists("libraryOfVariable", $v)))
+                    $v["libraryOfVariable"]=$lib;
             }
-        }else{
+        }else if (is_array($value) && ($lib!==null || !array_key_exists("libraryOfVariable", $value))){
             $value["libraryOfVariable"]=$lib;
         }
         return new ValueNode(["type"=>$type,"value"=>$value]);
@@ -130,5 +131,17 @@ abstract class Module {
         $where["course"]=$courseId;
         return Core::$systemDB->selectMultiple($object,$where,"*",null,[], $whereDate);
     }
+    //checks if object/collection array is correctly formated, may also check if a parameter belongs to an object
+    public function checkArray($array,$type,$functionName,$parameter=null){
+        if (!is_array($array) || !array_key_exists("type", $array) || $array["type"]!=$type){
+            throw new \Exception("The function '.".$functionName."' must be called on ".$type);
+        }
+        if ($parameter!==null){
+            if($type=="object" && !array_key_exists($parameter, $array["value"])){
+                throw new \Exception("In function '.".$functionName."': the object does not contain "+$parameter);
+            }
+        }
+    }
+    
 }
 ?>

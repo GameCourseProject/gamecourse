@@ -359,7 +359,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     }
                 });
             }
-
+            block.css('padding-top', 10);
             return block;
         },
         destroy: function (element) {

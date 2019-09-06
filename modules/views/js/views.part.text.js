@@ -53,7 +53,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 }
                 bindToolbar();
             }
-
+            element.css('padding-top', 18);
             return element;
         },
         createElement: function(scope, part, options) {

@@ -91,6 +91,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             function build() {
                 var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
                 element.removeClass('block');
+                element.css('padding-top', 18);
                 element.addClass('view editing');
                 return element;
             }
@@ -484,7 +485,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     wrapper.append('<label for="partList">Turn Part into:</label>')
                     wrapper.append(partsList);
                     wrapper.append(turnButton);
-
                     el.append(wrapper)
                 }, function() {
                     optionsScope.$destroy();
@@ -619,17 +619,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             toolbarOptions.editData = editData;
 
             myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
-            element.css('padding-top', trueMargin + 18);
-
+            //element.css('padding-top', trueMargin + 18);
+  
             myToolbar.css({
                 position: 'absolute',
-                top: 1,
-                right: 1
+                top: 0,
+                right: 0
             });
-
-            element.addClass('highlight');
+            if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
+                element.addClass('highlight');
+            
             element.append(myToolbar);
-            //console.log("mouseover",part);
+           // console.log("mouseover",part);
         });
 
         element.on('mouseleave', function(e) {

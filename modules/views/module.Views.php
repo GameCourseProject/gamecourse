@@ -148,15 +148,36 @@ class Views extends Module {
 
         $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });
         $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
-        $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });
-        //$this->viewHandler->registerFunction('system','int', function($val1) { return new ValueNode(intval($val1)); });
-        
+        $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });      
         $this->viewHandler->registerFunction(null,'int', function($val) { return $this->toInt($val,"int");});
         $this->viewHandler->registerFunction(null,'integer', function($val) { return $this->toInt($val,"integer"); });
-        $this->viewHandler->registerFunction(null,'sort', function($collection,$order,$keys) use ($courseId){ 
-            if (!is_array($collection) || !array_key_exists("type", $collection) || $collection["type"]!="collection"){
-                throw new \Exception("The function .sort() must be called over a collection");
+        
+        $this->viewHandler->registerFunction(null,'id', function($object) {
+            $this->checkArray($object, "object", "id", "id");
+            return new ValueNode($object["value"]["id"]);
+        });
+        //functions to be called on %collection
+        $this->viewHandler->registerFunction(null,'item', function($collection, $index) { 
+            $this->checkArray($collection, "collection", "item()");
+            if (is_array($collection["value"][$index]))
+                return $this->createNode($collection["value"][$index]);
+            else 
+                return new ValueNode($collection["value"][$index]);
+        });
+        $this->viewHandler->registerFunction(null,'index', function($collection, $item) { 
+            $this->checkArray($collection, "collection", "index()");
+            $result = array_search($item, $collection["value"]);
+            if ($result ===false){
+                throw new \Exception("In function .index(x): Coudn't find the x in the collection");
             }
+            return new ValueNode($result );
+        });
+        $this->viewHandler->registerFunction(null,'count', function($collection) { 
+            $this->checkArray($collection, "collection", "count");    
+            return new ValueNode(sizeof($collection["value"]));
+        });
+        $this->viewHandler->registerFunction(null,'sort', function($collection,$order,$keys) use ($courseId){ 
+            $this->checkArray($collection, "collection", "sort()");
             $keys = explode(";",$keys);
             $i=0;
             foreach ($keys as &$key){
@@ -228,9 +249,6 @@ class Views extends Module {
         });
         $this->viewHandler->registerFunction('users','email',function($user){
             return new ValueNode($user["value"]["email"]);
-        });
-        $this->viewHandler->registerFunction('users','id',function($user){
-            return new ValueNode($user["value"]["id"]);
         });
         $this->viewHandler->registerFunction('users','isAdmin',function($user){
             return new ValueNode($user["value"]["isAdmin"]);

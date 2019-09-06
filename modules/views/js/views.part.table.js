@@ -549,6 +549,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     }
                 });
             }
+            tableDiv.css('padding-top', 18);
             return tableDiv;
         },
         destroy: function (element) {

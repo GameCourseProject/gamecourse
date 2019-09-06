@@ -126,10 +126,15 @@ class Skills extends Module {
                         $skillWhere,"s.*,t.*"),'skillTrees',"collection");
         });
         //%tree.getSkill(name), returns skill object
-        $viewHandler->registerFunction('skillTrees','getSkill', 
-            function($tree,$name) { 
-                return $this->createNode(Core::$systemDB->select("skill natural join skill_tier",
-                        ["treeId"=>$tree["value"]["id"],"name"=>$name]),'skillTrees');
+        $viewHandler->registerFunction('skillTrees','getSkill', function($tree,$name) { 
+            $this->checkArray($tree, "object", "getSkill()");
+            $skill = Core::$systemDB->select("skill natural join skill_tier",
+                    ["treeId"=>$tree["value"]["id"],"name"=>$name]);
+            
+            if (empty($skill)){
+                throw new \Exception("In function getSkill(): No skill found with name=".$name);
+            }
+            return $this->createNode($skill,'skillTrees');
         });
         //%tree.getTier(number), returns tier object
         $viewHandler->registerFunction('skillTrees','getTier', 
@@ -145,6 +150,7 @@ class Skills extends Module {
         });
         //%tier.skills, returns collection w all skills of the tier
         $viewHandler->registerFunction('skillTrees','skills', function($tier) use ($courseId){ 
+            $this->checkArray($tier, "object", "skills");
             return $this->createNode(Core::$systemDB->selectMultiple("skill natural join skill_tier",
                                         ["treeId"=>$tier["value"]["treeId"],"tier"=>$tier["value"]["tier"]]),
                                     'skillTrees',"collection");

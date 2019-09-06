@@ -136,7 +136,7 @@ create table participation(#for now this is just used for badges
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
-create table award_participation(
+create table award_participation(#this table may be pointles if participations haven't got more than 1 award
 	award int unsigned,
 	participation int unsigned,
 	primary key (award,participation),
