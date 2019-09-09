@@ -39,8 +39,8 @@
 <div class="partSpecific"></div>
 
 <sb-menu sb-menu-title="Styling/Misc" sb-menu-icon="images/gear.svg">
-    <sb-checkbox ng-if="options.allowStyle" sb-checkbox="part.style" sb-checkbox-label="Enable Style" sb-checkbox-default="" sb-checkbox-info="The Style is used for styling the element. The Style expression accepts CSS rules to be applied to the element." sb-checkbox-link="./docs/#ViewsStyleMiscStyle">
-        <sb-expression sb-expression="part.style" sb-expression-label="Style"></sb-expression>
+    <sb-checkbox ng-if="options.allowStyle" sb-checkbox="part.parameters.style" sb-checkbox-label="Enable Style" sb-checkbox-default="" sb-checkbox-info="The Style is used for styling the element. The Style expression accepts CSS rules to be applied to the element." sb-checkbox-link="./docs/#ViewsStyleMiscStyle">
+        <sb-expression sb-expression="part.parameters.style" sb-expression-label="Style"></sb-expression>
     </sb-checkbox>
     <sb-checkbox ng-if="options.allowClass" sb-checkbox="part.parameters.class" sb-checkbox-label="Enable HTML Class" sb-checkbox-default="" sb-checkbox-info="The Class is used for styling the element. It makes the element use a certain CSS class defined in a CSS file." sb-checkbox-link="./docs/#ViewsStyleMiscClass">
         <sb-expression sb-expression="part.parameters.class" sb-expression-label="Class"></sb-expression>

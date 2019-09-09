@@ -341,7 +341,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         el.append(container);
                         watch('part.parameters.class');
                         watch('part.directive');
-                        watch('part.style');
+                        watch('part.parameters.style');
                         watch('part.parameters.loopData');
                         watch('part.if');
                         watch('part.events');
@@ -485,7 +485,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     wrapper.append('<label for="partList">Turn Part into:</label>')
                     wrapper.append(partsList);
                     wrapper.append(turnButton);
-                    el.append(wrapper)
+                    el.append(wrapper);
                 }, function() {
                     optionsScope.$destroy();
                 });
