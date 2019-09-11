@@ -55,10 +55,12 @@ class XPLevels extends Module {
         $course = $this->getParent();
         $courseId = $course->getId();
         $levelWhere = ["course"=>$courseId, "badgeId"=>null];
+        //xp.allLevels returns collection of level objects
         $viewHandler->registerFunction('xp','allLevels',function()use ($levelWhere){
             $levels = Core::$systemDB->selectMultiple(LEVEL_TABLE,$levelWhere);
             return $this->createNode($levels, 'xp',"collection");
         });
+        //xp.getLevel(user,number,goal) returns level object
         $viewHandler->registerFunction('xp','getLevel',function($user=null,$number=null,$goal=null)use ($levelWhere){
             if ($user!==null){
                 //calculate the level of the user
@@ -74,32 +76,40 @@ class XPLevels extends Module {
                 $where["goal"]=$goal;
 
             $level = Core::$systemDB->select(LEVEL_TABLE,$where);
-            
+            if (empty($level))
+                throw new Exception ("In function xp.getLevel(...): couldn't find level with the given information");
             return $this->createNode($level, 'xp');
         });
+        //xp.getBadgesXP(user) returns value of badge xp for user
         $viewHandler->registerFunction('xp','getBadgesXP',function($user) use ($courseId){
             $userId=$this->getUserId($user);
             $badgeXP = $this->calculateBadgeXP($userId,$courseId);
             return new ValueNode($badgeXP);
         });
+        //xp.getSkillTreeXP(user) returns value of skill xp for user
         $viewHandler->registerFunction('xp','getSkillTreeXP',function($user) use ($courseId){
             $userId=$this->getUserId($user);
             $skillXP = $this->calculateSkillXP($userId,$courseId);
             return new ValueNode($skillXP);
         });
+        //xp.getXP(user) returns value of xp for user
         $viewHandler->registerFunction('xp','getXP',function($user) use ($courseId){
             $XP = $this->calculateXP($user,$courseId);
             return new ValueNode($XP);
         });
+        //%level.description
         $viewHandler->registerFunction('xp','description',function($level) {
-            return new ValueNode($level["value"]["description"]);
+            return $this->basicGetterFunction($level,"description");
         });
+        //%level.goal
         $viewHandler->registerFunction('xp','goal',function($level) {
-            return new ValueNode($level["value"]["goal"]);
+            return $this->basicGetterFunction($level,"goal");
         });
+        //%level.number
         $viewHandler->registerFunction('xp','number',function($level) {
-            return new ValueNode($level["value"]["number"]);
+            return $this->basicGetterFunction($level,"number");
         });
+        
         /*$viewHandler->registerFunction('awardLatestImage', function($award, $course) {
             switch ($award['type']) {
                 case 'grade':

@@ -86,9 +86,10 @@ abstract class Module {
             return $id=$user;
     }
     //create value node of an object or collection
-    public function createNode($value,$lib=null,$type="object"){
+    public function createNode($value,$lib=null,$type="object",$parent=null){
         if($type=="collection"){
             foreach($value as &$v){
+                $v["parent"]=$parent;
                 if (is_array($v) && ($lib!==null || !array_key_exists("libraryOfVariable", $v)))
                     $v["libraryOfVariable"]=$lib;
             }
@@ -138,9 +139,14 @@ abstract class Module {
         }
         if ($parameter!==null){
             if($type=="object" && !array_key_exists($parameter, $array["value"])){
-                throw new \Exception("In function '.".$functionName."': the object does not contain "+$parameter);
+                throw new \Exception("In function '.".$functionName."': the object does not contain ".$parameter);
             }
         }
+    }
+    //return valuenode of the field of the object
+    public function basicGetterFunction($object,$field){
+        $this->checkArray($object, "object", $field);
+        return new ValueNode($object["value"][$field]);
     }
     
 }

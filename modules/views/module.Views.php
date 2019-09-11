@@ -97,6 +97,7 @@ class Views extends Module {
     }
     //gets timestamps and converts it to DD/MM/YYYY
     public function getDate($object){
+        $this->checkArray($object, "object", "date");
         $date = implode("/",array_reverse(explode("-",explode(" ",$object["value"]["date"])[0])));
         return new ValueNode($date);
     }
@@ -110,23 +111,57 @@ class Views extends Module {
                 throw new \Exception("'."+$funName+"' can only be called over string.");
         return new ValueNode(intval($val)); 
     }
+    function evaluateKey(&$key, &$collection,$courseId,$i=0){
+        if(!array_key_exists($key, $collection["value"][0])){
+            //key is not a parameter of objects in collection, it should be an expression of the language
+            if(strpos($key, "{")!==0)
+                    $key = "{".$key."}";
+
+            $this->viewHandler->parseSelf($key);
+            foreach($collection["value"] as &$object){
+                $viewParams = array(
+                    'course' => (string)$courseId,
+                    'viewer' => (string)Core::getLoggedUser()->getId(),
+                    'item' => $this->createNode($object,$object["libraryOfVariable"])->getValue(),
+                    'index'=>$i
+                );
+                $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
+                $value = $key->accept($visitor)->getValue();
+
+                $object["sortVariable".$i]=$value;
+            }
+            $key="sortVariable".$i;
+        }
+    }
+    
+    public function evalCondition($a,$b,$op){
+        switch($op) {
+            case '=':  case'==': return $a == $b;
+            case '===':return           $a === $b;
+            case '!==':return           $a !== $b;
+            case '!=': return           $a != $b; 
+            case '>':  return           $a > $b;
+            case '>=': return           $a >= $b;
+            case '<':  return           $a < $b;
+            case '<=': return           $a <= $b;  
+        }
+    }
+    
     public function init() {
         $this->viewHandler = new ViewHandler($this);
         $course = $this->getParent();
         $courseId = $course->getId();
         //functions of views' expression language
+        //functions of the old language ToDo check if they could be usefull
         $this->viewHandler->registerFunction('system','value', function($val) {
             return new ValueNode($val->getValue());
         });
-
         $this->viewHandler->registerFunction('system','urlify', function($val) {
             return new ValueNode(str_replace(' ', '', $val));
         });
-
         $this->viewHandler->registerFunction('system','time', function() {
             return new ValueNode(time());
         });
-
         $this->viewHandler->registerFunction('system','formatDate', function($val) {
             return new ValueNode(date('d-M-Y', strtotime($val)));
         });
@@ -136,7 +171,6 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','if', function($cond, $val1, $val2) {
             return new ValueNode($cond ? $val1 :  $val2);
         });
-
         $this->viewHandler->registerFunction('system','size', function($val) {
             if (is_null($val))
                 return new ValueNode(0);
@@ -145,18 +179,30 @@ class Views extends Module {
             else
                 return new ValueNode(strlen($val));
         });
-
+        $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
+            return new ValueNode($course->getModule($module) != null);
+        });
+        $this->viewHandler->registerFunction('system','getModules', function() use ($course) {
+            return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
+        });
         $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });
         $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
         $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });      
+        
+        //functions without library
+        //%string.integer or %string.int   converts string to int
         $this->viewHandler->registerFunction(null,'int', function($val) { return $this->toInt($val,"int");});
         $this->viewHandler->registerFunction(null,'integer', function($val) { return $this->toInt($val,"integer"); });
-        
+        //%object.id
         $this->viewHandler->registerFunction(null,'id', function($object) {
-            $this->checkArray($object, "object", "id", "id");
-            return new ValueNode($object["value"]["id"]);
+            return $this->basicGetterFunction($object,"id");
+        });
+        //%item.parent returns the parent(aka the %item of the previous context)
+        $this->viewHandler->registerFunction(null,'parent', function($object) { 
+            return $this->basicGetterFunction($object,"parent");
         });
         //functions to be called on %collection
+        //%collection.item(index) returns item w the given index
         $this->viewHandler->registerFunction(null,'item', function($collection, $index) { 
             $this->checkArray($collection, "collection", "item()");
             if (is_array($collection["value"][$index]))
@@ -164,6 +210,7 @@ class Views extends Module {
             else 
                 return new ValueNode($collection["value"][$index]);
         });
+        //%collection.index(item)  returns the index of the item in the collection
         $this->viewHandler->registerFunction(null,'index', function($collection, $item) { 
             $this->checkArray($collection, "collection", "index()");
             $result = array_search($item, $collection["value"]);
@@ -172,10 +219,32 @@ class Views extends Module {
             }
             return new ValueNode($result );
         });
+        //%collection.count  returns size of the collection
         $this->viewHandler->registerFunction(null,'count', function($collection) { 
             $this->checkArray($collection, "collection", "count");    
             return new ValueNode(sizeof($collection["value"]));
         });
+        //%collection.crop(start,end) returns collection croped to start and end (inclusive)
+        $this->viewHandler->registerFunction(null,'crop', function($collection,$start,$end) { 
+            $this->checkArray($collection, "collection", "crop()");  
+            $collection["value"] = array_slice($collection["value"],$start,$end-$start+1);
+            return new ValueNode($collection);
+        });
+        //$collection.filter(key,val,op) returns collection w items that pass the condition of the filter
+        $this->viewHandler->registerFunction(null,'filter', function($collection,$key,$value,$operation)use ($courseId) { 
+            $this->checkArray($collection, "collection", "filter()");  
+            
+            $this->evaluateKey($key, $collection, $courseId);
+            $newCollectionVals=[];
+            foreach ($collection["value"] as $item){
+                if ($this->evalCondition($item[$key], $value, $operation)){
+                    $newCollectionVals[]=$item;
+                }
+            }
+            $collection["value"]=$newCollectionVals;
+            return new ValueNode($collection);
+        });
+        //%collectio.sort(order=(asc|des),keys) returns collection sorted by key
         $this->viewHandler->registerFunction(null,'sort', function($collection,$order,$keys) use ($courseId){ 
             $this->checkArray($collection, "collection", "sort()");
             $keys = explode(";",$keys);
@@ -223,16 +292,9 @@ class Views extends Module {
             return new ValueNode($collection);
         });
         
-        
-        $this->viewHandler->registerFunction('system','isModuleEnabled', function($module) use ($course) {
-            return new ValueNode($course->getModule($module) != null);
-        });
-        $this->viewHandler->registerFunction('system','getModules', function() use ($course) {
-            return DataRetrieverContinuation::buildForArray($course->getEnabledModules());
-        });
         //functions of users library
+        //users.getAllUsers(role,course) returns collection of users
         $this->viewHandler->registerFunction('users','getAllUsers',function($role=null,$courseId=null) use ($course){
-            //the courseId argument won't be used (for now) since we already know the course of the view
             if ($courseId!==null){
                 $course = new Course($courseId);
             }
@@ -241,58 +303,93 @@ class Views extends Module {
             else
                 return $this->createNode($course->getUsersWithRole($role),'users',"collection");
         });
+        //users.getUser(id) returns user object
         $this->viewHandler->registerFunction('users','getUser',function($id) use ($course){
-            return $this->createNode($course->getUser($id)->getAllData(),'users');
+            $user = $course->getUser($id)->getAllData();
+            if (empty($user)){
+                throw new \Exception("In function getUser(id): The ID given doesn't match any user");
+            }
+            return $this->createNode($user,'users');
         });
+        //%user.getAllCourses(role)
+        $this->viewHandler->registerFunction('users','getAllCourses',function($user,$role=null) {
+            $this->checkArray($user, "object", "getAllCourses");
+            if ($role==null){
+                $courses = Core::$systemDB->selectMultiple(
+                        "course c join course_user u on course=c.id","c.*",
+                        ["u.id"=>$user["value"]["id"]]);
+            } else{
+                $courses = Core::$systemDB->selectMultiple(
+                        "course_user u natural join user_role join role r on r.id=role " .
+                        "join course c on course=c.id","c.*",
+                        ["u.id"=>$user["value"]["id"],"r.name"=>$role]);
+            }
+            return $this->createNode($courses,"courses","collection",$user);
+            //ToDo courses functions
+        });
+        //%user.campus
         $this->viewHandler->registerFunction('users','campus',function($user){
-            return new ValueNode($user["value"]["campus"]);
+            return $this->basicGetterFunction($user,"campus");
         });
+        //%user.email
         $this->viewHandler->registerFunction('users','email',function($user){
-            return new ValueNode($user["value"]["email"]);
+            return $this->basicGetterFunction($user,"email");
         });
+        //%user.isAdmin
         $this->viewHandler->registerFunction('users','isAdmin',function($user){
-            return new ValueNode($user["value"]["isAdmin"]);
+            return $this->basicGetterFunction($user,"isAdmin");
         });
+        //%user.lastActivity
         $this->viewHandler->registerFunction('users','lastActivity',function($user){
-            return new ValueNode($user["value"]["lastActivity"]);
+            return $this->basicGetterFunction($user,"lastActivity");
         });
+        //%user.name 
         $this->viewHandler->registerFunction('users','name',function($user){
-            return new ValueNode($user["value"]["name"]);
+            return $this->basicGetterFunction($user,"name");
         });
+        //%user.roles returns collection of role names
         $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
+            $this->checkArray($user,"object","roles","id");
             return $this->createNode((new \SmartBoards\CourseUser($user["value"]["id"], $course))->getRoles(),
-                                    "users", "collection");
+                                    "users", "collection",$user);
         });
+        //%users.username
         $this->viewHandler->registerFunction('users','username',function($user){
-            return new ValueNode($user["value"]["username"]);
+            return $this->basicGetterFunction($user,"username");
         });
+        //%users.picture
         $this->viewHandler->registerFunction('users','picture',function($user){
+            $this->checkArray($user,"object","picture","username");
             return new ValueNode("photos/".$user["value"]["username"].".png");
         });
         
         //functions of awards library
+        //awards.getAllAwards(user,type,moduleInstance,initialdate,finaldate)
         $this->viewHandler->registerFunction('awards','getAllAwards', 
         function($user=null,$type=null,$moduleInstance=null,$initialDate=null,$finalDate=null) use ($courseId){
             return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate);
         });
-        
+        //%award.renderPicture(item=(user|type)) returns the img or block ok the award (should be used on text views)
         $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
+            $this->checkArray($award,"object","renderPicture()");
             if ($item=="user"){
                 $username = Core::$systemDB->select("game_course_user",["id"=>$award["value"]["user"]],"username");
+                if (empty($username))
+                    throw new \Exception("In function renderPicture('user'): couldn't find user.");
                 return new ValueNode("photos/".$username.".png");
             }
-            else{//$item=="type
+            else if ($item=="type"){
                 switch ($award["value"]['type']) {
                     case 'grade':
                         return new ValueNode('<img src="images/quiz.svg">');
                     case 'badge':
                         $name = $this->getModuleNameOfAwardOrParticipation($award);
+                        if ($name===null)
+                            throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                         $level = substr($award["value"]["description"],-2,1);//assuming that level are always single digit
                         $imgName = str_replace(' ', '', $name . '-' . $level);
                         return new ValueNode('<img src="badges/' . $imgName . '.png">');
-                        break;
                     case 'skill':
-                        $name = $this->getModuleNameOfAwardOrParticipation($award);
                         $color = '#fff';
                         $skillColor = Core::$systemDB->select("skill",["id"=>$award['value']["moduleInstance"]],"color");
                         if($skillColor)
@@ -304,29 +401,37 @@ class Views extends Module {
                     default:
                         return new ValueNode('<img src="images/quiz.svg">');
                 }
-            }
-            return new ValueNode($award["value"]["description"]);
+            }else
+                throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
         });
+        //%award.description
         $this->viewHandler->registerFunction('awards','description',function($award){
-            return new ValueNode($award["value"]["description"]);
+            return $this->basicGetterFunction($award,"description");
         });
+        //%award.moduleInstance
         $this->viewHandler->registerFunction('awards','moduleInstance',function($award){
+            $this->checkArray($award, "object", "moduleInstance");
             return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
         });
+        //%award.reward
         $this->viewHandler->registerFunction('awards','reward',function($award){
-            return new ValueNode($award["value"]["reward"]);
+            return $this->basicGetterFunction($award,"reward");
         });
+        //%award.type
         $this->viewHandler->registerFunction('awards','type',function($award){
-            return new ValueNode($award["value"]["type"]);
+            return $this->basicGetterFunction($award,"type");
         });
+        //%award.date
         $this->viewHandler->registerFunction('awards','date',function($award){
             return $this->getDate($award);
         });
+        //%award.user
         $this->viewHandler->registerFunction('awards','user',function($award){
-            return new ValueNode($award["value"]["user"]);
+            return $this->basicGetterFunction($award,"user");
         });
         
         //functions of the participation library
+        //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate)
         $this->viewHandler->registerFunction('participations','getAllParticipations', 
         function($user=null,$type=null,$moduleInstance=null,$rating=null,$evaluator=null,$initialDate=null,$finalDate=null) use ($courseId){
             $where=[];
@@ -338,41 +443,49 @@ class Views extends Module {
             }
             return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where,"participation");
         });
-        
+        //%participation.date
         $this->viewHandler->registerFunction('participations','date',function($participation){
             return $this->getDate($participation);
         });
+        //%participation.description
         $this->viewHandler->registerFunction('participations','description',function($participation){
-            return new ValueNode($participation["value"]["description"]);
+            return $this->basicGetterFunction($participation,"description");
         });
+        
+        //%participation.evaluator
         $this->viewHandler->registerFunction('participations','evaluator',function($participation){
-            return new ValueNode($participation["value"]["evaluator"]);
-        });
+            return $this->basicGetterFunction($participation,"evaluator");
+        });        
+        //%participation.moduleInstance
         $this->viewHandler->registerFunction('participations','moduleInstance',function($participation){
             return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation,false));
         });
+        //%participation.post
         $this->viewHandler->registerFunction('participations','post',function($participation){
-            return new ValueNode($participation["value"]["post"]);
+            return $this->basicGetterFunction($participation,"post");
         });
+        //%participation.rating
         $this->viewHandler->registerFunction('participations','rating',function($participation){
-            return new ValueNode($participation["value"]["post"]);
+            return $this->basicGetterFunction($participation,"rating");
         });
+        //%participation.type
         $this->viewHandler->registerFunction('participations','type',function($participation){
-            return new ValueNode($participation["value"]["type"]);
+            return $this->basicGetterFunction($participation,"type");
         });
+        //%participation.user
         $this->viewHandler->registerFunction('participations','user',function($participation){
-            return new ValueNode($participation["value"]["user"]);
+            return $this->basicGetterFunction($participation,"user");
         });
         
         //parts
         $this->viewHandler->registerPartType('text', null, null,
-            function(&$value) {
+            function(&$value) {//parse function
                 if (array_key_exists('link', $value))
                     $this->viewHandler->parseSelf($value['link']);
 
                 $this->viewHandler->parseSelf($value['parameters']["value"]);
             },
-            function(&$value, $viewParams, $visitor) {
+            function(&$value, $viewParams, $visitor) {//processing function
                 if (array_key_exists('link', $value))
                     $value['link'] = $value['link']->accept($visitor)->getValue();
                 
@@ -381,46 +494,19 @@ class Views extends Module {
             }
         );
         
-        $this->viewHandler->registerPartType('value', null, null,
-            function(&$value) {
-                if (array_key_exists('link', $value))
-                    $this->viewHandler->parseSelf($value['link']);
-
-                if ($value['valueType'] == 'expression')
-                    $this->viewHandler->parseSelf($value['info']);
-            },
-            function(&$value, $viewParams, $visitor) {
-                if (array_key_exists('link', $value))
-                    $value['link'] = $value['link']->accept($visitor)->getValue();
-
-                if ($value['valueType'] == 'field') {
-                    $context = array_key_exists('context', $value['info']) ? $value['info']['context'] : array();
-                    $fieldValue = \SmartBoards\DataSchema::getValue($value['info']['field'], $context, $viewParams, false);
-                    if (array_key_exists('format', $value['info']))
-                        $fieldValue = str_replace('%v', $fieldValue, $value['info']['format']);
-                    $value['valueType'] = 'text';
-                    $value['info'] = $fieldValue;
-                } else if ($value['valueType'] == 'expression') {
-                    $value['valueType'] = 'text';
-                    $value['info'] = $value['info']->accept($visitor)->getValue();
-                }
-            }
-        );
-
         $this->viewHandler->registerPartType('image', null, null,
-            function(&$image) {
+            function(&$image) {//parse function
                 if (array_key_exists('link', $image))
                     $this->viewHandler->parseSelf($image['link']);
 
                 $this->viewHandler->parseSelf($image['parameters']["value"]);
             },
-            function(&$image, $viewParams, $visitor) {
+            function(&$image, $viewParams, $visitor) {//processing function
                 if (array_key_exists('link', $image))
                     $image['link'] = $image['link']->accept($visitor)->getValue();
 
                 $image['edit'] = false;
                 $image['parameters']["value"] = $image['parameters']["value"]->accept($visitor)->getValue();
-                    // $image['info'] = $image['parameters']["value"]->accept($visitor)->getValue();
             }
         );
 
@@ -433,19 +519,18 @@ class Views extends Module {
                 $this->putTogetherTableRows($table['headerRows'], $getPart);
                 $this->putTogetherTableRows($table['rows'], $getPart);
             },
-            function(&$table) {
-                //print_r($table);
+            function(&$table) {//parse function
                 $this->parseTableRows($table['headerRows']);
                 $this->parseTableRows($table['rows']);
             },
-            function(&$table, $viewParams, $visitor) {
+            function(&$table, $viewParams, $visitor) {//processing function
                 $this->processTableRows($table['headerRows'], $viewParams, $visitor);
                 $this->processTableRows($table['rows'], $viewParams, $visitor);
             }
         );
 
         $this->viewHandler->registerPartType('block', null, null,
-            function(&$block) {
+            function(&$block) {//parse function
                 if (array_key_exists('header', $block)) {
                     $block['header']['title']['type'] = 'value';
                     $block['header']['image']['type'] = 'image';
@@ -458,21 +543,19 @@ class Views extends Module {
                         $this->viewHandler->parsePart($child);
                 }
             },
-            function(&$block, $viewParams, $visitor) {
-                
+            function(&$block, $viewParams, $visitor) {//processing function
                 if (array_key_exists('header', $block)) {
                     $this->viewHandler->processPart($block['header']['title'], $viewParams, $visitor);
                     $this->viewHandler->processPart($block['header']['image'], $viewParams, $visitor);
                 }
 
                 if (array_key_exists('children', $block)) {
-                    $this->viewHandler->processLoop($block['children'], $viewParams, $visitor, function(&$child, $viewParams, $visitor) {
-                        $this->viewHandler->processPart($child, $viewParams, $visitor);
+                    $this->viewHandler->processLoop($block['children'], $viewParams, $visitor, function(&$child, $params, $visitor) {
+                        $this->viewHandler->processPart($child, $params, $visitor);
                     });
                 }
             }
         );
-
 
         API::registerFunction('views', 'view', function() {
             API::requireValues('view');

@@ -18,6 +18,8 @@ class Badges extends Module {
             $type = "collection";
         }else{
             $badgeArray = Core::$systemDB->select("badge",$where); 
+            if (empty($badgeArray))
+                throw new \Exception("In function badges.getBadge(name): couldn't find badge with name '".$where["name"]."'.");
             $type = "object";
         }
         return $this->createNode($badgeArray, 'badges',$type);
@@ -25,7 +27,7 @@ class Badges extends Module {
     
     public function getLevel($levelNum,$badge){
         $type="object";
-        
+        $parent=null;
         if ($levelNum===0){
             $level = ["number"=>0,"description"=>null];
         }else if ($levelNum>$badge["value"]["maxLevel"] || $levelNum<0){
@@ -36,6 +38,7 @@ class Badges extends Module {
             if ($levelNum==null){
                 $level = Core::$systemDB->selectMultiple($table,["badgeId"=>$badgeId]);
                 $type="collection";
+                $parent=$badge;
             }else{
                 $level = Core::$systemDB->select($table,["badgeId"=>$badgeId,"number"=>$levelNum]);
             }
@@ -52,7 +55,7 @@ class Badges extends Module {
             $level["libraryOfVariable"] = "badges";
             $level=array_merge($badge["value"],$level);
         }
-        return $this->createNode($level, 'badges',$type);
+        return $this->createNode($level, 'badges',$type,$parent);
     }
     
     public function getLevelNum($badge,$user) {
@@ -67,6 +70,7 @@ class Badges extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         
+        //%badges.getAllBadges(isExtra,IsBragging)
         $viewHandler->registerFunction('badges','getAllBadges', function($isExtra=null, $isBragging=null) { 
             $where=[];
             if ($isExtra!==null)
@@ -75,10 +79,11 @@ class Badges extends Module {
                 $where["isBragging"]=$isBragging;
             return $this->getBadge(true,$where);
         });
+        //%badges.getBadge(name)
         $viewHandler->registerFunction('badges','getBadge', function($name=null) { 
             return $this->getBadge(false,["name"=>$name]);
         });
-        
+        //%badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction('badges','getCountBadges', function($user=null) {  
             if ($user===null){
                 return new ValueNode(Core::$systemDB->select("badge",["course"=>$this->getCourseId()],"sum(maxLevel)"));
@@ -87,24 +92,27 @@ class Badges extends Module {
             return new ValueNode( Core::$systemDB->select("award",
                     ["course"=>$this->getCourseId(),"type"=>"badge","user"=>$id],"count(*)") );
         });
-        
-        //get atribute of badge
+        //%badge.description
         $viewHandler->registerFunction('badges','description', function($arg) {
-            return new ValueNode($arg["value"]["description"]);
+            return $this->basicGetterFunction($arg,"description");
         });
+        //%badge.name
         $viewHandler->registerFunction('badges','name', function($badge) {
-            return new ValueNode($badge["value"]["name"]);
+            return $this->basicGetterFunction($badge,"name");
         });
+        //%badge.maxLevel
         $viewHandler->registerFunction('badges','maxLevel', function($badge) {
-            return new ValueNode($badge["value"]["maxLevel"]);
+            return $this->basicGetterFunction($badge,"maxLevel");
         });
+        //%badge.isExtra
         $viewHandler->registerFunction('badges','isExtra', function($badge) {
-            return new ValueNode($badge["value"]["isExtra"]);
+            return $this->basicGetterFunction($badge,"isExtra");
         });
+        //%badge.isBragging
         $viewHandler->registerFunction('badges','isBragging', function($badge) {
-            return new ValueNode($badge["value"]["isBragging"]);
+            return $this->basicGetterFunction($badge,"isBragging");
         });
-        
+        //%badge.renderPicture(number) return expression for the image of the badge in the specified level
         $viewHandler->registerFunction('badges','renderPicture', function($badge,$level) {   
             //$level num or object
             if (is_array($level))
@@ -114,20 +122,26 @@ class Badges extends Module {
             $name=str_replace(' ', '', $badge["value"]["name"]);
             return new ValueNode("badges/".$name."-".$levelNum.".png");
         });
-        
+        //%badge.levels returns collection of level objects
         $viewHandler->registerFunction('badges','levels', function($badge) {
+            $this->checkArray($badge, "object", 'levels');
             return $this->getLevel(null,$badge);
         });
-        
+        //%badge.getLevel(number) returns level object
         $viewHandler->registerFunction('badges','getLevel', function($badge,$level) {
+            $this->checkArray($badge, "object", 'getLevel');
+            $this->checkArray($level, "object", 'getLevel');
             return $this->getLevel($level,$badge);
         });
-        
-        $viewHandler->registerFunction('badges','currLevel', function($badge,$user) {   
+        //%badge.currLevel(%user) returns object of the current level of user
+        $viewHandler->registerFunction('badges','currLevel', function($badge,$user) {
+            $this->checkArray($badge, "object", 'currLevel');
             $levelNum=$this->getLevelNum($badge,$user);
             return $this->getLevel($levelNum,$badge);
         });
+        //%badge.nextLevel(user) %level.nextLevel  returns level object
         $viewHandler->registerFunction('badges','nextLevel', function($arg,$user=null) {
+            $this->checkArray($arg, "object", 'nextLevel');
             if ($user === null) { //arg is a level
                 $levelNum = $arg["value"]["number"];
             } else {//arg is badge
@@ -135,7 +149,9 @@ class Badges extends Module {
             }
             return $this->getLevel($levelNum+1,$arg);
         });
+        //%badge.previousLevel(user) %level.previousLevel  returns level object
         $viewHandler->registerFunction('badges','previousLevel', function($arg,$user=null) {  
+            $this->checkArray($arg, "object", 'previousLevel');
             if ($user === null) {//arg is a level
                 $levelNum = $arg["value"]["number"];
             } else {//arg is badge
@@ -143,16 +159,17 @@ class Badges extends Module {
             }
             return $this->getLevel($levelNum-1,$arg);
         });
-        
-        //functions for levels
+        //%level.goal
         $viewHandler->registerFunction('badges','goal', function($level) {
-            return new ValueNode($level["value"]["goal"]);
+            return $this->basicGetterFunction($level,"goal");
         });
+        //%level.reward
         $viewHandler->registerFunction('badges','reward', function($level) {
-            return new ValueNode($level["value"]["reward"]);
+            return $this->basicGetterFunction($level,"goal");
         });
+        //%level.number
         $viewHandler->registerFunction('badges','number', function($level) {
-            return new ValueNode($level["value"]["number"]);
+            return $this->basicGetterFunction($level,"goal");
         });
         
         

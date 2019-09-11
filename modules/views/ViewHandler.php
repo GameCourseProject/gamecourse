@@ -281,7 +281,6 @@ class ViewHandler {
             $organizedView["rows"]=[];
             $organizedView["headerRows"]=[];
             foreach($organizedView["children"] as $row){
-                //print_r($row);
                 $rowType = $row["partType"]."s";
                 $values=[];
                 foreach($row["children"] as $cell){
@@ -475,7 +474,7 @@ class ViewHandler {
             $this->registeredFunctions[$funcName] = $processFunc;
         }else{
             if (!array_key_exists($funcLib, $this->registeredLibFunctions))
-            $this->registeredLibFunctions[$funcLib]=[];
+                $this->registeredLibFunctions[$funcLib]=[];
             if (array_key_exists($funcLib, $this->registeredLibFunctions[$funcLib]))
                 new \Exception('Function ' . $funcName . ' already exists in library '. $funcLib);
 
@@ -653,28 +652,7 @@ class ViewHandler {
                         return $filter->accept(new EvaluateVisitor($params, $this))->getValue();
                     });
                 }*/
-                /*
-                if (array_key_exists('sort', $child['repeat'])) {
-                    $sort = $child['repeat']['sort'];
-                    $valueExp = $sort['value'];
-                    $values = array();
-                    $i=0;
-                    foreach ($repeatParams as &$params){
-                        $values[$i] = $valueExp->accept(new EvaluateVisitor(array_merge($viewParams, $params), $this))->getValue();
-                        $params['index']=$i;
-                        $i++;  
-                    }
-                    
-                    if ($sort['order'] == 'ASC')
-                        usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$a['index']] > $values[$b['index']] ? 1 : -1;
-                        });
-                    else
-                        usort($repeatParams, function($a, $b) use($values) {
-                            return $values[$a['index']] < $values[$b['index']] ? 1 : -1;
-                        });
-                }
-                */
+                
                 //unset($child['repeat']);
                 $repeatParams= array_values($repeatParams);
                 for($p=0;$p < sizeof($repeatParams);$p++){
@@ -686,11 +664,10 @@ class ViewHandler {
                     
                     $dupChild = $child;
                     $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
-                    //print_r($paramsforEvaluator);
-                    $visitor = new EvaluateVisitor($paramsforEvaluator, $this);
-
-                    if ($this->processIf($dupChild, $visitor)) {
-                        $func($dupChild, $paramsforEvaluator, $visitor);
+                    $newvisitor = new EvaluateVisitor($paramsforEvaluator, $this);
+                    
+                    if ($this->processIf($dupChild, $newvisitor)) {
+                        $func($dupChild, $paramsforEvaluator, $newvisitor);
                         $containerArr[] = $dupChild;
                     }
                 }
@@ -777,11 +754,9 @@ class ViewHandler {
     }
 
     public function parseView(&$view) {
-        //print_r($view);
         foreach ($view['children'] as &$part) {
             $this->parsePart($part);
         }
-        //print_r($view);
     }
     
     //go throgh roles of a view to find the role of the user
