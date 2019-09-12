@@ -73,7 +73,6 @@ class EvaluateVisitor extends Visitor {
     }
 
     public function visitFunctionOp($node) {
-        //print_r($node);
         $funcName = $node->getName();
         if ($node->getArgs() == null) {
             $args = array();
@@ -86,16 +85,11 @@ class EvaluateVisitor extends Visitor {
             return $this->viewHandler->callFunction($node->getLib(),$funcName, $args);
         }else{
             $contextVal=$context->accept($this)->getValue();
-           // print_R($contextVal);
             $lib=$node->getLib();
             if($node->getLib()==null){
                 //gets the lib name of the previous function 
-                //ex: users.getUser().name in the function 'name' gets users lib
-                if (is_a($context, "Modules\Views\Expression\FunctionOp")) {
-                    $lib = $context->getLib();
-                    $node->setLib($lib);
-                } 
-                if ($lib==null){
+                //ex: %user.name in the function 'name' gets users lib
+                if (is_array($contextVal)){
                     if ($contextVal["type"] == "object")
                         $lib = $contextVal["value"]["libraryOfVariable"];
                     else {//type == collection

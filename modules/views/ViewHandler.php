@@ -588,7 +588,7 @@ class ViewHandler {
         
         //print_r($visitedNode);
         if (is_array($visitedNode) && $lib!==null){
-            
+            /*
             if ($visitedNode["type"]=="object")
                 $visitedNode["value"]["libraryOfVariable"]=$lib;
             else {//type == collection
@@ -597,7 +597,7 @@ class ViewHandler {
                         break;
                     $element["libraryOfVariable"]=$lib;
                 }
-            }
+            }*/
         }
         //print_R($visitedNode);
         $val($visitedNode);

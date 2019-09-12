@@ -89,7 +89,8 @@ abstract class Module {
     public function createNode($value,$lib=null,$type="object",$parent=null){
         if($type=="collection"){
             foreach($value as &$v){
-                $v["parent"]=$parent;
+                if ($parent!==null)
+                    $v["parent"]=$parent;
                 if (is_array($v) && ($lib!==null || !array_key_exists("libraryOfVariable", $v)))
                     $v["libraryOfVariable"]=$lib;
             }
@@ -145,7 +146,7 @@ abstract class Module {
     }
     //return valuenode of the field of the object
     public function basicGetterFunction($object,$field){
-        $this->checkArray($object, "object", $field);
+        $this->checkArray($object, "object", $field, $field);
         return new ValueNode($object["value"][$field]);
     }
     

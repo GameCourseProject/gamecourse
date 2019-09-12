@@ -311,22 +311,6 @@ class Views extends Module {
             }
             return $this->createNode($user,'users');
         });
-        //%user.getAllCourses(role)
-        $this->viewHandler->registerFunction('users','getAllCourses',function($user,$role=null) {
-            $this->checkArray($user, "object", "getAllCourses");
-            if ($role==null){
-                $courses = Core::$systemDB->selectMultiple(
-                        "course c join course_user u on course=c.id","c.*",
-                        ["u.id"=>$user["value"]["id"]]);
-            } else{
-                $courses = Core::$systemDB->selectMultiple(
-                        "course_user u natural join user_role join role r on r.id=role " .
-                        "join course c on course=c.id","c.*",
-                        ["u.id"=>$user["value"]["id"],"r.name"=>$role]);
-            }
-            return $this->createNode($courses,"courses","collection",$user);
-            //ToDo courses functions
-        });
         //%user.campus
         $this->viewHandler->registerFunction('users','campus',function($user){
             return $this->basicGetterFunction($user,"campus");
@@ -351,7 +335,7 @@ class Views extends Module {
         $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
             $this->checkArray($user,"object","roles","id");
             return $this->createNode((new \SmartBoards\CourseUser($user["value"]["id"], $course))->getRoles(),
-                                    "users", "collection",$user);
+                                    null, "collection");
         });
         //%users.username
         $this->viewHandler->registerFunction('users','username',function($user){
@@ -361,6 +345,58 @@ class Views extends Module {
         $this->viewHandler->registerFunction('users','picture',function($user){
             $this->checkArray($user,"object","picture","username");
             return new ValueNode("photos/".$user["value"]["username"].".png");
+        });
+        //%user.getAllCourses(role)
+        $this->viewHandler->registerFunction('users','getAllCourses',function($user,$role=null) {
+            $this->checkArray($user, "object", "getAllCourses");
+            if ($role==null){
+                $courses = Core::$systemDB->selectMultiple(
+                        "course c join course_user u on course=c.id",
+                        ["u.id"=>$user["value"]["id"]],"c.*");
+            } else{
+                $courses = Core::$systemDB->selectMultiple(
+                        "course_user u natural join user_role join role r on r.id=role " .
+                        "join course c on u.course=c.id",
+                        ["u.id"=>$user["value"]["id"],"r.name"=>$role],"c.*");
+            }
+            return $this->createNode($courses,"courses","collection",$user);
+            //ToDo courses functions
+        });
+        
+        //functions of course library
+        //courses.getAllCourses(isActive,isVisible) returns collection of courses
+        $this->viewHandler->registerFunction('courses','getAllCourses',function($isActive=null,$isVisible=null){
+            $where=[];
+            if ($isActive!==null)
+                $where["isActive"]=$isActive;
+            if ($isVisible!==null)
+                $where["isVisible"]=$isVisible;
+            return $this->createNode(Core::$systemDB->selectMultiple("course",$where), "courses", "collection");
+        });
+        //courses.getCourse(id) returns course object
+        $this->viewHandler->registerFunction('courses','getCourse',function($id){
+            $course = Core::$systemDB->select("course",["id"=>$id]);
+            if (empty($course))
+                throw new \Exception("In function courses.getCourse(...): Coudn't find course with id=".$id);
+            return $this->createNode($course, "courses","object");
+        });
+        //%course.isActive
+        $this->viewHandler->registerFunction('courses','isActive',function($course){
+            return $this->basicGetterFunction($course,"isActive");
+        });
+        //%course.isVisible
+        $this->viewHandler->registerFunction('courses','isVisible',function($course){
+            return $this->basicGetterFunction($course,"isVisible");
+        });
+        //%course.name
+        $this->viewHandler->registerFunction('courses','name',function($course){
+            return $this->basicGetterFunction($course,"name");
+        });
+        //%course.roles   returns collection of roles(which are just strings
+        $this->viewHandler->registerFunction('courses','roles',function($course){
+            $this->checkArray($course, "object", "roles");
+            $roles = array_column(Core::$systemDB->selectMultiple("role",["course"=>$course["value"]["id"]],"name"),"name");
+            return $this->createNode($roles,null,"collection");
         });
         
         //functions of awards library
@@ -998,7 +1034,7 @@ class Views extends Module {
                     if ($viewerId != -1) {
                         $this->viewHandler->processView($viewCopy, array(
                             'course' => (string)$courseId,
-                            'viewer' => (string)$viewerId,
+                            'viewer' => (string)Core::getLoggedUser()->getId()
                         ));
                         $testDone = true;
                     }
@@ -1009,7 +1045,7 @@ class Views extends Module {
                     if ($viewerId != -1 && $userId != -1) {
                         $this->viewHandler->processView($viewCopy, array(
                             'course' => (string)$courseId,
-                            'viewer' => (string)$viewerId,
+                            'viewer' => (string)Core::getLoggedUser()->getId(),
                             'user' => (string)$userId
                         ));
                         $testDone = true;
