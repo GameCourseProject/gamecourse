@@ -92,14 +92,12 @@ create table course_module(
 	foreign key(course) references course(id) on delete cascade
 );
 
-create table dictionary(# conect with enable_module? course and module? course?
+create table dictionary(
 	moduleId varchar(50),
-	course int unsigned,
 	keyword varchar(50),
 	description varchar(255),
-	primary key(moduleId,course,keyword),
-	foreign key(moduleId) references module (moduleId),
-	foreign key(course) references course(id)
+	primary key(moduleId,keyword),
+	foreign key(moduleId) references module (moduleId)
 );
 
 create table award(
@@ -263,7 +261,7 @@ create table aspect_class(
 );
 create table parameter(
 	id int unsigned auto_increment primary key,
-	type enum ('loopData','variables','value','class','style','link','if','events') not null,#angular directive?
+	type enum ('loopData','variables','value','class','style','link','visibilityCondition','visibilityType','events') not null,#angular directive?
 	value varchar(500) not null
 );
 create table view_parameter(

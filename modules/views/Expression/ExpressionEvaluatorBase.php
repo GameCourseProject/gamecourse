@@ -259,6 +259,7 @@ class ExpressionEvaluatorBase
 			$table74 = new ParserState(74);
 			$table75 = new ParserState(75);
 			$table76 = new ParserState(76);
+			$table77 = new ParserState(77);
 
 			$tableDefinition0 = array(
 				
@@ -292,26 +293,27 @@ class ExpressionEvaluatorBase
 			$tableDefinition4 = array(
 				
 					7=>new ParserAction($this->none, $table7),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					10=>new ParserAction($this->shift, $table8),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition5 = array(
 				
-					1=>new ParserAction($this->reduce, $table8),
-					9=>new ParserAction($this->reduce, $table8),
-					11=>new ParserAction($this->reduce, $table8)
+					1=>new ParserAction($this->reduce, $table9),
+					9=>new ParserAction($this->reduce, $table9),
+					11=>new ParserAction($this->reduce, $table9)
 				);
 
 			$tableDefinition6 = array(
@@ -321,111 +323,98 @@ class ExpressionEvaluatorBase
 
 			$tableDefinition7 = array(
 				
-					10=>new ParserAction($this->shift, $table21),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33)
+					10=>new ParserAction($this->shift, $table22),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34)
 				);
 
 			$tableDefinition8 = array(
 				
-					7=>new ParserAction($this->none, $table34),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					1=>new ParserAction($this->reduce, $table8),
+					9=>new ParserAction($this->reduce, $table8),
+					11=>new ParserAction($this->reduce, $table8)
 				);
 
 			$tableDefinition9 = array(
 				
 					7=>new ParserAction($this->none, $table35),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition10 = array(
 				
 					7=>new ParserAction($this->none, $table36),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition11 = array(
 				
 					7=>new ParserAction($this->none, $table37),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition12 = array(
 				
-					8=>new ParserAction($this->reduce, $table29),
-					10=>new ParserAction($this->reduce, $table29),
-					12=>new ParserAction($this->reduce, $table29),
-					13=>new ParserAction($this->reduce, $table29),
-					14=>new ParserAction($this->reduce, $table29),
-					15=>new ParserAction($this->reduce, $table29),
-					16=>new ParserAction($this->reduce, $table29),
-					17=>new ParserAction($this->reduce, $table29),
-					18=>new ParserAction($this->reduce, $table29),
-					19=>new ParserAction($this->reduce, $table29),
-					21=>new ParserAction($this->reduce, $table29),
-					22=>new ParserAction($this->reduce, $table29),
-					23=>new ParserAction($this->reduce, $table29),
-					24=>new ParserAction($this->reduce, $table29),
-					28=>new ParserAction($this->reduce, $table29),
-					38=>new ParserAction($this->shift, $table38)
+					7=>new ParserAction($this->none, $table38),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition13 = array(
@@ -444,7 +433,8 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table30),
 					23=>new ParserAction($this->reduce, $table30),
 					24=>new ParserAction($this->reduce, $table30),
-					28=>new ParserAction($this->reduce, $table30)
+					28=>new ParserAction($this->reduce, $table30),
+					38=>new ParserAction($this->shift, $table39)
 				);
 
 			$tableDefinition14 = array(
@@ -520,8 +510,7 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table34),
 					23=>new ParserAction($this->reduce, $table34),
 					24=>new ParserAction($this->reduce, $table34),
-					28=>new ParserAction($this->reduce, $table34),
-					38=>new ParserAction($this->shift, $table39)
+					28=>new ParserAction($this->reduce, $table34)
 				);
 
 			$tableDefinition18 = array(
@@ -540,7 +529,8 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table35),
 					23=>new ParserAction($this->reduce, $table35),
 					24=>new ParserAction($this->reduce, $table35),
-					28=>new ParserAction($this->reduce, $table35)
+					28=>new ParserAction($this->reduce, $table35),
+					38=>new ParserAction($this->shift, $table40)
 				);
 
 			$tableDefinition19 = array(
@@ -564,253 +554,253 @@ class ExpressionEvaluatorBase
 
 			$tableDefinition20 = array(
 				
-					38=>new ParserAction($this->shift, $table40)
+					8=>new ParserAction($this->reduce, $table37),
+					10=>new ParserAction($this->reduce, $table37),
+					12=>new ParserAction($this->reduce, $table37),
+					13=>new ParserAction($this->reduce, $table37),
+					14=>new ParserAction($this->reduce, $table37),
+					15=>new ParserAction($this->reduce, $table37),
+					16=>new ParserAction($this->reduce, $table37),
+					17=>new ParserAction($this->reduce, $table37),
+					18=>new ParserAction($this->reduce, $table37),
+					19=>new ParserAction($this->reduce, $table37),
+					21=>new ParserAction($this->reduce, $table37),
+					22=>new ParserAction($this->reduce, $table37),
+					23=>new ParserAction($this->reduce, $table37),
+					24=>new ParserAction($this->reduce, $table37),
+					28=>new ParserAction($this->reduce, $table37)
 				);
 
 			$tableDefinition21 = array(
+				
+					38=>new ParserAction($this->shift, $table41)
+				);
+
+			$tableDefinition22 = array(
 				
 					1=>new ParserAction($this->reduce, $table7),
 					9=>new ParserAction($this->reduce, $table7),
 					11=>new ParserAction($this->reduce, $table7)
 				);
 
-			$tableDefinition22 = array(
-				
-					7=>new ParserAction($this->none, $table41),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
-				);
-
 			$tableDefinition23 = array(
 				
 					7=>new ParserAction($this->none, $table42),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition24 = array(
 				
 					7=>new ParserAction($this->none, $table43),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition25 = array(
 				
 					7=>new ParserAction($this->none, $table44),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition26 = array(
 				
 					7=>new ParserAction($this->none, $table45),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition27 = array(
 				
 					7=>new ParserAction($this->none, $table46),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition28 = array(
 				
 					7=>new ParserAction($this->none, $table47),
-					13=>new ParserAction($this->shift, $table10),
-					20=>new ParserAction($this->shift, $table48),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition29 = array(
 				
-					7=>new ParserAction($this->none, $table49),
-					13=>new ParserAction($this->shift, $table10),
-					20=>new ParserAction($this->shift, $table50),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					7=>new ParserAction($this->none, $table48),
+					13=>new ParserAction($this->shift, $table11),
+					20=>new ParserAction($this->shift, $table49),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition30 = array(
 				
-					7=>new ParserAction($this->none, $table51),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					7=>new ParserAction($this->none, $table50),
+					13=>new ParserAction($this->shift, $table11),
+					20=>new ParserAction($this->shift, $table51),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition31 = array(
 				
-					7=>new ParserAction($this->none, $table53),
-					13=>new ParserAction($this->shift, $table10),
-					22=>new ParserAction($this->shift, $table52),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					7=>new ParserAction($this->none, $table52),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition32 = array(
 				
-					7=>new ParserAction($this->none, $table55),
-					13=>new ParserAction($this->shift, $table10),
-					23=>new ParserAction($this->shift, $table54),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					7=>new ParserAction($this->none, $table54),
+					13=>new ParserAction($this->shift, $table11),
+					22=>new ParserAction($this->shift, $table53),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition33 = array(
 				
 					7=>new ParserAction($this->none, $table56),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					23=>new ParserAction($this->shift, $table55),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition34 = array(
 				
-					8=>new ParserAction($this->reduce, $table25),
-					10=>new ParserAction($this->reduce, $table25),
-					12=>new ParserAction($this->reduce, $table25),
-					13=>new ParserAction($this->reduce, $table25),
-					14=>new ParserAction($this->reduce, $table25),
-					15=>new ParserAction($this->reduce, $table25),
-					16=>new ParserAction($this->reduce, $table25),
-					17=>new ParserAction($this->reduce, $table25),
-					18=>new ParserAction($this->reduce, $table25),
-					19=>new ParserAction($this->reduce, $table25),
-					21=>new ParserAction($this->reduce, $table25),
-					22=>new ParserAction($this->reduce, $table25),
-					23=>new ParserAction($this->reduce, $table25),
-					24=>new ParserAction($this->reduce, $table25),
-					28=>new ParserAction($this->reduce, $table25)
+					7=>new ParserAction($this->none, $table57),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
 			$tableDefinition35 = array(
@@ -853,24 +843,38 @@ class ExpressionEvaluatorBase
 
 			$tableDefinition37 = array(
 				
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->shift, $table57)
+					8=>new ParserAction($this->reduce, $table28),
+					10=>new ParserAction($this->reduce, $table28),
+					12=>new ParserAction($this->reduce, $table28),
+					13=>new ParserAction($this->reduce, $table28),
+					14=>new ParserAction($this->reduce, $table28),
+					15=>new ParserAction($this->reduce, $table28),
+					16=>new ParserAction($this->reduce, $table28),
+					17=>new ParserAction($this->reduce, $table28),
+					18=>new ParserAction($this->reduce, $table28),
+					19=>new ParserAction($this->reduce, $table28),
+					21=>new ParserAction($this->reduce, $table28),
+					22=>new ParserAction($this->reduce, $table28),
+					23=>new ParserAction($this->reduce, $table28),
+					24=>new ParserAction($this->reduce, $table28),
+					28=>new ParserAction($this->reduce, $table28)
 				);
 
 			$tableDefinition38 = array(
 				
-					37=>new ParserAction($this->shift, $table58)
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->shift, $table58)
 				);
 
 			$tableDefinition39 = array(
@@ -885,21 +889,7 @@ class ExpressionEvaluatorBase
 
 			$tableDefinition41 = array(
 				
-					8=>new ParserAction($this->reduce, $table9),
-					10=>new ParserAction($this->reduce, $table9),
-					12=>new ParserAction($this->reduce, $table9),
-					13=>new ParserAction($this->reduce, $table9),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->reduce, $table9),
-					18=>new ParserAction($this->reduce, $table9),
-					19=>new ParserAction($this->reduce, $table9),
-					21=>new ParserAction($this->reduce, $table9),
-					22=>new ParserAction($this->reduce, $table9),
-					23=>new ParserAction($this->reduce, $table9),
-					24=>new ParserAction($this->reduce, $table9),
-					28=>new ParserAction($this->reduce, $table9)
+					37=>new ParserAction($this->shift, $table61)
 				);
 
 			$tableDefinition42 = array(
@@ -908,9 +898,9 @@ class ExpressionEvaluatorBase
 					10=>new ParserAction($this->reduce, $table10),
 					12=>new ParserAction($this->reduce, $table10),
 					13=>new ParserAction($this->reduce, $table10),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
 					17=>new ParserAction($this->reduce, $table10),
 					18=>new ParserAction($this->reduce, $table10),
 					19=>new ParserAction($this->reduce, $table10),
@@ -927,9 +917,9 @@ class ExpressionEvaluatorBase
 					10=>new ParserAction($this->reduce, $table11),
 					12=>new ParserAction($this->reduce, $table11),
 					13=>new ParserAction($this->reduce, $table11),
-					14=>new ParserAction($this->reduce, $table11),
-					15=>new ParserAction($this->reduce, $table11),
-					16=>new ParserAction($this->reduce, $table11),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
 					17=>new ParserAction($this->reduce, $table11),
 					18=>new ParserAction($this->reduce, $table11),
 					19=>new ParserAction($this->reduce, $table11),
@@ -982,15 +972,15 @@ class ExpressionEvaluatorBase
 				
 					8=>new ParserAction($this->reduce, $table14),
 					10=>new ParserAction($this->reduce, $table14),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
+					12=>new ParserAction($this->reduce, $table14),
+					13=>new ParserAction($this->reduce, $table14),
+					14=>new ParserAction($this->reduce, $table14),
+					15=>new ParserAction($this->reduce, $table14),
+					16=>new ParserAction($this->reduce, $table14),
 					17=>new ParserAction($this->reduce, $table14),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
+					18=>new ParserAction($this->reduce, $table14),
+					19=>new ParserAction($this->reduce, $table14),
+					21=>new ParserAction($this->reduce, $table14),
 					22=>new ParserAction($this->reduce, $table14),
 					23=>new ParserAction($this->reduce, $table14),
 					24=>new ParserAction($this->reduce, $table14),
@@ -1001,15 +991,15 @@ class ExpressionEvaluatorBase
 				
 					8=>new ParserAction($this->reduce, $table15),
 					10=>new ParserAction($this->reduce, $table15),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
 					17=>new ParserAction($this->reduce, $table15),
-					18=>new ParserAction($this->reduce, $table15),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
 					22=>new ParserAction($this->reduce, $table15),
 					23=>new ParserAction($this->reduce, $table15),
 					24=>new ParserAction($this->reduce, $table15),
@@ -1018,420 +1008,210 @@ class ExpressionEvaluatorBase
 
 			$tableDefinition48 = array(
 				
-					7=>new ParserAction($this->none, $table61),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
-				);
-
-			$tableDefinition49 = array(
-				
 					8=>new ParserAction($this->reduce, $table16),
 					10=>new ParserAction($this->reduce, $table16),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
 					17=>new ParserAction($this->reduce, $table16),
 					18=>new ParserAction($this->reduce, $table16),
-					19=>new ParserAction($this->reduce, $table16),
-					21=>new ParserAction($this->reduce, $table16),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
 					22=>new ParserAction($this->reduce, $table16),
 					23=>new ParserAction($this->reduce, $table16),
 					24=>new ParserAction($this->reduce, $table16),
 					28=>new ParserAction($this->reduce, $table16)
 				);
 
-			$tableDefinition50 = array(
+			$tableDefinition49 = array(
 				
 					7=>new ParserAction($this->none, $table62),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
-			$tableDefinition51 = array(
-				
-					8=>new ParserAction($this->reduce, $table19),
-					10=>new ParserAction($this->reduce, $table19),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->reduce, $table19),
-					18=>new ParserAction($this->reduce, $table19),
-					19=>new ParserAction($this->reduce, $table19),
-					21=>new ParserAction($this->reduce, $table19),
-					22=>new ParserAction($this->reduce, $table19),
-					23=>new ParserAction($this->reduce, $table19),
-					24=>new ParserAction($this->reduce, $table19),
-					28=>new ParserAction($this->reduce, $table19)
-				);
-
-			$tableDefinition52 = array(
-				
-					7=>new ParserAction($this->none, $table63),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
-				);
-
-			$tableDefinition53 = array(
-				
-					8=>new ParserAction($this->reduce, $table22),
-					10=>new ParserAction($this->reduce, $table22),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->reduce, $table22)
-				);
-
-			$tableDefinition54 = array(
-				
-					7=>new ParserAction($this->none, $table64),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
-				);
-
-			$tableDefinition55 = array(
-				
-					8=>new ParserAction($this->reduce, $table23),
-					10=>new ParserAction($this->reduce, $table23),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->reduce, $table23)
-				);
-
-			$tableDefinition56 = array(
-				
-					8=>new ParserAction($this->reduce, $table24),
-					10=>new ParserAction($this->reduce, $table24),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->reduce, $table24)
-				);
-
-			$tableDefinition57 = array(
-				
-					8=>new ParserAction($this->reduce, $table28),
-					10=>new ParserAction($this->reduce, $table28),
-					12=>new ParserAction($this->reduce, $table28),
-					13=>new ParserAction($this->reduce, $table28),
-					14=>new ParserAction($this->reduce, $table28),
-					15=>new ParserAction($this->reduce, $table28),
-					16=>new ParserAction($this->reduce, $table28),
-					17=>new ParserAction($this->reduce, $table28),
-					18=>new ParserAction($this->reduce, $table28),
-					19=>new ParserAction($this->reduce, $table28),
-					21=>new ParserAction($this->reduce, $table28),
-					22=>new ParserAction($this->reduce, $table28),
-					23=>new ParserAction($this->reduce, $table28),
-					24=>new ParserAction($this->reduce, $table28),
-					28=>new ParserAction($this->reduce, $table28)
-				);
-
-			$tableDefinition58 = array(
-				
-					8=>new ParserAction($this->reduce, $table41),
-					10=>new ParserAction($this->reduce, $table41),
-					12=>new ParserAction($this->reduce, $table41),
-					13=>new ParserAction($this->reduce, $table41),
-					14=>new ParserAction($this->reduce, $table41),
-					15=>new ParserAction($this->reduce, $table41),
-					16=>new ParserAction($this->reduce, $table41),
-					17=>new ParserAction($this->reduce, $table41),
-					18=>new ParserAction($this->reduce, $table41),
-					19=>new ParserAction($this->reduce, $table41),
-					21=>new ParserAction($this->reduce, $table41),
-					22=>new ParserAction($this->reduce, $table41),
-					23=>new ParserAction($this->reduce, $table41),
-					24=>new ParserAction($this->reduce, $table41),
-					27=>new ParserAction($this->shift, $table65),
-					28=>new ParserAction($this->reduce, $table41),
-					38=>new ParserAction($this->reduce, $table41)
-				);
-
-			$tableDefinition59 = array(
-				
-					8=>new ParserAction($this->reduce, $table39),
-					10=>new ParserAction($this->reduce, $table39),
-					12=>new ParserAction($this->reduce, $table39),
-					13=>new ParserAction($this->reduce, $table39),
-					14=>new ParserAction($this->reduce, $table39),
-					15=>new ParserAction($this->reduce, $table39),
-					16=>new ParserAction($this->reduce, $table39),
-					17=>new ParserAction($this->reduce, $table39),
-					18=>new ParserAction($this->reduce, $table39),
-					19=>new ParserAction($this->reduce, $table39),
-					21=>new ParserAction($this->reduce, $table39),
-					22=>new ParserAction($this->reduce, $table39),
-					23=>new ParserAction($this->reduce, $table39),
-					24=>new ParserAction($this->reduce, $table39),
-					27=>new ParserAction($this->shift, $table66),
-					28=>new ParserAction($this->reduce, $table39),
-					38=>new ParserAction($this->reduce, $table39)
-				);
-
-			$tableDefinition60 = array(
-				
-					8=>new ParserAction($this->reduce, $table37),
-					10=>new ParserAction($this->reduce, $table37),
-					12=>new ParserAction($this->reduce, $table37),
-					13=>new ParserAction($this->reduce, $table37),
-					14=>new ParserAction($this->reduce, $table37),
-					15=>new ParserAction($this->reduce, $table37),
-					16=>new ParserAction($this->reduce, $table37),
-					17=>new ParserAction($this->reduce, $table37),
-					18=>new ParserAction($this->reduce, $table37),
-					19=>new ParserAction($this->reduce, $table37),
-					21=>new ParserAction($this->reduce, $table37),
-					22=>new ParserAction($this->reduce, $table37),
-					23=>new ParserAction($this->reduce, $table37),
-					24=>new ParserAction($this->reduce, $table37),
-					27=>new ParserAction($this->shift, $table67),
-					28=>new ParserAction($this->reduce, $table37),
-					38=>new ParserAction($this->reduce, $table37)
-				);
-
-			$tableDefinition61 = array(
+			$tableDefinition50 = array(
 				
 					8=>new ParserAction($this->reduce, $table17),
 					10=>new ParserAction($this->reduce, $table17),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
 					17=>new ParserAction($this->reduce, $table17),
 					18=>new ParserAction($this->reduce, $table17),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
+					19=>new ParserAction($this->reduce, $table17),
+					21=>new ParserAction($this->reduce, $table17),
 					22=>new ParserAction($this->reduce, $table17),
 					23=>new ParserAction($this->reduce, $table17),
 					24=>new ParserAction($this->reduce, $table17),
 					28=>new ParserAction($this->reduce, $table17)
 				);
 
-			$tableDefinition62 = array(
+			$tableDefinition51 = array(
 				
-					8=>new ParserAction($this->reduce, $table18),
-					10=>new ParserAction($this->reduce, $table18),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->reduce, $table18),
-					18=>new ParserAction($this->reduce, $table18),
-					19=>new ParserAction($this->reduce, $table18),
-					21=>new ParserAction($this->reduce, $table18),
-					22=>new ParserAction($this->reduce, $table18),
-					23=>new ParserAction($this->reduce, $table18),
-					24=>new ParserAction($this->reduce, $table18),
-					28=>new ParserAction($this->reduce, $table18)
+					7=>new ParserAction($this->none, $table63),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
-			$tableDefinition63 = array(
+			$tableDefinition52 = array(
 				
 					8=>new ParserAction($this->reduce, $table20),
 					10=>new ParserAction($this->reduce, $table20),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->reduce, $table20),
+					18=>new ParserAction($this->reduce, $table20),
+					19=>new ParserAction($this->reduce, $table20),
+					21=>new ParserAction($this->reduce, $table20),
+					22=>new ParserAction($this->reduce, $table20),
+					23=>new ParserAction($this->reduce, $table20),
+					24=>new ParserAction($this->reduce, $table20),
 					28=>new ParserAction($this->reduce, $table20)
 				);
 
-			$tableDefinition64 = array(
+			$tableDefinition53 = array(
 				
-					8=>new ParserAction($this->reduce, $table21),
-					10=>new ParserAction($this->reduce, $table21),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->reduce, $table21)
+					7=>new ParserAction($this->none, $table64),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
-			$tableDefinition65 = array(
+			$tableDefinition54 = array(
 				
-					6=>new ParserAction($this->none, $table68),
-					7=>new ParserAction($this->none, $table69),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					8=>new ParserAction($this->reduce, $table23),
+					10=>new ParserAction($this->reduce, $table23),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table23)
 				);
 
-			$tableDefinition66 = array(
+			$tableDefinition55 = array(
 				
-					6=>new ParserAction($this->none, $table70),
-					7=>new ParserAction($this->none, $table69),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					7=>new ParserAction($this->none, $table65),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
 				);
 
-			$tableDefinition67 = array(
+			$tableDefinition56 = array(
 				
-					6=>new ParserAction($this->none, $table71),
-					7=>new ParserAction($this->none, $table69),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
+					8=>new ParserAction($this->reduce, $table24),
+					10=>new ParserAction($this->reduce, $table24),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table24)
 				);
 
-			$tableDefinition68 = array(
+			$tableDefinition57 = array(
 				
-					28=>new ParserAction($this->shift, $table72)
+					8=>new ParserAction($this->reduce, $table25),
+					10=>new ParserAction($this->reduce, $table25),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table25)
 				);
 
-			$tableDefinition69 = array(
+			$tableDefinition58 = array(
 				
-					8=>new ParserAction($this->shift, $table73),
-					12=>new ParserAction($this->shift, $table22),
-					13=>new ParserAction($this->shift, $table23),
-					14=>new ParserAction($this->shift, $table24),
-					15=>new ParserAction($this->shift, $table25),
-					16=>new ParserAction($this->shift, $table26),
-					17=>new ParserAction($this->shift, $table27),
-					18=>new ParserAction($this->shift, $table28),
-					19=>new ParserAction($this->shift, $table29),
-					21=>new ParserAction($this->shift, $table30),
-					22=>new ParserAction($this->shift, $table31),
-					23=>new ParserAction($this->shift, $table32),
-					24=>new ParserAction($this->shift, $table33),
-					28=>new ParserAction($this->reduce, $table5)
+					8=>new ParserAction($this->reduce, $table29),
+					10=>new ParserAction($this->reduce, $table29),
+					12=>new ParserAction($this->reduce, $table29),
+					13=>new ParserAction($this->reduce, $table29),
+					14=>new ParserAction($this->reduce, $table29),
+					15=>new ParserAction($this->reduce, $table29),
+					16=>new ParserAction($this->reduce, $table29),
+					17=>new ParserAction($this->reduce, $table29),
+					18=>new ParserAction($this->reduce, $table29),
+					19=>new ParserAction($this->reduce, $table29),
+					21=>new ParserAction($this->reduce, $table29),
+					22=>new ParserAction($this->reduce, $table29),
+					23=>new ParserAction($this->reduce, $table29),
+					24=>new ParserAction($this->reduce, $table29),
+					28=>new ParserAction($this->reduce, $table29)
 				);
 
-			$tableDefinition70 = array(
-				
-					28=>new ParserAction($this->shift, $table74)
-				);
-
-			$tableDefinition71 = array(
-				
-					28=>new ParserAction($this->shift, $table75)
-				);
-
-			$tableDefinition72 = array(
+			$tableDefinition59 = array(
 				
 					8=>new ParserAction($this->reduce, $table42),
 					10=>new ParserAction($this->reduce, $table42),
@@ -1447,30 +1227,12 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table42),
 					23=>new ParserAction($this->reduce, $table42),
 					24=>new ParserAction($this->reduce, $table42),
+					27=>new ParserAction($this->shift, $table66),
 					28=>new ParserAction($this->reduce, $table42),
 					38=>new ParserAction($this->reduce, $table42)
 				);
 
-			$tableDefinition73 = array(
-				
-					6=>new ParserAction($this->none, $table76),
-					7=>new ParserAction($this->none, $table69),
-					13=>new ParserAction($this->shift, $table10),
-					25=>new ParserAction($this->shift, $table8),
-					26=>new ParserAction($this->shift, $table9),
-					27=>new ParserAction($this->shift, $table11),
-					29=>new ParserAction($this->none, $table12),
-					30=>new ParserAction($this->shift, $table13),
-					31=>new ParserAction($this->shift, $table14),
-					32=>new ParserAction($this->shift, $table15),
-					33=>new ParserAction($this->shift, $table16),
-					34=>new ParserAction($this->shift, $table17),
-					35=>new ParserAction($this->shift, $table18),
-					36=>new ParserAction($this->shift, $table19),
-					37=>new ParserAction($this->shift, $table20)
-				);
-
-			$tableDefinition74 = array(
+			$tableDefinition60 = array(
 				
 					8=>new ParserAction($this->reduce, $table40),
 					10=>new ParserAction($this->reduce, $table40),
@@ -1486,11 +1248,12 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table40),
 					23=>new ParserAction($this->reduce, $table40),
 					24=>new ParserAction($this->reduce, $table40),
+					27=>new ParserAction($this->shift, $table67),
 					28=>new ParserAction($this->reduce, $table40),
 					38=>new ParserAction($this->reduce, $table40)
 				);
 
-			$tableDefinition75 = array(
+			$tableDefinition61 = array(
 				
 					8=>new ParserAction($this->reduce, $table38),
 					10=>new ParserAction($this->reduce, $table38),
@@ -1506,11 +1269,257 @@ class ExpressionEvaluatorBase
 					22=>new ParserAction($this->reduce, $table38),
 					23=>new ParserAction($this->reduce, $table38),
 					24=>new ParserAction($this->reduce, $table38),
+					27=>new ParserAction($this->shift, $table68),
 					28=>new ParserAction($this->reduce, $table38),
 					38=>new ParserAction($this->reduce, $table38)
 				);
 
+			$tableDefinition62 = array(
+				
+					8=>new ParserAction($this->reduce, $table18),
+					10=>new ParserAction($this->reduce, $table18),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->reduce, $table18),
+					18=>new ParserAction($this->reduce, $table18),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->reduce, $table18),
+					23=>new ParserAction($this->reduce, $table18),
+					24=>new ParserAction($this->reduce, $table18),
+					28=>new ParserAction($this->reduce, $table18)
+				);
+
+			$tableDefinition63 = array(
+				
+					8=>new ParserAction($this->reduce, $table19),
+					10=>new ParserAction($this->reduce, $table19),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->reduce, $table19),
+					18=>new ParserAction($this->reduce, $table19),
+					19=>new ParserAction($this->reduce, $table19),
+					21=>new ParserAction($this->reduce, $table19),
+					22=>new ParserAction($this->reduce, $table19),
+					23=>new ParserAction($this->reduce, $table19),
+					24=>new ParserAction($this->reduce, $table19),
+					28=>new ParserAction($this->reduce, $table19)
+				);
+
+			$tableDefinition64 = array(
+				
+					8=>new ParserAction($this->reduce, $table21),
+					10=>new ParserAction($this->reduce, $table21),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table21)
+				);
+
+			$tableDefinition65 = array(
+				
+					8=>new ParserAction($this->reduce, $table22),
+					10=>new ParserAction($this->reduce, $table22),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table22)
+				);
+
+			$tableDefinition66 = array(
+				
+					6=>new ParserAction($this->none, $table69),
+					7=>new ParserAction($this->none, $table70),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
+				);
+
+			$tableDefinition67 = array(
+				
+					6=>new ParserAction($this->none, $table71),
+					7=>new ParserAction($this->none, $table70),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
+				);
+
+			$tableDefinition68 = array(
+				
+					6=>new ParserAction($this->none, $table72),
+					7=>new ParserAction($this->none, $table70),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
+				);
+
+			$tableDefinition69 = array(
+				
+					28=>new ParserAction($this->shift, $table73)
+				);
+
+			$tableDefinition70 = array(
+				
+					8=>new ParserAction($this->shift, $table74),
+					12=>new ParserAction($this->shift, $table23),
+					13=>new ParserAction($this->shift, $table24),
+					14=>new ParserAction($this->shift, $table25),
+					15=>new ParserAction($this->shift, $table26),
+					16=>new ParserAction($this->shift, $table27),
+					17=>new ParserAction($this->shift, $table28),
+					18=>new ParserAction($this->shift, $table29),
+					19=>new ParserAction($this->shift, $table30),
+					21=>new ParserAction($this->shift, $table31),
+					22=>new ParserAction($this->shift, $table32),
+					23=>new ParserAction($this->shift, $table33),
+					24=>new ParserAction($this->shift, $table34),
+					28=>new ParserAction($this->reduce, $table5)
+				);
+
+			$tableDefinition71 = array(
+				
+					28=>new ParserAction($this->shift, $table75)
+				);
+
+			$tableDefinition72 = array(
+				
+					28=>new ParserAction($this->shift, $table76)
+				);
+
+			$tableDefinition73 = array(
+				
+					8=>new ParserAction($this->reduce, $table43),
+					10=>new ParserAction($this->reduce, $table43),
+					12=>new ParserAction($this->reduce, $table43),
+					13=>new ParserAction($this->reduce, $table43),
+					14=>new ParserAction($this->reduce, $table43),
+					15=>new ParserAction($this->reduce, $table43),
+					16=>new ParserAction($this->reduce, $table43),
+					17=>new ParserAction($this->reduce, $table43),
+					18=>new ParserAction($this->reduce, $table43),
+					19=>new ParserAction($this->reduce, $table43),
+					21=>new ParserAction($this->reduce, $table43),
+					22=>new ParserAction($this->reduce, $table43),
+					23=>new ParserAction($this->reduce, $table43),
+					24=>new ParserAction($this->reduce, $table43),
+					28=>new ParserAction($this->reduce, $table43),
+					38=>new ParserAction($this->reduce, $table43)
+				);
+
+			$tableDefinition74 = array(
+				
+					6=>new ParserAction($this->none, $table77),
+					7=>new ParserAction($this->none, $table70),
+					13=>new ParserAction($this->shift, $table11),
+					25=>new ParserAction($this->shift, $table9),
+					26=>new ParserAction($this->shift, $table10),
+					27=>new ParserAction($this->shift, $table12),
+					29=>new ParserAction($this->none, $table13),
+					30=>new ParserAction($this->shift, $table14),
+					31=>new ParserAction($this->shift, $table15),
+					32=>new ParserAction($this->shift, $table16),
+					33=>new ParserAction($this->shift, $table17),
+					34=>new ParserAction($this->shift, $table18),
+					35=>new ParserAction($this->shift, $table19),
+					36=>new ParserAction($this->shift, $table20),
+					37=>new ParserAction($this->shift, $table21)
+				);
+
+			$tableDefinition75 = array(
+				
+					8=>new ParserAction($this->reduce, $table41),
+					10=>new ParserAction($this->reduce, $table41),
+					12=>new ParserAction($this->reduce, $table41),
+					13=>new ParserAction($this->reduce, $table41),
+					14=>new ParserAction($this->reduce, $table41),
+					15=>new ParserAction($this->reduce, $table41),
+					16=>new ParserAction($this->reduce, $table41),
+					17=>new ParserAction($this->reduce, $table41),
+					18=>new ParserAction($this->reduce, $table41),
+					19=>new ParserAction($this->reduce, $table41),
+					21=>new ParserAction($this->reduce, $table41),
+					22=>new ParserAction($this->reduce, $table41),
+					23=>new ParserAction($this->reduce, $table41),
+					24=>new ParserAction($this->reduce, $table41),
+					28=>new ParserAction($this->reduce, $table41),
+					38=>new ParserAction($this->reduce, $table41)
+				);
+
 			$tableDefinition76 = array(
+				
+					8=>new ParserAction($this->reduce, $table39),
+					10=>new ParserAction($this->reduce, $table39),
+					12=>new ParserAction($this->reduce, $table39),
+					13=>new ParserAction($this->reduce, $table39),
+					14=>new ParserAction($this->reduce, $table39),
+					15=>new ParserAction($this->reduce, $table39),
+					16=>new ParserAction($this->reduce, $table39),
+					17=>new ParserAction($this->reduce, $table39),
+					18=>new ParserAction($this->reduce, $table39),
+					19=>new ParserAction($this->reduce, $table39),
+					21=>new ParserAction($this->reduce, $table39),
+					22=>new ParserAction($this->reduce, $table39),
+					23=>new ParserAction($this->reduce, $table39),
+					24=>new ParserAction($this->reduce, $table39),
+					28=>new ParserAction($this->reduce, $table39),
+					38=>new ParserAction($this->reduce, $table39)
+				);
+
+			$tableDefinition77 = array(
 				
 					28=>new ParserAction($this->reduce, $table6)
 				);
@@ -1592,6 +1601,7 @@ class ExpressionEvaluatorBase
 			$table74->setActions($tableDefinition74);
 			$table75->setActions($tableDefinition75);
 			$table76->setActions($tableDefinition76);
+			$table77->setActions($tableDefinition77);
 
 			$this->table = array(
 				
@@ -1671,14 +1681,15 @@ class ExpressionEvaluatorBase
 					73=>$table73,
 					74=>$table74,
 					75=>$table75,
-					76=>$table76
+					76=>$table76,
+					77=>$table77
 				);
 
 			$this->defaultActions = array(
 				
 					2=>new ParserAction($this->reduce, $table2),
 					6=>new ParserAction($this->reduce, $table4),
-					76=>new ParserAction($this->reduce, $table6)
+					77=>new ParserAction($this->reduce, $table6)
 				);
 
 			$this->productions = array(
@@ -1691,8 +1702,8 @@ class ExpressionEvaluatorBase
 					5=>new ParserProduction($symbol6,1),
 					6=>new ParserProduction($symbol6,3),
 					7=>new ParserProduction($symbol5,3),
-					8=>new ParserProduction($symbol5,1),
-					9=>new ParserProduction($symbol7,3),
+					8=>new ParserProduction($symbol5,2),
+					9=>new ParserProduction($symbol5,1),
 					10=>new ParserProduction($symbol7,3),
 					11=>new ParserProduction($symbol7,3),
 					12=>new ParserProduction($symbol7,3),
@@ -1700,19 +1711,19 @@ class ExpressionEvaluatorBase
 					14=>new ParserProduction($symbol7,3),
 					15=>new ParserProduction($symbol7,3),
 					16=>new ParserProduction($symbol7,3),
-					17=>new ParserProduction($symbol7,4),
+					17=>new ParserProduction($symbol7,3),
 					18=>new ParserProduction($symbol7,4),
-					19=>new ParserProduction($symbol7,3),
-					20=>new ParserProduction($symbol7,4),
+					19=>new ParserProduction($symbol7,4),
+					20=>new ParserProduction($symbol7,3),
 					21=>new ParserProduction($symbol7,4),
-					22=>new ParserProduction($symbol7,3),
+					22=>new ParserProduction($symbol7,4),
 					23=>new ParserProduction($symbol7,3),
 					24=>new ParserProduction($symbol7,3),
-					25=>new ParserProduction($symbol7,2),
+					25=>new ParserProduction($symbol7,3),
 					26=>new ParserProduction($symbol7,2),
 					27=>new ParserProduction($symbol7,2),
-					28=>new ParserProduction($symbol7,3),
-					29=>new ParserProduction($symbol7,1),
+					28=>new ParserProduction($symbol7,2),
+					29=>new ParserProduction($symbol7,3),
 					30=>new ParserProduction($symbol7,1),
 					31=>new ParserProduction($symbol7,1),
 					32=>new ParserProduction($symbol7,1),
@@ -1720,12 +1731,13 @@ class ExpressionEvaluatorBase
 					34=>new ParserProduction($symbol7,1),
 					35=>new ParserProduction($symbol7,1),
 					36=>new ParserProduction($symbol7,1),
-					37=>new ParserProduction($symbol29,3),
-					38=>new ParserProduction($symbol29,6),
-					39=>new ParserProduction($symbol29,3),
-					40=>new ParserProduction($symbol29,6),
-					41=>new ParserProduction($symbol29,3),
-					42=>new ParserProduction($symbol29,6)
+					37=>new ParserProduction($symbol7,1),
+					38=>new ParserProduction($symbol29,3),
+					39=>new ParserProduction($symbol29,6),
+					40=>new ParserProduction($symbol29,3),
+					41=>new ParserProduction($symbol29,6),
+					42=>new ParserProduction($symbol29,3),
+					43=>new ParserProduction($symbol29,6)
 				);
 
 
@@ -1796,7 +1808,7 @@ class ExpressionEvaluatorBase
 
 
 switch ($yystate) {
-case 1:
+case 1: case 8:
     return new ValueNode(''); 
         
 break;
@@ -1824,171 +1836,171 @@ case 6:
             $thisS = new ArgumentSequence($s[$o-2]->text, $s[$o]->text);
         
 break;
-case 7: case 28:
+case 7: case 29:
 
             $thisS = $s[$o-1]->text;
         
 break;
-case 8:
+case 9:
    
             $thisS = new ValueNode($s[$o]->text);
         
 break;
-case 9:
+case 10:
 
             $thisS = new GenericBinaryOp('+', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 10:
+case 11:
 
             $thisS = new GenericBinaryOp('-', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 11:
+case 12:
 
             $thisS = new GenericBinaryOp('*', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 12:
+case 13:
 
             $thisS =  new GenericBinaryOp('/', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 13:
+case 14:
 
             $thisS =  new GenericBinaryOp('%', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 14:
+case 15:
 
             $thisS = new GenericBinaryOp('==', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 15:
+case 16:
 
             $thisS = new GenericBinaryOp('<', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 16:
+case 17:
 
             $thisS = new GenericBinaryOp('>', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 17:
+case 18:
 
             $thisS = new GenericBinaryOp('<=', $s[$o-3]->text, $s[$o]->text);
         
 break;
-case 18:
+case 19:
 
             $thisS = new GenericBinaryOp('>=', $s[$o-3]->text, $s[$o]->text);
         
 break;
-case 19:
+case 20:
 
             $thisS = new GenericBinaryOp('in_array', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 20:
+case 21:
 
             $thisS = new GenericBinaryOp('&&', $s[$o-3]->text, $s[$o]->text);
         
 break;
-case 21:
+case 22:
 
             $thisS = new GenericBinaryOp('||', $s[$o-3]->text, $s[$o]->text);
         
 break;
-case 22:
+case 23:
 
             $thisS = new GenericBinaryOp('&', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 23:
+case 24:
 
             $thisS = new GenericBinaryOp('|', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 24:
+case 25:
 
             $thisS = new GenericBinaryOp('||', $s[$o-2]->text, $s[$o]->text);
         
 break;
-case 25:
+case 26:
 
             $thisS = new GenericUnaryOp('~', $s[$o]->text);
         
 break;
-case 26:
+case 27:
 
             $thisS = new GenericUnaryOp('!', $s[$o]->text);
         
 break;
-case 27:
+case 28:
 
             $thisS = new GenericUnaryOp('-', $s[$o]->text);
         
 break;
-case 29: case 30:
+case 30: case 31:
     $thisS = $s[$o]->text; 
-        
-break;
-case 31:
-
-            $thisS = new ValueNode(null);
         
 break;
 case 32:
 
-            $thisS = new ValueNode(1);
+            $thisS = new ValueNode(null);
         
 break;
 case 33:
 
-            $thisS = new ValueNode(0);
+            $thisS = new ValueNode(1);
         
 break;
 case 34:
 
-            $thisS = new ParameterNode(substr($s[$o]->text, 1));
+            $thisS = new ValueNode(0);
         
 break;
 case 35:
 
-            $thisS = new ValueNode($s[$o]->text);
+            $thisS = new ParameterNode(substr($s[$o]->text, 1));
         
 break;
 case 36:
 
-            $thisS = new ValueNode((int) ($s[$o]->text));
+            $thisS = new ValueNode($s[$o]->text);
         
 break;
 case 37:
 
-            $thisS = new FunctionOp($s[$o]->text, null, $s[$o-2]->text);
+            $thisS = new ValueNode((int) ($s[$o]->text));
         
 break;
 case 38:
 
-            $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, $s[$o-5]->text);
+            $thisS = new FunctionOp($s[$o]->text, null, $s[$o-2]->text);
         
 break;
 case 39:
 
-            $thisS = new FunctionOp($s[$o]->text, null, null,new ParameterNode(substr($s[$o-2]->text, 1)));
+            $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, $s[$o-5]->text);
         
 break;
 case 40:
 
-            $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, null,new ParameterNode(substr($s[$o-5]->text, 1)));
+            $thisS = new FunctionOp($s[$o]->text, null, null,new ParameterNode(substr($s[$o-2]->text, 1)));
         
 break;
 case 41:
 
-            $thisS = new FunctionOp($s[$o]->text, null, null,$s[$o-2]->text);
+            $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, null,new ParameterNode(substr($s[$o-5]->text, 1)));
         
 break;
 case 42:
+
+            $thisS = new FunctionOp($s[$o]->text, null, null,$s[$o-2]->text);
+        
+break;
+case 43:
 
             $thisS = new FunctionOp($s[$o-3]->text, $s[$o-1]->text, null,$s[$o-5]->text);
         

@@ -14,6 +14,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         },
         build: function(scope, part, options) {
             var valuePartDef = this;
+            $sbviews.setDefaultParamters(part);
             
             scope.placeholder = undefined;
             scope.placeholderValue = undefined;
@@ -24,7 +25,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 var optionsDivEl;
                 function buildOptions(optionsScope, watch) {
 
-                    var optionsDiv = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
+                    var optionsDiv = $('<sb-menu sb-menu-title="Content" sb-menu-icon="images/gear.svg"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
                     $compile(optionsDiv)(optionsScope);
 
                     watch('part.valueType');
@@ -52,8 +53,8 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                     }}});
                 }
                 bindToolbar();
+                element.css('padding-top', 18);
             }
-            element.css('padding-top', 18);
             return element;
         },
         createElement: function(scope, part, options) {

@@ -167,6 +167,10 @@ stmt
         {/*php
             $$ = $2.yytext;
         */}
+    | EXPR_START EXPR_END
+        {   //js
+            /*php return new ValueNode(''); */
+        }
     | TEXT
         {   //js
             /*php

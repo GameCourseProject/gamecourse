@@ -68,7 +68,33 @@ class ViewHandler {
         if (empty(Core::$systemDB->select("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter])))
             Core::$systemDB->insert("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter]);
     }
-    
+    public function updateParameters(&$viewPart){
+        $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
+            ["viewId"=>$viewPart["id"]],"type,value,id");
+        $paramesToDelete= array_combine(array_column($oldParameters, "type"),$oldParameters);
+        if (array_key_exists("parameters", $viewPart)){
+            foreach ($viewPart["parameters"] as $type => $param){
+                $viewParam=null;
+                if (array_key_exists($type, $paramesToDelete)) {
+                    $viewParam=$paramesToDelete[$type];
+                    unset($paramesToDelete[$type]);
+                }
+                $this->addViewParameter($type,$param,$viewPart["id"],$viewParam);
+            }
+        }       
+        if (array_key_exists("variables", $viewPart)){
+            $value = json_encode($viewPart["variables"]);
+            $viewParam=null;
+            if (array_key_exists("variables", $paramesToDelete)) {
+                $viewParam=$paramesToDelete["variables"];
+                unset($paramesToDelete["variables"]);
+            }
+            $this->addViewParameter("variables",$value,$viewPart["id"],$viewParam);
+        }  
+        foreach($paramesToDelete as $type => $param){
+            Core::$systemDB->delete("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$param["id"]]);
+        }
+    }
     //receives view and updates the DB with its info
     //propagates changes in the main view to all its children
 //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), change in aspectclass
@@ -76,10 +102,7 @@ class ViewHandler {
     //insert data into DB, should check previous data and update/delete stuff   
         if ($viewPart["partType"]!="aspect" ){            
             //insert/update views
-            if (array_key_exists("id", $viewPart) && !$ignoreIds){
-                //already in DB, may need update
-                //index is probably the only thing that can be updated
-                //aspect class  and roles can also be updated
+            if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
                 Core::$systemDB->update("view",["viewIndex"=>$viewPart["viewIndex"],
                     "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"]],
                         ["id"=>$viewPart["id"]]);  
@@ -100,33 +123,9 @@ class ViewHandler {
                         ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
             }     
             if (!$basicUpdate){//update parameters
-                $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
-                    ["viewId"=>$viewPart["id"]],"type,value,id");
-                $paramesToDelete= array_combine(array_column($oldParameters, "type"),$oldParameters);
-                if (array_key_exists("parameters", $viewPart)){
-                    foreach ($viewPart["parameters"] as $type => $param){
-                        $viewParam=null;
-                        if (array_key_exists($type, $paramesToDelete)) {
-                            $viewParam=$paramesToDelete[$type];
-                            unset($paramesToDelete[$type]);
-                        }
-                        $this->addViewParameter($type,$param,$viewPart["id"],$viewParam);
-                    }
-                }       
-                if (array_key_exists("variables", $viewPart)){
-                    $value = json_encode($viewPart["variables"]);
-                    $viewParam=null;
-                    if (array_key_exists("variables", $paramesToDelete)) {
-                        $viewParam=$paramesToDelete["variables"];
-                        unset($paramesToDelete["variables"]);
-                    }
-                    $this->addViewParameter("variables",$value,$viewPart["id"],$viewParam);
-                }  
-                foreach($paramesToDelete as $type => $param){
-                    Core::$systemDB->delete("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$param["id"]]);
-                }
+                $this->updateParameters($viewPart);
             }
-        }//else print_r($viewPart);
+        }
         if ($viewPart["partType"]=="table"){
             foreach($viewPart["headerRows"] as $headRow){
                 $rowPart=$headRow;
@@ -169,8 +168,7 @@ class ViewHandler {
                 }
             }
         }
-        //deal with header of block
-        if ($viewPart["partType"]=="block") {
+        if ($viewPart["partType"]=="block") {//deal with header of block
             $header = Core::$systemDB->select("view",["parent"=>$viewPart["id"], "partType"=>"header"],"id");
             if (array_key_exists("header", $viewPart)){//if there is a header
                 if(!$basicUpdate && empty($header)){ //insert (header is not in DB)
@@ -178,34 +176,23 @@ class ViewHandler {
                         "partType"=>"header","role"=>$viewPart["role"]]);
                     $headerId = Core::$systemDB->getLastId();
                     
-                    Core::$systemDB->insert("view",["parent"=>$headerId, 
-                        "partType"=>"image","role"=>$viewPart["role"],"viewIndex"=>0]);
-                    $imageId= Core::$systemDB->getLastId();
-                    if (array_key_exists("value", $viewPart["header"]["image"]["parameters"]))
-                        $this->addViewParameter("value",$viewPart["header"]["image"]["parameters"]["value"],$imageId);
+                    $image = ["role"=>$viewPart["role"],"parent"=>$headerId,
+                        "partType"=>"image","aspectClass"=>$viewPart["aspectClass"],
+                        "viewIndex"=>0,"parameters"=>$viewPart["header"]["image"]["parameters"]];
+                    $this->updateViewAndChildren($image,$basicUpdate,$ignoreIds);
                     
-                    Core::$systemDB->insert("view",["parent"=>$headerId, 
-                        "partType"=>"text","role"=>$viewPart["role"],"viewIndex"=>1]);
-                    $titleId= Core::$systemDB->getLastId();
-                    if (array_key_exists("value", $viewPart["header"]["title"]["parameters"]))
-                        $this->addViewParameter("value",$viewPart["header"]["title"]["parameters"]["value"],$titleId);
+                    $text = ["role"=>$viewPart["role"],"parent"=>$headerId,
+                        "partType"=>"text","aspectClass"=>$viewPart["aspectClass"],
+                        "viewIndex"=>1,"parameters"=>$viewPart["header"]["title"]["parameters"]];
+                    $this->updateViewAndChildren($text,$basicUpdate,$ignoreIds);
                     
-                    if($viewPart["aspectClass"]!==null){
-                        Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$headerId]);
-                        Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$imageId]);
-                        Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$titleId]);
-                    }
                 }else if (!empty($header)){//update (header is in DB)
                     //in most cases just updating parameters
                     $headerParts = Core::$systemDB->selectMultiple("view",["parent"=>$header]);
                     foreach($headerParts as $part){
                         if ($basicUpdate) {
-                            Core::$systemDB->update("view", 
-                                ["role" => $viewPart["role"]], 
-                                ["id" => $part["id"]]);
+                            Core::$systemDB->update("view", ["id" => $part["id"]],
+                                ["role" => $viewPart["role"]]);
                             Core::$systemDB->insert("aspect_class",
                                 ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$part["id"]]);
                         } else {
@@ -213,18 +200,17 @@ class ViewHandler {
                                 $type = "title";
                             else
                                 $type = "image";
-
-                            $this->addViewParameter("value", $viewPart["header"][$type]["info"], $part["id"]);
+                            $part["parameters"]=$viewPart["header"][$type]["info"];
+                            $this->updateParameters($part);
                         }
                     }
                 }
             }
-            else if (!empty($header) && !$basicUpdate){
+            else if (!empty($header) && !$basicUpdate){//delete headeer in db
                 Core::$systemDB->delete("view",["parent"=>$viewPart["id"], "partType"=>"header"]);
             }
-            if ($basicUpdate && !empty($header)) {
-                Core::$systemDB->update("view",["role" => $viewPart["role"]], 
-                                                ["id" => $header]);
+            if ($basicUpdate && !empty($header)) {//ToDo
+                Core::$systemDB->update("view",["role" => $viewPart["role"]],["id" => $header]);
                 Core::$systemDB->insert("aspect_class",
                     ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$header]);
             }
@@ -546,21 +532,12 @@ class ViewHandler {
         $actualVisitor = $visitor;
         $params = $viewParams;
         if (array_key_exists('variables', $part)) {
+            
             foreach ($part['variables'] as $k => &$v) {
-                $this->getNodeValue($v['value'], $visitor, /*function($continuation) use ($k, &$params, &$v) {
-                    if (is_array($continuation) && sizeof($continuation) == 1 && array_key_exists(0, $continuation))
-                        $continuation = $continuation[0];
-
-                    if ($continuation instanceof ValueNode)
-                        $continuation = $continuation->getValue();
-
-                    $params[$k] = $continuation;
-              },*/ function($value) use ($k, &$params, &$v) {
-                    $params[$k] = $value;
-                });
+                $params[$k] = $v['value']->accept($actualVisitor)->getValue();
+                if ($params != $viewParams)
+                    $actualVisitor = new EvaluateVisitor($params, $this);
             }
-            if ($params != $viewParams)
-                $actualVisitor = new EvaluateVisitor($params, $this);
         }
         //adding all parameters to $part (so they can be used in js)
         if (array_key_exists("events", $part) || array_key_exists("directive", $part)){
@@ -568,46 +545,15 @@ class ViewHandler {
                 $part['variables'][$k]["value"]=$val;
             }
         }
-        
-
         if ($func != null && is_callable($func))
             $func($params, $actualVisitor);
-    }
-//fixme //gets value of node (funtion, colection or object)
-    private function getNodeValue(&$node, &$visitor, $val) {
-        /*if (is_a($node, 'Modules\Views\Expression\DatabasePath'))
-            $cont($node->accept($visitor, null, true));
-        else if (is_a($node, 'Modules\Views\Expression\DatabasePathFromParameter'))
-            $cont($node->accept($visitor, true));*/
-        //print_R($node);
-        $lib=null;
-        if (is_a($node,'Modules\Views\Expression\FunctionOp')){
-            $lib=$node->getLib();
-        }
-        $visitedNode = $node->accept($visitor)->getValue();
-        
-        //print_r($visitedNode);
-        if (is_array($visitedNode) && $lib!==null){
-            /*
-            if ($visitedNode["type"]=="object")
-                $visitedNode["value"]["libraryOfVariable"]=$lib;
-            else {//type == collection
-                foreach ($visitedNode["value"] as &$element){
-                    if (!is_array($element))
-                        break;
-                    $element["libraryOfVariable"]=$lib;
-                }
-            }*/
-        }
-        //print_R($visitedNode);
-        $val($visitedNode);
     }
 
     public function processLoop(&$container, $viewParams, $visitor, $func) {
         $containerArr = array();
         foreach($container as &$child) {
             if (!array_key_exists('loopData', $child["parameters"])) {
-                if ($this->processIf($child, $visitor)) {
+                if ($this->processVisibilityCondition($child, $visitor)) {
                     $func($child, $viewParams, $visitor);
                     $containerArr[] = $child;
                 }
@@ -615,10 +561,8 @@ class ViewHandler {
                 $repeatKey = "item";
                 $repeatParams = array();
                 $keys = null;
-                $this->getNodeValue($child['parameters']['loopData'], $visitor, 
-                   /*function($continuation) use(&$repeatParams, &$keys, $repeatKey) {
-                    $repeatParams= $continuation;
-              },*/function($value) use(&$repeatParams, &$keys, $repeatKey) {
+                $value = $child['parameters']['loopData']->accept($visitor)->getValue();
+                
                     if (is_null($value))
                         $value = [];
                     if (!is_array($value)) {
@@ -638,20 +582,12 @@ class ViewHandler {
                         $value= [$value];
                      
                     $repeatParams = $value;
-                });
+                
                 $i=0;
                 foreach ($repeatParams as &$params){
                     $params = [$repeatKey => $params];
                     $i++;
                 }
-                /*
-                if (array_key_exists('filter', $child['repeat'])) {
-                    $filter = $child['repeat']['filter'];
-                    $repeatParams = array_filter($repeatParams, function($repeatParams) use($filter, $viewParams) {
-                        $params = array_merge($viewParams, $repeatParams);
-                        return $filter->accept(new EvaluateVisitor($params, $this))->getValue();
-                    });
-                }*/
                 
                 //unset($child['repeat']);
                 $repeatParams= array_values($repeatParams);
@@ -666,7 +602,7 @@ class ViewHandler {
                     $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
                     $newvisitor = new EvaluateVisitor($paramsforEvaluator, $this);
                     
-                    if ($this->processIf($dupChild, $newvisitor)) {
+                    if ($this->processVisibilityCondition($dupChild, $newvisitor)) {
                         $func($dupChild, $paramsforEvaluator, $newvisitor);
                         $containerArr[] = $dupChild;
                     }
@@ -676,22 +612,28 @@ class ViewHandler {
         $container = $containerArr;
     }
 
-    public function processIf(&$child, $visitor) {
-        if (!array_key_exists('if', $child['parameters']))
+    public function processVisibilityCondition(&$child, $visitor) {
+        if (!array_key_exists('visibilityCondition', $child['parameters']))
             return true;
         else {
             $ret = false;
-            if ($child['parameters']['if']->accept($visitor)->getValue() == true)
+            if ($child['parameters']['visibilityCondition']->accept($visitor)->getValue() == true)
                 $ret = true;
-            unset($child['parameters']['if']);
+            unset($child['parameters']['visibilityCondition']);
             return $ret;
         }
     }
 
     public function processPart(&$part, $viewParams, $visitor) {
         $this->processVariables($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
-            if (array_key_exists('style', $part["parameters"]))
-                $part['style'] = $part["parameters"]['style']->accept($visitor)->getValue();
+            $part["style"]="";
+                      
+            if (array_key_exists("visibilityType", $part["parameters"]) && $part["parameters"]["visibilityType"]=="invisible")
+                $part['style'] .= " display: none; ";
+            if (array_key_exists('style', $part["parameters"])) {
+                $part['style'] .= $part["parameters"]['style']->accept($visitor)->getValue();
+                
+            }
             if (array_key_exists('class', $part["parameters"]))
                 $part['class'] = $part["parameters"]['class']->accept($visitor)->getValue();
 
@@ -713,30 +655,30 @@ class ViewHandler {
     public function parseVariables(&$part) {
         if (array_key_exists('variables', $part)) {
             foreach ($part['variables'] as $k => &$v){
-                
-                $this->parseSelf($v['value']);
-  
+                $this->parseSelf($v['value']);  
             }  
         }
     }
 
     public function parseLoop(&$part) {
-        if (array_key_exists('loopData', $part["parameters"])) {
-            $this->parseSelf($part['parameters']['loopData']);
-
-            //ToDo
-            /*if (array_key_exists('filter', $part['repeat']))
-                $this->parseSelf($part['repeat']['filter']);
-
-            if (array_key_exists('sort', $part['repeat']))
-                $this->parseSelf($part['repeat']['sort']['value']);*/
-            
+        if (array_key_exists("loopData", $part['parameters'])){
+            if ($part['parameters']['loopData']=="{}" || $part['parameters']['loopData']=="")
+                unset($part['parameters']['loopData']);
+            else{        
+                $this->parseSelf($part['parameters']['loopData']);           
+            }
         }
     }
 
-    public function parseIf(&$part) {
-        if (array_key_exists('if', $part["parameters"]))
-            $this->parseSelf($part["parameters"]['if']);
+    public function parseVisibilityCondition(&$part) {
+        //print_r($part);
+        if (($part["parameters"]["visibilityType"] == "visible" && array_key_exists("loopData", $part["parameters"]))
+                    || $part['parameters']['visibilityCondition']=="{}" || $part['parameters']['visibilityCondition']==""){        
+            unset($part["parameters"]["visibilityCondition"]);          
+        }
+        else{        
+            $this->parseSelf($part['parameters']['visibilityCondition']);           
+        }
     }
 
     public function parsePart(&$part) {
@@ -748,7 +690,7 @@ class ViewHandler {
             $this->parseSelf($part["parameters"]['class']);
 
         $this->parseLoop($part);
-        $this->parseIf($part);
+        $this->parseVisibilityCondition($part);
         
         $this->callPartParse($part['partType'], $part);
     }

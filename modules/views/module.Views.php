@@ -61,7 +61,7 @@ class Views extends Module {
                 $this->viewHandler->parsePart($cell['value']);
 
             $this->viewHandler->parseLoop($row);
-            $this->viewHandler->parseIf($row);
+            $this->viewHandler->parseVisibilityCondition($row);
         }
     }
 

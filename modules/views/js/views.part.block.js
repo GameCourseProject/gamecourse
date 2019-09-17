@@ -48,17 +48,12 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     deleteIds(newPart.values[c].value);
                 }
             }
-            if (Array.isArray(part.parameters)){
-                //when a block is saved with empty parameters it becomes an array instead of object
-                //this changes them back (so it doesnt cause problems)
-                part.parameters={};
-            }
-                
+            $sbviews.setDefaultParamters(part);
             var block = $(document.createElement('div')).addClass('block');
-            if (part.header) {
+            if (part.header) {  
                 var blockHeader = $(document.createElement('div')).addClass('header');
                 if (part.header.anchor && !options.edit)
-                    blockHeader.append('<a name="' + part.header.anchor + '"></a>')
+                    blockHeader.append('<a name="' + part.header.anchor + '"></a>');
                 blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {partType: 'image'})));
                 blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {partType: 'text'})).addClass('title'));
                 block.append(blockHeader);
@@ -209,7 +204,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         } else {
                             blockHeader.each(function () {
                                 $sbviews.destroy($(this));
-                            })
+                            });
                             blockHeader.remove();
                             $sbviews.notifyChanged(part, options);
                         }
@@ -234,7 +229,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     delete optionsScope.part.header;
                             };
 
-                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"></sb-menu>');
+                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
 
                             var header = $('<div class="sb-checkbox">');
                             header.append('<input id="block-header" type="checkbox" ng-checked="part.header != undefined" ng-click="toggleHeader()">');
@@ -358,8 +353,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         }
                     }
                 });
+                block.css('padding-top', 10);
             }
-            block.css('padding-top', 10);
             return block;
         },
         destroy: function (element) {

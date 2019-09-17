@@ -310,6 +310,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     delete obj[k];
                 };
 
+                optionsScope.toggleVisCondition = function(){
+                    var sbExp = $(($(document.getElementById('visCondition'))).children().get(1));
+                    
+                    if (optionsScope.part.parameters.visibilityType==="visible" || optionsScope.part.parameters.visibilityType==="invisible"){
+                        //disable condition input if visibility is visible or invisible
+                        sbExp.prop('disabled', true);
+                    }
+                    else{//enable condition input if visibility is by condition
+                        sbExp.prop('disabled', false);
+                    }
+                };
+                
                 var options = toolbarOptions.overlayOptions;
                 optionsScope.options = options;
 
@@ -331,7 +343,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         }, true);
                     }
                     $sbviews.openOverlay(function(el, execClose) {
-
                         optionsScope.closeOverlay = function() {
                             execClose();
                         };
@@ -346,7 +357,11 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         watch('part.if');
                         watch('part.events');
                         watch('part.data');
-
+                        
+                        el.on('mouseenter', function() {
+                            //this ensures that when visibility is not conditional, the field will be disabled
+                            optionsScope.toggleVisCondition();
+                        });
                         // Events
                         var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
                         var missingEvents = [];
@@ -388,13 +403,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             if (options.callbackFunc != undefined)
                                 options.callbackFunc(container.next(), execClose, optionsScope, watch);
                         }, 50);
+                        
                     }, function(cancel) {
                         console.log("close settings",optionsScope.part);
-                        if (cancel != undefined && optionsScope.part.parameters.loopData != undefined && optionsScope.part.parameters.loopData == '') {
-                            cancel();
-                            alert('Repeat Elements expression cannot be empty. Be sure it is an Array or Continuation.');
-                            return;
-                        }
+         
 
                         if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
                             $timeout(function() {
@@ -411,7 +423,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         }
                     });
                 });
-
             }));
         }
         
@@ -581,7 +592,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         element.on('mouseenter', function() {
             if (myToolbar)
                 return;
-
+                                   
             var trueMargin = element.data('true-margin');
             if (trueMargin == undefined) {
                 trueMargin = element.innerHeight() - element.height();
@@ -592,8 +603,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 layoutEditor: false,
                 overlayOptions: {
                     allowClass: true,
-                    allowDirective: true,
                     allowStyle: true
+                    //allowDirective: true
                 },
                 tools: {
                     noSettings: false,
@@ -604,17 +615,23 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 },
                 view: partOptions.view
             };
-
-            if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view')) { // children of ui-block
-                defaultOptions.overlayOptions.allowRepeat = true;
+            
+            if (element.parent().hasClass("header")){
+                defaultOptions.overlayOptions.allowEvents = true;
+                defaultOptions.overlayOptions.allowStyle = true;
+                defaultOptions.overlayOptions.allowClass = true;
+            }
+            else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view')) { // children of ui-block
+                defaultOptions.overlayOptions.allowDataLoop = true;
                 defaultOptions.overlayOptions.allowIf = true;
                 defaultOptions.overlayOptions.allowEvents = true;
                 defaultOptions.overlayOptions.allowVariables = true;
+                defaultOptions.overlayOptions.allowStyle = true;
+                defaultOptions.overlayOptions.allowClass = true;
             }
             if (element.hasClass('view')) {
                 toolOptions.noSettings = true;
             }
-            
             toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
             toolbarOptions.editData = editData;
 
@@ -630,7 +647,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 element.addClass('highlight');
             
             element.append(myToolbar);
-           // console.log("mouseover",part);
+            //console.log("mouseenter",part);
         });
 
         element.on('mouseleave', function(e) {
@@ -718,5 +735,22 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         for (var i = 0; i < oldKeys.length; ++i) {
             delete original[oldKeys[i]];
         }
-    }
+    };
+    this.setDefaultParamters = function(part) {
+        //sets some fields contents to '{}' and ensures paramters is an object
+        if (Array.isArray(part.parameters)){
+            //when a block is saved with empty parameters it becomes an array instead of object
+            //this changes them back to object(to prevent problems where params wheren't being saved)
+            part.parameters={};
+        }
+        if (part.parameters!==undefined ){
+            if (part.parameters.loopData===undefined)
+                part.parameters.loopData="{}";
+            if (part.parameters.visibilityCondition===undefined)
+                part.parameters.visibilityCondition="{}";
+            if (part.parameters.visibilityType==undefined)
+                part.parameters.visibilityType="conditional";
+        }
+    };
+    
 });

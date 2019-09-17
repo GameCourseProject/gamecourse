@@ -6,8 +6,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 partType: 'table',
                 columns: 1,//[{}],//[{sortMode: 'def'}],
                 headerRows: [],
-                rows: [{values: [], parameters:{} }],
-                parameters: {}
+                rows: [{values: [], parameters:{loopData: "{}",visibilityCondition: "{}"} }],
+                parameters: {loopData: "{}",visibilityCondition: "{}"}
             };
             part.rows[0].values.push({value: $sbviews.defaultPart('text')});
             return part;
@@ -28,11 +28,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             }
         },
         build: function (scope, part, options) {
-            if (Array.isArray(part.parameters)){
-                //when a table is saved with empty parameters it becomes an array instead of object
-                //this changes them back (so it doesnt cause problems)
-                part.parameters={};
-            }
+            $sbviews.setDefaultParamters(part);
             var tableDiv = $(document.createElement('div')).addClass('table');
             var table = $(document.createElement('table'));
 
@@ -83,7 +79,9 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     },
                     overlayOptions: {
                         allowEvents: true,
-                        allowVariables: true
+                        allowVariables: true,
+                        allowStyle: true,
+                        allowClass: true
                     }
                 });
             }
@@ -91,6 +89,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             var thead = $(document.createElement('thead'));
             for (var ridx in  part.headerRows) {
                 var row = part.headerRows[ridx];
+                $sbviews.setDefaultParamters(part.headerRows[ridx]);
                 var rowEl = $(document.createElement('tr'));
                 $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
 
@@ -122,6 +121,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             var tbody = $(document.createElement('tbody'));
             for (var ridx in  part.rows) {
                 var row = part.rows[ridx];
+                $sbviews.setDefaultParamters(part.rows[ridx]);
                 var rowEl = $(document.createElement('tr'));
                 $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
 
@@ -277,7 +277,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                 function insertRow(container, idx, header) {
                     var rowIdx = idx - (header ? 1 : 0);
-                    var row = {values:[], parameters: {} };
+                    var row = {values:[], parameters: {loopData: "{}",visibilityCondition: "{}"} };
                     var newRowEl = $(document.createElement('tr'));
                     $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
                     for (var cid=0;cid<part.columns;cid++) {
@@ -413,7 +413,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         overlayOptions: {
                             allowStyle: true,
                             allowClass: true,
-                            allowRepeat: true,
+                            allowDataLoop: true,
                             allowEvents: true,
                             allowVariables: true,
                             allowIf: true
@@ -498,7 +498,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     } else if (hasAddColumnRow) {
                         addColumnRowSearch.remove();
                     }
-                }
+                };
 
                 checkEmpty(false);
 
@@ -535,7 +535,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     },
                     overlayOptions: {
                         callbackFunc: function(el, execClose, optionsScope, watch) {
-                            var partSpecificMenu = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"></sb-menu>');
+                            var partSpecificMenu = $('<sb-menu sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
                             var filterBox = $('<sb-checkbox sb-checkbox="part.filterBox" sb-checkbox-label="Enable Filter" sb-checkbox-default="{value: \'\', mode: \'hide\'}" sb-checkbox-info="Allows the viewer to filter the items in the table." sb-checkbox-link="./docs/#PartTableFilter"></sb-checkbox>');
                             filterBox.append($('<sb-input sb-input="part.filterBox.value" sb-input-label="Filter"></sb-input>'))
                             filterBox.append($('<div class="sb-component"><label for="mode-select">Mode</label><select id="mode-select" ng-model="part.filterBox.mode"><option value="hide">Hide</option><option value="fade">Fade</option></select></div>'));
@@ -548,8 +548,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         }
                     }
                 });
+                tableDiv.css('padding-top', 18);
             }
-            tableDiv.css('padding-top', 18);
             return tableDiv;
         },
         destroy: function (element) {
