@@ -369,7 +369,6 @@ class Views extends Module {
                         ["u.id"=>$user["value"]["id"],"r.name"=>$role],"c.*");
             }
             return $this->createNode($courses,"courses","collection",$user);
-            //ToDo courses functions
         });
         
         //functions of course library
@@ -656,27 +655,16 @@ class Views extends Module {
         });
         //creates a new aspect for the page/template
         API::registerFunction('views', 'createAspectView', function() {
-            API::requireCourseAdminPermission();
-            //ToDo make it work for templates
-            API::requireValues('view', 'course');
-
-            $pages = $this->viewHandler->getPages();
-            $pageId = API::getValue('view');
-            if (!array_key_exists($pageId, $pages))
-                API::error('Unknown view ' . $pageId);
-            
-            $courseId=API::getValue('course');
-            $course = Course::getCourse($courseId);
-            $pageSettings = $pages[$pageId];
-            
-            $type = $pageSettings['roleType'];
+            $data=$this->getViewSettings();
+            $viewSettings = $data["viewSettings"];
+            $type = $viewSettings['roleType'];
 
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
                 $info = API::getValue('info');
                 
-                $finalParents = $this->findParents($course, $info['roleOne']);
-                $parentView = $this->findView($pageSettings["viewId"],$type, array_merge($finalParents, array($info['roleOne'])));
+                $finalParents = $this->findParents($data["course"], $info['roleOne']);
+                $parentView = $this->findView($viewSettings["viewId"],$type, array_merge($finalParents, array($info['roleOne'])));
                 
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
                     $role=$info['roleOne'];
@@ -729,18 +717,10 @@ class Views extends Module {
         });
         //Delete an aspect view of a page or template
         API::registerFunction('views', 'deleteAspectView', function() {
-            API::requireCourseAdminPermission();
-            API::requireValues('view', 'course');
-            //ToDo check if works for templates
-            $pages = $this->viewHandler->getPages();
-            $page = API::getValue('view');
-            if (!array_key_exists($page, $pages))
-                API::error('Unknown view ' . $page);
+            $data=$this->getViewSettings();
+            $viewSettings = $data["viewSettings"];
 
-            $pageSettings = $pages[$page];
-            $courseId = API::getValue('course');
-
-            $type = $pageSettings['roleType'];
+            $type = $viewSettings['roleType'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
                 
                 API::requireValues('info');
@@ -749,7 +729,7 @@ class Views extends Module {
                 if (!array_key_exists('roleOne', $info))
                     API::error('Missing roleOne in info');
                 
-                $aspects = $this->viewHandler->getAspects($pageSettings["viewId"]);
+                $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
                 
                 if ($type == ViewHandler::VT_ROLE_INTERACTION && !array_key_exists('roleTwo', $info)) {
                     $id= Core::$systemDB->select("aspect_class left join view",
@@ -848,8 +828,15 @@ class Views extends Module {
             //gets view of specified role or its closest parent role
             $view = $this->findView($anAspect["id"],$roleType, $possibleRoles);
             
-            //print_r($view);
-            API::response(array('template' => $view["children"][0] ));
+            //the template needs to be contained in 1 view part, se if there are multiple we put everything in a block
+            if (sizeOf($view["children"])>1){
+                $block = $view;
+                $block["partType"]="block";
+                $block["parameters"]=[];
+                unset($block["id"]);
+            }else
+                $block = $view["children"][0];
+            API::response(array('template' => $block));
         });
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
@@ -918,8 +905,6 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             $data = $this->getViewSettings();
             $viewSettings=$data["viewSettings"];
-            $course=$data["course"];
-            $courseId=$data["courseId"];
             $viewId=$data["viewId"];//id of page or template
             
             $viewType = $viewSettings['roleType'];
@@ -940,14 +925,14 @@ class Views extends Module {
                     API::error('Missing roleOne and/or roleTwo in info');
 
                 $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
-                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
+                $parentParts = $this->findParentParts($data["course"], $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
                 $view = $this->viewHandler->getViewWithParts($pageId, "");  
             }
             
             //$view = ViewEditHandler::putTogetherView($view, $parentParts);
-            $fields = \SmartBoards\DataSchema::getFields(array('course' => $courseId));
+            $fields = \SmartBoards\DataSchema::getFields(array('course' => $data["courseId"]));
 
             $templates= $this->getTemplates();
             API::response(array('view' => $view, 'fields' => $fields, 'templates' =>$templates ));
@@ -958,10 +943,9 @@ class Views extends Module {
             $data=$this->getViewSettings();
             $courseId=$data["courseId"];
             $course=$data["course"];
-            $viewSettings=$data["viewSettings"];
             $viewContent = API::getValue('content');
             
-            $viewType = (int)$viewSettings['roleType'];
+            $viewType = (int)$data["viewSettings"]['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -1010,12 +994,23 @@ class Views extends Module {
                     $testDone = true;
                 }
             } catch (\Exception $e) {
-                API::error('Error saving view: ' . $e->getMessage());
+                $msg =$e->getMessage();
+                if ($data["pageOrTemp"]=="page" || strpos($msg,'Unknown variable')===null)
+                    API::error('Error saving view: ' . $e->getMessage());
+                else{//template with variable error, probably because it belong to an unknow context, save anyway
+                    $msgArr = explode(": ",$msg);
+                    $varName = end($msgArr);
+                    $warning=true;
+                    $warningMsg="Warning: Template was saved but not tested because of the unknow variable: ".$varName;
+                }
             }
             
             $this->viewHandler->updateViewAndChildren($viewContent);
-            if (!$testDone)
+            if (!$testDone) {
+                if ($warning)
+                    API::response($warningMsg);
                 API::response('Saved, but skipping test (no users in role to test or special role)');
+            }
             return;
         });
 
@@ -1024,10 +1019,9 @@ class Views extends Module {
             $data=$this->getViewSettings();
             $courseId=$data["courseId"];
             $course=$data["course"];
-            $viewSettings=$data["viewSettings"];
             $viewContent = API::getValue('content');
             
-            $viewType = $viewSettings['roleType'];
+            $viewType = $data["viewSettings"]['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -1172,7 +1166,7 @@ class Views extends Module {
         //}
         //$views = $views->getValue();
         $aspects = $this->getViewHandler()->getAspects($anAspectId); 
-        //$views = $this->getViewHandler()->getViewRoles($viewId);
+        
         $viewRoles = array_column($aspects,'role');
         $viewsFound = array();
         if ($type== ViewHandler::VT_ROLE_INTERACTION){
@@ -1193,7 +1187,7 @@ class Views extends Module {
             }
             return null;
         }
-        //return $viewsFound;
+        return $viewsFound;
     }
 
     public function &getViewHandler() {
@@ -1257,12 +1251,13 @@ class Views extends Module {
     function getViewSettings(){
         API::requireValues('view','pageOrTemp','course');
         $viewId = API::getValue('view');
-        if (API::getValue('pageOrTemp')=="page"){
+        $pgOrTemp=API::getValue('pageOrTemp');
+        if ($pgOrTemp=="page"){
             $views = $this->viewHandler->getPages();
             if (!array_key_exists($viewId, $views))
                 API::error('Unknown page ' . $viewId);
 
-        }else {
+        }else {//template
             $views = $this->getTemplates();
             $tempIds = array_column($views, "id");
             if (!in_array($viewId, $tempIds))
@@ -1272,7 +1267,8 @@ class Views extends Module {
         $viewSettings = $views[$viewId];
         $courseId=API::getValue('course');
         $course = Course::getCourse($courseId);
-        return ["courseId"=>$courseId,"course"=>$course,"viewSettings"=>$viewSettings,"viewId"=>$viewId];
+        return ["courseId"=>$courseId,"course"=>$course,"viewId"=>$viewId,
+            "pageOrTemp"=>$pgOrTemp,"viewSettings"=>$viewSettings];
     }
 }
 

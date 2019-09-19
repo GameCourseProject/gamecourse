@@ -715,7 +715,6 @@ class ViewHandler {
     }
 
     public function parsePart(&$part) {
-        //parse ["data"] or ["variables"]
         $this->parseVariables($part);
         if (array_key_exists('style', $part["parameters"]))
             $this->parseSelf($part["parameters"]['style']);
