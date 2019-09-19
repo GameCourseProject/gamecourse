@@ -2,13 +2,11 @@ angular.module('module.overview', []);
 
 angular.module('module.overview').controller('OverviewController', function ($element, $scope, $sbviews) {
     changeTitle('Overview', 1);
-
-    $sbviews.request('overview', {course: $scope.course}, function(view, err) {
+    $sbviews.request('Overview', {course: $scope.course, needPermission:true}, function(view, err) {
         if (err) {
             console.log(err);
             return;
         }
-
         $element.append(view.element);
     });
 });

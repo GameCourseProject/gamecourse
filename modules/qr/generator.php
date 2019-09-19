@@ -41,7 +41,6 @@ if (isset($_REQUEST["course"])){
     }
 }
 
-
 $tinyurl="";
 if(isset($_REQUEST["quantos"]) && isset($_REQUEST["course"]) ){
 

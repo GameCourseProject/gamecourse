@@ -11,12 +11,11 @@ angular.module('module.leaderboard', [], function ($stateProvider) {
 
 angular.module('module.leaderboard').controller('Leaderboard', function ($rootScope, $element, $scope, $sbviews, $compile, $state) {
     changeTitle('Leaderboard', 1);
-    $sbviews.request('Leaderboard View', {course: $scope.course}, function(view, err) {
+    $sbviews.request('Leaderboard', {course: $scope.course}, function(view, err) {
         if (err) {
             console.log(err);
             return;
         }
-
         $element.append(view.element);
     });
 });

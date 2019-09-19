@@ -38,7 +38,7 @@ API::registerFunction('core', 'getCoursesList', function() {
         $courses=[];
         foreach($coursesId as $cid){
             $course = Core::getCourse($cid);
-            if ($course["active"]){
+            if ($course["isActive"]){
                 $courses[]=$course;
             }
         }
@@ -51,14 +51,37 @@ API::registerFunction('core', 'getCoursesList', function() {
 API::registerFunction('core', 'getCourseInfo', function() {
     API::requireCoursePermission();
     API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    
+    //adding other pages to navigation
+    $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
+    $OldNavPages = Core::getNavigation();
+    $navNames= array_column($OldNavPages,"text");
+    
+    foreach ($pages as $pageId => $page){
+        //pages added by modules already have navigation, the otheres need to be added
+        if(!in_array($page["name"], $navNames)){
+            $simpleName=str_replace(' ', '', $page["name"]);
+            Core::addNavigation('images/leaderboard.svg', $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+        }
+    }
+   
     $user = Core::getLoggedUser();
     $courseUser = $course->getLoggedUser();
-    if ($user->isAdmin() || $courseUser->hasRole('Teacher'))
+    $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
+    
+    if ($isAdmin)
         Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
     
+    $navPages = Core::getNavigation();
+    foreach ($navPages as $nav){
+        if ($nav["restrictAcess"]===true && !$isAdmin){
+            unset($navPages[array_search($nav, $navPages)]);
+        }
+    }
     API::response(array(
-        'navigation' => Core::getNavigation(),
+        'navigation' => $navPages,
         'landingPage' => $courseUser->getLandingPage(),
         'courseName' => $course->getName(),
         'resources' => $course->getModulesResources()

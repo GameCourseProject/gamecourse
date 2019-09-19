@@ -16,7 +16,8 @@ class ViewHandler {
     const VT_ROLE_SINGLE = 2;
     const VT_ROLE_INTERACTION = 3;
     private $viewsModule;
-    private $registeredPages = array();
+    //private $registeredPages = array(); //this was used when all the pages where created by templates
+                            //it could still be usefull if we wanted to know what pages where create by templates
     
     private $registeredFunctions = array();
     private $registeredLibFunctions = array();
@@ -39,9 +40,9 @@ class ViewHandler {
         $this->viewsModule = $viewsModule;
     }
 
-    public function getRegisteredPages() {
-        return $this->registeredPages;
-    }
+    //public function getRegisteredPages() {
+    //    return $this->registeredPages;
+    //}
     
     //receives parameter and viewid, and adds what is necessary to DB
     public function addViewParameter($type,$value,$viewId,$parmOfView=null){   
@@ -175,7 +176,9 @@ class ViewHandler {
                     Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
                         "partType"=>"header","role"=>$viewPart["role"]]);
                     $headerId = Core::$systemDB->getLastId();
-                    
+                    if($viewPart["aspectClass"]!==null)
+                        Core::$systemDB->insert("aspect_class",["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$headerId]);
+                        
                     $image = ["role"=>$viewPart["role"],"parent"=>$headerId,
                         "partType"=>"image","aspectClass"=>$viewPart["aspectClass"],
                         "viewIndex"=>0,"parameters"=>$viewPart["header"]["image"]["parameters"]];
@@ -191,8 +194,8 @@ class ViewHandler {
                     $headerParts = Core::$systemDB->selectMultiple("view",["parent"=>$header]);
                     foreach($headerParts as $part){
                         if ($basicUpdate) {
-                            Core::$systemDB->update("view", ["id" => $part["id"]],
-                                ["role" => $viewPart["role"]]);
+                            Core::$systemDB->update("view",["role" => $viewPart["role"]], 
+                                    ["id" => $part["id"]]);
                             Core::$systemDB->insert("aspect_class",
                                 ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$part["id"]]);
                         } else {
@@ -404,29 +407,59 @@ class ViewHandler {
     public function getViewRoles($viewId,$role=null){
         if ($role === null) {
             return Core::$systemDB->selectMultiple("view",["pageId"=>$viewId, "partType"=>"aspect"]);
-            //return Core::$systemDB->selectMultiple("view_role", ['viewId' => $viewId, 'course' => $this->getCourseId()]);
         } else {
             return Core::$systemDB->select("view",["pageId"=>$viewId, "role"=>$role, "partType"=>"aspect"]);
-            //return Core::$systemDB->select("view_role",  
-            //        ['viewId' => $viewId, 'course' => $this->getCourseId(),'role'=>$role]);
         }
     }
-    //returns all pages or page of the name given
-    public function getPages($pageName = null) {
-        if ($pageName == null) {
-            //return Core::$systemDB->selectMultiple("view", ['course' => $this->getCourseId()]);
-            return Core::$systemDB->selectMultiple("page",['course' => $this->getCourseId()]);
+    //returns all pages or page of the name or id given
+    public function getPages($id=null,$pageName = null) {
+        return $this->getPagesOfCourse($this->getCourseId(), $id, $pageName);
+    }
+    public static function getPagesOfCourse($courseId,$id=null,$pageName = null) {
+        $fileds="course,id,name,theme,viewId,roleType+0 as roleType";
+        if ($pageName == null && $id==null) {
+            $pages=Core::$systemDB->selectMultiple("page",['course' => $courseId],$fileds);
+            return array_combine(array_column($pages, "id"),$pages);
+        } else if ($id !== null) {
+            return Core::$systemDB->select("page",["id"=>$id,'course' => $courseId],$fileds);
         } else {
-            //return Core::$systemDB->select("view", ['viewId' => $viewId, 'course' => $this->getCourseId()]);
-            return Core::$systemDB->select("page",["name"=>$pageName,'course' => $this->getCourseId()]);
+            return Core::$systemDB->select("page",["name"=>$pageName,'course' => $courseId],$fileds);
         }
     }
     public function getCourseId(){
         return $this->viewsModule->getParent()->getId();
     }
+    public function createPageOrTemplateIfNew($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
+        if(empty($this->getPages(null,$name))){
+            $this->createPageOrTemplate($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE);
+        }
+    }
+    public function createPageOrTemplate($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
+        $courseId=$this->getCourseId();
+        
+        if ($roleType == self::VT_ROLE_SINGLE)
+            $role='role.Default';
+        else if ($roleType == self::VT_ROLE_INTERACTION)
+            $role='role.Default>role.Default';
+        
+        Core::$systemDB->insert("view",["partType"=>"aspect","role"=>$role]);
+        $viewId=Core::$systemDB->getLastId();
+        
+        //page or template to insert in db
+        $newView=["name"=>$name,"course"=>$courseId,"roleType"=>$roleType];
+        if ($pageOrTemp=="page"){
+            $newView["viewId"]=$viewId;
+            Core::$systemDB->insert("page",$newView);
+        }else{
+            Core::$systemDB->insert("template",$newView);
+            $templateId=Core::$systemDB->getLastId();
+            Core::$systemDB->insert("view_template",["viewId"=>$viewId,"templateId"=>$templateId]);
+        }
+        //return $id;
+    }
+            
     
-     
-    public function registerPage($module, $pageName, $roleType=self::VT_ROLE_SINGLE) {
+    /*public function registerPage($module, $pageName, $roleType=self::VT_ROLE_SINGLE) {
         $pageSettings = ["name"=> $pageName, "roleType"=>$roleType];              
         $page = $this->getPages($pageName);
         
@@ -450,7 +483,7 @@ class ViewHandler {
             new \Exception('Page' . $pageName . ' (id='.$page['id'].' is aready defined.');
         $pageSettings["viewId"]=$page["viewId"];
         $this->registeredPages[$page['id']] = $pageSettings;
-    }
+    }*/
 
     public function registerFunction($funcLib,$funcName, $processFunc) {
         //ToDO: save on dictionary table ?
@@ -727,7 +760,7 @@ class ViewHandler {
     
     //handles requests to show a page
     public function handle($pageId) {
-        if (!array_key_exists($pageId, $this->registeredPages)) {
+        if (empty($this->getPages($pageId))) {
             API::error('Unknown view: ' . $pageId, 404);
         }
 
@@ -736,7 +769,7 @@ class ViewHandler {
             $course = Course::getCourse((string)API::getValue('course'));
             $page = Core::$systemDB->select("page",["id"=>$pageId]);
             $viewRoles = array_column($this->getAspects($page["viewId"]),'role');
-            $viewType = $this->registeredPages[$pageId]['roleType'];
+            $viewType = $this->getPages($pageId)['roleType'];
             
             $roleOne=$roleTwo=null;
             if ($viewType == ViewHandler::VT_SINGLE){

@@ -30,8 +30,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         });
     };
 
-    this.requestEdit = function(view, params, func) {
-        $smartboards.request('views', 'getEdit', $.extend({view: view}, params), function(data, err) {
+    this.requestEdit = function(view,pageOrTemp, params, func) {
+        $smartboards.request('views', 'getEdit', $.extend({view: view, pageOrTemp:pageOrTemp}, params), function(data, err) {
             if (err) {
                 func(undefined, err);
                 return;

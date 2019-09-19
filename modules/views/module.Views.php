@@ -25,10 +25,19 @@ class Views extends Module {
 
     public function initSettingsTabs() {
         $childTabs = array();
-        $views = $this->viewHandler->getRegisteredPages();
-        foreach($views as $viewId => $view)
-            $childTabs[] = Settings::buildTabItem($view['name'], 'course.settings.views.view({view:\'' . $viewId . '\'})', true);
-        Settings::addTab(Settings::buildTabItem('Pages', 'course.settings.views', true, $childTabs));
+        $pages = $this->viewHandler->getPages();
+        $viewTabs=[];
+        foreach($pages as $pageId => $page)
+            $childTabs[] = Settings::buildTabItem($page['name'], 'course.settings.views.view({pageOrTemp:\'page\',view:\'' . $pageId . '\'})', true);
+        $viewTabs[] = Settings::buildTabItem('Pages', null, false, $childTabs);
+        
+        $templates = $this->getTemplates();
+        $childTempTabs=[];
+        foreach($templates as $template)
+            $childTempTabs[] = Settings::buildTabItem($template['name'], 'course.settings.views.view({pageOrTemp:\'template\',view:\'' . $template["id"] . '\'})', true);
+        $viewTabs[] = Settings::buildTabItem('Templates', null, false, $childTempTabs);
+        
+        Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $viewTabs));
     }
 
     private function breakTableRows(&$rows, &$savePart) {
@@ -592,17 +601,24 @@ class Views extends Module {
                 }
             }
         );
-
+        //gets a parsed and processed view
         API::registerFunction('views', 'view', function() {
-            API::requireValues('view');
-
-            if (API::hasKey('course'))
-                Course::getCourse((string)API::getValue('course'))->getLoggedUser()->refreshActivity();
+            API::requireValues('view','course');
+            $courseId = API::getValue('course');
+            $course = Course::getCourse($courseId);
+            $courseUser = $course->getLoggedUser();
+            $courseUser->refreshActivity();
+            if (API::hasKey('needPermission') && API::getValue('needPermission')==true ){
+                $user = Core::getLoggedUser();
+                $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
+                if(!$isAdmin)
+                    API::error("This page can only be acessd by Adminis or Teachers, you don't have permission");
+            }
             
             $viewId = API::getValue('view');
-            //If this request can come from  js file that only knows the name of the view
-            if (!is_int($viewId)){
-                foreach ($this->viewHandler->getRegisteredPages() as $id => $viewData){
+            //the view parameter received can be an id or a name
+            if (!is_int($viewId)){//if view is a name, get its id
+                foreach ($this->viewHandler->getPages() as $id => $viewData){
                     if ($viewData["name"]==$viewId){
                         $viewId=$id;
                         break;
@@ -611,20 +627,40 @@ class Views extends Module {
             }
             $this->viewHandler->handle($viewId);
         });
-
+        //gets list of pages and templates for the views page
         API::registerFunction('views', 'listViews', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course');
             $templates=$this->getTemplates(true);
-            API::response(array('views' => $this->viewHandler->getRegisteredPages(), 
+            API::response(array('pages' => $this->viewHandler->getPages(), 
                 'templates' => $templates[0], "globals"=>$templates[1]));
         });
-        //ToDO change the name to createAspect maybe (check when it is used)
+        //creates a page or template
         API::registerFunction('views', 'createView', function() {
             API::requireCourseAdminPermission();
+            API::requireValues('course','name','pageOrTemp');
+            $pageOrTemp = API::getValue('pageOrTemp');
+            //insert aspect view
+            Core::$systemDB->insert("view",["partType"=>"aspect"]);
+            $viewId=Core::$systemDB->getLastId();
+            //page or template to insert in db
+            $newView=["name"=>API::getValue('name'),"course"=>API::getValue('course')];
+            if ($pageOrTemp=="page"){
+                $newView["viewId"]=$viewId;
+                Core::$systemDB->insert("page",$newView);
+            }else{
+                Core::$systemDB->insert("template",$newView);
+                $templateId=Core::$systemDB->getLastId();
+                Core::$systemDB->insert("view_template",["viewId"=>$viewId,"templateId"=>$templateId]);
+            }
+        });
+        //creates a new aspect for the page/template
+        API::registerFunction('views', 'createAspectView', function() {
+            API::requireCourseAdminPermission();
+            //ToDo make it work for templates
             API::requireValues('view', 'course');
 
-            $pages = $this->viewHandler->getRegisteredPages();
+            $pages = $this->viewHandler->getPages();
             $pageId = API::getValue('view');
             if (!array_key_exists($pageId, $pages))
                 API::error('Unknown view ' . $pageId);
@@ -668,9 +704,9 @@ class Views extends Module {
                     if ($parentView["aspectClass"]==null){
                         $aspectClass = $this->newAspectClassNum();
                         $parentView["aspectClass"]=$aspectClass;
-                        //update aspectClass of parent view in DB
                         
                         Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$parentView["id"]]);
+                        //update aspect class of parent view
                         $this->viewHandler->updateViewAndChildren($parentView, true);
                     }
                     $newView = ["role"=>$role, "partType"=>"aspect"];
@@ -678,6 +714,7 @@ class Views extends Module {
                     $newView["id"]=Core::$systemDB->getLastId();
                     Core::$systemDB->insert("aspect_class",["aspectClass"=>$parentView["aspectClass"], "viewId"=>$newView["id"]]);
                     $newView = array_merge($parentView,$newView);
+                    //add new aspect to db
                     $this->viewHandler->updateViewAndChildren($newView, false, true);
                     
                 } else {
@@ -690,12 +727,12 @@ class Views extends Module {
             }
             API::error('Unexpected...');
         });
-        //ToDo change to deleteAspect
-        API::registerFunction('views', 'deleteView', function() {
+        //Delete an aspect view of a page or template
+        API::registerFunction('views', 'deleteAspectView', function() {
             API::requireCourseAdminPermission();
             API::requireValues('view', 'course');
-
-            $pages = $this->viewHandler->getRegisteredPages();
+            //ToDo check if works for templates
+            $pages = $this->viewHandler->getPages();
             $page = API::getValue('view');
             if (!array_key_exists($page, $pages))
                 API::error('Unknown view ' . $page);
@@ -737,20 +774,14 @@ class Views extends Module {
             }
             API::error('Unexpected...');
         });
-
+        //gets page/template info, show aspects
         API::registerFunction('views', 'getInfo', function() {
-            API::requireValues('view', 'course');
+            $data = $this->getViewSettings();
+            $viewSettings=$data["viewSettings"];
+            $course=$data["course"];
             
-            $pages = $this->viewHandler->getRegisteredPages();
-            $pageId = API::getValue('view');
-            if (!array_key_exists($pageId, $pages))
-                API::error('Unknown page ' . $pageId);
-
-            $pageSettings = $pages[$pageId];
-
-            $course = Course::getCourse(API::getValue('course'));
             $response = array(
-                'viewSettings' => $pageSettings,
+                'viewSettings' => $viewSettings,
             );
 
             $response['types'] = array(
@@ -758,11 +789,9 @@ class Views extends Module {
                 array('id'=> 2, 'name' => 'Role - Single'),
                 array('id'=> 3, 'name' => 'Role - Interaction')
             );
-
-            $type = $pageSettings['roleType'];
-            if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {
-                
-                $viewSpecializations = $this->viewHandler->getAspects($pageSettings["viewId"]);
+            $type = $viewSettings['roleType'];
+            if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {   
+                $viewSpecializations = $this->viewHandler->getAspects($viewSettings["viewId"]);
                 $result = [];
                 
                 $doubleRoles=[];//for views w role interaction
@@ -787,7 +816,6 @@ class Views extends Module {
                             'viewedBy'=>$viewedBy);                        
                     }
                 }
-
                 $response['viewSpecializations'] = $result;
                 $response['allIds'] = array();
                 $roles = array_merge(array('Default'), $course->getRoles());
@@ -846,16 +874,29 @@ class Views extends Module {
             
             $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
         });
-
-        API::registerFunction('views', 'deleteTemplate', function() {
+        //toggle isGlobal parameter of a template
+        API::registerFunction('views',"globalizeTemplate",function(){
             API::requireCourseAdminPermission();
-            API::requireValues('id','course');
+            API::requireValues('id','isGlobal');
+            Core::$systemDB->update("template",["isGlobal"=>!API::getValue("isGlobal")],["id"=>API::getValue("id")]);
+            http_response_code(201);
+            return;
+        });
+        API::registerFunction('views', 'deleteView', function() {
+            API::requireCourseAdminPermission();
+            API::requireValues('id','course','pageOrTemp');
             $id=API::getValue('id');
-            $views = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
-            foreach($views as $view){//aspect views of template or templateReferences
+            
+            if (API::getValue("pageOrTemp")=="template"){
+                $views = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
+            }else{
+                $views = Core::$systemDB->selectMultiple("page",["id"=>$id]);
+            }
+            
+            foreach($views as $view){//aspect views of pages or template or templateReferences
                 Core::$systemDB->delete("view",["id"=>$view["viewId"]]);
             }
-            Core::$systemDB->delete("template",["id"=>$id]);
+            Core::$systemDB->delete(API::getValue("pageOrTemp"),["id"=>$id]);
         });
         
         API::registerFunction('views', 'exportTemplate', function() {
@@ -874,21 +915,14 @@ class Views extends Module {
         });
 
         API::registerFunction('views', 'getEdit', function() {
-            
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'view');
-
-            $courseId = API::getValue('course');
-            $pageId = API::getValue('view');
-         
-            $pages = $this->viewHandler->getRegisteredPages();
-            if (!array_key_exists($pageId, $pages))
-                API::error('Unknown view ' . $pageId, 404);
-
-            $course = \SmartBoards\Course::getCourse($courseId);
+            $data = $this->getViewSettings();
+            $viewSettings=$data["viewSettings"];
+            $course=$data["course"];
+            $courseId=$data["courseId"];
+            $viewId=$data["viewId"];//id of page or template
             
-            $pageSettings = $pages[$pageId];//set id
-            $viewType = $pageSettings['roleType'];
+            $viewType = $viewSettings['roleType'];
 
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
                 API::requireValues('info');
@@ -897,8 +931,7 @@ class Views extends Module {
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
 
-                $view = $this->viewHandler->getViewWithParts($pageSettings["viewId"], $info['role']);
-                //print_r($view);
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['role']);
                 //$parentParts = $this->findParentParts($course, $pageId, $viewType, $info['role']);
             } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
                 API::requireValues('info');
@@ -906,8 +939,8 @@ class Views extends Module {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
                     API::error('Missing roleOne and/or roleTwo in info');
 
-                $view = $this->viewHandler->getViewWithParts($pageId, $info['roleOne'].'>'.$info['roleTwo']);
-                $parentParts = $this->findParentParts($course, $pageId, $viewType, $info['roleOne'], $info['roleTwo']);
+                $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
+                $parentParts = $this->findParentParts($course, $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
                 $view = $this->viewHandler->getViewWithParts($pageId, "");  
@@ -922,20 +955,13 @@ class Views extends Module {
 
         API::registerFunction('views', 'saveEdit', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'view');
-            
-            $courseId = API::getValue('course');
-            $pageId = API::getValue('view');
+            $data=$this->getViewSettings();
+            $courseId=$data["courseId"];
+            $course=$data["course"];
+            $viewSettings=$data["viewSettings"];
             $viewContent = API::getValue('content');
             
-            $pages = $this->viewHandler->getRegisteredPages();
-            if (!array_key_exists($pageId, $pages))
-                API::error('Unknown view ' . $pageId, 404);
-
-            $course = \SmartBoards\Course::getCourse($courseId);
-
-            $pageSettings = $pages[$pageId];
-            $viewType = $pageSettings['roleType'];
+            $viewType = (int)$viewSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -988,7 +1014,6 @@ class Views extends Module {
             }
             
             $this->viewHandler->updateViewAndChildren($viewContent);
-            //print_r($viewContent);
             if (!$testDone)
                 API::response('Saved, but skipping test (no users in role to test or special role)');
             return;
@@ -996,20 +1021,13 @@ class Views extends Module {
 
         API::registerFunction('views', 'previewEdit', function() {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'view');
-
-            $courseId = API::getValue('course');
-            $pageId = API::getValue('view');
+            $data=$this->getViewSettings();
+            $courseId=$data["courseId"];
+            $course=$data["course"];
+            $viewSettings=$data["viewSettings"];
             $viewContent = API::getValue('content');
-
-            $pages = $this->viewHandler->getRegisteredPages();
-            if (!array_key_exists($pageId, $pages))
-                API::error('Unknown page ' . $pageId, 404);
-
-            $course = \SmartBoards\Course::getCourse($courseId);
-
-            $pageSettings = $pages[$pageId];
-            $viewType = $pageSettings['roleType'];
+            
+            $viewType = $viewSettings['roleType'];
 
             $info = array();
             if ($viewType == ViewHandler::VT_ROLE_SINGLE) {
@@ -1181,19 +1199,15 @@ class Views extends Module {
     public function &getViewHandler() {
         return $this->viewHandler;
     }
-    
+    //gets templates of this course
     public function getTemplates($includeGlobals=false){
-        //gets normal templates of this course
-        //ToDO: get global templates
-        $temps = Core::$systemDB->selectMultiple('template',
-                ['course'=>$this->getCourseId()]);
+        $temps = Core::$systemDB->selectMultiple('template t join view_template on templateId=id join view v on v.id=viewId',
+                ['course'=>$this->getCourseId(),"partType"=>"aspect"],
+                "t.id,name,course,isGlobal,roleType+0 as roleType,viewId,role");
         if ($includeGlobals) {
             $globalTemp = Core::$systemDB->selectMultiple("template",["isGlobal" => true]);
             return [$temps, $globalTemp];
         }
-        //foreach ($temps as &$temp){
-          //  $temp['content'] = unserialize($temp['content']);
-        //}
         return $temps;
     }
     //gets template by name
@@ -1238,6 +1252,27 @@ class Views extends Module {
         if (strpos($role, '>') !== false) {//dual role
             return ViewHandler::VT_ROLE_INTERACTION;
         }else return ViewHandler::VT_ROLE_SINGLE;
+    }
+    
+    function getViewSettings(){
+        API::requireValues('view','pageOrTemp','course');
+        $viewId = API::getValue('view');
+        if (API::getValue('pageOrTemp')=="page"){
+            $views = $this->viewHandler->getPages();
+            if (!array_key_exists($viewId, $views))
+                API::error('Unknown page ' . $viewId);
+
+        }else {
+            $views = $this->getTemplates();
+            $tempIds = array_column($views, "id");
+            if (!in_array($viewId, $tempIds))
+                API::error('Unknown template ' . $viewId);
+            $views = array_combine($tempIds, $views);
+        }
+        $viewSettings = $views[$viewId];
+        $courseId=API::getValue('course');
+        $course = Course::getCourse($courseId);
+        return ["courseId"=>$courseId,"course"=>$course,"viewSettings"=>$viewSettings,"viewId"=>$viewId];
     }
 }
 

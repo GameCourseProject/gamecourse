@@ -1,7 +1,7 @@
 angular.module('module.views', []);
 angular.module('module.views').controller('ViewSettings', function($state, $stateParams, $smartboards, $element, $compile, $scope) {
     $element.html('Loading...');
-    $smartboards.request('views', 'getInfo', {view: $stateParams.view, course: $scope.course}, function(data, err) {
+    $smartboards.request('views', 'getInfo', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp,course: $scope.course}, function(data, err) {
         if (err) {
             $element.text(err.description);
             return;
@@ -21,11 +21,10 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                 cpy = undefined;
             return cpy;
         }
-
         angular.extend($scope, data);
 
-        $scope.viewType = $scope.viewSettings.roleType;
-
+        $scope.viewType = Number($scope.viewSettings.roleType);
+        
         $scope.selection = {};
         $scope.selectedStyle = {
             'background-color': 'rgba(0, 0, 0, 0.07)'
@@ -49,7 +48,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.createViewOne = function() {
             if ($scope.viewType == 2) {
-                $smartboards.request('views', 'createView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
+                $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
                     if (err) {
                         alert(err.description);
                         return;
@@ -62,7 +61,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                         $scope.selection.missingOneToAdd = $scope.missingOne[0];
                 });
             } else if ($scope.viewType == 3) {
-                $smartboards.request('views', 'createView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
+                $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
                     if (err) {
                         alert(err.description);
                         return;
@@ -79,7 +78,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         };
 
         $scope.createViewTwo = function() {
-            $smartboards.request('views', 'createView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: $scope.selection.missingTwoToAdd.id}}, function(data, err) {
+            $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: $scope.selection.missingTwoToAdd.id}}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
@@ -97,7 +96,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             if (!confirm("Are you sure you want to delete?"))
                 return
 
-            $smartboards.request('views', 'deleteView', {view: $stateParams.view, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
+            $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
@@ -121,7 +120,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             if (!confirm("Are you sure you want to delete?"))
                 return
 
-            $smartboards.request('views', 'deleteView', {view: $stateParams.view, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
+            $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
@@ -134,7 +133,6 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     $scope.selection.missingTwoToAdd = $scope.missingTwo[0];
             });
         };
-
         $scope.gotoEdit = function() {
             $state.go('course.settings.views.view.edit-single');
         };
@@ -147,11 +145,10 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     --i;
                 }
             }
-
             if ($scope.missingOne.length > 0)
                 $scope.selection.missingOneToAdd = $scope.missingOne[0];
         }
-
+        
         var el = $compile($('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">'))($scope);
         $element.html(el);
     });
@@ -167,7 +164,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     if ($state.current.name == 'course.settings.views.view.edit-role-interaction')
         reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
 
-    $sbviews.requestEdit($stateParams.view, reqData, function(view, err) {
+    $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function(view, err) {
         if (err) {
             $element.html(err);
             console.log(err);
@@ -182,6 +179,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             btnSave.prop('disabled', true);
             var saveData = $.extend({}, reqData);
             saveData.view = $stateParams.view;
+            saveData.pageOrTemp = $stateParams.pageOrTemp;
             saveData.content = view.get();
             $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
                 btnSave.prop('disabled', false);
@@ -206,6 +204,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             btnPreview.prop('disabled', true);
             var editData = $.extend({}, reqData);
             editData.view = $stateParams.view;
+            editData.pageOrTemp = $stateParams.pageOrTemp;
             editData.content = view.get();
             $smartboards.request('views', 'previewEdit', editData, function(data, err) {
                 btnPreview.prop('disabled', false);
@@ -276,30 +275,54 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     });
 });
 
-angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope) {
+angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state) {
     $smartboards.request('views', 'listViews', {course: $scope.course}, function(data, err) {
         if (err) {
             alert(err.description);
             return;
         }
         var viewsArea = createSection($($element),"Pages");
-        viewsArea.append($compile('<div ng-repeat="(id, view) in views">{{view.name}} (page id: {{id}})'+
-                '<button ng-click="">Edit</button> '+
-                '<button ng-click="">Delete</button> </div>')($scope));
-        //ToDo: add behaviour for buttons
+        viewsArea.append($compile('<div ng-repeat="(id, page) in pages">{{page.name}} (page id: {{id}})'+
+                '<button ng-click="editView(id,\'page\')">Edit</button> '+
+                '<button ng-click="deleteView(page,\'page\')">Delete</button> </div>')($scope));
+        viewsArea.append($compile('<button ng-click="createView(\'page\')">Create New Page</button>')($scope));
+        
         var TemplateArea = createSection($($element),"View Templates");
         TemplateArea.append($compile('<div ng-repeat="template in templates">{{template.name}}'+
-                '<button ng-click="">Edit</button> '+
-                '<button ng-click="">Globalize</button> '+
-                '<button ng-click="deleteTemplate(template)">Delete</button> '+
+                '<button ng-click="editView(template.id,\'template\')">Edit</button> '+
+                '<button ng-if="template.isGlobal==false" ng-click="globalize(template)">Globalize</button> '+
+                '<button ng-if="template.isGlobal==true" ng-click="globalize(template)">De-Globalize</button> '+
+                '<button ng-click="deleteView(template,\'template\')">Delete</button> '+
                 '<button ng-click="exportTemplate(template)">Export</button></div>')($scope));
-        //ToDo: add edit and turn global buttons
+        TemplateArea.append($compile('<button ng-click="createView(\'template\')">Create New Template</button>')($scope));
+        
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.append($compile('<div ng-repeat="template in globals">{{template.name}} '+
-                '<button ng-if="template.course!=course" ng-click="">Add to course</button> </div>')($scope));
-        //ToDo: add behaviour to button
-        
+                '<button ng-if="template.course!=course" ng-click="">Add to course</button> </div>')($scope));//ToDo
+                
         angular.extend($scope, data);
+        $scope.createView = function(pageOrTemp){
+            name = prompt('Name of the new '+pageOrTemp+': ');
+            $smartboards.request('views','createView',{course: $scope.course, name: name,pageOrTemp: pageOrTemp},function(data,err){
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        };
+        $scope.editView = function(id,pageOrTemp){
+            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id});
+        };
+        $scope.globalize = function(template){
+            $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal},function(data,err){
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        };
         $scope.exportTemplate = function(template){
             $smartboards.request('views', 'exportTemplate', {course:$scope.course, id: template.id,name:template.name}, function(data, err) {
                 if (err) {
@@ -309,23 +332,41 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 alert("File created: " + data.filename +  "\n"+ "To use it move to a module folder and edit the module file");
             });
         };
-        $scope.deleteTemplate = function(template) {
-            if (!confirm("Are you sure you want to delete the template '"+template.name+"'?"))
+        $scope.deleteView = function(view,templateOrPage) {
+            if (!confirm("Are you sure you want to delete the "+templateOrPage+" '"+view.name+"'?"))
                 return
-            $smartboards.request('views', 'deleteTemplate', {course: $scope.course, id: template.id}, function(data, err) {
+            $smartboards.request('views', 'deleteView', {course: $scope.course, id: view.id,pageOrTemp:templateOrPage}, function(data, err) {
                 if (err) {
                     alert(err.description);
                     return;
                 }
-
-                $scope.templates.splice($scope.templates.indexOf(template), 1);
+                location.reload();
+                //$scope.templates.splice($scope.templates.indexOf(view), 1);
             });
         };
     });
 });
 
+//controller for pages that are created in the views page
+angular.module('module.views').controller('CustomPage', function ($stateParams,$rootScope, $element, $scope, $sbviews, $compile, $state) {
+    changeTitle($stateParams.name, 1);
+    $sbviews.request($stateParams.id, {course: $scope.course}, function(view, err) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        $element.append(view.element);
+    });
+});
 angular.module('module.views').config(function($stateProvider) {
-    $stateProvider.state('course.settings.views', {
+    $stateProvider.state('course.customPage', {
+        url: '/{name:[A-z0-9]+}-{id:[0-9]+}',
+        views: {
+            'main-view@':{
+                controller: 'CustomPage'
+            }
+        }
+    }).state('course.settings.views', {
         url: '/views',
         views: {
             'tabContent@course.settings': {
@@ -334,7 +375,7 @@ angular.module('module.views').config(function($stateProvider) {
             }
         }
     }).state('course.settings.views.view', {
-        url: '/{view:[A-z0-9]+}',
+        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}',
         views: {
             'tabContent@course.settings': {
                 template: 'abc',

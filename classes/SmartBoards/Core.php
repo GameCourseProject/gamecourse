@@ -171,9 +171,11 @@ class Core {
     public static function getFenixAuth() {
         return new FenixAuth();
     }
-
-    public static function addNavigation($image, $text, $ref, $isSRef = false, $subtext = '') {
-        static::$navigation[] = array('image' => $image, 'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'subtext' => $subtext);
+    
+    //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins
+    public static function addNavigation($image, $text, $ref, $isSRef = false, $subtext = '',$restrictAcess=false) {
+        static::$navigation[] = ['image' => $image, 'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'subtext' => $subtext,
+                                "restrictAcess"=>$restrictAcess];
     }
 
     public static function getNavigation() {

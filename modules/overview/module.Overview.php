@@ -15,18 +15,15 @@ class Overview extends Module {
     }
 
     public function init() {
-        $user = Core::getLoggedUser();
-        if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
-            Core::addNavigation('images/gear.svg', 'Overview', 'course.overview', true);
+        //page only meant for teachers
+        Core::addNavigation('images/gear.svg', 'Overview', 'course.overview', true,null,true);
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerPage($this, 'overview', 'Overview View', array(
-            'type' => ViewHandler::VT_SINGLE
-        ));
+        $viewHandler->createPageOrTemplateIfNew('Overview',"page",ViewHandler::VT_ROLE_SINGLE);
 
-        if ($viewsModule->getTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
-            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'),$this->getId());
+        //if ($viewsModule->getTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME) == NULL)
+        //    $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'),$this->getId());
     }
 }
 ModuleLoader::registerModule(array(
