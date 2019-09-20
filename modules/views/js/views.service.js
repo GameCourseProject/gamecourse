@@ -87,6 +87,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 origin: viewScope.view.origin,
                 role: viewScope.view.role
             };
+            $rootScope.role=viewScope.view.role;
 
             function build() {
                 var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
@@ -529,6 +530,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         };
 
                         optionsScope.saveTemplate = function () {
+                            optionsScope.template.part.role=$rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
                                     alert(err.description);

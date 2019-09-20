@@ -3,11 +3,11 @@ drop trigger if exists parameterDelete;
 drop trigger if exists viewDelete;
 drop table if exists view_parameter;
 drop table if exists parameter;
-drop table if exists aspect_class;
 drop table if exists view_template;
 drop table if exists template;
 drop table if exists page;
 drop table if exists view;
+drop table if exists aspect_class;
 drop table if exists skill_dependency;
 drop table if exists dependency;
 drop table if exists skill;
@@ -17,7 +17,6 @@ drop table if exists badge_has_level;
 drop table if exists level;
 drop table if exists badge;
 drop table if exists badges_config;
-drop table if exists grade;
 drop table if exists award_participation;
 drop table if exists participation;
 drop table if exists notification;
@@ -213,17 +212,21 @@ create table skill_dependency(
 	foreign key (dependencyId) references dependency(id) on delete cascade,
 	foreign key(normalSkillId) references skill(id) on delete cascade
 );
-
+create table aspect_class(
+	aspectClass int unsigned auto_increment primary key
+	#foreign key (viewId) references view(id) on delete cascade
+);
 create table view(
 	id int unsigned auto_increment primary key,
 	#pageId int unsigned not null,
-	#aspectClass int,
+	aspectClass int unsigned,
 	role varchar(100) default "role.Default",
 	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef'),
 	parent int unsigned,
 	viewIndex int unsigned,
 	label varchar(50),
 	#template int unsigned,
+	foreign key (aspectClass) references aspect_class(aspectClass) on delete set null,
 	foreign key (parent) references view(id) on delete cascade
 	#foreign key (template) references view_template(id) on delete cascade,
 	#foreign key(pageId) references page(id) on delete cascade
@@ -254,11 +257,7 @@ create table view_template(
 	foreign key (templateId) references template(id) on delete cascade,
 	foreign key (viewId) references view(id) on delete cascade
 );
-create table aspect_class(
-	viewId int unsigned primary key,
-	aspectClass int unsigned,
-	foreign key (viewId) references view(id) on delete cascade
-);
+
 create table parameter(
 	id int unsigned auto_increment primary key,
 	type enum ('loopData','variables','value','class','style','link','visibilityCondition','visibilityType','events') not null,#angular directive?

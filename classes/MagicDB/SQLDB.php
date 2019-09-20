@@ -63,10 +63,16 @@ class SQLDB {
 
     //functions to construct and execute sql querys
     
-    public function insert($table,$data){
+    public function insert($table,$data=[]){
         //example: insert into user set name="Example",id=80000,username=ist1800000;
-        $sql="insert into ".$table." set "; 
-        $this->dataToQuery($sql,$data,',');
+        
+        $sql="insert into ".$table;
+        if ($data==[]){
+            $sql.=" values(default)";
+        }else{
+            $sql.=" set "; 
+            $this->dataToQuery($sql,$data,',');
+        }
         $sql.=";";     
         $this->executeQueryWithParams($sql,$data); 
     }

@@ -105,23 +105,16 @@ class ViewHandler {
             //insert/update views
             if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
                 Core::$systemDB->update("view",["viewIndex"=>$viewPart["viewIndex"],
-                    "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"]],
+                    "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"],"aspectClass"=>$viewPart["aspectClass"]],
                         ["id"=>$viewPart["id"]]);  
                 
                 if (!$basicUpdate)
                     unset($partsInDB[$viewPart["id"]]);
-                else{
-                    Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
-                }
             }else{//not in DB, insert it
                 Core::$systemDB->insert("view",
-                    ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],
+                    ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],"aspectClass"=>$viewPart["aspectClass"],
                     "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
-                if ($viewPart["aspectClass"]!==null)
-                    Core::$systemDB->insert("aspect_class",
-                        ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$viewPart["id"]]);
             }     
             if (!$basicUpdate){//update parameters
                 $this->updateParameters($viewPart);
@@ -174,11 +167,9 @@ class ViewHandler {
             if (array_key_exists("header", $viewPart)){//if there is a header
                 if(!$basicUpdate && empty($header)){ //insert (header is not in DB)
                     Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
-                        "partType"=>"header","role"=>$viewPart["role"]]);
+                        "partType"=>"header","role"=>$viewPart["role"],"aspectClass"=>$viewPart["aspectClass"]]);
                     $headerId = Core::$systemDB->getLastId();
-                    if($viewPart["aspectClass"]!==null)
-                        Core::$systemDB->insert("aspect_class",["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$headerId]);
-                        
+                       
                     $image = ["role"=>$viewPart["role"],"parent"=>$headerId,
                         "partType"=>"image","aspectClass"=>$viewPart["aspectClass"],
                         "viewIndex"=>0,"parameters"=>$viewPart["header"]["image"]["parameters"]];
@@ -194,10 +185,8 @@ class ViewHandler {
                     $headerParts = Core::$systemDB->selectMultiple("view",["parent"=>$header]);
                     foreach($headerParts as $part){
                         if ($basicUpdate) {
-                            Core::$systemDB->update("view",["role" => $viewPart["role"]], 
+                            Core::$systemDB->update("view",["role" => $viewPart["role"],"aspectClass"=>$viewPart["aspectClass"]], 
                                     ["id" => $part["id"]]);
-                            Core::$systemDB->insert("aspect_class",
-                                ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$part["id"]]);
                         } else {
                             if ($part["partType"] == "text")
                                 $type = "title";
@@ -209,13 +198,12 @@ class ViewHandler {
                     }
                 }
             }
-            else if (!empty($header) && !$basicUpdate){//delete headeer in db
+            else if (!empty($header) && !$basicUpdate){//delete header in db
                 Core::$systemDB->delete("view",["parent"=>$viewPart["id"], "partType"=>"header"]);
             }
             if ($basicUpdate && !empty($header)) {//ToDo
-                Core::$systemDB->update("view",["role" => $viewPart["role"]],["id" => $header]);
-                Core::$systemDB->insert("aspect_class",
-                    ["aspectClass"=>$viewPart["aspectClass"],"viewId"=>$header]);
+                Core::$systemDB->update("view",["role" => $viewPart["role"],"aspectClass"=>$viewPart["aspectClass"]],
+                        ["id" => $header]);
             }
         }
     }
@@ -246,8 +234,8 @@ class ViewHandler {
         //ToDo: check if this query could be done in a more eficient way
         if (array_key_exists("aspectClass", $where)){
             $db_params = Core::$systemDB->selectMultiple(
-                "aspect_class a left join view v on a.viewId=v.id "
-                . "left join view_parameter vp on vp.viewId=v.id right join parameter p on p.id=parameterId",
+                "aspect_class a natural join view v left join view_parameter vp".
+                " on vp.viewId=v.id right join parameter p on p.id=parameterId",
             $where,"vp.viewId,p.id,type,value");
         }else{
             $db_params = Core::$systemDB->selectMultiple(
@@ -262,7 +250,6 @@ class ViewHandler {
                 continue;
             $view_params[$p["viewId"]][]=$p;
         }
-        //print_r($view_params);
         return $view_params;
     }
     function lookAtTable(&$organizedView){
@@ -340,13 +327,12 @@ class ViewHandler {
         $this->lookAtHeader($organizedView);
         $this->lookAtTable($organizedView);
     }
-    //gets aspect view and its aspectClass
+    //gets aspect view 
     public function getAspect($aspectId){
-        $asp=Core::$systemDB->select("aspect_class left join view on viewId=id",["id"=>$aspectId]);
+        $asp=Core::$systemDB->select("aspect_class natural join view",["id"=>$aspectId]);
         if (empty($asp)){
             //aspect class hasnt' been assigned because it has only 1 aspect
             $asp=Core::$systemDB->select("view",["id"=>$aspectId]);
-            $asp["aspectClass"]=null;
         }
         return $asp;
     }
@@ -355,7 +341,7 @@ class ViewHandler {
         $asp = $this->getAspect($anAspeptId);
         if ($asp["aspectClass"]!=null){
             //there are other aspects
-            $aspects= Core::$systemDB->selectMultiple("aspect_class left join view on viewId=id",
+            $aspects= Core::$systemDB->selectMultiple("aspect_class natural join view",
                     ["aspectClass"=>$asp["aspectClass"],"partType"=>"aspect"]);
             return $aspects;
         }
@@ -378,7 +364,7 @@ class ViewHandler {
             if ($role)
                 $where["role"]=$role;
             //gets all the views of the aspect (using aspectclass and role)
-            $viewsOfAspect= Core::$systemDB->selectMultiple("aspect_class left join view on id=viewId",
+            $viewsOfAspect= Core::$systemDB->selectMultiple("aspect_class natural join view",
                     $where,
                     "id,role,partType,parent,viewIndex,aspectClass","parent,viewIndex");
             

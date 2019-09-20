@@ -689,18 +689,17 @@ class Views extends Module {
                 }
                 //$sizeParents = count($parentViews);
                 if ($parentView !=null) {
-                    if ($parentView["aspectClass"]==null){
-                        $aspectClass = $this->newAspectClassNum();
+                    if ($parentView["aspectClass"]==null){    
+                        Core::$systemDB->insert("aspect_class");
+                        $aspectClass = Core::$systemDB->getLastId();
                         $parentView["aspectClass"]=$aspectClass;
-                        
-                        Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$parentView["id"]]);
+                        Core::$systemDB->update("view",["aspectClass"=>$aspectClass],["id"=>$parentView["id"]]);
                         //update aspect class of parent view
                         $this->viewHandler->updateViewAndChildren($parentView, true);
                     }
-                    $newView = ["role"=>$role, "partType"=>"aspect"];
+                    $newView = ["role"=>$role, "partType"=>"aspect","aspectClass"=>$parentView["aspectClass"]];
                     Core::$systemDB->insert("view",$newView);
                     $newView["id"]=Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("aspect_class",["aspectClass"=>$parentView["aspectClass"], "viewId"=>$newView["id"]]);
                     $newView = array_merge($parentView,$newView);
                     //add new aspect to db
                     $this->viewHandler->updateViewAndChildren($newView, false, true);
@@ -732,9 +731,10 @@ class Views extends Module {
                 $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
                 
                 if ($type == ViewHandler::VT_ROLE_INTERACTION && !array_key_exists('roleTwo', $info)) {
-                    $id= Core::$systemDB->select("aspect_class left join view",
-                            ["role"=>$info['roleOne'].'>%', "aspectClass"=>$aspects[0]["aspectClass"]],"id");
-                    Core::$systemDB->deletee("view",["id"=>$id]);
+                    //
+                    //$id= Core::$systemDB->select("aspect_class natural join view",
+                    //        ["role"=>$info['roleOne'].'>%', "aspectClass"=>$aspects[0]["aspectClass"]],"id");
+                    Core::$systemDB->delete("view",["role"=>$info['roleOne'].'>%', "aspectClass"=>$aspects[0]["aspectClass"]]);
                 } 
                 else{
                     $aspectsByRole = array_combine(array_column($aspects,"role"),$aspects);
@@ -856,7 +856,8 @@ class Views extends Module {
             $aspects= [["role"=>$content["role"], "partType"=>"aspect"]];
             if (!$isDefault){
                 $aspects[]=["role"=>$defaultRole, "partType"=>"aspect"];
-                $aspectClass = $this->newAspectClassNum();
+                Core::$systemDB->insert("aspect_class");
+                $aspectClass=Core::$systemDB->getLastId();
             }else $aspectClass = null;
             
             $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
@@ -869,19 +870,25 @@ class Views extends Module {
             http_response_code(201);
             return;
         });
+        //delete page/template
         API::registerFunction('views', 'deleteView', function() {
             API::requireCourseAdminPermission();
             API::requireValues('id','course','pageOrTemp');
             $id=API::getValue('id');
             
             if (API::getValue("pageOrTemp")=="template"){
-                $views = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
+                $pageOrTemplates = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
             }else{
-                $views = Core::$systemDB->selectMultiple("page",["id"=>$id]);
+                $pageOrTemplates = Core::$systemDB->selectMultiple("page",["id"=>$id]);
             }
             
-            foreach($views as $view){//aspect views of pages or template or templateReferences
-                Core::$systemDB->delete("view",["id"=>$view["viewId"]]);
+            foreach($pageOrTemplates as $pageTemp){//aspect views of pages or template or templateReferences
+                $aspectView = Core::$systemDB->select("view",["id"=>$pageTemp["viewId"]]);
+                if ($aspectView["partType"]=="aspect" && $aspectView["aspectClass"]!=null){
+                    Core::$systemDB->delete("view",["aspectClass"=>$aspectView["aspectClass"]]);
+                    Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspectView["aspectClass"]]);
+                }
+                Core::$systemDB->delete("view",["id"=>$pageTemp["viewId"]]);
             }
             Core::$systemDB->delete(API::getValue("pageOrTemp"),["id"=>$id]);
         });
@@ -1214,9 +1221,11 @@ class Views extends Module {
     public function setTemplate($name, $template) {
         $aspects = json_decode($template,true);
         $aspectClass=null;
-        if (sizeof($aspects)>1)
-            $aspectClass= $this->newAspectClassNum();
-        
+        if (sizeof($aspects) > 1) {
+            Core::$systemDB->insert("aspect_class");
+            $aspectClass=Core::$systemDB->getLastId();
+        }
+
         $roleType = $this->getRoleType($aspects[0]["role"]);
         $this->setTemplateHelper($aspects, $aspectClass,$this->getCourseId(), $name, $roleType);
     }
@@ -1224,10 +1233,8 @@ class Views extends Module {
     function setTemplateHelper($aspects,$aspectClass,$courseId,$name,$roleType,$content=null){
         foreach($aspects as &$aspect){
             $aspect["aspectClass"]=$aspectClass;
-            Core::$systemDB->insert("view",["role"=>$aspect["role"],"partType"=>$aspect["partType"]]);
+            Core::$systemDB->insert("view",["role"=>$aspect["role"],"partType"=>$aspect["partType"],"aspectClass"=>$aspectClass]);
             $aspect["id"]=Core::$systemDB->getLastId();
-            if ($aspectClass!==null)
-                Core::$systemDB->insert("aspect_class",["aspectClass"=>$aspectClass, "viewId"=>$aspect["id"]]);
             if ($content)
                 $aspect["children"][]=$content;
             $this->viewHandler->updateViewAndChildren($aspect, false, true); 
@@ -1236,10 +1243,6 @@ class Views extends Module {
         Core::$systemDB->insert("template",["course"=>$courseId,"name"=>$name,"roleType"=>$roleType]);
         $templateId = Core::$systemDB->getLastId();
         Core::$systemDB->insert("view_template",["viewId"=>$aspects[0]["id"],"templateId"=>$templateId]);
-    }
-    
-    function newAspectClassNum(){
-        return Core::$systemDB->select("aspect_class",[],"max(aspectClass)")+1;
     }
     
     function getRoleType($role){
