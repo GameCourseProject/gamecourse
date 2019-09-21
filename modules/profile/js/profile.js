@@ -2,7 +2,7 @@ angular.module('module.profile', []);
 
 angular.module('module.profile').controller('Profile', function($element, $scope, $smartboards, $stateParams, $compile, $sbviews) {
     $scope.userID = $stateParams.userID;
-    $sbviews.request('profile', {course: $scope.course, user: $scope.userID}, function(view, err) {
+    $sbviews.request('Profile', {course: $scope.course, user: $scope.userID}, function(view, err) {
         if (err) {
             console.log(err);
             return;

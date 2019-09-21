@@ -516,7 +516,8 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 });
 
 app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    $smartboards.request('settings', 'roleInfo', {course : $scope.course, role: $stateParams.role}, function(data, err) {
+    //shortName: $stateParams.role,
+    $smartboards.request('settings', 'roleInfo', {course : $scope.course,  id: $stateParams.id}, function(data, err) {
         if (err) {
             console.log(err);
             return;
@@ -1072,7 +1073,7 @@ app.config(function($stateProvider){
             }
         }
     }).state('course.settings.roles.role', {
-        url: '/{role:[A-Za-z.]+}',
+        url: '/{role:[A-Za-z.]+}-{id:[0-9]+}',
         views : {
             'tabContent@course.settings': {
                 controller: 'CourseRoleSettingsController'

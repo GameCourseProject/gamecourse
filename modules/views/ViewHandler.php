@@ -417,7 +417,7 @@ class ViewHandler {
     }
     public function createPageOrTemplateIfNew($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
         if(empty($this->getPages(null,$name))){
-            $this->createPageOrTemplate($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE);
+            $this->createPageOrTemplate($name,$pageOrTemp,$roleType);
         }
     }
     public function createPageOrTemplate($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
@@ -781,7 +781,7 @@ class ViewHandler {
                         $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
                     }
                     
-                    $userView=$this->getViewWithParts($pageId, $roleOne.'>'.$roleTwo);
+                    $userView=$this->getViewWithParts($page["viewId"], $roleOne.'>'.$roleTwo);
                 }
                 else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
                     $userRoles = $course->getLoggedUser()->getRoles();

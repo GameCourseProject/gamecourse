@@ -20,12 +20,13 @@ class Profile extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerPage($this, 'profile', 'Profile View', array(
+        $viewHandler->createPageOrTemplateIfNew('Profile',"page",ViewHandler::VT_ROLE_INTERACTION);
+        /*$viewHandler->registerPage($this, 'profile', 'Profile View', array(
             'type' => ViewHandler::VT_ROLE_INTERACTION
-        ));
+        ));*/
 
-        if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
-            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'),$this->getId());
+        //if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
+          //  $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'),$this->getId());
        
     }
 

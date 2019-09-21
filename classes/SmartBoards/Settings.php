@@ -26,14 +26,15 @@ class Settings {
             static::addTab(static::buildTabItem('Configurations', 'course.settings.config', false, $configTabs));
             
             $childTabs = array();
-            Utils::goThroughRoles($course->getRolesHierarchy(), function($roleName, $hasChildren, $continue, &$parent) {
+            Utils::goThroughRoles($course->getRolesHierarchy(), function($role, $hasChildren, $continue, &$parent) {
                 $children = array();
                 if ($hasChildren)
                     $continue($children);
-                $parent[] = Settings::buildTabItem($roleName, 'course.settings.roles.role({role:\'' . $roleName . '\'})', true, $children);
+                $shortName=str_replace(' ', '', $role["name"]);
+                $parent[] = Settings::buildTabItem($role["name"], 'course.settings.roles.role({role:\''.$shortName.'\',id:'.$role["id"].'})', true, $children);
             }, $childTabs);
 
-            $defaultViewTab = Settings::buildTabItem('Default', 'course.settings.roles.role({role:\'Default\'})', true, $childTabs);
+            $defaultViewTab = Settings::buildTabItem('Default', 'course.settings.roles.role({role:\'Default\',id:0})', true, $childTabs);
             static::addTab(static::buildTabItem('Roles', 'course.settings.roles', true, array($defaultViewTab)));
 
             foreach($course->getModules() as $module) {

@@ -53,7 +53,6 @@ API::registerFunction('core', 'getCourseInfo', function() {
     API::requireValues('course');
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    
     //adding other pages to navigation
     $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
     $OldNavPages = Core::getNavigation();
@@ -127,19 +126,19 @@ API::registerFunction('settings', 'setCourseState', function() {
 //see and/or set landing page for a role
 API::registerFunction('settings', 'roleInfo', function() {
     API::requireCourseAdminPermission();
-    API::requireValues('role');
+    API::requireValues('id');
     $course = Course::getCourse(API::getValue('course'));
 
-    $role = API::getValue('role');
+    $roleId = API::getValue('id');
     if (API::hasKey('landingPage')) {
-        if ($role != 'Default') {
-            $course->setRoleData($role,"landingPage",API::getValue('landingPage'));
+        if ($roleId != 0) {//id 0 is default role
+            $course->setRoleDataById($roleId,"landingPage",API::getValue('landingPage'));
         } else {
             $course->setLandingPage(API::getValue('landingPage'));
         }
     } else {
-        if ($role != 'Default') {
-            API::response(['landingPage'=>$course->getRoleData($role, "landingPage")]);
+        if ($roleId != 0) {
+            API::response(['landingPage'=>$course->getRoleById($roleId, "landingPage")]);
         } else {
             API::response(['landingPage'=>$course->getLandingPage()]);
         }

@@ -112,9 +112,9 @@ class CourseUser extends User{
     function getLandingPage() {
         $userRoles = $this->getRoles();//array w names
         $landingPage = $this->course->getLandingPage();
-        $this->course->goThroughRoles(function($roleName, $hasChildren, $continue) use (&$landingPage, $userRoles) {
-            if (in_array($roleName, $userRoles) ) {
-                $land = $this->course->getRoleData($roleName, "landingPage");
+        $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
+            if (in_array($role["name"], $userRoles) ) {
+                $land = $this->course->getRoleByName($role["name"], "landingPage");
                 if ($land != ''){
                     $landingPage= $land;
                 }

@@ -52,6 +52,12 @@ class Course {
                 ["r.course"=>$this->cid,"r.name"=>$role],
                 "u.*,cu.*,r.name as role");
     }
+    //receives id of role and gets all the course_users w that role
+    public function getUsersWithRoleId($role) {
+        return Core::$systemDB->selectMultiple(
+                "game_course_user natural join course_user natural join user_role",
+                ["course"=>$this->cid,"role"=>$role]);
+    }
 
     public function getUsersIds() { 
         return array_column(Core::$systemDB->selectMultiple("course_user",["course"=>$this->cid],'id'),'id');
@@ -79,8 +85,13 @@ class Course {
     public function setRoleData($name, $field, $value){
         return Core::$systemDB->update("role",[$field=>$value],["course"=>$this->cid,"name"=>$name]);
     }
-    
-    public function getRoleData($name, $field='*'){
+    public function setRoleDataById($id, $field, $value){
+        return Core::$systemDB->update("role",[$field=>$value],["id"=>$id]);
+    }
+    public function getRoleById($id, $field='*'){
+        return Core::$systemDB->select("role",["course"=>$this->cid,"id"=>$id],$field);
+    }
+    public function getRoleByName($name, $field='*'){
         return Core::$systemDB->select("role",["course"=>$this->cid,"name"=>$name],$field);
     }
     public function getRolesData($field='*') {
@@ -93,8 +104,9 @@ class Course {
     public static function getRoleId($role,$courseId){
         return Core::$systemDB->select("role",["course"=>$courseId,"name"=>$role],"id");
     }
-    //receives array of roles to replace in the DB
+    //receives array of roles to replace in the DB,
     public function setRoles($newroles) {
+        //ToDo:If this is suposed to work with repeated roles, then there should be hiearchy info in role table in DB
         $oldRoles=$this->getRoles();
         foreach ($newroles as $role){
             $inOldRoles=array_search($role, $oldRoles);
@@ -109,9 +121,25 @@ class Course {
         }
     }
     
+    public function setHierarchyId(&$role,$rolesByName){
+        $role["id"]=$rolesByName[$role["name"]]["id"];
+        if (array_key_exists("children", $role)){
+            foreach($role["children"] as &$child){
+                $this->setHierarchyId($child, $rolesByName);
+            }
+        }
+    }
     //returns array with all the roles ordered by hierarchy
     public function getRolesHierarchy() {
-        return json_decode( Core::$systemDB->select("course",["id"=>$this->cid],"roleHierarchy"),true);
+        //ToDO, if we want to allow repeated role names,the hierarchy will work diferently
+        $roles = Core::$systemDB->selectMultiple("role",["course"=>$this->cid]);
+        $rolesByName = array_combine(array_column($roles, "name"), $roles);
+        
+        $hierarchy = json_decode( Core::$systemDB->select("course",["id"=>$this->cid],"roleHierarchy"),true);
+        foreach ($hierarchy as &$role){
+            $this->setHierarchyId($role,$rolesByName);
+        }
+        return $hierarchy;
     }
     public function setRolesHierarchy($rolesHierarchy) {
         Core::$systemDB->update("course",["roleHierarchy"=>json_encode($rolesHierarchy)],["id"=>$this->cid]);
@@ -192,24 +220,23 @@ class Course {
     //insert data to tiers and roles tables 
     //FixMe, this has hard coded info
     public static function insertBasicCourseData($db, $courseId){
-        
-        $roleId=1;
-        $db->insert("role",["name"=>"Teacher","course" =>$courseId, "id"=>$roleId]);
+        $db->insert("role",["name"=>"Teacher","course" =>$courseId]);
+        $teacherId=$db->getLastId();
         $db->insert("role",["name"=>"Student","course" =>$courseId]);
         $db->insert("role",["name"=>"Watcher","course" =>$courseId]);
-        
+
         $roles = [["name"=>"Teacher"],["name"=>"Student"],["name"=>"Watcher"]];
         $db->update("course",["roleHierarchy"=> json_encode($roles)],["id"=>$courseId]);
         
-        $skillTree=1;
-        $db->insert("skill_tree",["course"=>$courseId, "id"=>$skillTree, "maxReward"=>DEFAULT_MAX_TREE_XP]);
+        $db->insert("skill_tree",["course"=>$courseId, "maxReward"=>DEFAULT_MAX_TREE_XP]);
+        $skillTree=$db->getLastId();
         $db->insert("skill_tier",["tier"=>1,"reward"=>150,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>2,"reward"=>400,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);
         $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"treeId"=>$skillTree]); 
         
         $db->insert("badges_config",["maxBonusReward"=>MAX_BONUS_BADGES,"course"=>$courseId]);
-        return $roleId;
+        return $teacherId;
     }
     
     //copies content of a specified table in DB to new rows for the new course

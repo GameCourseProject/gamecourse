@@ -663,7 +663,8 @@ class Views extends Module {
                 API::requireValues('info');
                 $info = API::getValue('info');
                 
-                $finalParents = $this->findParents($data["course"], $info['roleOne']);
+                $finalParents = $this->findParents($data["course"], $info['roleOne']);//parent roles array
+                //get the aspect view from which we will copy the contents
                 $parentView = $this->findView($viewSettings["viewId"],$type, array_merge($finalParents, array($info['roleOne'])));
                 
                 if ($type == ViewHandler::VT_ROLE_SINGLE)
@@ -754,7 +755,7 @@ class Views extends Module {
             }
             API::error('Unexpected...');
         });
-        //gets page/template info, show aspects
+        //gets page/template info, show aspects (for the page/template settings page)
         API::registerFunction('views', 'getInfo', function() {
             $data = $this->getViewSettings();
             $viewSettings=$data["viewSettings"];
@@ -771,19 +772,25 @@ class Views extends Module {
             );
             $type = $viewSettings['roleType'];
             if ($type == ViewHandler::VT_ROLE_SINGLE || $type == ViewHandler::VT_ROLE_INTERACTION) {   
-                $viewSpecializations = $this->viewHandler->getAspects($viewSettings["viewId"]);
+                $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
                 $result = [];
                 
                 $doubleRoles=[];//for views w role interaction
-                foreach ($viewSpecializations as $role){
-                    $id=$role['role'];
-                    if ($type == ViewHandler::VT_ROLE_INTERACTION) {
-                        $roleTwo= substr($id, strpos($id, '>')+1, strlen($id));
-                        $roleOne= substr($id, 0, strpos($id, '>'));
-                        $doubleRoles[$roleOne][]=$roleTwo;
+                foreach ($aspects as $aspects){
+                    $aspectRole=$aspects['role'];
+                    if ($type == ViewHandler::VT_ROLE_INTERACTION) {//ToDo
+                        $roleTwo = substr($aspectRole, strpos($aspectRole, '>') + 1, strlen($aspectRole));
+                        $roleOne = substr($aspectRole, 0, strpos($aspectRole, '>'));
+                        $doubleRoles[$roleOne][] = $roleTwo;
+                    } else {
+                        $roleId = substr($aspectRole, strpos($aspectRole, '.') + 1);
+                        if ($roleId=="Default"){
+                            $result[] = ['id' => $aspectRole, 'name' => $roleId];
+                        }else{
+                            $role = $course->getRoleById($roleId);
+                            $result[] = array('id' => $aspectRole, 'name' => $role["name"]);
+                        }
                     }
-                    else
-                        $result[] = array('id' => $id, 'name' => substr($id, strpos($id, '.') + 1));
                 }
                 
                 if ($type == ViewHandler::VT_ROLE_INTERACTION) {
@@ -798,14 +805,15 @@ class Views extends Module {
                 }
                 $response['viewSpecializations'] = $result;
                 $response['allIds'] = array();
-                $roles = array_merge(array('Default'), $course->getRoles());
+                $roles = array_merge([["name"=>'Default',"id"=>"Default"]], $course->getRolesData());
                 $users = $course->getUsersIds();
                 $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
                 foreach ($roles as $role)
-                    $response['allIds'][] = array('id' => 'role.' . $role, 'name' => $role);
+                    $response['allIds'][] = array('id' => 'role.' . $role["id"], 'name' => $role["name"]);
                 foreach ($users as $user)
                     $response['allIds'][] = array('id' => 'user.' . $user, 'name' => $user);
             }
+            //print_r($response);
             API::response($response);
         });
 
@@ -931,8 +939,8 @@ class Views extends Module {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
                     API::error('Missing roleOne and/or roleTwo in info');
 
-                $view = $this->viewHandler->getViewWithParts($viewId, $info['roleOne'].'>'.$info['roleTwo']);
-                $parentParts = $this->findParentParts($data["course"], $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['roleOne'].'>'.$info['roleTwo']);
+                //$parentParts = $this->findParentParts($data["course"], $viewId, $viewType, $info['roleOne'], $info['roleTwo']);
             } else {
                 $parentParts = array();
                 $view = $this->viewHandler->getViewWithParts($pageId, "");  
@@ -960,7 +968,7 @@ class Views extends Module {
                 $info = API::getValue('info');
                 if (!array_key_exists('role', $info))
                     API::error('Missing role');
-            } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {
+            } else if ($viewType == ViewHandler::VT_ROLE_INTERACTION) {//ToDO
                 API::requireValues('info');
                 $info = API::getValue('info');
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info))
@@ -968,6 +976,7 @@ class Views extends Module {
             }
 
             $testDone = false;
+            $warning=false;
             $viewCopy = $viewContent;
             try {//replaces expressions with objects of Expression language
                 $this->viewHandler->parseView($viewCopy);
@@ -1085,14 +1094,14 @@ class Views extends Module {
             API::response(array('view' => $viewCopy));
         });
     }
-
+    //receives roles like 'role.Default','role.1',etc and get a user of that role
     function getUserIdWithRole($course, $role) {
         $uid = -1;
         if (strpos($role, 'role.') === 0) {
             $role = substr($role, 5);
             if ($role == 'Default')
                 return $course->getUsersIds()[0];
-            $users = $course->getUsersWithRole($role);
+            $users = $course->getUsersWithRoleId($role);
             if (count($users) != 0)
                 $uid = $users[0]['id'];
         } else if (strpos($role, 'user.') === 0) {
@@ -1147,18 +1156,18 @@ class Views extends Module {
         return $parentParts;
     }
     
-    //ToDo decide if this function is actualy useful, maybe delete
+    //Find parent roles given a role like 'role.1'
     private function findParents($course, $roleToFind) {
         $finalParents = array();
         $parents = array();
-        $course->goThroughRoles(function($roleName, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
-            if ('role.' . $roleName == $roleToFind) {
+        $course->goThroughRoles(function($role, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
+            if ('role.' . $role["id"] == $roleToFind) {
                 $finalParents = $parents;
                 return;
             }
 
             $parentCopy = $parents;
-            $parentCopy[] = 'role.' . $roleName;
+            $parentCopy[] = 'role.' . $role["id"];
             $cont($parentCopy);
         }, $parents);
         return array_merge(array('role.Default'), $finalParents);
