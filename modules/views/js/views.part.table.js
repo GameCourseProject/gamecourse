@@ -6,8 +6,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 partType: 'table',
                 columns: 1,//[{}],//[{sortMode: 'def'}],
                 headerRows: [],
-                rows: [{values: [], parameters:{loopData: "{}",visibilityCondition: "{}"} }],
-                parameters: {loopData: "{}",visibilityCondition: "{}"}
+                rows: [{values: [], parameters:{loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"} }],
+                parameters: {loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"}
             };
             part.rows[0].values.push({value: $sbviews.defaultPart('text')});
             return part;
@@ -89,6 +89,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             var thead = $(document.createElement('thead'));
             for (var ridx in  part.headerRows) {
                 var row = part.headerRows[ridx];
+                //$sbviews.setDefaultParamters(part.headerRows);
                 $sbviews.setDefaultParamters(part.headerRows[ridx]);
                 var rowEl = $(document.createElement('tr'));
                 $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
@@ -121,6 +122,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             var tbody = $(document.createElement('tbody'));
             for (var ridx in  part.rows) {
                 var row = part.rows[ridx];
+               // $sbviews.setDefaultParamters(part.rows);
                 $sbviews.setDefaultParamters(part.rows[ridx]);
                 var rowEl = $(document.createElement('tr'));
                 $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
@@ -283,6 +285,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     for (var cid=0;cid<part.columns;cid++) {
                         var newPart = $sbviews.defaultPart('text');
                         row.values.push({value: newPart});
+                        $sbviews.setDefaultParamters(row);
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, newPart, childOptions)));
                     }
                     newRowEl.append(buildRowToolbar(container, row, header));

@@ -234,7 +234,7 @@ create table view(
 create table page(
 	id int unsigned auto_increment primary key,
 	course int unsigned not null,
-	roleType enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',	
+	roleType enum('ROLE_SINGLE','ROLE_INTERACTION') default 'ROLE_SINGLE',	
 	name varchar(50) not null,
 	theme varchar(50),
 	viewId int unsigned,
@@ -246,7 +246,7 @@ create table page(
 create table template(
 	id int unsigned auto_increment primary key,
 	name varchar(100) not null,#
-	roleType enum('VT_SINGLE','VT_ROLE_SINGLE','VT_ROLE_INTERACTION') default 'VT_ROLE_SINGLE',
+	roleType enum('ROLE_SINGLE','ROLE_INTERACTION') default 'ROLE_SINGLE',
 	course int unsigned not null,
 	isGlobal boolean default false,
 	foreign key (course) references course(id) on delete cascade

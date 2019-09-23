@@ -63,14 +63,18 @@ class CourseUser extends User{
                 ["course"=>$this->course->getId(),"id"=>$this->id]);
     }
     
-    function getRoles() {
+    function getRolesNames() {
         return array_column(Core::$systemDB->selectMultiple("user_role u join role r on role=r.id",
                 ["u.course"=>$this->course->getId(),"u.id"=>$this->id],"name"),"name");
+    }
+    function getRolesIds() {
+        return array_column(Core::$systemDB->selectMultiple("user_role",
+                ["course"=>$this->course->getId(),"id"=>$this->id],"role"),"role");
     }
     
     //receives array of roles and replaces them in the database
     function setRoles($roles) {
-        $oldRoles = $this->getRoles();
+        $oldRoles = $this->getRolesNames();
         foreach($roles as $role){
             $found = array_search($role, $oldRoles);
             if ($found === false) {
@@ -89,7 +93,7 @@ class CourseUser extends User{
     
     //adds Role (instead of replacing) only if it isn't already in user's roles
     function addRole($roleId){
-        $currRoles=$this->getRoles();
+        $currRoles=$this->getRolesNames();
         if (!in_array($roleId, $currRoles)){
             Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId]);  
             return true;
@@ -110,7 +114,7 @@ class CourseUser extends User{
     }
 
     function getLandingPage() {
-        $userRoles = $this->getRoles();//array w names
+        $userRoles = $this->getRolesNames();//array w names
         $landingPage = $this->course->getLandingPage();
         $this->course->goThroughRoles(function($role, $hasChildren, $continue) use (&$landingPage, $userRoles) {
             if (in_array($role["name"], $userRoles) ) {

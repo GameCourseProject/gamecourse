@@ -7,9 +7,8 @@ angular.module('module.profile').controller('Profile', function($element, $scope
             console.log(err);
             return;
         }
-
         $element.append(view.element);
-        changeTitle('Profile', 1); //TODO: fix
+        changeTitle('Profile', 1);
     });
 });
 

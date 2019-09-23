@@ -23,8 +23,8 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         }
         angular.extend($scope, data);
 
-        $scope.viewType = Number($scope.viewSettings.roleType);
-        
+        $scope.viewType = $scope.viewSettings.roleType;
+        $scope.pageOrTemp = data.pageOrTemp;
         $scope.selection = {};
         $scope.selectedStyle = {
             'background-color': 'rgba(0, 0, 0, 0.07)'
@@ -32,9 +32,9 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.selectOne = function(specializationOne) {
             $scope.oneSelected = specializationOne;
-            if ($scope.viewType == 2) {
+            if ($scope.viewType == "ROLE_SINGLE") {
                 $state.go('course.settings.views.view.edit-role-single', {role: $scope.oneSelected.id});
-            } else if ($scope.viewType == 3) {
+            } else if ($scope.viewType == "ROLE_INTERACTION") {
                 $scope.specializationsTwo = specializationOne.viewedBy;
                 $scope.missingTwo = subtractSpecializations($scope.allIds, $scope.specializationsTwo);
                 if ($scope.missingTwo.length > 0)
@@ -47,7 +47,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         };
 
         $scope.createViewOne = function() {
-            if ($scope.viewType == 2) {
+            if ($scope.viewType == "ROLE_SINGLE") {
                 $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
                     if (err) {
                         alert(err.description);
@@ -60,7 +60,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     if ($scope.missingOne.length > 0)
                         $scope.selection.missingOneToAdd = $scope.missingOne[0];
                 });
-            } else if ($scope.viewType == 3) {
+            } else if ($scope.viewType == "ROLE_INTERACTION") {
                 $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
                     if (err) {
                         alert(err.description);
@@ -94,7 +94,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         $scope.deleteViewOne = function(what, $event) {
             $event.stopPropagation();
             if (!confirm("Are you sure you want to delete?"))
-                return
+                return;
 
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
                 if (err) {
@@ -118,7 +118,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         $scope.deleteViewTwo = function(what, $event) {
             $event.stopPropagation();
             if (!confirm("Are you sure you want to delete?"))
-                return
+                return;
 
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
                 if (err) {
@@ -137,7 +137,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             $state.go('course.settings.views.view.edit-single');
         };
 
-        if ($scope.viewType == 2 || $scope.viewType == 3) {
+        if ($scope.viewType == "ROLE_SINGLE" || $scope.viewType == "ROLE_INTERACTION") {
             $scope.missingOne = subtractSpecializations($scope.allIds, $scope.viewSpecializations);
             for (var i = 0; i < $scope.missingOne.length; ++i) {
                 if ($scope.missingOne[i].id.startsWith('special.')) {
@@ -198,7 +198,6 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             });
         });
         controlsDiv.append(btnSave);
-
         var btnPreview = $('<button>Preview</button>');
         btnPreview.click(function() {
             btnPreview.prop('disabled', true);
@@ -275,7 +274,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     });
 });
 
-angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state) {
+angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state,$sbviews) {
     $smartboards.request('views', 'listViews', {course: $scope.course}, function(data, err) {
         if (err) {
             alert(err.description);
@@ -301,15 +300,35 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 '<button ng-if="template.course!=course" ng-click="">Add to course</button> </div>')($scope));//ToDo
                 
         angular.extend($scope, data);
+        
         $scope.createView = function(pageOrTemp){
-            name = prompt('Name of the new '+pageOrTemp+': ');
-            $smartboards.request('views','createView',{course: $scope.course, name: name,pageOrTemp: pageOrTemp},function(data,err){
-                if (err) {
-                    alert(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            //show overlay to ask name of view and the if this is a template ask roleType
+            $sbviews.openOverlay(function (el, execClose) {
+                var optionsScope = $scope.$new();
+                optionsScope.closeOverlay = function () {
+                    execClose();
+                };
+                optionsScope.view={name: '',roleType: 'ROLE_SINGLE',pageOrTemp: pageOrTemp,course:$scope.course};
+
+                optionsScope.saveTemplate = function () {
+                    $smartboards.request('views','createView',optionsScope.view,function(data,err){
+                        if (err) {
+                            alert(err.description);
+                            return;
+                        }
+                        location.reload();
+                    });
+                };
+                var wrapper = $('<div>');// ng-disabled=
+                wrapper.append('<div class="title"><span>Create {{view.pageOrTemp}}</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
+                var input = $('<sb-input sb-input="view.name" sb-input-label="Name of {{view.pageOrTemp}}">'+ 
+                        '<span ng-if="view.pageOrTemp==\'template\'">Template Role Type:</span>'+
+                        '<select ng-if="view.pageOrTemp==\'template\'" ng-options="type.id as type.name for type in types" ng-model="view.roleType"></select>'+
+                        '<button ng-click="saveTemplate()">Save</button></sb-input>');
+                wrapper.append(input);
+                $compile(wrapper)(optionsScope);
+                el.append(wrapper);
+            }, function () {});
         };
         $scope.editView = function(id,pageOrTemp){
             $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id});

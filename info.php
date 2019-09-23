@@ -57,8 +57,10 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
     $OldNavPages = Core::getNavigation();
     $navNames= array_column($OldNavPages,"text");
-    
     foreach ($pages as $pageId => $page){
+        
+        if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
+            continue;
         //pages added by modules already have navigation, the otheres need to be added
         if(!in_array($page["name"], $navNames)){
             $simpleName=str_replace(' ', '', $page["name"]);
@@ -74,6 +76,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
         Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
     
     $navPages = Core::getNavigation();
+    //print_r($navPages);
     foreach ($navPages as $nav){
         if ($nav["restrictAcess"]===true && !$isAdmin){
             unset($navPages[array_search($nav, $navPages)]);
@@ -172,7 +175,7 @@ API::registerFunction('settings', 'roles', function() {
         foreach ($users as $userData) {
             $id = $userData['id'];
             $user = new \SmartBoards\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRoles());
+            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
         }
         $globalInfo = array(
             'users' => $usersInfo,

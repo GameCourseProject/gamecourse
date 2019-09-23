@@ -3,32 +3,28 @@ namespace Modules\Views;
 
 use Modules\Views\Expression\EvaluateVisitor;
 use Modules\Views\Expression\ExpressionEvaluatorBase;
-
 use Modules\Views\Expression\ValueNode;
 use SmartBoards\Core;
 use SmartBoards\Course;
 use SmartBoards\API;
-use SmartBoards\DataSchema;
 use SmartBoards\ModuleLoader;
 
 class ViewHandler {
-    const VT_SINGLE = 1;
-    const VT_ROLE_SINGLE = 2;
-    const VT_ROLE_INTERACTION = 3;
     private $viewsModule;
     //private $registeredPages = array(); //this was used when all the pages where created by templates
-                            //it could still be usefull if we wanted to know what pages where create by templates
-    
+                            //it could still be usefull if we wanted to know what pages where create by templates  
     private $registeredFunctions = array();
     private $registeredLibFunctions = array();
     private $registeredPartTypes = array();
     
     public function parse($exp) {
         static $parser;
-        if ($parser == null)
+        if ($parser == null) {
             $parser = new ExpressionEvaluatorBase();
-        if (trim($exp) == '')
+        }
+        if (trim($exp) == '') {
             return new ValueNode('');
+        }
         return $parser->parse($exp);
     }
 
@@ -40,10 +36,6 @@ class ViewHandler {
         $this->viewsModule = $viewsModule;
     }
 
-    //public function getRegisteredPages() {
-    //    return $this->registeredPages;
-    //}
-    
     //receives parameter and viewid, and adds what is necessary to DB
     public function addViewParameter($type,$value,$viewId,$parmOfView=null){   
         if ($parmOfView===null){
@@ -52,16 +44,17 @@ class ViewHandler {
         }
         
         if (!empty($parmOfView)){
-            if ($parmOfView["value"]!=$value)
+            if ($parmOfView["value"] != $value) {
                 //the view_param has a parm w dif val, we delete the view_param, 
                 // if the param isnt used by any others,a trigger will delete it
-                Core::$systemDB->delete("view_parameter",["viewId"=>$viewId,"parameterId"=>$parmOfView["id"]]);
-            else //the view is already associated with this parameter
+                Core::$systemDB->delete("view_parameter", ["viewId" => $viewId, "parameterId" => $parmOfView["id"]]);
+            } else { //the view is already associated with this parameter
                 return;
+            }
         }
         $parameter = Core::$systemDB->select("parameter",["type"=>$type,"value"=>$value],"id");
-        //if param doesnt exist, insert it
-        if (empty($parameter)){
+        
+        if (empty($parameter)){//if param doesnt exist, insert it
             Core::$systemDB->insert("parameter",["type"=>$type,"value"=>$value]);
             $parameter=Core::$systemDB->getLastId();
         }            
@@ -69,6 +62,7 @@ class ViewHandler {
         if (empty(Core::$systemDB->select("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter])))
             Core::$systemDB->insert("view_parameter",["viewId"=>$viewId,"parameterId"=>$parameter]);
     }
+    
     public function updateParameters(&$viewPart){
         $oldParameters = Core::$systemDB->selectMultiple("parameter join view_parameter on parameterId=id",
             ["viewId"=>$viewPart["id"]],"type,value,id");
@@ -82,7 +76,7 @@ class ViewHandler {
                 }
                 $this->addViewParameter($type,$param,$viewPart["id"],$viewParam);
             }
-        }       
+        }      
         if (array_key_exists("variables", $viewPart)){
             $value = json_encode($viewPart["variables"]);
             $viewParam=null;
@@ -96,11 +90,9 @@ class ViewHandler {
             Core::$systemDB->delete("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$param["id"]]);
         }
     }
-    //receives view and updates the DB with its info
-    //propagates changes in the main view to all its children
+    //receives view and updates the DB with its info, propagates changes in the main view to all its children
 //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), change in aspectclass
     public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
-    //insert data into DB, should check previous data and update/delete stuff   
         if ($viewPart["partType"]!="aspect" ){            
             //insert/update views
             if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
@@ -108,8 +100,9 @@ class ViewHandler {
                     "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"],"aspectClass"=>$viewPart["aspectClass"]],
                         ["id"=>$viewPart["id"]]);  
                 
-                if (!$basicUpdate)
+                if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
+                }
             }else{//not in DB, insert it
                 Core::$systemDB->insert("view",
                     ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],"aspectClass"=>$viewPart["aspectClass"],
@@ -366,7 +359,7 @@ class ViewHandler {
             //gets all the views of the aspect (using aspectclass and role)
             $viewsOfAspect= Core::$systemDB->selectMultiple("aspect_class natural join view",
                     $where,
-                    "id,role,partType,parent,viewIndex,aspectClass","parent,viewIndex");
+                    "id,role,partType,parent,viewIndex,aspectClass","parent,viewIndex,id");
             
             $view_params=$this->getViewParameters($where);
             $aspectsViews=[];
@@ -402,7 +395,7 @@ class ViewHandler {
         return $this->getPagesOfCourse($this->getCourseId(), $id, $pageName);
     }
     public static function getPagesOfCourse($courseId,$id=null,$pageName = null) {
-        $fileds="course,id,name,theme,viewId,roleType+0 as roleType";
+        $fileds="course,id,name,theme,viewId,roleType";
         if ($pageName == null && $id==null) {
             $pages=Core::$systemDB->selectMultiple("page",['course' => $courseId],$fileds);
             return array_combine(array_column($pages, "id"),$pages);
@@ -415,17 +408,17 @@ class ViewHandler {
     public function getCourseId(){
         return $this->viewsModule->getParent()->getId();
     }
-    public function createPageOrTemplateIfNew($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
+    public function createPageOrTemplateIfNew($name,$pageOrTemp,$roleType="ROLE_SINGLE"){
         if(empty($this->getPages(null,$name))){
             $this->createPageOrTemplate($name,$pageOrTemp,$roleType);
         }
     }
-    public function createPageOrTemplate($name,$pageOrTemp,$roleType=self::VT_ROLE_SINGLE){
+    public function createPageOrTemplate($name,$pageOrTemp,$roleType="ROLE_SINGLE"){
         $courseId=$this->getCourseId();
         
-        if ($roleType == self::VT_ROLE_SINGLE)
+        if ($roleType == "ROLE_SINGLE")
             $role='role.Default';
-        else if ($roleType == self::VT_ROLE_INTERACTION)
+        else if ($roleType == "ROLE_INTERACTION")
             $role='role.Default>role.Default';
         
         Core::$systemDB->insert("view",["partType"=>"aspect","role"=>$role]);
@@ -690,7 +683,6 @@ class ViewHandler {
     }
 
     public function parseVisibilityCondition(&$part) {
-        //print_r($part);
         if (($part["parameters"]["visibilityType"] == "visible" && array_key_exists("loopData", $part["parameters"]))
                     || $part['parameters']['visibilityCondition']=="{}" || $part['parameters']['visibilityCondition']==""){        
             unset($part["parameters"]["visibilityCondition"]);          
@@ -731,15 +723,16 @@ class ViewHandler {
             }
 
             //this is choosing a role with low hirearchy (maybe change)
-            $course->goThroughRoles(function ($roleName, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
-                if (in_array('role.' . $roleName, $roleArray) && in_array($roleName, $userRoles)) {
+            $course->goThroughRoles(function ($role, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
+                if (in_array('role.' . $role["id"], $roleArray) && in_array($role["id"], $userRoles)) {
                     
-                    $roleFound = 'role.' . $roleName;
+                    $roleFound = 'role.' . $role["id"];
                 }
                 if ($hasChildren)
                     $continue();
             });
         }
+        //print_r($roleFound);
         return $roleFound;
     }
     
@@ -757,41 +750,33 @@ class ViewHandler {
             $viewType = $this->getPages($pageId)['roleType'];
             
             $roleOne=$roleTwo=null;
-            if ($viewType == ViewHandler::VT_SINGLE){
-                $view=$this->getViewWithParts($pageId, "");
-                $userView = ViewEditHandler::putTogetherView($view, array());
-            }else{
-                //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
-                if ($viewType == ViewHandler::VT_ROLE_INTERACTION){
-                    API::requireValues('user');
-                    $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
-                    foreach ($viewRoles as $roleInteraction){
-                        $roles= explode('>',$roleInteraction);
-                        $roleArray[$roles[0]][]=$roles[1];
-                    }
-                    $userRoles=$course->getUser((string)API::getValue('user'))->getRoles();
-                    $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
-                    $roleArray = $roleArray[$roleOne];
-                    
-                    if (in_array('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
-                        $roleTwo = 'special.Own';
-                    }
-                    else {
-                        $loggedUserRoles = $course->getLoggedUser()->getRoles();
-                        $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
-                    }
-                    
-                    $userView=$this->getViewWithParts($page["viewId"], $roleOne.'>'.$roleTwo);
+            
+            //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
+            if ($viewType == "ROLE_INTERACTION"){
+                API::requireValues('user');
+                $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
+                foreach ($viewRoles as $roleInteraction){
+                    $roles= explode('>',$roleInteraction);
+                    $roleArray[$roles[0]][]=$roles[1];
                 }
-                else if ($viewType == ViewHandler::VT_ROLE_SINGLE){
-                    $userRoles = $course->getLoggedUser()->getRoles();
-                    $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
-                    $userView=$this->getViewWithParts($page["viewId"], $roleOne);
-                }  
-                //$parentParts = $this->viewsModule->findParentParts($course, $pageId, $viewType, $roleOne, $roleTwo);  
-                // ToDo check if  parentparts is working for role interaction
-                //$userView = ViewEditHandler::putTogetherView($userView, $parentParts);
+                $userRoles=$course->getUser((string)API::getValue('user'))->getRolesIds();
+                $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
+                $roleArray = $roleArray[$roleOne];
+
+                if (in_array('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
+                    $roleTwo = 'special.Own';
+                }
+                else {
+                    $loggedUserRoles = $course->getLoggedUser()->getRolesIds();
+                    $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
+                }
+                $userView=$this->getViewWithParts($page["viewId"], $roleOne.'>'.$roleTwo);
             }
+            else if ($viewType == "ROLE_SINGLE"){
+                $userRoles = $course->getLoggedUser()->getRolesIds();
+                $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
+                $userView=$this->getViewWithParts($page["viewId"], $roleOne);
+            }  
                      
             $viewParams = array(
                 'course' => (string)API::getValue('course'),
@@ -815,7 +800,6 @@ class ViewHandler {
         API::response(array(
             //'fields' => DataSchema::getFields($viewParams),//not beeing user currently
             'view' => $viewData
-        ));  
-        
+        ));   
     }
 }

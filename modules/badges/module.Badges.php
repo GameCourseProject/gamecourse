@@ -84,7 +84,7 @@ class Badges extends Module {
             return $this->getBadge(false,["name"=>$name]);
         });
         //%badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
-        $viewHandler->registerFunction('badges','getCountBadges', function($user=null) {  
+        $viewHandler->registerFunction('badges','getBadgesCount', function($user=null) {  
             if ($user===null){
                 return new ValueNode(Core::$systemDB->select("badge",["course"=>$this->getCourseId()],"sum(maxLevel)"));
             }

@@ -82,9 +82,9 @@ class SQLDB {
         $this->dataToQuery($sql,$where,'&&',$whereNot,$whereCompare);
         if ($likeParams!=null){
             foreach($likeParams as $key => $value){
-                $sql.=" && ". $key." like :".$key;
+                $sql.=" && ". $key." like ? ";
             }
-            $where=array_merge($where,$likeParams);
+            $where=array_merge($where,array_values($likeParams));
         }
         $sql.=';';
         $this->executeQueryWithParams($sql,$where);  

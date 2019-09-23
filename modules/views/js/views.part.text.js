@@ -6,7 +6,10 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 partType: 'text',
                 //info: 'Text'
                 parameters: {
-                    value: 'Text'
+                    value: 'Text',
+                    loopData: '{}',
+                    visibilityCondition: '{}',
+                    visibilityType: "conditional"
                 }
             };
         },
