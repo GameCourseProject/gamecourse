@@ -353,7 +353,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         };
         $scope.deleteView = function(view,templateOrPage) {
             if (!confirm("Are you sure you want to delete the "+templateOrPage+" '"+view.name+"'?"))
-                return
+                return;
             $smartboards.request('views', 'deleteView', {course: $scope.course, id: view.id,pageOrTemp:templateOrPage}, function(data, err) {
                 if (err) {
                     alert(err.description);

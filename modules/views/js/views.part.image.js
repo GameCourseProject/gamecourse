@@ -6,7 +6,6 @@ angular.module('module.views').run(function($sbviews, $compile) {
             return {
                 partType: 'image',
                 edit: true,
-                //info: 'images/awards.svg'
                 parameters: {
                     value: 'images/awards.svg'
                 }
@@ -30,8 +29,8 @@ angular.module('module.views').run(function($sbviews, $compile) {
             
             
             var root;
-            if (part.link != undefined && !options.edit) {
-                root = $(document.createElement('a')).attr({href: part.link});
+            if (part.parameters.link != undefined && !options.edit) {
+                root = $(document.createElement('a')).attr({href: part.parameters.link});
             } else {
                 root = $(document.createElement('span'));
             }

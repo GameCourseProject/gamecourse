@@ -23,16 +23,14 @@
 </sb-menu>
 
 <sb-menu sb-menu-title="Variables" sb-menu-icon="images/gear.svg">
-    <sb-checkbox ng-if="options.allowVariables" sb-checkbox="part.variables" sb-checkbox-label="Enable Variables" sb-checkbox-default="{}" sb-checkbox-info="This defines variables for the element, which are useful to complement the Events or for the Expressions of the various settings." sb-checkbox-link="./docs/#ViewsStyleMiscData">
-        <div ng-repeat="(key, variables) in part.variables">
-            <sb-expression sb-expression="part.variables[key].value" sb-expression-label="{{key}}"><!--
-                --><button ng-click="delete(part.variables, key)">Remove</button><!--
-            --></sb-expression>
-        </div>
-        <sb-input sb-input="variables.dataKey" sb-input-label="New Key"><!--
-            --><button ng-disabled="variables.dataKey == undefined" ng-click="addVariable()">Add</button><!--
-        --></sb-input>
-    </sb-checkbox>
+    <div ng-if="options.allowVariables" ng-repeat="(key, variables) in part.variables">
+        <sb-expression sb-expression="part.variables[key].value" sb-expression-label="%{{key}}"><!--
+            --><button ng-click="delete(part.variables, key)">Remove</button><!--
+        --></sb-expression>
+    </div>
+    <sb-input ng-if="options.allowVariables" sb-input="variables.dataKey" sb-input-label="New Key:  %"><!--
+        --><button ng-disabled="variables.dataKey == undefined" ng-click="addVariable()">Add</button><!--
+    --></sb-input>
 </sb-menu>
 <div class="partSpecific"></div>
 <sb-menu sb-menu-title="Visibility" sb-menu-icon="images/gear.svg">
@@ -48,16 +46,14 @@
     <!--sb-checkbox ng-if="options.allowDirective" sb-checkbox="part.directive" sb-checkbox-label="Enable Angular Directive" sb-checkbox-info="The angular directive allows to define anything to be run in Javascript for the element being initialized. It is should be used primarily to defined functions for Events. To define the directive it is required to create/edit a Javascript file." sb-checkbox-default="" sb-checkbox-link="./docs/#ViewsStyleMiscAngularDirective">
         <sb-input sb-input="part.directive" sb-input-label="Directive name"></sb-input>
     </sb-checkbox-->
-    <sb-checkbox ng-if="options.allowEvents" sb-checkbox="part.events" sb-checkbox-label="Enable Events" sb-checkbox-info="Events allow to define interaction with the element, for example, when the moves the mouse over it. This may require you to write Javascript code." sb-checkbox-default="{}" sb-checkbox-link="./docs/#ViewsStyleMiscEvents">
-        <sb-input ng-repeat="(type, event) in part.events" sb-input="part.events[type]" sb-input-label="{{type}}"><!--
-            --><button ng-click="delete(part.events, type); addEventToMissing(type)">Remove</button>
-        </sb-input>
-        <div class="sb-component" ng-if="missingEvents.length > 0"><!--
-            --><label for="events-missing">Add event</label><!--
-            --><select id="events-missing" ng-model="events.eventToAdd" ng-options="event for event in missingEvents"></select><!--
-            --><button ng-disabled="events.eventToAdd == undefined" ng-click="addEvent()">Add event</button><!--
-        --></div>
-    </sb-checkbox>
+    <sb-input ng-if="options.allowEvents" ng-repeat="(type, event) in part.parameters.events" sb-input="part.parameters.events[type]" sb-input-label="{{type}}"><!--
+        --><button ng-click="delete(part.events, type); addEventToMissing(type)">Remove</button>
+    </sb-input>
+    <div ng-if="options.allowEvents" class="sb-component" ng-if="missingEvents.length > 0"><!--
+        --><label for="events-missing">Add event</label><!--
+        --><select id="events-missing" ng-model="events.eventToAdd" ng-options="event for event in missingEvents"></select><!--
+        --><button ng-disabled="events.eventToAdd == undefined" ng-click="addEvent()">Add event</button><!--
+    --></div>
     
 </sb-menu>
 <div class="part-sysinfo">pid: {{part.pid}}</div>

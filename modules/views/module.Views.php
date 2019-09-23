@@ -499,14 +499,14 @@ class Views extends Module {
         //parts
         $this->viewHandler->registerPartType('text', null, null,
             function(&$value) {//parse function
-                if (array_key_exists('link', $value)){
-                    $this->viewHandler->parseSelf($value['link']);
+                if (array_key_exists('link', $value['parameters'])){
+                    $this->viewHandler->parseSelf($value['parameters']['link']);
                 }
                 $this->viewHandler->parseSelf($value['parameters']["value"]);
             },
             function(&$value, $viewParams, $visitor) {//processing function
-                if (array_key_exists('link', $value)) {
-                    $value['link'] = $value['link']->accept($visitor)->getValue();
+                if (array_key_exists('link', $value['parameters'])) {
+                    $value['parameters']['link'] = $value['parameters']['link']->accept($visitor)->getValue();
                 }
                 $value['valueType'] = 'text';
                 $value['parameters']["value"] = $value['parameters']["value"]->accept($visitor)->getValue();
@@ -515,14 +515,14 @@ class Views extends Module {
         
         $this->viewHandler->registerPartType('image', null, null,
             function(&$image) {//parse function
-                if (array_key_exists('link', $image)){
-                    $this->viewHandler->parseSelf($image['link']);
+                if (array_key_exists('link', $image['parameters'])){
+                    $this->viewHandler->parseSelf($image['parameters']['link']);
                 }
                 $this->viewHandler->parseSelf($image['parameters']["value"]);
             },
             function(&$image, $viewParams, $visitor) {//processing function
-                if (array_key_exists('link', $image))
-                    $image['link'] = $image['link']->accept($visitor)->getValue();
+                if (array_key_exists('link', $image['parameters']))
+                    $image['parameters']['link'] = $image['parameters']['link']->accept($visitor)->getValue();
 
                 $image['edit'] = false;
                 $image['parameters']["value"] = $image['parameters']["value"]->accept($visitor)->getValue();

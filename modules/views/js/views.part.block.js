@@ -321,7 +321,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 }                                
                             });
 
-                            addPartsDiv.append('<label for="partList">Add New Part:</label><br>')
+                            addPartsDiv.append('<label for="partList">Add New Part:</label><br>');
                             addPartsDiv.append(partsList);
                             addPartsDiv.append(addButton);
                             
@@ -339,7 +339,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     //get template contents
                                 
                             });
-                            addTemplateRef.append('<label for="partList">Add Template Reference:</label><br>')
+                            addTemplateRef.append('<label for="partList">Add Template Reference:</label><br>');
                             addTemplateRef.append(templateList);
                             addTemplateRef.append(addTemplateButton);
 

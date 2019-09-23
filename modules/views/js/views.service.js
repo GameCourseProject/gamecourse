@@ -494,7 +494,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         execClose();
                     });
 
-                    wrapper.append('<label for="partList">Turn Part into:</label>')
+                    wrapper.append('<label for="partList">Turn Part into:</label>');
                     wrapper.append(partsList);
                     wrapper.append(turnButton);
                     el.append(wrapper);
@@ -542,7 +542,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             });
                         };
 
-                        var wrapper = $('<div>')
+                        var wrapper = $('<div>');
                         wrapper.append('<div class="title"><span>Save Template</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
                         var input = $('<sb-input sb-input="template.name" sb-input-label="Template Name"><button ng-click="saveTemplate()">Save</button></sb-input>');
                         wrapper.append(input);
@@ -750,8 +750,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 part.parameters.loopData="{}";
             if (part.parameters.visibilityCondition===undefined)
                 part.parameters.visibilityCondition="{}";
-            if (part.parameters.visibilityType==undefined)
+            if (part.parameters.visibilityType===undefined)
                 part.parameters.visibilityType="conditional";
+            if (part.variables===undefined)
+                part.variables={};
         }
     };
     

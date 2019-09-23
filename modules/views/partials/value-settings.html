@@ -13,7 +13,6 @@
 <sb-checkbox ng-if="part.valueType == 'field'" sb-checkbox="part.parameters.value.format" sb-checkbox-label="Enable Format" sb-checkbox-default="'%v'">
     <sb-input sb-input="part.parameters.value.format" sb-input-label="Format"></sb-input>
 </sb-checkbox>
-<sb-checkbox sb-checkbox="part.link" sb-checkbox-label="Enable Link" sb-checkbox-default="" sb-checkbox-info="Defines a link on the element for the reader to follow.">
-    <sb-expression sb-expression="part.link" sb-expression-label="Link"></sb-expression>
+<sb-checkbox sb-checkbox="part.parameters.link" sb-checkbox-label="Enable Link" sb-checkbox-default="" sb-checkbox-info="Defines a link on the element for the reader to follow.">
+    <sb-expression sb-expression="part.parameters.link" sb-expression-label="Link"></sb-expression>
 </sb-checkbox>
-<!--div class="preview"></div>

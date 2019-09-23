@@ -540,7 +540,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         callbackFunc: function(el, execClose, optionsScope, watch) {
                             var partSpecificMenu = $('<sb-menu sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
                             var filterBox = $('<sb-checkbox sb-checkbox="part.filterBox" sb-checkbox-label="Enable Filter" sb-checkbox-default="{value: \'\', mode: \'hide\'}" sb-checkbox-info="Allows the viewer to filter the items in the table." sb-checkbox-link="./docs/#PartTableFilter"></sb-checkbox>');
-                            filterBox.append($('<sb-input sb-input="part.filterBox.value" sb-input-label="Filter"></sb-input>'))
+                            filterBox.append($('<sb-input sb-input="part.filterBox.value" sb-input-label="Filter"></sb-input>'));
                             filterBox.append($('<div class="sb-component"><label for="mode-select">Mode</label><select id="mode-select" ng-model="part.filterBox.mode"><option value="hide">Hide</option><option value="fade">Fade</option></select></div>'));
                             partSpecificMenu.append(filterBox);
                             partSpecificMenu.append($('<sb-checkbox sb-checkbox="part.sort" sb-checkbox-label="Enable Sort" sb-checkbox-default="true" sb-checkbox-info="Enables sorting of the columns of the table." sb-checkbox-link="./docs/#PartTableSort"></sb-checkbox>'));

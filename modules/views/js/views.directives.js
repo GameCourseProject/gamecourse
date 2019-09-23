@@ -9,7 +9,7 @@ angular.module('module.views').directive('sbMenu', function() {
             $scope.icon = attrs.sbMenuIcon;
         },
         template: '<div class="sb-menu"><div class="header"><img class="icon" ng-src="{{icon}}"><span>{{title}}</span></div><div class="content" ng-transclude></div></div>'
-    }
+    };
 }).directive('sbCheckbox', function($parse) {
     var uid = 0;
     return {
@@ -41,7 +41,7 @@ angular.module('module.views').directive('sbMenu', function() {
             $scope.elid = 'cb-' + (++uid);
         },
         template: '<div class="sb-checkbox"><input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()"><label for="{{elid}}">{{label}}</label><a ng-href="{{link}}" target="_blank"><img ng-if="parameters.value != undefined" title="{{parameters.value}}" class="info" src="images/info.svg"></a><div class="content" ng-if="isChecked()" ng-transclude></div></div>'
-    }
+    };
 }).directive('sbInput', function($parse) {
     var uid = 0;
     return {
@@ -53,12 +53,12 @@ angular.module('module.views').directive('sbMenu', function() {
             var parsedValue = $parse(attrs.sbInput);
             $scope.value = function() { return function() {
                 return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
-            } };
+            }; };
             $scope.label = attrs.sbInputLabel;
             $scope.elid = 'ip-' + (++uid);
         },
         template: '<div class="sb-input"><label for="{{elid}}">{{label}}</label><input id="{{elid}}" type="text" ng-model="value()" ng-model-options="{ getterSetter: true }"><div class="content" ng-transclude></div></div>'
-    }
+    };
 }).directive('sbExpression', function($parse, $timeout) {
     CodeAssistant = {};
     CodeAssistant.fields = {};
@@ -142,7 +142,7 @@ angular.module('module.views').directive('sbMenu', function() {
         if (obj == undefined)
             return undefined;
         return obj.type;
-    }
+    };
 
     CodeAssistant.processError = function(err) {
         if (typeof err === 'object' && err.hash) {
@@ -172,7 +172,7 @@ angular.module('module.views').directive('sbMenu', function() {
             var parsedValue = $parse(attrs.sbExpression);
             $scope.value = function() { return function() {
                 return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
-            } };
+            }; };
             $scope.label = attrs.sbExpressionLabel;
             $scope.tryAutoComplete = function($event) {
                 if ($event.keyCode == 9 || $event.keyCode == 13) {
@@ -332,5 +332,5 @@ angular.module('module.views').directive('sbMenu', function() {
         '<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
         '<div class="content" ng-transclude></div>' +
         '</div>'
-    }
+    };
 });

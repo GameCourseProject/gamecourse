@@ -36,7 +36,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                         valuePartDef.createElement(optionsScope, optionsScope.part, {edit: true, preview: true});
                     });
 
-                    if (optionsDivEl == undefined)
+                    if (optionsDivEl === undefined)
                         return optionsDivEl = optionsDiv;
                     else {
                         optionsDivEl.replaceWith(optionsDiv);
@@ -62,14 +62,11 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         },
         createElement: function(scope, part, options) {
             var element;
-            if (part.link && !options.edit)
-                element = $(document.createElement('a')).addClass('value').attr('href', part.link);
+            if (part.parameters.link && !options.edit)
+                element = $(document.createElement('a')).addClass('value').attr('href', part.parameters.link);
             else
                 element = $(document.createElement('span')).addClass('value');
             
-            /*if ((part.info==undefined || part.info=="") && (part.parameters != undefined && part.parameters.value!=undefined)){
-                part.info=part.parameters.value;
-            }*/
             if (part.parameters.value === '' || scope.placeholderValue === '') {
                 element.text('(Empty Value)');
                 element.addClass('red');
