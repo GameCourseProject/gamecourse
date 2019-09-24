@@ -333,4 +333,14 @@ angular.module('module.views').directive('sbMenu', function() {
         '<div class="content" ng-transclude></div>' +
         '</div>'
     };
-});
+}).directive('events', function($state) {
+    return {
+        link: function($scope) {
+            $scope.gotoProfile = function(row) {
+                console.log("IN GOTOPROFILE");
+                console.log(row);
+                $state.go('course.profile', {'userID': row.data.student.value.id});
+            };
+        }
+    };
+});;

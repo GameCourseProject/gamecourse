@@ -97,16 +97,16 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx=0;cidx<part.columns;cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('th'));
-                    $sbviews.applyCommonFeatures(scope, column, columnEl, options);
+                    //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.headerRows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);
                 }
 
-                if (!options.edit && row.events) {
-                    var keys = Object.keys(row.events);
+                if (!options.edit && row.parameters.events) {//?
+                    var keys = Object.keys(row.parameters.events);
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
-                        var fn = $parse(row.events[key]);
+                        var fn = $parse(row.parameters.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.row = row;
@@ -130,16 +130,16 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx =0; cidx<part.columns;cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('td'));
-                    $sbviews.applyCommonFeatures(scope, column, columnEl, options);
+                    //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.rows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);
                 }
 
-                if (!options.edit && row.events) {
-                    var keys = Object.keys(row.events);
+                if (!options.edit && row.parameters.events) {//?
+                    var keys = Object.keys(row.parameters.events);
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
-                        var fn = $parse(row.events[key]);
+                        var fn = $parse(row.parameters.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.row = row;
@@ -378,7 +378,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 }
 
                 buildColumnToolbar = function (cidx) {
-                    var columnEl = $(document.createElement('th'));//here
+                    var columnEl = $(document.createElement('th'));
                     var toolbar = $sbviews.createToolbar(scope, {}, {
                         view: options.view,
                         notifiedPart: part,                        

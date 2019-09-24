@@ -201,12 +201,16 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.applyCommonFeatures = function(scope, part, element, options) {
         if (!options.edit && part.parameters.events && !options.disableEvents) {
-            var keys = Object.keys(part.events);
+            var keys = Object.keys(part.parameters.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
+                console.log("checking event",key);
+                console.log(part.parameters.events[key]);
                 var fn = $parse(part.parameters.events[key]);
+                console.log("parsed",fn);
                 (function(key, fn) {
                     element.on(key, function(e) {
+                        console.log("detected event:",key);
                         if(e.stopPropagation)
                             e.stopPropagation();
                         fn(scope);
@@ -221,13 +225,11 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             element.addClass(part.class);
         if (part.style != undefined)
             element.attr('style', part.style);
-
-        if (part.directive != undefined) {
-            element.attr(part.directive, '');
-            $compile(element)(scope);
-            element.removeAttr(part.directive);
-        }
         
+        //add events attribute so they can acess functions of events directive
+        element.attr("events", '');
+        $compile(element)(scope);
+        element.removeAttr("events");
     };
 
     this.openOverlay = function(callbackFunc, closeFunc) {
@@ -356,7 +358,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         watch('part.parameters.style');
                         watch('part.parameters.loopData');
                         watch('part.if');
-                        watch('part.events');
+                        //watch('part.parameters.events');
                         watch('part.data');
                         
                         el.on('mouseenter', function() {
@@ -366,10 +368,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         // Events
                         var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
                         var missingEvents = [];
-                        if (optionsScope.part.parameters.events != undefined) {
+                        if (optionsScope.part.parameters.events !== undefined) {
                             for (var i in events) {
                                 var event = events[i];
-                                if (optionsScope.part.parameters.events[event] == undefined)
+                                if (optionsScope.part.parameters.events[event] === undefined)
                                     missingEvents.push(event);
                             }
                         } else {
@@ -607,8 +609,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 layoutEditor: false,
                 overlayOptions: {
                     allowClass: true,
-                    allowStyle: true
-                    //allowDirective: true
+                    allowStyle: true,
+                    allowDirective: true
                 },
                 tools: {
                     noSettings: false,
@@ -742,7 +744,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
     this.setDefaultParamters = function(part) {
         //sets some fields contents to '{}' and ensures paramters is an object
-        if (Array.isArray(part.parameters)){
+        if (part.parameters===undefined || Array.isArray(part.parameters)){
             //when a block is saved with empty parameters it becomes an array instead of object
             //this changes them back to object(to prevent problems where params wheren't being saved)
             part.parameters={};
@@ -751,6 +753,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         if (part.parameters!==undefined ){
             if (part.parameters.variables===undefined || Array.isArray(part.parameters.variables))
                 part.parameters.variables={};
+            if (part.parameters.events===undefined || Array.isArray(part.parameters.events))
+                part.parameters.events={};
             if (part.parameters.loopData===undefined)
                 part.parameters.loopData="{}";
             if (part.parameters.visibilityCondition===undefined)

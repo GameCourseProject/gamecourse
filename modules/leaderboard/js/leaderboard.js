@@ -19,13 +19,14 @@ angular.module('module.leaderboard').controller('Leaderboard', function ($rootSc
         $element.append(view.element);
     });
 });
-
+/*
 angular.module('module.leaderboard').directive('leaderboardTable', function($state) {
     return {
         link: function($scope) {
             $scope.gotoProfile = function(row) {
+                console.log("IN GOTOPROFILE");
                 $state.go('course.profile', {'userID': row.data.student.value.id});
             };
         }
     };
-});
+});*/

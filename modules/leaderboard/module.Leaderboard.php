@@ -27,8 +27,7 @@ class Leaderboard extends Module {
         }
     }
 
-    public function initSettingsTabs() {
-    }
+    public function initSettingsTabs() {}
 }
 
 ModuleLoader::registerModule(array(
