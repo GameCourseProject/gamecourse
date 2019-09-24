@@ -319,18 +319,18 @@ angular.module('module.views').directive('sbMenu', function() {
         template: '<div class="sb-expression">' +
         '<label for="{{elid}}">{{label}}</label>' +
         '<textarea id="{{elid}}" ng-blur="updateVisibility(false)" ng-focus="updateVisibility(true)" ng-model="value()" ng-model-options="{ getterSetter: true }" class="expression" placeholder="Expression" ng-keydown="tryAutoComplete($event)" ng-keyup="applyResize()"></textarea>' +
-        '<a ng-style="needField" ng-mousedown="searchFieldContext.showFieldSearch = true">Need a field?</a>' +
-        '<div class="expression-field-search" ng-if="searchFieldContext.showFieldSearch == true">' +
-        '<div><label for="label-search-{{elid}}">Search Field</label><input id="label-search-{{elid}}" type="text" ng-model="searchFieldContext.searchVariable">' +
-        '<img src="images/close.svg" ng-click="searchFieldContext.showFieldSearch = false"></div>' +
-        '<div class="value-filtered-fields">' +
-        '<div ng-repeat="result in filteredResults" ng-click="selectField(result)">' +
-        '<div class="field">{{result.fieldExp}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>' +
-        '</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
-        '<div class="content" ng-transclude></div>' +
+        //'<a ng-style="needField" ng-mousedown="searchFieldContext.showFieldSearch = true">Need a field?</a>' +
+        //'<div class="expression-field-search" ng-if="searchFieldContext.showFieldSearch == true">' +
+        //'<div><label for="label-search-{{elid}}">Search Field</label><input id="label-search-{{elid}}" type="text" ng-model="searchFieldContext.searchVariable">' +
+        //'<img src="images/close.svg" ng-click="searchFieldContext.showFieldSearch = false"></div>' +
+        //'<div class="value-filtered-fields">' +
+        //'<div ng-repeat="result in filteredResults" ng-click="selectField(result)">' +
+        //'<div class="field">{{result.fieldExp}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>' +
+        //'</div>' +
+        //'</div>' +
+        //'</div>' +
+        //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
+        //'<div class="content" ng-transclude></div>' +
         '</div>'
     };
 });

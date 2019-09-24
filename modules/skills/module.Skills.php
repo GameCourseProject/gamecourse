@@ -206,7 +206,7 @@ class Skills extends Module {
             $this->checkArray($skill, "object", "getPost()");
             $userId=$this->getUserId($user);
             $post=Core::$systemDB->select("participation",
-                    ["type"=>"skills","moduleInstance"=>$skill["value"]["id"],"user"=>$userId,"course"=>$courseId],
+                    ["type"=>"skill","moduleInstance"=>$skill["value"]["id"],"user"=>$userId,"course"=>$courseId],
                     "post");
             if (empty($post))
                 throw new \Exception("In function .getPost(...): Couldn't findo the skill post for the given user");
