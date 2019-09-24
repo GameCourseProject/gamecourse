@@ -200,11 +200,11 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.applyCommonFeatures = function(scope, part, element, options) {
-        if (!options.edit && part.events && !options.disableEvents) {
+        if (!options.edit && part.parameters.events && !options.disableEvents) {
             var keys = Object.keys(part.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
-                var fn = $parse(part.events[key]);
+                var fn = $parse(part.parameters.events[key]);
                 (function(key, fn) {
                     element.on(key, function(e) {
                         if(e.stopPropagation)
@@ -366,23 +366,25 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         // Events
                         var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
                         var missingEvents = [];
-                        if (optionsScope.part.events != undefined) {
+                        if (optionsScope.part.parameters.events != undefined) {
                             for (var i in events) {
                                 var event = events[i];
-                                if (optionsScope.part.events[event] == undefined)
+                                if (optionsScope.part.parameters.events[event] == undefined)
                                     missingEvents.push(event);
                             }
                         } else {
                             missingEvents = events;
+                            optionsScope.part.parameters.events={};
                         }
                         optionsScope.missingEvents = missingEvents;
                         optionsScope.events = {
                             eventToAdd: undefined
                         };
                         optionsScope.addEvent = function() {
+                            console.log(optionsScope);
                             var eventType = optionsScope.events.eventToAdd;
                             optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
-                            optionsScope.part.events[eventType] = '';
+                            optionsScope.part.parameters.events[eventType] = '';
                         };
 
                         optionsScope.addEventToMissing = function(type) {
@@ -396,7 +398,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         };
 
                         optionsScope.addVariable = function() {
-                            optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
+                            optionsScope.part.parameters.variables[optionsScope.variables.dataKey] = {value: ''};
                             optionsScope.variables.dataKey = '';
                         };
 
@@ -745,15 +747,16 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             //this changes them back to object(to prevent problems where params wheren't being saved)
             part.parameters={};
         }
+        
         if (part.parameters!==undefined ){
+            if (part.parameters.variables===undefined || Array.isArray(part.parameters.variables))
+                part.parameters.variables={};
             if (part.parameters.loopData===undefined)
                 part.parameters.loopData="{}";
             if (part.parameters.visibilityCondition===undefined)
                 part.parameters.visibilityCondition="{}";
             if (part.parameters.visibilityType===undefined)
                 part.parameters.visibilityType="conditional";
-            if (part.variables===undefined)
-                part.variables={};
         }
     };
     

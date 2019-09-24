@@ -23,9 +23,9 @@
 </sb-menu>
 
 <sb-menu sb-menu-title="Variables" sb-menu-icon="images/gear.svg">
-    <div ng-if="options.allowVariables" ng-repeat="(key, variables) in part.variables">
-        <sb-expression sb-expression="part.variables[key].value" sb-expression-label="%{{key}}"><!--
-            --><button ng-click="delete(part.variables, key)">Remove</button><!--
+    <div ng-if="options.allowVariables" ng-repeat="(key, variables) in part.parameters.variables">
+        <sb-expression sb-expression="part.parameters.variables[key].value" sb-expression-label="%{{key}}"><!--
+            --><button ng-click="delete(part.parameters.variables, key)">Remove</button><!--
         --></sb-expression>
     </div>
     <sb-input ng-if="options.allowVariables" sb-input="variables.dataKey" sb-input-label="New Key:  %"><!--
@@ -47,7 +47,7 @@
         <sb-input sb-input="part.directive" sb-input-label="Directive name"></sb-input>
     </sb-checkbox-->
     <sb-input ng-if="options.allowEvents" ng-repeat="(type, event) in part.parameters.events" sb-input="part.parameters.events[type]" sb-input-label="{{type}}"><!--
-        --><button ng-click="delete(part.events, type); addEventToMissing(type)">Remove</button>
+        --><button ng-click="delete(part.parameters.events, type); addEventToMissing(type)">Remove</button>
     </sb-input>
     <div ng-if="options.allowEvents" class="sb-component" ng-if="missingEvents.length > 0"><!--
         --><label for="events-missing">Add event</label><!--

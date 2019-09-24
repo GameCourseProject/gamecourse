@@ -330,7 +330,7 @@ angular.module('module.views').directive('sbMenu', function() {
         //'</div>' +
         //'</div>' +
         //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
-        //'<div class="content" ng-transclude></div>' +
+        '<div class="content" ng-transclude></div>' +
         '</div>'
     };
 });

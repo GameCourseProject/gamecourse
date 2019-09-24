@@ -69,6 +69,9 @@ class ViewHandler {
         $paramesToDelete= array_combine(array_column($oldParameters, "type"),$oldParameters);
         if (array_key_exists("parameters", $viewPart)){
             foreach ($viewPart["parameters"] as $type => $param){
+                if ($type=="variables" || $type=="events"){
+                    $param=json_encode($param);
+                }
                 $viewParam=null;
                 if (array_key_exists($type, $paramesToDelete)) {
                     $viewParam=$paramesToDelete[$type];
@@ -76,16 +79,7 @@ class ViewHandler {
                 }
                 $this->addViewParameter($type,$param,$viewPart["id"],$viewParam);
             }
-        }      
-        if (array_key_exists("variables", $viewPart)){
-            $value = json_encode($viewPart["variables"]);
-            $viewParam=null;
-            if (array_key_exists("variables", $paramesToDelete)) {
-                $viewParam=$paramesToDelete["variables"];
-                unset($paramesToDelete["variables"]);
-            }
-            $this->addViewParameter("variables",$value,$viewPart["id"],$viewParam);
-        }  
+        }
         foreach($paramesToDelete as $type => $param){
             Core::$systemDB->delete("view_parameter",["viewId"=>$viewPart["id"],"parameterId"=>$param["id"]]);
         }
@@ -281,11 +275,11 @@ class ViewHandler {
         if (array_key_exists($child['id'], $view_params)){
             $params = $view_params[$child['id']];
             foreach($params as $param){
-                if ($param["type"]=="variables"){
-                    $child["variables"]= json_decode($param["value"],true);
+                if ($param["type"] == "variables" || $param["type"]== "events") {
+                    $child["parameters"][$param["type"]] = json_decode($param["value"], true);
+                } else {
+                    $child["parameters"][$param["type"]] = $param["value"];
                 }
-                else
-                    $child["parameters"][$param["type"]]=$param["value"];
             }
         }
         $organizedView["children"][] = array_merge($child,["children"=>[]]);
@@ -543,18 +537,18 @@ class ViewHandler {
     public function processVariables(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
         $params = $viewParams;
-        if (array_key_exists('variables', $part)) {
+        if (array_key_exists('variables', $part["parameters"])) {
             
-            foreach ($part['variables'] as $k => &$v) {
+            foreach ($part["parameters"]['variables'] as $k => &$v) {
                 $params[$k] = $v['value']->accept($actualVisitor)->getValue();
                 if ($params != $viewParams)
                     $actualVisitor = new EvaluateVisitor($params, $this);
             }
         }
         //adding all parameters to $part (so they can be used in js)
-        if (array_key_exists("events", $part) || array_key_exists("directive", $part)){
+        if (array_key_exists("events", $part["parameters"]) || array_key_exists("directive", $part)){
             foreach ($params as $k => $val){
-                $part['variables'][$k]["value"]=$val;
+                $part["parameters"]['variables'][$k]["value"]=$val;
             }
         }
         if ($func != null && is_callable($func))
@@ -665,8 +659,8 @@ class ViewHandler {
     }
 
     public function parseVariables(&$part) {
-        if (array_key_exists('variables', $part)) {
-            foreach ($part['variables'] as $k => &$v){
+        if (array_key_exists('variables', $part["parameters"])) {
+            foreach ($part["parameters"]['variables'] as $k => &$v){
                 $this->parseSelf($v['value']);  
             }  
         }
@@ -776,8 +770,7 @@ class ViewHandler {
                 $userRoles = $course->getLoggedUser()->getRolesIds();
                 $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
                 $userView=$this->getViewWithParts($page["viewId"], $roleOne);
-            }  
-                     
+            }        
             $viewParams = array(
                 'course' => (string)API::getValue('course'),
                 'viewer' => (string)Core::getLoggedUser()->getId()
@@ -788,13 +781,11 @@ class ViewHandler {
             
             $this->parseView($userView);
             $this->processView($userView, $viewParams);
-             
-
+            
             $viewData = $userView;
         } else {
             // general views (plugins not bound to courses)
             API::error('Unsupported!');
-            //$viewData = Core::getViews()->get($view)['view'];
         }
         
         API::response(array(
