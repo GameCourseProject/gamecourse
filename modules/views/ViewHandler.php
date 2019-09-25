@@ -533,6 +533,13 @@ class ViewHandler {
             $func(...$args);
     }
 
+    public function processEvents(&$part, $visitor) {
+        if (array_key_exists('events', $part["parameters"])) {
+            foreach ($part["parameters"]['events'] as $k => &$v) {
+                $v = $v->accept($visitor)->getValue();
+            }
+        }
+    }
     
     public function processVariables(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
@@ -545,14 +552,9 @@ class ViewHandler {
                     $actualVisitor = new EvaluateVisitor($params, $this);
             }
         }
-        //adding all parameters to $part (so they can be used in js)
-        if (array_key_exists("events", $part["parameters"]) || array_key_exists("directive", $part)){
-            foreach ($params as $k => $val){
-                $part["parameters"]['variables'][$k]["value"]=$val;
-            }
-        }
-        if ($func != null && is_callable($func))
+        if ($func != null && is_callable($func)) {
             $func($params, $actualVisitor);
+        }
     }
 
     public function processLoop(&$container, $viewParams, $visitor, $func) {
@@ -633,15 +635,16 @@ class ViewHandler {
     public function processPart(&$part, $viewParams, $visitor) {
         $this->processVariables($part, $viewParams, $visitor, function($viewParams, $visitor) use(&$part) {
             $part["style"]="";
-                      
-            if (array_key_exists("visibilityType", $part["parameters"]) && $part["parameters"]["visibilityType"]=="invisible")
+            if (array_key_exists("visibilityType", $part["parameters"]) && $part["parameters"]["visibilityType"] == "invisible") {
                 $part['style'] .= " display: none; ";
+            }
             if (array_key_exists('style', $part["parameters"])) {
                 $part['style'] .= $part["parameters"]['style']->accept($visitor)->getValue();
-                
             }
-            if (array_key_exists('class', $part["parameters"]))
+            if (array_key_exists('class', $part["parameters"])) {
                 $part['class'] = $part["parameters"]['class']->accept($visitor)->getValue();
+            }
+            $this->processEvents($part, $visitor);
 
             $this->callPartProcess($part['partType'], $part, $viewParams, $visitor);
         });
@@ -653,11 +656,16 @@ class ViewHandler {
             $this->processPart($part, $viewParams, $visitor);
 
         });
-        /*foreach ($view['content'] as &$part) {
-            $this->processPart($part, $viewParams, $visitor);
-        }*/
     }
-
+    
+    public function parseEvents(&$part) {
+        if (array_key_exists('events', $part["parameters"])) {
+            foreach ($part["parameters"]['events'] as $k => &$v){
+                $this->parseSelf($v);  
+            } 
+        }
+    }
+    
     public function parseVariables(&$part) {
         if (array_key_exists('variables', $part["parameters"])) {
             foreach ($part["parameters"]['variables'] as $k => &$v){
@@ -688,11 +696,13 @@ class ViewHandler {
 
     public function parsePart(&$part) {
         $this->parseVariables($part);
-        if (array_key_exists('style', $part["parameters"]))
+        if (array_key_exists('style', $part["parameters"])) {
             $this->parseSelf($part["parameters"]['style']);
-        if (array_key_exists('class', $part["parameters"]))
+        }
+        if (array_key_exists('class', $part["parameters"])) {
             $this->parseSelf($part["parameters"]['class']);
-
+        }
+        $this->parseEvents($part);
         $this->parseLoop($part);
         $this->parseVisibilityCondition($part);
         

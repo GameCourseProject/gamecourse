@@ -336,10 +336,18 @@ angular.module('module.views').directive('sbMenu', function() {
 }).directive('events', function($state) {
     return {
         link: function($scope) {
-            $scope.gotoProfile = function(row) {
-                console.log("IN GOTOPROFILE");
-                console.log(row);
-                $state.go('course.profile', {'userID': row.data.student.value.id});
+            $scope.goToPage = function(page,user=null) {
+                console.log("goToPAge",page);
+                var pageState = "course."+page.toLowerCase(); 
+                if (user!==null){
+                    $state.go(pageState, {'userID': user});
+                }else{
+                    $state.go(pageState);
+                }
+                    
+            };
+            $scope.hideView = function(label) {
+                console.log("event Detected",label);
             };
         }
     };

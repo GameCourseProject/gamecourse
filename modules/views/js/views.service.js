@@ -204,13 +204,9 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var keys = Object.keys(part.parameters.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
-                console.log("checking event",key);
-                console.log(part.parameters.events[key]);
                 var fn = $parse(part.parameters.events[key]);
-                console.log("parsed",fn);
                 (function(key, fn) {
                     element.on(key, function(e) {
-                        console.log("detected event:",key);
                         if(e.stopPropagation)
                             e.stopPropagation();
                         fn(scope);
@@ -366,7 +362,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             optionsScope.toggleVisCondition();
                         });
                         // Events
-                        var events = ['click', 'dblclick', 'mousedown', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mouseenter', 'mouseleave', 'keydown', 'keyup', 'keypress', 'submit', 'focus', 'blur', 'copy', 'cut', 'paste'];
+                        var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
+                        //ToDo: drop,keydown,keypress,keyup (these weren't working)
                         var missingEvents = [];
                         if (optionsScope.part.parameters.events !== undefined) {
                             for (var i in events) {

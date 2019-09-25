@@ -67,7 +67,7 @@ class Views extends Module {
                 $this->viewHandler->parseSelf($row["parameters"]['class']);
 
             $this->viewHandler->parseVariables($row);
-
+            $this->viewHandler->parseEvents($row);
             foreach ($row['values'] as &$cell) {
                 $this->viewHandler->parsePart($cell['value']);
             }
@@ -83,7 +83,7 @@ class Views extends Module {
                     $row['style'] = $row["parameters"]['style']->accept($visitor)->getValue();
                 if (array_key_exists('class', $row["parameters"]))
                     $row['class'] = $row["parameters"]['class']->accept($visitor)->getValue();
-
+                $this->viewHandler->processEvents($row, $visitor);
                 foreach($row['values'] as &$cell) {
                     $this->viewHandler->processPart($cell['value'], $viewParams, $visitor);
                 }
@@ -275,7 +275,19 @@ class Views extends Module {
             }  
             return new ValueNode($collection);
         });
-        
+        //functions of actions(events) library, 
+        //they don't really do anything, they're just here so their arguments can be processed 
+        $this->viewHandler->registerFunction("actions",'goToPage', function($page,$user=null) { 
+            if ($user!==null){
+                $userId=$this->getUserId($user);
+                return new ValueNode("goToPage('".$page."',".$userId.")");
+            }
+            return new ValueNode("goToPage('".$page."')");
+        });
+        $this->viewHandler->registerFunction("actions",'hideView', function($label) { 
+            //toDo check label
+            return new ValueNode("hideView('".$label."')");
+        });
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
         $this->viewHandler->registerFunction('users','getAllUsers',function($role=null,$courseId=null) use ($course){
