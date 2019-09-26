@@ -6,7 +6,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 func(undefined, err);
                 return;
             }
-
+            console.log("view",data.view);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.viewBlock = {
@@ -221,6 +221,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             element.addClass(part.class);
         if (part.style != undefined)
             element.attr('style', part.style);
+        if (part.parameters.label != undefined)
+            element.prop('id',part.parameters.label);
         
         //add events attribute so they can acess functions of events directive
         element.attr("events", '');
@@ -476,23 +478,32 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var template = templates[t];
                         var option = $(document.createElement('option'));
                         option.text(template["name"]+" ("+template['id']+")");
-                        option.val('temp:' + template['id']);
+                        option.val('temp:' + t);
                         partsList.append(option);
                     }
-
+                    
                     var turnButton = $(document.createElement('button')).text('Turn');
                     turnButton.click(function() {
                         var value = partsList.val();
                         var id = value.substr(5);
                         var newPart;
-                        if (value.indexOf('part:') == 0)
+                        if (value.indexOf('part:') == 0){
                             newPart = $sbviews.registeredPartType[id].defaultPart();
-                        else if (value.indexOf('temp:') == 0)
-                            newPart = angular.copy(templates[id]);
-
-                        $sbviews.changePids(newPart);
-                        toolbarOptions.toolFunctions.switch(part, newPart);
-                        execClose();
+                            toolbarOptions.toolFunctions.switch(part, newPart);
+                            execClose();
+                        }
+                        else if (value.indexOf('temp:') === 0){
+                            templates[id].role=part.role;
+                            $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
+                                if (err) {
+                                    alert(err.description);
+                                    return;
+                                }
+                                newPart = data.template;
+                                toolbarOptions.toolFunctions.switch(part, newPart);
+                                execClose();
+                            });     
+                        }
                     });
 
                     wrapper.append('<label for="partList">Turn Part into:</label>');

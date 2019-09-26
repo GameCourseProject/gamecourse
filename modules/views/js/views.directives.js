@@ -333,7 +333,7 @@ angular.module('module.views').directive('sbMenu', function() {
         '<div class="content" ng-transclude></div>' +
         '</div>'
     };
-}).directive('events', function($state) {
+}).directive('events', function($state,$compile, $smartboards,$rootScope) {
     return {
         link: function($scope) {
             $scope.goToPage = function(page,user=null) {
@@ -347,8 +347,52 @@ angular.module('module.views').directive('sbMenu', function() {
                     
             };
             $scope.hideView = function(label) {
-                console.log("event Detected",label);
+                console.log("hide view",label);
+                $compile($("#"+label).hide())($scope);
             };
+            $scope.showView = function(label) {
+                console.log("show view",label);
+                $compile($("#"+label).show())($scope);
+            };
+            $scope.toggleView = function(label) {
+                console.log("togles hiden",label);
+                $compile($("#"+label).toggle())($scope);
+            };
+            $scope.showToolTip = function(templateId,roleType) {
+                
+                console.log($scope);
+                console.log($rootScope);
+                if ($scope.tooltipBound)
+                    return;
+                getContents = function(){
+                    //id , role, roletype, course
+                //given id, could be given roleType, $scope.part.role, $rootScope.course
+                    var templateInfo = {id:templateId, roleType: roleType, role: $scope.part.role, course: $rootScope.course};
+                    console.log(templateInfo);
+                    $smartboards.request('views', 'getTemplateContent', templateInfo, function (data, err) {
+                        if (err) {
+                            alert(err.description);
+                            return;
+                        }
+                        return data.template;
+                    });    
+                };
+                console.log(getContents());
+               /* var user = part.data.info.value;
+                
+                var tooltipContent = $('<div>', {'class': 'content'});
+                tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));
+                var tooltipUserInfo = $('<div>', {'class': 'userinfo'});
+                tooltipUserInfo.append($('<div>', {'class': 'name', text: user.name + ' [' + user.campus + ']'}));
+                tooltipUserInfo.append($('<div>', {text: 'Date: ' + user.when}));
+                if (user.progress != -1)
+                    tooltipUserInfo.append($('<div>', {text: 'Progress: ' + user.progress}));
+                tooltipContent.append(tooltipUserInfo);
+
+                $element.tooltip({offset: [-150, -65], html: tooltipContent});
+                $scope.tooltipBound = true;
+                $element.trigger('mouseover');*/
+            }
         }
     };
 });;

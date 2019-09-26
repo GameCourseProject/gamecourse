@@ -260,7 +260,7 @@ create table view_template(
 
 create table parameter(
 	id int unsigned auto_increment primary key,
-	type enum ('loopData','variables','value','class','style','link','visibilityCondition','visibilityType','events') not null,#angular directive?
+	type enum ('loopData','variables','value','class','style','link','visibilityCondition','visibilityType','events','label') not null,
 	value varchar(500) not null
 );
 create table view_parameter(

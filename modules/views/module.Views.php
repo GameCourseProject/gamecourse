@@ -285,8 +285,17 @@ class Views extends Module {
             return new ValueNode("goToPage('".$page."')");
         });
         $this->viewHandler->registerFunction("actions",'hideView', function($label) { 
-            //toDo check label
             return new ValueNode("hideView('".$label."')");
+        });
+        $this->viewHandler->registerFunction("actions",'showView', function($label) { 
+            return new ValueNode("showView('".$label."')");
+        });
+        $this->viewHandler->registerFunction("actions",'toggleView', function($label) { 
+            return new ValueNode("toggleView('".$label."')");
+        });
+        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName) { 
+            $template = Core::$systemDB->select("template",["name"=>$templateName]);     
+            return new ValueNode("showToolTip('".$template["id"]."','".$template["roleType"]."')");
         });
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
@@ -796,9 +805,10 @@ class Views extends Module {
             API::requireCourseAdminPermission();
             API::requireValues('role', 'id', 'roleType','course');
             $role = API::getValue("role");
+            $id = API::getValue("id");
             
             $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"aspect","templateId"=>API::getValue("id")]);
+                    ["partType"=>"aspect","templateId"=>$id]);
             
             $course = new Course(API::getValue("course"));
             $type = API::getValue("roleType");
@@ -810,6 +820,7 @@ class Views extends Module {
                 $view=$this->getClosestAspect($course,$type,$role,$anAspect["id"]);
             }
             //the template needs to be contained in 1 view part, if there are multiple we put everything in a block
+            //print_r($view);//here, only has aspect
             if (sizeOf($view["children"]) > 1) {
                 $block = $view;
                 $block["partType"] = "block";

@@ -638,6 +638,9 @@ class ViewHandler {
             if (array_key_exists("visibilityType", $part["parameters"]) && $part["parameters"]["visibilityType"] == "invisible") {
                 $part['style'] .= " display: none; ";
             }
+            /*if (array_key_exists("label", $part["parameters"])) {
+                $part['style'] .= " display: none; ";
+            }*/
             if (array_key_exists('style', $part["parameters"])) {
                 $part['style'] .= $part["parameters"]['style']->accept($visitor)->getValue();
             }
