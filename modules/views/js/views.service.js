@@ -493,7 +493,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             execClose();
                         }
                         else if (value.indexOf('temp:') === 0){
-                            templates[id].role=part.role;
+                            templates[id].role=$rootScope.role;
                             $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                 if (err) {
                                     alert(err.description);

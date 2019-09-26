@@ -308,8 +308,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     newPart = $sbviews.registeredPartType[index].defaultPart();
                                     addPart(newPart);
                                 }
-                                else if (value.indexOf('temp:') == 0){     
-                                    templates[index].role=part.role;
+                                else if (value.indexOf('temp:') == 0){   
+                                    templates[index].role=scope.$root.role;
                                     $smartboards.request('views', 'getTemplateContent', templates[index], function (data, err) {
                                         if (err) {
                                             alert(err.description);
