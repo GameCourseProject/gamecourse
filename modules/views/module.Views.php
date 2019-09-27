@@ -1111,7 +1111,6 @@ class Views extends Module {
     }
     //gets templates of this course
     public function getTemplates($includeGlobals=false){
-        print_r("hi");
         $temps = Core::$systemDB->selectMultiple('template t join view_template on templateId=id join view v on v.id=viewId',
                 ['course'=>$this->getCourseId(),"partType"=>"aspect"],
                 "t.id,name,course,isGlobal,roleType,viewId,role");
