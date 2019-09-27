@@ -42,10 +42,10 @@ class AwardList extends Module {
             return new \Modules\Views\Expression\ValueNode($allAwards);
         });
 
-        if ($viewsModule->getTemplate(self::AWARDS_PROFILE_TEMPLATE) == NULL)
+        if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'),$this->getId());
  
-        if ($viewsModule->getTemplate(self::FULL_AWARDS_TEMPLATE) == NULL)
+        if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
             $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'),$this->getId());  
     }
 }

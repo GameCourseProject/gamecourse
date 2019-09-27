@@ -110,7 +110,7 @@ class Notifications extends Module {
             }*/
         });
         
-        if ($viewsModule->getTemplate('Notifications Profile - by notifications') == NULL)
+        if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
             $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'),$this->getId());
         
     }

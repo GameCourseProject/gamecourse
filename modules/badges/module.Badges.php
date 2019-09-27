@@ -165,11 +165,11 @@ class Badges extends Module {
         });
         //%level.reward
         $viewHandler->registerFunction('badges','reward', function($level) {
-            return $this->basicGetterFunction($level,"goal");
+            return $this->basicGetterFunction($level,"reward");
         });
         //%level.number
         $viewHandler->registerFunction('badges','number', function($level) {
-            return $this->basicGetterFunction($level,"goal");
+            return $this->basicGetterFunction($level,"number");
         });
         
         
@@ -257,7 +257,7 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 */
-        //if ($viewsModule->getTemplate(self::BADGES_TEMPLATE_NAME) == NULL)
+        //if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
         //    $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }

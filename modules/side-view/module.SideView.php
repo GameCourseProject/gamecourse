@@ -22,7 +22,7 @@ class SideView extends Module {
             'type' => ViewHandler::VT_ROLE_SINGLE
         ));
 
-        if ($viewsModule->getTemplate(self::SIDE_VIEW_TEMPLATE) == NULL)
+        if (!$viewsModule->templateExists(self::SIDE_VIEW_TEMPLATE))
             $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'),$this->getId());
   
         

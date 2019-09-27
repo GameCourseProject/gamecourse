@@ -22,7 +22,7 @@ class Leaderboard extends Module {
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->createPageOrTemplateIfNew('Leaderboard',"page","ROLE_SINGLE");
         
-        if ($viewsModule->getTemplate(self::LEADERBOARD_TEMPLATE_NAME) == NULL) {
+        if (!$viewsModule->templateExists(self::LEADERBOARD_TEMPLATE_NAME)) {
             $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'));
         }
     }

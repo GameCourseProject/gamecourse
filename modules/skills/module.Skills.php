@@ -322,7 +322,7 @@ class Skills extends Module {
             return new \Modules\Views\Expression\ValueNode($skillsCache[$skillName]);
         });
 */
-        if ($viewsModule->getTemplate(self::SKILL_TREE_TEMPLATE) == NULL)
+        if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE))
             $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'));
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
         //    $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'),$this->getId());

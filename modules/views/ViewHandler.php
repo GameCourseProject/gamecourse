@@ -302,7 +302,7 @@ class ViewHandler {
     
     //Go through views and update array with parameters info (receives parents and uses queries to get the rest)
     public function lookAtChildrenWQueries($parentId,&$organizedView){
-        $children=Core::$systemDB->selectMultiple("view",["parent"=>$parentId],"*","viewIndex");  
+        $children=Core::$systemDB->selectMultiple("view",["parent"=>$parentId],"*","viewIndex"); 
         $view_params=$this->getViewParameters(["parent"=>$parentId]);
         
         for($i=0;$i<count($children);$i++){
@@ -639,7 +639,6 @@ class ViewHandler {
                 $part['style'] .= " display: none; ";
             }
             /*if (array_key_exists("label", $part["parameters"])) {
-                $part['style'] .= " display: none; ";
             }*/
             if (array_key_exists('style', $part["parameters"])) {
                 $part['style'] .= $part["parameters"]['style']->accept($visitor)->getValue();
@@ -744,66 +743,41 @@ class ViewHandler {
     }
     
     //handles requests to show a page
-    public function handle($pageId) {
-        if (empty($this->getPages($pageId))) {
-            API::error('Unknown view: ' . $pageId, 404);
-        }
+    public function handle($view,$course,$viewParams) {//receives page/template     
+        $viewRoles = array_column($this->getAspects($view["viewId"]),'role');
+        $viewType=$view["roleType"];
+        $roleOne=$roleTwo=null;
 
-        $viewParams = array();
-        if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
-            $course = Course::getCourse((string)API::getValue('course'));
-            $page = Core::$systemDB->select("page",["id"=>$pageId]);
-            $viewRoles = array_column($this->getAspects($page["viewId"]),'role');
-            $viewType = $this->getPages($pageId)['roleType'];
-            
-            $roleOne=$roleTwo=null;
-            
-            //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
-            if ($viewType == "ROLE_INTERACTION"){
-                API::requireValues('user');
-                $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
-                foreach ($viewRoles as $roleInteraction){
-                    $roles= explode('>',$roleInteraction);
-                    $roleArray[$roles[0]][]=$roles[1];
-                }
-                $userRoles=$course->getUser((string)API::getValue('user'))->getRolesIds();
-                $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
-                $roleArray = $roleArray[$roleOne];
-
-                if (in_array('special.Own', $roleArray) && (string)API::getValue('user') == (string)Core::getLoggedUser()->getId()) {
-                    $roleTwo = 'special.Own';
-                }
-                else {
-                    $loggedUserRoles = $course->getLoggedUser()->getRolesIds();
-                    $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
-                }
-                $userView=$this->getViewWithParts($page["viewId"], $roleOne.'>'.$roleTwo);
+        //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
+        if ($viewType == "ROLE_INTERACTION"){
+            API::requireValues('user');
+            $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
+            foreach ($viewRoles as $roleInteraction){
+                $roles= explode('>',$roleInteraction);
+                $roleArray[$roles[0]][]=$roles[1];
             }
-            else if ($viewType == "ROLE_SINGLE"){
-                $userRoles = $course->getLoggedUser()->getRolesIds();
-                $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
-                $userView=$this->getViewWithParts($page["viewId"], $roleOne);
-            }        
-            $viewParams = array(
-                'course' => (string)API::getValue('course'),
-                'viewer' => (string)Core::getLoggedUser()->getId()
-            );
+            $userRoles=$course->getUser($viewParams["user"])->getRolesIds();
+            $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
+            $roleArray = $roleArray[$roleOne];
 
-            if (API::hasKey('user'))
-                $viewParams['user'] = (string)API::getValue('user');
-            
-            $this->parseView($userView);
-            $this->processView($userView, $viewParams);
-            
-            $viewData = $userView;
-        } else {
-            // general views (plugins not bound to courses)
-            API::error('Unsupported!');
+            if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
+                $roleTwo = 'special.Own';
+            }
+            else {
+                $loggedUserRoles = $course->getLoggedUser()->getRolesIds();
+                $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
+            }
+            $userView=$this->getViewWithParts($view["viewId"], $roleOne.'>'.$roleTwo);
         }
-        
-        API::response(array(
-            //'fields' => DataSchema::getFields($viewParams),//not beeing user currently
-            'view' => $viewData
-        ));   
+        else if ($viewType == "ROLE_SINGLE"){
+            $userRoles = $course->getLoggedUser()->getRolesIds();
+            $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
+            $userView=$this->getViewWithParts($view["viewId"], $roleOne);
+        }        
+
+        $this->parseView($userView);
+        $this->processView($userView, $viewParams);
+
+        return $userView;
     }
 }

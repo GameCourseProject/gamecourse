@@ -123,7 +123,7 @@ create table participation(#for now this is just used for badges
 	user 	int unsigned not null,
 	course 	int unsigned not null,
 	description varchar(50) not null,
-	type 	varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
+	type 	varchar(50) not null, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
 	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
 	date timestamp,

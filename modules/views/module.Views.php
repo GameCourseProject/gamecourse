@@ -115,7 +115,7 @@ class Views extends Module {
     //get award or participations from DB
     public function getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object="award"){
         $awardParticipation = $this->getAwardOrParticipation($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object);
-        return $this->createNode($awardParticipation,$object+"s","collection");
+        return $this->createNode($awardParticipation,$object."s","collection");
     }
     //expression lang function, convert string to int
     public function toInt($val, $funName){
@@ -278,6 +278,7 @@ class Views extends Module {
         //functions of actions(events) library, 
         //they don't really do anything, they're just here so their arguments can be processed 
         $this->viewHandler->registerFunction("actions",'goToPage', function($page,$user=null) { 
+            //if user is specified get its value
             if ($user!==null){
                 $userId=$this->getUserId($user);
                 return new ValueNode("goToPage('".$page."',".$userId.")");
@@ -293,9 +294,11 @@ class Views extends Module {
         $this->viewHandler->registerFunction("actions",'toggleView', function($label) { 
             return new ValueNode("toggleView('".$label."')");
         });
-        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName) { 
-            $template = Core::$systemDB->select("template",["name"=>$templateName]);     
-            return new ValueNode("showToolTip('".$template["id"]."','".$template["roleType"]."')");
+        //call view handle template (parse and process its view)
+        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$params) use ($course){ 
+            $template = $this->getTemplate(null,$templateName);  
+            $userView = $this->viewHandler->handle($template,$course,$params);
+            return new ValueNode("showToolTip('".json_encode($userView)."')");
         });
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
@@ -600,10 +603,9 @@ class Views extends Module {
 //API functions (functions called in js)
         
         //gets a parsed and processed view
-        API::registerFunction('views', 'view', function() {
-            API::requireValues('view','course');
-            $courseId = API::getValue('course');
-            $course = Course::getCourse($courseId);
+        API::registerFunction('views', 'view', function() {//this is just being used for pages but can also deal with templates
+            $data = $this->getViewSettings();
+            $course = $data["course"];
             $courseUser = $course->getLoggedUser();
             $courseUser->refreshActivity();
             if (API::hasKey('needPermission') && API::getValue('needPermission')==true ){
@@ -613,18 +615,17 @@ class Views extends Module {
                     API::error("This page can only be acessd by Adminis or Teachers, you don't have permission");
                 }
             }
-            
-            $viewId = API::getValue('view');
-            //the view parameter received can be an id or a name
-            if (!is_int($viewId)){//if view is a name, get its id
-                foreach ($this->viewHandler->getPages() as $id => $viewData){
-                    if ($viewData["name"]==$viewId){
-                        $viewId=$id;
-                        break;
-                    }
-                }
+            $viewParams = [
+                'course' => (string)$data["courseId"],
+                'viewer' => (string)$courseUser->getId()
+            ];
+            if (API::hasKey('user')) {
+                $viewParams['user'] = (string) API::getValue('user');
             }
-            $this->viewHandler->handle($viewId);
+            
+            API::response([ //'fields' => ,//not beeing user currently
+                'view' => $this->viewHandler->handle($data["viewSettings"],$course,$viewParams)
+            ]); 
         });
         //gets list of pages and templates for the views page
         API::registerFunction('views', 'listViews', function() {
@@ -820,7 +821,6 @@ class Views extends Module {
                 $view=$this->getClosestAspect($course,$type,$role,$anAspect["id"]);
             }
             //the template needs to be contained in 1 view part, if there are multiple we put everything in a block
-            //print_r($view);//here, only has aspect
             if (sizeOf($view["children"]) > 1) {
                 $block = $view;
                 $block["partType"] = "block";
@@ -1089,7 +1089,6 @@ class Views extends Module {
         $finalParents = $this->findParents($course, $roleOne);//parent roles of roleone
         //get the aspect view from which we will copy the contents
         $parentViews = $this->findViews($viewId,$type, array_merge($finalParents, [$roleOne]));
-
         if ($type == "ROLE_INTERACTION") {
             $parentsTwo = array_merge($this->findParents($course, $roleTwo),[$roleTwo]);
             $finalViews = [];
@@ -1112,6 +1111,7 @@ class Views extends Module {
     }
     //gets templates of this course
     public function getTemplates($includeGlobals=false){
+        print_r("hi");
         $temps = Core::$systemDB->selectMultiple('template t join view_template on templateId=id join view v on v.id=viewId',
                 ['course'=>$this->getCourseId(),"partType"=>"aspect"],
                 "t.id,name,course,isGlobal,roleType,viewId,role");
@@ -1121,10 +1121,22 @@ class Views extends Module {
         }
         return $temps;
     }
-    //gets template by name
-    public function getTemplate($name) {
-        $temp = Core::$systemDB->select('template',['name'=>$name,'course'=>$this->getCourseId()]);
-        return $temp;
+    //gets template by id
+    public function getTemplate($id=null,$name=null) {
+        $tables="template t join view_template on templateId=id join view v on v.id=viewId";
+        $where=['course'=>$this->getCourseId(),"partType"=>"aspect"];
+        if ($id){
+            $where["t.id"]=$id;
+        }else{
+            $where["name"]=$name;
+        }
+        $fields="t.id,name,course,isGlobal,roleType,viewId,role";
+        return Core::$systemDB->select($tables,$where,$fields);
+    }
+    
+    //checks if a template with a given name exists in the DB
+    public function templateExists($name) {
+        return !empty(Core::$systemDB->select('template',['name'=>$name,'course'=>$this->getCourseId()]));
     }
     
     //receives the template name, its encoded contents, and puts it in the database
@@ -1162,21 +1174,20 @@ class Views extends Module {
     //get settings of page/template 
     function getViewSettings(){
         API::requireValues('view','pageOrTemp','course');
-        $viewId = API::getValue('view');
+        $viewId = API::getValue('view');//page or template id
         $pgOrTemp=API::getValue('pageOrTemp');
         if ($pgOrTemp=="page"){
-            $views = $this->viewHandler->getPages();
-            if (!array_key_exists($viewId, $views))
-                API::error('Unknown page ' . $viewId);
-
+            if (is_numeric($viewId)){
+                $viewSettings = $this->viewHandler->getPages($viewId);
+            } else{//for pages, the value of 'view' could be a name instead of an id
+                $viewSettings = $this->viewHandler->getPages(null,$viewId);
+            }
         }else {//template
-            $views = $this->getTemplates();
-            $tempIds = array_column($views, "id");
-            if (!in_array($viewId, $tempIds))
-                API::error('Unknown template ' . $viewId);
-            $views = array_combine($tempIds, $views);
+            $viewSettings = $this->getTemplate($viewId);
         }
-        $viewSettings = $views[$viewId];
+        if (empty($viewSettings)) {
+            API::error('Unknown '.$pgOrTemp .' ' . $viewId);
+        }
         $courseId=API::getValue('course');
         $course = Course::getCourse($courseId);
         return ["courseId"=>$courseId,"course"=>$course,"viewId"=>$viewId,

@@ -1,7 +1,7 @@
 angular.module('module.views').service('$sbviews', function($smartboards, $rootScope, $compile, $parse, $timeout) {
     var $sbviews = this;
-    this.request = function (view, params, func) {
-        $smartboards.request('views', 'view', $.extend({view: view}, params), function(data, err) {  
+    this.request = function (view, params, func, pageOrTemp="page") {
+        $smartboards.request('views', 'view', $.extend({view: view, pageOrTemp: pageOrTemp}, params), function(data, err) {  
             if (err) {
                 func(undefined, err);
                 return;
@@ -181,6 +181,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         //ToDo: build instance/templateref
         
         this.applyCommonFeatures(partScope, part, element, options);
+        
         element.data('scope', partScope);
         return element;
     };
@@ -191,7 +192,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.destroy = function(element) {
         var scope = element.data('scope');
-        
         if (scope == null || scope.part == null)
             return;
         this.registeredPartType[scope.part.partType].destroy(element, scope.part);
@@ -231,7 +231,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.openOverlay = function(callbackFunc, closeFunc) {
-        
         var overlay = $('<div class="settings-overlay">');
         var overlayCenter = $('<div class="settings-overlay-center"></div>');
         overlay.append(overlayCenter);
@@ -308,6 +307,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 };
 
                 optionsScope.delete = function (obj, k) {
+                    console.log(k);
                     delete obj[k];
                 };
 
@@ -351,14 +351,13 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
                         el.append(container);
-                        watch('part.parameters.class');
-                        watch('part.directive');
-                        watch('part.parameters.style');
-                        watch('part.parameters.loopData');
-                        watch('part.if');
+                        //watch('part.parameters.class');
+                        //watch('part.directive');
+                        //watch('part.parameters.style');
+                        //watch('part.parameters.loopData');
+                        //watch('part.if');
                         //watch('part.parameters.events');
-                        watch('part.data');
-                        
+                        //watch('part.data');
                         el.on('mouseenter', function() {
                             //this ensures that when visibility is not conditional, the field will be disabled
                             optionsScope.toggleVisCondition();
@@ -382,7 +381,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             eventToAdd: undefined
                         };
                         optionsScope.addEvent = function() {
-                            console.log(optionsScope);
                             var eventType = optionsScope.events.eventToAdd;
                             optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
                             optionsScope.part.parameters.events[eventType] = '';
@@ -402,7 +400,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             optionsScope.part.parameters.variables[optionsScope.variables.dataKey] = {value: ''};
                             optionsScope.variables.dataKey = '';
                         };
-
                         $timeout(function() {
                             if (options.callbackFunc != undefined)
                                 options.callbackFunc(container.next(), execClose, optionsScope, watch);
@@ -410,8 +407,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         
                     }, function(cancel) {
                         console.log("close settings",optionsScope.part);
-         
-
                         if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
                             $timeout(function() {
                                 objSync(part, optionsScope.part);
@@ -606,12 +601,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         element.on('mouseenter', function() {
             if (myToolbar)
                 return;
-                                   
-            var trueMargin = element.data('true-margin');
-            if (trueMargin == undefined) {
-                trueMargin = element.innerHeight() - element.height();
-                element.data('true-margin', trueMargin)
-            }
 
             var defaultOptions = {
                 layoutEditor: false,
@@ -648,9 +637,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             }
             toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
             toolbarOptions.editData = editData;
-
+            
             myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
-            //element.css('padding-top', trueMargin + 18);
   
             myToolbar.css({
                 position: 'absolute',
@@ -661,13 +649,13 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 element.addClass('highlight');
             
             element.append(myToolbar);
-            //console.log("mouseenter",part);
+            //console.log("mouseenter",element.data());
         });
 
         element.on('mouseleave', function(e) {
             if (layoutEditing)
                 return;
-            element.css('padding-top', element.data('true-margin'));
+            //element.css('padding-top', element.data('true-margin'));
             element.removeClass('highlight');
             if (myToolbar != undefined)
                 myToolbar.remove();

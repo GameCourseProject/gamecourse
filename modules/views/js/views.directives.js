@@ -333,9 +333,9 @@ angular.module('module.views').directive('sbMenu', function() {
         '<div class="content" ng-transclude></div>' +
         '</div>'
     };
-}).directive('events', function($state,$compile, $smartboards,$rootScope) {
+}).directive('events', function($state,$compile,$rootScope,$sbviews) {
     return {
-        link: function($scope) {
+        link: function($scope, $element) {
             $scope.goToPage = function(page,user=null) {
                 console.log("goToPAge",page);
                 var pageState = "course."+page.toLowerCase(); 
@@ -358,41 +358,39 @@ angular.module('module.views').directive('sbMenu', function() {
                 console.log("togles hiden",label);
                 $compile($("#"+label).toggle())($scope);
             };
-            $scope.showToolTip = function(templateId,roleType) {
-                
-                console.log($scope);
-                console.log($rootScope);
-                if ($scope.tooltipBound)
+            $scope.tooltipBound = false;
+            $scope.showToolTip = function(template) {
+                console.log("showToolTip");
+                if ($scope.tooltipBound){
+                    console.log("bound");
                     return;
-                getContents = function(){
-                    //id , role, roletype, course
-                //given id, could be given roleType, $scope.part.role, $rootScope.course
-                    var templateInfo = {id:templateId, roleType: roleType, role: $scope.part.role, course: $rootScope.course};
-                    console.log(templateInfo);
-                    $smartboards.request('views', 'getTemplateContent', templateInfo, function (data, err) {
-                        if (err) {
-                            alert(err.description);
-                            return;
-                        }
-                        return data.template;
-                    });    
+                }
+                var view =JSON.parse(template);
+                console.log(view);
+                var viewScope = $rootScope.$new(true);
+                viewScope.view = view;
+                viewScope.viewBlock = {
+                    partType: 'block',
+                    noHeader: true,
+                    children: viewScope.view.children,
+                    role: viewScope.view.role
                 };
-                console.log(getContents());
-               /* var user = part.data.info.value;
-                
-                var tooltipContent = $('<div>', {'class': 'content'});
-                tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));
-                var tooltipUserInfo = $('<div>', {'class': 'userinfo'});
-                tooltipUserInfo.append($('<div>', {'class': 'name', text: user.name + ' [' + user.campus + ']'}));
-                tooltipUserInfo.append($('<div>', {text: 'Date: ' + user.when}));
-                if (user.progress != -1)
-                    tooltipUserInfo.append($('<div>', {text: 'Progress: ' + user.progress}));
-                tooltipContent.append(tooltipUserInfo);
 
-                $element.tooltip({offset: [-150, -65], html: tooltipContent});
-                $scope.tooltipBound = true;
-                $element.trigger('mouseover');*/
-            }
+                var viewBlock = $sbviews.build(viewScope, 'viewBlock');
+                viewBlock.removeClass('block');
+                viewBlock.addClass('view');
+                var view = {
+                    scope: viewScope,
+                    element: $compile(viewBlock)(viewScope)
+                };
+
+                var tooltipContent = $('<div>', {'class': 'block'});    
+                tooltipContent.append(view.element);
+
+                $element.tooltip({offset: [50, -50], html: tooltipContent});
+                $scope.tooltipBound = true; 
+                $element.trigger('mouseover');
+            };
         }
     };
-});;
+});

@@ -25,7 +25,7 @@ class Profile extends Module {
             'type' => ViewHandler::VT_ROLE_INTERACTION
         ));*/
 
-        if ($viewsModule->getTemplate(self::STUDENT_SUMMARY_TEMPLATE) == NULL)
+        if (!$viewsModule->templateExists(self::STUDENT_SUMMARY_TEMPLATE))
             $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'));
        
     }

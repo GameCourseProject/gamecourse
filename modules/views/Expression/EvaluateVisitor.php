@@ -80,12 +80,15 @@ class EvaluateVisitor extends Visitor {
             $args = $node->getArgs()->accept($this)->getValue();
         }
         $context = $node->getContext();
-        
+        $lib=$node->getLib();
+        if ($lib=="actions" && $funcName=="showToolTip"){
+            $args[]=$this->params;
+        }
         if ($context==null){
-            return $this->viewHandler->callFunction($node->getLib(),$funcName, $args);
+            return $this->viewHandler->callFunction($lib,$funcName, $args);
         }else{
             $contextVal=$context->accept($this)->getValue();
-            $lib=$node->getLib();
+            
             if($node->getLib()==null){
                 //gets the lib name of the previous function 
                 //ex: %user.name in the function 'name' gets users lib
@@ -98,6 +101,7 @@ class EvaluateVisitor extends Visitor {
                     $node->setLib($lib);
                 }
             }
+           
             return $this->viewHandler->callFunction($lib,$funcName, $args, $contextVal);
         }
     }
