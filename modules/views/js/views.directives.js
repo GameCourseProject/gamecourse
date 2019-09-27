@@ -348,15 +348,15 @@ angular.module('module.views').directive('sbMenu', function() {
             };
             $scope.hideView = function(label) {
                 console.log("hide view",label);
-                $compile($("#"+label).hide())($scope);
+                $compile($("[label-for-events='"+label+"']").hide())($scope);
             };
             $scope.showView = function(label) {
                 console.log("show view",label);
-                $compile($("#"+label).show())($scope);
+                $compile($("[label-for-events='"+label+"']").show())($scope);
             };
             $scope.toggleView = function(label) {
                 console.log("togles hiden",label);
-                $compile($("#"+label).toggle())($scope);
+                $compile($("[label-for-events='"+label+"']").toggle())($scope);
             };
             $scope.tooltipBound = false;
             $scope.showToolTip = function(template) {

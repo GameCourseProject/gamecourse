@@ -43,7 +43,7 @@
 <sb-menu sb-menu-title="Styling/Misc" sb-menu-icon="images/gear.svg">
     <sb-expression ng-if="options.allowStyle" sb-expression="part.parameters.style" sb-expression-label="Style"></sb-expression>
     <sb-expression ng-if="options.allowClass" sb-expression="part.parameters.class" sb-expression-label="Class"></sb-expression>
-    <sb-input sb-input="part.parameters.label" sb-input-label="Label"></sb-input>
+    <sb-expression sb-expression="part.parameters.label" sb-expression-label="Label"></sb-expression>   
     <br>
     <div ng-if="options.allowEvents">
         <label>Events:</label>

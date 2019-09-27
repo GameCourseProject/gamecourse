@@ -16,7 +16,12 @@ class EvaluateVisitor extends Visitor {
         $text = $node->getNode()->accept($this)->getValue();
         $next = $node->getNext();
         if ($next != null) {
-            $text .= $next->accept($this)->getValue();
+            $nextStr = $next->accept($this)->getValue();
+            if (is_string($nextStr) || is_int($nextStr)) {
+                $text .= $next->accept($this)->getValue();
+            } else {
+                throw new \Exception("Can't process statement '".$text."{?}'. Found an object where a string should be");
+            }
         }
         return new ValueNode($text);
     }
@@ -81,9 +86,15 @@ class EvaluateVisitor extends Visitor {
         }
         $context = $node->getContext();
         $lib=$node->getLib();
-        if ($lib=="actions" && $funcName=="showToolTip"){
-            $args[]=$this->params;
+        if ($lib=="actions") {
+            if ($funcName==="showToolTip"){
+                $args[]=$this->params;
+            }
+            else if ($funcName==="hideView" || $funcName==="showView" || $funcName==="toggleView"){
+                $args[]=$this;
+            }
         }
+        
         if ($context==null){
             return $this->viewHandler->callFunction($lib,$funcName, $args);
         }else{
@@ -101,7 +112,6 @@ class EvaluateVisitor extends Visitor {
                     $node->setLib($lib);
                 }
             }
-           
             return $this->viewHandler->callFunction($lib,$funcName, $args, $contextVal);
         }
     }

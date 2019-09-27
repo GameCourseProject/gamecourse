@@ -285,14 +285,15 @@ class Views extends Module {
             }
             return new ValueNode("goToPage('".$page."')");
         });
-        $this->viewHandler->registerFunction("actions",'hideView', function($label) { 
+        $this->viewHandler->registerFunction("actions",'hideView', function($label,$visitor) { 
             return new ValueNode("hideView('".$label."')");
         });
-        $this->viewHandler->registerFunction("actions",'showView', function($label) { 
+        $this->viewHandler->registerFunction("actions",'showView', function($label,$visitor) { 
             return new ValueNode("showView('".$label."')");
         });
-        $this->viewHandler->registerFunction("actions",'toggleView', function($label) { 
-            return new ValueNode("toggleView('".$label."')");
+        $this->viewHandler->registerFunction("actions",'toggleView', function($label,$visitor) { 
+            $this->viewHandler->parseSelf($label);
+            return new ValueNode("toggleView('".$label->accept($visitor)->getValue()."')");
         });
         //call view handle template (parse and process its view)
         $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$params) use ($course){ 

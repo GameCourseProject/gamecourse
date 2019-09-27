@@ -217,12 +217,12 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
         if (options.edit)
             return;
-        if (part.class != undefined)
+        if (part.class !== undefined)
             element.addClass(part.class);
-        if (part.style != undefined)
+        if (part.style !== undefined)
             element.attr('style', part.style);
-        if (part.parameters.label != undefined)
-            element.prop('id',part.parameters.label);
+        if (part.parameters.label !== undefined)
+            element.attr('label-for-events',part.parameters.label);
         
         //add events attribute so they can acess functions of events directive
         element.attr("events", '');

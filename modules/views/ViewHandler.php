@@ -638,8 +638,9 @@ class ViewHandler {
             if (array_key_exists("visibilityType", $part["parameters"]) && $part["parameters"]["visibilityType"] == "invisible") {
                 $part['style'] .= " display: none; ";
             }
-            /*if (array_key_exists("label", $part["parameters"])) {
-            }*/
+            if (array_key_exists("label", $part["parameters"])) {
+                $part["parameters"]['label']= $part["parameters"]['label']->accept($visitor)->getValue();
+            }
             if (array_key_exists('style', $part["parameters"])) {
                 $part['style'] .= $part["parameters"]['style']->accept($visitor)->getValue();
             }
@@ -703,6 +704,9 @@ class ViewHandler {
         }
         if (array_key_exists('class', $part["parameters"])) {
             $this->parseSelf($part["parameters"]['class']);
+        }
+        if (array_key_exists("label", $part["parameters"])) {
+            $this->parseSelf($part["parameters"]['label']);
         }
         $this->parseEvents($part);
         $this->parseLoop($part);
