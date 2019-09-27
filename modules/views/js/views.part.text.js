@@ -49,8 +49,11 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                         el.children('.partSpecific').after(buildOptions(optionsScope, watch));
                     }, closeFunc: function() {
                         var newEl = valuePartDef.createElement(scope, part, options);
+                        var data = element.data();
                         element.replaceWith(newEl);
                         element = newEl;
+                        element.data(data);
+                        element.css('padding-top', 18);
                         bindToolbar();
                         optionsDivEl = undefined;
                     }}});
