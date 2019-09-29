@@ -158,6 +158,11 @@ class Views extends Module {
             case '<=': return           $a <= $b;  
         }
     }
+    private function popUpOrToolTip($templateName,$params,$funcName,$course){
+        $template = $this->getTemplate(null,$templateName);  
+        $userView = $this->viewHandler->handle($template,$course,$params);
+        return new ValueNode($funcName."('".json_encode($userView)."')");
+    }
     
     public function init() {
         $this->viewHandler = new ViewHandler($this);
@@ -296,10 +301,12 @@ class Views extends Module {
             return new ValueNode("toggleView('".$label->accept($visitor)->getValue()."')");
         });
         //call view handle template (parse and process its view)
+        
         $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$params) use ($course){ 
-            $template = $this->getTemplate(null,$templateName);  
-            $userView = $this->viewHandler->handle($template,$course,$params);
-            return new ValueNode("showToolTip('".json_encode($userView)."')");
+            return $this->popUpOrToolTip($templateName,$params,"showToolTip",$course);
+        });
+        $this->viewHandler->registerFunction("actions",'showPopUp', function($templateName,$params) use ($course){ 
+            return $this->popUpOrToolTip($templateName,$params,"showPopUp",$course);
         });
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users

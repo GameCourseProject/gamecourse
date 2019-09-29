@@ -358,15 +358,12 @@ angular.module('module.views').directive('sbMenu', function() {
                 console.log("togles hiden",label);
                 $compile($("[label-for-events='"+label+"']").toggle())($scope);
             };
+            
             $scope.tooltipBound = false;
-            $scope.showToolTip = function(template) {
-                console.log("showToolTip");
-                if ($scope.tooltipBound){
-                    console.log("bound");
-                    return;
-                }
+            $scope.popupBound=false;
+            //contructs the block of the template for a popup or tooltip
+            $scope.makePopupTooltipContents = function(template){
                 var view =JSON.parse(template);
-                console.log(view);
                 var viewScope = $rootScope.$new(true);
                 viewScope.view = view;
                 viewScope.viewBlock = {
@@ -384,12 +381,29 @@ angular.module('module.views').directive('sbMenu', function() {
                     element: $compile(viewBlock)(viewScope)
                 };
 
-                var tooltipContent = $('<div>', {'class': 'block'});    
-                tooltipContent.append(view.element);
-
-                $element.tooltip({offset: [50, -50], html: tooltipContent});
+                var contents = $('<div>', {'class': 'block'});    
+                contents.append(view.element);
+                return contents;
+            };
+            $scope.showToolTip = function(template) {
+                console.log("showToolTip",$scope);
+                if ($scope.tooltipBound){
+                    return;
+                }
+                tooltipContent = $scope.makePopupTooltipContents(template);
+                $element.tooltip({offset: [0, 0], html: tooltipContent});
                 $scope.tooltipBound = true; 
                 $element.trigger('mouseover');
+            };
+            $scope.showPopUp = function(template) {
+                console.log("showPopUp");
+                if ($scope.popupBound){
+                    return;
+                }
+                popupContent = $scope.makePopupTooltipContents(template);
+                $element.popup({ html: popupContent, event: $scope.event});
+                $scope.popupBound = true; 
+                $element.trigger($scope.event);
             };
         }
     };

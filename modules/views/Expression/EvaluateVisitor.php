@@ -87,7 +87,7 @@ class EvaluateVisitor extends Visitor {
         $context = $node->getContext();
         $lib=$node->getLib();
         if ($lib=="actions") {
-            if ($funcName==="showToolTip"){
+            if ($funcName==="showToolTip" || $funcName==="showPopUp"){
                 $args[]=$this->params;
             }
             else if ($funcName==="hideView" || $funcName==="showView" || $funcName==="toggleView"){

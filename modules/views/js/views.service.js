@@ -207,6 +207,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 var fn = $parse(part.parameters.events[key]);
                 (function(key, fn) {
                     element.on(key, function(e) {
+                        scope.event = key;
                         if(e.stopPropagation)
                             e.stopPropagation();
                         fn(scope);

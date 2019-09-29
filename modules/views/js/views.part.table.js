@@ -109,6 +109,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         var fn = $parse(row.parameters.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
+                            rowScope.event = key;
                             rowScope.row = row;
                             rowEl.on(key, function() { fn(rowScope); });
                         })(key, fn, row);
@@ -142,6 +143,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         var fn = $parse(row.parameters.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
+                            rowScope.event = key;
                             rowScope.row = row;
                             rowEl.on(key, function() { fn(rowScope); });
                         })(key, fn, row);
