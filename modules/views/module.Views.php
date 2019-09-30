@@ -817,30 +817,30 @@ class Views extends Module {
         API::registerFunction('views', 'getTemplateContent', function() {
             API::requireCourseAdminPermission();
             API::requireValues('role', 'id', 'roleType','course');
-            $role = API::getValue("role");
-            $id = API::getValue("id");
-            
-            $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"aspect","templateId"=>$id]);
-            
-            $course = new Course(API::getValue("course"));
-            $type = API::getValue("roleType");
-            
-            if ($type=="ROLE_INTERACTION"){
-                $roles = explode(">", $role);
-                $view=$this->getClosestAspect($course,$type,$roles[0],$anAspect["id"],$roles[1]);
-            }else{
-                $view=$this->getClosestAspect($course,$type,$role,$anAspect["id"]);
-            }
+            $templateView = $this->getTemplateContents(API::getValue("role"),API::getValue("id"),API::getValue("course"),API::getValue("roleType"));
             //the template needs to be contained in 1 view part, if there are multiple we put everything in a block
-            if (sizeOf($view["children"]) > 1) {
-                $block = $view;
+            if (sizeOf($templateView["children"]) > 1) {
+                $block = $templateView;
                 $block["partType"] = "block";
                 $block["parameters"] = [];
                 unset($block["id"]);
             } else {
-                $block = $view["children"][0];
+                $block = $templateView["children"][0];
             }
+            API::response(array('template' => $block));
+        });
+        //gets 
+        API::registerFunction('views', 'getTemplateReference', function() {
+            API::requireCourseAdminPermission();//course/id/isglobal/name/role/roletype/viewid
+            //get content of template to put in the view
+            $templateView = $this->getTemplateContents(API::getValue("role"),API::getValue("id"),API::getValue("course"),API::getValue("roleType"));
+            //set template reference in the db
+            $block = $templateView;
+            $block["partType"] = "templateRef";
+            $block["parameters"] = [];
+            unset($block["id"]);
+            //Core::$systemDB->insert("view",["partType"=>"templateRef"]);
+            //Core::$systemDB->insert("view_template");
             API::response(array('template' => $block));
         });
         //save a part of the view as a template while editing the view
@@ -1117,7 +1117,20 @@ class Views extends Module {
         }
         return end($parentViews);
     }
-    
+    public function getTemplateContents($role,$templateId,$courseId,$roleType){
+        $course = new Course($courseId);
+        $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
+                ["partType"=>"aspect","templateId"=>$templateId]);
+        
+        if ($roleType=="ROLE_INTERACTION"){
+            $roles = explode(">", $role);
+            $view=$this->getClosestAspect($course,$roleType,$roles[0],$anAspect["id"],$roles[1]);
+        }else{
+            $view=$this->getClosestAspect($course,$roleType,$role,$anAspect["id"]);
+        }
+        
+        return $view;
+    }
     public function &getViewHandler() {
         return $this->viewHandler;
     }

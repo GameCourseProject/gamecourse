@@ -168,17 +168,21 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             part.edit=true;
         if (options.type != undefined)
             part.partType = options.partType;
-
-        if (this.registeredPartType[part.partType] == undefined) {
-            console.error('Unknown part type: ' + part.partType);
-            return;
-        }
         
         var partScope = parentScope.$new(true);
         partScope.part = part;
-        if (part.partType!="templateRef")
+        if (part.partType=="templateRef"){//adding background color and a warning message if its a template reference
+            var element = this.registeredPartType["block"].build(partScope, part, options);
+            element.prepend($('<span style="color: #8f0707;display: table; margin: auto;">Warning: Any changes made to this block will affect the original template</span>'));
+            element.attr("style","padding: 10px; background-color: #7497c4");
+        }
+        else{
+            if (this.registeredPartType[part.partType] == undefined) {
+                console.error('Unknown part type: ' + part.partType);
+                return;
+            }
             var element = this.registeredPartType[part.partType].build(partScope, part, options);
-        //ToDo: build instance/templateref
+        }
         
         this.applyCommonFeatures(partScope, part, element, options);
         

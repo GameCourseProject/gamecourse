@@ -337,6 +337,14 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     //newPart = angular.copy(templates[id]['content']);
                                     console.log("newTemplateRef",templates[id]);
                                     //get template contents
+                                    $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
+                                        if (err) {
+                                            alert(err.description);
+                                            return;
+                                        }
+                                        console.log("getTemplateReference", data);
+                                        addPart(data.template);
+                                    }); 
                                 
                             });
                             addTemplateRef.append('<label for="partList">Add Template Reference:</label><br>');
