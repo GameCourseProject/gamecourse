@@ -159,9 +159,12 @@ class Views extends Module {
         }
     }
     private function popUpOrToolTip($templateName,$params,$funcName,$course){
-        $template = $this->getTemplate(null,$templateName);  
+        $template = $this->getTemplate(null,$templateName); 
         $userView = $this->viewHandler->handle($template,$course,$params);
-        return new ValueNode($funcName."('".json_encode($userView)."')");
+        $encodedView = json_encode($userView);
+        if (strlen($encodedView)>100000)//preventing the use of tooltips with big templates
+            throw new \Exception("Tooltips and PopUps can only be used with smaller templates, '".$templateName."' is too big.");
+        return new ValueNode($funcName."('".$encodedView."')");
     }
     
     public function init() {
@@ -627,7 +630,8 @@ class Views extends Module {
                 'course' => (string)$data["courseId"],
                 'viewer' => (string)$courseUser->getId()
             ];
-            if (API::hasKey('user')) {
+            if ($data["viewSettings"]["roleType"] == "ROLE_INTERACTION"){
+                API::requireValues('user');
                 $viewParams['user'] = (string) API::getValue('user');
             }
             

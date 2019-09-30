@@ -204,6 +204,9 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var keys = Object.keys(part.parameters.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
+                
+                part.parameters.events[key]=part.parameters.events[key].replace(/\\n/g,'');
+                
                 var fn = $parse(part.parameters.events[key]);
                 (function(key, fn) {
                     element.on(key, function(e) {

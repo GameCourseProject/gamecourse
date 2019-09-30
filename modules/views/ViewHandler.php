@@ -754,7 +754,6 @@ class ViewHandler {
 
         //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
         if ($viewType == "ROLE_INTERACTION"){
-            API::requireValues('user');
             $roleArray=[];//role1=>[roleA,roleB],role2=>[roleA],...
             foreach ($viewRoles as $roleInteraction){
                 $roles= explode('>',$roleInteraction);
