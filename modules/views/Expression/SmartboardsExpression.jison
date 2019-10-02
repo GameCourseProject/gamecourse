@@ -263,11 +263,6 @@ exp
             CodeAssistant.reset();
             /*php $$ = $1->text; */
         }
-    | totalpath
-        {   //js
-            CodeAssistant.reset();
-            /*php $$ = $1->text; */
-        }
     | NULL
         {/*php
             $$ = new ValueNode(null);
@@ -298,7 +293,10 @@ function
         {/*php
             $$ = new FunctionOp($3.yytext, null, $1.yytext);
         */}
- 
+    | PATH PATH_SEPARATOR PATH '(' ')'
+        {/*php
+            $$ = new FunctionOp($3.yytext, null, $1.yytext);
+        */}
     | PATH PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
             $$ = new FunctionOp($3.yytext, $5.yytext, $1.yytext);
@@ -307,7 +305,10 @@ function
         {/*php
             $$ = new FunctionOp($3.yytext, null, null,new ParameterNode(substr($1.yytext, 1)));
         */}
- 
+    | PATH PATH_SEPARATOR PATH '(' ')'
+        {/*php
+            $$ = new FunctionOp($3.yytext, null, null,new ParameterNode(substr($1.yytext, 1)));
+        */}
     | PARAM PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
             $$ = new FunctionOp($3.yytext, $5.yytext, null,new ParameterNode(substr($1.yytext, 1)));
@@ -316,7 +317,10 @@ function
         {/*php
             $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
         */}
- 
+    | function PATH_SEPARATOR PATH '(' ')'
+        {/*php
+            $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
+        */}
     | function PATH_SEPARATOR PATH '(' arglist ')'
         {/*php
             $$ = new FunctionOp($3.yytext, $5.yytext, null,$1.yytext);

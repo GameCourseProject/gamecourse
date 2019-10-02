@@ -170,7 +170,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         partScope.part = part;
         if (part.partType=="templateRef"){//adding background color, border and a warning message if its a template reference
             //ToDo: improve the look of the template references
-            tempRefOptions=options;
+            tempRefOptions=angular.copy(options);
             tempRefOptions.toolOptions.canSwitch=false;
             tempRefOptions.toolOptions.noSettings=true;
             tempRefOptions.toolOptions.canDuplicate=false;
