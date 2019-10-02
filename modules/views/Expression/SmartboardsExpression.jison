@@ -59,16 +59,11 @@
                                 /*php $this->popState(); */
                                 return 'EXPR_END';
                             }
-<EXPR,PATH_STATE>"["        {   //js
-                                this.begin('CONTEXT');
-                                /*php $this->begin('CONTEXT'); */
-                                return '[';
-                            }
 <EXPR>.                     {   //js
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
                                 /*php throw new Exception('Unknown character \'' . $this->yy->text . '\', line ' . ($this->yy->lineNo + 1) . ' near pos ' . $this->yy->loc->lastColumn); */
                             }
-<PATH_STATE>[A-Za-z_]+       {   //js
+<PATH_STATE>[A-Za-z_]+      {   //js
                                 CodeAssistant.setPath(yytext);
                                 //
                                 return 'PATH';
@@ -78,24 +73,11 @@
                                 //
                                 return 'PATH_SEPARATOR';
                             }
-<PATH_STATE>"+"             {   //js
-                                CodeAssistant.pushPath();//??
-                                //
-                                return 'JOIN';
-                            }
 <PATH_STATE>.               {   //js
                                 this.unput(yytext);
                                 this.popState();
                                 /*php $this->input = $this->yy->text . $this->input; $this->popState(); */
                             }
-<CONTEXT>"]"                {   //js
-                                CodeAssistant.pathFollowKey();
-                                this.popState();
-                                /*php $this->popState(); */ return ']';
-                            }
-<CONTEXT>[^\]=.{%]+         return 'TEXT';
-<CONTEXT>"="                return '=';
-<CONTEXT>"."                return 'PATH_SEPARATOR';
 <INITIAL>[^{]+             return 'TEXT';
 .                           {   //js
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
@@ -153,13 +135,17 @@ block
     ;
 
 arglist
-    : exp
+    : '(' exp ')'
         {/*php
-            $$ = new ArgumentSequence($1.yytext);
+            $$ = new ArgumentSequence($2.yytext);
         */}
-    | exp ',' arglist
+    | '(' ')'
         {/*php
-            $$ = new ArgumentSequence($1.yytext, $3.yytext);
+            $$ = null;
+        */}
+    | '(' exp ',' arglist ')'
+        {/*php
+            $$ = new ArgumentSequence($2.yytext, $3.yytext);
         */}
     ;
 stmt
@@ -293,36 +279,24 @@ function
         {/*php
             $$ = new FunctionOp($3.yytext, null, $1.yytext);
         */}
-    | PATH PATH_SEPARATOR PATH '(' ')'
+    | PATH PATH_SEPARATOR PATH arglist 
         {/*php
-            $$ = new FunctionOp($3.yytext, null, $1.yytext);
-        */}
-    | PATH PATH_SEPARATOR PATH '(' arglist ')'
-        {/*php
-            $$ = new FunctionOp($3.yytext, $5.yytext, $1.yytext);
+            $$ = new FunctionOp($3.yytext, $4.yytext, $1.yytext);
         */}
     | PARAM PATH_SEPARATOR PATH
         {/*php
             $$ = new FunctionOp($3.yytext, null, null,new ParameterNode(substr($1.yytext, 1)));
         */}
-    | PATH PATH_SEPARATOR PATH '(' ')'
+    | PARAM PATH_SEPARATOR PATH  arglist 
         {/*php
-            $$ = new FunctionOp($3.yytext, null, null,new ParameterNode(substr($1.yytext, 1)));
-        */}
-    | PARAM PATH_SEPARATOR PATH '(' arglist ')'
-        {/*php
-            $$ = new FunctionOp($3.yytext, $5.yytext, null,new ParameterNode(substr($1.yytext, 1)));
+            $$ = new FunctionOp($3.yytext, $4.yytext, null,new ParameterNode(substr($1.yytext, 1)));
         */}
     | function PATH_SEPARATOR PATH
         {/*php
             $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
         */}
-    | function PATH_SEPARATOR PATH '(' ')'
+    | function PATH_SEPARATOR PATH  arglist 
         {/*php
-            $$ = new FunctionOp($3.yytext, null, null,$1.yytext);
-        */}
-    | function PATH_SEPARATOR PATH '(' arglist ')'
-        {/*php
-            $$ = new FunctionOp($3.yytext, $5.yytext, null,$1.yytext);
+            $$ = new FunctionOp($3.yytext, $4.yytext, null,$1.yytext);
         */}
     ;

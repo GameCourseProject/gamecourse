@@ -8,7 +8,5 @@ abstract class Visitor {
     public abstract function visitGenericUnaryOp($node);
     public abstract function visitGenericBinaryOp($node);
     public abstract function visitFunctionOp($node);
-    public abstract function visitDatabasePath($node, $parent, $returnContinuation);
-    public abstract function visitDatabasePathFromParameter($node, $returnContinuation);
     public abstract function visitParameterNode($node);
 }
