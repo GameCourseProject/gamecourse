@@ -336,15 +336,24 @@ angular.module('module.views').directive('sbMenu', function() {
 }).directive('events', function($state,$compile,$rootScope,$sbviews) {
     return {
         link: function($scope, $element) {
-            $scope.goToPage = function(page,user=null) {
-                console.log("goToPAge",page);
-                var pageState = "course."+page.toLowerCase(); 
-                if (user!==null){
-                    $state.go(pageState, {'userID': user});
+            $scope.goToPage = function(pageName,id=null,user=null) {
+                console.log("goToPage",pageName);
+                if(id!==null){
+                    if (user!==null){
+                        $state.go("course.customUserPage", {name:pageName, id: id, userID: user});
+                    }else{
+                        $state.go("course.customPage",{name:pageName, id: id});
+                    }
                 }else{
-                    $state.go(pageState);
+                    var state="course."+pageName.toLowerCase();
+                    if (user!==null){
+                        $state.go(state, {userID: user});
+                    }else{
+                        $state.go(state);
+                    }
                 }
-                    
+                
+                
             };
             $scope.hideView = function(label) {
                 console.log("hide view",label);

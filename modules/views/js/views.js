@@ -321,7 +321,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 };
                 optionsScope.view={name: '',roleType: 'ROLE_SINGLE',pageOrTemp: pageOrTemp,course:$scope.course};
 
-                optionsScope.saveTemplate = function () {
+                optionsScope.saveView = function () {
                     $smartboards.request('views','createView',optionsScope.view,function(data,err){
                         if (err) {
                             alert(err.description);
@@ -332,11 +332,13 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 };
                 var wrapper = $('<div>');// ng-disabled=
                 wrapper.append('<div class="title"><span>Create {{view.pageOrTemp}}</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
-                var input = $('<sb-input sb-input="view.name" sb-input-label="Name of {{view.pageOrTemp}}">'+ 
-                        '<span ng-if="view.pageOrTemp==\'template\'">Template Role Type:</span>'+
-                        '<select ng-if="view.pageOrTemp==\'template\'" ng-options="type.id as type.name for type in types" ng-model="view.roleType"></select>'+
-                        '<button ng-click="saveTemplate()">Save</button></sb-input>');
-                wrapper.append(input);
+                var content = $('<div style="padding: 10px">');
+                var inputName = $('<sb-input sb-input="view.name" sb-input-label="Name of {{view.pageOrTemp}}">');
+                content.append(inputName);
+                content.append($('<span> Role Type:</span>'+
+                        '<select ng-options="type.id as type.name for type in types" ng-model="view.roleType"></select>'));
+                content.append($('<br><button ng-click="saveView()">Save</button></sb-input>'));
+                wrapper.append(content);
                 $compile(wrapper)(optionsScope);
                 el.append(wrapper);
             }, function () {});
@@ -383,6 +385,16 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 });
 
 //controller for pages that are created in the views page
+angular.module('module.views').controller('CustomUserPage', function ($stateParams, $element, $scope, $sbviews) {
+    changeTitle($stateParams.name, 1);
+    $sbviews.request($stateParams.id, {course: $scope.course, user: $stateParams.userID}, function(view, err) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        $element.append(view.element);
+    });
+});
 angular.module('module.views').controller('CustomPage', function ($stateParams,$rootScope, $element, $scope, $sbviews, $compile, $state) {
     changeTitle($stateParams.name, 1);
     $sbviews.request($stateParams.id, {course: $scope.course}, function(view, err) {
@@ -394,7 +406,14 @@ angular.module('module.views').controller('CustomPage', function ($stateParams,$
     });
 });
 angular.module('module.views').config(function($stateProvider) {
-    $stateProvider.state('course.customPage', {
+    $stateProvider.state('course.customUserPage', {
+        url: '/{name:[A-z0-9]+}-{id:[0-9]+}/{userID:[0-9]{1,5}}',
+        views: {
+            'main-view@':{
+                controller: 'CustomUserPage'
+            }
+        }
+    }).state('course.customPage', {
         url: '/{name:[A-z0-9]+}-{id:[0-9]+}',
         views: {
             'main-view@':{

@@ -286,12 +286,19 @@ class Views extends Module {
         //functions of actions(events) library, 
         //they don't really do anything, they're just here so their arguments can be processed 
         $this->viewHandler->registerFunction("actions",'goToPage', function($page,$user=null) { 
-            //if user is specified get its value
-            if ($user!==null){
-                $userId=$this->getUserId($user);
-                return new ValueNode("goToPage('".$page."',".$userId.")");
+            $id = $this->viewHandler->getPages(null,$page)["id"];
+            if ($id !== null) {
+                $response = "goToPage('" . $page . "'," . $id;
+            } else {
+                $response = "goToPage('" . $page . "',null";
             }
-            return new ValueNode("goToPage('".$page."')");
+            if ($user !== null) {//if user is specified get its value
+                $userId = $this->getUserId($user);
+                $response .= "," . $userId . ")";
+            } else {
+                $response .= ")";
+            }
+            return new ValueNode($response);
         });
         $this->viewHandler->registerFunction("actions",'hideView', function($label,$visitor) { 
             return new ValueNode("hideView('".$label."')");
@@ -901,19 +908,15 @@ class Views extends Module {
             $data = $this->getViewSettings();
             $viewSettings=$data["viewSettings"];
             $viewType = $viewSettings['roleType'];
-
+            API::requireValues('info');
+            $info = API::getValue('info');
             if ($viewType == "ROLE_SINGLE") {
-                API::requireValues('info');
-                $info = API::getValue('info');
-
                 if (!array_key_exists('role', $info)) {
                     API::error('Missing role');
                 }
                 $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['role']);
             } 
             else if ($viewType == "ROLE_INTERACTION") {
-                API::requireValues('info');
-                $info = API::getValue('info');
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
                     API::error('Missing roleOne and/or roleTwo in info');
                 }
@@ -1129,23 +1132,23 @@ class Views extends Module {
     //get settings of page/template 
     function getViewSettings(){
         API::requireValues('view','pageOrTemp','course');
-        $viewId = API::getValue('view');//page or template id
+        $id = API::getValue('view');//page or template id
         $pgOrTemp=API::getValue('pageOrTemp');
         if ($pgOrTemp=="page"){
-            if (is_numeric($viewId)){
-                $viewSettings = $this->viewHandler->getPages($viewId);
+            if (is_numeric($id)){
+                $viewSettings = $this->viewHandler->getPages($id);
             } else{//for pages, the value of 'view' could be a name instead of an id
-                $viewSettings = $this->viewHandler->getPages(null,$viewId);
+                $viewSettings = $this->viewHandler->getPages(null,$id);
             }
         }else {//template
-            $viewSettings = $this->getTemplate($viewId);
+            $viewSettings = $this->getTemplate($id);
         }
         if (empty($viewSettings)) {
-            API::error('Unknown '.$pgOrTemp .' ' . $viewId);
+            API::error('Unknown '.$pgOrTemp .' ' . $id);
         }
         $courseId=API::getValue('course');
         $course = Course::getCourse($courseId);
-        return ["courseId"=>$courseId,"course"=>$course,"viewId"=>$viewId,
+        return ["courseId"=>$courseId,"course"=>$course,"viewId"=>$id,
             "pageOrTemp"=>$pgOrTemp,"viewSettings"=>$viewSettings];
     }
 }

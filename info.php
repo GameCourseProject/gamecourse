@@ -64,7 +64,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
         //pages added by modules already have navigation, the otheres need to be added
         if(!in_array($page["name"], $navNames)){
             $simpleName=str_replace(' ', '', $page["name"]);
-            Core::addNavigation('images/leaderboard.svg', $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+            Core::addNavigation('images/awards.svg', $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
         }
     }
    
