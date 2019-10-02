@@ -94,8 +94,10 @@ class XPLevels extends Module {
         });
         //xp.getXP(user) returns value of xp for user
         $viewHandler->registerFunction('xp','getXP',function($user) use ($courseId){
-            $XP = $this->calculateXP($user,$courseId);
-            return new ValueNode($XP);
+            return new ValueNode($this->calculateXP($user,$courseId));
+        });//same function 
+        $viewHandler->registerFunction('xp','getXp',function($user) use ($courseId){
+            return new ValueNode($this->calculateXP($user,$courseId));
         });
         //%level.description
         $viewHandler->registerFunction('xp','description',function($level) {
