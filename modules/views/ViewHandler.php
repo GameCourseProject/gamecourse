@@ -85,13 +85,13 @@ class ViewHandler {
         }
     }
     //receives view and updates the DB with its info, propagates changes in the main view to all its children
-//$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), change in aspectclass
+//$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), used for change in aspectclass
     public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
         if ($viewPart["partType"]!="aspect" ){            
             //insert/update views
             if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
                 Core::$systemDB->update("view",["viewIndex"=>$viewPart["viewIndex"],
-                    "partType"=>$viewPart["partType"],"parent"=>$viewPart["parent"],"aspectClass"=>$viewPart["aspectClass"]],
+                    "partType"=>$viewPart["partType"],"aspectClass"=>$viewPart["aspectClass"]],
                         ["id"=>$viewPart["id"]]);  
                 
                 if (!$basicUpdate) {
@@ -102,6 +102,9 @@ class ViewHandler {
                     ["parent"=>$viewPart["parent"],"role"=>$viewPart["role"],"aspectClass"=>$viewPart["aspectClass"],
                     "partType"=>$viewPart["partType"], "viewIndex"=>$viewPart["viewIndex"]]);
                 $viewPart["id"]=Core::$systemDB->getLastId();
+                if ($viewPart["partType"]=="templateRef"){
+                    Core::$systemDB->insert("view_template",["viewId"=>$viewPart["id"],"templateId"=>$viewPart["templateId"]]);
+                }
             }     
             if (!$basicUpdate){//update parameters
                 $this->updateParameters($viewPart);
@@ -129,10 +132,51 @@ class ViewHandler {
             unset($viewPart["rows"]);
             unset($viewPart["headerRows"]);
         }
+        if ($viewPart["partType"]=="templateRef" && !$basicUpdate){//update orignial template of the reference
+            $type = $this->getRoleType($viewPart["role"]);//type of viewPart (templateRef)
+            $aspects = $this->getAspects($viewPart["aspectId"]);
+            $templateType=$this->getRoleType($aspects[0]["role"]);//type of template
+            //if view role is a double role, get second part, if its special.own set to default
+            if ($type=="ROLE_INTERACTION" && $templateType == "ROLE_SINGLE") {
+                $viewPart["role"]=explode('>',$viewPart["role"])[1];
+                if ($viewPart["role"]=="special.Own")
+                    $viewPart["role"]="role.Default";
+            }else if ($templateType == "ROLE_INTERACTION" && $type=="ROLE_SINGLE"){//if the template need double role set 1st to default
+                $viewPart["role"] = "role.Default>".$viewPart["role"];
+            }
+            //check if aspect exists
+            $foundAspect=null;
+            foreach($aspects as $asp){
+                if ($asp["role"]==$viewPart["role"]){
+                    $foundAspect=$asp;
+                    break;
+                }
+            }
+            $aspectClass=$aspects[0]["aspectClass"];
+            
+            if ($foundAspect===null){ //new aspect, add it
+                if ($templateType == "ROLE_INTERACTION" ){
+                    $roles=explode('>',$viewPart["role"]);
+                    $roleInfo=["roleOne"=>$roles[0],"roleTwo"=>$roles[1]];
+                }else{
+                    $roleInfo=["roleOne"=>$viewPart["role"]];
+                }
+                $this->createAspect($templateType,$viewPart["aspectId"],$this->viewsModule->getParent(),$roleInfo);
+            }else{//aspect exists, update its contents
+                if (!$ignoreIds && !$basicUpdate){
+                    $viewPart["id"]=$foundAspect["id"];
+                    $viewPart["partType"]="aspect";
+                    $viewPart["aspectClass"]=$aspectClass;
+                    $this->updateViewAndChildren($viewPart);
+                }
+            }
+            return;
+        }
         if (array_key_exists("children", $viewPart)){
             $children = null;
             if (!$basicUpdate){
-                $children = Core::$systemDB->selectMultiple("view",["parent"=>$viewPart["id"]]);
+                //all the children of the view except headers which are dealt with later
+                $children = Core::$systemDB->selectMultiple("view",["parent"=>$viewPart["id"]],"*",null,[["partType","header"]]);
                 $children = array_combine(array_column($children,"id"),$children);
             }
             
@@ -179,7 +223,7 @@ class ViewHandler {
                                 $type = "title";
                             else
                                 $type = "image";
-                            $part["parameters"]=$viewPart["header"][$type]["info"];
+                            $part["parameters"]=$viewPart["header"][$type]["parameters"];
                             $this->updateParameters($part);
                         }
                     }
@@ -194,28 +238,100 @@ class ViewHandler {
             }
         }
     }
-    //receives array with view info and organizes info to put into DB
-    public function organizeViewData($data){
-        $partList=$data['partlist'];
-        unset($data['partlist']);
-        if (array_key_exists('replacements', $data)){
-            $data['replacements']=json_encode($data['replacements']);
-        }
-        
-        $returnArray=['view_role'=>$data,'view_part'=>[]];
-        foreach ($partList as $part){
-            $view_part=[];
-            $view_part['pid']=$part['pid'];
-            $view_part['partType']=$part['partType'];
-            unset($part['pid']);
-            unset($part['partType']); 
-            $view_part['partContents']=json_encode($part);
-            $returnArray['view_part'][]=$view_part;
-        }
-        
-        return $returnArray;
+    //Find parent roles given a role like 'role.1'
+    private function findParents($course, $roleToFind) {
+        $finalParents = array();
+        $parents = array();
+        $course->goThroughRoles(function($role, $hasChildren, $cont, &$parents) use ($roleToFind, &$finalParents) {
+            if ('role.' . $role["id"] == $roleToFind) {
+                $finalParents = $parents;
+                return;
+            }
+            $parentCopy = $parents;
+            $parentCopy[] = 'role.' . $role["id"];
+            $cont($parentCopy);
+        }, $parents);
+        return array_merge(array('role.Default'), $finalParents);
     }
     
+    //gets views of the class of $anAspectId, with the last matching role of $rolesWanted 
+    private function findViews($anAspectId,$type, $rolesWanted) {
+        $aspects = $this->getAspects($anAspectId); 
+        
+        $viewRoles = array_column($aspects,'role');
+        $viewsFound = array();
+        if ($type== "ROLE_INTERACTION"){
+            $rolesFound=[];
+            foreach ($viewRoles as $dualRole) {
+                $role = substr($dualRole,0, strpos($dualRole, '>'));
+                if (in_array($role, $rolesWanted) && !in_array($role, $rolesFound)){
+                    $viewsFound[]=$this->getViewWithParts($anAspectId, $dualRole);
+                    $rolesFound[]=$dualRole;
+                }
+            }
+        }
+        else{
+            foreach (array_reverse($rolesWanted) as $role) {
+                if (in_array($role, $viewRoles)) {
+                    return [$this->getViewWithParts($anAspectId, $role)];
+                }
+            }
+            return null;
+        }
+        return $viewsFound;
+    }
+    //gets the closest aspectview to the current
+    public function getClosestAspect($course,$type,$roleOne,$viewId,$roleTwo=null){
+        $finalParents = $this->findParents($course, $roleOne);//parent roles of roleone
+        //get the aspect view from which we will copy the contents
+        $parentViews = $this->findViews($viewId,$type, array_merge($finalParents, [$roleOne]));
+        if ($type == "ROLE_INTERACTION") {
+            $parentsTwo = array_merge($this->findParents($course, $roleTwo),[$roleTwo]);
+            $finalViews = [];
+            foreach ($parentViews as $viewRoleOne) {
+                $viewRoles = explode(">",$viewRoleOne['role']);
+                $viewRoleTwo = $viewRoles[1];
+                foreach ($parentsTwo as $parentRole) {
+                    if($parentRole== $viewRoleTwo){
+                        $finalViews[]=$viewRoleOne;
+                    }
+                }
+            }
+            $parentViews = $finalViews;
+        }
+        return end($parentViews);
+    }
+    public function createAspect($roleType,$aspectId,$course,$roleInfo){
+        if ($roleType == "ROLE_SINGLE"){
+            $role=$roleInfo['roleOne'];
+            $parentView=$this->getClosestAspect($course,$roleType,$roleInfo['roleOne'],$aspectId);
+        }
+        else if ($roleType == "ROLE_INTERACTION") {
+            $role=$roleInfo['roleOne'].'>'.$roleInfo['roleTwo'];
+            $parentView=$this->getClosestAspect($course,$roleType,$roleInfo['roleOne'],$aspectId,$roleInfo['roleTwo']);
+        }
+
+        if ($parentView !=null) {
+            if ($parentView["aspectClass"]==null){    
+                Core::$systemDB->insert("aspect_class");
+                $aspectClass = Core::$systemDB->getLastId();
+                $parentView["aspectClass"]=$aspectClass;
+                Core::$systemDB->update("view",["aspectClass"=>$aspectClass],["id"=>$parentView["id"]]);
+                //update aspect class of parent view
+                $this->updateViewAndChildren($parentView, true);
+            }
+            $newView = ["role"=>$role, "partType"=>"aspect","aspectClass"=>$parentView["aspectClass"]];
+            Core::$systemDB->insert("view",$newView);
+            $newView["id"]=Core::$systemDB->getLastId();
+            $newView = array_merge($parentView,$newView);
+            //add new aspect to db
+            $this->updateViewAndChildren($newView, false, true);
+        } else {
+            $newView = ["role"=>$role, "partType"=>"aspect", 
+                    "aspectClass"=>null,"parent"=>null,"viewIndex"=>null];
+            $this->updateViewAndChildren($newView);
+        }
+    }
     //gets a array with all params of each view of the given condition
     public function getViewParameters($where){
         //ToDo: check if this query could be done in a more eficient way
@@ -239,6 +355,7 @@ class ViewHandler {
         }
         return $view_params;
     }
+    //get table data
     function lookAtTable(&$organizedView){
         if ($organizedView["partType"]=="table" && sizeof($organizedView["children"])>0){
             $organizedView["rows"]=[];
@@ -259,6 +376,7 @@ class ViewHandler {
             $organizedView["columns"]=sizeof($organizedView["rows"][0]["values"]);
         } 
     }
+    //check if view is a block w header and get it's data
     function lookAtHeader(&$organizedView){
         if ($organizedView["partType"]=="block" && sizeof($organizedView["children"])>0){
             if ($organizedView["children"][0]["partType"]=="header"){
@@ -270,6 +388,7 @@ class ViewHandler {
             }
         } 
     }
+    //get data of view parameter
     function lookAtParameter($child,$view_params,&$organizedView){
         $child["parameters"]=[];
         if (array_key_exists($child['id'], $view_params)){
@@ -284,61 +403,9 @@ class ViewHandler {
         }
         $organizedView["children"][] = array_merge($child,["children"=>[]]);
     }
-    //Go through views and update array with parameters info (it receives arrays with all the data, doesnt do more queries)
-    public function lookAtChildren($parent,$children, $view_params, &$organizedView){
-        if (!array_key_exists($parent, $children))
-            return;
-        
-        for($i=0;$i<count($children[$parent]);$i++){
-        //foreach($children[$parent] as $child){
-            $child=$children[$parent][$i];
-            $this->lookAtParameter($child,$view_params,$organizedView);
-            //ToDo: instances
-            $this->lookAtChildren($child['id'],$children, $view_params, $organizedView["children"][$i]);    
-        }
-        $this->lookAtHeader($organizedView);
-        $this->lookAtTable($organizedView);
-    }
-    
-    //Go through views and update array with parameters info (receives parents and uses queries to get the rest)
-    public function lookAtChildrenWQueries($parentId,&$organizedView){
-        $children=Core::$systemDB->selectMultiple("view",["parent"=>$parentId],"*","viewIndex"); 
-        $view_params=$this->getViewParameters(["parent"=>$parentId]);
-        
-        for($i=0;$i<count($children);$i++){
-            $child=$children[$i];
-            $this->lookAtParameter($child,$view_params,$organizedView);
-            $organizedView["children"][$i]["aspectClass"]=$organizedView["aspectClass"];
-            $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);        
-        }    
-        $this->lookAtHeader($organizedView);
-        $this->lookAtTable($organizedView);
-    }
-    //gets aspect view 
-    public function getAspect($aspectId){
-        $asp=Core::$systemDB->select("aspect_class natural join view",["id"=>$aspectId]);
-        if (empty($asp)){
-            //aspect class hasnt' been assigned because it has only 1 aspect
-            $asp=Core::$systemDB->select("view",["id"=>$aspectId]);
-        }
-        return $asp;
-    }
-    //receives an aspect id and returns all aspects of that aspectClass
-    public function getAspects($anAspeptId){
-        $asp = $this->getAspect($anAspeptId);
-        if ($asp["aspectClass"]!=null){
-            //there are other aspects
-            $aspects= Core::$systemDB->selectMultiple("aspect_class natural join view",
-                    ["aspectClass"=>$asp["aspectClass"],"partType"=>"aspect"]);
-            return $aspects;
-        }
-        return [$asp];
-    }
-    //contructs an array of the view with all it's children, if there isn't a role returns array of view arrays
-    //ToDO template references
-    public function getViewWithParts($anAspectId,$role=null){
-        $anAspect = $this->getAspect($anAspectId);
-        if ($anAspect["aspectClass"]===null){//only 1 aspect exists
+    //receives aspect (and possibly role), contructs array of view with all its contents
+    public function getViewContents($anAspect,$role=null){
+        if ($anAspect["aspectClass"]==null){//view as only 1 aspect
             //this has a lot of queries (select all children, each of their params and children)
             //this happens because null aspectClass when there's only one aspect
             $organizedView=$anAspect;
@@ -366,24 +433,98 @@ class ViewHandler {
             }
             foreach($aspectsViews as &$organizedView){
                 $organizedView["children"]=[];
-                if (sizeof($parts)>0)
-                    $this->lookAtChildren($organizedView['id'],$parts, $view_params, $organizedView); 
-            }
+                if (sizeof($parts) > 0) {
+                    $this->lookAtChildren($organizedView['id'], $parts, $view_params, $organizedView);
+                }
+            } 
         }
         if ($role)
-           return $organizedView;
+           return $aspectsViews[0];
         else
            return $aspectsViews; 
     }
-    
-    //returns all the aspects for a given view or for the given role
-    public function getViewRoles($viewId,$role=null){
-        if ($role === null) {
-            return Core::$systemDB->selectMultiple("view",["pageId"=>$viewId, "partType"=>"aspect"]);
-        } else {
-            return Core::$systemDB->select("view",["pageId"=>$viewId, "role"=>$role, "partType"=>"aspect"]);
-        }
+    //gets contents of template referenced by templateref
+    public function lookAtTemplateReference($templatRef,&$organizedView){
+        //gettemplate and its aspect
+        $aspect = Core::$systemDB->select("view_template vt join template on templateId=id join view_template vt2 on id=vt2.templateId join view v on v.id=vt2.viewId",
+                                ["vt.viewId"=>$templatRef["id"],"v.partType"=>"aspect"],
+                                "v.id,vt.templateId,roleType,aspectClass,role,partType");
+        
+        //deal with roles of different types
+        $roleType = $this->getRoleType($templatRef["role"]);
+        if ($roleType=="ROLE_INTERACTION" && $aspect["roleType"]=="ROLE_SINGLE"){
+            $role = explode(">",$templatRef["role"])[1];
+        }else if ($roleType=="ROLE_SINGLE" && $aspect["roleType"]=="ROLE_INTERACTION"){
+            $role = "role.Default>".$templatRef["role"];
+        }else $role = $templatRef["role"];
+        
+        //$this->getViewContents($aspect, $role);
+        $aspectView = $this->getViewContents($aspect, $role);
+        $organizedView["children"] = $aspectView["children"];
+        $organizedView["aspectId"]=$aspect["id"];
+        $organizedView["templateId"]=$aspect["templateId"];
     }
+    //Go through views and update array with parameters info (it receives arrays with all the data, doesnt do more queries)
+    public function lookAtChildren($parent,$children, $view_params, &$organizedView){
+        if (!array_key_exists($parent, $children))
+            return;
+        
+        for($i=0;$i<count($children[$parent]);$i++){
+            $child=$children[$parent][$i];
+            $this->lookAtParameter($child,$view_params,$organizedView);
+            $this->lookAtChildren($child['id'],$children, $view_params, $organizedView["children"][$i]); 
+            if ($child["partType"]=="templateRef"){
+                $this->lookAtTemplateReference($child,$organizedView["children"][$i]);
+            }
+        }
+        $this->lookAtHeader($organizedView);
+        $this->lookAtTable($organizedView);
+    }
+    
+    //Go through views and update array with parameters info (receives parents and uses queries to get the rest)
+    public function lookAtChildrenWQueries($parentId,&$organizedView){
+        $children=Core::$systemDB->selectMultiple("view",["parent"=>$parentId],"*","viewIndex"); 
+        $view_params=$this->getViewParameters(["parent"=>$parentId]);
+        
+        for($i=0;$i<count($children);$i++){
+            $child=$children[$i];
+            $this->lookAtParameter($child,$view_params,$organizedView);
+            $organizedView["children"][$i]["aspectClass"]=$organizedView["aspectClass"];
+            $this->lookAtChildrenWQueries($child["id"],$organizedView["children"][$i]);  
+            if($child["partType"]=="templateRef"){
+                $this->lookAtTemplateReference($child, $organizedView["children"][$i]);
+            }
+        }    
+        $this->lookAtHeader($organizedView);
+        $this->lookAtTable($organizedView);
+    }
+    //gets aspect view 
+    public function getAspect($aspectId){
+        $where=["id"=>$aspectId];
+        $asp=Core::$systemDB->select("aspect_class natural join view",$where);
+        if (empty($asp)){
+            //aspect class hasnt' been assigned because it has only 1 aspect
+            $asp=Core::$systemDB->select("view",$where);
+        }
+        return $asp;
+    }
+    //receives an aspect id and returns all aspects of that aspectClass, if role is specified returns aspect of that role
+    public function getAspects($anAspeptId){
+        $asp = $this->getAspect($anAspeptId);
+        if ($asp["aspectClass"]!=null){
+            //there are other aspects
+            $aspects= Core::$systemDB->selectMultiple("aspect_class natural join view",
+                    ["aspectClass"=>$asp["aspectClass"],"partType"=>"aspect"]);        
+            return $aspects;
+        }
+        return [$asp];
+    }
+    //contructs an array of the view with all it's children, if there isn't a role returns array of view arrays
+    public function getViewWithParts($anAspectId,$role=null){
+        $anAspect = $this->getAspect($anAspectId);
+        return $this->getViewContents($anAspect, $role);
+    }
+    
     //returns all pages or page of the name or id given
     public function getPages($id=null,$pageName = null) {
         return $this->getPagesOfCourse($this->getCourseId(), $id, $pageName);
@@ -430,33 +571,11 @@ class ViewHandler {
         }
         //return $id;
     }
-            
-    
-    /*public function registerPage($module, $pageName, $roleType=self::VT_ROLE_SINGLE) {
-        $pageSettings = ["name"=> $pageName, "roleType"=>$roleType];              
-        $page = $this->getPages($pageName);
-        
-        if (empty($page)) {
-            $courseId=$this->getCourseId();
-            $role="";
-            if ($roleType == self::VT_ROLE_SINGLE)
-                $role='role.Default';
-            else if ($roleType == self::VT_ROLE_INTERACTION)
-                $role='role.Default>role.Default';
-
-            Core::$systemDB->insert('view',[ 
-                    "role"=>$role, "partType"=>"aspect"]);
-            $page["viewId"]=Core::$systemDB->getLastId();
-            
-            Core::$systemDB->insert('page',array_merge($pageSettings,['course'=>$courseId,"viewId"=>$page["viewId"]]));
-            $page["id"]=Core::$systemDB->getLastId();  
-        }
-        
-        if (array_key_exists($page['id'], $this->registeredPages))
-            new \Exception('Page' . $pageName . ' (id='.$page['id'].' is aready defined.');
-        $pageSettings["viewId"]=$page["viewId"];
-        $this->registeredPages[$page['id']] = $pageSettings;
-    }*/
+    public function getRoleType($role){
+        if (strpos($role, '>') !== false) {
+            return "ROLE_INTERACTION";
+        }else return "ROLE_SINGLE";
+    }
 
     public function registerFunction($funcLib,$funcName, $processFunc) {
         //ToDO: save on dictionary table ?
@@ -472,7 +591,6 @@ class ViewHandler {
 
             $this->registeredLibFunctions[$funcLib][$funcName] = $processFunc;
         }
-        
     }
 
     public function callFunction($funcLib, $funcName, $args, $context=null) {
@@ -571,25 +689,24 @@ class ViewHandler {
                 $keys = null;
                 $value = $child['parameters']['loopData']->accept($visitor)->getValue();
                 
-                    if (is_null($value))
-                        $value = [];
-                    if (!is_array($value)) {
-                         print_r($value);
-                        throw new \Exception('Repeat must be an Array or a Continuation.');
+                if (is_null($value))
+                    $value = [];
+                if (!is_array($value)) {
+                    throw new \Exception('Data Loop must have an object or collection.');
+                }
+                $value=$value["value"];
+                //if the $value array is associative it will be put in a sequential array
+                $isNumericArray=true;
+                foreach(array_keys($value) as $key){
+                    if (!is_int($key)){
+                        $isNumericArray=false;
+                        break;
                     }
-                    $value=$value["value"];
-                    //if the $value array is associative it will be put in a sequential array
-                    $isNumericArray=true;
-                    foreach(array_keys($value) as $key){
-                        if (!is_int($key)){
-                            $isNumericArray=false;
-                            break;
-                        }
-                    }
-                    if (!$isNumericArray)
-                        $value= [$value];
-                     
-                    $repeatParams = $value;
+                }
+                if (!$isNumericArray)
+                    $value= [$value];
+
+                $repeatParams = $value;
                 
                 $i=0;
                 foreach ($repeatParams as &$params){
@@ -711,7 +828,9 @@ class ViewHandler {
         $this->parseEvents($part);
         $this->parseLoop($part);
         $this->parseVisibilityCondition($part);
-        
+        if ($part["partType"]==="templateRef"){
+            $part["partType"]="block";
+        }
         $this->callPartParse($part['partType'], $part);
     }
 

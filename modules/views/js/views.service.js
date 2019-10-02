@@ -155,10 +155,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.build = function(scope, what, options) {
-        //console.log(what);
-        //console.log(scope);
         var part = $parse(what)(scope);
-        //console.log(part);
         return this.buildElement(scope, part, options);
     };
 
@@ -171,10 +168,16 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         
         var partScope = parentScope.$new(true);
         partScope.part = part;
-        if (part.partType=="templateRef"){//adding background color and a warning message if its a template reference
-            var element = this.registeredPartType["block"].build(partScope, part, options);
+        if (part.partType=="templateRef"){//adding background color, border and a warning message if its a template reference
+            //ToDo: improve the look of the template references
+            tempRefOptions=options;
+            tempRefOptions.toolOptions.canSwitch=false;
+            tempRefOptions.toolOptions.noSettings=true;
+            tempRefOptions.toolOptions.canDuplicate=false;
+            tempRefOptions.toolOptions.canSaveTemplate=false;
+            var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
             element.prepend($('<span style="color: #8f0707;display: table; margin: auto;">Warning: Any changes made to this block will affect the original template</span>'));
-            element.attr("style","padding: 10px; background-color: #7497c4");
+            element.attr("style","padding: 10px; background-color: #ddedeb; border: 1px solid rgba(255, 0, 0, 0.2);");//#881111
         }
         else{
             if (this.registeredPartType[part.partType] == undefined) {
@@ -198,6 +201,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         var scope = element.data('scope');
         if (scope == null || scope.part == null)
             return;
+        if (scope.part.partType=="templateRef")
+            scope.part.partType="block";
         this.registeredPartType[scope.part.partType].destroy(element, scope.part);
         scope.$destroy();
         element.remove();

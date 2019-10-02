@@ -93,9 +93,14 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.deleteViewOne = function(what, $event) {
             $event.stopPropagation();
-            if (!confirm("Are you sure you want to delete?"))
-                return;
-
+            if ($stateParams.pageOrTemp=="template"){
+                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?\nAny template references that use it will also be deleted"))
+                    return;
+            }else{
+                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?"))
+                    return;
+            }
+            
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
                 if (err) {
                     alert(err.description);
@@ -117,8 +122,13 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
         $scope.deleteViewTwo = function(what, $event) {
             $event.stopPropagation();
-            if (!confirm("Are you sure you want to delete?"))
-                return;
+            if ($stateParams.pageOrTemp=="template"){
+                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?\nAny template references that use it will also be deleted"))
+                    return;
+            }else{
+                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?"))
+                    return;
+            }
 
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
                 if (err) {
@@ -181,6 +191,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             saveData.view = $stateParams.view;
             saveData.pageOrTemp = $stateParams.pageOrTemp;
             saveData.content = view.get();
+            console.log("saveEdit",saveData.content);
             $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
                 btnSave.prop('disabled', false);
                 if (err) {
@@ -352,8 +363,13 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             });
         };
         $scope.deleteView = function(view,templateOrPage) {
-            if (!confirm("Are you sure you want to delete the "+templateOrPage+" '"+view.name+"'?"))
-                return;
+            if (templateOrPage=="template"){
+                if (!confirm("Are you sure you want to delete the "+templateOrPage+" '"+view.name+"'?\nAny template references that use it will also be deleted"))
+                    return;
+            }else{
+                if (!confirm("Are you sure you want to delete the "+templateOrPage+" '"+view.name+"'?"))
+                    return;
+            }
             $smartboards.request('views', 'deleteView', {course: $scope.course, id: view.id,pageOrTemp:templateOrPage}, function(data, err) {
                 if (err) {
                     alert(err.description);

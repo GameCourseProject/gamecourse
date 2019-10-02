@@ -257,8 +257,8 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 */
-        //if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-        //    $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
+        if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }
 

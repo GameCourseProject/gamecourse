@@ -287,9 +287,10 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             var templates = options.editData.templates;
                             addTemplatelist(partsList);
                             
-                            function addPart(newPart){
+                            function addPart(newPart,$isTemplateRef=false){
                                 console.log("newPart", newPart);
-                                deleteIds(newPart);
+                                if ($isTemplateRef===false)
+                                    deleteIds(newPart);
                                 //$sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();
                                 part.children.push(newPart);
@@ -315,6 +316,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                             alert(err.description);
                                             return;
                                         }
+                                        
                                         console.log("getTemp", data.template);
                                         addPart(data.template);
                                     });                                    
@@ -337,13 +339,15 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     //newPart = angular.copy(templates[id]['content']);
                                     console.log("newTemplateRef",templates[id]);
                                     //get template contents
+                                    templates[id].role=scope.$root.role;
                                     $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
                                         if (err) {
                                             alert(err.description);
                                             return;
                                         }
+                                        delete data.template.id;
                                         console.log("getTemplateReference", data);
-                                        addPart(data.template);
+                                        addPart(data.template,true);
                                     }); 
                                 
                             });

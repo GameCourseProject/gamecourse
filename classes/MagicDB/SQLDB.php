@@ -131,12 +131,18 @@ class SQLDB {
             return $returnVal[substr($field,$pos+1)];
         return $returnVal[$field];
     } 
-    public function selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[],$group=null){
+    public function selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[],$group=null,$likeParams=null){
         //example: select * from course where isActive=true;
         $sql = "select ".$field." from ".$table;
         if ($where){
             $sql.=" where ";
             $this->dataToQuery($sql,$where,'&&', $whereNot,$whereCompare);
+        }
+        if ($likeParams!=null){
+            foreach($likeParams as $key => $value){
+                $sql.=" && ". $key." like ? ";
+            }
+            $where=array_merge($where,array_values($likeParams));
         }
         if ($group){
             $sql.=" group by ". $group;
