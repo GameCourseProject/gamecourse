@@ -134,18 +134,24 @@ block
         */}
     ;
 
-arglist
-    : '(' exp ')'
+args
+    : exp 
         {/*php
-            $$ = new ArgumentSequence($2.yytext);
+            $$ = new ArgumentSequence($1.yytext);
         */}
-    | '(' ')'
+    |  exp ',' args 
+        {/*php
+            $$ = new ArgumentSequence($1.yytext, $3.yytext);
+        */}
+    ;
+arglist
+    : '(' ')'
         {/*php
             $$ = null;
         */}
-    | '(' exp ',' arglist ')'
+    | '(' args ')'
         {/*php
-            $$ = new ArgumentSequence($2.yytext, $3.yytext);
+            $$ = $2.yytext;
         */}
     ;
 stmt

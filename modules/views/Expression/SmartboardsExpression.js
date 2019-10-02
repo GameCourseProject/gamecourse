@@ -72,18 +72,18 @@
   }
 */
 var SmartboardsExpression = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,5],$V2=[1,12],$V3=[1,11],$V4=[1,9],$V5=[1,10],$V6=[1,14],$V7=[1,15],$V8=[1,16],$V9=[1,17],$Va=[1,18],$Vb=[1,19],$Vc=[1,20],$Vd=[1,11,13],$Ve=[1,22],$Vf=[1,23],$Vg=[1,24],$Vh=[1,25],$Vi=[1,26],$Vj=[1,27],$Vk=[1,28],$Vl=[1,29],$Vm=[1,30],$Vn=[1,31],$Vo=[1,32],$Vp=[1,33],$Vq=[9,10,12,14,15,16,17,18,19,20,21,23,24,25,26],$Vr=[9,10,12,14,15,19,20,21,23,24,25,26],$Vs=[9,10,12,19,20,24,25,26],$Vt=[9,10,12,19,20,21,23,24,25,26],$Vu=[9,10,12],$Vv=[9,10,12,14,15,16,17,18,19,20,21,23,24,25,26,37],$Vw=[1,66];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,5],$V2=[1,12],$V3=[1,11],$V4=[1,9],$V5=[1,10],$V6=[1,14],$V7=[1,15],$V8=[1,16],$V9=[1,17],$Va=[1,18],$Vb=[1,19],$Vc=[1,20],$Vd=[1,12,14],$Ve=[1,22],$Vf=[1,23],$Vg=[1,24],$Vh=[1,25],$Vi=[1,26],$Vj=[1,27],$Vk=[1,28],$Vl=[1,29],$Vm=[1,30],$Vn=[1,31],$Vo=[1,32],$Vp=[1,33],$Vq=[8,11,13,15,16,17,18,19,20,21,22,24,25,26,27],$Vr=[8,11,13,15,16,20,21,22,24,25,26,27],$Vs=[8,11,13,20,21,25,26,27],$Vt=[8,11,13,20,21,22,24,25,26,27],$Vu=[8,11,13],$Vv=[8,11,13,15,16,17,18,19,20,21,22,24,25,26,27,38],$Vw=[1,66];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"start":3,"block":4,"stmt":5,"arglist":6,"(":7,"exp":8,")":9,",":10,"EXPR_START":11,"EXPR_END":12,"TEXT":13,"+":14,"-":15,"*":16,"/":17,"%":18,"EQUALS":19,"<":20,">":21,"=":22,"IN":23,"&":24,"|":25,"^":26,"~":27,"!":28,"function":29,"NULL":30,"TRUE":31,"FALSE":32,"PARAM":33,"STRING":34,"NUMBER":35,"PATH":36,"PATH_SEPARATOR":37,"$accept":0,"$end":1},
-terminals_: {2:"error",7:"(",9:")",10:",",11:"EXPR_START",12:"EXPR_END",13:"TEXT",14:"+",15:"-",16:"*",17:"/",18:"%",19:"EQUALS",20:"<",21:">",22:"=",23:"IN",24:"&",25:"|",26:"^",27:"~",28:"!",30:"NULL",31:"TRUE",32:"FALSE",33:"PARAM",34:"STRING",35:"NUMBER",36:"PATH",37:"PATH_SEPARATOR"},
-productions_: [0,[3,0],[3,1],[4,1],[4,2],[6,3],[6,2],[6,5],[5,3],[5,2],[5,1],[8,3],[8,3],[8,3],[8,3],[8,3],[8,3],[8,3],[8,3],[8,4],[8,4],[8,3],[8,4],[8,4],[8,3],[8,3],[8,3],[8,2],[8,2],[8,2],[8,3],[8,1],[8,1],[8,1],[8,1],[8,1],[8,1],[8,1],[29,3],[29,4],[29,3],[29,4],[29,3],[29,4]],
+symbols_: {"error":2,"start":3,"block":4,"stmt":5,"args":6,"exp":7,",":8,"arglist":9,"(":10,")":11,"EXPR_START":12,"EXPR_END":13,"TEXT":14,"+":15,"-":16,"*":17,"/":18,"%":19,"EQUALS":20,"<":21,">":22,"=":23,"IN":24,"&":25,"|":26,"^":27,"~":28,"!":29,"function":30,"NULL":31,"TRUE":32,"FALSE":33,"PARAM":34,"STRING":35,"NUMBER":36,"PATH":37,"PATH_SEPARATOR":38,"$accept":0,"$end":1},
+terminals_: {2:"error",8:",",10:"(",11:")",12:"EXPR_START",13:"EXPR_END",14:"TEXT",15:"+",16:"-",17:"*",18:"/",19:"%",20:"EQUALS",21:"<",22:">",23:"=",24:"IN",25:"&",26:"|",27:"^",28:"~",29:"!",31:"NULL",32:"TRUE",33:"FALSE",34:"PARAM",35:"STRING",36:"NUMBER",37:"PATH",38:"PATH_SEPARATOR"},
+productions_: [0,[3,0],[3,1],[4,1],[4,2],[6,1],[6,3],[9,2],[9,3],[5,3],[5,2],[5,1],[7,3],[7,3],[7,3],[7,3],[7,3],[7,3],[7,3],[7,3],[7,4],[7,4],[7,3],[7,4],[7,4],[7,3],[7,3],[7,3],[7,2],[7,2],[7,2],[7,3],[7,1],[7,1],[7,1],[7,1],[7,1],[7,1],[7,1],[30,3],[30,4],[30,3],[30,4],[30,3],[30,4]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
-case 1: case 9:
+case 1: case 10:
    //js
             /*php return new ValueNode(''); */
         
@@ -105,195 +105,195 @@ case 4:
 break;
 case 5:
 /*php
-            this.$ = new ArgumentSequence($$[$0-1].yytext);
+            this.$ = new ArgumentSequence($$[$0].yytext);
         */
 break;
 case 6:
 /*php
-            this.$ = null;
+            this.$ = new ArgumentSequence($$[$0-2].yytext, $$[$0].yytext);
         */
 break;
 case 7:
 /*php
-            this.$ = new ArgumentSequence($$[$0-3].yytext, $$[$0-2].yytext);
+            this.$ = null;
         */
 break;
-case 8: case 30:
+case 8: case 9: case 31:
 /*php
             this.$ = $$[$0-1].yytext;
         */
 break;
-case 10:
+case 11:
    //js
             /*php
             this.$ = new ValueNode($$[$0].yytext);
         */
 break;
-case 11:
+case 12:
 /*php
             this.$ = new GenericBinaryOp('+', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 12:
+case 13:
 /*php
             this.$ = new GenericBinaryOp('-', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 13:
+case 14:
 /*php
             this.$ = new GenericBinaryOp('*', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 14:
+case 15:
 /*php
             this.$ =  new GenericBinaryOp('/', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 15:
+case 16:
 /*php
             this.$ =  new GenericBinaryOp('%', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 16:
+case 17:
 /*php
             this.$ = new GenericBinaryOp('==', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 17:
+case 18:
 /*php
             this.$ = new GenericBinaryOp('<', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 18:
+case 19:
 /*php
             this.$ = new GenericBinaryOp('>', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 19:
+case 20:
 /*php
             this.$ = new GenericBinaryOp('<=', $$[$0-3].yytext, $$[$0].yytext);
         */
 break;
-case 20:
+case 21:
 /*php
             this.$ = new GenericBinaryOp('>=', $$[$0-3].yytext, $$[$0].yytext);
         */
 break;
-case 21:
+case 22:
 /*php
             this.$ = new GenericBinaryOp('in_array', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 22:
+case 23:
 /*php
             this.$ = new GenericBinaryOp('&&', $$[$0-3].yytext, $$[$0].yytext);
         */
 break;
-case 23:
+case 24:
 /*php
             this.$ = new GenericBinaryOp('||', $$[$0-3].yytext, $$[$0].yytext);
         */
 break;
-case 24:
+case 25:
 /*php
             this.$ = new GenericBinaryOp('&', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 25:
+case 26:
 /*php
             this.$ = new GenericBinaryOp('|', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 26:
+case 27:
 /*php
             this.$ = new GenericBinaryOp('||', $$[$0-2].yytext, $$[$0].yytext);
         */
 break;
-case 27:
+case 28:
 /*php
             this.$ = new GenericUnaryOp('~', $$[$0].yytext);
         */
 break;
-case 28:
+case 29:
 /*php
             this.$ = new GenericUnaryOp('!', $$[$0].yytext);
         */
 break;
-case 29:
+case 30:
 /*php
             this.$ = new GenericUnaryOp('-', $$[$0].yytext);
         */
 break;
-case 31:
+case 32:
    //js
             CodeAssistant.reset();
             /*php this.$ = $$[$0]->text; */
         
 break;
-case 32:
+case 33:
 /*php
             this.$ = new ValueNode(null);
         */
 break;
-case 33:
+case 34:
 /*php
             this.$ = new ValueNode(1);
         */
 break;
-case 34:
+case 35:
 /*php
             this.$ = new ValueNode(0);
         */
 break;
-case 35:
+case 36:
 /*php
             this.$ = new ParameterNode(substr($$[$0].yytext, 1));
         */
 break;
-case 36:
+case 37:
 /*php
             this.$ = new ValueNode($$[$0].yytext);
         */
 break;
-case 37:
+case 38:
 /*php
             this.$ = new ValueNode((int) ($$[$0].yytext));
         */
 break;
-case 38:
+case 39:
 /*php
             this.$ = new FunctionOp($$[$0].yytext, null, $$[$0-2].yytext);
         */
 break;
-case 39:
+case 40:
 /*php
             this.$ = new FunctionOp($$[$0-1].yytext, $$[$0].yytext, $$[$0-3].yytext);
         */
 break;
-case 40:
+case 41:
 /*php
             this.$ = new FunctionOp($$[$0].yytext, null, null,new ParameterNode(substr($$[$0-2].yytext, 1)));
         */
 break;
-case 41:
+case 42:
 /*php
             this.$ = new FunctionOp($$[$0-1].yytext, $$[$0].yytext, null,new ParameterNode(substr($$[$0-3].yytext, 1)));
         */
 break;
-case 42:
+case 43:
 /*php
             this.$ = new FunctionOp($$[$0].yytext, null, null,$$[$0-2].yytext);
         */
 break;
-case 43:
+case 44:
 /*php
             this.$ = new FunctionOp($$[$0-1].yytext, $$[$0].yytext, null,$$[$0-3].yytext);
         */
 break;
 }
 },
-table: [{1:[2,1],3:1,4:2,5:3,11:$V0,13:$V1},{1:[3]},{1:[2,2]},{1:[2,3],4:6,5:3,11:$V0,13:$V1},{7:$V2,8:7,12:[1,8],15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vd,[2,10]),{1:[2,4]},{12:[1,21],14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp},o($Vd,[2,9]),{7:$V2,8:34,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:35,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:36,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:37,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vq,[2,31],{37:[1,38]}),o($Vq,[2,32]),o($Vq,[2,33]),o($Vq,[2,34]),o($Vq,[2,35],{37:[1,39]}),o($Vq,[2,36]),o($Vq,[2,37]),{37:[1,40]},o($Vd,[2,8]),{7:$V2,8:41,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:42,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:43,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:44,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:45,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:46,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:47,15:$V3,22:[1,48],27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:49,15:$V3,22:[1,50],27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:51,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:53,15:$V3,24:[1,52],27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:55,15:$V3,25:[1,54],27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},{7:$V2,8:56,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vq,[2,27]),o($Vq,[2,28]),o($Vq,[2,29]),{9:[1,57],14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp},{36:[1,58]},{36:[1,59]},{36:[1,60]},o($Vr,[2,11],{16:$Vg,17:$Vh,18:$Vi}),o($Vr,[2,12],{16:$Vg,17:$Vh,18:$Vi}),o($Vq,[2,13]),o($Vq,[2,14]),o($Vq,[2,15]),o([9,10,12,19,24,25,26],[2,16],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,20:$Vk,21:$Vl,23:$Vm}),o($Vs,[2,17],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,21:$Vl,23:$Vm}),{7:$V2,8:61,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vt,[2,18],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi}),{7:$V2,8:62,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vt,[2,21],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi}),{7:$V2,8:63,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vu,[2,24],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp}),{7:$V2,8:64,15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vu,[2,25],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp}),o($Vu,[2,26],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp}),o($Vq,[2,30]),o($Vv,[2,42],{6:65,7:$Vw}),o($Vv,[2,40],{6:67,7:$Vw}),o($Vv,[2,38],{6:68,7:$Vw}),o($Vs,[2,19],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,21:$Vl,23:$Vm}),o($Vt,[2,20],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi}),o($Vu,[2,22],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp}),o($Vu,[2,23],{14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp}),o($Vv,[2,43]),{7:$V2,8:69,9:[1,70],15:$V3,27:$V4,28:$V5,29:13,30:$V6,31:$V7,32:$V8,33:$V9,34:$Va,35:$Vb,36:$Vc},o($Vv,[2,41]),o($Vv,[2,39]),{9:[1,71],10:[1,72],14:$Ve,15:$Vf,16:$Vg,17:$Vh,18:$Vi,19:$Vj,20:$Vk,21:$Vl,23:$Vm,24:$Vn,25:$Vo,26:$Vp},o($Vv,[2,6]),o($Vv,[2,5]),{6:73,7:$Vw},{9:[1,74]},o($Vv,[2,7])],
-defaultActions: {2:[2,2],6:[2,4]},
+table: [{1:[2,1],3:1,4:2,5:3,12:$V0,14:$V1},{1:[3]},{1:[2,2]},{1:[2,3],4:6,5:3,12:$V0,14:$V1},{7:7,10:$V2,13:[1,8],16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vd,[2,11]),{1:[2,4]},{13:[1,21],15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp},o($Vd,[2,10]),{7:34,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:35,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:36,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:37,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vq,[2,32],{38:[1,38]}),o($Vq,[2,33]),o($Vq,[2,34]),o($Vq,[2,35]),o($Vq,[2,36],{38:[1,39]}),o($Vq,[2,37]),o($Vq,[2,38]),{38:[1,40]},o($Vd,[2,9]),{7:41,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:42,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:43,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:44,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:45,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:46,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:47,10:$V2,16:$V3,23:[1,48],28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:49,10:$V2,16:$V3,23:[1,50],28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:51,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:53,10:$V2,16:$V3,25:[1,52],28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:55,10:$V2,16:$V3,26:[1,54],28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{7:56,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vq,[2,28]),o($Vq,[2,29]),o($Vq,[2,30]),{11:[1,57],15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp},{37:[1,58]},{37:[1,59]},{37:[1,60]},o($Vr,[2,12],{17:$Vg,18:$Vh,19:$Vi}),o($Vr,[2,13],{17:$Vg,18:$Vh,19:$Vi}),o($Vq,[2,14]),o($Vq,[2,15]),o($Vq,[2,16]),o([8,11,13,20,25,26,27],[2,17],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,21:$Vk,22:$Vl,24:$Vm}),o($Vs,[2,18],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,22:$Vl,24:$Vm}),{7:61,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vt,[2,19],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi}),{7:62,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vt,[2,22],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi}),{7:63,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vu,[2,25],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp}),{7:64,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vu,[2,26],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp}),o($Vu,[2,27],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp}),o($Vq,[2,31]),o($Vv,[2,43],{9:65,10:$Vw}),o($Vv,[2,41],{9:67,10:$Vw}),o($Vv,[2,39],{9:68,10:$Vw}),o($Vs,[2,20],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,22:$Vl,24:$Vm}),o($Vt,[2,21],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi}),o($Vu,[2,23],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp}),o($Vu,[2,24],{15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp}),o($Vv,[2,44]),{6:70,7:71,10:$V2,11:[1,69],16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},o($Vv,[2,42]),o($Vv,[2,40]),o($Vv,[2,7]),{11:[1,72]},{8:[1,73],11:[2,5],15:$Ve,16:$Vf,17:$Vg,18:$Vh,19:$Vi,20:$Vj,21:$Vk,22:$Vl,24:$Vm,25:$Vn,26:$Vo,27:$Vp},o($Vv,[2,8]),{6:74,7:71,10:$V2,16:$V3,28:$V4,29:$V5,30:13,31:$V6,32:$V7,33:$V8,34:$V9,35:$Va,36:$Vb,37:$Vc},{11:[2,6]}],
+defaultActions: {2:[2,2],6:[2,4],74:[2,6]},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -771,85 +771,85 @@ switch($avoiding_name_collisions) {
 case 0:   //js
                                 this.begin('EXPR');
                                 /*php $this->begin('EXPR'); */
-                                return 11;
+                                return 12;
                             
 break;
 case 1:   //js
                                 yy_.yytext = '%';
                                 /*php $this->yy->text = '%'; */
-                                return 13;
+                                return 14;
                             
 break;
-case 2:return 33;
+case 2:return 34;
 break;
 case 3:   //js
                                 yy_.yytext = yy_.yytext.substr(1, yy_.yyleng - 2);
                                 /*php $this->yy->text = substr($this->yy->text, 1, strlen($this->yy->text) - 2); */
-                                return 34;
+                                return 35;
                             
 break;
-case 4:return 23
+case 4:return 24
 break;
-case 5:return 10
+case 5:return 8
 break;
 case 6:   //js
                                 CodeAssistant.pushPath();
                                 // //this.begin('PATH_STATE');
                                 ///*php $this->begin('PATH_STATE'); */
-                                return 37;
+                                return 38;
                             
 break;
-case 7:return 30
+case 7:return 31
 break;
-case 8:return 31
+case 8:return 32
 break;
-case 9:return 32
+case 9:return 33
 break;
 case 10:   //js
                                 CodeAssistant.setPath(yy_.yytext);
                                 ////this.begin('PATH_STATE');
                                 ///*php $this->begin('PATH_STATE'); */
-                                return 36;
+                                return 37;
                             
 break;
 case 11:/* skip whitespace */
 break;
-case 12:return 35
+case 12:return 36
 break;
-case 13:return 16
+case 13:return 17
 break;
-case 14:return 17
+case 14:return 18
 break;
-case 15:return 15
+case 15:return 16
 break;
-case 16:return 14
+case 16:return 15
 break;
-case 17:return 18
+case 17:return 19
 break;
-case 18:return 7
+case 18:return 10
 break;
-case 19:return 9
+case 19:return 11
 break;
-case 20:return 19
+case 20:return 20
 break;
-case 21:return 22
+case 21:return 23
 break;
-case 22:return 21
+case 22:return 22
 break;
-case 23:return 20
+case 23:return 21
 break;
-case 24:return 24
+case 24:return 25
 break;
-case 25:return 25
+case 25:return 26
 break;
-case 26:return 26
+case 26:return 27
 break;
-case 27:return 28
+case 27:return 29
 break;
 case 28:   //js
                                 this.popState();
                                 /*php $this->popState(); */
-                                return 12;
+                                return 13;
                             
 break;
 case 29:   //js
@@ -860,13 +860,13 @@ break;
 case 30:   //js
                                 CodeAssistant.setPath(yy_.yytext);
                                 //
-                                return 36;
+                                return 37;
                             
 break;
 case 31:   //js
                                 CodeAssistant.pushPath();
                                 //
-                                return 37;
+                                return 38;
                             
 break;
 case 32:   //js
@@ -875,7 +875,7 @@ case 32:   //js
                                 /*php $this->input = $this->yy->text . $this->input; $this->popState(); */
                             
 break;
-case 33:return 13;
+case 33:return 14;
 break;
 case 34:   //js
                                 throw {message: 'Unknown character \'' + yy_.yytext + '\'', line: (yy_.yylineno + 1), column: yy_.yylloc.last_column};
