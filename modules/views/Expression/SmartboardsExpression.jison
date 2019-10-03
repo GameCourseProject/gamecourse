@@ -14,7 +14,7 @@
                                 /*php $this->yy->text = '%'; */
                                 return 'TEXT';
                             }
-<EXPR,CONTEXT>[%][A-Za-z]+    return 'PARAM';
+<INITIAL,EXPR,CONTEXT>[%][A-Za-z]+    return 'PARAM';
 <EXPR>\"[^"]*\"|\'[^']*\'   {   //js
                                 yytext = yytext.substr(1, yyleng - 2);
                                 /*php $this->yy->text = substr($this->yy->text, 1, strlen($this->yy->text) - 2); */
@@ -78,7 +78,7 @@
                                 this.popState();
                                 /*php $this->input = $this->yy->text . $this->input; $this->popState(); */
                             }
-<INITIAL>[^{]+             return 'TEXT';
+<INITIAL>[^{%]+             return 'TEXT';
 .                           {   //js
                                 throw {message: 'Unknown character \'' + yytext + '\'', line: (yylineno + 1), column: yylloc.last_column};
                                 /*php throw new Exception('Unknown character \'' . $this->yy->text . '\', line ' . ($this->yy->lineNo + 1) . ' near pos ' . $this->yy->loc->lastColumn); */
@@ -163,6 +163,10 @@ stmt
         {   //js
             /*php return new ValueNode(''); */
         }
+    | PARAM
+        {/*php
+            $$ = new ParameterNode(substr($1.yytext, 1));
+        */}
     | TEXT
         {   //js
             /*php
