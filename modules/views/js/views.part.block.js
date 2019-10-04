@@ -238,11 +238,11 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             header.append('<div class="content"></div>');
                             watch('part.header');
 
-                            var pageAnchor = $('<sb-checkbox ng-if="part.header != undefined" sb-checkbox="part.header.anchor" sb-checkbox-label="Enable Page Anchor" sb-checkbox-default="" sb-checkbox-info="Adds a anchor reference to the block. This is used by links to jump directly to this element." sb-checkbox-link="./docs/#PartBlockHeaderPageAnchor"></sb-checkbox>');
+                            /*var pageAnchor = $('<sb-checkbox ng-if="part.header != undefined" sb-checkbox="part.header.anchor" sb-checkbox-label="Enable Page Anchor" sb-checkbox-default="" sb-checkbox-info="Adds a anchor reference to the block. This is used by links to jump directly to this element." sb-checkbox-link="./docs/#PartBlockHeaderPageAnchor"></sb-checkbox>');
                             pageAnchor.append('<sb-input sb-input="part.header.anchor" sb-input-label="Anchor"></sb-input>');
                             watch('part.header.anchor');
 
-                            header.children('.content').append(pageAnchor);
+                            header.children('.content').append(pageAnchor);*/
 
                             partSpecificMenu.append(header);
 
