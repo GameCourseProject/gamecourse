@@ -92,11 +92,13 @@ create table course_module(
 );
 
 create table dictionary(
-	moduleId varchar(50),
+	course int unsigned not null,
+	moduleId varchar(50) not null,
+	library varchar(50),
 	keyword varchar(50),
 	description varchar(255),
-	primary key(moduleId,keyword),
-	foreign key(moduleId) references module (moduleId)
+	primary key(course,moduleId,library,keyword),
+	foreign key(moduleId, course) references course_module (moduleId,course)
 );
 
 create table award(

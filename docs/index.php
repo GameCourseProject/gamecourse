@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="css/docs.css"/>
 </head>
 <body>
-    <nav><a href=".">Docs</a> | <a href="./schema">Schema</a> | <a href="./api">API</a></nav>
+    <nav><a href=".">Docs</a> | <a href="./functions">Functions</a> </nav>
     <div class="docs">
         <?php include'pages/plugins/views.html'; ?>
         <?php include'pages/plugins/charts.html'; ?>
-        <?php include'pages/modules.html'; ?>
+        <!--?php include'pages/modules.html'; ?-->
     </div>
 </body>
 </html>
