@@ -237,8 +237,10 @@ class Views extends Module {
             return new ValueNode($collection);
         });
         //%collectio.sort(order=(asc|des),keys) returns collection sorted by key
-        $this->viewHandler->registerFunction(null,'sort', function($collection,$order,$keys) use ($courseId){ 
+        $this->viewHandler->registerFunction(null,'sort', function($collection=null,$order=null,$keys=null) use ($courseId){ 
             $this->checkArray($collection, "collection", "sort()");
+            if ($order===null) throw new \Exception("On function .sort(order,keys), no order was given.");
+            if ($keys===null) throw new \Exception("On function .sort(order,keys), no keys were given.");
             $keys = explode(";",$keys);
             $i=0;
             foreach ($keys as &$key){

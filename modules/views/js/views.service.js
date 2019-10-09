@@ -273,7 +273,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             execClose(true);
         });
 
-        overlay.click(function(event) {
+        overlay.mousedown(function(event) {
             if (event.target == this)
                 execClose();
         });

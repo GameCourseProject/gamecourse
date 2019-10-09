@@ -14,11 +14,13 @@ class EvaluateVisitor extends Visitor {
 
     public function visitStatementSequence($node) {
         $text = $node->getNode()->accept($this)->getValue();
+        if (is_array(($text)))
+            throw new \Exception("Tried to write an object as a string");
         $next = $node->getNext();
         if ($next != null) {
             $nextStr = $next->accept($this)->getValue();
             if (is_string($nextStr) || is_int($nextStr)) {
-                $text .= $next->accept($this)->getValue();
+                $text .= $nextStr;
             } else {
                 throw new \Exception("Can't process statement '".$text."{?}'. Found an object where a string should be");
             }

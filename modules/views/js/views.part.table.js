@@ -513,7 +513,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         layoutEditStart: function () {
                             checkEmpty(true);
 
-                            var rowEditHeader = $(document.createElement('tr')).attr('style', 'height: 24px');
+                            var rowEditHeader = $(document.createElement('tr')).attr('style', 'height: 44px');
                             for (var cidx = 0; cidx < part.columns; ++cidx) {
                                 rowEditHeader.append(buildColumnToolbar(cidx));
                             }
