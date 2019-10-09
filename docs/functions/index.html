@@ -138,7 +138,7 @@
                     var library = $('<div class="schema-path">');
                     var lib = $('<div class="general" ng-click="showChildren = !showChildren">');
                     //info of the library
-                    lib.append('<div><span class="name">{{lib.name}}</span></span></div>');
+                    lib.append('<div><span class="name"><b>{{lib.name}}</b></span></span></div>');
                     lib.append('<div><span class="description">{{lib.desc}}</span></div>');
                    //info of the functions of the library
                     var functions = $('<div class="children ng-scope" ng-style="!showChildren ? styleHide : undefined">');
@@ -147,7 +147,7 @@
                     var func = $('<div class="schema-path">');
                     var fun = $('<div class="general" ng-click="showChildren = !showChildren">');
                         
-                    fun.append('<div><span class="name">{{name}}</span></span></div>');
+                    fun.append('<div><span class="name"><b>{{name}}</b></span></span></div>');
                     fun.append('<div> <span class="description">{{desc}}</span></div>');
                     func.append(fun);
                     funLi.append(func);

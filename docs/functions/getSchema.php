@@ -36,15 +36,17 @@ else {
                 "%collection.crop(start,end)"=>
 "Returns the collection only with objects that have an index between start and end, inclusively.",
 "%collection.filter(key,value,operation)"=>
-"Returns the collection only with objects that have the variable key that satisfy the operation with a
-specific value.",
+'Returns the collection only with objects that have the variable key that satisfy the operation with a
+specific value. (e.g: %users.filter("id",80000,">")',
 "%collection.index(x)"=>
 "Returns the smallest i such that i is the index of the first occurrence of x in the collection.",
 "%collection.item(i)"=>
 "Returns the element x such that i is the index of x in the collection.",
 "%collection.sort(order,keys)"=>
-"Returns the collection with objects sorted in a specific order by variables keys, from left to right
-separated by a ;. Any key may be an expression.",
+'Returns the collection with objects sorted in a either "ascending" or "descending" order by variables keys. There can be one or
+    more keys, all inside quotation marks from left to right separated by a ";". 
+    Each key can be a parameter of the objects in the collection or an expression. 
+    (e.g with parameter as key: %users.sort("ascending","id") ), (e.g with expression as key: %users.sort("descending","xp.getLevel(%item)")   )',
 "%collection.count"=>
 "Returns the number of elements in the collection.",
 "%integer.abs"=>
@@ -218,10 +220,10 @@ argument is provided, that page needs the user to access a specific context.",
             "name"=>"xp",
             "desc"=>"This library provides information regarding XP and Levels. It is provided by the xp module.",
             "functions"=>[
-    "xp.allLevels"=>
-"Returns a collection with all the levels on a Course.
-xp.getLevel(user,number,goal)
-Returns a level object. The optional parameters can be used to find levels that specify a given
+    "xp.getAllLevels"=>
+"Returns a collection with all the levels on a Course.",
+"xp.getLevel(user,number,goal)"=>
+"Returns a level object. The optional parameters can be used to find levels that specify a given
 combination of conditions:
 ( user: The id of a GameCourseUser;
  number: The number to which the level corresponds to;

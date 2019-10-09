@@ -40,7 +40,7 @@ angular.module('module.views').directive('sbMenu', function() {
 
             $scope.elid = 'cb-' + (++uid);
         },
-        template: '<div class="sb-checkbox"><input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()"><label for="{{elid}}">{{label}}</label><a ng-href="{{link}}" target="_blank"><img ng-if="parameters.value != undefined" title="{{parameters.value}}" class="info" src="images/info.svg"></a><div class="content" ng-if="isChecked()" ng-transclude></div></div>'
+        template: '<div class="sb-checkbox">\n\<input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()">\n\<label for="{{elid}}">{{label}}</label>\n\<a ng-href="{{link}}" target="_blank">\n\<img ng-if="parameters.value != undefined" title="{{parameters.value}}" class="info" src="images/info.svg"></a>\n\<div class="content" ng-if="isChecked()" ng-transclude></div></div>'
     };
 }).directive('sbInput', function($parse) {
     var uid = 0;
@@ -174,6 +174,8 @@ angular.module('module.views').directive('sbMenu', function() {
                 return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
             }; };
             $scope.label = attrs.sbExpressionLabel;
+            $scope.link = attrs.sbExpressionLink;
+            $scope.info = attrs.sbExpressionInfo;
             $scope.tryAutoComplete = function($event) {
                 if ($event.keyCode == 9 || $event.keyCode == 13) {
                     if (CodeAssistant.suggestions.length > 0) {
@@ -330,6 +332,9 @@ angular.module('module.views').directive('sbMenu', function() {
         //'</div>' +
         //'</div>' +
         //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
+        '<a ng-href="{{link}}" target="_blank">'+
+        '<img ng-if="info != undefined" title="{{info}}" class="info" src="images/info.svg"></a>'+
+                
         '<div class="content" ng-transclude></div>' +
         '</div>'
     };

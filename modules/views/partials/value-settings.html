@@ -1,6 +1,6 @@
 <div class="sb-component">
 </div>
-<sb-expression sb-expression="part.parameters.value" sb-expression-label="Expression"></sb-expression>
+<sb-expression sb-expression="part.parameters.value" sb-expression-label="Expression" sb-expression-link="./docs/#ViewsContent" sb-expression-info="Define the contents of the view using the expression language"></sb-expression>
 <div class="value-filtered-fields" ng-if="part.valueType == 'field' && (filteredResults.length != 1 || filteredResults[0].field !== part.parameters.value.field)">
     <div ng-repeat="result in filteredResults" ng-click="part.parameters.value.field = result.field">
         <div class="field">{{result.field}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>
@@ -13,6 +13,6 @@
 <sb-checkbox ng-if="part.valueType == 'field'" sb-checkbox="part.parameters.value.format" sb-checkbox-label="Enable Format" sb-checkbox-default="'%v'">
     <sb-input sb-input="part.parameters.value.format" sb-input-label="Format"></sb-input>
 </sb-checkbox>
-<sb-checkbox sb-checkbox="part.parameters.link" sb-checkbox-label="Enable Link" sb-checkbox-default="" sb-checkbox-info="Defines a link on the element for the reader to follow.">
+<sb-checkbox sb-checkbox="part.parameters.link" sb-checkbox-label="Enable Link" sb-checkbox-default="">
     <sb-expression sb-expression="part.parameters.link" sb-expression-label="Link"></sb-expression>
 </sb-checkbox>

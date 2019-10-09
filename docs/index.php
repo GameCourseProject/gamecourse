@@ -11,7 +11,7 @@
     <nav><a href=".">Docs</a> | <a href="./functions">Functions</a> </nav>
     <div class="docs">
         <?php include'pages/plugins/views.html'; ?>
-        <?php include'pages/plugins/charts.html'; ?>
+        <!--?php include'pages/plugins/charts.html'; ?>
         <!--?php include'pages/modules.html'; ?-->
     </div>
 </body>
