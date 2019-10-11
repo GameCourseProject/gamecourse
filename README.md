@@ -50,8 +50,9 @@ If you make changes to the .jison file (used to define the expression language):
   - Now you can run the generateParsers.sh script (which should be run after changes in the .jison file)
 
 
-Creating a new Course ( functionality still not fully corrected to work in this version)
+Creating a new Course 
 =
+> **Note:** functionality still not fully corrected to work in this version
 
 1. Go to **Settings -> Courses**
 2. Press **Create new**

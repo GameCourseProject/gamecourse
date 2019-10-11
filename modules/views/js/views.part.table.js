@@ -554,6 +554,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     }
                 });
                 tableDiv.css('padding-top', 18);
+                tableDiv.css('padding-left', 10);
             }
             return tableDiv;
         },
