@@ -30,14 +30,14 @@ class Views extends Module {
         foreach ($pages as $pageId => $page) {
             $childTabs[] = Settings::buildTabItem($page['name'], 'course.settings.views.view({pageOrTemp:\'page\',view:\'' . $pageId . '\'})', true);
         }
-        $viewTabs[] = Settings::buildTabItem('Pages', null, false, $childTabs);
+        $viewTabs[] = Settings::buildTabItem('Pages', 'course.settings.views', true, $childTabs);
         
         $templates = $this->getTemplates();
         $childTempTabs=[];
         foreach ($templates as $template) {
             $childTempTabs[] = Settings::buildTabItem($template['name'], 'course.settings.views.view({pageOrTemp:\'template\',view:\'' . $template["id"] . '\'})', true);
         }
-        $viewTabs[] = Settings::buildTabItem('Templates', null, false, $childTempTabs);
+        $viewTabs[] = Settings::buildTabItem('Templates', 'course.settings.views', true, $childTempTabs);
         
         Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $viewTabs));
     }
