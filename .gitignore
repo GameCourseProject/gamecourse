@@ -1,13 +1,7 @@
-.idea
-logs/
-config/
-*.css
-legacy_data/*
-legacy_data/n
 legacy_data/old_2014_2015
 legacy_data/old_2016
 legacy_data/2018_2019
-legacy_data/moodle.tar.gz
+legacy_data/1-test
 photos/ist*
 modules/skills/resources/
 modules/quest/resources/

@@ -727,7 +727,7 @@ API::registerFunction('settings', 'courseSkills', function() {
 API::registerFunction('settings', 'courseBadges', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $folder = LEGACY_DATA_FOLDER;// Course::getCourseLegacyFolder($courseId);
+    $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
     $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
     
     if (API::hasKey('badgesList')) {

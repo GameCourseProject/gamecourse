@@ -1,0 +1,49 @@
+.award-list {
+  font-size: 90%;
+}
+.award-list > .content {
+  padding: 0px;
+}
+.award-list > .content > div {
+  width: 100%;
+}
+.award-list table {
+  background-color: #e6e6e6;
+  border-spacing: 0;
+  width: 100%;
+  text-align: center;
+  padding: 0px;
+}
+.award-list table img {
+  height: 32px;
+}
+.award-list table thead tr {
+  height: 40px;
+  background-color: #cfcfcf;
+}
+.award-list table thead tr th {
+  padding: 4px;
+}
+@media all and (min-width: 700px) {
+  .award-list table thead tr th:first-child {
+    width: 120px;
+  }
+  .award-list table thead tr th:nth-child(2) {
+    width: 200px;
+  }
+}
+.award-list table tbody tr {
+  height: 40px;
+  background-color: #d9d9d9;
+}
+.award-list table tbody tr:nth-child(even) {
+  background-color: #d4d4d4;
+}
+.award-list table tbody tr td:nth-child(2) {
+  white-space: nowrap;
+  padding: 8px;
+}
+.award-list table tbody tr td:nth-child(3) {
+  font-weight: bold;
+  text-align: left;
+}

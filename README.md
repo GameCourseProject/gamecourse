@@ -1,65 +1,56 @@
 Smartboards
 =
-
 Installation and Update guide for SmartBoards.
-
 ---
-
 Installation
 -
 
 (Recommended php version :5.6)
 
-1. Run the **old python script** (using python 2.7)
-2. Setup a FenixEdu Application, if you don't have one already
+
+1. Setup a FenixEdu Application, if you don't have one already
   - In Fenix go to **Personal** &gt; **External Applications** &gt; **Manage Applications**
   - Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
-3. Change the **config.php** constants.
-4. Copy the **old legacy files** to the folder specified in **LEGACY&lowbar;DATA&lowbar;FOLDER**
-  - **indicators.json**
-  - **achievements.txt**
-  - **awards.txt**
-  - **level.txt**
-  - **students.txt**
-  - **tree.txt**
-  - **tree folder with html pages** of skills
-5. Create a file with name **teachers.txt** in **LEGACY&lowbar;DATA&lowbar;FOLDER** and add the teachers, one per line, with the format **id;name;email**
-6. Copy the **folders of each skill** in the Skill Tree to **&lt;MODULES&lowbar;FOLDER&gt;/skills/resources**
-7. Install dependencies and run **generate.sh** (this is needed when the less or jison files are updated)
-  - Install Less and Jison from NPM
-  - Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
-  - Set correct **JISON_PHP** path to the Jison PHP port in the **generate.sh** script
-  - Run **generate.sh**
-8. If there is a file called setup.done , delete it
-9. Setup the course by visiting the SmartBoards page
-10. Run **loadLegacy.php** in the console or visit it in your browser
-11. Add the Grade page URL from Fenix Course page (the page which lists the Students with their **username**, **number**, name, etc..) to the array in **updateUsernames.php** 
-12. Get the cookie values (**BACKENDID**, **JSESSIONID**) from fenix and either put them in the **updateUsernames.php** and **downloadPhotos.php** files and run them or run them throug the course settings page
-and run it.
-
-You now have a installed course. Now proceed to setting up the SmartBoard!
-
+2. Change the **config.php** constants.
+3. If there is a file called setup.done , delete it
+4. Setup the course by visiting the SmartBoards page
+5. There will be a folder inside **legacy_data** with the id and name of the course created, if it is empty copy the contents of **legacy_data/defaultData** to the new folder.
+6. Go to the SmartBoards page, in there go to the course that was created, and then to its Settings page. Now you may enable modules, you can enable Views, XP and Levels, Skills, Profile, Leaderboard and Badges.
+7. There will be a side menu on the left, now go every option inside Configurations to set it up (there will at least be configuration of students and teachers)
+ -In those pages you can define the lists of Students, Teachers, Skills, Badges and Levels
+ -There will be default list on the rigth side, you may edit them as you please and then click the button to replace them
+8. Go back to global settings and click the **Load Legacy** button. (If there is a problem here which can happen in sigma, you can run loadLegacy.php manually)
+9. Get the cookie values (**BACKENDID**, **JSESSIONID**) from fenix, put them in their respective fields on the Settings page and press **Download Photos** (you may also run the downloadPhotos.php script manualy).
 > **Note:** The cookie values are required to properly download the photos, because not all students have their photos made public.
 
-Setup
-=
-
-1. In the **Settings** page:
-  - Enable all the modules you want
-  - Configure the landing page for the default role and header link
+Now You have instaled the course and can set up the pages.
+You may also want to configure the landing page by going selecting Roles->Default in the side menu
 
 Everything should be good to go! Now you just need to update the SmartBoards if something changes.
+
 
 Update
 =
 
-1. Run old python script
-2. Place the updated legacy files in the chosen folder
-3. Run **loadLegacy.php**
-4. If a new user was added to the system:
-  - Configure the cookie values and **downloadPhotos.php** and **updateUsernames.php**
+1. Run the **old python script** (using python 2.7) to update de txt files in the **legacy_data** folder of the course
+2. Go to the course settings page and click on **Load Legacy** or run the **loadLegacy.php** script manualy (if you run the script it needs to receive a course argument or it will assume it's the 1st)
+3. If a new user was added to the system:
+  - Get the cookie values and click on **Download Photos** or run **downloadPhotos.php**
 
-Creating a new Course
+
+Other setups that may be necessary
+=
+If you want to by compile .less files (by runnning compileLess.sh) into CSS:
+  - Instal Less from NPM 
+
+If you make changes to the .jison file (used to define the expression language):
+  - Install Less and Jison from NPM
+  - Download https://github.com/zaach/jison (alternative: https://github.com/AndreBaltazar8/jison)
+  - Set correct **JISON_PHP** path to the Jison PHP port in the **generateParsers.sh** script
+  - Now you can run the generateParsers.sh script (which should be run after changes in the .jison file)
+
+
+Creating a new Course ( functionality still not fully corrected to work in this version)
 =
 
 1. Go to **Settings -> Courses**

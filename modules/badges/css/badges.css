@@ -1,0 +1,132 @@
+.badges-page .badge {
+  width: 100%;
+  margin-top: 0px !important;
+  border-top: 2px solid #e6e6e6;
+}
+.badges-page .badge > .content {
+  padding: 8px;
+  margin: 0px;
+  display: block;
+  transition: all 0.3s ease;
+}
+.badges-page .badge > .content:hover {
+  background-color: #d1d1d1 !important;
+}
+.badges-page .badge > .content > * {
+  display: inline-block;
+  vertical-align: middle;
+}
+.badges-page .badge > .content > * .content {
+  margin: 0px;
+  padding: 0px !important;
+}
+.badges-page .badge > .content > * .content > * {
+  margin: 0px;
+  padding: 0px !important;
+}
+.badges-page .badge .badge-images {
+  width: 162px;
+}
+@media all and (min-width: 700px) {
+  .badges-page .badge .badge-images {
+    width: 240px;
+  }
+}
+.badges-page .badge .badge-images > .content {
+  display: flex;
+}
+.badges-page .badge .badge-info > .content,
+.badges-page .badge .xp-container .content {
+  display: block;
+}
+.badges-page .badge .badge-info > .content > .value,
+.badges-page .badge .xp-container .content > .value {
+  display: block;
+}
+.badges-page .badge .badge-info .title {
+  font-size: 120%;
+  font-weight: bold;
+}
+.badges-page .badge .badge-info .leveldesc {
+  font-size: 80%;
+}
+.badges-page .badge .badge-info .leveldesc .progress {
+  margin-left: 5px;
+  font-weight: bold;
+}
+.badges-page .badge .xp-container {
+  text-align: center;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+@media all and (min-width: 700px) {
+  .badges-page .badge .xp-container {
+    float: right;
+    width: 120px;
+    height: 80px;
+  }
+}
+.badges-page .badge .xp {
+  font-size: 160%;
+  font-weight: bold;
+}
+.badges-page .badge .extra-credit {
+  color: #E00;
+  font-size: 80%;
+  font-weight: bold;
+}
+.badges-page .badge .bragging-rights {
+  color: #070;
+  font-size: 80%;
+  font-weight: bold;
+}
+.badges-page .badge img {
+  width: 50px;
+  height: 50px;
+  padding: 2px;
+}
+@media all and (min-width: 700px) {
+  .badges-page .badge img {
+    width: 70px;
+    height: 70px;
+    padding: 5px;
+  }
+}
+.badges-page .badge .badge-extra {
+  width: 100%;
+  border-top: 1px solid #e6e6e6;
+  padding-top: 6px;
+}
+.badges-page .badge .badge-extra.editable {
+  display: block;
+}
+.badges-page .badge .badge-extra > .content {
+  display: block;
+}
+.badges-page .badge .badge-extra > .content .indicator {
+  display: inline-block;
+  margin-right: 4px !important;
+}
+.badges-page .badge .badge-extra > .content .indicator + .indicator:before {
+  content: '| ';
+  display: inline-block;
+  margin-right: 3px;
+}
+.badges-page .badge .badge-extra > .content .level-info .content {
+  display: block;
+}
+.badges-page .badge .badge-extra > .content .level-info .content .leveldesc {
+  display: block;
+  font-weight: bold;
+  padding: 8px 0px !important;
+  font-size: 110%;
+}
+.badges-page .badge .badge-extra > .content .level-info .content .student-image img {
+  width: 30px;
+  height: 30px;
+  margin: 1px;
+  padding: 0px;
+  cursor: pointer;
+  border: 1px solid #bfbfbf;
+}
