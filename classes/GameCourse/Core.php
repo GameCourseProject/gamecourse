@@ -161,13 +161,6 @@ class Core {
         return static::$systemDB->select("course",['id'=>$id]);  
     }
 
-    public static function getApiKey() {
-        return static::$systemDB->selectMultiple("system_info",null,"apiKey")[0]["apiKey"];
-    }
-    public static function setApiKey($key) {
-        return static::$systemDB->update("system_info",["apiKey"=>$key]);
-    }
-
     public static function getFenixAuth() {
         return new FenixAuth();
     }

@@ -28,7 +28,6 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.api">API</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.about">About</a></li>')($scope));
 
             addActiveLinks($state.current.name);
@@ -210,64 +209,6 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
 
         loadDataSection.append(updateDownloadButtons);
-    });
-});
-
-app.controller('CourseSettingsAPI', function($scope, $element, $smartboards, $compile) {
-    $scope.key = 'Loading';
-    $element.append($compile('<div>API Key: <strong>{{key}}</strong></div>')($scope));
-    $element.append($compile('<button ng-click="generateNewKey()">Generate new key</button>')($scope));
-
-    $scope.generateNewKey = function() {
-        $smartboards.request('settings', 'courseApiKeyGen', {course: $scope.course},  function(data, err) {
-            if (err) {
-                $($element).text('Error: ' + err.description);
-                return;
-            }
-
-            $scope.key = data.key;
-        });
-    };
-
-    $smartboards.request('settings', 'courseApiKey', {course: $scope.course},  function(data, err) {
-        if (err) {
-            $($element).text('Error: ' + err.description);
-            return;
-        }
-
-        if (data.key == false)
-            $scope.key = 'Not set';
-        else
-            $scope.key = data.key;
-    });
-});
-
-app.controller('SettingsAPI', function($scope, $element, $smartboards, $compile) {
-    $scope.key = 'Loading';
-    $element.append($compile('<div>API Key: <strong>{{key}}</strong></div>')($scope));
-    $element.append($compile('<button ng-click="generateNewKey()">Generate new key</button>')($scope));
-
-    $scope.generateNewKey = function() {
-        $smartboards.request('settings', 'apiKeyGen', {course: $scope.course},  function(data, err) {
-            if (err) {
-                $($element).text('Error: ' + err.description);
-                return;
-            }
-
-            $scope.key = data.key;
-        });
-    };
-
-    $smartboards.request('settings', 'apiKey', {course: $scope.course},  function(data, err) {
-        if (err) {
-            $($element).text('Error: ' + err.description);
-            return;
-        }
-
-        if (data.key == false || data.key == null)
-            $scope.key = 'Not set';
-        else
-            $scope.key = data.key;
     });
 });
 
@@ -599,7 +540,6 @@ app.controller('Settings', function($scope, $state, $compile, $smartboards) {
             tabs.append($compile('<li><a ui-sref="settings.users">Users</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
-            tabs.append($compile('<li><a ui-sref="settings.api">API</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="settings.about">About</a></li>')($scope));
 
             addActiveLinks($state.current.name);
@@ -981,14 +921,6 @@ app.config(function($stateProvider){
                 controller: 'SettingsUsers'
             }
         }
-    }).state('settings.api', {
-        url: '/api',
-        views : {
-            'tabContent': {
-                template: '',
-                controller: 'SettingsAPI'
-            }
-        }
     }).state('settings.about', {
         url: '/about',
         views : {
@@ -1020,14 +952,6 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 templateUrl: 'partials/settings/about.html'
-            }
-        }
-    }).state('course.settings.api', {
-        url: '/api',
-        views : {
-            'tabContent': {
-                template: '',
-                controller: 'CourseSettingsAPI'
             }
         }
     }).state('course.settings.students', {
