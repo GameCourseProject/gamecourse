@@ -1,7 +1,7 @@
 <?php
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Core;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
+use GameCourse\Core;
 use Modules\Views\ViewHandler;
 
 class Charts extends Module {
@@ -30,7 +30,7 @@ class Charts extends Module {
                 }
             },
             function(&$chart, $viewParams, $visitor) use (&$viewHandler) {
-                //$s = \SmartBoards\Course::$coursesDb->numQueriesExecuted();
+                //$s = \GameCourse\Course::$coursesDb->numQueriesExecuted();
                 if ($chart['chartType'] == 'progress') {
                     $chart['info']['value'] = $chart['info']['value']->accept($visitor)->getValue();
                     $chart['info']['max'] = $chart['info']['max']->accept($visitor)->getValue();
@@ -38,15 +38,15 @@ class Charts extends Module {
                     $processFunc = $this->registeredCharts[$chart['info']['provider']];
                     $processFunc($chart, $viewParams, $visitor);
                 }
-                //echo \SmartBoards\Course::$coursesDb->numQueriesExecuted() - $s . 'aaa';
+                //echo \GameCourse\Course::$coursesDb->numQueriesExecuted() - $s . 'aaa';
             }
         );
         
         $this->registerChart('starPlot', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
             
-            $course = \SmartBoards\Course::getCourse($params['course']);
-            $userData = (new \SmartBoards\CourseUser($userID, $course))->getData(); 
+            $course = \GameCourse\Course::getCourse($params['course']);
+            $userData = (new \GameCourse\CourseUser($userID, $course))->getData(); 
 
             $students = $course->getUsersWithRole('Student');   
             $numStudents = sizeof($students);
@@ -74,8 +74,8 @@ class Charts extends Module {
 
         $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \SmartBoards\Course::getCourse($params['course']);
-            $user = (new \SmartBoards\CourseUser($userID, $course));
+            $course = \GameCourse\Course::getCourse($params['course']);
+            $user = (new \GameCourse\CourseUser($userID, $course));
             
             $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$user->getData('XP');
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
@@ -123,7 +123,7 @@ class Charts extends Module {
 
         $this->registerChart('leaderboardEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \SmartBoards\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course']);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -155,7 +155,7 @@ class Charts extends Module {
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = \SmartBoards\Core::$systemDB->selectMultiple("award",['student'=>$student['id'],'course'=>$params['course']]);
+                $awards = \GameCourse\Core::$systemDB->selectMultiple("award",['student'=>$student['id'],'course'=>$params['course']]);
                 //ToDo maybe use a query with order by instead of sorting afterwards
                 usort($awards, function($v1,$v2){
                     return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
@@ -278,7 +278,7 @@ class Charts extends Module {
 
         $this->registerChart('xpWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \SmartBoards\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course']);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -318,7 +318,7 @@ class Charts extends Module {
 
         $this->registerChart('badgeWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \SmartBoards\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course']);
 
             $students = $course->getUsersWithRole('Student');
 

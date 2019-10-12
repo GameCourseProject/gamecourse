@@ -4,8 +4,8 @@ ini_set('display_errors', '1');
 
 include 'classes/ClassLoader.class.php';
 
-use SmartBoards\Core;
-use SmartBoards\ModuleLoader;
+use GameCourse\Core;
+use GameCourse\ModuleLoader;
 
 Core::denyCLI();
 Core::requireLogin();

@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 class API {
     private static $functions = array();
@@ -38,10 +38,10 @@ class API {
     public static function requireCoursePermission() {
         API::requireValues('course');
         $courseUser = Course::getCourse(API::getValue('course'))->getLoggedUser();
-        $isCourseUser = (!is_a($courseUser, "SmartBoards\NullCourseUser"));
+        $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
         if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
             API::error('You don\'t have permission acess this course!', 401);
-            //SmartBoards::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (SmartBoards::getLoggedUserID() != null ? SmartBoards::getLoggedUserID() : 'None'));
+            //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));
         }
     }
     
@@ -51,7 +51,7 @@ class API {
         $courseAdmin = Course::getCourse(API::getValue('course'))->getLoggedUser()->hasRole('Teacher');
         if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
             API::error('You don\'t have permission to request this!', 401);
-            //SmartBoards::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (SmartBoards::getLoggedUserID() != null ? SmartBoards::getLoggedUserID() : 'None'));
+            //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));
         }
     }
     

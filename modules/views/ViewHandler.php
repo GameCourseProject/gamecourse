@@ -4,10 +4,10 @@ namespace Modules\Views;
 use Modules\Views\Expression\EvaluateVisitor;
 use Modules\Views\Expression\ExpressionEvaluatorBase;
 use Modules\Views\Expression\ValueNode;
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\API;
-use SmartBoards\ModuleLoader;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\API;
+use GameCourse\ModuleLoader;
 
 class ViewHandler {
     private $viewsModule;

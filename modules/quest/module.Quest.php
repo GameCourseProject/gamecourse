@@ -20,12 +20,12 @@ function comparePNGImages($img, $img2) {
     return true;
 }
 
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\DataSchema;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Settings;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\DataSchema;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
+use GameCourse\Settings;
 
 class Quest extends Module {
     const LEVEL_NO_EXIST = 'Hummm.. This level does not seem to exist.';

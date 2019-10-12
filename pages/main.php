@@ -1,5 +1,5 @@
 <?php
-use SmartBoards\Core;
+use GameCourse\Core;
 
 $user = Core::getLoggedUser();
 ?>
@@ -9,7 +9,7 @@ $user = Core::getLoggedUser();
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
         <base href="<?php echo Utils::createBase(); ?>" target="_blank">
-        <title data-base="SmartBoards">SmartBoards</title>
+        <title data-base="GameCourse">GameCourse</title>
         <link rel="stylesheet" type="text/css" href="css/jquery.nestable.css" />
         <link rel="stylesheet" type="text/css" href="themes/<?php  echo $GLOBALS['theme'] ?>/main.css" />
 
@@ -143,7 +143,7 @@ $user = Core::getLoggedUser();
     <body ng-controller="SmartBoard">
         <nav>
             <div class="nav-header">
-                <a ui-sref="home">SmartBoards</a>
+                <a ui-sref="home">GameCourse</a>
                 <span id="page-title"></span>
             </div>
             <div class="nav-collapse">

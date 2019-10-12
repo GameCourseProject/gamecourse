@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 use MagicDB\SQLDB; 
 

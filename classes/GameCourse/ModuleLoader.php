@@ -1,7 +1,7 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
-use \SmartBoards as SmartBoards;
+use \GameCourse as GameCourse;
 
 class ModuleLoader {
     

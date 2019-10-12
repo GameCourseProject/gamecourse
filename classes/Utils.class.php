@@ -1,5 +1,5 @@
 <?php
-use SmartBoards\Settings as Settings;
+use GameCourse\Settings as Settings;
 
 class Utils {
     static function discoverFiles($baseDir, ...$files) {

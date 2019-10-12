@@ -1,9 +1,9 @@
 <?php
 //This script extracts all the posts from the moodle DataBase and inserts it into folders
-//This version uses SmartBoards classes, it only works if Smartboards and Moodle use the same Database
+//This version uses GameCourse classes, it only works if GameCourse and Moodle use the same Database
 include 'classes/ClassLoader.class.php';
 
-use \SmartBoards\Core;
+use \GameCourse\Core;
 
 Core::init();
 

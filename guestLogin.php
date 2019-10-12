@@ -8,14 +8,14 @@ function printTrace() {
 include 'classes/ClassLoader.class.php';
 require_once 'google-api-php-client/vendor/autoload.php';
 //require_once 'config.php';
-use \SmartBoards\Core;
+use \GameCourse\Core;
 echo '<pre>';
 
 echo "Guest Login\n";
 
 Core::denyCLI();
 if (!Core::requireSetup(false)) {
-    API::error("SmartBoards is not yet setup.", 400);
+    API::error("GameCourse is not yet setup.", 400);
 }
 $authorizedEmails = ['alice.dourado@campus.ul.pt'=>100,
                      'djvg@campus.ul.pt'=>101,

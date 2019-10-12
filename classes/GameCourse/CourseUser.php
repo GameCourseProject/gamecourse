@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 class CourseUser extends User{
     //$id is in User

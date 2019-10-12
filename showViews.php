@@ -2,7 +2,7 @@
 $starttime = microtime(true);
 include 'classes/ClassLoader.class.php';
 
-use \SmartBoards\Core;
+use \GameCourse\Core;
 
 $isCLI = Core::isCLI();
 echo '<pre>';

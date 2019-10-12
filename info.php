@@ -4,19 +4,19 @@ ini_set('display_errors', '1');
 
 include('classes/ClassLoader.class.php');
 
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Settings;
-use SmartBoards\User;
-use SmartBoards\CourseUser;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\ModuleLoader;
+use GameCourse\Settings;
+use GameCourse\User;
+use GameCourse\CourseUser;
 
 Core::denyCLI();
 if (!Core::requireLogin(false))
     API::error("Not logged in!", 400);
 if (!Core::requireSetup(false))
-    API::error("SmartBoards is not yet setup.", 400);
+    API::error("GameCourse is not yet setup.", 400);
 Core::init();
 if (!Core::checkAccess(false))
     API::error("Access denied.", 400);
@@ -174,7 +174,7 @@ API::registerFunction('settings', 'roles', function() {
         $usersInfo = [];
         foreach ($users as $userData) {
             $id = $userData['id'];
-            $user = new \SmartBoards\CourseUser($id,$course);
+            $user = new \GameCourse\CourseUser($id,$course);
             $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
         }
         $globalInfo = array(
@@ -440,7 +440,7 @@ API::registerFunction('settings', 'courseUsers', function() {
         $usersInfo = [];
         foreach ($users as $userData) {
             $id = $userData['id'];
-            $user = new \SmartBoards\CourseUser($id,$course);
+            $user = new \GameCourse\CourseUser($id,$course);
             $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername());
         }
         
@@ -842,9 +842,9 @@ API::registerFunction('settings', 'deleteCourse', function() {
     echo '<pre>';
     print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
     echo '</pre>';
-    //print_r(\SmartBoards\Course::$coursesDb);
-    echo 'before' . \SmartBoards\Course::$coursesDb->numQueriesExecuted();
-    echo 'after' . \SmartBoards\Course::$coursesDb->numQueriesExecuted();
+    //print_r(\GameCourse\Course::$coursesDb);
+    echo 'before' . \GameCourse\Course::$coursesDb->numQueriesExecuted();
+    echo 'after' . \GameCourse\Course::$coursesDb->numQueriesExecuted();
 });*/
 
 API::processRequest();

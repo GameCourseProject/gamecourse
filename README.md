@@ -1,6 +1,6 @@
-Smartboards
+GameCourse
 =
-Installation and Update guide for SmartBoards.
+Installation and Update guide for GameCourse.
 ---
 Installation
 -
@@ -13,9 +13,9 @@ Installation
   - Create the application defining the **Redirect Url** as **&lt;base website url&gt;/auth/** and check **Information** in **Scopes**
 2. Change the **config.php** constants.
 3. If there is a file called setup.done , delete it
-4. Setup the course by visiting the SmartBoards page
+4. Setup the course by visiting the GameCourse page
 5. There will be a folder inside **legacy_data** with the id and name of the course created, if it is empty copy the contents of **legacy_data/defaultData** to the new folder.
-6. Go to the SmartBoards page, in there go to the course that was created, and then to its Settings page. Now you may enable modules, you can enable Views, XP and Levels, Skills, Profile, Leaderboard and Badges.
+6. Go to the GameCourse page, in there go to the course that was created, and then to its Settings page. Now you may enable modules, you can enable Views, XP and Levels, Skills, Profile, Leaderboard and Badges.
 7. There will be a side menu on the left, now go every option inside Configurations to set it up (there will at least be configuration of students and teachers)
  -In those pages you can define the lists of Students, Teachers, Skills, Badges and Levels
  -There will be default list on the rigth side, you may edit them as you please and then click the button to replace them
@@ -26,7 +26,7 @@ Installation
 Now You have instaled the course and can set up the pages.
 You may also want to configure the landing page by going selecting Roles->Default in the side menu
 
-Everything should be good to go! Now you just need to update the SmartBoards if something changes.
+Everything should be good to go! Now you just need to update GameCourse if something changes.
 
 
 Update

@@ -13,10 +13,10 @@ function printTrace() {
 
 include 'classes/ClassLoader.class.php';
 
-use \SmartBoards\Core;
-use \SmartBoards\User;
-use \SmartBoards\Course;
-use \SmartBoards\CourseUser;
+use \GameCourse\Core;
+use \GameCourse\User;
+use \GameCourse\Course;
+use \GameCourse\CourseUser;
 
 $isCLI = Core::isCLI();
 Core::init();

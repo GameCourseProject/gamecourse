@@ -1,8 +1,8 @@
 <?php
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 class Notifications extends Module {
     
@@ -92,10 +92,10 @@ class Notifications extends Module {
             
             /*$notifications = array();
             foreach($pendingNotifications as $id => $notification) {
-                $notifications[$id] = SmartBoards\DataRetrieverContinuation::buildForArray($notification);
+                $notifications[$id] = GameCourse\DataRetrieverContinuation::buildForArray($notification);
             }
 
-            return SmartBoards\DataRetrieverContinuation::buildForArray($notifications);*/
+            return GameCourse\DataRetrieverContinuation::buildForArray($notifications);*/
             return new \Modules\Views\Expression\ValueNode($pendingNotifications);
         });
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
-    <title>SmartBoards Documentation</title>
+    <title>GameCourse Documentation</title>
     <link rel="stylesheet" href="css/docs.css"/>
 </head>
 <body>

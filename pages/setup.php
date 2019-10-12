@@ -3,7 +3,7 @@ if (!defined('CONNECTION_STRING'))
     return;
 
 use \MagicDB\SQLDB;
-use SmartBoards\Core;
+use GameCourse\Core;
 
 if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_POST)) {
     $courseName = $_POST['course-name'];
@@ -15,8 +15,8 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->executeQuery($sql);
     $courseId=1;
     $db->insert("course",["name" => $courseName, "id"=>$courseId]);
-    \SmartBoards\Course::createCourseLegacyFolder($courseId, $courseName);
-    $roleId = \SmartBoards\Course::insertBasicCourseData($db, $courseId);
+    \GameCourse\Course::createCourseLegacyFolder($courseId, $courseName);
+    $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
     
     $db->insert("game_course_user",["id" => $teacherId,
                         "name" => "Teacher",
@@ -39,11 +39,11 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
         <base href="<?php echo Utils::createBase(); ?>" target="_blank">
-        <title>SmartBoards</title>
+        <title>GameCourse</title>
         <link rel="stylesheet" type="text/css" href="css/simple-page.css" />
     </head>
     <body>
-        <div class="big-title">SmartBoards</div>
+        <div class="big-title">GameCourse</div>
         <form class="middle-box" action="?setup" method="post" target="_self">
             <div class="header">First time setup!</div>
             <div class="content">

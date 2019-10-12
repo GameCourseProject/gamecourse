@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 class Course {
     private $loadedModules = array();

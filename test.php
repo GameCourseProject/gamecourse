@@ -9,9 +9,9 @@ ini_set('display_errors', '1');
 
 include 'classes/ClassLoader.class.php';
 
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\ModuleLoader;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\ModuleLoader;
 
 Core::denyCLI();
 Core::requireLogin();
@@ -21,23 +21,23 @@ Core::checkAccess();
 
 ModuleLoader::scanModules();
 
-//$files = \SmartBoards\FileSystem::listFiles('courses/0/moduleData/');
+//$files = \GameCourse\FileSystem::listFiles('courses/0/moduleData/');
 //print_r($files);
 
 //Course::getCourse(0)->getUser(69827)->getWrapper()->set('lastActivity', null);
 //Course::getCourse(0)->getUser(69827)->getWrapper()->set('previousActivity', null);
 
-print_r(\SmartBoards\FileSystem::getFile('courses/0'));
+print_r(\GameCourse\FileSystem::getFile('courses/0'));
 
-//$abc = new \SmartBoards\FileWrapper('hello', array());
+//$abc = new \GameCourse\FileWrapper('hello', array());
 //$abc->set('abc', 123);
 
-/*$db = \SmartBoards\FileSystem::loadFile('hello');
+/*$db = \GameCourse\FileSystem::loadFile('hello');
 $db->set('abc', 321);
 echo $db->get('abc');*/
 
 /*$moduleOld = new FlintstoneDB('views', array('dir' => 'config2/courses/0/moduleData/'));
-$moduleData = \SmartBoards\FileSystem::loadFile('courses/0/moduleData/views');
+$moduleData = \GameCourse\FileSystem::loadFile('courses/0/moduleData/views');
 $moduleData->setValue($moduleOld->getAll());*/
 
 exit();
@@ -152,7 +152,7 @@ $course->getModuleData('views')->set('views', $views);
 <html ng-app="Test">
 <head>
     <title></title>
-    <base href="http://localhost/smartboards/" target="_blank">
+    <base href="http://localhost/gamecourse/" target="_blank">
     <script src="js/jquery.min.js"></script>
     <script src="js/angular.min.js"></script>
     <script src="js/d3.min.js"></script>

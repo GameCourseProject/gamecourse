@@ -1,7 +1,7 @@
 <?php
 namespace Modules\Views\Expression;
 
-use SmartBoards\Core;
+use GameCourse\Core;
 
 class EvaluateVisitor extends Visitor {
     private $params;

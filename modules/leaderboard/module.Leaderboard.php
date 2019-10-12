@@ -1,10 +1,10 @@
 <?php
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Settings;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
+use GameCourse\Settings;
 use Modules\Views\ViewHandler;
 
 class Leaderboard extends Module {

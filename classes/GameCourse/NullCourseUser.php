@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 class NullCourseUser extends CourseUser {
     function __construct($id, $course) {

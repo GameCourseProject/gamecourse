@@ -3,13 +3,13 @@
     <a name="ModuleCreation"></a>
     <h2>Module Creation</h2>
     <div class="section">
-        <p>Creating a module is necessary if you want to use advanced features on the SmartBoards, like defining functions or directives for Views, or to extend functionality of the SmartBoards in a modular way.</p>
+        <p>Creating a module is necessary if you want to use advanced features on the GameCourse, like defining functions or directives for Views, or to extend functionality of the GameCourse in a modular way.</p>
         <h3>Creating an empty module</h3>
         <div class="section">
             <p>All you need to get started is the following code in a file with the name <code>module.EmptyModule.php</code> inside a new directory in the directory of the modules. It is recommended that this directory uses a lowercase name, or it might not work in some systems.</p>
             <pre class="code">&lt;?php
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 class EmptyModule extends Module {
 }
@@ -28,18 +28,18 @@ ModuleLoader::registerModule(array(
         <a name="ModuleOnInitialization"></a>
         <h3>On Initialization</h3>
         <div class="section">
-            <p>To initialize something when the module initializes the function <code>init()</code> is used. It allows the module to use other features of the SmartBoards core, like Navigation, or setup additional things required for the module.</p>
+            <p>To initialize something when the module initializes the function <code>init()</code> is used. It allows the module to use other features of the GameCourse core, like Navigation, or setup additional things required for the module.</p>
             <p>As an example, lets define a new navigation button, which is only available for Administrators of the system. To do this, we start by defining our empty <code>init()</code> function inside the class.</p>
             <pre class="code">
 class EmptyModule extends Module {
 <span class="highlight">    public function init() {
     }</span>
 }</pre>
-            <p>Then we state that we need to use something that is part of the Core of the SmartBoards system by appending <code>use SmartBoards\Core</code> near the other use statements. An to conclude it we add the code that checks if the user is an Administrator and in that case add the navigation, resulting in the final code:</p>
+            <p>Then we state that we need to use something that is part of the Core of the GameCourse system by appending <code>use GameCourse\Core</code> near the other use statements. An to conclude it we add the code that checks if the user is an Administrator and in that case add the navigation, resulting in the final code:</p>
             <pre class="code">&lt;?php
-<span class="highlight">use SmartBoards\Core;</span>
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+<span class="highlight">use GameCourse\Core;</span>
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 class <span class="highlight">CustomNavigation</span> extends Module {
     public function init() {
@@ -74,7 +74,7 @@ public function setupResources() {
         <a name="OtherClassesFromModule"></a>
         <h3>Other classes from the Module</h3>
         <div class="section">
-            <p>To use other classes in the module, you can include them manually, or use the class loader provided by the SmartBoards system. This class loader will load the file if the namespace starts with the name <code>Modules</code> followed by the directory of the plugin, for example, <code>namespace Modules/Views;</code>.</p>
+            <p>To use other classes in the module, you can include them manually, or use the class loader provided by the GameCourse system. This class loader will load the file if the namespace starts with the name <code>Modules</code> followed by the directory of the plugin, for example, <code>namespace Modules/Views;</code>.</p>
             <p>The classes can then be created normally and are auto loaded by the system automatically, but considerations on the dependencies of the modules should be taken into account, due to the load order of the classes.</p>
         </div>
         <a name="ModuleInteraction"></a>
@@ -90,7 +90,7 @@ public function init() {
         <a name="ModuleDataSchema"></a>
         <h3>Defining accessible data in the Data Schema</h3>
         <div class="section">
-            <p>To define some type in the Data Schema some functions of the class <code>\SmartBoards\DataSchema</code> are used. There are 4 different data types that can be registered. The types and functions used to create the objects to register in the data schema are in the following list:</p>
+            <p>To define some type in the Data Schema some functions of the class <code>\GameCourse\DataSchema</code> are used. There are 4 different data types that can be registered. The types and functions used to create the objects to register in the data schema are in the following list:</p>
             <ul>
                 <li>Value/Field - <code>DataSchema::makeField</code></li>
                 <li>Array - <code>DataSchema::makeArray</code></li>

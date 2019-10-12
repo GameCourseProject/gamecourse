@@ -1,5 +1,5 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 use Modules\Views\Expression\ValueNode;
 
 abstract class Module {
@@ -71,7 +71,7 @@ abstract class Module {
 
     public function __set($key, $value)  {
         $trace = debug_backtrace();
-        if(isset($trace[1]['class']) && $trace[1]['class'] == 'SmartBoards\ModuleLoader') {
+        if(isset($trace[1]['class']) && $trace[1]['class'] == 'GameCourse\ModuleLoader') {
             return $this->$key = $value;
         }
         trigger_error('Cannot access private property ' . __CLASS__ . '::$' . $key, E_USER_ERROR);

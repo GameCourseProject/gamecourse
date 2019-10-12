@@ -1,8 +1,8 @@
 <?php
-use SmartBoards\Core;
+use GameCourse\Core;
 use Modules\Views\Expression\ValueNode;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 class Badges extends Module {
     const BADGES_TEMPLATE_NAME = 'Badges block - by badges';

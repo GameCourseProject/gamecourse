@@ -1,8 +1,8 @@
 <?php
-namespace SmartBoards;
+namespace GameCourse;
 
 use \Utils as Utils;
-use \SmartBoards as SmartBoards;
+use \GameCourse as GameCourse;
 
 class Settings {
 

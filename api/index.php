@@ -7,8 +7,8 @@ chdir('../');
 
 include 'classes/ClassLoader.class.php';
 
-use \SmartBoards\Core;
-use \SmartBoards\Course;
+use \GameCourse\Core;
+use \GameCourse\Course;
 
 Core::init();
 
@@ -102,12 +102,12 @@ function getModule($values) {
 
 process('GET', 'users', function() use ($values, $key) {
     globalAuth($key);
-    echo json_encode(\SmartBoards\User::getAllInfo());
+    echo json_encode(\GameCourse\User::getAllInfo());
 });
 
 process('POST', 'users', function() use ($values, $key) {
     globalAuth($key);
-    $data = \SmartBoards\User::getAllInfo();
+    $data = \GameCourse\User::getAllInfo();
     if (!array_key_exists('update', $values) || !is_array($values['update']))
         err('MissingUpdate');
     foreach ($values['update'] as $val) {

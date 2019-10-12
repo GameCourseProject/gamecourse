@@ -1,9 +1,9 @@
 <?php
-use SmartBoards\API;
-use SmartBoards\Module;
+use GameCourse\API;
+use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Core;
+use GameCourse\ModuleLoader;
+use GameCourse\Core;
 
 class Skills extends Module {
 
@@ -339,7 +339,7 @@ class Skills extends Module {
                     $compressedName = str_replace(' ', '', $skill['name']);
                     if ($compressedName == $skillName) {
                         $page = htmlspecialchars_decode($skill['page']);
-                        //to support legacy, TODO: Remove this when skill editing is supported in SmartBoards
+                        //to support legacy, TODO: Remove this when skill editing is supported in GameCourse
                         preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
                         foreach($matches[0] as $id => $match) {
                             $linkSkillName = $matches[1][$id];

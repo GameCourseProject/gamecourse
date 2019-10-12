@@ -8,9 +8,9 @@ chdir(__DIR__ . '/../');
 
 include 'classes/ClassLoader.class.php';
 
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\ModuleLoader;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\ModuleLoader;
 
 Core::denyCLI();
 Core::requireLogin();

@@ -247,7 +247,7 @@ angular.module('module.views').directive('sbMenu', function() {
                 try {
                     CodeAssistant.reset();
                     if (newValue != undefined)
-                        SmartboardsExpression.parse(newValue);
+                        GameCourseExpression.parse(newValue);
                     $scope.error = 'OK';
                     element.children('.expression').removeClass('err');
                 } catch (err) {

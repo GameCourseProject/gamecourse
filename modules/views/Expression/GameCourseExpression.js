@@ -71,7 +71,7 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-var SmartboardsExpression = (function(){
+var GameCourseExpression = (function(){
 var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,5],$V2=[1,6],$V3=[1,13],$V4=[1,18],$V5=[1,12],$V6=[1,10],$V7=[1,11],$V8=[1,15],$V9=[1,16],$Va=[1,17],$Vb=[1,19],$Vc=[1,20],$Vd=[1,21],$Ve=[1,12,14,15],$Vf=[1,23],$Vg=[1,24],$Vh=[1,25],$Vi=[1,26],$Vj=[1,27],$Vk=[1,28],$Vl=[1,29],$Vm=[1,30],$Vn=[1,31],$Vo=[1,32],$Vp=[1,33],$Vq=[1,34],$Vr=[8,11,13,16,17,18,19,20,21,22,23,25,26,27,28],$Vs=[8,11,13,16,17,21,22,23,25,26,27,28],$Vt=[8,11,13,21,22,26,27,28],$Vu=[8,11,13,21,22,23,25,26,27,28],$Vv=[8,11,13],$Vw=[8,11,13,16,17,18,19,20,21,22,23,25,26,27,28,38],$Vx=[1,67];
 var parser = {trace: function trace() { },
 yy: {},
@@ -899,9 +899,9 @@ return new Parser;
 
 
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = SmartboardsExpression;
-exports.Parser = SmartboardsExpression.Parser;
-exports.parse = function () { return SmartboardsExpression.parse.apply(SmartboardsExpression, arguments); };
+exports.parser = GameCourseExpression;
+exports.Parser = GameCourseExpression.Parser;
+exports.parse = function () { return GameCourseExpression.parse.apply(GameCourseExpression, arguments); };
 exports.main = function commonjsMain(args) {
     if (!args[1]) {
         console.log('Usage: '+args[0]+' FILE');

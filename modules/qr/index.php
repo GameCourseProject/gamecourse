@@ -2,8 +2,8 @@
 set_include_path(get_include_path() . PATH_SEPARATOR . '../../');
 include ('classes/ClassLoader.class.php');
 include('../../config.php');
-use \SmartBoards\Core;
-use \SmartBoards\Course;
+use \GameCourse\Core;
+use \GameCourse\Course;
 
 Core::init();
 			

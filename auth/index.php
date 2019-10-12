@@ -5,7 +5,7 @@ ini_set('display_errors', '1');
 chdir('..');
 include 'classes/ClassLoader.class.php';
 
-use SmartBoards\Core;
+use GameCourse\Core;
 Core::denyCLI();
 if (!Core::requireSetup(false))
     header('Location: ..');

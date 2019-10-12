@@ -3,13 +3,13 @@ namespace Modules\Views;
 
 use Modules\Views\Expression\ValueNode;
 use Modules\Views\Expression\EvaluateVisitor;
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Course;
-use SmartBoards\DataRetrieverContinuation;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
-use SmartBoards\Settings;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\DataRetrieverContinuation;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
+use GameCourse\Settings;
 
 class Views extends Module {
     private $viewHandler;
@@ -18,7 +18,7 @@ class Views extends Module {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
         parent::addResources('js/views.part.text.js');
-        parent::addResources('Expression/SmartboardsExpression.js');
+        parent::addResources('Expression/GameCourseExpression.js');
         parent::addResources('js/');
         parent::addResources('css/views.css');
     }
@@ -362,7 +362,7 @@ class Views extends Module {
         //%user.roles returns collection of role names
         $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
             $this->checkArray($user,"object","roles","id");
-            return $this->createNode((new \SmartBoards\CourseUser($user["value"]["id"], $course))->getRoles(),
+            return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRoles(),
                                     null, "collection");
         });
         //%users.username

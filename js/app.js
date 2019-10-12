@@ -50,7 +50,7 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
                             title: 'Welcome'
                         }, function(blockContent) {
                             var divText = $('<div style="padding: 4px">');
-                            divText.append('<p>Welcome to the SmartBoards system.</p>');
+                            divText.append('<p>Welcome to the GameCourse system.</p>');
                             divText.append('<p>Hope you enjoy!</p>');
                             blockContent.append(divText);
                         }));

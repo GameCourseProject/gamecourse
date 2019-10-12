@@ -1,8 +1,8 @@
 <?php
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 use Modules\Views\ViewHandler;
 
@@ -35,7 +35,7 @@ class AwardList extends Module {
             foreach($awards as $award){
                 $id=$award['student'];
                 if (!array_key_exists($id, $studentNames))
-                    $studentNames[$id]=\SmartBoards\User::getUser($id)->getName();
+                    $studentNames[$id]=\GameCourse\User::getUser($id)->getName();
                 $award['Studentname'] = $studentNames[$id];
                 $allAwards[] = $award;
             }

@@ -1,8 +1,8 @@
 <?php
-use SmartBoards\Module;
+use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
-use SmartBoards\Core;
-use SmartBoards\ModuleLoader;
+use GameCourse\Core;
+use GameCourse\ModuleLoader;
 
 define("LEVEL_TABLE", "level left join badge_has_level on levelId=id");
 class XPLevels extends Module {
@@ -122,7 +122,7 @@ class XPLevels extends Module {
                     break;
                 case 'skill':
                     $color = '#fff';
-                    $skillColor = \SmartBoards\Core::$systemDB->select("skill",["name"=>$award['name'],"course"=>$course],"color");
+                    $skillColor = \GameCourse\Core::$systemDB->select("skill",["name"=>$award['name'],"course"=>$course],"color");
                     if($skillColor)
                         $color=$skillColor;
                     return new Modules\Views\Expression\ValueNode('<div class="skill" style="background-color: ' . $color . '">');

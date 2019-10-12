@@ -11,9 +11,9 @@ include('../../config.php');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../../');
 include ('classes/ClassLoader.class.php');
 
-use \SmartBoards\Core;
-use \SmartBoards\Course;
-use \SmartBoards\API;
+use \GameCourse\Core;
+use \GameCourse\Course;
+use \GameCourse\API;
 
 Core::denyCLI();
 Core::requireLogin();

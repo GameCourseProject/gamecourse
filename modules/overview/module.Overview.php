@@ -1,8 +1,8 @@
 <?php
-use SmartBoards\API;
-use SmartBoards\Core;
-use SmartBoards\Module;
-use SmartBoards\ModuleLoader;
+use GameCourse\API;
+use GameCourse\Core;
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
 
 use Modules\Views\ViewHandler;
 

@@ -3,9 +3,9 @@ $BACKENDID = '';
 $JSESSIONID = '';
 include 'classes/ClassLoader.class.php';
 
-use \SmartBoards\Core;
-use \SmartBoards\Course;
-use \SmartBoards\User;
+use \GameCourse\Core;
+use \GameCourse\Course;
+use \GameCourse\User;
 
 $isCLI = Core::isCLI();
 
