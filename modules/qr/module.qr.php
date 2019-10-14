@@ -15,15 +15,11 @@ class QR extends Module {
     }
 
     public function init() {
-        $user = Core::getLoggedUser();
-        //TODO talvez usar uma imagem original 
-        if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
-            Core::addNavigation('images/qr-code.svg', 'QR', 'course.qr', true);
+        Core::addNavigation('images/qr-code.svg', 'QR', 'course.qr', true,null,true);
 
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->registerPage($this, 'qr', 'QR View', array(
-            'type' => ViewHandler::VT_SINGLE
-        ));
+        $viewHandler->createPageOrTemplateIfNew('QR',"page");
+        //ToDo add QR tables to database
     }
 }
 ModuleLoader::registerModule(array(

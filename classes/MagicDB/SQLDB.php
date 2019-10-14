@@ -1,6 +1,6 @@
 <?php
 namespace MagicDB;
-
+//This class is responsible for the interaction with the DB
 class SQLDB {
     private $db;
     public function __construct($dsn, $username = '', $password = '') {

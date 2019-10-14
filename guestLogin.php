@@ -21,7 +21,8 @@ $authorizedEmails = ['alice.dourado@campus.ul.pt'=>100,
                      'djvg@campus.ul.pt'=>101,
                      'fc@campus.ul.pt'=>102,
                      'javiana@campus.ul.pt'=>103,
-                     'ezorzal@gmail.com'=>104];
+                     'ezorzal@gmail.com'=>104,
+                     'hossein.nabizadeh.r@gmail.com'=>105];
 Core::init();
 ob_start();
 session_start();
