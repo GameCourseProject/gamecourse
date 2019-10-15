@@ -228,14 +228,6 @@ class Course {
         $roles = [["name"=>"Teacher"],["name"=>"Student"],["name"=>"Watcher"]];
         $db->update("course",["roleHierarchy"=> json_encode($roles)],["id"=>$courseId]);
         
-        $db->insert("skill_tree",["course"=>$courseId, "maxReward"=>DEFAULT_MAX_TREE_XP]);
-        $skillTree=$db->getLastId();
-        $db->insert("skill_tier",["tier"=>1,"reward"=>150,"treeId"=>$skillTree]);
-        $db->insert("skill_tier",["tier"=>2,"reward"=>400,"treeId"=>$skillTree]);
-        $db->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);
-        $db->insert("skill_tier",["tier"=>4,"reward"=>1150,"treeId"=>$skillTree]); 
-        
-        $db->insert("badges_config",["maxBonusReward"=>MAX_BONUS_BADGES,"course"=>$courseId]);
         return $teacherId;
     }
     

@@ -4,6 +4,7 @@ use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
+use GameCourse\Course;
 
 class Skills extends Module {
 
@@ -88,8 +89,22 @@ class Skills extends Module {
         }
         return ($unlocked);
     }
+    //adds skills tables if they dont exist, and fills it with tiers, the remaining info needs to be setup in config page
+    private function setupData($courseId){
+        if ($this->addTables("skills","skill")){
+            Core::$systemDB->insert("skill_tree",["course"=>$courseId, "maxReward"=>DEFAULT_MAX_TREE_XP]);
+            $skillTree=Core::$systemDB->getLastId();
+            Core::$systemDB->insert("skill_tier",["tier"=>1,"reward"=>150,"treeId"=>$skillTree]);
+            Core::$systemDB->insert("skill_tier",["tier"=>2,"reward"=>400,"treeId"=>$skillTree]);
+            Core::$systemDB->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);
+            Core::$systemDB->insert("skill_tier",["tier"=>4,"reward"=>1150,"treeId"=>$skillTree]);   
+        }
+    }
     
     public function init() {
+        $courseId = $this->getParent()->getId();
+        $this->setupData($courseId);
+        
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         //functions for the expression language
@@ -100,7 +115,7 @@ class Skills extends Module {
             //but it could eventualy have more atributes
             return $this->createNode(Core::$systemDB->select("skill_tree",["id"=>$id]),'skillTrees');
         });
-        $courseId = $this->getParent()->getId();
+        
         //skillTrees.trees, returns collection w all trees
         $viewHandler->registerFunction('skillTrees','trees', function() use ($courseId){ 
             return $this->createNode(Core::$systemDB->selectMultiple("skill_tree",["course"=>$courseId]),'skillTrees',"collection");

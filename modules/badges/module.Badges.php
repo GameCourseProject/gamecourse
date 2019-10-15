@@ -67,6 +67,9 @@ class Badges extends Module {
 
 
     public function init() {
+        if ($this->addTables("badges", "badge")) {
+            Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $this->getCourseId()]);
+        }
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         

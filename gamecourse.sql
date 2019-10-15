@@ -143,27 +143,7 @@ create table award_participation(#this table may be pointles if participations h
     foreign key(participation) references participation(id) on delete cascade
 );
 
-create table badges_config(
-	maxBonusReward 	int not null,
-	course int unsigned primary key,
-	foreign key(course) references course(id) on delete cascade
-);
-
-create table badge(
-	id 		int unsigned auto_increment primary key,
-	name varchar(70) not null,
-	course int unsigned not null,
-	description  varchar(200) not null,
-	maxLevel int not null,
-	isExtra boolean not null default false,
-	isBragging boolean not null default false,
-	isCount boolean not null default false,
-	isPost boolean not null default false,
-	isPoint boolean not null default false,
-	foreign key(course) references course(id) on delete cascade
-);
-
-create table level(
+create table level( #levels of xp and levels of badges
 	id 		int unsigned auto_increment primary key,
 	number int not null,
 	course int unsigned not null,
@@ -172,48 +152,6 @@ create table level(
 	foreign key(course) references course(id) on delete cascade
 );
 
-create table badge_has_level(#this table exists to prevent empty parameters on level table
-	levelId 	int unsigned,
-	badgeId 	int unsigned,
-	reward 		int unsigned,
-	foreign key(badgeId) references badge(id) on delete cascade,
-	foreign key(levelId) references level(id) on delete cascade,
-	primary key(levelId,badgeId)
-);
-
-create table skill_tree(
-	id 		int unsigned auto_increment primary key,
-	course int unsigned not null,
-	maxReward int unsigned,
-	foreign key(course) references course(id) on delete cascade
-);
-create table skill_tier(
-	tier int unsigned not null,
-	reward int unsigned not null,
-	treeId int unsigned not null,
-	primary key(treeId,tier),
-	foreign key(treeId) references skill_tree(id) on delete cascade
-);
-create table skill(
-	id 	int unsigned auto_increment primary key,
-	name varchar(50) not null,
-	color varchar(10),
-	page TEXT,
-	tier int unsigned not null,
-	treeId int unsigned not null,
-	foreign key(treeId,tier) references skill_tier(treeId, tier) on delete cascade
-);
-create table dependency(
-	id 	int unsigned auto_increment primary key,
-	superSkillId int unsigned not null,
-	foreign key(superSkillId) references skill(id) on delete cascade
-);
-create table skill_dependency(
-	dependencyId int unsigned not null,
-	normalSkillId int unsigned not null,
-	foreign key (dependencyId) references dependency(id) on delete cascade,
-	foreign key(normalSkillId) references skill(id) on delete cascade
-);
 create table aspect_class(
 	aspectClass int unsigned auto_increment primary key
 	#foreign key (viewId) references view(id) on delete cascade

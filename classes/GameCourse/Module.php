@@ -3,7 +3,6 @@ namespace GameCourse;
 use Modules\Views\Expression\ValueNode;
 
 abstract class Module {
-    
     private $id;
     private $name;
     private $version;
@@ -56,7 +55,17 @@ abstract class Module {
     public function getResources() {
         return $this->resources;
     }
-    
+    public function addTables($moduleName,$tableName){
+        $table = Core::$systemDB->executeQuery("show tables like '".$tableName."';")->fetchAll(\PDO::FETCH_ASSOC);
+        if (empty($table)){
+            Core::$systemDB->executeQuery(file_get_contents("modules/".$moduleName."/create.sql"));
+            return true;
+        }
+        return false;
+    }
+    public function dropTables($moduleName){
+        Core::$systemDB->executeQuery(file_get_contents("modules/".$moduleName."/delete.sql"));
+    }
     public function init() {
     }
 

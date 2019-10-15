@@ -147,13 +147,11 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
                 stateButton.click(function() {
                     $(this).prop('disabled', true);
                     $smartboards.request('settings', 'courseGlobal', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
-                        console.log("enable", data);
                         if (err) {
                             alert(err.description);
                             return;
                         }
-
-                        window.location = window.location;
+                        location.reload();
                     });
                 });
                 if (content.state || canEnable)

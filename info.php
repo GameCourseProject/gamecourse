@@ -166,7 +166,8 @@ API::registerFunction('settings', 'roles', function() {
 //main course settings page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));if (API::hasKey('module') && API::hasKey('enabled')) {
+    $course = Course::getCourse(API::getValue('course'));
+    if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
         $module = ModuleLoader::getModule($moduleId);
         if ($module == null) {
@@ -183,6 +184,11 @@ API::registerFunction('settings', 'courseGlobal', function() {
                         if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
                             API::error('Must disable all modules that depend on this one first.');
                     }
+                }
+                //ToDo: check if is working correctly with multiple courses
+                if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
+                    //only drop the tables of the module data if this is the last course where it is enabled
+                    $module->dropTables($moduleId);//deletes tables associated with the module
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                 foreach ($module['dependencies'] as $dependency) {
