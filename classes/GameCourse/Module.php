@@ -64,7 +64,10 @@ abstract class Module {
         return false;
     }
     public function dropTables($moduleName){
-        Core::$systemDB->executeQuery(file_get_contents("modules/".$moduleName."/delete.sql"));
+        $file = "modules/".$moduleName."/delete.sql";
+        if (file_exists($file)) {
+            Core::$systemDB->executeQuery(file_get_contents($file));
+        }
     }
     public function init() {
     }
