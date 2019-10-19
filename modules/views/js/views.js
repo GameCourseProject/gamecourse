@@ -291,19 +291,20 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             alert(err.description);
             return;
         }
+        var tableElement = '<td style="padding: 4px;">';
         var viewsArea = createSection($($element),"Pages");
         viewsArea.append($compile('<tr ng-repeat="(id, page) in pages"><td>{{page.name}} (page id: {{id}})</td>'+
-                '<td><button ng-click="editView(id,\'page\')">Edit</button> '+
-                '<button ng-click="deleteView(page,\'page\')">Delete</button> </td></tr>')($scope));
+                tableElement+'<button ng-click="editView(id,\'page\')">Edit</button></td> '+
+                tableElement+'<button ng-click="deleteView(page,\'page\')">Delete</button> </td></tr>')($scope));
         viewsArea.append($compile('<button ng-click="createView(\'page\')">Create New Page</button>')($scope));
         
         var TemplateArea = createSection($($element),"View Templates");
-        TemplateArea.append($compile('<tr ng-repeat="template in templates"><td>{{template.name}}</td>'+
-                '<td><button ng-click="editView(template.id,\'template\')">Edit</button> '+
-                '<button ng-if="template.isGlobal==false" ng-click="globalize(template)">Globalize</button> '+
-                '<button ng-if="template.isGlobal==true" ng-click="globalize(template)">De-Globalize</button> '+
-                '<button ng-click="deleteView(template,\'template\')">Delete</button> '+
-                '<button ng-click="exportTemplate(template)">Export</button></td></tr>')($scope));
+        TemplateArea.append($compile('<tr  ng-repeat="template in templates"><td>{{template.name}}</td>'+
+                tableElement+'<button ng-click="editView(template.id,\'template\')">Edit</button> </td>'+
+                tableElement+'<button ng-if="template.isGlobal==false" ng-click="globalize(template)">Globalize</button> '+
+                '<button ng-if="template.isGlobal==true" ng-click="globalize(template)">De-Globalize</button></td> '+
+                tableElement+'<button ng-click="deleteView(template,\'template\')">Delete</button></td> '+
+                tableElement+'<button ng-click="exportTemplate(template)">Export</button></td></tr>')($scope));
         TemplateArea.append($compile('<button ng-click="createView(\'template\')">Create New Template</button>')($scope));
         
         var globalTemplateArea = createSection($($element),"Global Templates");

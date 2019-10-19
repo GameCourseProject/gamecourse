@@ -30,8 +30,12 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
         
         //Buttons to show lists of participations and failed attempts
         var participationList = createSection(tabContent, 'Check Participations List');
-        participationList.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
-        href="modules/qr/report.php?course={{course}}">List</a>')($scope));
+        var participationButton = $('<button>',{text: 'Show List'}).click(function() {
+            window.open("modules/qr/report.php?course=" + $scope.course,"_blank");
+        });
+         participationList.append(participationButton);
+        //participationList.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
+        //href="modules/qr/report.php?course={{course}}">List</a>')($scope));
         
         var checkFailedAttempts = createSection(tabContent, 'Check failled attemps of QR use');
         /*checkFailedAttempts.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" \
