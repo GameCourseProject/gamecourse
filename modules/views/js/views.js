@@ -309,7 +309,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.append($compile('<div ng-repeat="template in globals">{{template.name}} '+
-                '<button ng-if="template.course!=course" ng-click="">Add to course</button> </div>')($scope));//ToDo
+                '<button ng-if="template.course!=course" ng-click="useGlobal(template)">Add to course</button> </div>')($scope));//ToDo
                 
         angular.extend($scope, data);
         
@@ -349,6 +349,16 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         };
         $scope.globalize = function(template){
             $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal},function(data,err){
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        };
+        $scope.useGlobal = function(template){
+            console.log(template);
+            $smartboards.request('views','copyGlobalTemplate',{course: $scope.course, template: template},function(data,err){
                 if (err) {
                     alert(err.description);
                     return;

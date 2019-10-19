@@ -1,7 +1,6 @@
-legacy_data/old_2014_2015
-legacy_data/old_2016
-legacy_data/2018_2019
-legacy_data/1-test
+!/legacy_data/
+/legacy_data/**
+!/legacy_data/defaultData/
 photos/ist*
 modules/skills/resources/
 modules/quest/resources/

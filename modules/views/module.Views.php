@@ -868,6 +868,24 @@ class Views extends Module {
             http_response_code(201);
             return;
         });
+        //make copy of global template for the current course
+        API::registerFunction('views',"copyGlobalTemplate",function(){
+            API::requireCourseAdminPermission();
+            API::requireValues('template','course');
+            $template = API::getValue("template");
+            
+            $aspect=Core::$systemDB->select("view_template join view on viewId=id",
+                    ["partType"=>"aspect","templateId"=>$template["id"]]);
+            $aspect["aspectClass"]=null;
+            $views = $this->viewHandler->getViewWithParts($aspect["id"]);
+
+            //just coppying the default aspect because we don't know if the other course has the same roles
+            $aspectClass=null;
+            $views = [$views[0]];
+            $this->setTemplateHelper($views,$aspectClass,API::getValue("course"),$template["name"],$template["roleType"]);
+            http_response_code(201);
+            return;
+        });
         //delete page/template
         API::registerFunction('views', 'deleteView', function() {
             API::requireCourseAdminPermission();
@@ -1122,6 +1140,7 @@ class Views extends Module {
             $aspect["aspectClass"]=$aspectClass;
             Core::$systemDB->insert("view",["role"=>$aspect["role"],"partType"=>$aspect["partType"],"aspectClass"=>$aspectClass]);
             $aspect["id"]=Core::$systemDB->getLastId();
+            //print_r($aspect);
             if ($content) {
                 $aspect["children"][] = $content;
             }

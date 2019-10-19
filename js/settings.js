@@ -185,7 +185,7 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
                 { c1:'Version:', c2: module.version},
                 { c1:'Path:', c2: module.dir},
                 { c1:'State:', c2: {state: module.enabled, id: module.id, canEnable: canEnable}},
-                { c1:'Dependencies:', c2: dependencies},
+                { c1:'Dependencies:', c2: dependencies}
             ], columns);
             modulesSection.append(table);
         }
@@ -612,7 +612,7 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
                 alert(err.description);
                 return;
             }
-            course.active = !course.active;
+            course.isActive = !course.isActive;
             $scope.$emit('refreshTabs');
         });
     };
@@ -629,7 +629,7 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
             courses = newCourses;
         }
         $scope.courses = courses;
-        $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.active ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
+        $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
         $($element).append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
     });
 });

@@ -34,7 +34,7 @@ class Course {
         Core::$systemDB->update("course",[$field=>$value],["id"=>$this->cid]);
     }
     public function setActiveState($active){
-        $this->setData("active",$active);
+        $this->setData("isActive",$active);
     }
     public function setLandingPage($page){
         $this->setData("defaultLandingPage",$page);
@@ -263,7 +263,7 @@ class Course {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
         //    static::$coursesDb->delete($newCourse);
         Core::$systemDB->insert("course",["name"=>$courseName]);
-        $courseId=Core::$systemDB->select("course",["name"=>$courseName],"id");
+        $courseId=Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
         $legacyFolder = Course::createCourseLegacyFolder($courseId,$courseName);
@@ -354,9 +354,14 @@ class Course {
 
             \Utils::copyFolder($fromFolder ."/tree",$legacyFolder ."/tree");
         } else {
-            Course::insertBasicCourseData(Core::$systemDB, $courseId);
-            Core::$systemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>"Teacher"]);
+            $teacherRoleId= Course::insertBasicCourseData(Core::$systemDB, $courseId);
+            Core::$systemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>$teacherRoleId]);
+            $modules = Core::$systemDB->selectMultiple("module");
+            foreach($modules as $mod){
+                Core::$systemDB->insert("course_module",["course"=>$courseId,"moduleId"=>$mod["moduleId"]]);
+            }
         }
+        
         return $course;
     }
 }
