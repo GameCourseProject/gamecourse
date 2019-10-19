@@ -80,6 +80,7 @@ class EvaluateVisitor extends Visitor {
     }
 
     public function visitFunctionOp($node) {
+        
         $funcName = $node->getName();
         if ($node->getArgs() == null) {
             $args = array();
@@ -106,6 +107,9 @@ class EvaluateVisitor extends Visitor {
                 //gets the lib name of the previous function 
                 //ex: %user.name in the function 'name' gets users lib
                 if (is_array($contextVal)){
+                    if (empty($contextVal)){
+                        throw new \Exception('Tried to call function "'.$funcName.' on an empty array.');
+                    }
                     if ($contextVal["type"] == "object")
                         $lib = $contextVal["value"]["libraryOfVariable"];
                     else {//type == collection

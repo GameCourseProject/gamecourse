@@ -240,6 +240,7 @@ class Course {
                 unset($data['id']);
             Core::$systemDB->insert($content, $data);
         }
+        return $fromData;
     }
     public static function getCourseLegacyFolder($courseId,$courseName=null){
         if ($courseName===null){
@@ -274,7 +275,6 @@ class Course {
         
         if ($copyFrom !== null){//&& $courseExists) {
             $copyFromCourse = Course::getCourse($copyFrom);
-            //$fromId=$copyFromCourse->getId();
             
             //course table
             $keys = ['defaultLandingPage',"roleHierarchy","theme"];
@@ -285,66 +285,96 @@ class Course {
             Core::$systemDB->update("course",$newData,["id"=>$courseId]);
             
             //copy content of tables to new course
-            Course::copyCourseContent("role",$copyFrom,$courseId,true);
             Course::copyCourseContent("course_module",$copyFrom,$courseId);
+            Course::copyCourseContent("dictionary",$copyFrom,$courseId);
+            //copy roles, create mapping from old roles to new
+            $oldRoles = Course::copyCourseContent("role",$copyFrom,$courseId,true);
+            $oldRolesById= array_combine(array_column($oldRoles, "id"), $oldRoles);
+            $newRoles = Core::$systemDB->selectMultiple("role",["course"=>$courseId]);
+            $newRolesByName = array_combine(array_column($newRoles, "name"), $newRoles);
+            $newRoleOfOldId = function($id)  use ($newRolesByName,$oldRolesById){
+                return $newRolesByName[$oldRolesById[$id]["name"]]["id"];
+            };
             
-            //view data
-       
-            //Course::copyCourseContent("page",$copyFrom,$courseId,true);
-            //Course::copyCourseContent("view",$copyFrom,$courseId);
-            //Course::copyCourseContent("view_role",$copyFrom,$courseId);
-            //Course::copyCourseContent("view_part",$copyFrom,$courseId);
-            
-            //badges/skills/levels data
-            /*Course::copyCourseContent("skill_tree",$copyFrom,$courseId,true);
-            $tree=Core::$systemDB->getLastId();
-            $treeData = Core::$systemDB->selectMultiple("skill_tree",["course"=>$copyFrom]);
-            foreach ($treeData as $tree) {
-                $tree['course'] = $courseId;
-                $oldTreeId=$tree['id'];
-                unset($tree['id']);
-                Core::$systemDB->insert("skill_tree", $tree);
-                $treeId=Core::$systemDB->getLastId();
-                $tierData = Core::$system->selectMultiple("skill_tier",["treeId"=>$oldTreeId]);
-                foreach ($tierData as $tier){
-                    $tier["treeId"]= $treeId;
-                    $tierNum = $tier["tier"];
-                    Core::$systemDB->insert("skill_tier",$tier);
-                    $skillsData=Core::$systemDB->selectMultiple("skill",["tier"=>$tierNum,"treeId"=>$oldTreeId]);
-                    foreach($skillsData as $skill){
-                        $oldSkillId=$skill['id'];
-                        unset($skill['id']);
-                        $skill['treeId']=$treeId;
-                        Core::$systemDB->insert("skill",$skill);
-                        $skillId=Core::$systemDB->getLastId();
-                        $dependencyData = Core::$systemDB->select("dependency",["superSkill"=>$oldSkillId]);
-                        foreach($dependencyData as $dep){
-                            $oldDepId=$dep['id'];
-                            unset($dep['id']);
-                            $dep["superSkill"]=$skillId;
-                            Core::$systemDB->insert("dependency",$dep);
-                            $depId=Core::$systemDB->getLastId();
-                            $dependencyElementData=Core::$systemDB->select("skill_dependency",["dependencyId"=>$oldDepId]);
-                            foreach ($dependencyElementData as $element){
-                                $element["dependencyId"]=$depId;
-                                $element["normalSkill"]
-                                Core::$systemDB->insert("skill_dependency", $element);
-                            }
+            //pages and views data
+            $pages = Core::$systemDB->selectMultiple("page",["course"=>$copyFrom]);
+            $handler=$copyFromCourse->getModule("views")->getViewHandler();
+            foreach ($pages as $p) {
+                $p['course'] = $courseId;
+                unset($p['id']);
+                $view = Core::$systemDB->select("view",["id"=>$p["viewId"]]);
+                $views = $handler->getViewWithParts($view["id"]);
+                
+                $defaultAspectId = null;
+                if (sizeof($views)>1){
+                    Core::$systemDB->insert("aspect_class");
+                    $aspectClass=Core::$systemDB->getLastId();
+                }else $aspectClass=null;
+                //set view
+                foreach ($views as $v){
+                    unset($v["id"]);
+                    $v["aspectClass"]=$aspectClass;
+   //need to convert the roles of the aspects to the new roles                 
+                    if ($p["roleType"]=="ROLE_INTERACTION"){
+                        $roles= explode(">", $v["role"]);
+                    }else{
+                        $roles=[$v["role"]];
+                    }
+                    foreach($roles as &$role){
+                        $specificationName = explode(".",$role);
+                        if ($specificationName[0]=="role" && $specificationName[1]!="Default"){
+                            $role = "role.".$newRoleOfOldId($specificationName[1]);
                         }
                     }
-                          
+                    $v["role"]= implode(">", $roles);
+                    
+                    $copy = $v;
+                    unset($copy["children"]);
+                    Core::$systemDB->insert("view",$copy);
+                    $aspectId = Core::$systemDB->getLastId();
+                    if ($defaultAspectId==null){
+                        $defaultAspectId=$aspectId;
+                    }
+                    
+                    $v["id"]=$aspectId;
+                    $handler->updateViewAndChildren($v,null, true);
                 }
-            }*/
+                $p["viewId"]=$defaultAspectId;
+                Core::$systemDB->insert("page",$p);
+            }
+            //copy templates
+            //$templates = Core::$systemDB->selectMultiple("template",["course"=>$copyFrom]);
+                            /*
+            $aspect=Core::$systemDB->select("view_template join view on viewId=id",
+                    ["partType"=>"aspect","templateId"=>$template["id"]]);
+            $aspect["aspectClass"]=null;
+            $views = $this->viewHandler->getViewWithParts($aspect["id"]);
+
+            //$aspectClass
+            $this->setTemplateHelper($views,$aspectClass,API::getValue("course"),$template["name"],$template["roleType"]);
+            
+                 *                  */
+            
+            //copy skill tree and tiers, for the rest we'll just use the config file
+            $oldTree= Course::copyCourseContent("skill_tree",$copyFrom,$courseId,true);
+            $oldTreeId=$oldTree[0]["id"];
+            $tree=Core::$systemDB->getLastId();
+            $tiers = Core::$systemDB->selectMultiple("skill_tier",["treeId"=>$oldTreeId]);
+            foreach($tiers as $tier){
+                $tier["treeId"]=$tree;
+                Core::$systemDB->insert("skill_tier",$tier);
+            }
             //Course::copyCourseContent("skill_tier",$copyFrom,$courseId);
             //Course::copyCourseContent("skill",$copyFrom,$courseId);
             //Course::copyCourseContent("skill_dependency",$copyFrom,$courseId);
             
-            Course::copyCourseContent("badge",$copyFrom,$courseId,true);
+            Course::copyCourseContent("badges_config",$copyFrom,$courseId,true);
+            //Course::copyCourseContent("badge",$copyFrom,$courseId,true);
             //Course::copyCourseContent("badge_has_level",$copyFrom,$courseId);
             //Course::copyCourseContent("level",$copyFrom,$courseId,true);
             
-            $fromFolder = Course::getCourseLegacyFolder($copyFrom);
-            
+            //copy some contents of the legacy folder
+            $fromFolder = Course::getCourseLegacyFolder($copyFrom);         
             $fromTree = file_get_contents($fromFolder . "/tree.txt");  
             file_put_contents($legacyFolder."/tree.txt",$fromTree);
             $fromBagdes = file_get_contents($fromFolder . "/achievements.txt");  
@@ -353,7 +383,8 @@ class Course {
             file_put_contents($legacyFolder."/levels.txt",$fromLevels);
 
             \Utils::copyFolder($fromFolder ."/tree",$legacyFolder ."/tree");
-        } else {
+        } 
+        else {
             $teacherRoleId= Course::insertBasicCourseData(Core::$systemDB, $courseId);
             Core::$systemDB->insert("user_role",["id" => $currentUserId,"course" => $courseId, "role"=>$teacherRoleId]);
             $modules = Core::$systemDB->selectMultiple("module");
@@ -361,7 +392,6 @@ class Course {
                 Core::$systemDB->insert("course_module",["course"=>$courseId,"moduleId"=>$mod["moduleId"]]);
             }
         }
-        
         return $course;
     }
 }

@@ -648,9 +648,8 @@ API::registerFunction('settings', 'courseSkills', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $folder = Course::getCourseLegacyFolder($courseId);
-    
     //For now we only have 1 skill tree per course, if we have more this line needs to change
-    $tree = Core::$systemDB->select("skill_tree",["course",$courseId]);
+    $tree = Core::$systemDB->select("skill_tree",["course"=>$courseId]);
     $treeId=$tree["id"];
     if (API::hasKey('maxReward')) {
         $max=API::getValue('maxReward');
