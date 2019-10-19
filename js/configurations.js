@@ -34,12 +34,18 @@ function clearFillBox($scope){
     else if ("file" in $scope.data)
         $scope.newList=$scope.data.file;
 }
-function constructTextArea($compile,$scope,name,text,width=60,data="newList",){
+function constructNumberInput($compile,$scope,text,dataModel,button){
+    var numInput = $('<div>',{'class': 'column', style: 'float: right; width: 100%;',text: text+": "}); 
+    numInput.append('<br><input type:"number" style="width: 25%" id="newList" ng-model="'+dataModel+'">');
+    numInput.append('<button class="button small" ng-click="replaceNumber('+ dataModel +')">Save '+button+'</button>');
+    return $compile(numInput)($scope);
+}
+function constructTextArea($compile,$scope,name,text,width=60,data="newList",rows=25){
     var bigBox = $('<div>',{'class': 'column', style: 'float: right; width: '+width+'%;', 
            text:text });
     
     var funName = (name=="Tier") ? name : "Data";
-    bigBox.append('<textarea cols="80" rows="25" type="text" style="width: 100%" class="ConfigInputBox" id="newList" ng-model="'+data+'"></textarea>');
+    bigBox.append('<textarea cols="80" rows="'+rows+'" type="text" style="width: 100%" class="ConfigInputBox" id="newList" ng-model="'+data+'"></textarea>');
     bigBox.append('<button class="button small" ng-click="replace'+funName+'('+data+')">Replace '+name+' List</button>');
     //ToDo: add this button (and delete) back after the system stops using TXTs from legacy_folder
     //If TXT files are used it's difficult to keep them synced w DB and have the Add/Edit functionality
@@ -48,8 +54,7 @@ function constructTextArea($compile,$scope,name,text,width=60,data="newList",){
         //ng-disabled="!isValidString(inviteInfo.id) "
     bigBox.append('<button class="button small" ng-click="clear'+funName+'()" style="float: right;">Clear/Fill Box</button>');
     //bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
-    bigBox.append($compile(bigBox)($scope));
-    return bigBox;
+    return ($compile(bigBox)($scope));
 }
 function constructConfigPage(data, err, $scope,$element,$compile,name,text,tabContents,columns){
     if (err) {
@@ -149,6 +154,10 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
         if (confirm("Are you sure you want to replace all the Tiers with the ones on the input box?"))
             $smartboards.request('settings', 'courseSkills', {course : $scope.course, tiersList:arg}, alertUpdateAndReload);
     };
+    $scope.replaceNumber = function(arg) {
+        if (confirm("Are you sure you want to change the Maximum Tree XP?"))
+            $smartboards.request('settings', 'courseSkills', {course : $scope.course, maxReward:arg}, alertUpdateAndReload);
+    };
     $scope.addData = function(arg) {//Currently not being used
             $smartboards.request('settings', 'courseSkills', {course : $scope.course, newSkillsList:arg}, alertUpdateAndReload);
     };
@@ -215,8 +224,22 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
         
         $scope.tierList=data.file2;
         var bigBox2 = constructTextArea($compile,$scope,"Tier","Tier must be in the following formart: tier;XP",
-                                                        100,"tierList");
-        bigBox.append(bigBox2);                                                
+                                                        100,"tierList",5);
+        $scope.maxReward=data.maxReward;  
+        var numInput = constructNumberInput($compile,$scope,"Maximum Skill Tree Reward","maxReward","Max Reward");
+        //        $('<div>',{'class': 'column', style: 'float: right; width: 100%;',text:"Maximum Skill Tree Reward: "}); 
+        //numInput.append('<br><input type:"number" style="width: 25%" id="newList" ng-model="maxReward">');
+        //numInput.append('<button class="button small" ng-click="replaceMax(maxReward)">Save Max Reward</button>');
+    //ToDo: add this button (and delete) back after the system stops using TXTs from legacy_folder
+    //If TXT files are used it's difficult to keep them synced w DB and have the Add/Edit functionality
+//if (name!=="Level")
+    //    bigBox.append('<button class="button small" ng-click="addData(newList)">Add/Edit '+name+'s </button>');
+        //ng-disabled="!isValidString(inviteInfo.id) "
+   // numInput.append('<button class="button small" ng-click="clear'+funName+'()" style="float: right;">Clear/Fill Box</button>');
+    //bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
+                                        
+        bigBox.append(bigBox2);  
+        bigBox.append(numInput); 
         configSectionContent.append(bigBox);
         configurationSection.append(configSectionContent);
     });
@@ -229,7 +252,10 @@ app.controller('CourseBadgesSettingsController', function($scope, $stateParams, 
     $scope.clearData = function(){
         clearFillBox($scope);
     };
-    
+    $scope.replaceNumber = function(arg) {
+        if (confirm("Are you sure you want to change the Maximum Bonus Badge Reward?"))
+            $smartboards.request('settings', 'courseBadges', {course : $scope.course, maxReward:arg}, alertUpdateAndReload);
+    };
     $smartboards.request('settings', 'courseBadges', {course : $scope.course}, function(data,err){
         if (err) {
             console.log(err);
@@ -280,7 +306,10 @@ app.controller('CourseBadgesSettingsController', function($scope, $stateParams, 
  
         $scope.newList=data.file;
         var bigBox = constructTextArea($compile,$scope,"Badge",text,55);
-
+        
+        $scope.maxReward=data.maxReward;  
+        var numInput = constructNumberInput($compile,$scope,"Maximum Bonus Badges Reward","maxReward","Max Reward");
+        bigBox.append(numInput);
         configSectionContent.append(bigBox);
         configurationSection.append(configSectionContent);
     });

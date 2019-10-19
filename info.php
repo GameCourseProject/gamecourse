@@ -174,12 +174,13 @@ API::registerFunction('settings', 'courseGlobal', function() {
             API::error('Unknown module!', 400);
             http_response_code(400);
         } else {
-            $moduleEnabled = ($course->getModule($moduleId) != null);
+            $moduleObject = $course->getModule($moduleId);
+            $moduleEnabled = ($moduleObject != null);
             
             if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
                 $modules = $course->getModules();
-                foreach ($modules as $module) {
-                    $dependencies = $module->getDependencies();
+                foreach ($modules as $mod) {
+                    $dependencies = $mod->getDependencies();
                     foreach ($dependencies as $dependency) {
                         if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
                             API::error('Must disable all modules that depend on this one first.');
@@ -188,7 +189,7 @@ API::registerFunction('settings', 'courseGlobal', function() {
                 //ToDo: check if is working correctly with multiple courses
                 if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
                     //only drop the tables of the module data if this is the last course where it is enabled
-                    $module->dropTables($moduleId);//deletes tables associated with the module
+                    $moduleObject->dropTables($moduleId);//deletes tables associated with the module
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                 foreach ($module['dependencies'] as $dependency) {
@@ -443,8 +444,11 @@ API::registerFunction('settings', 'courseUsers', function() {
 API::registerFunction('settings', 'courseLevels', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
+    if (Course::getCourse($courseId)->getModule("badges")!==null)
+        $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
                     ["course"=>$courseId, "levelId"=>null],'number,description,goal,id',"number");
+    else
+        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],'number,description,goal,id',"number");
     //print_r($levels);
     $levelsByNum = array_combine(array_column($levels,"number") , $levels);
     $numOldLevels=sizeof($levels);
@@ -639,23 +643,32 @@ function updateSkills($list,$tree,$replace, $folder){
     return;
 }
 //update list of skills of the course skill tree, from the skills configuration page
+//ToDo make ths work for multiple skill trees
 API::registerFunction('settings', 'courseSkills', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $folder = Course::getCourseLegacyFolder($courseId);
     
     //For now we only have 1 skill tree per course, if we have more this line needs to change
-    $tree = Core::$systemDB->select("skill_tree",["course",$courseId],"id");
-    
+    $tree = Core::$systemDB->select("skill_tree",["course",$courseId]);
+    $treeId=$tree["id"];
+    if (API::hasKey('maxReward')) {
+        $max=API::getValue('maxReward');
+        if ($tree["maxReward"] != $max) {
+            Core::$systemDB->update("skill_tree", ["maxReward" => $max], ["id" => $treeId]);
+        }
+        API::response(["updatedData"=>["Max Reward set to ".$max] ]);
+        return;
+    }
     if (API::hasKey('skillsList')) {
-        updateSkills(API::getValue('skillsList'), $tree, true, $folder);
+        updateSkills(API::getValue('skillsList'), $treeId, true, $folder);
         return;
     }if (API::hasKey('tiersList')) {
         $keys = array('tier', 'reward');
         $tiers = preg_split('/[\r]?\n/', API::getValue('tiersList'), -1, PREG_SPLIT_NO_EMPTY);
         
         $tiersInDB= array_column(Core::$systemDB->selectMultiple("skill_tier",
-                                        ["treeId"=>$tree],"tier"),'tier');
+                                        ["treeId"=>$treeId],"tier"),'tier');
         $tiersToDelete= $tiersInDB;
         $updatedData=[];
 
@@ -668,30 +681,32 @@ API::registerFunction('settings', 'courseSkills', function() {
             $tier = array_combine($keys, preg_split('/;/', $tier));
             if (!in_array($tier["tier"], $tiersInDB)){
                 Core::$systemDB->insert("skill_tier",
-                        ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$tree]);
+                        ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$treeId]);
                 $updatedData[]= "Added Tier ".$tier["tier"];
             }else{
                 Core::$systemDB->update("skill_tier",["reward"=>$tier["reward"]],
-                                        ["tier"=>$tier["tier"],"treeId"=>$tree]);           
+                                        ["tier"=>$tier["tier"],"treeId"=>$treeId]);           
                 unset($tiersToDelete[array_search($tier['tier'], $tiersToDelete)]);
             }
         }
         foreach ($tiersToDelete as $tierToDelete){
-            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"treeId"=>$tree]);
+            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"treeId"=>$treeId]);
             $updatedData[]= "Deleted Tier ".$tierToDelete." and all its skills. The Skill List may need to be updated";
         }
         API::response(["updatedData"=>$updatedData ]);
         return;
-    }/*else if (API::hasKey('newSkillsList')) {
+    }
+    /*else if (API::hasKey('newSkillsList')) {
         updateSkills(API::getValue('newSkillsList'), $courseId, false, $folder);
         return;
     }*/
+    
     $tierText="";
     $tiers = Core::$systemDB->selectMultiple("skill_tier",
-                                ["treeId"=>$tree],'tier,reward',"tier");
+                                ["treeId"=>$treeId],'tier,reward',"tier");
     $tiersAndSkills=[];
     foreach ($tiers as &$t){//add page, have deps working, have 3 3 dependencies
-        $skills = Core::$systemDB->selectMultiple("skill",["treeId"=>$tree, "tier"=>$t["tier"]],
+        $skills = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier"=>$t["tier"]],
                                     'id,tier,name,color',"name");
         $tiersAndSkills[$t["tier"]]=array_merge($t,["skills" => $skills]);
         $tierText.=$t["tier"].';'.$t["reward"]."\n";
@@ -701,9 +716,10 @@ API::registerFunction('settings', 'courseSkills', function() {
             $s['dependencies'] = getSkillDependencies($s['id']);
         }
     }
+    
     $file = @file_get_contents($folder . '/tree.txt');
     if ($file===FALSE){$file="";}
-    API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText));
+    API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText, "maxReward"=>$tree["maxReward"]));
 });
 
 //update list of badges for course, from the badges configuration page
@@ -713,6 +729,12 @@ API::registerFunction('settings', 'courseBadges', function() {
     $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
     $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
     
+    if (API::hasKey('maxReward')){
+        $max=API::getValue('maxReward');
+        Core::$systemDB->update("badges_config",["maxBonusReward"=>$max],["course"=>$courseId]);
+        API::response(["updatedData"=>["Max Reward set to ".$max] ] );
+        return;
+    }
     if (API::hasKey('badgesList')) {
         $keys = ['name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 
             'countBased', 'postBased', 'pointBased','count1', 'count2', 'count3'];
@@ -800,7 +822,7 @@ API::registerFunction('settings', 'courseBadges', function() {
     
     $file = @file_get_contents($folder . '/achievements.txt');
     if ($file===FALSE){$file="";}
-    API::response(array('badgesList' => $badges, "file"=>$file));
+    API::response(array('badgesList' => $badges, "file"=>$file, "maxReward"=>Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward")));
 });
 
 API::registerFunction('settings', 'createCourse', function() {

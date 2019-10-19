@@ -64,7 +64,15 @@ class Badges extends Module {
         $levelNum=Core::$systemDB->select("award",["user"=>$id,"type"=>"badge","moduleInstance"=>$badgeId],"count(*)");
         return (int)$levelNum;
     }
-
+    
+    public function dropTables($moduleName){
+        $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
+                    ["course"=>$this->getCourseId()],'id',null,[["levelId",null]]);
+        foreach($levels as $lvl){
+            Core::$systemDB->delete("level",["id"=>$lvl["id"]]);
+        }
+        parent::dropTables($moduleName);
+    }
 
     public function init() {
         if ($this->addTables("badges", "badge")) {

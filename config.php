@@ -13,6 +13,6 @@ define('FENIX_API_BASE_URL', 'https://fenix.tecnico.ulisboa.pt');
 $GLOBALS['theme']="default";
 
 define('XP_PER_LEVEL', 1000);
-define('MAX_BONUS_BADGES', 1000);
-define('DEFAULT_MAX_TREE_XP', 5000);
+define('MAX_BONUS_BADGES', 1000);//this is the default value but can be changed in connfig page
+define('DEFAULT_MAX_TREE_XP', 5000);//this is the default value but can be changed in connfig page
 ?>
