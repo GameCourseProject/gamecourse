@@ -179,7 +179,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
         name: 'Chart',
         defaultPart: function() {
             return {
-                type: 'chart',
+                partType: 'chart',
                 chartType: 'line',
                 info: {
                     provider:''
@@ -189,6 +189,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
         changePids: function(part, change) {
         },
         build: function(scope, part, options) {
+            $sbviews.setDefaultParamters(part);
             function createSVGElement(tag) {
                 return document.createElementNS('http://www.w3.org/2000/svg', tag);
             }
@@ -269,8 +270,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                     root.append('<sb-expression ng-if="part.chartType == \'progress\'" sb-expression="part.info.max" sb-expression-label="Max"></sb-expression>');
                     watch('part.info.value');
                     watch('part.info.max');
-
-                    el.children('.title').after($compile(root)(optionsScope));
+                    el.children('.partSpecific').after($compile(root)(optionsScope));
                 }}});
             } else {
                 runWhenInDom(chart, function() {

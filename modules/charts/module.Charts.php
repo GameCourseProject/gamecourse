@@ -46,9 +46,13 @@ class Charts extends Module {
             $userID = $params['user'];
             
             $course = \GameCourse\Course::getCourse($params['course']);
-            $userData = (new \GameCourse\CourseUser($userID, $course))->getData(); 
-
-            $students = $course->getUsersWithRole('Student');   
+            $userXPData = (new \GameCourse\CourseUser($userID, $course))->getXP(); 
+            
+            $students = $course->getUsersWithRole('Student');  
+            $studentsData= [];
+            foreach($students as $s){
+                $studentsData[]= (new \GameCourse\CourseUser($s["id"], $course))->getXP(); 
+            }
             $numStudents = sizeof($students);
             
             $starParams = $chart['info']['params'];
@@ -56,8 +60,9 @@ class Charts extends Module {
             $starAverage = array();
             
             foreach($starParams as &$param) {
-                $val = $userData[$param['id']];
-                $others = array_map(function($student) use ($param) {return $student[$param['id']];},$students);
+                $val = $userXPData[$param['id']];
+                
+                $others = array_map(function($studentsData) use ($param) {return $studentsData[$param['id']];},$studentsData);
                 
                 $starUser[$param['id']] = $val;
                 $average = array_sum($others) / $numStudents;
@@ -75,9 +80,9 @@ class Charts extends Module {
         $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
             $course = \GameCourse\Course::getCourse($params['course']);
-            $user = (new \GameCourse\CourseUser($userID, $course));
-            
-            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$user->getData('XP');
+            $xpModule = $course->getModule("xp");
+            $xp = $xpModule->calculateXP($userID,$params['course']);
+            $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
                 $spark = (array_key_exists('spark', $chart['info']) ? true : false);
@@ -85,18 +90,14 @@ class Charts extends Module {
                 $chart['info']['spark'] = $spark;
                 return;
             }
-            $awards = Core::$systemDB->selectMultiple("award",["student"=>$userID,"course"=>$course->getId()]);
-            //ToDo use order by in the query instead of sorting array
-            usort($awards, function($v1,$v2){
-                return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
-            });
+            $awards = Core::$systemDB->selectMultiple("award",["user"=>$userID,"course"=>$course->getId()],"*","date");
 
-            $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['awardDate'])));
+            $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
             $xpDay = 0;
             $xpTotal = 0;
             $xpValue = array();
             foreach($awards as $award) {
-                $awardDay = new DateTime(date('Y-m-d', strtotime($award['awardDate'])));
+                $awardDay = new DateTime(date('Y-m-d', strtotime($award['date'])));
                 $diff = $currentDay->diff($awardDay);
                 $diffDays = ($diff->days * ($diff->invert ? -1 : 1));
                 if ($diffDays > 0)
@@ -155,17 +156,14 @@ class Charts extends Module {
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = \GameCourse\Core::$systemDB->selectMultiple("award",['student'=>$student['id'],'course'=>$params['course']]);
-                //ToDo maybe use a query with order by instead of sorting afterwards
-                usort($awards, function($v1,$v2){
-                    return $v1['awardDate'] < $v2['awardDate'] ? -1 : 1;                         
-                });
+                $awards = \GameCourse\Core::$systemDB->selectMultiple("award",['user'=>$student['id'],'course'=>$params['course']],"*","date");
+  
                 if (count($awards) == 0) {
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
                     continue;
                 }
 
-                $currentDay = $calcDay($awards[0]['awardDate']);
+                $currentDay = $calcDay($awards[0]['date']);
                 $minDay = min($currentDay, $minDay);
                 $xpTotal = 0;
                
@@ -173,7 +171,7 @@ class Charts extends Module {
                 $firstDay = true;
                 foreach ($awards as $award) {
                     if ($award['reward']>0){
-                        $awardDay = $calcDay($award['awardDate']);
+                        $awardDay = $calcDay($award['date']);
                         $diff = $awardDay - $currentDay;
                         if ($diff > 0 ) {
                             if ($firstDay) {
@@ -285,7 +283,8 @@ class Charts extends Module {
             $highlightValue = PHP_INT_MAX;
             $xpValues = array();
             foreach ($students as $student) {
-                $xp = $student['XP'];
+                $xpModule = $course->getModule("xp");
+                $xp = $xpModule->calculateXP($student["id"],$params['course']);
                 $xp = $xp - ($xp % 500);
                 if (array_key_exists($xp, $xpValues))
                     $xpValues[$xp]++;
@@ -321,12 +320,12 @@ class Charts extends Module {
             $course = \GameCourse\Course::getCourse($params['course']);
 
             $students = $course->getUsersWithRole('Student');
-
+            $badgesModule = $course->getModule("badges");
             $highlightValue = PHP_INT_MAX;
             $badgeCounts = array();
             foreach ($students as $student) {
-                $badgesCount = $student['numBadgeLvls'];
-                
+                $badgesCount=$badgesModule->getBadgeCount($student["id"]);
+                //getBadgeCount
                 if (array_key_exists($badgesCount, $badgeCounts))
                     $badgeCounts[$badgesCount]++;
                 else
@@ -343,7 +342,7 @@ class Charts extends Module {
                 $data[] = array('x' => $badgesCount, 'y' => $studentCount);
             }
 
-            $totalLevels =$course->getNumBadges();
+            $totalLevels =$badgesModule->getBadgeCount();
                     
             $chart['info'] = array(
                 'values' => $data,

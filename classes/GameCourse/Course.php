@@ -20,9 +20,9 @@ class Course {
     public function getName() {
         return $this->getData("name");
     }
-    public function getNumBadges(){
-        return $this->getData("numBadges");
-    }
+    //public function getNumBadges(){
+    //    return $this->getData("numBadges");
+    //}
     public function getActive(){
         return $this->getData("active");
     }

@@ -73,7 +73,14 @@ class Badges extends Module {
         }
         parent::dropTables($moduleName);
     }
-
+    public function getBadgeCount($user=null){
+        $courseId=$this->getCourseId();
+        if ($user===null){
+            return Core::$systemDB->select("badge",["course"=>$courseId],"sum(maxLevel)");
+        }
+        $id=$this->getUserId($user);
+        return  Core::$systemDB->select("award", ["course"=>$courseId,"type"=>"badge","user"=>$id],"count(*)") ;
+    }
     public function init() {
         if ($this->addTables("badges", "badge")) {
             Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $this->getCourseId()]);
@@ -96,12 +103,7 @@ class Badges extends Module {
         });
         //%badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction('badges','getBadgesCount', function($user=null) {  
-            if ($user===null){
-                return new ValueNode(Core::$systemDB->select("badge",["course"=>$this->getCourseId()],"sum(maxLevel)"));
-            }
-            $id=$this->getUserId($user);
-            return new ValueNode( Core::$systemDB->select("award",
-                    ["course"=>$this->getCourseId(),"type"=>"badge","user"=>$id],"count(*)") );
+            return new ValueNode( $this->getBadgeCount($user) );
         });
         //%badge.description
         $viewHandler->registerFunction('badges','description', function($arg) {
@@ -268,8 +270,8 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 */
-        if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
+        //if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
+         //   $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }
 
