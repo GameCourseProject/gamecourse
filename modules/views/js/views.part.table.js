@@ -6,26 +6,13 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 partType: 'table',
                 columns: 1,//[{}],//[{sortMode: 'def'}],
                 headerRows: [],
-                rows: [{values: [], parameters:{loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"} }],
-                parameters: {loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"}
+                rows: [{values: [], loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"} ],
+                loopData: "{}",
+                visibilityCondition: "{}",
+                visibilityType: "conditional"
             };
             part.rows[0].values.push({value: $sbviews.defaultPart('text')});
             return part;
-        },
-        changePids: function(part, change) {
-            for (var i = 0; i < part.rows.length; ++i) {
-                var values = part.rows[i].values;
-                for (var j = 0; j < values.length; ++j) {
-                    change(values[j].value);
-                }
-            }
-
-            for (var i = 0; i < part.headerRows.length; ++i) {
-                var values = part.headerRows[i].values;
-                for (var j = 0; j < values.length; ++j) {
-                    change(values[j].value);
-                }
-            }
         },
         build: function (scope, part, options) {
             $sbviews.setDefaultParamters(part);
@@ -54,7 +41,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                                     if (values[j].value == oldPart) {
                                         part.rows[i].values[j].value = newPart;
                                         var newPartEl = $sbviews.build(scope, 'part.rows[' + i + '].values[' + j + '].value', childOptions);
-                                        var oldPartEl = $($(table.children('tbody').children().get(i)).children().get(j));
+                                        var oldPartEl = $($($(table.children('tbody').children().get(i)).children().get(j)).children().get(0));
                                         oldPartEl.replaceWith(newPartEl);
                                         $sbviews.destroy(oldPartEl);
                                         return;
@@ -102,11 +89,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     rowEl.append(columnEl);
                 }
 
-                if (!options.edit && row.parameters.events) {//?
-                    var keys = Object.keys(row.parameters.events);
+                if (!options.edit && row.events) {//?
+                    var keys = Object.keys(row.events);
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
-                        var fn = $parse(row.parameters.events[key]);
+                        var fn = $parse(row.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.event = key;
@@ -136,11 +123,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     rowEl.append(columnEl);
                 }
 
-                if (!options.edit && row.parameters.events) {//?
-                    var keys = Object.keys(row.parameters.events);
+                if (!options.edit && row.events) {//?
+                    var keys = Object.keys(row.events);
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
-                        var fn = $parse(row.parameters.events[key]);
+                        var fn = $parse(row.events[key]);
                         (function(key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.event = key;
@@ -155,9 +142,9 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             table.append(tbody);
             tableDiv.append(table);
 
-            if (!options.edit ){//&& part.sort != undefined && part.sort) 
-                table.tablesorter({sortList: [], headers: {} });
-            }
+            //if (!options.edit ){//&& part.sort != undefined && part.sort) 
+            //    table.tablesorter({sortList: [], headers: {} });
+            //}
 
             if (part.filterBox != undefined && !options.edit) {
                 var filterField = part.filterBox.value;
@@ -258,7 +245,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         $($(tbody.children().get(rid)).children().get(idx)).before(td);
                     }
 
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                     checkEmpty(true);
                 }
 
@@ -275,13 +262,13 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         part.rows[rid].values.splice(idx, 1);
                     }
 
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                     checkEmpty(true);
                 }
 
                 function insertRow(container, idx, header) {
                     var rowIdx = idx - (header ? 1 : 0);
-                    var row = {values:[], parameters: {loopData: "{}",visibilityCondition: "{}"} };
+                    var row = {values:[], loopData: "{}",visibilityCondition: "{}" };
                     var newRowEl = $(document.createElement('tr'));
                     $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
                     for (var cid=0;cid<part.columns;cid++) {
@@ -300,7 +287,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     else
                         $(containerEl.children().get(idx)).before(newRowEl);
 
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                     checkEmpty(true);
                 }
 
@@ -309,7 +296,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     container.splice(rowIdx, 1);
                     $((header ? thead : tbody).children().get(idx)).remove();
 
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                     checkEmpty(true);
                 }
 
@@ -342,7 +329,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         $($(tbody.children().get(rid)).children().get(newIdx)).replaceWith(td2);
                     }
 
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                 }
 
                 function moveRow(container, oldIdx, newIdx, header) {
@@ -376,7 +363,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     $(containerEl.children().get(oldIdx)).replaceWith(newRowEl);
                     $(containerEl.children().get(newIdx)).replaceWith(newRowEl2);
-                    $sbviews.notifyChanged(part, options);
+                    //$sbviews.notifyChanged(part, options);
                 }
 
                 buildColumnToolbar = function (cidx) {

@@ -6,31 +6,28 @@ angular.module('module.views').run(function($sbviews, $compile) {
             return {
                 partType: 'image',
                 edit: true,
-                parameters: {
-                    value: 'images/awards.svg'
-                }
+                value: 'images/awards.svg'
             };
         },
-        changePids: function(part, change) {
-        },
+        //changePids: function(part, change) {},
         createElement: function(scope, part, options) {
             if (options.preview != undefined)
                 return valuePartDef.createElement(scope, part, options);
             var img;
 
-            var emptyValue = (part.parameters.value === '' || scope.placeholderValue === '');
+            var emptyValue = (part.value === '' || scope.placeholderValue === '');
             
             if (emptyValue) {
                 img = $(document.createElement('div')).attr('class', 'placeholder red');
             } else if (part.edit) {
                 img = $(document.createElement('div')).attr('class', 'placeholder');
             } else //if (part.valueType == 'text') {
-                img = $(document.createElement('img')).attr('src', part.parameters.value);
+                img = $(document.createElement('img')).attr('src', part.value);
             
             
             var root;
-            if (part.parameters.link != undefined && !options.edit) {
-                root = $(document.createElement('a')).attr({href: part.parameters.link});
+            if (part.link != undefined && !options.edit) {
+                root = $(document.createElement('a')).attr({href: part.link});
             } else {
                 root = $(document.createElement('span'));
             }

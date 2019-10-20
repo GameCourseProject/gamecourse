@@ -4,11 +4,9 @@ use Modules\Views\Expression\ValueNode;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
 
-define("LEVEL_TABLE", "level left join badge_has_level on levelId=id");
 class XPLevels extends Module {
     
     //const LEVEL_TABLE = "level left join badge_has_level on levelId=id";
-    
     
     public function setupResources() {
         parent::addResources('css/awards.css');
@@ -35,47 +33,73 @@ class XPLevels extends Module {
         }  
         return $skillTreeXP;
     }
+    
+    public function calculateXPComponents($user,$courseId){
+        $userId=$this->getUserId($user);
+        $xp=[];
+        //badge XP
+        $xp["badgeXP"]= $this->calculateBadgeXP($userId,$courseId);
+        //skills XP 
+        $xp["skillXP"] = $this->calculateSkillXP($userId,$courseId);
+        
+        $xp["labXP"]=Core::$systemDB->select("award",
+                ["course"=>$courseId,"user"=>$userId,"type"=>"labs"],"sum(reward)");
+        $xp["quizXP"]=Core::$systemDB->select("award",
+                ["course"=>$courseId,"user"=>$userId,"type"=>"quiz"],"sum(reward)");
+        $xp["presentationXP"]=Core::$systemDB->select("award",
+                ["course"=>$courseId,"user"=>$userId,"type"=>"presentation"],"sum(reward)");
+        $xp["bonusXP"]=Core::$systemDB->select("award",
+                ["course"=>$courseId,"user"=>$userId,"type"=>"bonus"],"sum(reward)");
+        $xp["xp"]=array_sum($xp);
+        return $xp;
+    }
     //calculates total xp of an user
     public function calculateXP($user,$courseId){
         $userId=$this->getUserId($user);
         //badge XP
         $badgeXP= $this->calculateBadgeXP($userId,$courseId);
         //skills XP 
-        $skillTreeXP = $this->calculateSkillXP($userId,$courseId);
+        $skillXP = $this->calculateSkillXP($userId,$courseId);
         //XP of everything else
         $otherXP = Core::$systemDB->select("award",
                 ["course"=>$courseId,"user"=>$userId],"sum(reward)",null,//where
                 [["type","skill"],["type","badge"]]);//where not
-        return $otherXP + $skillTreeXP + $badgeXP;
+        return $badgeXP+$skillXP+$otherXP;
     }
-    
     public function init() {
        
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $course = $this->getParent();
         $courseId = $course->getId();
-        $levelWhere = ["course"=>$courseId, "badgeId"=>null];
+        
+        $levelTable=function($badgesExist){return (!$badgesExist) ? "level" : "level left join badge_has_level on levelId=id";};
+        $levelWhere=function($badgesExist) use ($courseId){return (!$badgesExist) ? ["course"=>$courseId] : ["course"=>$courseId, "badgeId"=>null];};
         //xp.allLevels returns collection of level objects
-        $viewHandler->registerFunction('xp','getAllLevels',function()use ($levelWhere){
-            $levels = Core::$systemDB->selectMultiple(LEVEL_TABLE,$levelWhere);
+        $viewHandler->registerFunction('xp','getAllLevels',function()use ($levelWhere,$levelTable){
+            $badgesExist=($this->getParent()->getModule("badges")!==null);
+            $table = $levelTable($badgesExist);
+            $where = $levelWhere($badgesExist);
+            $levels = Core::$systemDB->selectMultiple($table,$where);
             return $this->createNode($levels, 'xp',"collection");
         });
         //xp.getLevel(user,number,goal) returns level object
-        $viewHandler->registerFunction('xp','getLevel',function($user=null,$number=null,$goal=null)use ($levelWhere){
+        $viewHandler->registerFunction('xp','getLevel',function($user=null,$number=null,$goal=null)use ($levelWhere,$levelTable){
+            $badgesExist=($this->getParent()->getModule("badges")!==null);
+            $table = $levelTable($badgesExist);
+            $where = $levelWhere($badgesExist);
             if ($user!==null){
                 //calculate the level of the user
-                $xp = $this->calculateXP($user,$levelWhere["course"]); 
-                $goal = Core::$systemDB->select(LEVEL_TABLE,$levelWhere,
+                $xp = $this->calculateXP($user,$where["course"]); 
+                $goal = Core::$systemDB->select($table,$where,
                         "max(goal)",null,[],[["goal","<=",$xp]]);
             }
             //get a level with a specific number or reward
-            $where = $levelWhere;
             if($number!==null)
                 $where["number"]=$number;
             else if ($goal!==null)
                 $where["goal"]=$goal;
 
-            $level = Core::$systemDB->select(LEVEL_TABLE,$where);
+            $level = Core::$systemDB->select($table,$where);
             if (empty($level))
                 throw new Exception ("In function xp.getLevel(...): couldn't find level with the given information");
             return $this->createNode($level, 'xp');

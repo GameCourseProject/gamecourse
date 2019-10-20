@@ -8,29 +8,17 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     title: undefined,
                     image: undefined
                 },
-                children: [],
-                parameters: {}
+                children: []
             };
 
             var titlePart = $sbviews.defaultPart('text');
-            titlePart.parameters.value = 'Header Title';
+            titlePart.value = 'Header Title';
             part.header.title = titlePart;
 
             var imagePart = $sbviews.defaultPart('image');
-            imagePart.parameters.value = 'images/awards.svg';
+            imagePart.value = 'images/awards.svg';
             part.header.image = imagePart;
             return part;
-        },
-        changePids: function(part, change) {
-            if (part.header) {
-                if (part.header.title)
-                    change(part.header.title);
-                if (part.header.image)
-                    change(part.header.image);
-            }
-
-            for (var i in part.children)
-                change(part.children[i]);
         },
         build: function (scope, part, options) {
             function deleteIds(newPart){
@@ -167,7 +155,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             $sbviews.destroy($(blockContent.children().get(idx)));
                             if (blockContent.children().length == 0)
                                 blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
-                            $sbviews.notifyChanged(part, options);
+                            //$sbviews.notifyChanged(part, options);
                         },
                         duplicate: function(obj) {
                             var idx = part.children.indexOf(obj);
@@ -178,7 +166,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             part.children.splice(idx, 0, newPart);
                             var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
                             $(blockContent.children().get(idx)).before(newPartEl);
-                            $sbviews.notifyChanged(part, options);
+                            //$sbviews.notifyChanged(part, options);
                         },
                         switch: function(obj, newPart) {
                             var idx = part.children.indexOf(obj);
@@ -187,7 +175,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             var oldEl = $(blockContent.children().get(idx));
                             oldEl.replaceWith(newPartEl);
                             $sbviews.destroy(oldEl);
-                            $sbviews.notifyChanged(part, options);
+                            //$sbviews.notifyChanged(part, options);
                         }
                     }
                 });
@@ -295,7 +283,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 blockContent.children('.no-children').remove();
                                 part.children.push(newPart);
                                 var newChild = $sbviews.buildElement(scope, newPart, childOptions);
-                                $sbviews.notifyChanged(part, options);
+                                //$sbviews.notifyChanged(part, options);
                                 blockContent.append(newChild);
                                 addOverlay(newChild);
                             }

@@ -65,7 +65,7 @@ class Course {
 
     public function getUser($istid) {
        if (!empty(Core::$systemDB->select("course_user",["course"=>$this->cid,"id"=>$istid],'id')))
-               return new CourseUser($istid,$this);
+            return new CourseUser($istid,$this);
        else
            return new NullCourseUser($istid, $this);
     }

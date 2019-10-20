@@ -40,7 +40,7 @@ angular.module('module.views').directive('sbMenu', function() {
 
             $scope.elid = 'cb-' + (++uid);
         },
-        template: '<div class="sb-checkbox">\n\<input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()">\n\<label for="{{elid}}">{{label}}</label>\n\<a ng-href="{{link}}" target="_blank">\n\<img ng-if="parameters.value != undefined" title="{{parameters.value}}" class="info" src="images/info.svg"></a>\n\<div class="content" ng-if="isChecked()" ng-transclude></div></div>'
+        template: '<div class="sb-checkbox">\n\<input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()">\n\<label for="{{elid}}">{{label}}</label>\n\<a ng-href="{{link}}" target="_blank">\n\<img ng-if="value != undefined" title="{{value}}" class="info" src="images/info.svg"></a>\n\<div class="content" ng-if="isChecked()" ng-transclude></div></div>'
     };
 }).directive('sbInput', function($parse) {
     var uid = 0;

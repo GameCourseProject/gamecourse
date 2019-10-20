@@ -4,16 +4,11 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         defaultPart: function() {
             return {
                 partType: 'text',
-                //info: 'Text'
-                parameters: {
-                    value: 'Text',
-                    loopData: '{}',
-                    visibilityCondition: '{}',
-                    visibilityType: "conditional"
-                }
+                value: 'Text',
+                loopData: '{}',
+                visibilityCondition: '{}',
+                visibilityType: "conditional"
             };
-        },
-        changePids: function(part, change) {
         },
         build: function(scope, part, options) {
             var valuePartDef = this;
@@ -32,7 +27,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                     $compile(optionsDiv)(optionsScope);
 
                     watch('part.valueType');
-                    watch('part.parameters.value', function() {
+                    watch('part.value', function() {
                         valuePartDef.createElement(optionsScope, optionsScope.part, {edit: true, preview: true});
                     });
 
@@ -65,17 +60,17 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         },
         createElement: function(scope, part, options) {
             var element;
-            if (part.parameters.link && !options.edit)
-                element = $(document.createElement('a')).addClass('value').attr('href', part.parameters.link);
+            if (part.link && !options.edit)
+                element = $(document.createElement('a')).addClass('value').attr('href', part.link);
             else
                 element = $(document.createElement('span')).addClass('value');
             
-            if (part.parameters.value === '' || scope.placeholderValue === '') {
+            if (part.value === '' || scope.placeholderValue === '') {
                 element.text('(Empty Value)');
                 element.addClass('red');
             } 
             else 
-                element.html(part.parameters.value);
+                element.html(part.value);
             element.data("scope",scope);
             return element;
         },

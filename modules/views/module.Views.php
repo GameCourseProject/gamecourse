@@ -61,10 +61,10 @@ class Views extends Module {
     private function parseTableRows(&$rows) {
         for($i = 0; $i < count($rows); ++$i) {
             $row = &$rows[$i];
-            if (array_key_exists('style', $row["parameters"]))
-                $this->viewHandler->parseSelf($row["parameters"]['style']);
-            if (array_key_exists('class', $row["parameters"]))
-                $this->viewHandler->parseSelf($row["parameters"]['class']);
+            if (array_key_exists('style', $row))
+                $this->viewHandler->parseSelf($row['style']);
+            if (array_key_exists('class', $row))
+                $this->viewHandler->parseSelf($row['class']);
 
             $this->viewHandler->parseVariables($row);
             $this->viewHandler->parseEvents($row);
@@ -79,10 +79,10 @@ class Views extends Module {
     private function processTableRows(&$rows, $viewParams, $visitor) {
         $this->viewHandler->processLoop($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
             $this->viewHandler->processVariables($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
-                if (array_key_exists('style', $row["parameters"]))
-                    $row['style'] = $row["parameters"]['style']->accept($visitor)->getValue();
-                if (array_key_exists('class', $row["parameters"]))
-                    $row['class'] = $row["parameters"]['class']->accept($visitor)->getValue();
+                if (array_key_exists('style', $row))
+                    $row['style'] = $row['style']->accept($visitor)->getValue();
+                if (array_key_exists('class', $row))
+                    $row['class'] = $row['class']->accept($visitor)->getValue();
                 $this->viewHandler->processEvents($row, $visitor);
                 foreach($row['values'] as &$cell) {
                     $this->viewHandler->processPart($cell['value'], $viewParams, $visitor);
@@ -543,33 +543,33 @@ class Views extends Module {
         //parts
         $this->viewHandler->registerPartType('text', null, null,
             function(&$value) {//parse function
-                if (array_key_exists('link', $value['parameters'])){
-                    $this->viewHandler->parseSelf($value['parameters']['link']);
+                if (array_key_exists('link', $value)){
+                    $this->viewHandler->parseSelf($value['link']);
                 }
-                $this->viewHandler->parseSelf($value['parameters']["value"]);
+                $this->viewHandler->parseSelf($value["value"]);
             },
             function(&$value, $viewParams, $visitor) {//processing function
-                if (array_key_exists('link', $value['parameters'])) {
-                    $value['parameters']['link'] = $value['parameters']['link']->accept($visitor)->getValue();
+                if (array_key_exists('link', $value)) {
+                    $value['link'] = $value['link']->accept($visitor)->getValue();
                 }
                 $value['valueType'] = 'text';
-                $value['parameters']["value"] = $value['parameters']["value"]->accept($visitor)->getValue();
+                $value["value"] = $value["value"]->accept($visitor)->getValue();
             }
         );
         
         $this->viewHandler->registerPartType('image', null, null,
             function(&$image) {//parse function
-                if (array_key_exists('link', $image['parameters'])){
-                    $this->viewHandler->parseSelf($image['parameters']['link']);
+                if (array_key_exists('link', $image)){
+                    $this->viewHandler->parseSelf($image['link']);
                 }
-                $this->viewHandler->parseSelf($image['parameters']["value"]);
+                $this->viewHandler->parseSelf($image["value"]);
             },
             function(&$image, $viewParams, $visitor) {//processing function
-                if (array_key_exists('link', $image['parameters']))
-                    $image['parameters']['link'] = $image['parameters']['link']->accept($visitor)->getValue();
+                if (array_key_exists('link', $image))
+                    $image['link'] = $image['link']->accept($visitor)->getValue();
 
                 $image['edit'] = false;
-                $image['parameters']["value"] = $image['parameters']["value"]->accept($visitor)->getValue();
+                $image["value"] = $image["value"]->accept($visitor)->getValue();
             }
         );
 
@@ -810,7 +810,6 @@ class Views extends Module {
             if (sizeOf($templateView["children"]) > 1) {
                 $block = $templateView;
                 $block["partType"] = "block";
-                $block["parameters"] = [];
                 unset($block["id"]);
             } else {
                 $block = $templateView["children"][0];
@@ -826,7 +825,6 @@ class Views extends Module {
             $templateView = $this->getTemplateContents(API::getValue("role"),$templateId,API::getValue("course"),API::getValue("roleType"));      
             
             $templateView["partType"] = "templateRef";
-            $templateView["parameters"] = [];
             $templateView["templateId"] =$templateId;
             $templateView["aspectId"] =$templateView["id"];
             

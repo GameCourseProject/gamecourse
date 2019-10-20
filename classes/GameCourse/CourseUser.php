@@ -58,6 +58,13 @@ class CourseUser extends User{
         return Core::$systemDB->select("course_user natural join game_course_user",
                 ["course"=>$this->course->getId(),"id"=>$this->id],$field);
     }
+    function getXP(){
+        $xpMod=$this->course->getModule("xp");
+        if ($xpMod!==null){
+            return $xpMod->calculateXPComponents($this->id,$this->course->getId());
+        }
+        throw new \Exception("Tried to get XP, but XP is disabled");
+    }
     function setCampus($campus) {
         return Core::$systemDB->update("course_user",["campus"=>$campus],
                 ["course"=>$this->course->getId(),"id"=>$this->id]);

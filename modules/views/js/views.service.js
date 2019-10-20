@@ -83,8 +83,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 partType: 'block',
                 noHeader: true,
                 children: viewScope.view.children,
-                pid: viewScope.view.id,
-                origin: viewScope.view.origin,
                 role: viewScope.view.role
             };
             $rootScope.role=viewScope.view.role;
@@ -111,9 +109,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 scope: viewScope,
                 element: viewBlock,
                 get: function() {
-                    viewScope.view.origin = viewScope.viewBlock.origin;
-                    viewScope.view.pid = viewScope.viewBlock.pid;
-                    //viewScope.view.content = viewScope.viewBlock.children;
                     return viewScope.view;
                 },
                 undo: function() {
@@ -209,14 +204,14 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.applyCommonFeatures = function(scope, part, element, options) {
-        if (!options.edit && part.parameters.events && !options.disableEvents) {
-            var keys = Object.keys(part.parameters.events);
+        if (!options.edit && part.events && !options.disableEvents) {
+            var keys = Object.keys(part.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
                 
-                part.parameters.events[key]=part.parameters.events[key].replace(/\\n/g,'');
+                part.events[key]=part.events[key].replace(/\\n/g,'');
                 
-                var fn = $parse(part.parameters.events[key]);
+                var fn = $parse(part.events[key]);
                 (function(key, fn) {
                     element.on(key, function(e) {
                         scope.event = key;
@@ -234,8 +229,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             element.addClass(part.class);
         if (part.style !== undefined)
             element.attr('style', part.style);
-        if (part.parameters.label !== undefined)
-            element.attr('label-for-events',part.parameters.label);
+        if (part.label !== undefined)
+            element.attr('label-for-events',part.label);
         
         //add events attribute so they can acess functions of events directive
         element.attr("events", '');
@@ -327,7 +322,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 optionsScope.toggleVisCondition = function(){
                     var sbExp = $(($(document.getElementById('visCondition'))).children().get(1));
                     
-                    if (optionsScope.part.parameters.visibilityType==="visible" || optionsScope.part.parameters.visibilityType==="invisible"){
+                    if (optionsScope.part.visibilityType==="visible" || optionsScope.part.visibilityType==="invisible"){
                         //disable condition input if visibility is visible or invisible
                         sbExp.prop('disabled', true);
                     }
@@ -343,14 +338,14 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     function watch(path, fn) {
                         optionsScope.$watch(path, function(n, o) {
                             if (n != o) {
-                                var notifiedPart = part;
+                                /*var notifiedPart = part;
                                 if (toolbarOptions.notifiedPart != null)
                                     notifiedPart = toolbarOptions.notifiedPart;
                                 $sbviews.notifyChanged(notifiedPart, {view: toolbarOptions.view});
                                 if (notifiedPart == part) {
                                     optionsScope.part.pid = part.pid;
                                     optionsScope.part.origin = part.origin;
-                                }
+                                }*/
                                 if (fn != undefined)
                                     fn(n, o);
                             }
@@ -364,13 +359,6 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
                         el.append(container);
-                        //watch('part.parameters.class');
-                        //watch('part.directive');
-                        //watch('part.parameters.style');
-                        //watch('part.parameters.loopData');
-                        //watch('part.if');
-                        //watch('part.parameters.events');
-                        //watch('part.data');
                         el.on('mouseenter', function() {
                             //this ensures that when visibility is not conditional, the field will be disabled
                             optionsScope.toggleVisCondition();
@@ -379,15 +367,15 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
                         //ToDo: drop,keydown,keypress,keyup (these weren't working)
                         var missingEvents = [];
-                        if (optionsScope.part.parameters.events !== undefined) {
+                        if (optionsScope.part.events !== undefined) {
                             for (var i in events) {
                                 var event = events[i];
-                                if (optionsScope.part.parameters.events[event] === undefined)
+                                if (optionsScope.part.events[event] === undefined)
                                     missingEvents.push(event);
                             }
                         } else {
                             missingEvents = events;
-                            optionsScope.part.parameters.events={};
+                            optionsScope.part.events={};
                         }
                         optionsScope.missingEvents = missingEvents;
                         optionsScope.events = {
@@ -396,7 +384,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         optionsScope.addEvent = function() {
                             var eventType = optionsScope.events.eventToAdd;
                             optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
-                            optionsScope.part.parameters.events[eventType] = '';
+                            optionsScope.part.events[eventType] = '';
                         };
 
                         optionsScope.addEventToMissing = function(type) {
@@ -410,7 +398,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         };
 
                         optionsScope.addVariable = function() {
-                            optionsScope.part.parameters.variables[optionsScope.variables.dataKey] = {value: ''};
+                            optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
                             optionsScope.variables.dataKey = '';
                         };
                         $timeout(function() {
@@ -542,7 +530,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         };
 
                         var templatePart = angular.copy(part);
-                        $sbviews.changePids(templatePart);
+                        //$sbviews.changePids(templatePart);
                         optionsScope.template = {
                             name: '',
                             part: templatePart,
@@ -678,36 +666,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
     this.defaultPart = function(partType) {
         var part = $sbviews.registeredPartType[partType].defaultPart();
-        $sbviews.generatePid(part);
         return part;
-    };
-
-    this.generatePid = function(part) {
-        var validChars = '0123456789abcdef';
-        var pid = '';
-        for (var i = 0; i < 32; ++i)
-            pid += validChars[Math.floor(Math.random() * 16)];
-        if (part != undefined) {
-            part.pid = pid;
-            part.origin = 'this';
-        }
-        return pid;
-    };
-
-    this.changePids = function(part) {
-        $sbviews.generatePid(part);
-        $sbviews.registeredPartType[part.partType].changePids(part, $sbviews.changePids);
-    };
-
-    this.notifyChanged = function(part, options) {
-        if (part.origin == 'this')
-            return;
-        var oldpartid = part.pid;
-        var newpartid = $sbviews.generatePid(part);
-        var view = options.view;
-        if (view.replacements !== 'object' || Array.isArray(view.replacements))
-            view.replacements = {};
-        view.replacements[oldpartid] = newpartid;
     };
 
     this.createCheckboxAndInput = function (scope, watch, elId, text, path, defaultVal, fn) {
@@ -752,25 +711,17 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         }
     };
     this.setDefaultParamters = function(part) {
-        //sets some fields contents to '{}' and ensures paramters is an object
-        if (part.parameters===undefined || Array.isArray(part.parameters)){
-            //when a block is saved with empty parameters it becomes an array instead of object
-            //this changes them back to object(to prevent problems where params wheren't being saved)
-            part.parameters={};
-        }
-        
-        if (part.parameters!==undefined ){
-            if (part.parameters.variables===undefined || Array.isArray(part.parameters.variables))
-                part.parameters.variables={};
-            if (part.parameters.events===undefined || Array.isArray(part.parameters.events))
-                part.parameters.events={};
-            if (part.parameters.loopData===undefined)
-                part.parameters.loopData="{}";
-            if (part.parameters.visibilityCondition===undefined)
-                part.parameters.visibilityCondition="{}";
-            if (part.parameters.visibilityType===undefined)
-                part.parameters.visibilityType="conditional";
-        }
+        //sets some fields contents to '{}' 
+        if (part.variables===undefined || Array.isArray(part.variables))
+            part.variables={};
+        if (part.events===undefined || Array.isArray(part.events))
+            part.events={};
+        if (part.loopData===undefined)
+            part.loopData="{}";
+        if (part.visibilityCondition===undefined)
+            part.visibilityCondition="{}";
+        if (part.visibilityType===undefined)
+            part.visibilityType="conditional";
     };
     
 });

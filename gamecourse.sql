@@ -158,18 +158,24 @@ create table aspect_class(
 );
 create table view(
 	id int unsigned auto_increment primary key,
-	#pageId int unsigned not null,
 	aspectClass int unsigned,
 	role varchar(100) default "role.Default",
-	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef'),
+	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef','chart'),
 	parent int unsigned,
 	viewIndex int unsigned,
 	label varchar(50),
-	#template int unsigned,
+	loopData varchar(200),
+	variables varchar(500),
+	value varchar(200),
+	class varchar(50),
+	style varchar(200),
+	link varchar(100),
+	visibilityCondition varchar(200),
+	visibilityType enum ("visible","invisible","conditional"),
+	events varchar(500),
+	info varchar(500),
 	foreign key (aspectClass) references aspect_class(aspectClass) on delete set null,
 	foreign key (parent) references view(id) on delete cascade
-	#foreign key (template) references view_template(id) on delete cascade,
-	#foreign key(pageId) references page(id) on delete cascade
 );
 create table page(
 	id int unsigned auto_increment primary key,
@@ -178,8 +184,6 @@ create table page(
 	name varchar(50) not null,
 	theme varchar(50),
 	viewId int unsigned,
-	#module varchar(50),
-	#foreign key(module, course) references course_module(moduleId,course) on delete cascade,
 	foreign key(viewId) references view(id) on delete set null,
 	foreign key(course) references course(id) on delete cascade
 );
@@ -198,37 +202,4 @@ create table view_template(
 	foreign key (viewId) references view(id) on delete cascade
 );
 
-create table parameter(
-	id int unsigned auto_increment primary key,
-	type enum ('loopData','variables','value','class','style','link','visibilityCondition','visibilityType','events','label') not null,
-	value varchar(500) not null
-);
-create table view_parameter(
-	viewId int unsigned,
-	parameterId int unsigned,
-	primary key(viewId,parameterId),
-	foreign key (viewId) references view(id) on delete cascade,
-	foreign key (parameterId) references parameter(id) on delete cascade
-);
-
 #ToDO add trigger when delete level or badge -> delete bagde_has_level
-
-# if no view is using a parameter then delete it
-create trigger parameterDelete before delete on view_parameter
-	for each row
-		BEGIN
-		declare paramCount int;
-		set paramCount = (select count(*) from view_parameter where parameterId=OLD.parameterId);
-		if (paramCount=1)
-		then
-			delete from parameter where id=OLD.parameterId;
-		END if;
-
-		end;
-
-#delete view_parameter of view (same as on delete cascade but it works for triggers)
-create trigger viewDelete before delete on view
-	for each row
-	BEGIN
-			delete from view_parameter where viewId=OLD.id;
-	end;
