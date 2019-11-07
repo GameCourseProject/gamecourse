@@ -158,8 +158,14 @@ class Views extends Module {
             case '<=': return           $a <= $b;  
         }
     }
-    private function popUpOrToolTip($templateName,$params,$funcName,$course){
+    //receives templateName, current view parameters, funcNAme= showPopUp or showToolTip,course, and user
+    //renders template view and returns it inside a function call for views.directive.js which deals w events
+    private function popUpOrToolTip($templateName,$params,$funcName,$course,$user){
         $template = $this->getTemplate(null,$templateName); 
+        if ($user!=null){//rendering a user view
+            $userId = $this->getUserId($user);
+            $params["user"]=$userId;
+        }
         $userView = $this->viewHandler->handle($template,$course,$params);
         $encodedView = json_encode($userView);
         if (strlen($encodedView)>100000)//preventing the use of tooltips with big templates
@@ -203,9 +209,9 @@ class Views extends Module {
                 return new ValueNode($collection["value"][$index]);
         });
         //%collection.index(item)  returns the index of the item in the collection
-        $this->viewHandler->registerFunction(null,'index', function($collection, $item) { 
+        $this->viewHandler->registerFunction(null,'index', function($collection, $item) {
             $this->checkArray($collection, "collection", "index()");
-            $result = array_search($item, $collection["value"]);
+            $result = array_search($item["value"]["id"], array_column($collection["value"],"id"));
             if ($result ===false){
                 throw new \Exception("In function .index(x): Coudn't find the x in the collection");
             }
@@ -238,6 +244,9 @@ class Views extends Module {
         });
         //%collectio.sort(order=(asc|des),keys) returns collection sorted by key
         $this->viewHandler->registerFunction(null,'sort', function($collection=null,$order=null,$keys=null) use ($courseId){ 
+            if (empty($collection["value"]))
+                return new ValueNode($collection);
+            
             $this->checkArray($collection, "collection", "sort()");
             if ($order===null) throw new \Exception("On function .sort(order,keys), no order was given.");
             if ($keys===null) throw new \Exception("On function .sort(order,keys), no keys were given.");
@@ -302,23 +311,25 @@ class Views extends Module {
             }
             return new ValueNode($response);
         });
+        //fucntions to change the visibility of a view element with the specified label
+        //the $visitor parameter is provided by the visitor itself
         $this->viewHandler->registerFunction("actions",'hideView', function($label,$visitor) { 
-            return new ValueNode("hideView('".$label."')");
+            return new ValueNode("hideView('".$label->accept($visitor)->getValue()."')");
         });
         $this->viewHandler->registerFunction("actions",'showView', function($label,$visitor) { 
-            return new ValueNode("showView('".$label."')");
+            return new ValueNode("showView('".$label->accept($visitor)->getValue()."')");
         });
         $this->viewHandler->registerFunction("actions",'toggleView', function($label,$visitor) { 
             $this->viewHandler->parseSelf($label);
             return new ValueNode("toggleView('".$label->accept($visitor)->getValue()."')");
         });
         //call view handle template (parse and process its view)
-        
-        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$params) use ($course){ 
-            return $this->popUpOrToolTip($templateName,$params,"showToolTip",$course);
+        //the $params argument is provided by the visitor
+        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$user,$params) use ($course){ 
+            return $this->popUpOrToolTip($templateName,$params,"showToolTip",$course,$user);
         });
-        $this->viewHandler->registerFunction("actions",'showPopUp', function($templateName,$params) use ($course){ 
-            return $this->popUpOrToolTip($templateName,$params,"showPopUp",$course);
+        $this->viewHandler->registerFunction("actions",'showPopUp', function($templateName,$user,$params) use ($course){ 
+            return $this->popUpOrToolTip($templateName,$params,"showPopUp",$course,$user);
         });
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users

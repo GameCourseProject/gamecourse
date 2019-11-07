@@ -386,7 +386,7 @@ angular.module('module.views').directive('sbMenu', function() {
                     children: viewScope.view.children,
                     role: viewScope.view.role
                 };
-
+                
                 var viewBlock = $sbviews.build(viewScope, 'viewBlock');
                 viewBlock.removeClass('block');
                 viewBlock.addClass('view');
@@ -400,11 +400,10 @@ angular.module('module.views').directive('sbMenu', function() {
                 return contents;
             };
             $scope.showToolTip = function(template) {
-                console.log("showToolTip",$scope);
                 if ($scope.tooltipBound){
                     return;
                 }
-                tooltipContent = $scope.makePopupTooltipContents(template);
+                let tooltipContent = $scope.makePopupTooltipContents(template);
                 $element.tooltip({offset: [0, 0], html: tooltipContent});
                 $scope.tooltipBound = true; 
                 $element.trigger('mouseover');

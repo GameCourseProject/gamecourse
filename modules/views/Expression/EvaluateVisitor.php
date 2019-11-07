@@ -19,7 +19,8 @@ class EvaluateVisitor extends Visitor {
         $next = $node->getNext();
         if ($next != null) {
             $nextStr = $next->accept($this)->getValue();
-            if (is_string($nextStr) || is_int($nextStr)) {
+            if ($nextStr===null) $nextStr="";
+            if (is_string($nextStr) || is_int($nextStr) )  {
                 $text .= $nextStr;
             } else {
                 throw new \Exception("Can't process statement '".$text."{?}'. Found an object where a string should be");
@@ -91,6 +92,9 @@ class EvaluateVisitor extends Visitor {
         $lib=$node->getLib();
         if ($lib=="actions") {
             if ($funcName==="showToolTip" || $funcName==="showPopUp"){
+                if (sizeof($args)==1){//does not have user argument
+                    $args[]=null;
+                }
                 $args[]=$this->params;
             }
             else if ($funcName==="hideView" || $funcName==="showView" || $funcName==="toggleView"){

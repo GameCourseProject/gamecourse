@@ -22,16 +22,13 @@ function putPopupTooltip(popOrTool,settings,el){
         elY += el.outerHeight() / 2;
         elX -= el.outerWidth() / 2;
     }
-
     popOrTool.css({position: 'fixed', left: elX - $(window).scrollLeft() + settings.offset[0], top: elY - $(window).scrollTop() + settings.offset[1]});
     $(document.body).append(popOrTool);
 }
 (function($) {
-    var tooltip = $('<div>');
-    
 
     $.fn.tooltip = function(options) {
-        
+        var tooltip = $('<div>');
         var settings = $.extend({}, defaultsToolTipSettings, options);
 
         return this.each(function() {
