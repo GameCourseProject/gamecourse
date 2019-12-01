@@ -142,9 +142,9 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             table.append(tbody);
             tableDiv.append(table);
 
-            //if (!options.edit ){//&& part.sort != undefined && part.sort) 
-            //    table.tablesorter({sortList: [], headers: {} });
-            //}
+            if (!options.edit ){//&& part.sort != undefined && part.sort) 
+                table.tablesorter({sortList: [], headers: {} });
+            }
 
             if (part.filterBox != undefined && !options.edit) {
                 var filterField = part.filterBox.value;

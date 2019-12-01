@@ -162,7 +162,7 @@ class ViewHandler {
         }
         if ($viewPart["partType"]=="block") {//deal with header of block
             $header = Core::$systemDB->select("view",["parent"=>$viewPart["id"], "partType"=>"header"],"id");
-            if (array_key_exists("header", $viewPart)){//if there is a header
+            if (array_key_exists("header", $viewPart)){//if there is a header in the updated version
                 if(!$basicUpdate && empty($header)){ //insert (header is not in DB)
                     Core::$systemDB->insert("view",["parent"=>$viewPart["id"], 
                         "partType"=>"header","role"=>$viewPart["role"],"aspectClass"=>$viewPart["aspectClass"]]);
@@ -191,6 +191,9 @@ class ViewHandler {
                             else
                                 $type = "image";
                             $part = array_merge($part,$this->makeCleanViewCopy($viewPart["header"][$type]));
+                            $partId=$part["id"];
+                            unset($part["id"]);
+                            Core::$systemDB->update("view",$part, ["id" => $partId]);
                         }
                     }
                 }
@@ -616,7 +619,7 @@ class ViewHandler {
             }
         }
         if ($func != null && is_callable($func)) {
-            $func($params, $actualVisitor);
+            return $func($params, $actualVisitor);
         }
     }
 
@@ -682,14 +685,14 @@ class ViewHandler {
         $container = $containerArr;
     }
 
-    public function processVisibilityCondition(&$child, $visitor) {
-        if (!array_key_exists('visibilityCondition', $child))
+    public function processVisibilityCondition(&$part, $visitor) {
+        if (!array_key_exists('visibilityCondition', $part))
             return true;
         else {
             $ret = false;
-            if ($child['visibilityCondition']->accept($visitor)->getValue() == true)
+            if ($part['visibilityCondition']->accept($visitor)->getValue() == true)
                 $ret = true;
-            unset($child['visibilityCondition']);
+            unset($part['visibilityCondition']);
             return $ret;
         }
     }
@@ -720,7 +723,6 @@ class ViewHandler {
         $visitor = new EvaluateVisitor($viewParams, $this);
         $this->processLoop($view['children'], $viewParams, $visitor, function(&$part, $viewParams, $visitor) {
             $this->processPart($part, $viewParams, $visitor);
-
         });
     }
     

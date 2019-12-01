@@ -133,13 +133,17 @@ abstract class Module {
             $where["type"]=$type;
             //should only use module instance if the type is specified (so we know if we should use skils or badges)
             if ($moduleInstance !== null && ($type=="badge" || $type=="skill")) {
-                if (is_int($moduleInstance))
-                    $where["m.id"]=$moduleInstance;
-                else
-                    $where["name"]=$moduleInstance;
+                if (is_numeric($moduleInstance)) {
+                    $where["moduleInstance"] = $moduleInstance;
+                    $table = $object." a ";
+                    $field="*";
+                } else {
+                    $where["name"] = $moduleInstance;
+                    $table = $object." a join ".$type." m on moduleInstance=m.id";
+                    $field="a.*,m.name";
+                }
                 $where["a.course"]=$courseId;
-                $table = $object." a join ".$type." m on moduleInstance=m.id";
-                return (Core::$systemDB->selectMultiple($table,$where,"a.*,m.name",null,[],$whereDate));
+                return (Core::$systemDB->selectMultiple($table,$where,$field,null,[],$whereDate));
             }
         }
         $where["course"]=$courseId;

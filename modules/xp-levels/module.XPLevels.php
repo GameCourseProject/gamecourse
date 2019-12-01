@@ -11,14 +11,19 @@ class XPLevels extends Module {
     public function setupResources() {
         parent::addResources('css/awards.css');
     }
+    public function calculateBonusBadgeXP($userId, $courseId){
+        $table = "award a join badge b on moduleInstance=b.id";
+        $where = ["a.course"=>$courseId, "user"=>$userId, "type"=>"badge"];
+        $maxBonusXP = Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward");
+        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where,["isExtra"=>true]),"sum(reward)");
+        return min($bonusBadgeXP,$maxBonusXP);
+    }
     public function calculateBadgeXP($userId,$courseId){
         //badges XP (bonus badges have a maximum value of XP)
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course"=>$courseId, "user"=>$userId, "type"=>"badge"];
             $normalBadgeXP = Core::$systemDB->select($table, array_merge($where,["isExtra"=>false]),"sum(reward)");
-            $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where,["isExtra"=>true]),"sum(reward)");
-        $maxBonusXP = Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward");
-        $badgeXP = $normalBadgeXP + min($bonusBadgeXP,$maxBonusXP);
+        $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId,$courseId);
         return $badgeXP;
     }
     public function calculateSkillXP($userId,$courseId){
@@ -108,6 +113,12 @@ class XPLevels extends Module {
         $viewHandler->registerFunction('xp','getBadgesXP',function($user) use ($courseId){
             $userId=$this->getUserId($user);
             $badgeXP = $this->calculateBadgeXP($userId,$courseId);
+            return new ValueNode($badgeXP);
+        });
+         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
+        $viewHandler->registerFunction('xp','getBonusBadgesXP',function($user) use ($courseId){
+            $userId=$this->getUserId($user);
+            $badgeXP = $this->calculateBonusBadgeXP($userId,$courseId);
             return new ValueNode($badgeXP);
         });
         //xp.getSkillTreeXP(user) returns value of skill xp for user

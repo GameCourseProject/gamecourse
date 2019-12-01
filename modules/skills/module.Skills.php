@@ -223,8 +223,6 @@ class Skills extends Module {
             $post=Core::$systemDB->select("participation",
                     ["type"=>"skill","moduleInstance"=>$skill["value"]["id"],"user"=>$userId,"course"=>$courseId],
                     "post");
-            if (empty($post))
-                throw new \Exception("In function .getPost(...): Couldn't findo the skill post for the given user");
             return new ValueNode($post);
         });
         //%skill.isUnlocked(user), returns true if skill is available to the user
@@ -260,6 +258,20 @@ class Skills extends Module {
         $viewHandler->registerFunction('skillTrees','superSkill', function($dep) { 
             $this->checkArray($dep, "object", "superSkill","superSkill");
             return $this->createNode($dep["value"]["superSkill"],'skillTrees');
+        });
+        //%skill.getStyle(user)
+        $viewHandler->registerFunction('skillTrees','getStyle', function($skill,$user) use ($courseId){ 
+            $this->checkArray($skill, "object", "getStyle");
+            $style = "background-color: ";
+            if ($this->isSkillUnlocked($skill, $user, $courseId)){
+                $style .= $skill["value"]["color"] . ";";
+                if ($this->isSkillCompleted($skill, $user, $courseId)){
+                    $style.="box-shadow: 0 0 30px 5px green;";
+                }
+            }else{
+                $style .= "#6d6d6d;";
+            }
+            return new ValueNode($style);
         });
         
         /*$viewHandler->registerFunction('skillStyle', function($skill, $user) {
@@ -337,8 +349,8 @@ class Skills extends Module {
             return new \Modules\Views\Expression\ValueNode($skillsCache[$skillName]);
         });
 */
-        if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE))
-            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'));
+        //if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE))
+        //    $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'));
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
         //    $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'),$this->getId());
     
@@ -348,8 +360,8 @@ class Skills extends Module {
             $courseId=$this->getParent()->getId();
             
             if ($skillName) {
-                $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill",
-                                ["course"=>$courseId]);
+                $skills = Core::$systemDB->selectMultiple("skill_tier natural join skill s join skill_tree t on t.id=treeId",
+                                ["course"=>$courseId],"name,page");
                 foreach($skills as $skill) {
                     $compressedName = str_replace(' ', '', $skill['name']);
                     if ($compressedName == $skillName) {

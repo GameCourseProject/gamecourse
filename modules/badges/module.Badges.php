@@ -29,7 +29,7 @@ class Badges extends Module {
         $type="object";
         $parent=null;
         if ($levelNum===0){
-            $level = ["number"=>0,"description"=>null];
+            $level = ["number"=>0,"description"=>""];
         }else if ($levelNum>$badge["value"]["maxLevel"] || $levelNum<0){
             $level = ["number"=>null,"description"=>null];
         }else{
@@ -45,7 +45,6 @@ class Badges extends Module {
         }
         unset($badge["value"]["description"]);
         unset($level["id"]);
-        
         if ($type == "collection") {
             foreach ($level as &$l) {
                 $l["libraryOfVariable"] = "badges";
@@ -120,6 +119,10 @@ class Badges extends Module {
         //%badge.isExtra
         $viewHandler->registerFunction('badges','isExtra', function($badge) {
             return $this->basicGetterFunction($badge,"isExtra");
+        });
+        //%badge.isCount
+        $viewHandler->registerFunction('badges','isCount', function($badge) {
+            return $this->basicGetterFunction($badge,"isCount");
         });
         //%badge.isBragging
         $viewHandler->registerFunction('badges','isBragging', function($badge) {
@@ -205,7 +208,8 @@ class Badges extends Module {
             $students = $course->getUsersWithRole('Student');
             $studentsBadges = array();
             $studentsUsernames = array();
-
+            
+            $studentsById= array_combine(array_column($students, "id"), $students);
             foreach ($students as $student) {
                 $studentsUsernames[$student['id']] = $student['username'];
                 $studentsNames[$student['id']] = $student['name'];

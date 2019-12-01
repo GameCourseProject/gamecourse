@@ -120,7 +120,7 @@ class Views extends Module {
     //expression lang function, convert string to int
     public function toInt($val, $funName){
         if(is_array($val))
-                throw new \Exception("'."+$funName+"' can only be called over string.");
+            throw new \Exception("'."+$funName+"' can only be called over string.");
         return new ValueNode(intval($val)); 
     }
     function evaluateKey(&$key, &$collection,$courseId,$i=0){
@@ -181,13 +181,25 @@ class Views extends Module {
         $this->viewHandler->registerFunction('system','if', function($cond, $val1, $val2) {
             return new ValueNode($cond ? $val1 :  $val2);
         });
-        $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });
+        $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });    
         $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
         $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });      
         $this->viewHandler->registerFunction('system','time', function() {
             return new ValueNode(time());
         });
         //functions without library
+        //%string.strip  -> removes spaces
+        $this->viewHandler->registerFunction(null,'strip', function($val) { 
+            if(!is_string($val))
+                throw new \Exception("'.strip' can only be called over an string.");
+            return new ValueNode(str_replace(' ', '', $val));
+        });
+        //%integer.abs
+        $this->viewHandler->registerFunction(null,'abs', function($val) { 
+            if(!is_int($val))
+                throw new \Exception("'.abs' can only be called over an int.");
+            return new ValueNode(abs($val));
+        });
         //%string.integer or %string.int   converts string to int
         $this->viewHandler->registerFunction(null,'int', function($val) { return $this->toInt($val,"int");});
         $this->viewHandler->registerFunction(null,'integer', function($val) { return $this->toInt($val,"integer"); });
@@ -574,12 +586,12 @@ class Views extends Module {
                     $this->viewHandler->parseSelf($image['link']);
                 }
                 $this->viewHandler->parseSelf($image["value"]);
+                $image['edit'] = false;
             },
             function(&$image, $viewParams, $visitor) {//processing function
                 if (array_key_exists('link', $image))
                     $image['link'] = $image['link']->accept($visitor)->getValue();
 
-                $image['edit'] = false;
                 $image["value"] = $image["value"]->accept($visitor)->getValue();
             }
         );

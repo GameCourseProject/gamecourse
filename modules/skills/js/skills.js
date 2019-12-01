@@ -9,7 +9,7 @@ angular.module('module.skills').controller('SkillPage', function($scope, $smartb
                 window.location = document.baseURI;
             return;
         }
-
+        
         $scope.skill = data;
         changeTitle('Skill - ' + data.name, 1);
         $('#skill-description-container').append($compile(Builder.createPageBlock({
@@ -33,6 +33,18 @@ angular.module('module.skills').directive('skillBlock', function($state) {
             $element.find('a').on('click', function(e) { e.stopPropagation(); });
         }
     };
+});
+
+angular.module('module.skills').config(function($stateProvider) {
+    $stateProvider.state('course.skill', {
+        url: '/skill/{skillName:[A-z0-9]+}',
+        views: {
+            'main-view@': {
+                template: '<div id="skill-description-container"></div>',
+                controller: 'SkillPage'
+            }
+        }
+    });
 });
 
 angular.module('module.skills').config(function($stateProvider) {
