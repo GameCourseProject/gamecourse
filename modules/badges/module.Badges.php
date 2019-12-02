@@ -87,7 +87,7 @@ class Badges extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         
-        //%badges.getAllBadges(isExtra,IsBragging)
+        //badges.getAllBadges(isExtra,IsBragging)
         $viewHandler->registerFunction('badges','getAllBadges', function($isExtra=null, $isBragging=null) { 
             $where=[];
             if ($isExtra!==null)
@@ -96,11 +96,11 @@ class Badges extends Module {
                 $where["isBragging"]=$isBragging;
             return $this->getBadge(true,$where);
         });
-        //%badges.getBadge(name)
+        //badges.getBadge(name)
         $viewHandler->registerFunction('badges','getBadge', function($name=null) { 
             return $this->getBadge(false,["name"=>$name]);
         });
-        //%badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
+        //badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction('badges','getBadgesCount', function($user=null) {  
             return new ValueNode( $this->getBadgeCount($user) );
         });
@@ -123,6 +123,10 @@ class Badges extends Module {
         //%badge.isCount
         $viewHandler->registerFunction('badges','isCount', function($badge) {
             return $this->basicGetterFunction($badge,"isCount");
+        });
+        //%badge.isPost
+        $viewHandler->registerFunction('badges','isPost', function($badge) {
+            return $this->basicGetterFunction($badge,"isPost");
         });
         //%badge.isBragging
         $viewHandler->registerFunction('badges','isBragging', function($badge) {
@@ -274,8 +278,8 @@ class Badges extends Module {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
 */
-        //if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-         //   $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
+        if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
     }
 }
 

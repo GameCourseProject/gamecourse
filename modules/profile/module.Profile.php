@@ -7,6 +7,7 @@ use Modules\Views\ViewHandler;
 class Profile extends Module {
 
     const STUDENT_SUMMARY_TEMPLATE = 'Student Summary - by profile';
+    const STUDENT_AWARD_LIST = 'User Awards - by profile';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -21,12 +22,11 @@ class Profile extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
         $viewHandler->createPageOrTemplateIfNew('Profile',"page","ROLE_INTERACTION");
-        /*$viewHandler->registerPage($this, 'profile', 'Profile View', array(
-            'type' => ViewHandler::VT_ROLE_INTERACTION
-        ));*/
 
         if (!$viewsModule->templateExists(self::STUDENT_SUMMARY_TEMPLATE))
             $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'));
+        if (!$viewsModule->templateExists(self::STUDENT_AWARD_LIST))
+            $viewsModule->setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'));
        
     }
 
