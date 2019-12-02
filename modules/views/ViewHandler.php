@@ -60,7 +60,7 @@ class ViewHandler {
     //receives view and updates the DB with its info, propagates changes in the main view to all its children
 //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), used for change in aspectclass
     public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
-        if ($viewPart["partType"]!="aspect" ){            
+    if ($viewPart["partType"]!="block" ||  $viewPart["parent"]!=null ){            
             //insert/update views
             $copy=$this->makeCleanViewCopy($viewPart);
             if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
@@ -132,7 +132,8 @@ class ViewHandler {
             }else{//aspect exists, update its contents
                 if (!$ignoreIds && !$basicUpdate){
                     $viewPart["id"]=$foundAspect["id"];
-                    $viewPart["partType"]="aspect";
+                    $viewPart["partType"]="block";
+                    $viewPart["parent"]=null;
                     $viewPart["aspectClass"]=$aspectClass;
                     $this->updateViewAndChildren($viewPart);
                 }
@@ -289,14 +290,14 @@ class ViewHandler {
                 //update aspect class of parent view
                 $this->updateViewAndChildren($parentView, true);
             }
-            $newView = ["role"=>$role, "partType"=>"aspect","aspectClass"=>$parentView["aspectClass"]];
+            $newView = ["role"=>$role, "partType"=>"block","parent"=>null,"aspectClass"=>$parentView["aspectClass"]];
             Core::$systemDB->insert("view",$newView);
             $newView["id"]=Core::$systemDB->getLastId();
             $newView = array_merge($parentView,$newView);
             //add new aspect to db
             $this->updateViewAndChildren($newView, false, true);
         } else {
-            $newView = ["role"=>$role, "partType"=>"aspect", 
+            $newView = ["role"=>$role, "partType"=>"block","parent"=>null,
                     "aspectClass"=>null,"parent"=>null,"viewIndex"=>null];
             $this->updateViewAndChildren($newView);
         }
@@ -325,7 +326,7 @@ class ViewHandler {
     }
     //check if view is a block w header and get it's data
     function lookAtHeader(&$organizedView){
-        if ($organizedView["partType"]=="block" && sizeof($organizedView["children"])>0){
+        if ($organizedView["partType"]=="block" && $organizedView["parent"]!=null && sizeof($organizedView["children"])>0){
             if ($organizedView["children"][0]["partType"]=="header"){
                 $organizedView["header"]=[];
                 $organizedView["header"]["image"]=$organizedView["children"][0]["children"][0];
@@ -375,7 +376,7 @@ class ViewHandler {
             $aspectsViews=[];
             $parts=[];
             foreach ($viewsOfAspect as $v){
-                if ($v['partType']=="aspect")
+                if ($v['partType']=="block" && $v["parent"]==null)
                     $aspectsViews[] = $v;
                 else
                     $parts[$v['parent']][]= $v;
@@ -396,7 +397,7 @@ class ViewHandler {
     public function lookAtTemplateReference($templatRef,&$organizedView){
         //gettemplate and its aspect
         $aspect = Core::$systemDB->select("view_template vt join template on templateId=id join view_template vt2 on id=vt2.templateId join view v on v.id=vt2.viewId",
-                                ["vt.viewId"=>$templatRef["id"],"v.partType"=>"aspect"],
+                                ["vt.viewId"=>$templatRef["id"],"v.partType"=>"block", "v.parent"=>null],
                                 "v.id,vt.templateId,roleType,aspectClass,role,partType");
         
         //deal with roles of different types
@@ -462,7 +463,7 @@ class ViewHandler {
         if ($asp["aspectClass"]!=null){
             //there are other aspects
             $aspects= Core::$systemDB->selectMultiple("aspect_class natural join view",
-                    ["aspectClass"=>$asp["aspectClass"],"partType"=>"aspect"]);        
+                    ["aspectClass"=>$asp["aspectClass"],"partType"=>"block","parent"=>null]);        
             return $aspects;
         }
         return [$asp];
@@ -504,7 +505,7 @@ class ViewHandler {
         else if ($roleType == "ROLE_INTERACTION")
             $role='role.Default>role.Default';
         
-        Core::$systemDB->insert("view",["partType"=>"aspect","role"=>$role]);
+        Core::$systemDB->insert("view",["partType"=>"block","parent"=>null,"role"=>$role]);
         $viewId=Core::$systemDB->getLastId();
         
         //page or template to insert in db

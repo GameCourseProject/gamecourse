@@ -160,7 +160,7 @@ create table view(
 	id int unsigned auto_increment primary key,
 	aspectClass int unsigned,
 	role varchar(100) default "role.Default",
-	partType enum ('aspect','block','text','image','table','headerRow','row','header','templateRef','chart'),
+	partType enum ('block','text','image','table','headerRow','row','header','templateRef','chart'),
 	parent int unsigned,
 	viewIndex int unsigned,
 	label varchar(50),

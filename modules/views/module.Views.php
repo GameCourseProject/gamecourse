@@ -696,7 +696,7 @@ class Views extends Module {
                 $defaultRole ="role.Default";
             }
             //insert default aspect view
-            Core::$systemDB->insert("view",["partType"=>"aspect","role"=>$defaultRole]);
+            Core::$systemDB->insert("view",["partType"=>"block","parent"=>null,"role"=>$defaultRole]);
             $viewId=Core::$systemDB->getLastId();
             //page or template to insert in db
             $newView=["name"=>API::getValue('name'),"course"=>API::getValue('course'),"roleType"=>$roleType];
@@ -737,7 +737,7 @@ class Views extends Module {
                 $role=["role"=>$info['roleOne'].'>%'];
                 $this->deleteTemplateRefs($isTemplate,$data["viewId"],$info['roleOne'].'>%',false);
                 //This is assuming that there is always an undeletable default aspect
-                Core::$systemDB->delete("view",["aspectClass"=>$aspects[0]["aspectClass"],"partType"=>"aspect"],$role );
+                Core::$systemDB->delete("view",["aspectClass"=>$aspects[0]["aspectClass"],"partType"=>"block","parent"=>null],$role );
             } 
             else{
                 $aspectsByRole = array_combine(array_column($aspects,"role"),$aspects);
@@ -871,13 +871,13 @@ class Views extends Module {
             }
             $aspects = [];
             if (!$isDefault) {
-                $aspects[] = ["role" => $defaultRole, "partType" => "aspect"];
+                $aspects[] = ["role" => $defaultRole, "partType" => "block","parent"=>null];
                 Core::$systemDB->insert("aspect_class");
                 $aspectClass = Core::$systemDB->getLastId();
             } else {
                 $aspectClass = null;
             }
-            $aspects[] = ["role"=>$content["role"], "partType"=>"aspect"];
+            $aspects[] = ["role"=>$content["role"], "partType"=>"block","parent"=>null];
             
             $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
         });
@@ -896,7 +896,7 @@ class Views extends Module {
             $template = API::getValue("template");
             
             $aspect=Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"aspect","templateId"=>$template["id"]]);
+                    ["partType"=>"block","parent"=>null,"templateId"=>$template["id"]]);
             $aspect["aspectClass"]=null;
             $views = $this->viewHandler->getViewWithParts($aspect["id"]);
 
@@ -921,7 +921,7 @@ class Views extends Module {
             
             foreach($pageOrTemplates as $pageTemp){//aspect views of pages or template or templateReferences
                 $aspectView = Core::$systemDB->select("view",["id"=>$pageTemp["viewId"]]);
-                if ($aspectView["partType"]=="aspect" && $aspectView["aspectClass"]!=null){
+                if ($aspectView["partType"]=="block" && $aspectView["parent"]==null && $aspectView["aspectClass"]!=null){
                     Core::$systemDB->delete("view",["aspectClass"=>$aspectView["aspectClass"]]);
                     Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspectView["aspectClass"]]);
                 }
@@ -936,7 +936,7 @@ class Views extends Module {
             $templateId = API::getValue('id');
             //get aspect
             $aspect=Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"aspect","templateId"=>$templateId]);
+                    ["partType"=>"block","parent"=>null,"templateId"=>$templateId]);
             //will get all the aspects (and contents) of the template
             $views = $this->viewHandler->getViewWithParts($aspect["id"]);
             $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", API::getValue('name'))."-".$templateId . ".txt";
@@ -1082,7 +1082,7 @@ class Views extends Module {
     public function getTemplateContents($role,$templateId,$courseId,$templateRoleType){
         $course = new Course($courseId);
         $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
-                ["partType"=>"aspect","templateId"=>$templateId]);
+                ["partType"=>"block","parent"=>null,"templateId"=>$templateId]);
         $referenceRoleType=$this->viewHandler->getRoleType($role);
         
         if ($templateRoleType=="ROLE_INTERACTION"){
@@ -1118,7 +1118,7 @@ class Views extends Module {
     //gets templates of this course
     public function getTemplates($includeGlobals=false){
         $temps = Core::$systemDB->selectMultiple('template t join view_template on templateId=id join view v on v.id=viewId',
-                ['course'=>$this->getCourseId(),"partType"=>"aspect"],
+                ['course'=>$this->getCourseId(),"partType"=>"block","parent"=>null],
                 "t.id,name,course,isGlobal,roleType,viewId,role");
         if ($includeGlobals) {
             $globalTemp = Core::$systemDB->selectMultiple("template",["isGlobal" => true]);
@@ -1129,7 +1129,7 @@ class Views extends Module {
     //gets template by id
     public function getTemplate($id=null,$name=null) {
         $tables="template t join view_template on templateId=id join view v on v.id=viewId";
-        $where=['course'=>$this->getCourseId(),"partType"=>"aspect"];
+        $where=['course'=>$this->getCourseId(),"partType"=>"block","parent"=>null];
         if ($id){
             $where["t.id"]=$id;
         }else{

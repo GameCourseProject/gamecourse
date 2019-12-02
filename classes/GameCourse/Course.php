@@ -346,7 +346,7 @@ class Course {
             //$templates = Core::$systemDB->selectMultiple("template",["course"=>$copyFrom]);
                             /*
             $aspect=Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"aspect","templateId"=>$template["id"]]);
+                    ["partType"=>"block","parent"=>null,"templateId"=>$template["id"]]);
             $aspect["aspectClass"]=null;
             $views = $this->viewHandler->getViewWithParts($aspect["id"]);
 

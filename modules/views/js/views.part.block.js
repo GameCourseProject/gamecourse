@@ -126,7 +126,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     $(block.children('.content').get(0).children[newIdx - 1]).after(child);
                                 part.children.splice(oldIndex, 1);
                                 part.children.splice(newIdx, 0, value);
-                                $sbviews.notifyChanged(part, options);
+                                //$sbviews.notifyChanged(part, options);
                             });
                         }
 
