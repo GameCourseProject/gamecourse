@@ -190,6 +190,8 @@ API::registerFunction('settings', 'courseGlobal', function() {
                 if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
                     //only drop the tables of the module data if this is the last course where it is enabled
                     $moduleObject->dropTables($moduleId);//deletes tables associated with the module
+                }else{
+                    $moduleObject->deleteDataRows();
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                 foreach ($module['dependencies'] as $dependency) {
@@ -670,14 +672,14 @@ API::registerFunction('settings', 'courseSkills', function() {
                                         ["treeId"=>$treeId],"tier"),'tier');
         $tiersToDelete= $tiersInDB;
         $updatedData=[];
-
-        foreach($tiers as &$tier) {
+        foreach($tiers as $tier) {
             $splitInfo =preg_split('/;/', $tier);
             if (sizeOf($splitInfo) != sizeOf($keys)) {
                 echo "Tier information was incorrectly formatted";
                 return null;
             }
-            $tier = array_combine($keys, preg_split('/;/', $tier));
+            $tier = array_combine($keys, $splitInfo);
+            
             if (!in_array($tier["tier"], $tiersInDB)){
                 Core::$systemDB->insert("skill_tier",
                         ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$treeId]);

@@ -91,7 +91,7 @@ class Skills extends Module {
     }
     //adds skills tables if they dont exist, and fills it with tiers, the remaining info needs to be setup in config page
     private function setupData($courseId){
-        if ($this->addTables("skills","skill")){
+        if ($this->addTables("skills","skill") || empty(Core::$systemDB->select("skill_tree",["course"=>$courseId]))){
             Core::$systemDB->insert("skill_tree",["course"=>$courseId, "maxReward"=>DEFAULT_MAX_TREE_XP]);
             $skillTree=Core::$systemDB->getLastId();
             Core::$systemDB->insert("skill_tier",["tier"=>1,"reward"=>150,"treeId"=>$skillTree]);
@@ -99,6 +99,10 @@ class Skills extends Module {
             Core::$systemDB->insert("skill_tier",["tier"=>3,"reward"=>750,"treeId"=>$skillTree]);
             Core::$systemDB->insert("skill_tier",["tier"=>4,"reward"=>1150,"treeId"=>$skillTree]);   
         }
+    }
+    
+    public function deleteDataRows(){
+        Core::$systemDB->delete("skill_tree",["course"=>$this->getCourseId()]);
     }
     
     public function init() {

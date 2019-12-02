@@ -11,6 +11,14 @@ class XPLevels extends Module {
     public function setupResources() {
         parent::addResources('css/awards.css');
     }
+    
+    public function deleteDataRows(){
+        $lvls=Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",["course"=>$this->getCourseId(), "badgeId"=>null]);
+        foreach($lvls as $lvl){
+            Core::$systemDB->delete("level",["id"=>$lvl["id"]]);
+        }
+    }
+    
     public function calculateBonusBadgeXP($userId, $courseId){
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course"=>$courseId, "user"=>$userId, "type"=>"badge"];

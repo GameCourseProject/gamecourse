@@ -69,6 +69,7 @@ abstract class Module {
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
     }
+    public function deleteDataRows(){}
     public function init() {
     }
 
