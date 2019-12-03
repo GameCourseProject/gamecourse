@@ -6,7 +6,6 @@ use Modules\Views\Expression\EvaluateVisitor;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\DataRetrieverContinuation;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Settings;
