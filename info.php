@@ -361,7 +361,7 @@ function updateUsers($list,$role,$course,$courseId,$replace){
             $updatedUsers[]= 'New '.$role.' ' . $currUser['id'];
         } else {
             $courseUser->setCampus($currUser['campus']);
-            if ($courseUser->addRole($roleId)===true)
+            if ($courseUser->addRole($role)===true)
                 $updatedUsers[]= "Added role of ".$role." to user ".$currUser['id'];
         }
     }
