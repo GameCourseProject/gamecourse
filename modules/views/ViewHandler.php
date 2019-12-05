@@ -802,9 +802,9 @@ class ViewHandler {
 
             //this is choosing a role with low hirearchy (maybe change)
             $course->goThroughRoles(function ($role, $hasChildren, $continue) use ($userRoles, $roleArray, &$roleFound) {
-                if (in_array('role.' . $role["id"], $roleArray) && in_array($role["id"], $userRoles)) {
+                if (in_array('role.' . $role["name"], $roleArray) && in_array($role["name"], $userRoles)) {
                     
-                    $roleFound = 'role.' . $role["id"];
+                    $roleFound = 'role.' . $role["name"];
                 }
                 if ($hasChildren)
                     $continue();
@@ -827,7 +827,7 @@ class ViewHandler {
                 $roles= explode('>',$roleInteraction);
                 $roleArray[$roles[0]][]=$roles[1];
             }
-            $userRoles=$course->getUser($viewParams["user"])->getRolesIds();
+            $userRoles=$course->getUser($viewParams["user"])->getRolesNames();
             $roleOne=$this->handleHelper(array_keys($roleArray), $course,$userRoles); 
             $roleArray = $roleArray[$roleOne];
 
@@ -835,13 +835,13 @@ class ViewHandler {
                 $roleTwo = 'special.Own';
             }
             else {
-                $loggedUserRoles = $course->getLoggedUser()->getRolesIds();
+                $loggedUserRoles = $course->getLoggedUser()->getRolesNames();
                 $roleTwo=$this->handleHelper($roleArray, $course,$loggedUserRoles);     
             }
             $userView=$this->getViewWithParts($view["viewId"], $roleOne.'>'.$roleTwo);
         }
         else if ($viewType == "ROLE_SINGLE"){
-            $userRoles = $course->getLoggedUser()->getRolesIds();
+            $userRoles = $course->getLoggedUser()->getRolesNames();
             $roleOne=$this->handleHelper($viewRoles, $course,$userRoles); 
             $userView=$this->getViewWithParts($view["viewId"], $roleOne);
         }        

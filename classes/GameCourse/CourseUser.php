@@ -82,11 +82,13 @@ class CourseUser extends User{
     //receives array of roles and replaces them in the database
     function setRoles($roles) {
         $oldRoles = $this->getRolesNames();
+        $courseRoles= $this->course->getRolesData();
+        $rolesByName = array_combine(array_column($courseRoles,"name"), $courseRoles);
         foreach($roles as $role){
             $found = array_search($role, $oldRoles);
             if ($found === false) {
                 $id=Course::getRoleId($role,$this->course->getId());
-                Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $id]);
+                Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $rolesByName[$role]["id"]]);
             } else {
                 unset($oldRoles[$found]);
             }
@@ -99,10 +101,12 @@ class CourseUser extends User{
     }
     
     //adds Role (instead of replacing) only if it isn't already in user's roles
-    function addRole($roleId){
+    function addRole($role){
         $currRoles=$this->getRolesNames();
-        if (!in_array($roleId, $currRoles)){
-            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$roleId]);  
+        $courseRoles= $this->course->getRolesData();
+        $rolesByName = array_combine(array_column($courseRoles,"name"), $courseRoles);
+        if (!in_array($role, $currRoles)){
+            Core::$systemDB->insert("user_role",["course"=>$this->course->getId(),"id"=>$this->id,"role"=>$rolesByName[$role]["id"]]);  
             return true;
         }
         return false;

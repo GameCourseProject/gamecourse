@@ -771,22 +771,13 @@ class Views extends Module {
             $result = [];
 
             //function to get role details from the role in aspect
-            $parseRoleName = function($aspectRole,$rolesById){
+            $parseRoleName = function($aspectRole){
                 $roleInfo = explode(".",$aspectRole);//e.g: role.Default
                 $roleSpecification = $roleInfo[1];
-                if ($roleInfo[0] == "role") {
-                    $name = $rolesById[$roleSpecification]["name"];
-                } else {
-                    $name = $roleSpecification;
-                }
-                return ["id"=>$aspectRole,"name"=>$name];
+                return ["id"=>$aspectRole,"name"=>$roleSpecification];
             };
 
             $doubleRoles=[];//for views w role interaction
-            $courseRoles=$course->getRolesData();
-            $rolesById = array_combine(array_column($courseRoles,"id"), $courseRoles);
-            $rolesById["Default"]=["name"=>"Default","id"=>"Default"];
-
             foreach ($aspects as $aspects){
                 $aspectRole=$aspects['role'];//string like 'role.Default'
                 if ($type == "ROLE_INTERACTION") {
@@ -794,7 +785,7 @@ class Views extends Module {
                     $roleOne = substr($aspectRole, 0, strpos($aspectRole, '>'));
                     $doubleRoles[$roleOne][] = $roleTwo;
                 } else{
-                    $result[] = $parseRoleName($aspectRole, $rolesById);
+                    $result[] = $parseRoleName($aspectRole);
                 }
             }
 
@@ -802,9 +793,9 @@ class Views extends Module {
                 foreach($doubleRoles as $roleOne => $rolesTwo){
                     $viewedBy = [];
                     foreach($rolesTwo as $roleTwo ){
-                        $viewedBy[] = $parseRoleName($roleTwo, $rolesById);
+                        $viewedBy[] = $parseRoleName($roleTwo);
                     }
-                    $result[]=array_merge($parseRoleName($roleOne, $rolesById),['viewedBy'=>$viewedBy]);                   
+                    $result[]=array_merge($parseRoleName($roleOne),['viewedBy'=>$viewedBy]);                   
                 }
             }
 
@@ -814,7 +805,7 @@ class Views extends Module {
             $users = $course->getUsersIds();
             $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
             foreach ($roles as $role) {
-                $response['allIds'][] = array('id' => 'role.' . $role["id"], 'name' => $role["name"]);
+                $response['allIds'][] = array('id' => 'role.' . $role["name"], 'name' => $role["name"]);
             }
             foreach ($users as $user) {
                 $response['allIds'][] = array('id' => 'user.' . $user, 'name' => $user);
@@ -863,11 +854,10 @@ class Views extends Module {
             $roleType = $this->viewHandler->getRoleType($content["role"]);
             if ($roleType=="ROLE_INTERACTION") {
                 $defaultRole ="role.Default>role.Default";
-                $isDefault = ($content["role"]==$defaultRole);
             }else {
                 $defaultRole ="role.Default";
-                $isDefault = ($content["role"]==$defaultRole);
             }
+            $isDefault = ($content["role"]==$defaultRole);
             $aspects = [];
             if (!$isDefault) {
                 $aspects[] = ["role" => $defaultRole, "partType" => "block","parent"=>null];
@@ -988,7 +978,7 @@ class Views extends Module {
                 $params["user"]=(string)$userId;
             }
             if ($viewerId != -1) {
-                $params['viewer'] = (string)Core::getLoggedUser()->getId();
+                $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
             }
@@ -1068,7 +1058,11 @@ class Views extends Module {
             $role = substr($role, 5);
             if ($role == 'Default')
                 return $course->getUsersIds()[0];
-            $users = $course->getUsersWithRoleId($role);
+            $loggedUserId=Core::getLoggedUser()->getId();
+            $loggedUser = new \GameCourse\CourseUser($loggedUserId,$course);
+            if (in_array($role, $loggedUser->getRolesNames()))
+                return $loggedUserId;
+            $users = $course->getUsersWithRole($role);
             if (count($users) != 0)
                 $uid = $users[0]['id'];
         } else if (strpos($role, 'user.') === 0) {

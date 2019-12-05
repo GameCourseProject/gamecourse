@@ -145,10 +145,9 @@ foreach($awards as &$award) {
             $level=$award['field1'];
             $badgeName = $award['what'];
             $name=$badgeName . " (level ".$level.")";
-            $moduleInstance = Core::$systemDB->select("badge",["name"=>$badgeName, "course",$courseId],'id');
+            $moduleInstance = Core::$systemDB->select("badge",["name"=>$badgeName, "course"=>$courseId],'id');
             $data['reward']=$sbBadges[$badgeName]['xp'][$level - 1];
-            
-            if (empty(Core::$systemDB->select("award",["description"=>$name,"course"=>$courseId,"user"=>$award['userid']]))){ 
+            if (empty(Core::$systemDB->select("award",["description"=>$name,"course"=>$courseId,"user"=>$award['userid'],"type" => 'badge', "moduleInstance"=>$moduleInstance]))){ 
                 Core::$systemDB->insert ("award", array_merge ($data,
                                 ["description" => $name, "type" => 'badge', "moduleInstance"=>$moduleInstance]));
             }
