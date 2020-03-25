@@ -14,7 +14,7 @@ function buildTabs(info, parent, $smartboards, $scope) {
 }
 
 app.controller('CourseSettings', function($scope, $state, $compile, $smartboards) {
-    changeTitle('Settings', 1);
+    changeTitle('Course Settings', 1); //muda no breadcrumb
 
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
         $smartboards.request('settings', 'courseTabs', {course: $scope.course}, function(data, err) {
@@ -28,6 +28,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.about">About</a></li>')($scope));
 
             addActiveLinks($state.current.name);
@@ -135,6 +136,36 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         infoDiv.append($compile('<p>Course Name: '+$scope.data.name+'</p>') ($scope));
         infoDiv.append($compile('<p>Course ID: '+$scope.course+'</p>') ($scope));
         courseInfo.append(infoDiv);
+
+        var loadDataSection = createSection(tabContent, 'Load Data');
+        var loadLegacy = $('<div><br>');
+        loadLegacy.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="loadLegacy.php?course={{course}}">Load Legacy</a>')($scope));
+        loadDataSection.append(loadLegacy);
+
+        var downloadPhotosSettings = $('<br><div>');
+        downloadPhotosSettings.append('<label for="jsessionid" class="label">JSESSIONID</label>');
+        var jsessionidInput = $('<input>', {type: 'text', id:'jsessionid', 'class': 'input-text', placeholder:'', 'ng-model':'data.jsessionid'});
+        downloadPhotosSettings.append($compile(jsessionidInput)($scope));
+        downloadPhotosSettings.append('<label for="backendid" class="label">BACKENDID</label>');
+        var backendidInput = $('<input>', {type: 'text', id:'backendid', 'class': 'input-text', placeholder:'', 'ng-model':'data.backendid'});
+        downloadPhotosSettings.append($compile(backendidInput)($scope));
+        loadDataSection.append(downloadPhotosSettings);
+        var updateDownloadButtons = $('<div>');
+        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
+
+        loadDataSection.append(updateDownloadButtons);
+    });
+});
+
+app.controller('CourseSettingsModules', function($scope, $element, $smartboards, $compile) {
+    $smartboards.request('settings', 'courseModules', {course: $scope.course}, function(data, err) {
+        if (err) {
+            $($element).text(err.description);
+            return;
+        }
+
+        var tabContent = $($element);
+        $scope.data = data;
         
         // Modules
         var columns = ['c1', {field:'c2', constructor: function(content) {
@@ -146,7 +177,7 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
                 var stateButton = $('<button>', {text: !content.state ? 'Enable' : 'Disable', 'class':'button small'});
                 stateButton.click(function() {
                     $(this).prop('disabled', true);
-                    $smartboards.request('settings', 'courseGlobal', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
+                    $smartboards.request('settings', 'courseModules', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
                         if (err) {
                             alert(err.description);
                             return;
@@ -189,24 +220,6 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
             ], columns);
             modulesSection.append(table);
         }
-
-        var loadDataSection = createSection(tabContent, 'Load Data');
-        var loadLegacy = $('<div><br>');
-        loadLegacy.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="loadLegacy.php?course={{course}}">Load Legacy</a>')($scope));
-        loadDataSection.append(loadLegacy);
-
-        var downloadPhotosSettings = $('<br><div>');
-        downloadPhotosSettings.append('<label for="jsessionid" class="label">JSESSIONID</label>');
-        var jsessionidInput = $('<input>', {type: 'text', id:'jsessionid', 'class': 'input-text', placeholder:'', 'ng-model':'data.jsessionid'});
-        downloadPhotosSettings.append($compile(jsessionidInput)($scope));
-        downloadPhotosSettings.append('<label for="backendid" class="label">BACKENDID</label>');
-        var backendidInput = $('<input>', {type: 'text', id:'backendid', 'class': 'input-text', placeholder:'', 'ng-model':'data.backendid'});
-        downloadPhotosSettings.append($compile(backendidInput)($scope));
-        loadDataSection.append(downloadPhotosSettings);
-        var updateDownloadButtons = $('<div>');
-        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
-
-        loadDataSection.append(updateDownloadButtons);
     });
 });
 
@@ -534,7 +547,9 @@ app.controller('Settings', function($scope, $state, $compile, $smartboards) {
 
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
+            //side bar nas settings globais
             tabs.append($compile('<li><a ui-sref="settings.global">Global</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="settings.modules">Installed Modules</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="settings.users">Users</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
@@ -581,6 +596,46 @@ app.controller('SettingsGlobal', function($scope, $element, $smartboards, $compi
         }
     });
 });
+
+app.controller('SettingsModules', function($scope, $element, $smartboards, $compile) {
+    $smartboards.request('settings', 'modules', {}, function(data, err) {
+        if (err) {
+            $($element).text(err.description);
+            return;
+        }
+
+        var tabContent = $($element);
+        $scope.data = data;
+        
+        var columns = ['c1', {field:'c2', constructor: function(content) {
+            return content;
+        }}];
+
+        var modulesSection = createSection(tabContent, 'Modules');
+        modulesSection.attr('id', 'modules');
+        var modules = $scope.data;
+        for(var i in modules) {
+            var module = modules[i];
+            var dependencies = [];
+            var canEnable = true;
+            for (var d in module.dependencies) {
+                var dependency = module.dependencies[d];
+                dependencies.push(dependency.id);
+            }
+            dependencies = dependencies.join(', ');
+            if (dependencies == '')
+                dependencies = 'None';
+            var table = Builder.buildTable([
+                { c1:'Name:', c2: module.name},
+                { c1:'Version:', c2: module.version},
+                { c1:'Path:', c2: module.dir},
+                { c1:'Dependencies:', c2: dependencies}
+            ], columns);
+            modulesSection.append(table);
+        }
+    });
+});
+
 app.controller('SettingsCourses', function($scope, $state, $compile, $smartboards, $element) {
     $scope.newCourse = function() {
         $state.go('settings.courses.create');
@@ -883,12 +938,28 @@ app.config(function($stateProvider){
                 controller: 'Settings'
             }
         }
+    
+    //Settings of the system
     }).state('settings.global', {
         url: '/global',
         views : {
             'tabContent': {
                 template: '',
                 controller: 'SettingsGlobal'
+            }
+        }
+    }).state('settings.modules', {
+        url: '/modules',
+        views : {
+            'tabContent': {
+                controller: 'SettingsModules'
+            }
+        }
+    }).state('settings.about', {
+        url: '/about',
+        views : {
+            'tabContent': {
+                templateUrl: 'partials/settings/about.html'
             }
         }
     }).state('settings.courses', {
@@ -919,13 +990,8 @@ app.config(function($stateProvider){
                 controller: 'SettingsUsers'
             }
         }
-    }).state('settings.about', {
-        url: '/about',
-        views : {
-            'tabContent': {
-                templateUrl: 'partials/settings/about.html'
-            }
-        }
+
+    //settings do curso
     }).state('course.settings', {
         url: '/settings',
         views: {
@@ -943,6 +1009,14 @@ app.config(function($stateProvider){
             'tabContent': {
                 template: '',
                 controller: 'CourseSettingsGlobal'
+            }
+        }
+    }).state('course.settings.modules', {
+        url: '/modules',
+        views : {
+            'tabContent': {
+                template: '',
+                controller: 'CourseSettingsModules'
             }
         }
     }).state('course.settings.about', {

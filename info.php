@@ -167,6 +167,17 @@ API::registerFunction('settings', 'roles', function() {
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
+    
+    $globalInfo = array(
+        'name' => $course->getName(),
+        'theme' => $GLOBALS['theme'],
+    );
+    API::response($globalInfo);
+});
+
+API::registerFunction('settings', 'courseModules', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
     if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
         $module = ModuleLoader::getModule($moduleId);
@@ -222,8 +233,6 @@ API::registerFunction('settings', 'courseGlobal', function() {
         }
         
         $globalInfo = array(
-            'name' => $course->getName(),
-            'theme' => $GLOBALS['theme'],
             'modules' => $modulesArr
         );
         API::response($globalInfo);
@@ -257,6 +266,30 @@ API::registerFunction('settings', 'global', function() {
         
         API::response(array('theme' => $GLOBALS['theme'], 'themes' => $themes));
     }
+});
+
+//system settingd (courses installed)
+API::registerFunction('settings', 'modules', function() {
+    API::requireAdminPermission();
+    // $course = Course::getCourse(API::getValue('course'));
+    
+    $allModules = ModuleLoader::getModules();
+    //$enabledModules = $course->getModules();
+    
+    $modulesArr = array();
+    foreach ($allModules as $module) {
+        $mod = array(
+            'id' => $module['id'],
+            'name' => $module['name'],
+            'dir' => $module['dir'],
+            'version' => $module['version'],
+            'dependencies' => $module['dependencies']
+        );
+        $modulesArr[$module['id']] = $mod;
+    }
+    
+    API::response($modulesArr);
+
 });
 
 //get tabs for system settings
