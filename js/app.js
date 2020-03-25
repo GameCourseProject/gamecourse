@@ -22,6 +22,80 @@ function addActiveLinks(state) {
     }
 }
 
+app.controller('HomePage', function($element, $scope, $timeout) {
+    $scope.setNavigation([]);
+    $timeout(function() {
+        $scope.defaultNavigation();
+        $timeout(function() {
+            addActiveLinks('home');
+        });
+    });
+    changeTitle('', 0, false);
+
+    $element.append(Builder.createPageBlock({
+        image: 'images/leaderboard.svg',
+        text: 'Main Page'
+    }, function(el, info) {
+        el.append(Builder.buildBlock({
+            image: 'images/awards.svg',
+            title: 'Welcome'
+        }, function(blockContent) {
+            var divText = $('<div style="padding: 4px">');
+            divText.append('<p>Welcome to the GameCourse system.</p>');
+            divText.append('<p>Hope you enjoy!</p>');
+            blockContent.append(divText);
+        }));
+    }));
+});
+
+app.controller('Courses', function($element, $scope, $smartboards, $compile) {
+    $scope.courses = {};
+    changeTitle('Courses', 0);
+
+
+    var pageBlock;
+    $element.append(pageBlock = Builder.createPageBlock({
+        image: 'images/leaderboard.svg',
+        text: 'Courses'
+    }, function(el, info) {
+        el.append(Builder.buildBlock({
+            image: 'images/awards.svg',
+            title: 'My courses'
+        }, function(blockContent) {
+            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
+        }).attr('ng-if', 'usingMyCourses ==true'));//'myCourses != undefined && myCourses.length != 0'));
+        el.append(Builder.buildBlock({
+            image: 'images/awards.svg',
+            title: 'All Courses'
+        }, function(blockContent) {
+            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
+        }).attr('ng-if', 'usingMyCourses ==false'));
+    }));
+    $compile(pageBlock)($scope);
+
+    $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
+        if (err) {
+            alert(err.description);
+            return;
+        }
+        $scope.courses = data.courses;
+        $scope.usingMyCourses = data.myCourses;//bool
+        for (var i in $scope.courses) {
+            var course = $scope.courses[i];
+            course.nameUrl = course.name.replace(/\W+/g, '');
+        }
+    });
+});
+
+app.controller('SpecificCourse', function($scope, $element, $stateParams, $compile) {
+    $element.append($compile(Builder.createPageBlock({
+        image: 'images/awards.svg',
+        text: '{{courseName}}'
+    }, function(el, info) {
+    }))($scope));
+});
+
+
 app.config(function($locationProvider, $compileProvider, $stateProvider){
     $locationProvider.html5Mode(true);
     if (location.hostname != 'localhost')
@@ -31,93 +105,27 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
         url: '/',
         views: {
             'main-view': {
-                controller: function($element, $scope, $timeout) {
-                    $scope.setNavigation([]);
-                    $timeout(function() {
-                        $scope.defaultNavigation();
-                        $timeout(function() {
-                            addActiveLinks('home');
-                        });
-                    });
-                    changeTitle('', 0, false);
-
-                    $element.append(Builder.createPageBlock({
-                        image: 'images/leaderboard.svg',
-                        text: 'Main Page'
-                    }, function(el, info) {
-                        el.append(Builder.buildBlock({
-                            image: 'images/awards.svg',
-                            title: 'Welcome'
-                        }, function(blockContent) {
-                            var divText = $('<div style="padding: 4px">');
-                            divText.append('<p>Welcome to the GameCourse system.</p>');
-                            divText.append('<p>Hope you enjoy!</p>');
-                            blockContent.append(divText);
-                        }));
-                    }));
-                }
+                controller: 'HomePage'
             }
         }
     }).state('courses', {
         url: '/courses',
         views: {
             'main-view': {
-                controller: function($element, $scope, $smartboards, $compile) {
-                    $scope.courses = {};
-                    changeTitle('Courses', 0);
-
-
-                    var pageBlock;
-                    $element.append(pageBlock = Builder.createPageBlock({
-                        image: 'images/leaderboard.svg',
-                        text: 'Courses'
-                    }, function(el, info) {
-                        el.append(Builder.buildBlock({
-                            image: 'images/awards.svg',
-                            title: 'My courses'
-                        }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
-                        }).attr('ng-if', 'usingMyCourses ==true'));//'myCourses != undefined && myCourses.length != 0'));
-                        el.append(Builder.buildBlock({
-                            image: 'images/awards.svg',
-                            title: 'All Courses'
-                        }, function(blockContent) {
-                            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
-                        }).attr('ng-if', 'usingMyCourses ==false'));
-                    }));
-                    $compile(pageBlock)($scope);
-
-                    $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
-                        if (err) {
-                            alert(err.description);
-                            return;
-                        }
-                        $scope.courses = data.courses;
-                        $scope.usingMyCourses = data.myCourses;//bool
-                        for (var i in $scope.courses) {
-                            var course = $scope.courses[i];
-                            course.nameUrl = course.name.replace(/\W+/g, '');
-                        }
-                    });
-                }
+                controller: 'Courses'
             }
         }
     }).state('course', {
         url: '/courses/{courseName:[A-Za-z0-9]+}-{course:[0-9]+}',
         views: {
             'main-view': {
-                controller: function($scope, $element, $stateParams, $compile) {
-                    $element.append($compile(Builder.createPageBlock({
-                        image: 'images/awards.svg',
-                        text: '{{courseName}}'
-                    }, function(el, info) {
-                    }))($scope));
-                }
+                controller: 'SpecificCourse'
             }
         }
     });
 });
 
+//muda o titulo no breadcrumb
 function changeTitle(newTitle, depth, keepOthers, url) {
     var title = $('title');
     var baseTitle = title.attr('data-base');

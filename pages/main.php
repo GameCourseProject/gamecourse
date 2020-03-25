@@ -34,6 +34,7 @@ $user = Core::getLoggedUser();
             app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
                 $rootScope.loaded=true;
                 
+                //em caso de entrarmos num curso
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                     if ($rootScope.course != course) {
                         $rootScope.course = $scope.course = course;
@@ -41,6 +42,7 @@ $user = Core::getLoggedUser();
                         removeActiveLinks();
                         if ($scope.course != undefined) {
                             changeTitle(courseName, 0, false);
+                            //na funcao da API devolve o que vai aparecer na navbar
                             $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function (data,err) {
                                 if (err) {
                                     alert(err.description);
@@ -74,7 +76,8 @@ $user = Core::getLoggedUser();
                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
                     }
                 };
-
+                
+                //conteúdo da nav bar
                 $scope.mainNavigation = [];
                 $scope.defaultNavigation = function() {
                     $scope.mainNavigation = [
@@ -143,10 +146,10 @@ $user = Core::getLoggedUser();
     <body ng-controller="SmartBoard">
         <nav>
             <div class="nav-header">
-                <a ui-sref="home">GameCourse</a>
-                <span id="page-title"></span>
+                <a ui-sref="home">GameCourse</a> 
+                <span id="page-title"></span> 
             </div>
-            <div class="nav-collapse">
+            <div class="nav-collapse"> <!-- menu na navbar -->
                 <ul>
                     <li ng-repeat="link in mainNavigation track by $index">
                         <a ng-if="link.sref" ui-sref="{{link.sref}}"><div><img ng-src="{{link.image}}"></div><div><span>{{link.text}}</span><span ng-if="link.subtext">{{link.subtext}}</span></div></a>
@@ -156,7 +159,7 @@ $user = Core::getLoggedUser();
             </div>
         </nav>
 
-        <div id="wrapper">          
+        <div id="wrapper">     <!-- conteudo da página -->     
             <div id="content-wrapper">            
                 <div ui-view="main-view"></div>           
             </div>
