@@ -2,7 +2,7 @@ GameCourse
 =
 Installation
 ---
-Needs a server with PHP 5.6 and a MySQL Database
+Needs a server with PHP 5.6 and a MySQL Database (needs to be a higher version - 7.3)
 (For example you can use Xampp to create the server and DB, but you may need to ajust the php version)
 
 1. Setup a FenixEdu Application, if you don't have one already
