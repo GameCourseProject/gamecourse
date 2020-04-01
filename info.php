@@ -307,8 +307,8 @@ API::registerFunction('settings', 'tabs', function() {
     API::response($tabs);
 });
 
-//system users settings (manage admins, create invites)
-API::registerFunction('settings', 'users', function() {
+//system users (manage admins)
+API::registerFunction('core', 'users', function() {
     API::requireAdminPermission();
 
     if (API::hasKey('setPermissions')) {
@@ -352,6 +352,8 @@ API::registerFunction('settings', 'users', function() {
             Core::removePendingInvites($invite);
         return;
     }*/
+    
+    // falta ir buscar info de numero de cursos, last login e see esta active ou nao
     API::response(array('users' => User::getAllInfo()));//, 'pendingInvites' => Core::getPendingInvites()));
 });
 

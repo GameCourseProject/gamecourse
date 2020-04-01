@@ -83,6 +83,7 @@ $user = Core::getLoggedUser();
                     $scope.mainNavigation = [
                         {sref: 'home', image: 'images/leaderboard.svg', text: 'Main Page'},
                         {sref: 'courses', image: 'images/leaderboard.svg', text: 'Courses'},
+                        {sref: 'users', image: 'images/leaderboard.svg', text: 'Users'},
                         <?php if ($user->isAdmin()) echo "{sref: 'settings', image: 'images/gear.svg', text: 'Settings'}," ?>
                     ];
                 };
