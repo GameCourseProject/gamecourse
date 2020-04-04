@@ -145,6 +145,42 @@ app.controller('CourseStudentSettingsController', function($scope, $stateParams,
     });
 });
 
+app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+    
+    $smartboards.request('settings', 'courseUsers', {course : $scope.course, role: "allRoles"}, function(data,err){
+        role = "allRoles"
+        console.log(data);
+        userTabContents=[];
+        for (var st in data.userList){
+            //fazer funcao para o tempo - 2 days, 30min, now, etc
+            userTabContents.push({ID: data.userList[st].id,
+                                Name:data.userList[st].name,
+                                Username:data.userList[st].username,
+                                Last_Login: data.userList[st].last_login});
+                // "":{id: data.userList[st].id}});
+        }
+        var columns = ["ID","Name","Username","Last_Login"];
+        $scope.newList=data.file;
+
+        $scope.data = data;
+        var tabContent = $($element);
+        var configurationSection = createSection(tabContent, 'Users List');
+    
+        
+        var configSectionContent = $('<div>',{'class': 'row'});
+        
+        var table = Builder.buildTable(userTabContents, columns,true);
+            
+        var tableArea = $('<div>',{'class': 'column', style: 'float: left; width: 40%;' });
+        tableArea.append(table);
+        tableArea.append('</div>');
+        configSectionContent.append(tableArea);
+
+        configurationSection.append(configSectionContent);
+    });
+
+});
+
 app.controller('CourseSkillsSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.replaceData = function(arg) {
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))

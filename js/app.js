@@ -276,7 +276,6 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     });
 });
 
-
 app.config(function($locationProvider, $compileProvider, $stateProvider){
     $locationProvider.html5Mode(true);
     if (location.hostname != 'localhost')
@@ -308,6 +307,13 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
         views: {
             'main-view': {
                 controller: 'SpecificCourse'
+            }
+        }
+    }).state('course.users', {
+        url: '/users',
+        views: {
+            'main-view@': {
+                controller: 'CourseUsersss'
             }
         }
     });

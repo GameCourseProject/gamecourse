@@ -13,6 +13,7 @@ function buildTabs(info, parent, $smartboards, $scope) {
     return el;
 }
 
+//definie o que esta nas settings de um curso
 app.controller('CourseSettings', function($scope, $state, $compile, $smartboards) {
     changeTitle('Course Settings', 1); //muda no breadcrumb
 
@@ -817,6 +818,13 @@ app.config(function($stateProvider){
                 controller: 'CourseSettings'
             }
         }
+    // }).state('course.users', {
+    //     url: '/users',
+    //     views: {
+    //         'main-view@': {
+    //             controller: 'CourseUsersss'
+    //         }
+    //     }
     }).state('course.settings.global', {
         url: '/global',
         views : {
@@ -852,6 +860,13 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 controller: 'CourseTeacherSettingsController'
+            }
+        }
+    }).state('course.settings.users', {
+        url: '/users',
+        views : {
+            'tabContent': {
+                controller: 'CourseUsersss'
             }
         }
     }).state('course.settings.skills', {

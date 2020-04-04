@@ -74,7 +74,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
     
     if ($isAdmin)
-        Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
+        Core::addNavigation('images/awards.svg', "Users", 'course.users', true); 
+        Core::addNavigation('images/gear.svg', 'Course Settings', 'course.settings', true);
     
     $navPages = Core::getNavigation();
     //print_r($navPages);
@@ -352,7 +353,7 @@ API::registerFunction('core', 'users', function() {
             Core::removePendingInvites($invite);
         return;
     }*/
-    
+
     // falta ir buscar info de numero de cursos, last login e see esta active ou nao
     API::response(array('users' => User::getAllInfo()));//, 'pendingInvites' => Core::getPendingInvites()));
 });
@@ -457,12 +458,18 @@ API::registerFunction('settings', 'courseUsers', function() {
     }
     
     if (API::hasKey('role')){
-        $users = $course->getUsersWithRole($role);
+        if ($role == "allRoles") {
+            $users = $course->getUsers($role);
+        }
+        else{
+            $users = $course->getUsersWithRole($role);
+        }
+        
         $usersInfo = [];
         foreach ($users as $userData) {
             $id = $userData['id'];
             $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername());
+            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername(), 'last_login' => $user->getLastLogin());
         }
         
         $fileData = @file_get_contents($file);
