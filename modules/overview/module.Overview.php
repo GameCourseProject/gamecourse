@@ -20,10 +20,10 @@ class Overview extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->createPageOrTemplateIfNew('Overview',"page",ViewHandler::VT_ROLE_SINGLE);
+        $viewHandler->createPageOrTemplateIfNew('Overview',"page","ROLE_SINGLE");
 
-        //if (!$viewsModule->templateExists(self::USERS_OVERVIEW_TEMPLATE_NAME))
-        //    $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'),$this->getId());
+        if (!$viewsModule->templateExists(self::USERS_OVERVIEW_TEMPLATE_NAME))
+           $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'));
     }
 }
 ModuleLoader::registerModule(array(

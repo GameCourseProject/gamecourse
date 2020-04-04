@@ -76,7 +76,7 @@ class Notifications extends Module {
         
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();//
-        $viewHandler->registerFunction('checkNotifications', function($userId) {
+        $viewHandler->registerFunction('notifications','checkNotifications', function($userId) {
             $pendingNotifications=$this->notificationList;
             
             //$courseId = $this->getParent()->getId();
@@ -84,7 +84,7 @@ class Notifications extends Module {
             return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
         });
 
-        $viewHandler->registerFunction('getNotifications', function($userId) {
+        $viewHandler->registerFunction('notifications','getNotifications', function($userId) {
             $pendingNotifications=$this->notificationList;
             //$courseId = $this->getParent()->getId();
             //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
@@ -111,7 +111,7 @@ class Notifications extends Module {
         });
         
         if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
-            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'),$this->getId());
+            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'));
         
     }
 }

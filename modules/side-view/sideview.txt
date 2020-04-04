@@ -1,1 +1,72 @@
-a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"block";s:3:"pid";s:32:"a011982d48b07996565e9ff700593d18";s:8:"children";a:1:{i:0;a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"block";s:3:"pid";s:32:"d540cc9790150f1a6a183bfec3748012";s:8:"children";a:2:{i:0;a:9:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"image";s:3:"pid";s:32:"053d9c0631a6fed2c6079b6d05b6de52";s:9:"valueType";s:10:"expression";s:4:"info";s:31:"photos/{%userData.username}.png";s:5:"class";s:13:"student-photo";s:6:"origin";s:4:"this";}i:1;a:10:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"table";s:3:"pid";s:32:"0bff83c56facb6256d543a11e68c9ac7";s:7:"columns";a:1:{i:0;a:1:{s:8:"sortMode";s:3:"def";}}s:10:"headerRows";a:0:{}s:4:"rows";a:2:{i:0;a:1:{s:6:"values";a:1:{i:0;a:1:{s:5:"value";a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"value";s:3:"pid";s:32:"21d937dc55fb6f8f0453dc595e2ba700";s:9:"valueType";s:10:"expression";s:4:"info";s:16:"{%userData.name}";s:6:"origin";s:4:"this";}}}}i:1;a:1:{s:6:"values";a:1:{i:0;a:1:{s:5:"value";a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"value";s:3:"pid";s:32:"19d3dce4fe925a3765d436fcece11e60";s:9:"valueType";s:10:"expression";s:4:"info";s:10:"#{%viewer}";s:6:"origin";s:4:"this";}}}}}s:5:"class";s:4:"tidy";s:6:"origin";s:4:"this";}}s:6:"origin";s:4:"this";s:4:"data";a:1:{s:8:"userData";a:2:{s:5:"value";s:18:"{user[id=%viewer]}";s:7:"context";s:8:"variable";}}}}s:6:"header";a:2:{s:5:"title";a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"value";s:3:"pid";s:32:"ebcf626cdd47bdb2a46a645cae75a488";s:9:"valueType";s:4:"text";s:4:"info";s:3:"You";s:6:"origin";s:4:"this";}s:5:"image";a:8:{s:6:"viewId";s:8:"sideview";s:6:"course";s:1:"1";s:4:"role";s:12:"role.Default";s:4:"type";s:5:"image";s:3:"pid";s:32:"515b166be36f5553ec794a81ed5ed03e";s:9:"valueType";s:4:"text";s:4:"info";s:18:"images/profile.svg";s:6:"origin";s:4:"this";}}s:6:"origin";s:4:"this";}
+[{
+    "parent":null,
+    "role": "role.Default",
+    "partType": "block",
+    "children": [
+        {
+            "role": "role.Default",
+            "partType": "block",
+            "children": [
+                {
+                    "role": "role.Default",
+                    "partType": "image",
+                    "value": "photos\/{%userData.username}.png",
+                    "info": null,
+                    "class": "student-photo"
+                },
+                {
+                    "role": "role.Default",
+                    "partType": "table",
+                    "class": "tidy",
+                    "columns": 1,
+                    "headerRows": {},
+                    "rows": [
+                        {
+                            "values": [
+                                {
+                                    "value": {
+                                        "role": "role.Default",
+                                        "partType": "text",
+                                        "value": "{%userData.name}",
+                                        "info": null
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "values": [
+                                {
+                                    "value": {
+                                        "role": "role.Default",
+                                        "partType": "text",
+                                        "value": "#{%viewer}",
+                                        "info": null
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "variables": {
+                "userData": {
+                    "value": "{userid=%viewer]}"
+                }
+            }
+        }
+    ],
+    "header": {
+        "title": {
+            "role": "role.Default",
+            "partType": "text",
+            "value": "You",
+            "info": null
+        },
+        "image": {
+            "role": "role.Default",
+            "partType": "image",
+            "value": "images\/profile.svg",
+            "info": null
+        }
+    }
+}]

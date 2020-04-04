@@ -22,12 +22,12 @@ class AwardList extends Module {
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerPage($this, 'awardlist', 'Award List View', array(
-            'type' => ViewHandler::VT_SINGLE
-        ));
+        // $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
+        //     'type' => ViewHandler::VT_SINGLE
+        // ));
 
         $course = $this->getParent();
-        $viewHandler->registerFunction('getAllAwards', function() use ($course) {
+        $viewHandler->registerFunction('awardlist','getAllAwards', function() use ($course) {
             $courseId = $course->getId();
             $allAwards = array();
             $awards = Core::$systemDB->selectMultiple("award",["course"=>$courseId]);
@@ -41,13 +41,13 @@ class AwardList extends Module {
             }
             return new \Modules\Views\Expression\ValueNode($allAwards);
         });
-
+        
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
-            $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'),$this->getId());
- 
-        if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
-            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'),$this->getId());  
-    }
+            $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));
+            
+            if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
+            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));  
+        }
 }
 ModuleLoader::registerModule(array(
     'id' => 'awardlist',
