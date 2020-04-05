@@ -540,25 +540,16 @@ function setSettingsTitle(title) {
 app.controller('Settings', function($scope, $state, $compile, $smartboards) {
     changeTitle('Settings', 0);
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
-        $smartboards.request('settings', 'tabs', {}, function(data, err) {
-            if (err) {
-                console.log(err);
-                return;
-            }
 
-            var tabs = $('#settings > .tabs > .tabs-container');
-            tabs.html('');
-            //side bar nas settings globais
-            tabs.append($compile('<li><a ui-sref="settings.global">Global</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="settings.modules">Installed Modules</a></li>')($scope));
-            //tabs.append($compile('<li><a ui-sref="settings.users">Users</a></li>')($scope));
-            for (var i = 0; i < data.length; ++i)
-                tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
-            tabs.append($compile('<li><a ui-sref="settings.about">About</a></li>')($scope));
+        var tabs = $('#settings > .tabs > .tabs-container');
+        tabs.html('');
+        //side bar nas settings globais
+        tabs.append($compile('<li><a ui-sref="settings.global">Global</a></li>')($scope));
+        tabs.append($compile('<li><a ui-sref="settings.modules">Installed Modules</a></li>')($scope));
+        tabs.append($compile('<li><a ui-sref="settings.about">About</a></li>')($scope));
 
-            addActiveLinks($state.current.name);
-            updateTabTitle($state.current.name, $state.params);
-        });
+        addActiveLinks($state.current.name);
+        updateTabTitle($state.current.name, $state.params);
     });
     $scope.$emit('refreshTabs');
     $scope.$on('$destroy', refreshTabsBind);
@@ -637,42 +628,10 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     });
 });
 
+//retirar no futuro
 app.controller('SettingsCourses', function($scope, $state, $compile, $smartboards, $element) {
-    $scope.newCourse = function() {
-        $state.go('settings.courses.create');
-    };
 
-    $scope.deleteCourse = function(course) {
-        //if (prompt('Are you sure you want to delete? Type \'DELETE ' + $scope.courses[course].name + '\' to confirm the action') != ('DELETE ' + $scope.courses[course].name))
-        //    return;
-        if (prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action') != ('DELETE')){
-            return;
-        }   
-        $smartboards.request('settings', 'deleteCourse', {course: course}, function(data, err) {
-            if (err) {
-                alert(err.description);
-                return;
-            }
-
-            for (var i in $scope.courses){
-                if ($scope.courses[i].id==course)
-                    delete $scope.courses[i];
-            }
-            $scope.$emit('refreshTabs');
-        });
-    };
-
-    $scope.toggleCourse = function(course) {
-        $smartboards.request('settings', 'setCourseState', {course: course.id, state: !course.active}, function(data, err) {
-            if (err) {
-                alert(err.description);
-                return;
-            }
-            course.isActive = !course.isActive;
-            $scope.$emit('refreshTabs');
-        });
-    };
-
+    //talvez precise do if abaixo
     $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
         // make sure courses is an object
         var courses = data.courses;
@@ -690,47 +649,7 @@ app.controller('SettingsCourses', function($scope, $state, $compile, $smartboard
     });
 });
 
-app.controller('SettingsCourse', function($scope, $state, $compile, $smartboards, $element) {
-});
 
-app.controller('SettingsCourseCreate', function($scope, $state, $compile, $smartboards, $element) {
-    setSettingsTitle('Courses > Create');
-
-    $scope.newCourse = {};
-    $scope.isValid = function(v) { return v != undefined && v.trim().length > 0; };
-    $scope.isValidCourse = function (course) { return course != undefined; };
-
-    $scope.courses = undefined;
-    $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
-        if (err) {
-            alert(err.description);
-            return;
-        }
-
-        $scope.courses = data.courses;
-        $compile(createSectionWithTemplate($element, 'Course Create', 'partials/settings/course-create.html'))($scope);
-    });
-
-    $scope.createCourse = function() {
-        var reqData = {
-            courseName: $scope.newCourse.courseName,
-            creationMode: $scope.newCourse.creationMode
-        };
-
-        if ($scope.newCourse.creationMode == 'similar')
-            reqData.copyFrom = $scope.newCourse.course.id;
-
-        $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
-            if (err) {
-                console.log(err.description);
-                return;
-            }
-
-            $scope.$emit('refreshTabs');
-            $state.go('settings.courses');
-        });
-    };
-});
 
 app.run(['$rootScope', '$state', function ($rootScope, $state) {
     $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
@@ -782,27 +701,6 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 templateUrl: 'partials/settings/about.html'
-            }
-        }
-    }).state('settings.courses', {
-        url: '/courses',
-        views : {
-            'tabContent@settings': {
-                controller: 'SettingsCourses'
-            }
-        }
-    }).state('settings.courses.course', {
-        url: '/{course:[0-9]+}',
-        views : {
-            'tabContent@settings': {
-                controller: 'SettingsCourse'
-            }
-        }
-    }).state('settings.courses.create', {
-        url: '/create',
-        views : {
-            'tabContent@settings': {
-                controller: 'SettingsCourseCreate'
             }
         }
 

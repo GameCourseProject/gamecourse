@@ -48,10 +48,46 @@ app.controller('HomePage', function($element, $scope, $timeout) {
     }));
 });
 
-app.controller('Courses', function($element, $scope, $smartboards, $compile) {
+//courses list
+app.controller('Courses', function($element, $scope, $smartboards, $compile, $state) {
     $scope.courses = {};
     changeTitle('Courses', 0);
 
+    $scope.newCourse = function() {
+        $state.go('courses.create');
+    };
+
+    $scope.deleteCourse = function(course) {
+        //if (prompt('Are you sure you want to delete? Type \'DELETE ' + $scope.courses[course].name + '\' to confirm the action') != ('DELETE ' + $scope.courses[course].name))
+        //    return;
+        if (prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action') != ('DELETE')){
+            return;
+        }   
+        $smartboards.request('settings', 'deleteCourse', {course: course}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+
+            for (var i in $scope.courses){
+                if ($scope.courses[i].id==course)
+                    delete $scope.courses[i];
+            }
+            $scope.$emit('refreshTabs');
+        });
+    };
+
+    //o que esta a fazer mesmo????
+    $scope.toggleCourse = function(course) {
+        $smartboards.request('settings', 'setCourseState', {course: course.id, state: !course.active}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+            course.isActive = !course.isActive;
+            $scope.$emit('refreshTabs');
+        });
+    };
 
     var pageBlock;
     $element.append(pageBlock = Builder.createPageBlock({
@@ -68,7 +104,10 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile) {
             image: 'images/awards.svg',
             title: 'All Courses'
         }, function(blockContent) {
-            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
+            //blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
+            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
+            blockContent.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+    
         }).attr('ng-if', 'usingMyCourses ==false'));
     }));
     $compile(pageBlock)($scope);
@@ -85,6 +124,45 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile) {
             course.nameUrl = course.name.replace(/\W+/g, '');
         }
     });
+});
+
+app.controller('CourseCreate', function($scope, $state, $compile, $smartboards, $element) {
+    //setSettingsTitle('Courses > Create');
+
+    $scope.newCourse = {};
+    $scope.isValid = function(v) { return v != undefined && v.trim().length > 0; };
+    $scope.isValidCourse = function (course) { return course != undefined; };
+
+    $scope.courses = undefined;
+    $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
+        if (err) {
+            alert(err.description);
+            return;
+        }
+
+        $scope.courses = data.courses;
+        $compile(createSectionWithTemplate($element, 'Course Create', 'partials/settings/course-create.html'))($scope);
+    });
+
+    $scope.createCourse = function() {
+        var reqData = {
+            courseName: $scope.newCourse.courseName,
+            creationMode: $scope.newCourse.creationMode
+        };
+
+        if ($scope.newCourse.creationMode == 'similar')
+            reqData.copyFrom = $scope.newCourse.course.id;
+
+        $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+
+            $scope.$emit('refreshTabs');
+            $state.go('courses');
+        });
+    };
 });
 
 app.controller('SpecificCourse', function($scope, $element, $stateParams, $compile) {
@@ -300,6 +378,13 @@ app.config(function($locationProvider, $compileProvider, $stateProvider){
         views: {
             'main-view': {
                 controller: 'Courses'
+            }
+        }
+    }).state('courses.create', {
+        url: '/create',
+        views : {
+            'main-view@': {
+                controller: 'CourseCreate'
             }
         }
     }).state('course', {

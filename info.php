@@ -294,6 +294,7 @@ API::registerFunction('settings', 'modules', function() {
 });
 
 //get tabs for system settings
+//deixa de ser utilizado, remover depois
 API::registerFunction('settings', 'tabs', function() {
     API::requireAdminPermission();
     $courses = Core::getCourses();
