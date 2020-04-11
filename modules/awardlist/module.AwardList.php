@@ -18,13 +18,13 @@ class AwardList extends Module {
     public function init() {
         $user = Core::getLoggedUser();
         if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
-            Core::addNavigation('images/gear.svg', 'Award List', 'course.awardlist', true);
-
-        $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
-        // $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
-        //     'type' => ViewHandler::VT_SINGLE
-        // ));
+            $viewHandler->createPageOrTemplateIfNew('AwardList',"page","ROLE_SINGLE");
+            
+            $viewsModule = $this->getParent()->getModule('views');
+            $viewHandler = $viewsModule->getViewHandler();
+            // $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
+                //     'type' => ViewHandler::VT_SINGLE
+                // ));
 
         $course = $this->getParent();
         $viewHandler->registerFunction('awardlist','getAllAwards', function() use ($course) {

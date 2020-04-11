@@ -1,110 +1,305 @@
 [
     {
+        "aspectClass": "58",
+        "id": "4021",
+        "role": "role.Default>role.Default",
+        "partType": "block",
+        "parent": null,
+        "viewIndex": null,
+        "label": null,
+        "loopData": null,
+        "variables": null,
+        "value": null,
+        "class": null,
+        "style": null,
+        "link": null,
+        "visibilityCondition": null,
+        "visibilityType": null,
+        "events": null,
+        "info": null,
+        "children": []
+    },
+    {
+        "aspectClass": "58",
+        "id": "4022",
         "role": "role.Student>role.Default",
         "partType": "block",
-        "class": "award-list",
         "parent": null,
+        "viewIndex": null,
+        "label": null,
+        "loopData": null,
+        "variables": null,
+        "value": null,
+        "class": null,
+        "style": null,
+        "link": null,
+        "visibilityCondition": null,
+        "visibilityType": null,
+        "events": null,
+        "info": null,
         "children": [
             {
-                "role": "role.Default",
+                "aspectClass": "58",
+                "id": "4023",
+                "role": "role.Student>role.Default",
                 "partType": "block",
-                "header": {
-                    "title": {
-                        "role": "role.Student>role.Default",
-                        "partType": "text",
-                        "value": "Award List ({$awardsXP(course_userid=%user])})",
-                        "loopData": "{}",
-                        "info": null
-                    },
-                    "image": {
-                        "role": "role.Student>role.Default",
-                        "loopData": "{}",
-                        "partType": "image",
-                        "value": "images/profile-img.svg",
-                        "info": null
-                    },
-                    "anchor": "AwardList"
-                },
+                "parent": "4022",
+                "viewIndex": "0",
+                "label": null,
+                "loopData": "{}",
+                "variables": [],
+                "value": null,
+                "class": null,
+                "style": null,
+                "link": null,
+                "visibilityCondition": "{}",
+                "visibilityType": "conditional",
+                "events": [],
+                "info": null,
                 "children": [
                     {
+                        "aspectClass": "58",
+                        "id": "4024",
                         "role": "role.Student>role.Default",
                         "partType": "table",
-                        "columns": 3,
-                        "headerRows": [
+                        "parent": "4023",
+                        "viewIndex": "0",
+                        "label": null,
+                        "loopData": "{awards.getAllAwards(%user)}",
+                        "variables": [],
+                        "value": null,
+                        "class": null,
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "events": [],
+                        "info": null,
+                        "children": [],
+                        "rows": [
                             {
-                                "aspectClass": null,
-                                "role": "role.Default",
-                                "partType": "headerRow",
+                                "aspectClass": "58",
+                                "id": "4029",
+                                "role": "role.Student>role.Default",
+                                "partType": "row",
+                                "parent": "4024",
+                                "viewIndex": "1",
+                                "label": null,
                                 "loopData": "{}",
+                                "variables": [],
+                                "value": null,
+                                "class": null,
+                                "style": null,
+                                "link": null,
+                                "visibilityCondition": "{}",
+                                "visibilityType": "conditional",
+                                "events": [],
+                                "info": null,
                                 "values": [
                                     {
                                         "value": {
+                                            "aspectClass": "58",
+                                            "id": "4030",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "Experience",
-                                            "info": null
+                                            "parent": "4029",
+                                            "viewIndex": "0",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.reward} XP",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     },
                                     {
                                         "value": {
+                                            "aspectClass": "58",
+                                            "id": "4031",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "Date",
-                                            "info": null
+                                            "parent": "4029",
+                                            "viewIndex": "1",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.date}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     },
                                     {
                                         "value": {
+                                            "aspectClass": "58",
+                                            "id": "4032",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "Description",
-                                            "info": null
+                                            "parent": "4029",
+                                            "viewIndex": "2",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.description}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     }
                                 ]
                             }
                         ],
-                        "rows": [
+                        "headerRows": [
                             {
-                                "partType": "row",
-                                "loopData": "{awardstudent=%user]}",
-                                "variables": {
-                                    "award": {
-                                        "value": "{%award.awardDate}",
-                                        "order": "descending"
-                                    }
-                                },
+                                "aspectClass": "58",
+                                "id": "4025",
+                                "role": "role.Student>role.Default",
+                                "partType": "headerRow",
+                                "parent": "4024",
+                                "viewIndex": "0",
+                                "label": null,
+                                "loopData": "{}",
+                                "variables": [],
+                                "value": null,
+                                "class": null,
+                                "style": null,
+                                "link": null,
+                                "visibilityCondition": "{}",
+                                "visibilityType": "conditional",
+                                "events": [],
+                                "info": null,
                                 "values": [
                                     {
                                         "value": {
-                                            "role": "",
+                                            "aspectClass": "58",
+                                            "id": "4026",
+                                            "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "{%award.reward} XP",
-                                            "info": null
+                                            "parent": "4025",
+                                            "viewIndex": "0",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Experience",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     },
                                     {
                                         "value": {
-                                            "role": "",
+                                            "aspectClass": "58",
+                                            "id": "4027",
+                                            "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "{$formatDate(%award.awardDate)}",
-                                            "info": null
+                                            "parent": "4025",
+                                            "viewIndex": "1",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Date",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     },
                                     {
                                         "value": {
-                                            "role": "",
+                                            "aspectClass": "58",
+                                            "id": "4028",
+                                            "role": "role.Student>role.Default",
                                             "partType": "text",
-                                            "value": "{$formatAward(%award)}",
-                                            "info": null
+                                            "parent": "4025",
+                                            "viewIndex": "2",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Description",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
                                         }
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        "columns": 3
                     }
-                ]
+                ],
+                "header": {
+                    "image": {
+                        "aspectClass": "58",
+                        "id": "4034",
+                        "role": "role.Student>role.Default",
+                        "partType": "image",
+                        "parent": "4033",
+                        "viewIndex": "0",
+                        "label": null,
+                        "loopData": "{}",
+                        "variables": [],
+                        "value": "images\/profile-img.svg",
+                        "class": null,
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "events": [],
+                        "info": null,
+                        "children": []
+                    },
+                    "title": {
+                        "aspectClass": "58",
+                        "id": "4035",
+                        "role": "role.Student>role.Default",
+                        "partType": "text",
+                        "parent": "4033",
+                        "viewIndex": "1",
+                        "label": null,
+                        "loopData": "{}",
+                        "variables": [],
+                        "value": "Award List",
+                        "class": null,
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "events": [],
+                        "info": null,
+                        "children": []
+                    }
+                }
             }
         ]
     }
-] 
+]
