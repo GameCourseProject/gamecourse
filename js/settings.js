@@ -27,7 +27,6 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.landingpages">Landing Pages</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
@@ -470,7 +469,23 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         };
     });
 
-    
+    $smartboards.request('settings', 'landingPages', {course : $scope.course}, function(data, err) {
+        
+        var $landingPageSection = createSection($element, 'Landing pages');
+        //fazer identificador por linha
+        //colocar valor atual na caixa
+        //nput vai passar a ser dropdown 
+        for (role of data.roles){
+            var title = "<b>" + role.name + "</b><br>";
+            $landingPageSection.append(title);
+            //ngModel =  'data.roles.landingPage' --- not working here, but is going to be changend anyway
+
+            var input = createInputWithChange('landing-page-'+ role.id, 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.roles.landingPage', 'settings', 'landingPages', 'landingPage', {course: $scope.course, id: role.id}, 'New landing page is set!');
+            $landingPageSection.append(input);
+
+        }
+        
+    });
 });
 
 app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
@@ -487,28 +502,6 @@ app.controller('CourseRoleSettingsController', function($scope, $stateParams, $e
     });
 });
 
-
-
-app.controller('CourseRolesLandingSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-
-    $smartboards.request('settings', 'landingPages', {course : $scope.course}, function(data, err) {
-        
-        //fazer identificador por linha
-        //colocar valor atual na caixa
-        //nput vai passar a ser dropdown 
-        for (role of data.roles){
-            var title = "<b>" + role.name + "</b><br>";
-            $element.append(title);
-            //ngModel =  'data.roles.landingPage' --- not working here, but is going to be changend anyway
-
-            var input = createInputWithChange('landing-page-'+ role.id, 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.roles.landingPage', 'settings', 'landingPages', 'landingPage', {course: $scope.course, id: role.id}, 'New landing page is set!');
-            $element.append(input);
-
-        }
-        
-    });
-    
-});
 
 function updateTabTitle(stateName, stateParams) {
     var title = '';
@@ -821,13 +814,6 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 controller: 'CourseRolesSettingsController'
-            }
-        }
-    }).state('course.settings.landingpages', {
-        url: '/landingpage',
-        views : {
-            'tabContent': {
-                controller: 'CourseRolesLandingSettingsController'
             }
         }
     }).state('course.settings.roles.role', {
