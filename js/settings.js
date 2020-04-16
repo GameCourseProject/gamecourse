@@ -27,6 +27,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.landingpages">Landing Pages</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
@@ -90,6 +91,7 @@ function createChangeButtonIfNone(name, anchor, action, config) {
 }
 
 function createInputWithChange(id, text, placeholder, $compile, $smartboards, $parse, scope, ngModel, module, request, field, additionalData, successMsg) {
+    //ngModel =  'data.roles.landingPage'
     var wrapperDiv = $('<div>');
     wrapperDiv.append('<label for="' + id + '" class="label">' + text + '</label>');
     var textInput = $('<input>', {type: 'text', id:'' + id + '', 'class': 'input-text', placeholder: placeholder, 'ng-model': ngModel});
@@ -224,6 +226,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     });
 });
 
+//pagina dos roles
 app.controller('CourseRolesSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     $smartboards.request('settings', 'roles', {course: $scope.course}, function(data, err) {
         if (err) {
@@ -466,6 +469,8 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             dd.trigger('change');
         };
     });
+
+    
 });
 
 app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
@@ -477,9 +482,32 @@ app.controller('CourseRoleSettingsController', function($scope, $stateParams, $e
         }
         $scope.data = data;
 
-        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, role: $stateParams.role}, 'New landing page is set!');
+        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, id: $stateParams.id}, 'New landing page is set!');
         $element.append(input);
     });
+});
+
+
+
+app.controller('CourseRolesLandingSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+
+    $smartboards.request('settings', 'landingPages', {course : $scope.course}, function(data, err) {
+        
+        //fazer identificador por linha
+        //colocar valor atual na caixa
+        //nput vai passar a ser dropdown 
+        for (role of data.roles){
+            var title = "<b>" + role.name + "</b><br>";
+            $element.append(title);
+            //ngModel =  'data.roles.landingPage' --- not working here, but is going to be changend anyway
+
+            var input = createInputWithChange('landing-page-'+ role.id, 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.roles.landingPage', 'settings', 'landingPages', 'landingPage', {course: $scope.course, id: role.id}, 'New landing page is set!');
+            $element.append(input);
+
+        }
+        
+    });
+    
 });
 
 function updateTabTitle(stateName, stateParams) {
@@ -793,6 +821,13 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 controller: 'CourseRolesSettingsController'
+            }
+        }
+    }).state('course.settings.landingpages', {
+        url: '/landingpage',
+        views : {
+            'tabContent': {
+                controller: 'CourseRolesLandingSettingsController'
             }
         }
     }).state('course.settings.roles.role', {

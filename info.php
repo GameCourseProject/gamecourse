@@ -126,6 +126,39 @@ API::registerFunction('settings', 'roleInfo', function() {
     }
 });
 
+API::registerFunction('settings', 'landingPages', function() {
+    API::requireCourseAdminPermission();
+
+    $course = Course::getCourse(API::getValue('course'));
+
+    if (API::hasKey('landingPage')) {
+        $roleId = API::getValue('id');
+        if ($roleId != 0) {//id 0 is default role
+            $course->setRoleDataById($roleId,"landingPage",API::getValue('landingPage'));
+        } else {
+            $course->setLandingPage(API::getValue('landingPage'));
+        }
+    } else {
+        $roles = $course->getRoles();
+        //add default
+        foreach ($roles as $role){
+            $roleId = $role["id"];
+            if ($roleId != "0") {
+                $role["landingPage"] = $course->getRoleById($roleId, "landingPage");
+            } else {
+                $role["landingPage"] = $course->getLandingPage();
+            }
+        }
+        $default = [ "id" => "0", "name" => "Default", "course" => $course->getId(), "landingPage" => $course->getLandingPage()];
+        array_unshift($roles, $default);
+        
+        $globalInfo = array('roles' => $roles);
+        API::response($globalInfo);
+    }
+
+    
+});
+
 //change user roles or role hierarchy
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
@@ -157,7 +190,8 @@ API::registerFunction('settings', 'roles', function() {
         }
         $globalInfo = array(
             'users' => $usersInfo,
-            'roles' => $course->getRoles(),
+            'roles' => array_column($course->getRoles("name"),"name"),
+            'roles_obj' => $course->getRoles(),
             'rolesHierarchy' => $course->getRolesHierarchy(),
         );
         API::response($globalInfo);
