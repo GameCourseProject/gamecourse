@@ -20,8 +20,14 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/jquery.nestable.js"></script>
         <script type="text/javascript" src="js/builder.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
-        <script type="text/javascript" src="js/settings.js"></script>
-        <script type="text/javascript" src="js/configurations.js"></script>
+        <script type="text/javascript" src="js/states/settings.js"></script>
+        <script type="text/javascript" src="js/states/other_pages.js"></script>
+        <script type="text/javascript" src="js/aux_functions.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/settings.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/other_pages.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/configurations.js"></script>
+        <script type="text/javascript" src="js/controllers/system/settings.js"></script>
+        <script type="text/javascript" src="js/controllers/system/other_pages.js"></script>
         <script type="text/javascript" src="js/d3.min.js"></script>
         <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
         <script type="text/javascript" src="js/tooltip.js"></script>
