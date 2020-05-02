@@ -5,10 +5,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
     <title>GameCourse Documentation</title>
-    <link rel="stylesheet" href="css/docs.css"/>
+    <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
 </head>
 <body>
-    <nav><a href=".">Docs</a> | <a href="./functions">Functions</a> | <a href="./pages/modules.html">Modules</a></nav>
+    <div class="navbar">  
+        <div class="logo">logo</div>
+        <ul class="menu documentation">
+            <li><a href=".">Docs</a></li>
+            <li><a href="./functions">Functions</a></li>
+            <li><a href="./pages/modules.html">Modules</a></li>
+        </ul>
+    </div>
+
     <div class="docs">
         <?php include'pages/plugins/views.html'; ?>
         <!--?php include'pages/plugins/charts.html'; ?>
