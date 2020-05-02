@@ -1,0 +1,23 @@
+body{
+    font-family: "Jost", Verdana, sans-serif;
+    margin: 0px;
+}
+
+.search {
+    display: flex;
+    justify-content: center;
+}
+.search input[type=text] {
+    padding: 6px;
+    font-size: 16px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    width: 150px;
+}
+.page .sidebar .search .magnifying-glass {
+    background: url(/gamecourse/images/search_icon.svg);
+    height: 35px;
+    width: 35px;
+    border: none;
+    padding: 0;
+}

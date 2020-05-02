@@ -6,6 +6,9 @@
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
     <title>GameCourse Documentation</title>
     <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
+    <link rel="stylesheet" href="./css/docs.css"/>
+    <link rel="stylesheet" href="./css/geral.css"/>
+    
 </head>
 <body>
     <div class="navbar">  
@@ -17,7 +20,7 @@
         </ul>
     </div>
 
-    <div class="docs">
+    <div class="page">
         <?php include'pages/plugins/views.html'; ?>
         <!--?php include'pages/plugins/charts.html'; ?>
         <!--?php include'pages/modules.html'; ?-->

@@ -1,12 +1,50 @@
-body {
-  margin: 0px;
-  padding: 8px;
+/* only used on main doc page */
+
+.page {
+  width: 100%;
+  height: calc(100vh - 75px);
 }
-.docs {
-  max-width: 800px;
-  text-align: justify;
-  line-height: 22px;
+/* Sidebar */
+.page .sidebar {
+  width: 200px;
+  height: 100%;
+  background-color: lightgrey;
+  font-size: 14px;
+  border-right: 2px solid grey;
+  float: left;
 }
+.page .sidebar .tab {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  border-right: 2px solid grey;
+  border-bottom: 2px solid grey;
+}
+.page .sidebar .tab.selected {
+  background-color: white;
+  border-right: 2px solid white;
+  font-weight: bold;
+}
+.page .sidebar .tab:not(.selected):not(#find-tab):hover {
+  background-color: grey;
+  color: white;
+}
+.page .sidebar .search input[type=text] {
+  width: 130px;
+  border: 2px solid grey;
+}
+
+/* Content section */
+.page .content {
+  height: 100%;
+  overflow: auto;
+  background-color: white;
+  margin-left: 200px;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+
 .docs .section .section {
   margin-left: 0px;
 }
