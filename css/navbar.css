@@ -31,11 +31,16 @@
   }
   .navbar .menu li a {
     text-decoration: none;
-    color: black;
+    color: grey;
     position: relative;
     padding: 11px 21px;
   }
-  .navbar .menu li a:hover {
+  .navbar .menu li a.focused{
+    color: black;
+    border-bottom: 5px solid black;
+    font-weight: bold;
+  }
+  .navbar .menu li a:not(focused):hover {
     border-bottom: 5px solid black;
   }
   .navbar .menu .dropdown {
