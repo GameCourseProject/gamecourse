@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
     <link rel="stylesheet" href="./css/docs.css"/>
     <link rel="stylesheet" href="./css/geral.css"/>
-    
+    <script src="/gamecourse/js/angular.min.js"></script>
+    <script src="/gamecourse/js/jquery.min.js"></script>
+    <script type="text/javascript" src="documentation.js"></script>
 </head>
 <body>
     <div class="navbar">  

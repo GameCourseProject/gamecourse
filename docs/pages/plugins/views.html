@@ -6,16 +6,13 @@
           <button class="magnifying-glass"></button> 
         </form>
     </div>
-    <div class="tab selected" id="">Views</div>
-    <div class="tab" id="">View Part Types</div>
-    <div class="tab" id="">Expression Language</div>
-    <div class="tab" id="">Part Configuration</div>
-    <div class="tab" id="">Operations & Functions</div>
-    <div class="tab" id="">Variables</div>
-    <div class="tab" id="">Participations</div>
+    <div class="tab selected" id="tab-views" >Views</div>
+    <div class="tab" id="tab-parts" >View Part Types</div>
+    <div class="tab" id="tab-exp-language">Expression Language</div>
+    <div class="tab" id="tab-config">Part Configuration</div>
 </div>
 <div class="content">
-    <div class="section" id="views">
+    <div class="section visible" id="views">
         <p>Views allow control over what is displayed
         in the system’s pages. The admins of the course are able to edit its views.</p>
         <h2><span lang=EN-US>Aspects</span></h2>
@@ -26,7 +23,7 @@
         the page or the user associated with the page.</span></p>
     
         <h2><span lang=EN-US>Aspect Types</span></h2>
-        <div class="section">
+        <div class="subsection">
             <p>There are two types of aspect for views:</p>
             <ul>
                 <li><code>Role - Single</code> - view that can show
@@ -37,7 +34,7 @@
             </ul>
         </div>
         <h2>Pages</h2>
-        <div class="section">
+        <div class="subsection">
             <p>Pages an be created on the views tab by
         clicking the ‘Create New Page’ button writing its name and choosing an aspect
         type. Pages of Role-Single type will be automatically added to the navigation
@@ -53,34 +50,34 @@
     View parts can have a few different types.</span></p>
         <a name="PartText"></a>
         <h2>Part - Text</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This part displays text using expressions
     to show the output</span></p>
         </div>
         <h2>Part - Image</h2>
-        <div class="section">
+        <div class="subsection">
             <p>This part is similar to the Text part. However it produces an image instead of text.</p>
         </div>
         <a name="PartBlock"></a>
         <h2>Part - Block</h2>
-        <div class="section">
+        <div class="subsection">
             <p>This part is a view that can contain other views and may
     have a header</p>
             <a name="PartBlockHeader"></a>
             <h3>Header</h3>
-            <div class="section">
+            <div class="subsection">
                 <p>The header, when enabled, displays an image and a text, that serve as the title of the block.</p>
             </div>
         </div>
         <a name="PartTable"></a>
         <h2>Part - Table</h2>
-        <div class="section">
+        <div class="subsection">
             <p>This part is a table with columns and rows. The row and column options appear after pressing the ‘edit layout’
     button on the table part.</p>
         </div>
         <a name="Templates"></a>
         <h2>Templates</h2>
-        <div class="section">
+        <div class="subsection">
             <p>Templates are parts of views that are saved
     and can be reused. They can be created in two different ways, while editing a
     view by pressing the ‘Save Template’ button on the toolbar of any of its parts,
@@ -117,7 +114,7 @@
     id of the user that is logged in the application) and then returns the name of
     that user.</span></p>
         <h2>Operations and Functions</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>As in many other languages the expressions
     provide the simple mathematics operators for addition <code>+</code>, subtraction -,
     multiplication <code>*</code>, division <code>/</code> and mod <code>%</code>. It also provides
@@ -147,7 +144,7 @@
         </div>
         <a name="ViewsExpressionVariables"></a>
         <h2>Variables</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>Variables are used by the expressions to
     allow an easier creation of expressions without having to write very long
     expressions to access certain fields. A variable starts with a % (percentage
@@ -182,14 +179,14 @@
             attempting to save the view.</span></p>
         <a name="ViewsLoop"></a>
         <h2>DOM Manipulations - Loop Data</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This field is used to get data from the
     database that will be accessible with the %item variable. If the expression
     produces a collection, then it will be looped through. The objects provided by
     the expression can be accessed in the current view part or any of its children
     with <B>%item</b> variable and its index in the collection will be on <b>%index</b>.</span></p>
             <h3>Example</h3>
-            <div class="section">
+            <div class="subsection">
                 <p>For example, to configure a list of badges: </p>
                 <img src="./pages/plugins/loop.png">
             <p class=MsoNormal><span lang=EN-US>In this case the element will be repeated
@@ -204,7 +201,7 @@
     expression for its value. To delete a variable, press the ‘Remove’ button. The
     variables can be used in the current view part and any of its children.</span></p>
             <h3>Example</h3>
-                <div class="section">
+                <div class="subsection">
                     <p>For example, to define a variable <b>%userXP</b> containing the XP of the user in <b>%item</b>: </p>
             <img src="./pages/plugins/variables.png">
             </div>
@@ -219,7 +216,7 @@
     also the possibility of making the text/image clickable to a specific link by
     enabling the link and defining a url.</span></p>
             <h3>Example</h3>
-                <div class="section">
+                <div class="subsection">
                 <p>For example, if %user was 10000 and %userData was the user object for that %user who's name was "Example Name": </p>
             
             <img src="./pages/plugins/content.png">
@@ -233,37 +230,37 @@
     ‘Visible by condition’ – the element id only rendered if the condition
     expression evaluates to true.</span></p>
             <h3>Example</h3>
-                <div class="section">
+                <div class="subsection">
                     <p>For example, given a skill object <b>%item</b>, if the <b>%user</b> as completed the skill then the view part will be rendered:</p>
             <img src="./pages/plugins/visibility.png">
             </div>
         <a name="ViewsStyleMiscStyle"></a>
         <h2>Styling/Misc - Style</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This field receives CSS code specifying the
     style of the element, the expression language may be used here if necessary.</span></p>
         </div>
         <a name="ViewsStyleMiscClass"></a>
         <h2>Styling/Misc - Class</h2>
-        <div class="section">
+        <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This field defines the class of the html
     element, this could be useful if the is already some css code defined for that
     class.</span></p>
         </div>
         <a name="ViewsStyleMiscLabel"></a>
         <h2>Styling/Misc – Label</h2>
-        <div class="section">
+        <div class="subsection">
     <p class=MsoNormal><span lang=EN-US>The label field is in events that affect
     other parts of the page and identify them by the label.</span></p>
         </div>
         <a name="ViewsStyleMiscEvents"></a>
         <h2>Styling/Misc - Events</h2>
-        <div class="section">
+        <div class="subsection">
     <p class=MsoNormal><span lang=EN-US>This area is where events can be selected
     and the actions that they trigger can be defined using the expression language.
     The events fields are the only places where the <b>actions</b> library is to be used.</span></p>
             <h3>Example</h3>
-                <div class="section">
+                <div class="subsection">
                     <p>For example, to go to the Leaderboard page when the user clicks on the element:</p>
         
             <img src="./pages/plugins/events.png">

@@ -20,4 +20,5 @@ body{
     width: 35px;
     border: none;
     padding: 0;
+    cursor: pointer;
 }

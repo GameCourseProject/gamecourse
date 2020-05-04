@@ -28,10 +28,14 @@
 .page .sidebar .tab:not(.selected):not(#find-tab):hover {
   background-color: grey;
   color: white;
+  cursor: pointer;
 }
 .page .sidebar .search input[type=text] {
   width: 130px;
   border: 2px solid grey;
+}
+.page .sidebar #find-tab {
+  margin-top: 25px;
 }
 
 /* Content section */
@@ -43,15 +47,12 @@
   padding-left: 40px;
   padding-right: 40px;
 }
-
-
-.docs .section .section {
-  margin-left: 0px;
+.page .content .section{
+  display: none;
+  margin-top: 50px;
 }
-@media all and (min-width: 700px) {
-  .docs .section .section {
-    margin-left: 10px;
-  }
+.page .content .visible{
+  display: block;
 }
 code {
   background: #EEEEEE;
