@@ -1,10 +1,8 @@
 
 <div class="sidebar">
-    <div class="tab" id="find-tab">
-        <form class="search">
-          <input type="text" placeholder="Search.." name="search">
-          <button class="magnifying-glass"></button> 
-        </form>
+    <div class="tab search" id="find-tab">
+        <input type="text" placeholder="Search.." name="search">
+        <button class="magnifying-glass" id="search-btn"></button> 
     </div>
     <div class="tab selected" id="tab-views" >Views</div>
     <div class="tab" id="tab-parts" >View Part Types</div>
@@ -26,11 +24,11 @@
         <div class="subsection">
             <p>There are two types of aspect for views:</p>
             <ul>
-                <li><code>Role - Single</code> - view that can show
-        a different aspect according to the viewer’s role</li>
-                <li><code>Role - Interaction</code> - view that can
+                <li><code>Role - Single</code><span> - view that can show
+        a different aspect according to the viewer’s role</span></li>
+                <li><code>Role - Interaction</code><span> - view that can
         show a different aspect according to the roles of the viewer and the user
-        associated with the page</li>
+        associated with the page</span></li>
             </ul>
         </div>
         <h2>Pages</h2>
@@ -102,32 +100,33 @@
     defined in those libraries can return values, objects (a data structure
     containing values) and collections (a data structure containing any number of
     objects).</span></p>
-        <p class=MsoNormal><span lang=EN-US>An example of an expression is <code>Hello
-    {users.getUser(%viewer).name}!</code> which would be evaluated as ’Hello John!’,
+        <p class=MsoNormal><span lang=EN-US><span>An example of an expression is </span><code>Hello
+    {users.getUser(%viewer).name}!</code><span> which would be evaluated as ’Hello John!’,
     for example, if the name of the user was John. In this language anything typed
     outside of the curly brackets is accepted as text with the exception of names
-    starting with <code>%</code> (percentage) which return the value of a variable, to escape this case use
-    <code>%%</code>. When you want to evaluate something, it should be placed inside curly
-    brackets, for example, <code>{2*3}</code>. To access the name of the user as we
-    demonstrated in the first example, we use <code>{users.getUser(%viewer).name}</code>
-    which will fetch the user with the id <code>%viewer</code> (which is evaluated as the
+    starting with </span><code>%</code><span> (percentage) which return the value of a variable, to escape this case use
+    </span><code>%%</code><span>. When you want to evaluate something, it should be placed inside curly
+    brackets, for example, </span><code>{2*3}</code><span>. To access the name of the user as we
+    demonstrated in the first example, we use </span><code>{users.getUser(%viewer).name}</code>
+    <span>which will fetch the user with the id </span><code>%viewer</code><span> (which is evaluated as the
     id of the user that is logged in the application) and then returns the name of
-    that user.</span></p>
+    that user.</span></span></p>
         <h2>Operations and Functions</h2>
         <div class="subsection">
-            <p class=MsoNormal><span lang=EN-US>As in many other languages the expressions
-    provide the simple mathematics operators for addition <code>+</code>, subtraction -,
-    multiplication <code>*</code>, division <code>/</code> and mod <code>%</code>. It also provides
-    logic and bitwise operators, and <code>&amp;&amp;</code> (bitwise <code>&amp;</code>), or <code>||</code>
-    (bitwise <code>|</code>), negation <code>!</code> (bitwise </span><code><span lang=EN-US
-    style='font-family:"Cambria Math",serif'>&#8764;</span></code><span lang=EN-US>)
-    and bitwise xor </span><code><span lang=EN-US>ˆ</span></code><span lang=EN-US>. It is
+            <p class=MsoNormal><span lang=EN-US>
+                <span>As in many other languages the expressions provide the simple mathematics operators for addition </span><code>+</code><span>, subtraction </span><code>-</code><span>, multiplication </span><code>*</code>
+                <span>, division </span><code>/</code><span> and mod </span><code>%</code>
+                <span>. It also provides logic and bitwise operators, and </span><code>&amp;&amp;</code><span> (bitwise </span><code>&amp;</code><span>), or </span><code>||</code>
+                <span>(bitwise </span><code>|</code><span>), negation </span><code>!</code><span> (bitwise </span></span>
+            <code><span lang=EN-US style='font-family:"Cambria Math",serif'>&#8764;</span></code>
+            <span lang=EN-US>)and bitwise xor </span><code><span lang=EN-US>ˆ</span></code>
+    <span lang=EN-US><span>. It is
     also possible to call functions defined in GameCourse from the expressions. A
     function call starts with the library that provides that behavior or a
     collection/object belonging to one of those libraries and is followed by a dot
-    <code>.</code> and an arbitrary number of letters, A through z. Arguments of the
-    function are enclosed in parenthesis <code>()</code> and need to be comma <code>,</code>
-    separated, if there are no arguments the parenthesis are not necessary.</span></p>
+    </span><code>.</code><span> and an arbitrary number of letters, A through z. Arguments of the
+    function are enclosed in parenthesis </span><code>()</code><span> and need to be comma </span><code>,</code>
+    <span>separated, if there are no arguments the parenthesis are not necessary.</span></span></p>
             <p class=MsoNormal><span lang=EN-US>The libraries available by default are
     system are actions, awards, courses, participations, system and users. There
     are also some functions not associated with any library that can be used over
@@ -139,35 +138,35 @@
 
     <p class=MsoNormal><span lang=EN-US>Other functions may be added by registering
     them in a module.</span></p>
-    <p class=MsoNormal><span lang=EN-US>The available functions according to the
-    enabled modules can be found in the <a href="./functions">Functions page</a>.</span></p>
+    <p class=MsoNormal><span lang=EN-US><span>The available functions according to the
+    enabled modules can be found in the </span><a href="./functions">Functions page</a>.</span></p>
         </div>
         <a name="ViewsExpressionVariables"></a>
         <h2>Variables</h2>
         <div class="subsection">
-            <p class=MsoNormal><span lang=EN-US>Variables are used by the expressions to
+            <p class=MsoNormal><span lang=EN-US><span>Variables are used by the expressions to
     allow an easier creation of expressions without having to write very long
     expressions to access certain fields. A variable starts with a % (percentage
     symbol) and is followed by an arbitrary number of letters, A through z. It is
-    possible to call functions over variables, for example is we have a variable <b>%item</b>
-    containing an user object we can call functions of the users library such as <b>%item.username</b>.</span></p>
+    possible to call functions over variables, for example is we have a variable </span><b>%item</b><span>
+    containing an user object we can call functions of the users library such as </span><b>%item.username</b>.</span></p>
 
             <p class=MsoNormal><span lang=EN-US>GameCourse has already defined some
             built-in meta variables:</span></p>
             <ul>
-                <li><code>%course</code> - Represents the course that the
-    user is manipulating;</li>
-                <li><code>%user</code> - Represents the user associated to
-    the page which is being displayed;</li>
-                <li><code>%viewer</code> - Represents the user that is
-    currently logged in watching the page;</li>
+                <li><code>%course</code><span> - Represents the course that the
+    user is manipulating;</span></li>
+                <li><code>%user</code><span> - Represents the user associated to
+    the page which is being displayed;</span></li>
+                <li><code>%viewer</code><span> - Represents the user that is
+    currently logged in watching the page;</span></li>
             </ul>  
     <p class=MsoNormal><span lang=EN-US>And when the Loop Data field is used there
     is also:</span></p><ul>
-                <li><code>%index</code> - Represents the current index while
-    iterating a collection;</li>
-                <li><code> %item</code> - Represents the object that is
-    currently being iterated in that view;</li>
+                <li><code>%index</code><span> - Represents the current index while
+    iterating a collection;</span></li>
+                <li><code> %item</code><span> - Represents the object that is
+    currently being iterated in that view;</span></li>
             </ul>
         </div>
     </div>
@@ -180,11 +179,11 @@
         <a name="ViewsLoop"></a>
         <h2>DOM Manipulations - Loop Data</h2>
         <div class="subsection">
-            <p class=MsoNormal><span lang=EN-US>This field is used to get data from the
+            <p class=MsoNormal><span lang=EN-US><span>This field is used to get data from the
     database that will be accessible with the %item variable. If the expression
     produces a collection, then it will be looped through. The objects provided by
     the expression can be accessed in the current view part or any of its children
-    with <B>%item</b> variable and its index in the collection will be on <b>%index</b>.</span></p>
+    with <B>%item</b> variable and its index in the collection will be on </span><b>%index</b>.</span></p>
             <h3>Example</h3>
             <div class="subsection">
                 <p>For example, to configure a list of badges: </p>
@@ -202,7 +201,7 @@
     variables can be used in the current view part and any of its children.</span></p>
             <h3>Example</h3>
                 <div class="subsection">
-                    <p>For example, to define a variable <b>%userXP</b> containing the XP of the user in <b>%item</b>: </p>
+                    <p><span>For example, to define a variable </span><b>%userXP</b><span> containing the XP of the user in </span><b>%item</b>: </p>
             <img src="./pages/plugins/variables.png">
             </div>
         <a name="ViewsContent"></a>
@@ -231,7 +230,7 @@
     expression evaluates to true.</span></p>
             <h3>Example</h3>
                 <div class="subsection">
-                    <p>For example, given a skill object <b>%item</b>, if the <b>%user</b> as completed the skill then the view part will be rendered:</p>
+                    <p><span>For example, given a skill object </span><b>%item</b><span>, if the </span><b>%user</b><span> as completed the skill then the view part will be rendered:</span></p>
             <img src="./pages/plugins/visibility.png">
             </div>
         <a name="ViewsStyleMiscStyle"></a>
@@ -256,9 +255,9 @@
         <a name="ViewsStyleMiscEvents"></a>
         <h2>Styling/Misc - Events</h2>
         <div class="subsection">
-    <p class=MsoNormal><span lang=EN-US>This area is where events can be selected
+    <p class=MsoNormal><span lang=EN-US><span>This area is where events can be selected
     and the actions that they trigger can be defined using the expression language.
-    The events fields are the only places where the <b>actions</b> library is to be used.</span></p>
+    The events fields are the only places where the </span><b>actions</b><span> library is to be used.</span></span></p>
             <h3>Example</h3>
                 <div class="subsection">
                     <p>For example, to go to the Leaderboard page when the user clicks on the element:</p>
@@ -267,4 +266,6 @@
             </div>
         </div>
     
+    </div>
 </div>
+

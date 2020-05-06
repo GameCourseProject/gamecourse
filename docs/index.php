@@ -18,7 +18,7 @@
         <ul class="menu documentation">
             <li id="menu-views"><a href="javascript:void(0);" class="focused">Views</a></li>
             <li id="menu-functions"><a href="./functions">Functions</a></li>
-            <li id="menu-module"><a href="javascript:void(0);">Modules</a></li>
+            <li id="menu-modules"><a href="javascript:void(0);">Modules</a></li>
         </ul>
     </div>
 
