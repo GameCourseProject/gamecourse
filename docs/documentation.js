@@ -12,68 +12,6 @@ function showContent(selector, name) {
     prevSection = name;
 } 
 
-function addClickEventsViews(){
-    prevTab = "#tab-views";
-    prevSection = "#views";
-    prevMenu = "#menu-views";
-
-    tabs = ["#tab-views","#tab-parts","#tab-exp-language","#tab-config"]
-    sections = ["#views","#view-parts","#expression-language","#part-configuration"]
-
-    //tabs onclick events
-    jQuery.each(tabs , function( index ) {
-        $(tabs[index]).on('click', function (){ 
-            showContent( tabs[index],sections[index]);}
-        );
-    });
-    //search
-    bindSearch();
-}
-
-function addClickEventsModules(){
-    prevTab = "#tab-create";
-    prevSection = "#create";
-    prevMenu = "#menu-modules";
-    
-    tabs = ["#tab-create","#tab-init","#tab-resources","#tab-data"]
-    sections = ["#create","#init","#resources","#data"]    
-
-    //tabs onclick events
-    jQuery.each(tabs , function( index ) {
-        $(tabs[index]).on('click', function (){ 
-            showContent( tabs[index],sections[index]);}
-        );
-    });
-    //search
-    bindSearch();
-}
-
-function changeMenu(new_menu){
-    menu = $(new_menu);
-    page = $(".page");
-
-    //focus right menu option
-    $(prevMenu).children().first().removeClass("focused");
-    menu.children().first().addClass("focused");
-
-    //reveal right partial
-    switch (new_menu){
-        case "#menu-views":
-            php_div = 'pages/plugins/views.html';
-            page.load(php_div, function(){
-                addClickEventsViews();
-            });
-            break;
-        case "#menu-modules":
-            php_div = 'pages/plugins/modules.html';
-            page.load(php_div, function(){
-                addClickEventsModules();
-            });
-            break;
-    }
-    prevMenu = new_menu;
-}
-
 function clearSearch(){
     //remove highlight from content
     $(".search-found").contents().unwrap();
@@ -150,14 +88,7 @@ function bindSearch(){
 }
 
 $(document).ready(function(){
-    addClickEventsViews();
-    
-    $("#menu-views").on('click', function (){ 
-        changeMenu("#menu-views");}
-    );
-    $("#menu-modules").on('click', function (){ 
-        changeMenu("#menu-modules");}
-    );
-
+    addClickEvents();
+    bindSearch();
 });
 

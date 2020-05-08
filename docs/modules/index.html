@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+    <title>GameCourse Documentation</title>
+    <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
+    <link rel="stylesheet" href="/gamecourse/docs/css/docs.css"/>
+    <link rel="stylesheet" href="/gamecourse/css/geral.css"/>
+    <script src="/gamecourse/js/angular.min.js"></script>
+    <script src="/gamecourse/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/gamecourse/docs/documentation.js"></script>
+    <script type="text/javascript" src="documentation-modules.js"></script>
+</head>
+<body>
+    <div class="navbar">  
+        <div class="logo">logo</div>
+        <ul class="menu documentation">
+            <li id="menu-views"><a href="/gamecourse/docs" >Views</a></li>
+            <li id="menu-functions"><a href="/gamecourse/docs/functions">Functions</a></li>
+            <li id="menu-modules"><a href="javascript:void(0);" class="focused">Modules</a></li>
+        </ul>
+    </div>
+
+    <div class="page">
+        <div class="sidebar">
+            <div class="tab search" id="find-tab">
+                <input type="text" placeholder="Search.." name="search">
+                <button class="magnifying-glass" id="search-btn"></button> 
+            </div>
+            <div class="tab selected" id="tab-create" >Module Creation</div>
+            <div class="tab" id="tab-init" >Module Initialization</div>
+            <div class="tab" id="tab-resources">Resources & Interaction</div>
+            <div class="tab" id="tab-data">Accessible Data</div>
+        </div>
+        
+        <div class="content">
+            <div class="section visible" id="create">
+                <h2>Module Creation</h2>
+                <div class="subsection">
+                    <p>Creating a module is necessary if you want to use advanced features on the GameCourse, like defining functions or directives for Views, or to extend functionality of the GameCourse in a modular way.</p>
+                    <h3>Creating an empty module</h3>
+                    <p><span>All you need to get started is the following code in a file with the name </span><code>module.EmptyModule.php</code><span> inside a new directory in the directory of the modules. It is recommended that this directory uses a lowercase name, or it might not work in some systems.</span></p>
+                    <pre class="code">&lt;?php
+                        use GameCourse\Module;
+                        use GameCourse\ModuleLoader;
+        
+                        class EmptyModule extends Module {
+                        }
+        
+                        ModuleLoader::registerModule(array(
+                            'id' => 'empty',
+                            'name' => 'My Empty Module',
+                            'version' => '0.1',
+                            'factory' => function() {
+                                return new EmptyModule();
+                            }
+                        ));
+                    </pre>
+                    <p>This code, creates an empty PHP class that is the module and registers it with the module loader, which will load it whenever it is required.</p>
+                </div>
+            </div>
+            <div class="section" id="init">
+                <h2>Module Initialization</h2>
+                <div class="subsection">   
+                    <p><span>To initialize something when the module initializes the function </span><code>init()</code><span> is used. It allows the module to use other features of the GameCourse core, like Navigation, or setup additional things required for the module.</span></p>
+                    <p><span>As an example, lets define a new navigation button, which is only available for Administrators of the system. To do this, we start by defining our empty </span><code>init()</code><span> function inside the class.</span></p>
+                    <pre class="code">
+                        class EmptyModule extends Module {
+                        <span class="highlight">    public function init() {
+                            }</span>
+                    }</pre>
+                    <p><span>Then we state that we need to use something that is part of the Core of the GameCourse system by appending </span><code>use GameCourse\Core</code><span> near the other use statements. An to conclude it we add the code that checks if the user is an Administrator and in that case add the navigation, resulting in the final code:</span></p>
+                    <pre class="code">&lt;?php
+                        <span class="highlight">use GameCourse\Core;</span>
+                        use GameCourse\Module;
+                        use GameCourse\ModuleLoader;
+        
+                        class <span class="highlight">CustomNavigation</span> extends Module {
+                            public function init() {
+                        <span class="highlight">        $user = Core::getLoggedUser();
+                                if (($user != null && $user->isAdmin()))
+                                    Core::addNavigation('images/gear.svg', 'Técnico', 'http://tecnico.ulisboa.pt');</span>
+                            }
+                        }
+        
+                        ModuleLoader::registerModule(array(
+                            'id' => '<span class="highlight">customnav</span>',
+                            'name' => '<span class="highlight">Custom Navigation</span>',
+                            'version' => '0.1',
+                            'factory' => function() {
+                                return new <span class="highlight">CustomNavigation</span>();
+                            }
+                        ));
+                    </pre>
+                    <p><span>The example can be downloaded </span><a href="pages/examples/customnavigation.tar.gz" aria-label="Custom Navigation Module Example">here</a><span>, ready to use, just needs to be extracted to the modules folder.</span></p>
+                </div>
+            </div>
+            <div class="section" id="resources">
+                <h3>Setup Resources</h3>
+                <p><span>If you want to define a plugin that applies CSS or needs Javascript, you need to specify which resources you want to include. This is done using the function </span><code>setupResources()</code><span> and using the function </span><code>addResources()</code><span> from the Module class to add the resources, which can be entire folders.</span></p>
+                <pre class="code">
+                    public function setupResources() {
+                        parent::addResources('css/'); // some styles
+                        parent::addResources('js/main.js'); // add main.js first
+                        parent::addResources('js/'); // other files depend on the main
+                }</pre>
+                <h3>Other classes from the Module</h3>
+                <p></span>To use other classes in the module, you can include them manually, or use the class loader provided by the GameCourse system. This class loader will load the file if the namespace starts with the name </span><code>Modules</code><span> followed by the directory of the plugin, for example, </span><code>namespace Modules/Views;</code>.</p>
+                <p>The classes can then be created normally and are auto loaded by the system automatically, but considerations on the dependencies of the modules should be taken into account, due to the load order of the classes.</p>
+                <h3>Interacting with other modules</h3>
+                <p><span>To interact with other modules we simply request the module we want by using the function </span><code>getModule($module)</code><span> from the course. The requested module should be using the class loader way of loading classes, as explained in </span><a href="#OtherClassesFromModule">Other classes from the Module</a><span> and provide some kind of API for other modules to interact with it.</span></p>
+                <p><span>As an example we can request the module </span><code>views</code><span> and get the view handler.</span></p>
+                <pre class="code">
+                public function init() {
+                    $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
+                }</pre>
+            </div>
+            <div class="section" id="data">
+                <h3>Defining accessible data in the Data Schema</h3>
+                <p><span>To define some type in the Data Schema some functions of the class </span><code>\GameCourse\DataSchema</code><span> are used. There are 4 different data types that can be registered. The types and functions used to create the objects to register in the data schema are in the following list:</span></p>
+                <ul>
+                    <li><span>Value/Field - </span><code>DataSchema::makeField</code></li>
+                    <li><span>Array - </span><code>DataSchema::makeArray</code></li>
+                    <li><span>Object - </span><code>DataSchema::makeObject</code></li>
+                    <li><span>Map - </span><code>DataSchema::makeMap</code></li>
+                </ul>
+                <p><span>The functions </span><code>DataSchema::courseModuleDataFields</code><span> and </span><code>DataSchema::courseUserDataFields</code><span> exist to help create fields for the module and user.</span></p>
+                <p><span>After obtaining the objects it is required to register those objects in the schema, using the function </span><code>DataSchema::register</code>.</p>
+                <pre class="code">
+                    public function init() {
+                        DataSchema::register(array(
+                            DataSchema::courseModuleDataFields($this, array(
+                                DataSchema::makeArray('levels', null,
+                                    DataSchema::makeObject('level', null, array(
+                                        DataSchema::makeField('minxp', 'Min XP', 2000),
+                                        DataSchema::makeField('title', 'Title of the Level', 'Self-Aware')
+                                    ))
+                                )
+                            ))
+                        ));
+                }</pre>
+                <h3>Accessing Module Data</h3>
+                <p><span>To access the module data, all that is needed to do is invoke the </span><code>getData</code><span> function from module class.</span></p>
+                <pre class="code">$this->getData()->set('test', true');</pre>
+                <h3>Accessing User Data</h3>
+                <div class="subsection">
+                    <p><span>To access user data it is necessary to get the user and then invoke the </span><code>CourseUser::getData</code><span> function to access the data.</span></p>
+                    <pre class="code">$this->getParent()->getUser(12345)->getData()->set('test', true');</pre>
+                    <p>In the example we get the user from the parent of the module, which is the course. Then we get the data from the user, which is wrapped by a DataWrapper, that manages the save automatically.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
