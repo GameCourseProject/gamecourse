@@ -65,6 +65,7 @@
                 $http.get('getSchema.php?course=' + $scope.course).then(function(data) {
                     $scope.libraries = data.data;
                     console.log("fields",$scope);
+                    addTabGroup();
                     jQuery.each($scope.libraries , function(index, lib ) {
                         addTab(lib.name);
                         addContent(lib);

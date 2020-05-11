@@ -24,9 +24,15 @@ function reduceNameToId(name){
     id = name.replace(/\s/g, '-');
     return id;
 }
-
-function addTab(name){
+function addTabGroup(){
     sidebar = $(".sidebar");
+    group = jQuery('<div/>', {
+        "class": 'tabgroup course-related'
+    });
+    sidebar.append(group);
+}
+function addTab(name){
+    sidebar = $(".tabgroup");
     div = '<div class="tab course-related" id="tab-' + reduceNameToId(name) +'">'+ name +'</div>';
     sidebar.append(div);
     tab= "#tab-" + reduceNameToId(name);

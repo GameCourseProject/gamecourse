@@ -13,6 +13,21 @@
   border-right: 2px solid grey;
   float: left;
 }
+.page .sidebar .tabgroup{
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 87px);
+}
+.page .sidebar .tabgroup.course-related{
+  height: calc(100% - 159px);
+}
+.page .sidebar .tabgroup .tab{
+  flex-grow: 1;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
 .page .sidebar .tab {
   width: 100%;
   text-align: center;
