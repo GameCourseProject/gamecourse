@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/docs.css"/>
 </head>
 <body>
-    <nav><a href=".">Docs</a> | <a href="./functions">Functions</a> </nav>
+    <nav><a href=".">Docs</a> | <a href="./functions">Functions</a> | <a href="./pages/modules.html">Modules</a></nav>
     <div class="docs">
         <?php include'pages/plugins/views.html'; ?>
         <!--?php include'pages/plugins/charts.html'; ?>

@@ -98,8 +98,8 @@ class Course {
         return Core::$systemDB->selectMultiple("role",["course"=>$this->cid],$field);
     }
     //return an array with role names
-    public function getRoles() {
-        return array_column($this->getRolesData("name"),"name");
+    public function getRoles($field='*') {
+        return $this->getRolesData($field);
     }
     public static function getRoleId($role,$courseId){
         return Core::$systemDB->select("role",["course"=>$courseId,"name"=>$role],"id");

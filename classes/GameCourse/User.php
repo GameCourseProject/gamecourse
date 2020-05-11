@@ -49,6 +49,10 @@ class User {
         $this->setData(["username"=>$username]);
     }
 
+    public function getLastLogin(){
+        return $this->getData("lastActivity");
+    }
+
     public function isAdmin() {
         return $this->getData("isAdmin");
     }

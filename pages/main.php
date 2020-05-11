@@ -20,8 +20,14 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/jquery.nestable.js"></script>
         <script type="text/javascript" src="js/builder.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
-        <script type="text/javascript" src="js/settings.js"></script>
-        <script type="text/javascript" src="js/configurations.js"></script>
+        <script type="text/javascript" src="js/states/settings.js"></script>
+        <script type="text/javascript" src="js/states/other_pages.js"></script>
+        <script type="text/javascript" src="js/aux_functions.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/settings.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/other_pages.js"></script>
+        <script type="text/javascript" src="js/controllers/inside_course/configurations.js"></script>
+        <script type="text/javascript" src="js/controllers/system/settings.js"></script>
+        <script type="text/javascript" src="js/controllers/system/other_pages.js"></script>
         <script type="text/javascript" src="js/d3.min.js"></script>
         <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
         <script type="text/javascript" src="js/tooltip.js"></script>
@@ -34,6 +40,7 @@ $user = Core::getLoggedUser();
             app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
                 $rootScope.loaded=true;
                 
+                //em caso de entrarmos num curso
                 $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                     if ($rootScope.course != course) {
                         $rootScope.course = $scope.course = course;
@@ -41,6 +48,7 @@ $user = Core::getLoggedUser();
                         removeActiveLinks();
                         if ($scope.course != undefined) {
                             changeTitle(courseName, 0, false);
+                            //na funcao da API devolve o que vai aparecer na navbar
                             $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function (data,err) {
                                 if (err) {
                                     alert(err.description);
@@ -74,12 +82,14 @@ $user = Core::getLoggedUser();
                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
                     }
                 };
-
+                
+                //conteúdo da nav bar
                 $scope.mainNavigation = [];
                 $scope.defaultNavigation = function() {
                     $scope.mainNavigation = [
                         {sref: 'home', image: 'images/leaderboard.svg', text: 'Main Page'},
                         {sref: 'courses', image: 'images/leaderboard.svg', text: 'Courses'},
+                        {sref: 'users', image: 'images/leaderboard.svg', text: 'Users'},
                         <?php if ($user->isAdmin()) echo "{sref: 'settings', image: 'images/gear.svg', text: 'Settings'}," ?>
                     ];
                 };
@@ -143,10 +153,10 @@ $user = Core::getLoggedUser();
     <body ng-controller="SmartBoard">
         <nav>
             <div class="nav-header">
-                <a ui-sref="home">GameCourse</a>
-                <span id="page-title"></span>
+                <a ui-sref="home">GameCourse</a> 
+                <span id="page-title"></span> 
             </div>
-            <div class="nav-collapse">
+            <div class="nav-collapse"> <!-- menu na navbar -->
                 <ul>
                     <li ng-repeat="link in mainNavigation track by $index">
                         <a ng-if="link.sref" ui-sref="{{link.sref}}"><div><img ng-src="{{link.image}}"></div><div><span>{{link.text}}</span><span ng-if="link.subtext">{{link.subtext}}</span></div></a>
@@ -156,7 +166,7 @@ $user = Core::getLoggedUser();
             </div>
         </nav>
 
-        <div id="wrapper">          
+        <div id="wrapper">     <!-- conteudo da página -->     
             <div id="content-wrapper">            
                 <div ui-view="main-view"></div>           
             </div>

@@ -74,7 +74,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
     
     if ($isAdmin)
-        Core::addNavigation('images/gear.svg', 'Settings', 'course.settings', true);
+        Core::addNavigation('images/awards.svg', "Users", 'course.users', true); 
+        Core::addNavigation('images/gear.svg', 'Course Settings', 'course.settings', true);
     
     $navPages = Core::getNavigation();
     //print_r($navPages);
@@ -125,6 +126,39 @@ API::registerFunction('settings', 'roleInfo', function() {
     }
 });
 
+API::registerFunction('settings', 'landingPages', function() {
+    API::requireCourseAdminPermission();
+
+    $course = Course::getCourse(API::getValue('course'));
+
+    if (API::hasKey('landingPage')) {
+        $roleId = API::getValue('id');
+        if ($roleId != 0) {//id 0 is default role
+            $course->setRoleDataById($roleId,"landingPage",API::getValue('landingPage'));
+        } else {
+            $course->setLandingPage(API::getValue('landingPage'));
+        }
+    } else {
+        $roles = $course->getRoles();
+        //add default
+        foreach ($roles as $role){
+            $roleId = $role["id"];
+            if ($roleId != "0") {
+                $role["landingPage"] = $course->getRoleById($roleId, "landingPage");
+            } else {
+                $role["landingPage"] = $course->getLandingPage();
+            }
+        }
+        $default = [ "id" => "0", "name" => "Default", "course" => $course->getId(), "landingPage" => $course->getLandingPage()];
+        array_unshift($roles, $default);
+        
+        $globalInfo = array('roles' => $roles);
+        API::response($globalInfo);
+    }
+
+    
+});
+
 //change user roles or role hierarchy
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
@@ -156,7 +190,8 @@ API::registerFunction('settings', 'roles', function() {
         }
         $globalInfo = array(
             'users' => $usersInfo,
-            'roles' => $course->getRoles(),
+            'roles' => array_column($course->getRoles("name"),"name"),
+            'roles_obj' => $course->getRoles(),
             'rolesHierarchy' => $course->getRolesHierarchy(),
         );
         API::response($globalInfo);
@@ -165,6 +200,17 @@ API::registerFunction('settings', 'roles', function() {
 
 //main course settings page
 API::registerFunction('settings', 'courseGlobal', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
+    
+    $globalInfo = array(
+        'name' => $course->getName(),
+        'theme' => $GLOBALS['theme'],
+    );
+    API::response($globalInfo);
+});
+
+API::registerFunction('settings', 'courseModules', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
     if (API::hasKey('module') && API::hasKey('enabled')) {
@@ -222,8 +268,6 @@ API::registerFunction('settings', 'courseGlobal', function() {
         }
         
         $globalInfo = array(
-            'name' => $course->getName(),
-            'theme' => $GLOBALS['theme'],
             'modules' => $modulesArr
         );
         API::response($globalInfo);
@@ -259,7 +303,32 @@ API::registerFunction('settings', 'global', function() {
     }
 });
 
+//system settingd (courses installed)
+API::registerFunction('settings', 'modules', function() {
+    API::requireAdminPermission();
+    // $course = Course::getCourse(API::getValue('course'));
+    
+    $allModules = ModuleLoader::getModules();
+    //$enabledModules = $course->getModules();
+    
+    $modulesArr = array();
+    foreach ($allModules as $module) {
+        $mod = array(
+            'id' => $module['id'],
+            'name' => $module['name'],
+            'dir' => $module['dir'],
+            'version' => $module['version'],
+            'dependencies' => $module['dependencies']
+        );
+        $modulesArr[$module['id']] = $mod;
+    }
+    
+    API::response($modulesArr);
+
+});
+
 //get tabs for system settings
+//deixa de ser utilizado, remover depois
 API::registerFunction('settings', 'tabs', function() {
     API::requireAdminPermission();
     $courses = Core::getCourses();
@@ -274,8 +343,8 @@ API::registerFunction('settings', 'tabs', function() {
     API::response($tabs);
 });
 
-//system users settings (manage admins, create invites)
-API::registerFunction('settings', 'users', function() {
+//system users (manage admins)
+API::registerFunction('core', 'users', function() {
     API::requireAdminPermission();
 
     if (API::hasKey('setPermissions')) {
@@ -319,6 +388,8 @@ API::registerFunction('settings', 'users', function() {
             Core::removePendingInvites($invite);
         return;
     }*/
+
+    // falta ir buscar info de numero de cursos, last login e see esta active ou nao
     API::response(array('users' => User::getAllInfo()));//, 'pendingInvites' => Core::getPendingInvites()));
 });
 
@@ -422,12 +493,18 @@ API::registerFunction('settings', 'courseUsers', function() {
     }
     
     if (API::hasKey('role')){
-        $users = $course->getUsersWithRole($role);
+        if ($role == "allRoles") {
+            $users = $course->getUsers($role);
+        }
+        else{
+            $users = $course->getUsersWithRole($role);
+        }
+        
         $usersInfo = [];
         foreach ($users as $userData) {
             $id = $userData['id'];
             $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername());
+            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername(), 'last_login' => $user->getLastLogin());
         }
         
         $fileData = @file_get_contents($file);
