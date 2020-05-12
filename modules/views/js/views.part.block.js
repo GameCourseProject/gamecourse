@@ -146,7 +146,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         canDelete: true,
                         canSwitch: true,
                         canDuplicate: true,
-                        canSaveTemplate: true
+                        canSaveTemplate: true,
+                        canSaveTemplateRef: true
                     },
                     toolFunctions: {
                         remove: function (obj) {

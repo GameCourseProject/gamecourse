@@ -46,6 +46,8 @@ class ViewHandler {
         unset($copy["rows"]);
         unset($copy["headerRows"]);
         unset($copy["columns"]);
+        unset($copy["templateId"]);
+        unset($copy["aspectId"]);
         if ($copy["partType"]=="chart"){
             $copy["value"]=$copy["chartType"];
             unset($copy["chartType"]);
@@ -60,11 +62,11 @@ class ViewHandler {
     //receives view and updates the DB with its info, propagates changes in the main view to all its children
 //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), used for change in aspectclass
     public function updateViewAndChildren($viewPart, $basicUpdate=false, $ignoreIds=false,&$partsInDB=null){
-    if ($viewPart["partType"]!="block" ||  $viewPart["parent"]!=null ){            
+        if ($viewPart["partType"]!="block" ||  $viewPart["parent"]!=null ){            
             //insert/update views
             $copy=$this->makeCleanViewCopy($viewPart);
             if (array_key_exists("id", $viewPart) && !$ignoreIds){//already in DB, may need update
-                
+
                 Core::$systemDB->update("view",$copy,["id"=>$viewPart["id"]]);  
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
@@ -134,6 +136,16 @@ class ViewHandler {
                     $viewPart["id"]=$foundAspect["id"];
                     $viewPart["partType"]="block";
                     $viewPart["parent"]=null;
+                    //when there is only one role created, aspect is null
+                    if ($aspectClass == null){
+                        //add new aspect
+                        Core::$systemDB->insert("aspect_class");
+                        $aspectClass = Core::$systemDB->getLastId();
+
+                        //update view and respective children with aspectClass
+                        Core::$systemDB->update("view",["aspectClass"=>$aspectClass],["id"=>$foundAspect["id"]]);
+                        Core::$systemDB->update("view",["aspectClass" => $aspectClass], ["parent" => $foundAspect["id"]]);
+                    }
                     $viewPart["aspectClass"]=$aspectClass;
                     $this->updateViewAndChildren($viewPart);
                 }
@@ -601,7 +613,7 @@ class ViewHandler {
     }
 
     public function processEvents(&$part, $visitor) {
-        if (array_key_exists('events', $part)) {
+        if (array_key_exists('events', $part) && $part["events"]!= null) {
             foreach ($part['events'] as $k => &$v) {
                 $v = $v->accept($visitor)->getValue();
             }
@@ -611,7 +623,7 @@ class ViewHandler {
     public function processVariables(&$part, $viewParams, $visitor, $func = null) {
         $actualVisitor = $visitor;
         $params = $viewParams;
-        if (array_key_exists('variables', $part)) {
+        if (array_key_exists('variables', $part) && $part["variables"]!=null) {
             
             foreach ($part['variables'] as $k => &$v) {
                 $params[$k] = $v['value']->accept($actualVisitor)->getValue();

@@ -170,6 +170,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             tempRefOptions.toolOptions.noSettings=true;
             tempRefOptions.toolOptions.canDuplicate=false;
             tempRefOptions.toolOptions.canSaveTemplate=false;
+            tempRefOptions.toolOptions.canSaveTemplateRef=false;
             var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
             element.prepend($('<span style="color: #8f0707;display: table; margin: auto;">Warning: Any changes made to this block will affect the original template</span>'));
             element.attr("style","padding: 10px; background-color: #ddedeb; border: 1px solid rgba(255, 0, 0, 0.2);");//#881111
@@ -561,6 +562,67 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 });
             }));
         }
+        
+        if (toolbarOptions.tools.canSaveTemplateRef) {
+            toolbar.append($sbviews.createTool('Save template by reference', 'images/save2.svg', function () {
+                var optionsScope = scope.$new();
+                optionsScope.editData = toolbarOptions.editData;
+                optionsScope.part = part;
+
+
+                var templatePart = angular.copy(part);
+
+                optionsScope.template = {
+                    name: '',
+                    part: templatePart,
+                    course: $rootScope.course,
+                    role: "Role.Default",
+                    roleType: "ROLE_SINGLE",
+                };
+                $timeout(function () {
+                    $sbviews.openOverlay(function (el, execClose) {
+                        optionsScope.closeOverlay = function () {
+                            execClose();
+                        };                      
+
+                        var templateIndex = optionsScope.editData.templates.length - 1;
+
+                        optionsScope.saveTemplateRef = function () {
+                            optionsScope.template.part.role=$rootScope.role;
+                            $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
+                                if (err) {
+                                    alert(err.description);
+                                    return;
+                                }
+                                execClose();
+                                alert('Template saved!');
+                                optionsScope.editData.templates[templateIndex] = optionsScope.template;
+                            });
+                            
+                            $smartboards.request('views', 'getTemplateReference',  optionsScope.editData.templates[templateIndex], function (data, err) {
+                                if (err) {
+                                    alert(err.description);
+                                    return;
+                                }
+                                newPart = data.template;
+                                delete data.template.id;
+                                console.log(newPart);
+                                toolbarOptions.toolFunctions.switch(part, newPart);
+                                execClose();
+                            });   
+                        };
+
+                        var wrapper = $('<div>');
+                        wrapper.append('<div class="title"><span>Save Template Reference</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
+                        var input = $('<sb-input sb-input="template.name" sb-input-label="Template Name"><button id="saveTemplateByReference" ng-click="saveTemplateRef()">Save</button></sb-input>');
+                        wrapper.append(input);
+                        $compile(wrapper)(optionsScope)
+                        el.append(wrapper);
+                    }, function () {
+                    });
+                });
+            }));
+        }
 
         var nTools = toolbar.children().length;
         toolbar.css('min-width', nTools * 15 + 1);
@@ -615,7 +677,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     canSwitch: false,
                     canDelete: false,
                     canDuplicate: false,
-                    canSaveTemplate: false
+                    canSaveTemplate: false,
+                    canSaveTemplateRef: false
                 },
                 view: partOptions.view
             };

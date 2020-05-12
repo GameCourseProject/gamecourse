@@ -1,1 +1,106 @@
-a:10:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"block";s:3:"pid";s:32:"d7a25f7846c837d3d858d124047c28b2";s:6:"header";a:2:{s:5:"title";a:8:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"value";s:3:"pid";s:32:"7ac8cc536f2dac39cc000ca362b3fd1c";s:9:"valueType";s:4:"text";s:4:"info";s:13:"Notifications";s:6:"origin";s:4:"this";}s:5:"image";a:8:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"image";s:3:"pid";s:32:"be3567c7ef463a6fab2c14665bfe969e";s:9:"valueType";s:4:"text";s:4:"info";s:17:"images/awards.svg";s:6:"origin";s:4:"this";}}s:8:"children";a:1:{i:0;a:11:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"block";s:3:"pid";s:32:"1422d31e81892943f304fe07ee96222f";s:8:"children";a:2:{i:0;a:10:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"block";s:3:"pid";s:32:"e7c268bca584444a2de601fa19f725a0";s:6:"header";a:2:{s:5:"title";a:8:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"value";s:3:"pid";s:32:"273a41c986a07e1f243dc5ff0ca1a133";s:9:"valueType";s:10:"expression";s:4:"info";s:56:"You unlocked: {%notification.name} {%notification.level}";s:6:"origin";s:4:"this";}s:5:"image";a:8:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"image";s:3:"pid";s:32:"cd0f2fb127e8ffec35242e43f8ee89b8";s:9:"valueType";s:10:"expression";s:4:"info";s:62:"badges/{$urlify(%notification.name)}-{%notification.level}.png";s:6:"origin";s:4:"this";}}s:8:"children";a:1:{i:0;a:10:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"image";s:3:"pid";s:32:"6daec590294494e0c238f9df1f75c57b";s:9:"valueType";s:4:"text";s:4:"info";s:16:"images/close.svg";s:5:"class";s:5:"close";s:6:"events";a:1:{s:5:"click";s:39:"removeNotification(this.notificationId)";}s:6:"origin";s:4:"this";}}s:2:"if";s:31:"{%notification.type == 'badge'}";s:5:"class";s:12:"notification";s:6:"origin";s:4:"this";}i:1;a:10:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"block";s:3:"pid";s:32:"4b108fc693ef66b8ab309c99167a0aaa";s:6:"header";a:2:{s:5:"title";a:8:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"value";s:3:"pid";s:32:"60747273b9908f345d38b018d6ceeeb6";s:9:"valueType";s:10:"expression";s:4:"info";s:34:"You unlocked: {%notification.name}";s:6:"origin";s:4:"this";}s:5:"image";a:9:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"image";s:3:"pid";s:32:"4ef0794b4129f5c99d0388a1e10c61e5";s:9:"valueType";s:4:"text";s:4:"info";s:17:"images/skills.svg";s:5:"style";s:56:"background-color: {skill[name=%notification.name].color}";s:6:"origin";s:4:"this";}}s:8:"children";a:1:{i:0;a:10:{s:6:"viewId";s:7:"profile";s:6:"course";s:1:"1";s:4:"role";s:24:"role.Student>special.Own";s:4:"type";s:5:"image";s:3:"pid";s:32:"b8ef10b1ffef02f3dcf30d5c8cae0d72";s:9:"valueType";s:4:"text";s:4:"info";s:16:"images/close.svg";s:5:"class";s:5:"close";s:6:"events";a:1:{s:5:"click";s:39:"removeNotification(this.notificationId)";}s:6:"origin";s:4:"this";}}s:2:"if";s:31:"{%notification.type == 'skill'}";s:5:"class";s:12:"notification";s:6:"origin";s:4:"this";}}s:6:"repeat";a:3:{s:3:"for";s:26:"{$getNotifications(%user)}";s:3:"key";s:12:"notification";s:4:"sort";a:2:{s:5:"value";s:25:"{%notification.awardDate}";s:5:"order";s:3:"ASC";}}s:5:"class";s:20:"notification-outside";s:9:"directive";s:22:"notification-directive";s:4:"data";a:2:{s:14:"notificationId";a:2:{s:5:"value";s:15:"{%notification}";s:7:"context";s:2:"js";}s:6:"course";a:2:{s:5:"value";s:9:"{%course}";s:7:"context";s:2:"js";}}s:6:"origin";s:4:"this";}}s:2:"if";s:28:"{$checkNotifications(%user)}";s:5:"class";s:23:"notifications-container";s:6:"origin";s:4:"this";}
+[
+    {
+        "role": "role.Student>special.Own",
+        "parent": null,
+        "partType": "block",
+        "class": "notifications-container",
+        "header": {
+            "title": {
+                "role": "role.Student>special.Own",
+                "partType": "text",
+                "value": "Notifications",
+                "info": null
+            },
+            "image": {
+                "role": "role.Student>special.Own",
+                "partType": "image",
+                "value": "images\/awards.svg",
+                "info": null
+            }
+        },
+        "children": [
+            {
+                "role": "role.Student>special.Own",
+                "class": "notification-outside",
+                "partType": "block",
+                "children": [
+                    {
+                        "role": "role.Student>special.Own",
+                        "class": "notification",
+                        "partType": "block",
+                        "header": {
+                            "title": {
+                                "role": "role.Student>special.Own",
+                                "partType": "text",
+                                "value": "You unlocked: {%notification.name} {%notification.level}",
+                                "info": null
+                            },
+                            "image": {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "badges\/{$urlify(%notification.name)}-{%notification.level}.png",
+                                "info": null
+                            }
+                        },
+                        "children": [
+                            {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images\/close.svg",
+                                "info": null,
+                                "class": "close",
+                                "events": {
+                                    "click": "removeNotification(this.notificationId)"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "role": "role.Student>special.Own",
+                        "partType": "block",
+                        "header": {
+                            "title": {
+                                "role": "role.Student>special.Own",
+                                "partType": "text",
+                                "value": "You unlocked: {%notification.name}",
+                                "info": null
+                            },
+                            "image": {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images\/skills.svg",
+                                "info": null,
+                                "style": "background-color: {skillname=%notification.name].color}"
+                            }
+                        },
+                        "children": [
+                            {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images/close.svg",
+                                "info": null,
+                                "class": "close",
+                                "events": {
+                                    "click": "removeNotification(this.notificationId)"
+                                }
+                            }
+                        ],
+                        "class": "notification"
+                    }
+                ],
+                "loopdata": "{$getNotifications(%user).sort(\"ascending\")}",
+                "variables": {
+                    "notification": {
+                        "value": "{%notification.awardDate}"
+                    },
+                    "notificationId": {
+                        "value": "{%notification}"
+                    },
+                    "course": {
+                        "value": "{%course}"
+                    }
+                }
+            }
+        ]
+    }
+]

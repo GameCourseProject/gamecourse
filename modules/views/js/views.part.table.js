@@ -31,7 +31,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         canDelete: false,
                         canSwitch: true,
                         canDuplicate: false,
-                        canSaveTemplate: true
+                        canSaveTemplate: true,
+                        canSaveTemplateRef: true
                     },
                     toolFunctions: {
                         switch: function (oldPart, newPart) {

@@ -694,8 +694,13 @@ class Views extends Module {
             }else {
                 $defaultRole ="role.Default";
             }
+
+            //create new aspectClass
+            Core::$systemDB->insert("aspect_class");
+            $aspectClass = Core::$systemDB->getLastId();
+            
             //insert default aspect view
-            Core::$systemDB->insert("view",["partType"=>"block","parent"=>null,"role"=>$defaultRole]);
+            Core::$systemDB->insert("view",["aspectClass"=>$aspectClass,"partType"=>"block","parent"=>null,"role"=>$defaultRole]);
             $viewId=Core::$systemDB->getLastId();
             //page or template to insert in db
             $newView=["name"=>API::getValue('name'),"course"=>API::getValue('course'),"roleType"=>$roleType];
@@ -753,9 +758,9 @@ class Views extends Module {
                 
                 Core::$systemDB->delete("view",["id"=>$aspect["id"]]);
             }
-            if(sizeof($aspects)==2){//only 1 aspect after deletion -> aspectClass becomes null
-                Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspects[0]["aspectClass"]]);
-            }
+            // if(sizeof($aspects)==2){//only 1 aspect after deletion -> aspectClass becomes null
+            //     Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspects[0]["aspectClass"]]);
+            // }
             http_response_code(200);
             return;
         });
@@ -836,14 +841,14 @@ class Views extends Module {
             //get content of template to put in the view
             $templateId=API::getValue("id");
             $templateView = $this->getTemplateContents(API::getValue("role"),$templateId,API::getValue("course"),API::getValue("roleType"));      
-            
             $templateView["partType"] = "templateRef";
             $templateView["templateId"] =$templateId;
             $templateView["aspectId"] =$templateView["id"];
-            
             API::response(array('template' => $templateView));
         });
-        //save a part of the view as a template while editing the view
+
+        
+        //save a part of the view as a template or templateRef while editing the view
         API::registerFunction('views', 'saveTemplate', function() {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');
@@ -857,17 +862,10 @@ class Views extends Module {
             }else {
                 $defaultRole ="role.Default";
             }
-            $isDefault = ($content["role"]==$defaultRole);
             $aspects = [];
-            if (!$isDefault) {
-                $aspects[] = ["role" => $defaultRole, "partType" => "block","parent"=>null];
-                Core::$systemDB->insert("aspect_class");
-                $aspectClass = Core::$systemDB->getLastId();
-            } else {
-                $aspectClass = null;
-            }
             $aspects[] = ["role"=>$content["role"], "partType"=>"block","parent"=>null];
-            
+            Core::$systemDB->insert("aspect_class");
+            $aspectClass = Core::$systemDB->getLastId();
             $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
         });
         //toggle isGlobal parameter of a template
@@ -1007,7 +1005,6 @@ class Views extends Module {
                 API::error('Missing roleOne and/or roleTwo in info');
             }
         }
-
         $testDone = false;
         $warning=false;
         $viewCopy = $viewContent;

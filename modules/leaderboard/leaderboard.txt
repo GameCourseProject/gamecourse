@@ -1,1 +1,566 @@
-[{"id":"2731","aspectClass":null,"role":"role.Default","partType":"block","parent":null,"viewIndex":null,"label":null,"loopData":null,"variables":null,"value":null,"class":null,"style":null,"link":null,"visibilityCondition":null,"visibilityType":null,"events":null,"info":null,"children":[{"id":"2732","aspectClass":null,"role":"role.Default","partType":"block","parent":"2731","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":null,"class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[{"id":"2733","aspectClass":null,"role":"role.Default","partType":"table","parent":"2732","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":null,"class":"leaderboard-table","style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[],"rows":[{"id":"2742","aspectClass":null,"role":"role.Default","partType":"row","parent":"2733","viewIndex":"1","label":null,"loopData":"{users.getAllUsers(\"Student\").sort( \"des\",\"xp.getXP(%item);badges.getBadgesCount(%item)\")}","variables":{"userXP":{"value":"{xp.getXP(%item)}"}},"value":null,"class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":{"click":"{actions.goToPage(\"Profile\",%item)}"},"info":null,"values":[{"value":{"id":"2743","aspectClass":null,"role":"role.Default","partType":"text","parent":"2742","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":"{%index+1}","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2744","aspectClass":null,"role":"role.Default","partType":"image","parent":"2742","viewIndex":"1","label":null,"loopData":"{}","variables":[],"value":"{%item.picture}","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2745","aspectClass":null,"role":"role.Default","partType":"text","parent":"2742","viewIndex":"2","label":null,"loopData":"{}","variables":[],"value":"{%item.campus}","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2746","aspectClass":null,"role":"role.Default","partType":"text","parent":"2742","viewIndex":"3","label":null,"loopData":"{}","variables":[],"value":"{%item.name}","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2747","aspectClass":null,"role":"role.Default","partType":"block","parent":"2742","viewIndex":"4","label":null,"loopData":"{}","variables":[],"value":null,"class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[{"id":"2748","aspectClass":null,"role":"role.Default","partType":"text","parent":"2747","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":"{%userXP} XP","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]},{"id":"2749","aspectClass":null,"role":"role.Default","partType":"chart","parent":"2747","viewIndex":"1","label":null,"loopData":"{}","variables":{"user":{"value":"{%item.id}"}},"value":"line","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":{"provider":"xpEvolution","spark":""},"chartType":"line","children":[]}]}},{"value":{"id":"2750","aspectClass":null,"role":"role.Default","partType":"block","parent":"2742","viewIndex":"5","label":null,"loopData":"{}","variables":{"lvl":{"value":"{xp.getLevel(%item)}"}},"value":null,"class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[{"id":"2751","aspectClass":null,"role":"role.Default","partType":"text","parent":"2750","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":"{%lvl.number} - {%lvl.description}","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]},{"id":"2752","aspectClass":null,"role":"role.Default","partType":"text","parent":"2750","viewIndex":"1","label":null,"loopData":"{}","variables":[],"value":"{1000 - (%userXP % 1000)} for L{%lvl.number.int + 1} at {(%lvl.number.int + 1) * 1000} XP","class":"xpNeeded","style":null,"link":null,"visibilityCondition":"{%lvl.number<20}","visibilityType":"conditional","events":[],"info":null,"children":[]}]}},{"value":{"id":"2753","aspectClass":null,"role":"role.Default","partType":"chart","parent":"2742","viewIndex":"6","label":null,"loopData":"{}","variables":[],"value":"progress","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":{"provider":"","value":"{badges.getBadgesCount(%item)}","max":"{badges.getBadgesCount}"},"chartType":"progress","children":[]}}]}],"headerRows":[{"id":"2734","aspectClass":null,"role":"role.Default","partType":"headerRow","parent":"2733","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":null,"class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"values":[{"value":{"id":"2735","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":"#","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2736","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"1","label":null,"loopData":"{}","variables":[],"value":"Photo","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2737","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"2","label":null,"loopData":"{}","variables":[],"value":"Campus","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2738","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"3","label":null,"loopData":"{}","variables":[],"value":"Name","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2739","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"4","label":null,"loopData":"{}","variables":[],"value":"Experience","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2740","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"5","label":null,"loopData":"{}","variables":[],"value":"Level","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}},{"value":{"id":"2741","aspectClass":null,"role":"role.Default","partType":"text","parent":"2734","viewIndex":"6","label":null,"loopData":"{}","variables":[],"value":"Badges","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}}]}],"columns":7}],"header":{"image":{"id":"2755","aspectClass":null,"role":"role.Default","partType":"image","parent":"2754","viewIndex":"0","label":null,"loopData":"{}","variables":[],"value":"images\/leaderboard.svg","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]},"title":{"id":"2756","aspectClass":null,"role":"role.Default","partType":"text","parent":"2754","viewIndex":"1","label":null,"loopData":"{}","variables":[],"value":"Leaderboard","class":null,"style":null,"link":null,"visibilityCondition":"{}","visibilityType":"conditional","events":[],"info":null,"children":[]}}}]}]
+[
+    {
+        "id": "2731",
+        "aspectClass": null,
+        "role": "role.Default",
+        "partType": "block",
+        "parent": null,
+        "viewIndex": null,
+        "label": null,
+        "loopData": null,
+        "variables": null,
+        "value": null,
+        "class": null,
+        "style": null,
+        "link": null,
+        "visibilityCondition": null,
+        "visibilityType": null,
+        "events": null,
+        "info": null,
+        "children": [
+            {
+                "id": "2732",
+                "aspectClass": null,
+                "role": "role.Default",
+                "partType": "block",
+                "parent": "2731",
+                "viewIndex": "0",
+                "label": null,
+                "loopData": "{}",
+                "variables": [],
+                "value": null,
+                "class": null,
+                "style": null,
+                "link": null,
+                "visibilityCondition": "{}",
+                "visibilityType": "conditional",
+                "events": [],
+                "info": null,
+                "children": [
+                    {
+                        "id": "2733",
+                        "aspectClass": null,
+                        "role": "role.Default",
+                        "partType": "table",
+                        "parent": "2732",
+                        "viewIndex": "0",
+                        "label": null,
+                        "value": null,
+                        "loopData": "{users.getAllUsers(\"student\",%course).sort( \"ascending\",\"xp.getXP(%item);badges.getBadgesCount(%item)\")}",
+                        "class": "leaderboard-table",
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "info": null,
+                        "children": [],
+                        "variables": {
+                            "userXP": {
+                                "value": "{xp.getXP(%item)}"
+                            }
+                        },
+                        "events": {
+                            "click": "{actions.goToPage(\"Profile\",%item)}"
+                        },
+                        "rows": [
+                            {
+                                "events": [],
+                                "id": "2742",
+                                "loopData": "{}",
+                                "aspectClass": null,
+                                "variables": [],
+                                "role": "role.Default",
+                                "partType": "row",
+                                "parent": "2733",
+                                "viewIndex": "1",
+                                "label": null,
+                                "value": null,
+                                "class": null,
+                                "style": null,
+                                "link": null,
+                                "visibilityCondition": "{}",
+                                "visibilityType": "conditional",
+                                "info": null,
+                                "values": [
+                                    {
+                                        "value": {
+                                            "id": "2743",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2742",
+                                            "viewIndex": "0",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%index+1}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2744",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "image",
+                                            "parent": "2742",
+                                            "viewIndex": "1",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.picture}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2745",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2742",
+                                            "viewIndex": "2",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.campus}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2746",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2742",
+                                            "viewIndex": "3",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "{%item.name}",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2747",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "block",
+                                            "parent": "2742",
+                                            "viewIndex": "4",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": null,
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": [
+                                                {
+                                                    "id": "2748",
+                                                    "aspectClass": null,
+                                                    "role": "role.Default",
+                                                    "partType": "text",
+                                                    "parent": "2747",
+                                                    "viewIndex": "0",
+                                                    "label": null,
+                                                    "loopData": "{}",
+                                                    "variables": [],
+                                                    "value": "{%userXP} XP",
+                                                    "class": null,
+                                                    "style": null,
+                                                    "link": null,
+                                                    "visibilityCondition": "{}",
+                                                    "visibilityType": "conditional",
+                                                    "events": [],
+                                                    "info": null,
+                                                    "children": []
+                                                },
+                                                {
+                                                    "id": "2749",
+                                                    "aspectClass": null,
+                                                    "role": "role.Default",
+                                                    "partType": "chart",
+                                                    "parent": "2747",
+                                                    "viewIndex": "1",
+                                                    "label": null,
+                                                    "loopData": "{}",
+                                                    "variables": {
+                                                        "user": {
+                                                            "value": "{%item.id}"
+                                                        }
+                                                    },
+                                                    "value": "line",
+                                                    "class": null,
+                                                    "style": null,
+                                                    "link": null,
+                                                    "visibilityCondition": "{}",
+                                                    "visibilityType": "conditional",
+                                                    "events": [],
+                                                    "info": {
+                                                        "provider": "xpEvolution",
+                                                        "spark": ""
+                                                    },
+                                                    "chartType": "line",
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2750",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "block",
+                                            "parent": "2742",
+                                            "viewIndex": "5",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": {
+                                                "lvl": {
+                                                    "value": "{xp.getLevel(%item)}"
+                                                }
+                                            },
+                                            "value": null,
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": [
+                                                {
+                                                    "id": "2751",
+                                                    "aspectClass": null,
+                                                    "role": "role.Default",
+                                                    "partType": "text",
+                                                    "parent": "2750",
+                                                    "viewIndex": "0",
+                                                    "label": null,
+                                                    "loopData": "{}",
+                                                    "variables": [],
+                                                    "value": "{%lvl.number} - {%lvl.description}",
+                                                    "class": null,
+                                                    "style": null,
+                                                    "link": null,
+                                                    "visibilityCondition": "{}",
+                                                    "visibilityType": "conditional",
+                                                    "events": [],
+                                                    "info": null,
+                                                    "children": []
+                                                },
+                                                {
+                                                    "id": "2752",
+                                                    "aspectClass": null,
+                                                    "role": "role.Default",
+                                                    "partType": "text",
+                                                    "parent": "2750",
+                                                    "viewIndex": "1",
+                                                    "label": null,
+                                                    "loopData": "{}",
+                                                    "variables": [],
+                                                    "value": "{1000 - (%userXP % 1000)} for L{%lvl.number.int + 1} at {(%lvl.number.int + 1) * 1000} XP",
+                                                    "class": "xpNeeded",
+                                                    "style": null,
+                                                    "link": null,
+                                                    "visibilityCondition": "{%lvl.number<20}",
+                                                    "visibilityType": "conditional",
+                                                    "events": [],
+                                                    "info": null,
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2753",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "chart",
+                                            "parent": "2742",
+                                            "viewIndex": "6",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "progress",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": {
+                                                "provider": "",
+                                                "value": "{badges.getBadgesCount(%item)}",
+                                                "max": "{badges.getBadgesCount}"
+                                            },
+                                            "chartType": "progress",
+                                            "children": []
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "headerRows": [
+                            {
+                                "id": "2734",
+                                "aspectClass": null,
+                                "role": "role.Default",
+                                "partType": "headerRow",
+                                "parent": "2733",
+                                "viewIndex": "0",
+                                "label": null,
+                                "loopData": "{}",
+                                "variables": [],
+                                "value": null,
+                                "class": null,
+                                "style": null,
+                                "link": null,
+                                "visibilityCondition": "{}",
+                                "visibilityType": "conditional",
+                                "events": [],
+                                "info": null,
+                                "values": [
+                                    {
+                                        "value": {
+                                            "id": "2735",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "0",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "#",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2736",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "1",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Photo",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2737",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "2",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Campus",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2738",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "3",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Name",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2739",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "4",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Experience",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2740",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "5",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Level",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    },
+                                    {
+                                        "value": {
+                                            "id": "2741",
+                                            "aspectClass": null,
+                                            "role": "role.Default",
+                                            "partType": "text",
+                                            "parent": "2734",
+                                            "viewIndex": "6",
+                                            "label": null,
+                                            "loopData": "{}",
+                                            "variables": [],
+                                            "value": "Badges",
+                                            "class": null,
+                                            "style": null,
+                                            "link": null,
+                                            "visibilityCondition": "{}",
+                                            "visibilityType": "conditional",
+                                            "events": [],
+                                            "info": null,
+                                            "children": []
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "columns": 7
+                    }
+                ],
+                "header": {
+                    "image": {
+                        "id": "2755",
+                        "aspectClass": null,
+                        "role": "role.Default",
+                        "partType": "image",
+                        "parent": "2754",
+                        "viewIndex": "0",
+                        "label": null,
+                        "loopData": "{}",
+                        "variables": [],
+                        "value": "images\/leaderboard.svg",
+                        "class": null,
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "events": [],
+                        "info": null,
+                        "children": []
+                    },
+                    "title": {
+                        "id": "2756",
+                        "aspectClass": null,
+                        "role": "role.Default",
+                        "partType": "text",
+                        "parent": "2754",
+                        "viewIndex": "1",
+                        "label": null,
+                        "loopData": "{}",
+                        "variables": [],
+                        "value": "Leaderboard",
+                        "class": null,
+                        "style": null,
+                        "link": null,
+                        "visibilityCondition": "{}",
+                        "visibilityType": "conditional",
+                        "events": [],
+                        "info": null,
+                        "children": []
+                    }
+                }
+            }
+        ]
+    }
+]
