@@ -6,7 +6,7 @@
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
     <title>GameCourse Documentation</title>
     <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
-    <link rel="stylesheet" href="/gamecourse/docs/css/docs.css"/>
+    <link rel="stylesheet" href="/gamecourse/css/docs.css"/>
     <link rel="stylesheet" href="/gamecourse/css/geral.css"/>
     <script src="/gamecourse/js/angular.min.js"></script>
     <script src="/gamecourse/js/jquery.min.js"></script>
