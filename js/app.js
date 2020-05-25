@@ -4,13 +4,23 @@ app.run(['$rootScope', '$state', function($rootScope, $state) {
     $rootScope.$on('$stateChangeSuccess', function(e, toState, toParams, fromState, fromParams) {
         removeActiveLinks();
         addActiveLinks(toState.name);
+        if(toState.name == "home"){
+            addPagesBackToNavBar(true);
+            console.log("repor navbar")
+        }
+        checkNavbarLength();
+        
     });
+    
 }]);
 
 function removeActiveLinks() {
     var elementsFrom = $(document).find('a.active[ui-sref]');
     if (elementsFrom.length > 0)
         elementsFrom.removeClass('active');
+    var elementsFromNav = $(document).find('a.focused[ui-sref]');
+    if (elementsFromNav.length > 0)
+        elementsFromNav.removeClass('focused');
 }
 
 function addActiveLinks(state) {
@@ -19,6 +29,7 @@ function addActiveLinks(state) {
         var elementsTo = $(document).find('a[ui-sref="' + sliced.slice(0, i).join('.') + '"]');
         if (elementsTo.length > 0)
             elementsTo.addClass('active');
+            elementsTo.addClass('focused');
     }
 }
 

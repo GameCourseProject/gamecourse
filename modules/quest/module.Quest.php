@@ -64,7 +64,7 @@ class Quest extends Module {
                         $subtext = '(Not Live: ' . floor($startTime - time()) . 's to start)';
                 }
             }
-            Core::addNavigation($this->getDir() . 'images/quest.svg', 'Quest', 'course.quest', true, $subtext);
+            Core::addNavigation( 'Quest', 'course.quest', true);
         }*/
 
 

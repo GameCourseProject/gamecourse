@@ -1,7 +1,7 @@
 //Controllers for pages of the system, except for setting pages
 
 app.controller('HomePage', function($element, $scope, $timeout) {
-    $scope.setNavigation([]);
+    $scope.setNavigation([], []);
     $timeout(function() {
         $scope.defaultNavigation();
         $timeout(function() {

@@ -46,6 +46,7 @@
   }
   .navbar .menu .dropdown {
     display: inline-block;
+    position: relative;
   }
   .navbar .menu .dropdown .dropdown-content {
     display: none;
@@ -53,9 +54,17 @@
     position: absolute;
     z-index: 1;
     background-color: gray;
+    width: 100%;
   }
   .navbar .menu .dropdown .dropdown-content a {
     display: block;
+    color: black;
+  }
+  .navbar .menu .dropdown .dropdown-content a.focused {
+    color: white;
+    background-color: gray;
+    border-bottom: none;
+    font-weight: bold;
   }
   .navbar .menu .dropdown .dropdown-content a:hover {
     border: none;

@@ -20,6 +20,7 @@ class Core {
 
     private static $loggedUser = null;
     private static $navigation = array();
+    private static $settings = array();
     public static function isCLI() {
         return php_sapi_name() == 'cli';
     }
@@ -171,12 +172,20 @@ class Core {
     }
     
     //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins
-    public static function addNavigation($image, $text, $ref, $isSRef = false, $subtext = '',$restrictAcess=false) {
-        static::$navigation[] = ['image' => $image, 'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'subtext' => $subtext,
+    public static function addNavigation( $text, $ref, $isSRef = false, $class = '', $children = false, $restrictAcess=false) {
+        static::$navigation[] = [ 'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'class' => $class, 'children' => $children,
                                 "restrictAcess"=>$restrictAcess];
     }
 
     public static function getNavigation() {
         return static::$navigation;
+    }
+
+    public static function addSettings($text, $ref, $isSRef = false, $restrictAcess=false){
+        static::$settings[] = ['text' => $text, ($isSRef ? 'sref' : 'href') => $ref,
+                                "restrictAcess"=>$restrictAcess];
+    }
+    public static function getSettings() {
+        return static::$settings;
     }
 }
