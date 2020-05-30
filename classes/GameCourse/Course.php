@@ -24,7 +24,10 @@ class Course {
     //    return $this->getData("numBadges");
     //}
     public function getActive(){
-        return $this->getData("active");
+        return $this->getData("isActive");
+    }
+    public function getVisible(){
+        return $this->getData("isVisible");
     }
     public function getLandingPage(){
         return $this->getData("defaultLandingPage");
@@ -35,6 +38,9 @@ class Course {
     }
     public function setActiveState($active){
         $this->setData("isActive",$active);
+    }
+    public function setVisibleState($active){
+        $this->setData("isVisible",$active);
     }
     public function setLandingPage($page){
         $this->setData("defaultLandingPage",$page);
@@ -314,7 +320,7 @@ class Course {
                 foreach ($views as $v){
                     unset($v["id"]);
                     $v["aspectClass"]=$aspectClass;
-   //need to convert the roles of the aspects to the new roles                 
+                    //need to convert the roles of the aspects to the new roles                 
                     if ($p["roleType"]=="ROLE_INTERACTION"){
                         $roles= explode(">", $v["role"]);
                     }else{

@@ -32,6 +32,14 @@ API::registerFunction('core', 'getCoursesList', function() {
     if ($user->isAdmin()) {
         $courses = Core::getCourses();
         $myCourses = false;
+        //get number of students per course
+        foreach($courses as &$course){
+            $cOb = Course::getCourse($course['id'], false);
+            $students = sizeof($cOb->getUsersWithRole("Student"));
+            $course['nstudents'] = $students;
+            $course['short'] = 'shortT';
+            $course['year'] = "2020";
+        }
     }
     else {
         $coursesId = $user->getCourses();
@@ -47,6 +55,32 @@ API::registerFunction('core', 'getCoursesList', function() {
         $myCourses = true;
     }
     API::response(array('courses' => $courses, 'myCourses' => $myCourses));
+});
+
+//set course Visibility
+API::registerFunction('core', 'setCoursesvisibility', function(){
+    API::requireValues('course_id');
+    API::requireValues('visibility');
+
+    
+    $course_id = API::getValue('course_id');
+    $visibility = API::getValue('visibility');
+    
+    $cOb = Course::getCourse($course_id, false);
+    $cOb->setVisibleState($visibility);
+});
+
+//set course ative
+API::registerFunction('core', 'setCoursesActive', function(){
+    API::requireValues('course_id');
+    API::requireValues('active');
+
+    
+    $course_id = API::getValue('course_id');
+    $active = API::getValue('active');
+    
+    $cOb = Course::getCourse($course_id, false);
+    $cOb->setActiveState($active);
 });
 
 API::registerFunction('core', 'getCourseInfo', function() {
@@ -65,7 +99,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
         //pages added by modules already have navigation, the otheres need to be added
         if(!in_array($page["name"], $navNames)){
             $simpleName=str_replace(' ', '', $page["name"]);
-            Core::addNavigation('images/awards.svg', $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+            Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
         }
     }
    
@@ -74,10 +108,15 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
     
     if ($isAdmin)
-        Core::addNavigation('images/awards.svg', "Users", 'course.users', true); 
-        Core::addNavigation('images/gear.svg', 'Course Settings', 'course.settings', true);
-    
+        Core::addNavigation( "Users", 'course.users', true); 
+        Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
+        Core::addSettings('About', 'course.settings.about', true);
+        Core::addSettings('Global', 'course.settings.global', true);
+        Core::addSettings('Modules', 'course.settings.modules', true);
+        Core::addSettings('Roles', 'course.settings.roles', true);
+
     $navPages = Core::getNavigation();
+    $navSettings = Core::getSettings();
     //print_r($navPages);
     foreach ($navPages as $nav){
         if ($nav["restrictAcess"]===true && !$isAdmin){
@@ -86,9 +125,11 @@ API::registerFunction('core', 'getCourseInfo', function() {
     }
     API::response(array(
         'navigation' => $navPages,
+        'settings' => $navSettings,
         'landingPage' => $courseUser->getLandingPage(),
         'courseName' => $course->getName(),
-        'resources' => $course->getModulesResources()
+        'resources' => $course->getModulesResources(),
+        'user' => $user
     ));
 });
 
@@ -151,7 +192,7 @@ API::registerFunction('settings', 'landingPages', function() {
         }
         $default = [ "id" => "0", "name" => "Default", "course" => $course->getId(), "landingPage" => $course->getLandingPage()];
         array_unshift($roles, $default);
-        
+
         $globalInfo = array('roles' => $roles);
         API::response($globalInfo);
     }
@@ -357,7 +398,7 @@ API::registerFunction('core', 'users', function() {
 
         foreach ($perm['users'] as $user) {
             if (in_array($user, $prevAdmins))
-                User::getUser($user)->setAdmin(false);
+                User::getUser($user)->setAdmin(0); //false
         }
         return;
     } else if (API::hasKey('updateUsername')) {

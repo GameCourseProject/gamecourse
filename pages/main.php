@@ -13,6 +13,8 @@ $user = Core::getLoggedUser();
         <link rel="stylesheet" type="text/css" href="css/jquery.nestable.css" />
         <link rel="stylesheet" type="text/css" href="themes/<?php  echo $GLOBALS['theme'] ?>/main.css" />
         <link rel="stylesheet" type="text/css" href="css/navbar.css" />
+        <link rel="stylesheet" type="text/css" href="css/geral.css" />
+        <link rel="stylesheet" type="text/css" href="css/search_filter_sidebar.css" />
 
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/angular.min.js"></script>
@@ -24,6 +26,7 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/states/settings.js"></script>
         <script type="text/javascript" src="js/states/other_pages.js"></script>
         <script type="text/javascript" src="js/aux_functions.js"></script>
+        <script type="text/javascript" src="js/search_filter_order_sidebar.js"></script>
         <script type="text/javascript" src="js/controllers/inside_course/settings.js"></script>
         <script type="text/javascript" src="js/controllers/inside_course/other_pages.js"></script>
         <script type="text/javascript" src="js/controllers/inside_course/configurations.js"></script>

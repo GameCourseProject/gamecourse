@@ -29,7 +29,7 @@ app.controller('HomePage', function($element, $scope, $timeout) {
 //courses list
 app.controller('Courses', function($element, $scope, $smartboards, $compile, $state) {
     $scope.courses = {};
-    changeTitle('Courses', 0);
+    //changeTitle('Courses', 0);
 
     $scope.newCourse = function() {
         $state.go('courses.create');
@@ -55,6 +55,41 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         });
     };
 
+    $scope.visibleCouse = function(course_name, course_id){
+        id = "#visible-" + course_name + ":checked"; 
+        if($(id).length > 0){
+            $visible = 0; //false
+        }
+        else{
+            $visible = 1; //true
+        }
+        $smartboards.request('core', 'setCoursesvisibility', {course_id: course_id, visibility: $visible}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+
+        });
+    }
+
+    $scope.activeCouse = function(course_name, course_id){
+        id = "#active-" + course_name + ":checked"; 
+        if($(id).length > 0){
+            $active = 0; //false
+        }
+        else{
+            $active = 1; //true
+        }
+        $smartboards.request('core', 'setCoursesActive', {course_id: course_id, active: $active}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+
+        });
+    }
+
+
     //o que esta a fazer mesmo????
     $scope.toggleCourse = function(course) {
         $smartboards.request('settings', 'setCourseState', {course: course.id, state: !course.active}, function(data, err) {
@@ -68,27 +103,69 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     };
 
     var pageBlock;
-    $element.append(pageBlock = Builder.createPageBlock({
-        image: 'images/leaderboard.svg',
-        text: 'Courses'
-    }, function(el, info) {
-        el.append(Builder.buildBlock({
-            image: 'images/awards.svg',
-            title: 'My courses'
-        }, function(blockContent) {
-            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
-        }).attr('ng-if', 'usingMyCourses ==true'));//'myCourses != undefined && myCourses.length != 0'));
-        el.append(Builder.buildBlock({
-            image: 'images/awards.svg',
-            title: 'All Courses'
-        }, function(blockContent) {
-            //blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
-            blockContent.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
-            blockContent.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+    var pageBlock2;
+
+    optionsFilter = ["Active", "Inactive", "Visble", "Invisible"];
+    optionsOrder = ["Name", "Short","# Students", "Year"];
     
-        }).attr('ng-if', 'usingMyCourses ==false'));
-    }));
-    $compile(pageBlock)($scope);
+    sidebar = createSidebar( optionsFilter, optionsOrder);
+    mainContent = $("<div id='mainContent'></div>");
+
+    //each version of the page courses
+    allCourses = $("<div id='allCourses' class='data-table'></div>").attr('ng-if', 'usingMyCourses ==false');
+    myCourses = $("<div id='myCourses'></div>").attr('ng-if', 'usingMyCourses ==true');
+
+
+    //versao aluno, teacher, etc
+    myCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
+    
+
+
+    //versao admin
+    table = $('<table></table>');
+    rowHeader = $("<tr></tr>");
+    header = [{class: "first-column", content: ""},
+              {class: "name-column", content: "Name"},
+              {class: "", content: "Short"},
+              {class: "", content: "# Students"},
+              {class: "", content: "Year"},
+              {class: "check-column", content: "Visible"},
+              {class: "check-column", content: "Active"},
+              {class: "action-column", content: ""},
+            ];
+    jQuery.each(header, function(index){
+        rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
+    });
+
+    rowContent = $("<tr ng-repeat='(i, course) in courses'> ></tr>");
+    rowContent.append('<td class="first-column"><div class="profile-icon"></div></td>');
+    rowContent.append('<td class="name-column" ui-sref="course({courseName:course.nameUrl, course: course.id})"><span>{{course.name}}</span></td>');
+    rowContent.append('<td>{{course.short}}</td>');
+    rowContent.append('<td>{{course.nstudents}}</td>');
+    rowContent.append('<td>{{course.year}}</td>');
+    //input tem de ter o checked se for o valor true (1)
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.name}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.name}}" type="checkbox"><span ng-click= "visibleCouse(course.name, course.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.name}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.name}}" type="checkbox"><span ng-click= "activeCouse(course.name, course.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
+
+    table.append(rowHeader);
+    table.append(rowContent);
+    allCourses.append(table);
+    //allCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
+    //allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+
+
+    $compile(allCourses)($scope);
+    $compile(myCourses)($scope);
+
+    mainContent.append(allCourses);
+    mainContent.append(myCourses);
+    $element.append(sidebar);
+    $element.append(mainContent);
+
+
 
     $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
         if (err) {

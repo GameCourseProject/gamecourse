@@ -1,6 +1,7 @@
 body{
     font-family: "Jost", Verdana, sans-serif;
     margin: 0px;
+    height: auto;
 }
 
 .search {
@@ -14,11 +15,142 @@ body{
     border-radius: 5px;
     width: 150px;
 }
-.page .sidebar .search .magnifying-glass {
+.sidebar .search .magnifying-glass {
     background: url(/gamecourse/images/search_icon.svg);
     height: 35px;
     width: 35px;
     border: none;
     padding: 0;
     cursor: pointer;
+}
+
+#mainContent{
+    margin-left: 220px;
+    padding: 80px;
+}
+
+/*tables structure*/
+
+.data-table {
+    width: 100%;
+    position: relative;
+    margin-right: 80px;
+    font-size: 16px;
+}
+.data-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table table th {
+    font-size: 18px;
+    padding-bottom: 15px;
+}
+.data-table table th.name-column {
+    padding-left: 10px;
+}
+.data-table table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 2px solid gray;
+    border-top: 2px solid gray;
+}
+.data-table table td span {
+    margin-right: 10px;
+}
+.data-table table td .profile-icon {
+    width: 30px;
+    height: 30px;
+    background-color: pink;
+}
+.data-table table .first-column {
+    width: 30px;
+}
+.data-table table .name-column {
+    text-align: left;
+    max-width: 200px;
+    cursor: pointer;
+}
+.data-table table .check-column {
+    min-width: 50px;
+}
+.data-table table .check-column span {
+    margin-right: 0;
+}
+.data-table table .action-column {
+    width: 20px;
+}
+.data-table table .icon {
+    height: 20px;
+    width: 20px;
+    background-color: black;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(22px);
+    -ms-transform: translateX(22px);
+    transform: translateX(22px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.role_tag {
+    text-transform: uppercase;
+    font-size: 10px;
+    background-color: lightgrey;
+    color: white;
+    padding: 5px;
+    font-family: "Jost", verdana, sans-serif;
+    display: inline-block;
 }
