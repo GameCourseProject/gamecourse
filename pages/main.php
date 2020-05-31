@@ -170,11 +170,11 @@ $user = Core::getLoggedUser();
     </head>
     <body ng-controller="SmartBoard">
         <div class="navbar">  
-            <div class= "logo"><a ui-sref="home">GameCourse</a></div>
+            <div class= "logo" ui-sref="home"></div>
             <div class="user_info">
                 <div ng-if="user" class="user_id">{{user.username}}</div>
-                <div class="user_icon"></div>
-                <div class="user_exit"></div>
+                <div class="icon" id="user_icon"></div>
+                <div class="icon" id="user_exit"></div>
             </div>
             <ul class="menu">
                 <li ng-repeat="link in mainNavigation track by $index" class="{{link.class}}">

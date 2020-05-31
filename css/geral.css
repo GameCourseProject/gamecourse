@@ -80,11 +80,25 @@ body{
     width: 20px;
 }
 .data-table table .icon {
-    height: 20px;
-    width: 20px;
-    background-color: black;
+    height: 26px;
+    width: 25px;
+}
+.data-table table #duplicate_icon{
+    background-image: url(/gamecourse/images/duplicate_icon.svg);
+}
+.data-table table #edit_icon{
+    background-image: url(/gamecourse/images/edit_icon.svg);
+}
+.data-table table #delete_icon{
+    background-image: url(/gamecourse/images/delete_icon.svg);
 }
 
+.icon{
+    cursor: pointer;
+    background-size: contain;
+    background-position: top;
+    background-repeat: no-repeat;
+}
 .switch {
     position: relative;
     display: inline-block;

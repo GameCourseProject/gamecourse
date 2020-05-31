@@ -146,9 +146,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     //input tem de ter o checked se for o valor true (1)
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.name}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.name}}" type="checkbox"><span ng-click= "visibleCouse(course.name, course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.name}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.name}}" type="checkbox"><span ng-click= "activeCouse(course.name, course.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon" id="duplicate_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon" id="edit_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon" id="delete_icon" ></div></td>');
 
     table.append(rowHeader);
     table.append(rowContent);

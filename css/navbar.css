@@ -9,13 +9,18 @@
     margin-top: 20px;
   }
   .navbar .logo {
-    height: 50px;
+    height: 70px;
     width: 200px;
-    background-color: black;
     color: white;
     float: left;
     left: 20px;
     position: relative;
+    background-image: url(/gamecourse/images/logo.svg);
+    cursor: pointer;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-top: -17px;
   }
   .navbar .menu {
     display: flex;
@@ -84,10 +89,17 @@
     align-items: center;
     justify-content: flex-end;
   }
-  .navbar .user_info .user_icon, .navbar .user_info .user_exit {
+  .navbar .user_info #user_icon{
+    background-image: url(/gamecourse/images/profile_icon.svg);
     height: 30px;
     width: 30px;
-    background-color: black;
-    margin-left: 10px;
+    margin-left: 15px;
+  }
+  
+  .navbar .user_info #user_exit {
+    background-image: url(/gamecourse/images/log_out_icon.svg);
+    height: 30px;
+    width: 30px;
+    margin-left: 15px;
   }
   
