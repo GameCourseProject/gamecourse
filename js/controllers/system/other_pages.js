@@ -36,11 +36,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     };
 
     $scope.deleteCourse = function(course) {
-        //if (prompt('Are you sure you want to delete? Type \'DELETE ' + $scope.courses[course].name + '\' to confirm the action') != ('DELETE ' + $scope.courses[course].name))
-        //    return;
-        if (prompt('Are you sure you want to delete? Type \'DELETE\' to confirm the action') != ('DELETE')){
-            return;
-        }   
+        console.log("continueDelete");
         $smartboards.request('settings', 'deleteCourse', {course: course}, function(data, err) {
             if (err) {
                 alert(err.description);
@@ -49,7 +45,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
             for (var i in $scope.courses){
                 if ($scope.courses[i].id==course)
+                    $("#course-" + course).remove();
                     delete $scope.courses[i];
+                   
             }
             $scope.$emit('refreshTabs');
         });
@@ -137,7 +135,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
     });
 
-    rowContent = $("<tr ng-repeat='(i, course) in courses'> ></tr>");
+    rowContent = $("<tr ng-repeat='(i, course) in courses' id='course-{{course.id}}'> ></tr>");
     rowContent.append('<td class="first-column"><div class="profile-icon"></div></td>');
     rowContent.append('<td class="name-column" ui-sref="course({courseName:course.nameUrl, course: course.id})"><span>{{course.name}}</span></td>');
     rowContent.append('<td>{{course.short}}</td>');
@@ -146,15 +144,25 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     //input tem de ter o checked se for o valor true (1)
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.name}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.name}}" type="checkbox"><span ng-click= "visibleCouse(course.name, course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.name}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.name}}" type="checkbox"><span ng-click= "activeCouse(course.name, course.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="action-column"><div class="icon" id="duplicate_icon" ></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon" id="edit_icon" ></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon" id="delete_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon duplicate_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon edit_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" onclick="openModal(this)"></div></td>');
+
+    modal = $("<div class='modal' id='delete-verification-{{course.id}}'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#delete-verification-{{course.id}}" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Are you sure you want to delete the Course?</div>'));
+    verification.append( $('<div class="target">{{course.name}}</div>'));
+    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{course.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course.id)"> Delete</button></div>'))
+    modal.append(verification);
+
+    rowContent.append(modal);
 
     table.append(rowHeader);
     table.append(rowContent);
     allCourses.append(table);
     //allCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
-    //allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+    allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
 
 
     $compile(allCourses)($scope);

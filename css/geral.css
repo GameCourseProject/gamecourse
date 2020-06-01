@@ -83,13 +83,13 @@ body{
     height: 26px;
     width: 25px;
 }
-.data-table table #duplicate_icon{
+.data-table table .duplicate_icon{
     background-image: url(/gamecourse/images/duplicate_icon.svg);
 }
-.data-table table #edit_icon{
+.data-table table .edit_icon{
     background-image: url(/gamecourse/images/edit_icon.svg);
 }
-.data-table table #delete_icon{
+.data-table table .delete_icon{
     background-image: url(/gamecourse/images/delete_icon.svg);
 }
 

@@ -15,6 +15,7 @@ $user = Core::getLoggedUser();
         <link rel="stylesheet" type="text/css" href="css/navbar.css" />
         <link rel="stylesheet" type="text/css" href="css/geral.css" />
         <link rel="stylesheet" type="text/css" href="css/search_filter_sidebar.css" />
+        <link rel="stylesheet" type="text/css" href="css/modals.css" />
 
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/angular.min.js"></script>
@@ -26,6 +27,7 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/states/settings.js"></script>
         <script type="text/javascript" src="js/states/other_pages.js"></script>
         <script type="text/javascript" src="js/aux_functions.js"></script>
+        <script type="text/javascript" src="js/modals.js"></script>
         <script type="text/javascript" src="js/search_filter_order_sidebar.js"></script>
         <script type="text/javascript" src="js/controllers/inside_course/settings.js"></script>
         <script type="text/javascript" src="js/controllers/inside_course/other_pages.js"></script>
@@ -35,6 +37,7 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/d3.min.js"></script>
         <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
         <script type="text/javascript" src="js/tooltip.js"></script>
+        
 
         <script>
             app.run(['$rootScope', function($rootScope) {
