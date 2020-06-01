@@ -93,6 +93,30 @@ body{
     background-image: url(/gamecourse/images/delete_icon.svg);
 }
 
+
+.action-buttons {
+    display: flex;
+    width: 150px;
+    align-content: end;
+    justify-content: space-between;
+    position: absolute;
+    top: -50px;
+    right: -55px;
+}
+.action-buttons .icon{
+    height: 45px;
+    width: 45px;
+}
+.action-buttons .add_icon{
+    background-image: url(/gamecourse/images/add_icon.svg);
+}
+.action-buttons .import_icon{
+    background-image: url(/gamecourse/images/import_icon.svg);
+}
+.action-buttons .export_icon{
+    background-image: url(/gamecourse/images/export_icon.svg);
+}
+
 .icon{
     cursor: pointer;
     background-size: contain;

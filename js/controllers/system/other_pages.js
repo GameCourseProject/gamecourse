@@ -141,7 +141,6 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     rowContent.append('<td>{{course.short}}</td>');
     rowContent.append('<td>{{course.nstudents}}</td>');
     rowContent.append('<td>{{course.year}}</td>');
-    //input tem de ter o checked se for o valor true (1)
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.name}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.name}}" type="checkbox"><span ng-click= "visibleCouse(course.name, course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.name}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.name}}" type="checkbox"><span ng-click= "activeCouse(course.name, course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="action-column"><div class="icon duplicate_icon" ></div></td>');
@@ -162,8 +161,13 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     table.append(rowContent);
     allCourses.append(table);
     //allCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
-    allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+    //allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
 
+    action_buttons = $("<div class='action-buttons'></div>");
+    action_buttons.append( $("<div class='icon add_icon' ng-click='newCourse()'></div>"));
+    action_buttons.append( $("<div class='icon import_icon'></div>"));
+    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    allCourses.append($compile(action_buttons)($scope));
 
     $compile(allCourses)($scope);
     $compile(myCourses)($scope);
