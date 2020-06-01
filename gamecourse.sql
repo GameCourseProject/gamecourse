@@ -41,6 +41,9 @@ create table game_course_user(
 create table course(
 	id 		int unsigned primary key auto_increment,
 	name 	varchar(100),
+	short	varchar(20),
+	color	varchar(7),
+	year	int,
 	defaultLandingPage varchar(100) default "",
 	lastUpdate timestamp default CURRENT_TIMESTAMP,
 	isActive boolean default true,

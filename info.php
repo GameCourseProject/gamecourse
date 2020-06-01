@@ -37,8 +37,6 @@ API::registerFunction('core', 'getCoursesList', function() {
             $cOb = Course::getCourse($course['id'], false);
             $students = sizeof($cOb->getUsersWithRole("Student"));
             $course['nstudents'] = $students;
-            $course['short'] = 'shortT';
-            $course['year'] = "2020";
         }
     }
     else {
