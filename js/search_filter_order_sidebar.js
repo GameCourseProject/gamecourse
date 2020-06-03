@@ -8,10 +8,10 @@ function createSidebar( optionsFilter, optionsOrder){
 
   
   jQuery.each(optionsFilter, function(index){
-      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox'><span class='checkmark'></span>   </label>"));
+      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='filtercourses()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
   });
   jQuery.each(optionsOrder, function(index){
-      oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio'><span class='checkmark'></span>   </label>"));
+      oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='order-" + optionsOrder[index] + "'><span class='checkmark'></span>   </label>"));
   });
   oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up"></div><div class="triangle" id="triangle-down"></div></div>' ));
  

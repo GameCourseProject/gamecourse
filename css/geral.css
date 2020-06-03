@@ -4,6 +4,7 @@ body{
     height: auto;
 }
 
+/* search bar and button*/
 .search {
     display: flex;
     justify-content: center;
@@ -24,13 +25,23 @@ body{
     cursor: pointer;
 }
 
+/* where the content is shown*/
 #mainContent{
     margin-left: 220px;
     padding: 80px;
 }
 
-/*tables structure*/
+/* errors */
+.error_box {
+    width: 100%;
+    text-align: center;
+}
+.error_msg {
+    color: red;
+    padding-top: 30px;
+}
 
+/*tables structure*/
 .data-table {
     width: 100%;
     position: relative;
@@ -93,7 +104,7 @@ body{
     background-image: url(/gamecourse/images/delete_icon.svg);
 }
 
-
+/* add, import and export buttons*/
 .action-buttons {
     display: flex;
     width: 150px;
@@ -117,25 +128,26 @@ body{
     background-image: url(/gamecourse/images/export_icon.svg);
 }
 
+/* all buttons using images*/
 .icon{
     cursor: pointer;
     background-size: contain;
     background-position: top;
     background-repeat: no-repeat;
 }
+
+/*on-off buttons*/
 .switch {
     position: relative;
     display: inline-block;
     width: 48px;
     height: 26px;
 }
-
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
-
 .slider {
     position: absolute;
     cursor: pointer;
@@ -147,7 +159,6 @@ body{
     -webkit-transition: .4s;
     transition: .4s;
 }
-
 .slider:before {
     position: absolute;
     content: "";
@@ -159,15 +170,12 @@ body{
     -webkit-transition: .4s;
     transition: .4s;
 }
-
 input:checked + .slider {
     background-color: #2196F3;
 }
-
 input:focus + .slider {
     box-shadow: 0 0 1px #2196F3;
 }
-
 input:checked + .slider:before {
     -webkit-transform: translateX(22px);
     -ms-transform: translateX(22px);
@@ -183,6 +191,7 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
+/*tags for user role on course*/
 .role_tag {
     text-transform: uppercase;
     font-size: 10px;

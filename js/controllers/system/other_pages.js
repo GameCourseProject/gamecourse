@@ -86,7 +86,68 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
         });
     }
+    $scope.filtercourses = function(){
+        $("#empty_table").empty();
+        $("#courses-table").show();
+        active = $("#filter-Active:checked").length >0
+        inactive = $("#filter-Inactive:checked").length >0
+        visible = $("#filter-Visible:checked").length >0
+        invisible = $("#filter-Invisible:checked").length >0;
 
+        //reset list of courses
+        $scope.courses = $scope.allCourses;
+        coursesList = $scope.courses;
+        filteredCourses = [];
+        error_msg = "";
+
+        //cases of empty result
+        if (!active && !inactive){
+            //inserir aviso
+            //filteredCourses is empty
+            error_msg = "You must select at least one of the options: Active or Inactive"
+        }
+        else if(!visible & !invisible){
+            //inserir aviso
+            //filteredCourses is empty
+            error_msg = "You must select at least one of the options: Visible or Invisible"
+        }
+        else if(active && inactive && visible & invisible){
+            filteredCourses = coursesList;
+        }
+        else{
+            jQuery.each(coursesList , function( index ) {
+                course = coursesList[index];
+                validA = false;
+                validV = false;
+                if (course.isActive == true && active){
+                    validA = true;
+                }
+                else if ( course.isActive == false && inactive){
+                    validA = true;
+                }
+                if (validA && course.isVisible == true && visible){
+                    validV = true;
+                }
+                else if(validA && course.isVisible == false && invisible){
+                    validV = true;
+                }
+
+                if (validA && validV){
+                    filteredCourses.push(course);
+                }
+            });
+        
+            if (filteredCourses.length == 0){
+                //nao ha nada para o filtro aplicado
+                error_msg = "No matches found for your filter"
+            }
+        }
+        if(error_msg != ""){
+            $("#courses-table").hide();
+            $("#empty_table").append(error_msg);
+        }
+        $scope.courses = filteredCourses;
+    }
 
     //o que esta a fazer mesmo????
     $scope.toggleCourse = function(course) {
@@ -103,10 +164,16 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     var pageBlock;
     var pageBlock2;
 
-    optionsFilter = ["Active", "Inactive", "Visble", "Invisible"];
+    optionsFilter = ["Active", "Inactive", "Visible", "Invisible"];
     optionsOrder = ["Name", "Short","# Students", "Year"];
-    
+    //start checkboxs checked, tied by the ng-model in each input
+    $scope.filterActive=true;
+    $scope.filterInactive=true;
+    $scope.filterVisible=true;
+    $scope.filterInvisible=true;
+
     sidebar = createSidebar( optionsFilter, optionsOrder);
+    $compile(sidebar)($scope)
     mainContent = $("<div id='mainContent'></div>");
 
     //each version of the page courses
@@ -119,8 +186,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     
 
 
-    //versao admin
-    table = $('<table></table>');
+    //admin version of the page
+    //table structure
+    table = $('<table id="courses-table"></table>');
     rowHeader = $("<tr></tr>");
     header = [{class: "first-column", content: ""},
               {class: "name-column", content: "Name"},
@@ -147,6 +215,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     rowContent.append('<td class="action-column"><div class="icon edit_icon" ></div></td>');
     rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" onclick="openModal(this)"></div></td>');
 
+    //the verification modals
     modal = $("<div class='modal' id='delete-verification-{{course.id}}'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#delete-verification-{{course.id}}" onclick="closeModal(this)"></button>'));
@@ -154,21 +223,75 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     verification.append( $('<div class="target">{{course.name}}</div>'));
     verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{course.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course.id)"> Delete</button></div>'))
     modal.append(verification);
-
     rowContent.append(modal);
 
+    //append table
     table.append(rowHeader);
     table.append(rowContent);
     allCourses.append(table);
-    //allCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a> <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>');
-    //allCourses.append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
 
+    //error section
+    allCourses.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
+
+    //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' ng-click='newCourse()'></div>"));
     action_buttons.append( $("<div class='icon import_icon'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
     allCourses.append($compile(action_buttons)($scope));
 
+    //new course modal
+    // modal = $("<div class='modal' id='new-course'></div>");
+    // newCourse = $("<div class='modal_content'></div>");
+    // newCourse.append( $('<button class="close_btn icon" value="#new-course" onclick="closeModal(this)"></button>'));
+    // newCourse.append( $('<div class="title">New Course: </div>'));
+    // content = $('<div class="content">');
+    // box = $('<div class= "box">');
+
+    // content.append(box);
+    // newCourse.append(content);
+
+//   <button class="close_btn"></button>
+//   <div class="title">New Course: </div>
+//   <div class="content">
+//     <div class= "box">
+//     <div class="name full">
+//       <input type="text" class="form__input " id="name" placeholder="Name" required="" /> <label for="name" class="form__label">Name</label>
+      
+//     </div>
+//     <div class= "row_inputs">
+//       <div class="short_name half">
+//         <input type="text" class="form__input" id="short_name" placeholder="Short Name" required="" />
+//           <label for="name" class="form__label">Short Name</label>
+//         <input type="text" class="form__input" id="short_name" placeholder="Other name" required="" />
+//           <label for="name" class="form__label">Other Name</label>
+//       </div>
+//       <div class="year half right">
+//         <input type="text" class="form__input" id="year" placeholder="Year" required="" />
+//           <label for="name" class="form__label">Year</label>
+//         </div>
+//     </div>
+//        <div class= "row">
+//          <div class= "on_off">
+//            <span>Active </span>
+//            <label class="switch">
+//     <input type="checkbox">
+//     <span class="slider round"></span>
+//              </label></div>
+//          <div class= "on_off">
+//            <span>Visible </span>
+//            <label class="switch">
+//     <input type="checkbox">
+//     <span class="slider round"></span>
+//              </label></div>
+//        </div>
+//     </div>
+//     <button class="save_btn"> Save </button>
+//   </div>
+// </div>
+
+
+    //compile the page for scope values
     $compile(allCourses)($scope);
     $compile(myCourses)($scope);
 
@@ -178,13 +301,14 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $element.append(mainContent);
 
 
-
+    //request to get all courses info
     $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
         if (err) {
             alert(err.description);
             return;
         }
         $scope.courses = data.courses;
+        $scope.allCourses = data.courses;
         $scope.usingMyCourses = data.myCourses;//bool
         for (var i in $scope.courses) {
             var course = $scope.courses[i];
