@@ -149,6 +149,66 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         $scope.courses = filteredCourses;
     }
 
+    //functions to visually change the "order by" arrows
+    $scope.sortUp = function(){
+        document.getElementById("triangle-up").classList.add("checked");
+        document.getElementById("triangle-down").classList.remove("checked");
+    }
+    $scope.sortDown = function() {
+        document.getElementById("triangle-down").classList.add("checked");
+        document.getElementById("triangle-up").classList.remove("checked");
+    }
+
+    $scope.orderCourses = function(){
+        order_by_id = $('input[type=radio]:checked', ".order-by")[0].id;
+        order = getNameFromId(order_by_id);
+        up = $("#triangle-up").hasClass("checked");
+
+        if (up){ arrow = "up";}
+        else{ arrow = "down";}
+
+        console.log("Order by:" + order + " " + arrow);
+
+        if ($scope.lastOrder =="none" || $scope.lastOrder != order){
+            switch (order){
+                //default sort made with arrow down
+                case "Name":
+                    $scope.courses.sort(orberByName);
+                    break;
+                case "Short":
+                    $scope.courses.sort(orberByShort);
+                    break;
+                case "N Students":
+                    $scope.courses.sort(orberByNStudents);
+                    break;
+                case "Year":
+                    $scope.courses.sort(orberByYear);
+                    break;
+            }
+            if (up){ 
+                $scope.courses.reverse();
+            }
+
+        }else{
+            if (arrow ==  $scope.lastArrow){
+                //nothing changes
+                return;
+            }
+            else{
+                //only the ascendent/descent order changed
+                $scope.courses.reverse();
+            }
+
+        }
+
+        //save also in all courses - copy by value
+        $scope.allCourses = $scope.courses.slice();
+
+        //set values of the existing orderby
+        $scope.lastOrder = order;
+        $scope.lastArrow = arrow;
+    }
+
     //o que esta a fazer mesmo????
     $scope.toggleCourse = function(course) {
         $smartboards.request('settings', 'setCourseState', {course: course.id, state: !course.active}, function(data, err) {
@@ -308,12 +368,17 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             return;
         }
         $scope.courses = data.courses;
-        $scope.allCourses = data.courses;
+        $scope.allCourses = data.courses.slice(); //using slice so it is a copy by value and not reference
         $scope.usingMyCourses = data.myCourses;//bool
         for (var i in $scope.courses) {
             var course = $scope.courses[i];
             course.nameUrl = course.name.replace(/\W+/g, '');
         }
+
+        //set order by parameters
+        $scope.lastOrder = "none";
+        $scope.lastArrow = "none";
+        $scope.orderCourses();
     });
 });
 

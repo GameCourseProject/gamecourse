@@ -11,9 +11,13 @@ function createSidebar( optionsFilter, optionsOrder){
       filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='filtercourses()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
   });
   jQuery.each(optionsOrder, function(index){
-      oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='order-" + optionsOrder[index] + "'><span class='checkmark'></span>   </label>"));
-  });
-  oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up"></div><div class="triangle" id="triangle-down"></div></div>' ));
+      if (index == 0){
+        oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+      }else{
+        oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+      }
+    });
+  oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderCourses();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderCourses();"></div></div>' ));
  
   sidebar.append(search);
   sidebar.append(filter);
@@ -22,22 +26,43 @@ function createSidebar( optionsFilter, optionsOrder){
   return sidebar;
 }
 
-
-
-function sortUp() {
-  document.getElementById("triangle-up").classList.add("checked");
-  
-  document.getElementById("triangle-down").classList.remove("checked");
+function transformNameToId(name){
+  var res = name.replace(" ", "-");
+  res = res.replace("#", "N");
+  id = "order-" + res;
+  return id;
+}
+function getNameFromId(id){
+  var res = id.replace("order-", "");
+  var name = res.replace("-", " ");
+  return name;
 }
 
-function sortDown() {
-  document.getElementById("triangle-down").classList.add("checked");
-  document.getElementById("triangle-up").classList.remove("checked");
+
+//aux funtions to order by a attibute
+function orberByName(a, b) {
+  if (a.name > b.name) { return 1;}
+  if (a.name < b.name) { return -1;}
+  // a must be equal to b
+  return 0;
 }
-
-$(document).ready(function(){
-    document.getElementById("triangle-up").addEventListener("click", sortUp);
-
-    document.getElementById("triangle-down").addEventListener("click", sortDown);
-
-});
+function orberByShort(a, b) {
+  if (a.short > b.short) { return 1;}
+  if (a.short < b.short) { return -1;}
+  return 0;
+}
+function orberByYear(a, b) {
+  if (a.year > b.year) { return 1;}
+  if (a.year < b.year) { return -1;}
+  return 0;
+}
+function orberByYear(a, b) {
+  if (a.year > b.year) { return 1;}
+  if (a.year < b.year) { return -1;}
+  return 0;
+}
+function orberByNStudents(a, b) {
+  if (a.nstudents > b.nstudents) { return 1;}
+  if (a.nstudents < b.nstudents) { return -1;}
+  return 0;
+}
