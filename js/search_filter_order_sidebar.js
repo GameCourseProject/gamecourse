@@ -2,13 +2,13 @@
 function createSidebar( optionsFilter, optionsOrder){
   //criar 2 secoes - sidebar e maincontent
   sidebar = $("<div class='sidebar'></div>");
-  search = $("<div class='search'> <input type='text' placeholder='Search..' name='search'><button class='magnifying-glass' id='search-btn'></button>  </div>")
+  search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceCoursesList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceCoursesList()'></button>  </div>")
   filter = $(" <div class='filter'> <div class='title'>Filter</div> </div>");
   oderby = $("<div class='order-by'> <div class='title'>Order by</div></div>");
 
   
   jQuery.each(optionsFilter, function(index){
-      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='filtercourses()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
+      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='reduceCoursesList()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
   });
   jQuery.each(optionsOrder, function(index){
       if (index == 0){
@@ -65,4 +65,18 @@ function orberByNStudents(a, b) {
   if (a.nstudents > b.nstudents) { return 1;}
   if (a.nstudents < b.nstudents) { return -1;}
   return 0;
+}
+
+
+function validateSearch(text){
+  exp = /^ *$/; //matches white spaces and empty string
+  if (text == ""){
+    return false;
+  }
+  else if (exp.test(text)){
+    return false;
+  }
+  else{
+    return true;
+  }
 }

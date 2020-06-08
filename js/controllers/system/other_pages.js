@@ -86,16 +86,44 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
         });
     }
-    $scope.filtercourses = function(){
+
+    $scope.reduceCoursesList = function(){
         $("#empty_table").empty();
         $("#courses-table").show();
+        $scope.courses = $scope.allCourses;
+        $scope.searchCourse();
+        $scope.filtercourses();
+    }
+
+    $scope.searchCourse = function(){
+        coursesList = $scope.courses;
+        filteredCourses = [];
+        text = $scope.search;
+        if (validateSearch(text)){
+            //match por name e short
+            jQuery.each(coursesList , function( index ){
+                course = coursesList[index];
+                if (course.name.includes(text)
+                || course.short.includes(text)
+                || course.year.includes(text)){
+                    filteredCourses.push(course);
+                }
+            });
+            if(filteredCourses.length == 0){
+                $("#courses-table").hide();
+                $("#empty_table").append("No matches found");
+            }
+            $scope.courses = filteredCourses;
+        }
+    }
+
+    $scope.filtercourses = function(){
         active = $("#filter-Active:checked").length >0
         inactive = $("#filter-Inactive:checked").length >0
         visible = $("#filter-Visible:checked").length >0
         invisible = $("#filter-Invisible:checked").length >0;
 
         //reset list of courses
-        $scope.courses = $scope.allCourses;
         coursesList = $scope.courses;
         filteredCourses = [];
         error_msg = "";
@@ -174,19 +202,24 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 //default sort made with arrow down
                 case "Name":
                     $scope.courses.sort(orberByName);
+                    $scope.allCourses.sort(orberByName);
                     break;
                 case "Short":
                     $scope.courses.sort(orberByShort);
+                    $scope.allCourses.sort(orberByShort);
                     break;
                 case "N Students":
                     $scope.courses.sort(orberByNStudents);
+                    $scope.allCourses.sort(orberByNStudents);
                     break;
                 case "Year":
                     $scope.courses.sort(orberByYear);
+                    $scope.allCourses.sort(orberByYear);
                     break;
             }
             if (up){ 
                 $scope.courses.reverse();
+                $scope.allCourses.reverse();
             }
 
         }else{
@@ -197,12 +230,10 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             else{
                 //only the ascendent/descent order changed
                 $scope.courses.reverse();
+                $scope.allCourses.reverse();
             }
 
         }
-
-        //save also in all courses - copy by value
-        $scope.allCourses = $scope.courses.slice();
 
         //set values of the existing orderby
         $scope.lastOrder = order;
