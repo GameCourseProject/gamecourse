@@ -295,7 +295,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     });
 
     rowContent = $("<tr ng-repeat='(i, course) in courses' id='course-{{course.id}}'> ></tr>");
-    rowContent.append('<td class="first-column"><div class="profile-icon"></div></td>');
+    rowContent.append('<td class="first-column"><div class="profile-icon"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame" style="border: 2px solid {{course.color}}"></div></div></td>');
     rowContent.append('<td class="name-column" ui-sref="course({courseName:course.nameUrl, course: course.id})"><span>{{course.name}}</span></td>');
     rowContent.append('<td>{{course.short}}</td>');
     rowContent.append('<td>{{course.nstudents}}</td>');
