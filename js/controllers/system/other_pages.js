@@ -29,6 +29,10 @@ app.controller('HomePage', function($element, $scope, $timeout) {
 //courses list
 app.controller('Courses', function($element, $scope, $smartboards, $compile, $state) {
     $scope.courses = {};
+    $scope.coursesActive = [];
+    $scope.coursesNotActive = [];
+    $scope.coursesActiveAll = [];
+    $scope.coursesNotActiveAll = [];
     //changeTitle('Courses', 0);
 
     $scope.newCourse = function() {
@@ -88,35 +92,80 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     }
 
     $scope.reduceCoursesList = function(){
-        $("#empty_table").empty();
-        $("#courses-table").show();
-        $scope.courses = $scope.allCourses;
-        $scope.searchCourse();
-        $scope.filtercourses();
+        if($scope.usingMyCourses){
+            $("#empty_active").empty();
+            $("#empty_notactive").empty();
+            $scope.coursesActive = $scope.coursesActiveAll;
+            $scope.coursesNotActive = $scope.coursesNotActiveAll;
+            $scope.searchCourse();
+        }
+        else{
+            $("#empty_table").empty();
+            $("#courses-table").show();
+            $scope.courses = $scope.allCourses;
+            $scope.searchCourse();
+            $scope.filtercourses();
+        }
+        
     }
 
     $scope.searchCourse = function(){
-        coursesList = $scope.courses;
-        filteredCourses = [];
-        text = $scope.search;
-        if (validateSearch(text)){
-            //match por name e short
-            jQuery.each(coursesList , function( index ){
-                course = coursesList[index];
-                if (course.name.includes(text)
-                || course.short.includes(text)
-                || course.year.includes(text)){
-                    filteredCourses.push(course);
+        if($scope.usingMyCourses){
+            text = $scope.search;
+            if (validateSearch(text)){
+                newActive = [];
+                newNotActive = [];
+                jQuery.each($scope.coursesActive , function( index ){
+                    course = $scope.coursesActive[index];
+                    //a.toLowerCase().includes(text.toLowerCase())
+                    if (course.name.toLowerCase().includes(text.toLowerCase())
+                    || course.short.toLowerCase().includes(text.toLowerCase())
+                    || course.year.toLowerCase().includes(text.toLowerCase())){
+                        newActive.push(course);
+                    }
+                });
+                jQuery.each($scope.coursesNotActive , function( index ){
+                    course = $scope.coursesNotActive[index];
+                    if (course.name.toLowerCase().includes(text.toLowerCase())
+                    || course.short.toLowerCase().includes(text.toLowerCase())
+                    || course.year.toLowerCase().includes(text.toLowerCase())){
+                        newNotActive.push(course);
+                    }
+                });
+                if(newActive.length == 0){
+                    $("#empty_active").append("No matches found");
                 }
-            });
-            if(filteredCourses.length == 0){
-                $("#courses-table").hide();
-                $("#empty_table").append("No matches found");
+                if(newNotActive.length == 0){
+                    $("#empty_notactive").append("No matches found");
+                }
+
+                $scope.coursesActive = newActive;
+                $scope.coursesNotActive = newNotActive;
             }
-            $scope.courses = filteredCourses;
+        }else{
+            filteredCourses = [];
+            text = $scope.search;
+            if (validateSearch(text)){
+                //match por name e short
+                jQuery.each($scope.courses , function( index ){
+                    course = $scope.courses[index];
+                    if (course.name.toLowerCase().includes(text.toLowerCase())
+                    || course.short.toLowerCase().includes(text.toLowerCase())
+                    || course.year.toLowerCase().includes(text.toLowerCase())){
+                        filteredCourses.push(course);
+                    }
+                });
+                if(filteredCourses.length == 0){
+                    $("#courses-table").hide();
+                    $("#empty_table").append("No matches found");
+                }
+                $scope.courses = filteredCourses;
+            }
         }
+        
     }
 
+    //only used on admin version
     $scope.filtercourses = function(){
         active = $("#filter-Active:checked").length >0
         inactive = $("#filter-Inactive:checked").length >0
@@ -195,31 +244,39 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         if (up){ arrow = "up";}
         else{ arrow = "down";}
 
-        console.log("Order by:" + order + " " + arrow);
-
         if ($scope.lastOrder =="none" || $scope.lastOrder != order){
             switch (order){
                 //default sort made with arrow down
                 case "Name":
                     $scope.courses.sort(orberByName);
                     $scope.allCourses.sort(orberByName);
+                    $scope.coursesActive.sort(orberByName);
+                    $scope.coursesNotActive.sort(orberByName);
                     break;
                 case "Short":
                     $scope.courses.sort(orberByShort);
                     $scope.allCourses.sort(orberByShort);
+                    $scope.coursesActive.sort(orberByShort);
+                    $scope.coursesNotActive.sort(orberByShort);
                     break;
                 case "N Students":
                     $scope.courses.sort(orberByNStudents);
                     $scope.allCourses.sort(orberByNStudents);
+                    $scope.coursesActive.sort(orberByNStudents);
+                    $scope.coursesNotActive.sort(orberByNStudents);
                     break;
                 case "Year":
                     $scope.courses.sort(orberByYear);
                     $scope.allCourses.sort(orberByYear);
+                    $scope.coursesActive.sort(orberByYear);
+                    $scope.coursesNotActive.sort(orberByYear);
                     break;
             }
             if (up){ 
                 $scope.courses.reverse();
                 $scope.allCourses.reverse();
+                $scope.coursesActive.reverse();
+                $scope.coursesNotActive.reverse();
             }
 
         }else{
@@ -231,6 +288,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 //only the ascendent/descent order changed
                 $scope.courses.reverse();
                 $scope.allCourses.reverse();
+                $scope.coursesActive.reverse();
+                $scope.coursesNotActive.reverse();
             }
 
         }
@@ -240,21 +299,43 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         $scope.lastArrow = arrow;
     }
 
-    //o que esta a fazer mesmo????
-    $scope.toggleCourse = function(course) {
-        $smartboards.request('settings', 'setCourseState', {course: course.id, state: !course.active}, function(data, err) {
-            if (err) {
-                alert(err.description);
-                return;
-            }
-            course.isActive = !course.isActive;
-            $scope.$emit('refreshTabs');
-        });
-    };
+    mainContent = $("<div id='mainContent'></div>");
 
-    var pageBlock;
-    var pageBlock2;
+    //each version of the page courses
+    allCourses = $("<div id='allCourses' class='data-table'></div>")
+    myCourses = $("<div id='myCourses'></div>")
 
+
+    //------------------non admin version of the page-------------
+    optionsFilter = [];
+    optionsOrder = ["Name", "Year"];
+
+    sidebarMy = createSidebar( optionsFilter, optionsOrder);
+    $compile(sidebarMy)($scope)    
+
+    myCourses.append( $('<div class="divider"><div class="title"><span>Active</span></div></div>'));
+    containerActive = $("<div class='container'></div>");
+    box = $('<div class="course_box" ng-repeat="(i, course) in coursesActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"></div></div>'));
+    box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
+    containerActive.append(box);
+    containerActive.append( $("<div class='error_box'><div id='empty_active' class='error_msg'></div></div>"));
+    myCourses.append(containerActive);
+
+    myCourses.append( $('<div class="divider"><div class="title"><span>Not Active</span></div></div>'));
+    containerNotActive = $("<div class='container'></div>");
+    box = $('<div class="course_box" ng-repeat="(i, course) in coursesNotActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"></div></div>'));
+    box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
+    containerNotActive.append(box);
+    containerNotActive.append( $("<div class='error_box'><div id='empty_notactive' class='error_msg'></div></div>"));
+    myCourses.append(containerNotActive);
+
+
+
+
+    //--------------------admin version of the page----------
+    //sidebar
     optionsFilter = ["Active", "Inactive", "Visible", "Invisible"];
     optionsOrder = ["Name", "Short","# Students", "Year"];
     //start checkboxs checked, tied by the ng-model in each input
@@ -262,22 +343,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $scope.filterInactive=true;
     $scope.filterVisible=true;
     $scope.filterInvisible=true;
+    sidebarAll = createSidebar( optionsFilter, optionsOrder);
+    $compile(sidebarAll)($scope)
 
-    sidebar = createSidebar( optionsFilter, optionsOrder);
-    $compile(sidebar)($scope)
-    mainContent = $("<div id='mainContent'></div>");
-
-    //each version of the page courses
-    allCourses = $("<div id='allCourses' class='data-table'></div>").attr('ng-if', 'usingMyCourses ==false');
-    myCourses = $("<div id='myCourses'></div>").attr('ng-if', 'usingMyCourses ==true');
-
-
-    //versao aluno, teacher, etc
-    myCourses.append('<ul style="list-style: none"><li ng-repeat="(i, course) in courses"><a ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}}</a></li></ul>');
-    
-
-
-    //admin version of the page
     //table structure
     table = $('<table id="courses-table"></table>');
     rowHeader = $("<tr></tr>");
@@ -386,10 +454,10 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $compile(allCourses)($scope);
     $compile(myCourses)($scope);
 
-    mainContent.append(allCourses);
-    mainContent.append(myCourses);
-    $element.append(sidebar);
-    $element.append(mainContent);
+    
+    
+    
+    
 
 
     //request to get all courses info
@@ -400,11 +468,36 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         }
         $scope.courses = data.courses;
         $scope.allCourses = data.courses.slice(); //using slice so it is a copy by value and not reference
-        $scope.usingMyCourses = data.myCourses;//bool
+        $scope.usingMyCourses = !data.myCourses;  //bool - to see this view use !
         for (var i in $scope.courses) {
             var course = $scope.courses[i];
             course.nameUrl = course.name.replace(/\W+/g, '');
         }
+
+        if($scope.usingMyCourses){
+            //seperate between active and notactive (but visible)
+            jQuery.each($scope.courses, function(index){
+                course = $scope.courses[index];
+                if (course.isVisible != false){
+                    if(course.isActive == true){
+                        $scope.coursesActive.push(course);
+                    }else{
+                        $scope.coursesNotActive.push(course);
+                    }
+                }
+                $scope.coursesActiveAll = $scope.coursesActive.slice();
+                $scope.coursesNotActiveAll = $scope.coursesNotActive.slice();
+            });
+            $element.append(sidebarMy);
+            mainContent.append(myCourses);
+
+
+        }
+        else{
+            $element.append(sidebarAll);
+            mainContent.append(allCourses);
+        }
+        $element.append(mainContent);
 
         //set order by parameters
         $scope.lastOrder = "none";

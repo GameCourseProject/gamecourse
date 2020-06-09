@@ -1,27 +1,30 @@
 
 function createSidebar( optionsFilter, optionsOrder){
-  //criar 2 secoes - sidebar e maincontent
   sidebar = $("<div class='sidebar'></div>");
   search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceCoursesList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceCoursesList()'></button>  </div>")
-  filter = $(" <div class='filter'> <div class='title'>Filter</div> </div>");
-  oderby = $("<div class='order-by'> <div class='title'>Order by</div></div>");
+  sidebar.append(search);
 
   
-  jQuery.each(optionsFilter, function(index){
+  if (optionsFilter.length > 0 ){
+    filter = $(" <div class='filter'> <div class='title'>Filter</div> </div>");
+    jQuery.each(optionsFilter, function(index){
       filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='reduceCoursesList()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
-  });
-  jQuery.each(optionsOrder, function(index){
-      if (index == 0){
-        oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
-      }else{
-        oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
-      }
     });
-  oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderCourses();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderCourses();"></div></div>' ));
- 
-  sidebar.append(search);
-  sidebar.append(filter);
-  sidebar.append(oderby);
+    sidebar.append(filter);
+  }
+
+  if (optionsOrder.length > 0 ){
+    oderby = $("<div class='order-by'> <div class='title'>Order by</div></div>");
+    jQuery.each(optionsOrder, function(index){
+        if (index == 0){
+          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+        }else{
+          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+        }
+      });
+    oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderCourses();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderCourses();"></div></div>' ));
+    sidebar.append(oderby);
+  }
 
   return sidebar;
 }
