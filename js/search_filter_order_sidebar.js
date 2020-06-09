@@ -70,7 +70,7 @@ function orberByNStudents(a, b) {
 
 function validateSearch(text){
   exp = /^ *$/; //matches white spaces and empty string
-  if (text == ""){
+  if (text == "" || text== null){
     return false;
   }
   else if (exp.test(text)){
