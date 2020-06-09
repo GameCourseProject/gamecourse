@@ -316,7 +316,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     myCourses.append( $('<div class="divider"><div class="title"><span>Active</span></div></div>'));
     containerActive = $("<div class='container'></div>");
     box = $('<div class="course_box" ng-repeat="(i, course) in coursesActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
-    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"></div></div>'));
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
     box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
     containerActive.append(box);
     containerActive.append( $("<div class='error_box'><div id='empty_active' class='error_msg'></div></div>"));
@@ -325,7 +325,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     myCourses.append( $('<div class="divider"><div class="title"><span>Not Active</span></div></div>'));
     containerNotActive = $("<div class='container'></div>");
     box = $('<div class="course_box" ng-repeat="(i, course) in coursesNotActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
-    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"></div></div>'));
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
     box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
     containerNotActive.append(box);
     containerNotActive.append( $("<div class='error_box'><div id='empty_notactive' class='error_msg'></div></div>"));

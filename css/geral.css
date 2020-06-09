@@ -152,7 +152,18 @@ body{
 .container .course_box .color_box .frame-course{
     width: calc(100% - 4px);
     height: calc(100% - 2px);
+    text-align: center;
  }
+.container .course_box .color_box .frame-course span {
+    opacity: 0.2;
+    height: 70%;
+    display: inline-block;
+    padding: 40px 0;
+    width: 95%;
+}
+.container .course_box .color_box .frame-course span:hover {
+    opacity: 1;
+}
 .container .course_box .footer {
     flex-grow: 1;
     display: flex;
