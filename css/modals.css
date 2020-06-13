@@ -80,61 +80,68 @@ cursor: pointer;
     width: 100%;
     position: relative;
 }
-.modal_content .content .box {
+.modal_content .content .inputs {
     display: flex;
     flex-direction: column;
 }
-.modal_content .content .box .row_inputs {
+.modal_content .content .inputs .row_inputs {
     display: block;
     width: 100%;
     position: relative;
 }
-.modal_content .content .box .row {
+.modal_content .content .inputs .row {
     display: flex;
 }
-.modal_content .content .box .image {
+.modal_content .content .inputs .image {
     margin-bottom: 40px;
 }
-.modal_content .content .box .image .profile_image {
+.modal_content .content .inputs .image .profile_image {
     height: 180px;
     background-color: lightgrey;
     margin-bottom: 10px;
 }
-.modal_content .content .box .image input {
+.modal_content .content .inputs .image input {
     width: 100%;
     padding: 0;
     font-size: 12px;
 }
-.modal_content .content .box .image input:focus {
+.modal_content .content .inputs .image input:focus {
     outline: none;
 }
-.modal_content .content .box .full {
-    width: calc(100% - 22px);
+.modal_content .content .inputs .full {
+    width: calc(100%);
+    position: relative;
 }
-.modal_content .content .box .half {
-    width: calc(45% - 11px);
+.modal_content .content .inputs .half {
+    width: calc(47%);
+    position: relative;
 }
-.modal_content .content .box .bigger {
+.modal_content .content .inputs .bigger {
     width: calc(60% - 22px);
 }
-.modal_content .content .box .smaller {
+.modal_content .content .inputs .smaller {
     width: calc(35% - 11px);
 }
-.modal_content .content .box .right {
+.modal_content .content .inputs .right {
     float: right;
     position: absolute;
     top: 0;
-    right: 22px;
+    right: 0;
 }
-.modal_content .content .box .form__label {
+.modal_content .content .inputs .form__label {
     font-family: 'Roboto', sans-serif;
     font-size: 18px;
     margin: 2px 0 10px 10px;
     display: block;
     transition: all 0.3s;
-    transform: translateY(-70px);
+    transform: translateX(0px); /*translateY(-70px);*/
+    -webkit-transform: translateX(0px);
+    color: lightgray;
+    position: absolute;
+    top: 10px;
+    right: 15px;
 }
-.modal_content .content .box .form__input {
+.modal_content .content .inputs .form__input {
     font-family: 'Roboto', sans-serif;
     color: #333;
     font-size: 18px;
@@ -144,12 +151,13 @@ cursor: pointer;
     transition: all 0.3s;
     border-radius: 5px;
     width: 100%;
+    margin-bottom: 31px;
 }
-.modal_content .content .box .form__input:placeholder-shown + .form__label {
+.modal_content .content .inputs .form__input:placeholder-shown + .form__label {
     opacity: 0;
     visibility: hidden;
-    -webkit-transform: translateY(-30px);
-    transform: translateY(-30px);
+    -webkit-transform: translateX(-70px);
+    transform: translateX(-70px);
 }
 .modal_content .save_btn {
     padding: 10px 15px;
@@ -159,6 +167,15 @@ cursor: pointer;
     background-color: lightgrey;
     bottom: 0px;
     right: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.modal_content .save_btn:disabled {
+    color: lightgray;
+    background-color: white;
+    border: 1px solid;
+    cursor: not-allowed;
 }
 
 .on_off {

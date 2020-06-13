@@ -266,10 +266,11 @@ class Course {
         return $folder;
     }
     
-    public static function newCourse($courseName, $copyFrom = null) {
+    public static function newCourse($courseName,$courseShort,$courseYear,$courseColor, $copyFrom = null) {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
         //    static::$coursesDb->delete($newCourse);
-        Core::$systemDB->insert("course",["name"=>$courseName]);
+
+        Core::$systemDB->insert("course",["name"=>$courseName, "short"=>$courseShort, "year"=>$courseYear, "color"=>$courseColor]); //adicionar campos extra aqui
         $courseId=Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;

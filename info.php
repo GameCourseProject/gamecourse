@@ -944,11 +944,11 @@ API::registerFunction('settings', 'courseBadges', function() {
 
 API::registerFunction('settings', 'createCourse', function() {
     API::requireAdminPermission();
-    API::requireValues('courseName', 'creationMode');
+    API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor');
     if (API::getValue('creationMode') == 'similar')
         API::requireValues('copyFrom');
 
-    Course::newCourse(API::getValue('courseName'), (API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+    Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), (API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
 });
 
 API::registerFunction('settings', 'deleteCourse', function() {
