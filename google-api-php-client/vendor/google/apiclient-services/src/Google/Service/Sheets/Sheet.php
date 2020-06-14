@@ -17,17 +17,21 @@
 
 class Google_Service_Sheets_Sheet extends Google_Collection
 {
-  protected $collection_key = 'protectedRanges';
+  protected $collection_key = 'slicers';
   protected $bandedRangesType = 'Google_Service_Sheets_BandedRange';
   protected $bandedRangesDataType = 'array';
   protected $basicFilterType = 'Google_Service_Sheets_BasicFilter';
   protected $basicFilterDataType = '';
   protected $chartsType = 'Google_Service_Sheets_EmbeddedChart';
   protected $chartsDataType = 'array';
+  protected $columnGroupsType = 'Google_Service_Sheets_DimensionGroup';
+  protected $columnGroupsDataType = 'array';
   protected $conditionalFormatsType = 'Google_Service_Sheets_ConditionalFormatRule';
   protected $conditionalFormatsDataType = 'array';
   protected $dataType = 'Google_Service_Sheets_GridData';
   protected $dataDataType = 'array';
+  protected $developerMetadataType = 'Google_Service_Sheets_DeveloperMetadata';
+  protected $developerMetadataDataType = 'array';
   protected $filterViewsType = 'Google_Service_Sheets_FilterView';
   protected $filterViewsDataType = 'array';
   protected $mergesType = 'Google_Service_Sheets_GridRange';
@@ -36,6 +40,10 @@ class Google_Service_Sheets_Sheet extends Google_Collection
   protected $propertiesDataType = '';
   protected $protectedRangesType = 'Google_Service_Sheets_ProtectedRange';
   protected $protectedRangesDataType = 'array';
+  protected $rowGroupsType = 'Google_Service_Sheets_DimensionGroup';
+  protected $rowGroupsDataType = 'array';
+  protected $slicersType = 'Google_Service_Sheets_Slicer';
+  protected $slicersDataType = 'array';
 
   /**
    * @param Google_Service_Sheets_BandedRange
@@ -80,6 +88,20 @@ class Google_Service_Sheets_Sheet extends Google_Collection
     return $this->charts;
   }
   /**
+   * @param Google_Service_Sheets_DimensionGroup
+   */
+  public function setColumnGroups($columnGroups)
+  {
+    $this->columnGroups = $columnGroups;
+  }
+  /**
+   * @return Google_Service_Sheets_DimensionGroup
+   */
+  public function getColumnGroups()
+  {
+    return $this->columnGroups;
+  }
+  /**
    * @param Google_Service_Sheets_ConditionalFormatRule
    */
   public function setConditionalFormats($conditionalFormats)
@@ -106,6 +128,20 @@ class Google_Service_Sheets_Sheet extends Google_Collection
   public function getData()
   {
     return $this->data;
+  }
+  /**
+   * @param Google_Service_Sheets_DeveloperMetadata
+   */
+  public function setDeveloperMetadata($developerMetadata)
+  {
+    $this->developerMetadata = $developerMetadata;
+  }
+  /**
+   * @return Google_Service_Sheets_DeveloperMetadata
+   */
+  public function getDeveloperMetadata()
+  {
+    return $this->developerMetadata;
   }
   /**
    * @param Google_Service_Sheets_FilterView
@@ -162,5 +198,33 @@ class Google_Service_Sheets_Sheet extends Google_Collection
   public function getProtectedRanges()
   {
     return $this->protectedRanges;
+  }
+  /**
+   * @param Google_Service_Sheets_DimensionGroup
+   */
+  public function setRowGroups($rowGroups)
+  {
+    $this->rowGroups = $rowGroups;
+  }
+  /**
+   * @return Google_Service_Sheets_DimensionGroup
+   */
+  public function getRowGroups()
+  {
+    return $this->rowGroups;
+  }
+  /**
+   * @param Google_Service_Sheets_Slicer
+   */
+  public function setSlicers($slicers)
+  {
+    $this->slicers = $slicers;
+  }
+  /**
+   * @return Google_Service_Sheets_Slicer
+   */
+  public function getSlicers()
+  {
+    return $this->slicers;
   }
 }

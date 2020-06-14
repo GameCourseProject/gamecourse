@@ -41,6 +41,7 @@ class Google_Service_Dfareporting_Campaign extends Google_Collection
   protected $creativeOptimizationConfigurationDataType = '';
   protected $defaultClickThroughEventTagPropertiesType = 'Google_Service_Dfareporting_DefaultClickThroughEventTagProperties';
   protected $defaultClickThroughEventTagPropertiesDataType = '';
+  public $defaultLandingPageId;
   public $endDate;
   protected $eventTagOverridesType = 'Google_Service_Dfareporting_EventTagOverride';
   protected $eventTagOverridesDataType = 'array';
@@ -51,8 +52,6 @@ class Google_Service_Dfareporting_Campaign extends Google_Collection
   public $kind;
   protected $lastModifiedInfoType = 'Google_Service_Dfareporting_LastModifiedInfo';
   protected $lastModifiedInfoDataType = '';
-  protected $lookbackConfigurationType = 'Google_Service_Dfareporting_LookbackConfiguration';
-  protected $lookbackConfigurationDataType = '';
   public $name;
   public $nielsenOcrEnabled;
   public $startDate;
@@ -227,6 +226,14 @@ class Google_Service_Dfareporting_Campaign extends Google_Collection
   {
     return $this->defaultClickThroughEventTagProperties;
   }
+  public function setDefaultLandingPageId($defaultLandingPageId)
+  {
+    $this->defaultLandingPageId = $defaultLandingPageId;
+  }
+  public function getDefaultLandingPageId()
+  {
+    return $this->defaultLandingPageId;
+  }
   public function setEndDate($endDate)
   {
     $this->endDate = $endDate;
@@ -300,20 +307,6 @@ class Google_Service_Dfareporting_Campaign extends Google_Collection
   public function getLastModifiedInfo()
   {
     return $this->lastModifiedInfo;
-  }
-  /**
-   * @param Google_Service_Dfareporting_LookbackConfiguration
-   */
-  public function setLookbackConfiguration(Google_Service_Dfareporting_LookbackConfiguration $lookbackConfiguration)
-  {
-    $this->lookbackConfiguration = $lookbackConfiguration;
-  }
-  /**
-   * @return Google_Service_Dfareporting_LookbackConfiguration
-   */
-  public function getLookbackConfiguration()
-  {
-    return $this->lookbackConfiguration;
   }
   public function setName($name)
   {

@@ -28,7 +28,7 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
   /**
    * Delete user (users.delete)
    *
-   * @param string $userKey Email or immutable Id of the user
+   * @param string $userKey Email or immutable ID of the user
    * @param array $optParams Optional parameters.
    */
   public function delete($userKey, $optParams = array())
@@ -40,7 +40,7 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
   /**
    * retrieve user (users.get)
    *
-   * @param string $userKey Email or immutable Id of the user
+   * @param string $userKey Email or immutable ID of the user
    * @param array $optParams Optional parameters.
    *
    * @opt_param string customFieldMask Comma-separated list of schema names. All
@@ -87,16 +87,15 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
    * field instead.
    * @opt_param string event Event on which subscription is intended (if
    * subscribing)
-   * @opt_param int maxResults Maximum number of results to return. Default is
-   * 100. Max allowed is 500
+   * @opt_param int maxResults Maximum number of results to return.
    * @opt_param string orderBy Column to use for sorting results
    * @opt_param string pageToken Token to specify next page in the list
    * @opt_param string projection What subset of fields to fetch for this user.
    * @opt_param string query Query string search. Should be of the form "".
    * Complete documentation is at https://developers.google.com/admin-
    * sdk/directory/v1/guides/search-users
-   * @opt_param string showDeleted If set to true retrieves the list of deleted
-   * users. Default is false
+   * @opt_param string showDeleted If set to true, retrieves the list of deleted
+   * users. (Default: false)
    * @opt_param string sortOrder Whether to return results in ascending or
    * descending order.
    * @opt_param string viewType Whether to fetch the ADMIN_VIEW or DOMAIN_PUBLIC
@@ -112,7 +111,7 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
   /**
    * change admin status of a user (users.makeAdmin)
    *
-   * @param string $userKey Email or immutable Id of the user as admin
+   * @param string $userKey Email or immutable ID of the user as admin
    * @param Google_Service_Directory_UserMakeAdmin $postBody
    * @param array $optParams Optional parameters.
    */
@@ -125,7 +124,7 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
   /**
    * update user. This method supports patch semantics. (users.patch)
    *
-   * @param string $userKey Email or immutable Id of the user. If Id, it should
+   * @param string $userKey Email or immutable ID of the user. If ID, it should
    * match with id of user object
    * @param Google_Service_Directory_User $postBody
    * @param array $optParams Optional parameters.
@@ -153,7 +152,7 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
   /**
    * update user (users.update)
    *
-   * @param string $userKey Email or immutable Id of the user. If Id, it should
+   * @param string $userKey Email or immutable ID of the user. If ID, it should
    * match with id of user object
    * @param Google_Service_Directory_User $postBody
    * @param array $optParams Optional parameters.
@@ -182,16 +181,15 @@ class Google_Service_Directory_Resource_Users extends Google_Service_Resource
    * field instead.
    * @opt_param string event Event on which subscription is intended (if
    * subscribing)
-   * @opt_param int maxResults Maximum number of results to return. Default is
-   * 100. Max allowed is 500
+   * @opt_param int maxResults Maximum number of results to return.
    * @opt_param string orderBy Column to use for sorting results
    * @opt_param string pageToken Token to specify next page in the list
    * @opt_param string projection What subset of fields to fetch for this user.
    * @opt_param string query Query string search. Should be of the form "".
    * Complete documentation is at https://developers.google.com/admin-
    * sdk/directory/v1/guides/search-users
-   * @opt_param string showDeleted If set to true retrieves the list of deleted
-   * users. Default is false
+   * @opt_param string showDeleted If set to true, retrieves the list of deleted
+   * users. (Default: false)
    * @opt_param string sortOrder Whether to return results in ascending or
    * descending order.
    * @opt_param string viewType Whether to fetch the ADMIN_VIEW or DOMAIN_PUBLIC

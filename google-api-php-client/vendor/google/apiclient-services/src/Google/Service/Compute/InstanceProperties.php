@@ -28,12 +28,17 @@ class Google_Service_Compute_InstanceProperties extends Google_Collection
   public $machineType;
   protected $metadataType = 'Google_Service_Compute_Metadata';
   protected $metadataDataType = '';
+  public $minCpuPlatform;
   protected $networkInterfacesType = 'Google_Service_Compute_NetworkInterface';
   protected $networkInterfacesDataType = 'array';
+  protected $reservationAffinityType = 'Google_Service_Compute_ReservationAffinity';
+  protected $reservationAffinityDataType = '';
   protected $schedulingType = 'Google_Service_Compute_Scheduling';
   protected $schedulingDataType = '';
   protected $serviceAccountsType = 'Google_Service_Compute_ServiceAccount';
   protected $serviceAccountsDataType = 'array';
+  protected $shieldedInstanceConfigType = 'Google_Service_Compute_ShieldedInstanceConfig';
+  protected $shieldedInstanceConfigDataType = '';
   protected $tagsType = 'Google_Service_Compute_Tags';
   protected $tagsDataType = '';
 
@@ -111,6 +116,14 @@ class Google_Service_Compute_InstanceProperties extends Google_Collection
   {
     return $this->metadata;
   }
+  public function setMinCpuPlatform($minCpuPlatform)
+  {
+    $this->minCpuPlatform = $minCpuPlatform;
+  }
+  public function getMinCpuPlatform()
+  {
+    return $this->minCpuPlatform;
+  }
   /**
    * @param Google_Service_Compute_NetworkInterface
    */
@@ -124,6 +137,20 @@ class Google_Service_Compute_InstanceProperties extends Google_Collection
   public function getNetworkInterfaces()
   {
     return $this->networkInterfaces;
+  }
+  /**
+   * @param Google_Service_Compute_ReservationAffinity
+   */
+  public function setReservationAffinity(Google_Service_Compute_ReservationAffinity $reservationAffinity)
+  {
+    $this->reservationAffinity = $reservationAffinity;
+  }
+  /**
+   * @return Google_Service_Compute_ReservationAffinity
+   */
+  public function getReservationAffinity()
+  {
+    return $this->reservationAffinity;
   }
   /**
    * @param Google_Service_Compute_Scheduling
@@ -152,6 +179,20 @@ class Google_Service_Compute_InstanceProperties extends Google_Collection
   public function getServiceAccounts()
   {
     return $this->serviceAccounts;
+  }
+  /**
+   * @param Google_Service_Compute_ShieldedInstanceConfig
+   */
+  public function setShieldedInstanceConfig(Google_Service_Compute_ShieldedInstanceConfig $shieldedInstanceConfig)
+  {
+    $this->shieldedInstanceConfig = $shieldedInstanceConfig;
+  }
+  /**
+   * @return Google_Service_Compute_ShieldedInstanceConfig
+   */
+  public function getShieldedInstanceConfig()
+  {
+    return $this->shieldedInstanceConfig;
   }
   /**
    * @param Google_Service_Compute_Tags

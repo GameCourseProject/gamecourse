@@ -17,21 +17,51 @@
 
 class Google_Service_AndroidEnterprise_Product extends Google_Collection
 {
-  protected $collection_key = 'appVersion';
+  protected $collection_key = 'screenshotUrls';
+  protected $appTracksType = 'Google_Service_AndroidEnterprise_TrackInfo';
+  protected $appTracksDataType = 'array';
   protected $appVersionType = 'Google_Service_AndroidEnterprise_AppVersion';
   protected $appVersionDataType = 'array';
   public $authorName;
+  public $availableCountries;
+  public $availableTracks;
+  public $category;
+  public $contentRating;
+  public $description;
   public $detailsUrl;
   public $distributionChannel;
+  public $features;
   public $iconUrl;
   public $kind;
+  public $lastUpdatedTimestampMillis;
+  public $minAndroidSdkVersion;
+  protected $permissionsType = 'Google_Service_AndroidEnterprise_ProductPermission';
+  protected $permissionsDataType = 'array';
   public $productId;
   public $productPricing;
+  public $recentChanges;
   public $requiresContainerApp;
+  public $screenshotUrls;
+  protected $signingCertificateType = 'Google_Service_AndroidEnterprise_ProductSigningCertificate';
+  protected $signingCertificateDataType = '';
   public $smallIconUrl;
   public $title;
   public $workDetailsUrl;
 
+  /**
+   * @param Google_Service_AndroidEnterprise_TrackInfo
+   */
+  public function setAppTracks($appTracks)
+  {
+    $this->appTracks = $appTracks;
+  }
+  /**
+   * @return Google_Service_AndroidEnterprise_TrackInfo
+   */
+  public function getAppTracks()
+  {
+    return $this->appTracks;
+  }
   /**
    * @param Google_Service_AndroidEnterprise_AppVersion
    */
@@ -54,6 +84,46 @@ class Google_Service_AndroidEnterprise_Product extends Google_Collection
   {
     return $this->authorName;
   }
+  public function setAvailableCountries($availableCountries)
+  {
+    $this->availableCountries = $availableCountries;
+  }
+  public function getAvailableCountries()
+  {
+    return $this->availableCountries;
+  }
+  public function setAvailableTracks($availableTracks)
+  {
+    $this->availableTracks = $availableTracks;
+  }
+  public function getAvailableTracks()
+  {
+    return $this->availableTracks;
+  }
+  public function setCategory($category)
+  {
+    $this->category = $category;
+  }
+  public function getCategory()
+  {
+    return $this->category;
+  }
+  public function setContentRating($contentRating)
+  {
+    $this->contentRating = $contentRating;
+  }
+  public function getContentRating()
+  {
+    return $this->contentRating;
+  }
+  public function setDescription($description)
+  {
+    $this->description = $description;
+  }
+  public function getDescription()
+  {
+    return $this->description;
+  }
   public function setDetailsUrl($detailsUrl)
   {
     $this->detailsUrl = $detailsUrl;
@@ -69,6 +139,14 @@ class Google_Service_AndroidEnterprise_Product extends Google_Collection
   public function getDistributionChannel()
   {
     return $this->distributionChannel;
+  }
+  public function setFeatures($features)
+  {
+    $this->features = $features;
+  }
+  public function getFeatures()
+  {
+    return $this->features;
   }
   public function setIconUrl($iconUrl)
   {
@@ -86,6 +164,36 @@ class Google_Service_AndroidEnterprise_Product extends Google_Collection
   {
     return $this->kind;
   }
+  public function setLastUpdatedTimestampMillis($lastUpdatedTimestampMillis)
+  {
+    $this->lastUpdatedTimestampMillis = $lastUpdatedTimestampMillis;
+  }
+  public function getLastUpdatedTimestampMillis()
+  {
+    return $this->lastUpdatedTimestampMillis;
+  }
+  public function setMinAndroidSdkVersion($minAndroidSdkVersion)
+  {
+    $this->minAndroidSdkVersion = $minAndroidSdkVersion;
+  }
+  public function getMinAndroidSdkVersion()
+  {
+    return $this->minAndroidSdkVersion;
+  }
+  /**
+   * @param Google_Service_AndroidEnterprise_ProductPermission
+   */
+  public function setPermissions($permissions)
+  {
+    $this->permissions = $permissions;
+  }
+  /**
+   * @return Google_Service_AndroidEnterprise_ProductPermission
+   */
+  public function getPermissions()
+  {
+    return $this->permissions;
+  }
   public function setProductId($productId)
   {
     $this->productId = $productId;
@@ -102,6 +210,14 @@ class Google_Service_AndroidEnterprise_Product extends Google_Collection
   {
     return $this->productPricing;
   }
+  public function setRecentChanges($recentChanges)
+  {
+    $this->recentChanges = $recentChanges;
+  }
+  public function getRecentChanges()
+  {
+    return $this->recentChanges;
+  }
   public function setRequiresContainerApp($requiresContainerApp)
   {
     $this->requiresContainerApp = $requiresContainerApp;
@@ -109,6 +225,28 @@ class Google_Service_AndroidEnterprise_Product extends Google_Collection
   public function getRequiresContainerApp()
   {
     return $this->requiresContainerApp;
+  }
+  public function setScreenshotUrls($screenshotUrls)
+  {
+    $this->screenshotUrls = $screenshotUrls;
+  }
+  public function getScreenshotUrls()
+  {
+    return $this->screenshotUrls;
+  }
+  /**
+   * @param Google_Service_AndroidEnterprise_ProductSigningCertificate
+   */
+  public function setSigningCertificate(Google_Service_AndroidEnterprise_ProductSigningCertificate $signingCertificate)
+  {
+    $this->signingCertificate = $signingCertificate;
+  }
+  /**
+   * @return Google_Service_AndroidEnterprise_ProductSigningCertificate
+   */
+  public function getSigningCertificate()
+  {
+    return $this->signingCertificate;
   }
   public function setSmallIconUrl($smallIconUrl)
   {

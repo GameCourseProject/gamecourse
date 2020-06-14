@@ -24,7 +24,7 @@
  *
  * <p>
  * For more information about this service, see the API
- * <a href="https://developers.google.com/admin-sdk/reports/" target="_blank">Documentation</a>
+ * <a href="/admin-sdk/reports/" target="_blank">Documentation</a>
  * </p>
  *
  * @author Google, Inc.
@@ -41,18 +41,21 @@ class Google_Service_Reports extends Google_Service
   public $activities;
   public $channels;
   public $customerUsageReports;
+  public $entityUsageReports;
   public $userUsageReport;
   
   /**
    * Constructs the internal representation of the Reports service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = 'admin/reports/v1/';
+    $this->batchPath = 'batch/admin/reports_v1';
     $this->version = 'reports_v1';
     $this->serviceName = 'admin';
 
@@ -100,6 +103,10 @@ class Google_Service_Reports extends Google_Service
                   'location' => 'query',
                   'type' => 'integer',
                 ),
+                'orgUnitID' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -146,6 +153,10 @@ class Google_Service_Reports extends Google_Service
                 'maxResults' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'orgUnitID' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',
@@ -206,6 +217,56 @@ class Google_Service_Reports extends Google_Service
           )
         )
     );
+    $this->entityUsageReports = new Google_Service_Reports_Resource_EntityUsageReports(
+        $this,
+        $this->serviceName,
+        'entityUsageReports',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'usage/{entityType}/{entityKey}/dates/{date}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'entityType' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'entityKey' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'date' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'customerId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'filters' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'maxResults' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'parameters' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->userUsageReport = new Google_Service_Reports_Resource_UserUsageReport(
         $this,
         $this->serviceName,
@@ -237,6 +298,10 @@ class Google_Service_Reports extends Google_Service
                 'maxResults' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'orgUnitID' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',

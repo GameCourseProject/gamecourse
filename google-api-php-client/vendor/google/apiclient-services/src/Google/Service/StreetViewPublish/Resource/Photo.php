@@ -29,12 +29,18 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
    * After the client finishes uploading the photo with the returned UploadRef,
    * CreatePhoto publishes the uploaded Photo to Street View on Google Maps.
    *
+   * Currently, the only way to set heading, pitch, and roll in CreatePhoto is
+   * through the [Photo Sphere XMP
+   * metadata](https://developers.google.com/streetview/spherical-metadata) in the
+   * photo bytes. CreatePhoto ignores the  `pose.heading`, `pose.pitch`,
+   * `pose.roll`, `pose.altitude`, and `pose.level` fields in Pose.
+   *
    * This method returns the following error codes:
    *
-   * * google.rpc.Code.INVALID_ARGUMENT if the request is malformed. *
-   * google.rpc.Code.NOT_FOUND if the upload reference does not exist. *
-   * google.rpc.Code.RESOURCE_EXHAUSTED if the account has reached the storage
-   * limit. (photo.create)
+   * * google.rpc.Code.INVALID_ARGUMENT if the request is malformed or if the
+   * uploaded photo is not a 360 photo. * google.rpc.Code.NOT_FOUND if the upload
+   * reference does not exist. * google.rpc.Code.RESOURCE_EXHAUSTED if the account
+   * has reached the storage limit. (photo.create)
    *
    * @param Google_Service_StreetViewPublish_Photo $postBody
    * @param array $optParams Optional parameters.
@@ -72,13 +78,19 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
    *
    * * google.rpc.Code.PERMISSION_DENIED if the requesting user did not create the
    * requested Photo. * google.rpc.Code.NOT_FOUND if the requested Photo does not
-   * exist. (photo.get)
+   * exist. * google.rpc.Code.UNAVAILABLE if the requested Photo is still being
+   * indexed. (photo.get)
    *
    * @param string $photoId Required. ID of the Photo.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string view Specifies if a download URL for the photo bytes should
-   * be returned in the Photo response.
+   * @opt_param string view Required. Specifies if a download URL for the photo
+   * bytes should be returned in the Photo response.
+   * @opt_param string languageCode The BCP-47 language code, such as "en-US" or
+   * "sr-Latn". For more information, see
+   * http://www.unicode.org/reports/tr35/#Unicode_locale_identifier. If
+   * language_code is unspecified, the user's language preference for Google
+   * services is used.
    * @return Google_Service_StreetViewPublish_Photo
    */
   public function get($photoId, $optParams = array())
@@ -88,12 +100,12 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
     return $this->call('get', array($params), "Google_Service_StreetViewPublish_Photo");
   }
   /**
-   * Creates an upload session to start uploading photo bytes. The upload URL of
-   * the returned UploadRef is used to upload the bytes for the Photo.
+   * Creates an upload session to start uploading photo bytes.  The method uses
+   * the upload URL of the returned UploadRef to upload the bytes for the Photo.
    *
    * In addition to the photo requirements shown in
    * https://support.google.com/maps/answer/7012050?hl=en_topic=6275604, the photo
-   * must also meet the following requirements:
+   * must meet the following requirements:
    *
    * * Photo Sphere XMP metadata must be included in the photo medadata. See
    * https://developers.google.com/streetview/spherical-metadata for the required
@@ -101,7 +113,7 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
    * in https://support.google.com/maps/answer/7012050?hl=en_topic=6275604, and
    * the photo must be a full 360 horizontally.
    *
-   * After the upload is complete, the UploadRef is used with CreatePhoto to
+   * After the upload completes, the method uses UploadRef with CreatePhoto to
    * create the Photo object entry. (photo.startUpload)
    *
    * @param Google_Service_StreetViewPublish_StreetviewpublishEmpty $postBody
@@ -118,33 +130,36 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
    * Updates the metadata of a Photo, such as pose, place association,
    * connections, etc. Changing the pixels of a photo is not supported.
    *
+   * Only the fields specified in the updateMask field are used. If `updateMask`
+   * is not present, the update applies to all fields.
+   *
    * This method returns the following error codes:
    *
    * * google.rpc.Code.PERMISSION_DENIED if the requesting user did not create the
    * requested photo. * google.rpc.Code.INVALID_ARGUMENT if the request is
    * malformed. * google.rpc.Code.NOT_FOUND if the requested photo does not exist.
+   * * google.rpc.Code.UNAVAILABLE if the requested Photo is still being indexed.
    * (photo.update)
    *
-   * @param string $id Required. A base64 encoded identifier.
+   * @param string $id Required. A unique identifier for a photo.
    * @param Google_Service_StreetViewPublish_Photo $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string updateMask Mask that identifies fields on the photo
-   * metadata to update. If not present, the old Photo metadata will be entirely
+   * @opt_param string updateMask Required. Mask that identifies fields on the
+   * photo metadata to update. If not present, the old Photo metadata is entirely
    * replaced with the new Photo metadata in this request. The update fails if
    * invalid fields are specified. Multiple fields can be specified in a comma-
    * delimited list.
    *
    * The following fields are valid:
    *
-   * * `pose.heading` * `pose.latlngpair` * `pose.pitch` * `pose.roll` *
+   * * `pose.heading` * `pose.latLngPair` * `pose.pitch` * `pose.roll` *
    * `pose.level` * `pose.altitude` * `connections` * `places`
    *
-   * Note: Repeated fields in updateMask mean the entire set of repeated values
-   * will be replaced with the new contents. For example, if updateMask contains
-   * `connections` and
-   * google.streetview.publish.v1.UpdatePhotoRequest.photo.connections is empty,
-   * all connections will be removed.
+   * Note: When updateMask contains repeated fields, the entire set of repeated
+   * values get replaced with the new contents. For example, if updateMask
+   * contains `connections` and `UpdatePhotoRequest.photo.connections` is empty,
+   * all connections are removed.
    * @return Google_Service_StreetViewPublish_Photo
    */
   public function update($id, Google_Service_StreetViewPublish_Photo $postBody, $optParams = array())

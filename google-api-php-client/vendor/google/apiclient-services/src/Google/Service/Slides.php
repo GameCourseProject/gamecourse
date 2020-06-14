@@ -19,7 +19,7 @@
  * Service definition for Slides (v1).
  *
  * <p>
- * An API for creating and editing Google Slides presentations.</p>
+ * Reads and writes Google Slides presentations.</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -30,10 +30,13 @@
  */
 class Google_Service_Slides extends Google_Service
 {
-  /** View and manage the files in your Google Drive. */
+  /** See, edit, create, and delete all of your Google Drive files. */
   const DRIVE =
       "https://www.googleapis.com/auth/drive";
-  /** View the files in your Google Drive. */
+  /** View and manage Google Drive files and folders that you have opened or created with this app. */
+  const DRIVE_FILE =
+      "https://www.googleapis.com/auth/drive.file";
+  /** See and download all your Google Drive files. */
   const DRIVE_READONLY =
       "https://www.googleapis.com/auth/drive.readonly";
   /** View and manage your Google Slides presentations. */
@@ -42,7 +45,7 @@ class Google_Service_Slides extends Google_Service
   /** View your Google Slides presentations. */
   const PRESENTATIONS_READONLY =
       "https://www.googleapis.com/auth/presentations.readonly";
-  /** View and manage your spreadsheets in Google Drive. */
+  /** See, edit, create, and delete your spreadsheets in Google Drive. */
   const SPREADSHEETS =
       "https://www.googleapis.com/auth/spreadsheets";
   /** View your Google Spreadsheets. */
@@ -55,13 +58,15 @@ class Google_Service_Slides extends Google_Service
   /**
    * Constructs the internal representation of the Slides service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://slides.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://slides.googleapis.com/';
     $this->servicePath = '';
+    $this->batchPath = 'batch';
     $this->version = 'v1';
     $this->serviceName = 'slides';
 
@@ -134,11 +139,11 @@ class Google_Service_Slides extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'thumbnailProperties.thumbnailSize' => array(
+                'thumbnailProperties.mimeType' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'thumbnailProperties.mimeType' => array(
+                'thumbnailProperties.thumbnailSize' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),

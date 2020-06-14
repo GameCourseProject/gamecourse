@@ -19,10 +19,11 @@
  * Service definition for CloudTrace (v2).
  *
  * <p>
- * Send and retrieve trace data from Stackdriver Trace. Data is generated and
- * available by default for all App Engine applications. Data from other
- * applications can be written to Stackdriver Trace for display, reporting, and
- * analysis.</p>
+ * Sends application trace data to Stackdriver Trace for viewing. Trace data is
+ * collected for all App Engine applications by default. Trace data from other
+ * applications can be provided using this API. This library is used to interact
+ * with the Trace API directly. If you are looking to instrument your
+ * application for Stackdriver Trace, we recommend using OpenCensus.</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -39,9 +40,6 @@ class Google_Service_CloudTrace extends Google_Service
   /** Write Trace data for a project or application. */
   const TRACE_APPEND =
       "https://www.googleapis.com/auth/trace.append";
-  /** Read Trace data for a project or application. */
-  const TRACE_READONLY =
-      "https://www.googleapis.com/auth/trace.readonly";
 
   public $projects_traces;
   public $projects_traces_spans;
@@ -49,13 +47,15 @@ class Google_Service_CloudTrace extends Google_Service
   /**
    * Constructs the internal representation of the CloudTrace service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://cloudtrace.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://cloudtrace.googleapis.com/';
     $this->servicePath = '';
+    $this->batchPath = 'batch';
     $this->version = 'v2';
     $this->serviceName = 'cloudtrace';
 
@@ -75,54 +75,6 @@ class Google_Service_CloudTrace extends Google_Service
                   'required' => true,
                 ),
               ),
-            ),'list' => array(
-              'path' => 'v2/{+parent}/traces',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'parent' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'orderBy' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'endTime' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'startTime' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
-              ),
-            ),'listSpans' => array(
-              'path' => 'v2/{+parent}:listSpans',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'parent' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-              ),
             ),
           )
         )
@@ -133,9 +85,9 @@ class Google_Service_CloudTrace extends Google_Service
         'spans',
         array(
           'methods' => array(
-            'create' => array(
+            'createSpan' => array(
               'path' => 'v2/{+name}',
-              'httpMethod' => 'PUT',
+              'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
                   'location' => 'path',

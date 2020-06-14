@@ -19,7 +19,6 @@ class Google_Service_AdExperienceReport_PlatformSummary extends Google_Collectio
 {
   protected $collection_key = 'region';
   public $betterAdsStatus;
-  public $egregiousStatus;
   public $enforcementTime;
   public $filterStatus;
   public $lastChangeTime;
@@ -34,14 +33,6 @@ class Google_Service_AdExperienceReport_PlatformSummary extends Google_Collectio
   public function getBetterAdsStatus()
   {
     return $this->betterAdsStatus;
-  }
-  public function setEgregiousStatus($egregiousStatus)
-  {
-    $this->egregiousStatus = $egregiousStatus;
-  }
-  public function getEgregiousStatus()
-  {
-    return $this->egregiousStatus;
   }
   public function setEnforcementTime($enforcementTime)
   {

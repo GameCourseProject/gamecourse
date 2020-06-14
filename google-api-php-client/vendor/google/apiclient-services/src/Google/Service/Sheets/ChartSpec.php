@@ -17,8 +17,11 @@
 
 class Google_Service_Sheets_ChartSpec extends Google_Model
 {
+  public $altText;
   protected $backgroundColorType = 'Google_Service_Sheets_Color';
   protected $backgroundColorDataType = '';
+  protected $backgroundColorStyleType = 'Google_Service_Sheets_ColorStyle';
+  protected $backgroundColorStyleDataType = '';
   protected $basicChartType = 'Google_Service_Sheets_BasicChartSpec';
   protected $basicChartDataType = '';
   protected $bubbleChartType = 'Google_Service_Sheets_BubbleChartSpec';
@@ -34,10 +37,31 @@ class Google_Service_Sheets_ChartSpec extends Google_Model
   protected $orgChartDataType = '';
   protected $pieChartType = 'Google_Service_Sheets_PieChartSpec';
   protected $pieChartDataType = '';
+  protected $scorecardChartType = 'Google_Service_Sheets_ScorecardChartSpec';
+  protected $scorecardChartDataType = '';
+  public $subtitle;
+  protected $subtitleTextFormatType = 'Google_Service_Sheets_TextFormat';
+  protected $subtitleTextFormatDataType = '';
+  protected $subtitleTextPositionType = 'Google_Service_Sheets_TextPosition';
+  protected $subtitleTextPositionDataType = '';
   public $title;
   protected $titleTextFormatType = 'Google_Service_Sheets_TextFormat';
   protected $titleTextFormatDataType = '';
+  protected $titleTextPositionType = 'Google_Service_Sheets_TextPosition';
+  protected $titleTextPositionDataType = '';
+  protected $treemapChartType = 'Google_Service_Sheets_TreemapChartSpec';
+  protected $treemapChartDataType = '';
+  protected $waterfallChartType = 'Google_Service_Sheets_WaterfallChartSpec';
+  protected $waterfallChartDataType = '';
 
+  public function setAltText($altText)
+  {
+    $this->altText = $altText;
+  }
+  public function getAltText()
+  {
+    return $this->altText;
+  }
   /**
    * @param Google_Service_Sheets_Color
    */
@@ -51,6 +75,20 @@ class Google_Service_Sheets_ChartSpec extends Google_Model
   public function getBackgroundColor()
   {
     return $this->backgroundColor;
+  }
+  /**
+   * @param Google_Service_Sheets_ColorStyle
+   */
+  public function setBackgroundColorStyle(Google_Service_Sheets_ColorStyle $backgroundColorStyle)
+  {
+    $this->backgroundColorStyle = $backgroundColorStyle;
+  }
+  /**
+   * @return Google_Service_Sheets_ColorStyle
+   */
+  public function getBackgroundColorStyle()
+  {
+    return $this->backgroundColorStyle;
   }
   /**
    * @param Google_Service_Sheets_BasicChartSpec
@@ -160,6 +198,56 @@ class Google_Service_Sheets_ChartSpec extends Google_Model
   {
     return $this->pieChart;
   }
+  /**
+   * @param Google_Service_Sheets_ScorecardChartSpec
+   */
+  public function setScorecardChart(Google_Service_Sheets_ScorecardChartSpec $scorecardChart)
+  {
+    $this->scorecardChart = $scorecardChart;
+  }
+  /**
+   * @return Google_Service_Sheets_ScorecardChartSpec
+   */
+  public function getScorecardChart()
+  {
+    return $this->scorecardChart;
+  }
+  public function setSubtitle($subtitle)
+  {
+    $this->subtitle = $subtitle;
+  }
+  public function getSubtitle()
+  {
+    return $this->subtitle;
+  }
+  /**
+   * @param Google_Service_Sheets_TextFormat
+   */
+  public function setSubtitleTextFormat(Google_Service_Sheets_TextFormat $subtitleTextFormat)
+  {
+    $this->subtitleTextFormat = $subtitleTextFormat;
+  }
+  /**
+   * @return Google_Service_Sheets_TextFormat
+   */
+  public function getSubtitleTextFormat()
+  {
+    return $this->subtitleTextFormat;
+  }
+  /**
+   * @param Google_Service_Sheets_TextPosition
+   */
+  public function setSubtitleTextPosition(Google_Service_Sheets_TextPosition $subtitleTextPosition)
+  {
+    $this->subtitleTextPosition = $subtitleTextPosition;
+  }
+  /**
+   * @return Google_Service_Sheets_TextPosition
+   */
+  public function getSubtitleTextPosition()
+  {
+    return $this->subtitleTextPosition;
+  }
   public function setTitle($title)
   {
     $this->title = $title;
@@ -181,5 +269,47 @@ class Google_Service_Sheets_ChartSpec extends Google_Model
   public function getTitleTextFormat()
   {
     return $this->titleTextFormat;
+  }
+  /**
+   * @param Google_Service_Sheets_TextPosition
+   */
+  public function setTitleTextPosition(Google_Service_Sheets_TextPosition $titleTextPosition)
+  {
+    $this->titleTextPosition = $titleTextPosition;
+  }
+  /**
+   * @return Google_Service_Sheets_TextPosition
+   */
+  public function getTitleTextPosition()
+  {
+    return $this->titleTextPosition;
+  }
+  /**
+   * @param Google_Service_Sheets_TreemapChartSpec
+   */
+  public function setTreemapChart(Google_Service_Sheets_TreemapChartSpec $treemapChart)
+  {
+    $this->treemapChart = $treemapChart;
+  }
+  /**
+   * @return Google_Service_Sheets_TreemapChartSpec
+   */
+  public function getTreemapChart()
+  {
+    return $this->treemapChart;
+  }
+  /**
+   * @param Google_Service_Sheets_WaterfallChartSpec
+   */
+  public function setWaterfallChart(Google_Service_Sheets_WaterfallChartSpec $waterfallChart)
+  {
+    $this->waterfallChart = $waterfallChart;
+  }
+  /**
+   * @return Google_Service_Sheets_WaterfallChartSpec
+   */
+  public function getWaterfallChart()
+  {
+    return $this->waterfallChart;
   }
 }

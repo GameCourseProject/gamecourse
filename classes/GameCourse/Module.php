@@ -10,7 +10,7 @@ abstract class Module {
     private $dir;
     private $parent;
     private $resources = array();
-    
+
     public function __construct() {
     }
 
@@ -55,10 +55,10 @@ abstract class Module {
     public function getResources() {
         return $this->resources;
     }
-    public function addTables($moduleName,$tableName){
+    public function addTables($moduleName,$tableName, $children = null){
         $table = Core::$systemDB->executeQuery("show tables like '".$tableName."';")->fetchAll(\PDO::FETCH_ASSOC);
         if (empty($table)){
-            Core::$systemDB->executeQuery(file_get_contents("modules/".$moduleName."/create.sql"));
+            Core::$systemDB->executeQuery(file_get_contents("modules/".$moduleName."/create".$children . ".sql"));
             return true;
         }
         return false;
@@ -88,10 +88,10 @@ abstract class Module {
             return $this->$key = $value;
         }
         trigger_error('Cannot access private property ' . __CLASS__ . '::$' . $key, E_USER_ERROR);
-    } 
-    
+    }
+
     //functions that are used in the modules in the functions of the expression language
-    
+
     public function getUserId($user){
         if (is_array($user))
             return $user["value"]["id"];
@@ -129,7 +129,7 @@ abstract class Module {
             $date = implode("-",array_reverse(explode("/",$finalDate)));
             array_push($whereDate,["date","<",$date]);
         }
-            
+
         if ($type !== null) {
             $where["type"]=$type;
             //should only use module instance if the type is specified (so we know if we should use skils or badges)
@@ -166,6 +166,6 @@ abstract class Module {
         $this->checkArray($object, "object", $field, $field);
         return new ValueNode($object["value"][$field]);
     }
-    
+
 }
 ?>

@@ -23,7 +23,13 @@ class Google_Service_YouTube_SuperChatEventSnippet extends Google_Model
   public $createdAt;
   public $currency;
   public $displayString;
+  public $isSuperChatForGood;
+  public $isSuperStickerEvent;
   public $messageType;
+  protected $nonprofitType = 'Google_Service_YouTube_Nonprofit';
+  protected $nonprofitDataType = '';
+  protected $superStickerMetadataType = 'Google_Service_YouTube_SuperStickerMetadata';
+  protected $superStickerMetadataDataType = '';
   protected $supporterDetailsType = 'Google_Service_YouTube_ChannelProfileDetails';
   protected $supporterDetailsDataType = '';
 
@@ -75,6 +81,22 @@ class Google_Service_YouTube_SuperChatEventSnippet extends Google_Model
   {
     return $this->displayString;
   }
+  public function setIsSuperChatForGood($isSuperChatForGood)
+  {
+    $this->isSuperChatForGood = $isSuperChatForGood;
+  }
+  public function getIsSuperChatForGood()
+  {
+    return $this->isSuperChatForGood;
+  }
+  public function setIsSuperStickerEvent($isSuperStickerEvent)
+  {
+    $this->isSuperStickerEvent = $isSuperStickerEvent;
+  }
+  public function getIsSuperStickerEvent()
+  {
+    return $this->isSuperStickerEvent;
+  }
   public function setMessageType($messageType)
   {
     $this->messageType = $messageType;
@@ -82,6 +104,34 @@ class Google_Service_YouTube_SuperChatEventSnippet extends Google_Model
   public function getMessageType()
   {
     return $this->messageType;
+  }
+  /**
+   * @param Google_Service_YouTube_Nonprofit
+   */
+  public function setNonprofit(Google_Service_YouTube_Nonprofit $nonprofit)
+  {
+    $this->nonprofit = $nonprofit;
+  }
+  /**
+   * @return Google_Service_YouTube_Nonprofit
+   */
+  public function getNonprofit()
+  {
+    return $this->nonprofit;
+  }
+  /**
+   * @param Google_Service_YouTube_SuperStickerMetadata
+   */
+  public function setSuperStickerMetadata(Google_Service_YouTube_SuperStickerMetadata $superStickerMetadata)
+  {
+    $this->superStickerMetadata = $superStickerMetadata;
+  }
+  /**
+   * @return Google_Service_YouTube_SuperStickerMetadata
+   */
+  public function getSuperStickerMetadata()
+  {
+    return $this->superStickerMetadata;
   }
   /**
    * @param Google_Service_YouTube_ChannelProfileDetails

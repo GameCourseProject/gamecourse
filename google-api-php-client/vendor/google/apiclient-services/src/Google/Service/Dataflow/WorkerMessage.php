@@ -21,10 +21,14 @@ class Google_Service_Dataflow_WorkerMessage extends Google_Model
   public $time;
   protected $workerHealthReportType = 'Google_Service_Dataflow_WorkerHealthReport';
   protected $workerHealthReportDataType = '';
+  protected $workerLifecycleEventType = 'Google_Service_Dataflow_WorkerLifecycleEvent';
+  protected $workerLifecycleEventDataType = '';
   protected $workerMessageCodeType = 'Google_Service_Dataflow_WorkerMessageCode';
   protected $workerMessageCodeDataType = '';
   protected $workerMetricsType = 'Google_Service_Dataflow_ResourceUtilizationReport';
   protected $workerMetricsDataType = '';
+  protected $workerShutdownNoticeType = 'Google_Service_Dataflow_WorkerShutdownNotice';
+  protected $workerShutdownNoticeDataType = '';
 
   public function setLabels($labels)
   {
@@ -57,6 +61,20 @@ class Google_Service_Dataflow_WorkerMessage extends Google_Model
     return $this->workerHealthReport;
   }
   /**
+   * @param Google_Service_Dataflow_WorkerLifecycleEvent
+   */
+  public function setWorkerLifecycleEvent(Google_Service_Dataflow_WorkerLifecycleEvent $workerLifecycleEvent)
+  {
+    $this->workerLifecycleEvent = $workerLifecycleEvent;
+  }
+  /**
+   * @return Google_Service_Dataflow_WorkerLifecycleEvent
+   */
+  public function getWorkerLifecycleEvent()
+  {
+    return $this->workerLifecycleEvent;
+  }
+  /**
    * @param Google_Service_Dataflow_WorkerMessageCode
    */
   public function setWorkerMessageCode(Google_Service_Dataflow_WorkerMessageCode $workerMessageCode)
@@ -83,5 +101,19 @@ class Google_Service_Dataflow_WorkerMessage extends Google_Model
   public function getWorkerMetrics()
   {
     return $this->workerMetrics;
+  }
+  /**
+   * @param Google_Service_Dataflow_WorkerShutdownNotice
+   */
+  public function setWorkerShutdownNotice(Google_Service_Dataflow_WorkerShutdownNotice $workerShutdownNotice)
+  {
+    $this->workerShutdownNotice = $workerShutdownNotice;
+  }
+  /**
+   * @return Google_Service_Dataflow_WorkerShutdownNotice
+   */
+  public function getWorkerShutdownNotice()
+  {
+    return $this->workerShutdownNotice;
   }
 }

@@ -17,28 +17,13 @@
 
 class Google_Service_ShoppingContent_OrdersCancelLineItemRequest extends Google_Model
 {
-  protected $amountType = 'Google_Service_ShoppingContent_Price';
-  protected $amountDataType = '';
   public $lineItemId;
   public $operationId;
+  public $productId;
   public $quantity;
   public $reason;
   public $reasonText;
 
-  /**
-   * @param Google_Service_ShoppingContent_Price
-   */
-  public function setAmount(Google_Service_ShoppingContent_Price $amount)
-  {
-    $this->amount = $amount;
-  }
-  /**
-   * @return Google_Service_ShoppingContent_Price
-   */
-  public function getAmount()
-  {
-    return $this->amount;
-  }
   public function setLineItemId($lineItemId)
   {
     $this->lineItemId = $lineItemId;
@@ -54,6 +39,14 @@ class Google_Service_ShoppingContent_OrdersCancelLineItemRequest extends Google_
   public function getOperationId()
   {
     return $this->operationId;
+  }
+  public function setProductId($productId)
+  {
+    $this->productId = $productId;
+  }
+  public function getProductId()
+  {
+    return $this->productId;
   }
   public function setQuantity($quantity)
   {

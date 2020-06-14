@@ -26,12 +26,16 @@ class Google_Service_TagManager_Tag extends Google_Collection
   public $firingRuleId;
   public $firingTriggerId;
   public $liveOnly;
+  protected $monitoringMetadataType = 'Google_Service_TagManager_Parameter';
+  protected $monitoringMetadataDataType = '';
+  public $monitoringMetadataTagNameKey;
   public $name;
   public $notes;
   protected $parameterType = 'Google_Service_TagManager_Parameter';
   protected $parameterDataType = 'array';
   public $parentFolderId;
   public $path;
+  public $paused;
   protected $priorityType = 'Google_Service_TagManager_Parameter';
   protected $priorityDataType = '';
   public $scheduleEndMs;
@@ -110,6 +114,28 @@ class Google_Service_TagManager_Tag extends Google_Collection
   {
     return $this->liveOnly;
   }
+  /**
+   * @param Google_Service_TagManager_Parameter
+   */
+  public function setMonitoringMetadata(Google_Service_TagManager_Parameter $monitoringMetadata)
+  {
+    $this->monitoringMetadata = $monitoringMetadata;
+  }
+  /**
+   * @return Google_Service_TagManager_Parameter
+   */
+  public function getMonitoringMetadata()
+  {
+    return $this->monitoringMetadata;
+  }
+  public function setMonitoringMetadataTagNameKey($monitoringMetadataTagNameKey)
+  {
+    $this->monitoringMetadataTagNameKey = $monitoringMetadataTagNameKey;
+  }
+  public function getMonitoringMetadataTagNameKey()
+  {
+    return $this->monitoringMetadataTagNameKey;
+  }
   public function setName($name)
   {
     $this->name = $name;
@@ -155,6 +181,14 @@ class Google_Service_TagManager_Tag extends Google_Collection
   public function getPath()
   {
     return $this->path;
+  }
+  public function setPaused($paused)
+  {
+    $this->paused = $paused;
+  }
+  public function getPaused()
+  {
+    return $this->paused;
   }
   /**
    * @param Google_Service_TagManager_Parameter

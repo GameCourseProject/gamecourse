@@ -16,7 +16,7 @@
  */
 
 /**
- * Service definition for Dfareporting (v2.8).
+ * Service definition for Dfareporting (v3.4).
  *
  * <p>
  * Manages your DoubleClick Campaign Manager ad campaigns and reports.</p>
@@ -47,6 +47,7 @@ class Google_Service_Dfareporting extends Google_Service
   public $accounts;
   public $ads;
   public $advertiserGroups;
+  public $advertiserLandingPages;
   public $advertisers;
   public $browsers;
   public $campaignCreativeAssociations;
@@ -62,8 +63,8 @@ class Google_Service_Dfareporting extends Google_Service
   public $creativeFields;
   public $creativeGroups;
   public $creatives;
+  public $customEvents;
   public $dimensionValues;
-  public $directorySiteContacts;
   public $directorySites;
   public $dynamicTargetingKeys;
   public $eventTags;
@@ -72,9 +73,9 @@ class Google_Service_Dfareporting extends Google_Service
   public $floodlightActivityGroups;
   public $floodlightConfigurations;
   public $inventoryItems;
-  public $landingPages;
   public $languages;
   public $metros;
+  public $mobileApps;
   public $mobileCarriers;
   public $operatingSystemVersions;
   public $operatingSystems;
@@ -106,14 +107,16 @@ class Google_Service_Dfareporting extends Google_Service
   /**
    * Constructs the internal representation of the Dfareporting service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
-    $this->servicePath = 'dfareporting/v2.8/';
-    $this->version = 'v2.8';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
+    $this->servicePath = 'dfareporting/v3.4/';
+    $this->batchPath = 'batch/dfareporting/v3.4';
+    $this->version = 'v3.4';
     $this->serviceName = 'dfareporting';
 
     $this->accountActiveAdSummaries = new Google_Service_Dfareporting_Resource_AccountActiveAdSummaries(
@@ -689,6 +692,119 @@ class Google_Service_Dfareporting extends Google_Service
           )
         )
     );
+    $this->advertiserLandingPages = new Google_Service_Dfareporting_Resource_AdvertiserLandingPages(
+        $this,
+        $this->serviceName,
+        'advertiserLandingPages',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'userprofiles/{profileId}/advertiserLandingPages/{id}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'id' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'insert' => array(
+              'path' => 'userprofiles/{profileId}/advertiserLandingPages',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'userprofiles/{profileId}/advertiserLandingPages',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'advertiserIds' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'repeated' => true,
+                ),
+                'archived' => array(
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ),
+                'campaignIds' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'repeated' => true,
+                ),
+                'ids' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'repeated' => true,
+                ),
+                'maxResults' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'searchString' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'sortField' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'sortOrder' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'subaccountId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'patch' => array(
+              'path' => 'userprofiles/{profileId}/advertiserLandingPages',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'id' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'update' => array(
+              'path' => 'userprofiles/{profileId}/advertiserLandingPages',
+              'httpMethod' => 'PUT',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->advertisers = new Google_Service_Dfareporting_Resource_Advertisers(
         $this,
         $this->serviceName,
@@ -909,16 +1025,6 @@ class Google_Service_Dfareporting extends Google_Service
               'parameters' => array(
                 'profileId' => array(
                   'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'defaultLandingPageName' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'defaultLandingPageUrl' => array(
-                  'location' => 'query',
                   'type' => 'string',
                   'required' => true,
                 ),
@@ -1869,6 +1975,26 @@ class Google_Service_Dfareporting extends Google_Service
           )
         )
     );
+    $this->customEvents = new Google_Service_Dfareporting_Resource_CustomEvents(
+        $this,
+        $this->serviceName,
+        'customEvents',
+        array(
+          'methods' => array(
+            'batchinsert' => array(
+              'path' => 'userprofiles/{profileId}/customEvents/batchinsert',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->dimensionValues = new Google_Service_Dfareporting_Resource_DimensionValues(
         $this,
         $this->serviceName,
@@ -1889,71 +2015,6 @@ class Google_Service_Dfareporting extends Google_Service
                   'type' => 'integer',
                 ),
                 'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-              ),
-            ),
-          )
-        )
-    );
-    $this->directorySiteContacts = new Google_Service_Dfareporting_Resource_DirectorySiteContacts(
-        $this,
-        $this->serviceName,
-        'directorySiteContacts',
-        array(
-          'methods' => array(
-            'get' => array(
-              'path' => 'userprofiles/{profileId}/directorySiteContacts/{id}',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'id' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'list' => array(
-              'path' => 'userprofiles/{profileId}/directorySiteContacts',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'directorySiteIds' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                  'repeated' => true,
-                ),
-                'ids' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                  'repeated' => true,
-                ),
-                'maxResults' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
-                'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'searchString' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'sortField' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'sortOrder' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
@@ -2018,10 +2079,6 @@ class Google_Service_Dfareporting extends Google_Service
                   'location' => 'query',
                   'type' => 'boolean',
                 ),
-                'countryId' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
                 'dfpNetworkCode' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -2036,10 +2093,6 @@ class Google_Service_Dfareporting extends Google_Service
                   'type' => 'integer',
                 ),
                 'pageToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'parentId' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
@@ -2723,121 +2776,6 @@ class Google_Service_Dfareporting extends Google_Service
           )
         )
     );
-    $this->landingPages = new Google_Service_Dfareporting_Resource_LandingPages(
-        $this,
-        $this->serviceName,
-        'landingPages',
-        array(
-          'methods' => array(
-            'delete' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages/{id}',
-              'httpMethod' => 'DELETE',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'id' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'get' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages/{id}',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'id' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'insert' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages',
-              'httpMethod' => 'POST',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'list' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages',
-              'httpMethod' => 'GET',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'patch' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages',
-              'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'id' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'update' => array(
-              'path' => 'userprofiles/{profileId}/campaigns/{campaignId}/landingPages',
-              'httpMethod' => 'PUT',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'campaignId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),
-          )
-        )
-    );
     $this->languages = new Google_Service_Dfareporting_Resource_Languages(
         $this,
         $this->serviceName,
@@ -2872,6 +2810,63 @@ class Google_Service_Dfareporting extends Google_Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->mobileApps = new Google_Service_Dfareporting_Resource_MobileApps(
+        $this,
+        $this->serviceName,
+        'mobileApps',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'userprofiles/{profileId}/mobileApps/{id}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'id' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'userprofiles/{profileId}/mobileApps',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'directories' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'repeated' => true,
+                ),
+                'ids' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                  'repeated' => true,
+                ),
+                'maxResults' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'searchString' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -3981,21 +3976,6 @@ class Google_Service_Dfareporting extends Google_Service
                 'sortOrder' => array(
                   'location' => 'query',
                   'type' => 'string',
-                ),
-              ),
-            ),'patch' => array(
-              'path' => 'userprofiles/{profileId}/reports/{reportId}',
-              'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'reportId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
                 ),
               ),
             ),'run' => array(

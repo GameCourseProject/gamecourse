@@ -132,6 +132,11 @@ class Core {
         return false;
     }
 
+    public static function getStudents($url){
+        $fenixEduClient = \FenixEdu::getSingleton();
+        return $fenixEduClient->get($url, true);
+    }
+
     public static function getLoggedUser() {
         return static::$loggedUser;
     }

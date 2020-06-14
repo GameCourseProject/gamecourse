@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of the Monolog package.
@@ -24,35 +24,37 @@ use Monolog\Logger;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class IntrospectionProcessor
+class IntrospectionProcessor implements ProcessorInterface
 {
     private $level;
 
     private $skipClassesPartials;
 
-    private $skipFunctions = array(
+    private $skipStackFramesCount;
+
+    private $skipFunctions = [
         'call_user_func',
         'call_user_func_array',
-    );
-
-    public function __construct($level = Logger::DEBUG, array $skipClassesPartials = array())
-    {
-        $this->level = Logger::toMonologLevel($level);
-        $this->skipClassesPartials = array_merge(array('Monolog\\'), $skipClassesPartials);
-    }
+    ];
 
     /**
-     * @param  array $record
-     * @return array
+     * @param string|int $level The minimum logging level at which this Processor will be triggered
      */
-    public function __invoke(array $record)
+    public function __construct($level = Logger::DEBUG, array $skipClassesPartials = [], int $skipStackFramesCount = 0)
+    {
+        $this->level = Logger::toMonologLevel($level);
+        $this->skipClassesPartials = array_merge(['Monolog\\'], $skipClassesPartials);
+        $this->skipStackFramesCount = $skipStackFramesCount;
+    }
+
+    public function __invoke(array $record): array
     {
         // return if the level is not high enough
         if ($record['level'] < $this->level) {
             return $record;
         }
 
-        $trace = debug_backtrace();
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
         // skip first since it's always the current method
         array_shift($trace);
@@ -66,32 +68,36 @@ class IntrospectionProcessor
                 foreach ($this->skipClassesPartials as $part) {
                     if (strpos($trace[$i]['class'], $part) !== false) {
                         $i++;
+
                         continue 2;
                     }
                 }
             } elseif (in_array($trace[$i]['function'], $this->skipFunctions)) {
                 $i++;
+
                 continue;
             }
 
             break;
         }
 
+        $i += $this->skipStackFramesCount;
+
         // we should have the call source now
         $record['extra'] = array_merge(
             $record['extra'],
-            array(
+            [
                 'file'      => isset($trace[$i - 1]['file']) ? $trace[$i - 1]['file'] : null,
                 'line'      => isset($trace[$i - 1]['line']) ? $trace[$i - 1]['line'] : null,
                 'class'     => isset($trace[$i]['class']) ? $trace[$i]['class'] : null,
                 'function'  => isset($trace[$i]['function']) ? $trace[$i]['function'] : null,
-            )
+            ]
         );
 
         return $record;
     }
 
-    private function isTraceClassOrSkippedFunction (array $trace, $index)
+    private function isTraceClassOrSkippedFunction(array $trace, int $index)
     {
         if (!isset($trace[$index])) {
             return false;

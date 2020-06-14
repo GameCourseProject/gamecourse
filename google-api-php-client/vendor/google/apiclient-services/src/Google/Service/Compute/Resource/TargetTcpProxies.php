@@ -31,6 +31,19 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
    * @param string $project Project ID for this request.
    * @param string $targetTcpProxy Name of the TargetTcpProxy resource to delete.
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string requestId An optional request ID to identify requests.
+   * Specify a unique request ID so that if you must retry your request, the
+   * server will know to ignore the request if it has already been completed.
+   *
+   * For example, consider a situation where you make an initial request and the
+   * request times out. If you make the request again with the same request ID,
+   * the server can check if original operation with the same request ID was
+   * received, and if so, will ignore the second request. This prevents clients
+   * from accidentally creating duplicate commitments.
+   *
+   * The request ID must be a valid UUID with the exception that zero UUID is not
+   * supported (00000000-0000-0000-0000-000000000000).
    * @return Google_Service_Compute_Operation
    */
   public function delete($project, $targetTcpProxy, $optParams = array())
@@ -40,8 +53,8 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
     return $this->call('delete', array($params), "Google_Service_Compute_Operation");
   }
   /**
-   * Returns the specified TargetTcpProxy resource. Get a list of available target
-   * TCP proxies by making a list() request. (targetTcpProxies.get)
+   * Returns the specified TargetTcpProxy resource. Gets a list of available
+   * target TCP proxies by making a list() request. (targetTcpProxies.get)
    *
    * @param string $project Project ID for this request.
    * @param string $targetTcpProxy Name of the TargetTcpProxy resource to return.
@@ -61,6 +74,19 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
    * @param string $project Project ID for this request.
    * @param Google_Service_Compute_TargetTcpProxy $postBody
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string requestId An optional request ID to identify requests.
+   * Specify a unique request ID so that if you must retry your request, the
+   * server will know to ignore the request if it has already been completed.
+   *
+   * For example, consider a situation where you make an initial request and the
+   * request times out. If you make the request again with the same request ID,
+   * the server can check if original operation with the same request ID was
+   * received, and if so, will ignore the second request. This prevents clients
+   * from accidentally creating duplicate commitments.
+   *
+   * The request ID must be a valid UUID with the exception that zero UUID is not
+   * supported (00000000-0000-0000-0000-000000000000).
    * @return Google_Service_Compute_Operation
    */
   public function insert($project, Google_Service_Compute_TargetTcpProxy $postBody, $optParams = array())
@@ -76,30 +102,26 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
    * @param string $project Project ID for this request.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string filter Sets a filter {expression} for filtering listed
-   * resources. Your {expression} must be in the format: field_name
-   * comparison_string literal_string.
+   * @opt_param string filter A filter expression that filters resources listed in
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either =,
+   * !=, >, or <.
    *
-   * The field_name is the name of the field you want to compare. Only atomic
-   * field types are supported (string, number, boolean). The comparison_string
-   * must be either eq (equals) or ne (not equals). The literal_string is the
-   * string value to filter to. The literal value must be valid for the type of
-   * field you are filtering by (string, number, boolean). For string fields, the
-   * literal value is interpreted as a regular expression using RE2 syntax. The
-   * literal value must match the entire field.
+   * For example, if you are filtering Compute Engine instances, you can exclude
+   * instances named example-instance by specifying name != example-instance.
    *
-   * For example, to filter for instances that do not have a name of example-
-   * instance, you would use name ne example-instance.
-   *
-   * You can filter on nested fields. For example, you could filter on instances
-   * that have set the scheduling.automaticRestart field to true. Use filtering on
-   * nested fields to take advantage of labels to organize and search for results
-   * based on label values.
+   * You can also filter nested fields. For example, you could specify
+   * scheduling.automaticRestart = false to include instances only if they are not
+   * scheduled for automatic restarts. You can use filtering on nested fields to
+   * filter based on resource labels.
    *
    * To filter on multiple expressions, provide each separate expression within
-   * parentheses. For example, (scheduling.automaticRestart eq true) (zone eq us-
-   * central1-f). Multiple expressions are treated as AND expressions, meaning
-   * that resources must match all expressions to pass the filters.
+   * parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform =
+   * "Intel Skylake"). By default, each expression is an AND expression. However,
+   * you can include AND and OR expressions explicitly. For example, (cpuPlatform
+   * = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * (scheduling.automaticRestart = true).
    * @opt_param string maxResults The maximum number of results per page that
    * should be returned. If the number of available results is larger than
    * maxResults, Compute Engine returns a nextPageToken that can be used to get
@@ -135,6 +157,19 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
    * BackendService resource is to be set.
    * @param Google_Service_Compute_TargetTcpProxiesSetBackendServiceRequest $postBody
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string requestId An optional request ID to identify requests.
+   * Specify a unique request ID so that if you must retry your request, the
+   * server will know to ignore the request if it has already been completed.
+   *
+   * For example, consider a situation where you make an initial request and the
+   * request times out. If you make the request again with the same request ID,
+   * the server can check if original operation with the same request ID was
+   * received, and if so, will ignore the second request. This prevents clients
+   * from accidentally creating duplicate commitments.
+   *
+   * The request ID must be a valid UUID with the exception that zero UUID is not
+   * supported (00000000-0000-0000-0000-000000000000).
    * @return Google_Service_Compute_Operation
    */
   public function setBackendService($project, $targetTcpProxy, Google_Service_Compute_TargetTcpProxiesSetBackendServiceRequest $postBody, $optParams = array())
@@ -152,6 +187,19 @@ class Google_Service_Compute_Resource_TargetTcpProxies extends Google_Service_Re
    * ProxyHeader is to be set.
    * @param Google_Service_Compute_TargetTcpProxiesSetProxyHeaderRequest $postBody
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string requestId An optional request ID to identify requests.
+   * Specify a unique request ID so that if you must retry your request, the
+   * server will know to ignore the request if it has already been completed.
+   *
+   * For example, consider a situation where you make an initial request and the
+   * request times out. If you make the request again with the same request ID,
+   * the server can check if original operation with the same request ID was
+   * received, and if so, will ignore the second request. This prevents clients
+   * from accidentally creating duplicate commitments.
+   *
+   * The request ID must be a valid UUID with the exception that zero UUID is not
+   * supported (00000000-0000-0000-0000-000000000000).
    * @return Google_Service_Compute_Operation
    */
   public function setProxyHeader($project, $targetTcpProxy, Google_Service_Compute_TargetTcpProxiesSetProxyHeaderRequest $postBody, $optParams = array())

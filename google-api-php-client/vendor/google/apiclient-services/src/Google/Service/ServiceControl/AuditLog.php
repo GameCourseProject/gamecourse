@@ -22,12 +22,16 @@ class Google_Service_ServiceControl_AuditLog extends Google_Collection
   protected $authenticationInfoDataType = '';
   protected $authorizationInfoType = 'Google_Service_ServiceControl_AuthorizationInfo';
   protected $authorizationInfoDataType = 'array';
+  public $metadata;
   public $methodName;
   public $numResponseItems;
   public $request;
   protected $requestMetadataType = 'Google_Service_ServiceControl_RequestMetadata';
   protected $requestMetadataDataType = '';
+  protected $resourceLocationType = 'Google_Service_ServiceControl_ResourceLocation';
+  protected $resourceLocationDataType = '';
   public $resourceName;
+  public $resourceOriginalState;
   public $response;
   public $serviceData;
   public $serviceName;
@@ -61,6 +65,14 @@ class Google_Service_ServiceControl_AuditLog extends Google_Collection
   public function getAuthorizationInfo()
   {
     return $this->authorizationInfo;
+  }
+  public function setMetadata($metadata)
+  {
+    $this->metadata = $metadata;
+  }
+  public function getMetadata()
+  {
+    return $this->metadata;
   }
   public function setMethodName($methodName)
   {
@@ -100,6 +112,20 @@ class Google_Service_ServiceControl_AuditLog extends Google_Collection
   {
     return $this->requestMetadata;
   }
+  /**
+   * @param Google_Service_ServiceControl_ResourceLocation
+   */
+  public function setResourceLocation(Google_Service_ServiceControl_ResourceLocation $resourceLocation)
+  {
+    $this->resourceLocation = $resourceLocation;
+  }
+  /**
+   * @return Google_Service_ServiceControl_ResourceLocation
+   */
+  public function getResourceLocation()
+  {
+    return $this->resourceLocation;
+  }
   public function setResourceName($resourceName)
   {
     $this->resourceName = $resourceName;
@@ -107,6 +133,14 @@ class Google_Service_ServiceControl_AuditLog extends Google_Collection
   public function getResourceName()
   {
     return $this->resourceName;
+  }
+  public function setResourceOriginalState($resourceOriginalState)
+  {
+    $this->resourceOriginalState = $resourceOriginalState;
+  }
+  public function getResourceOriginalState()
+  {
+    return $this->resourceOriginalState;
   }
   public function setResponse($response)
   {

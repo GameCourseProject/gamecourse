@@ -22,11 +22,13 @@ class Google_Service_TagManager_ContainerVersionHeader extends Google_Model
   public $containerVersionId;
   public $deleted;
   public $name;
+  public $numCustomTemplates;
   public $numMacros;
   public $numRules;
   public $numTags;
   public $numTriggers;
   public $numVariables;
+  public $numZones;
   public $path;
 
   public function setAccountId($accountId)
@@ -69,6 +71,14 @@ class Google_Service_TagManager_ContainerVersionHeader extends Google_Model
   {
     return $this->name;
   }
+  public function setNumCustomTemplates($numCustomTemplates)
+  {
+    $this->numCustomTemplates = $numCustomTemplates;
+  }
+  public function getNumCustomTemplates()
+  {
+    return $this->numCustomTemplates;
+  }
   public function setNumMacros($numMacros)
   {
     $this->numMacros = $numMacros;
@@ -108,6 +118,14 @@ class Google_Service_TagManager_ContainerVersionHeader extends Google_Model
   public function getNumVariables()
   {
     return $this->numVariables;
+  }
+  public function setNumZones($numZones)
+  {
+    $this->numZones = $numZones;
+  }
+  public function getNumZones()
+  {
+    return $this->numZones;
   }
   public function setPath($path)
   {

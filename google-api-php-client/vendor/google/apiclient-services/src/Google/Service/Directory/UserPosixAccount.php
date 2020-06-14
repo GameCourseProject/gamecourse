@@ -17,15 +17,25 @@
 
 class Google_Service_Directory_UserPosixAccount extends Google_Model
 {
+  public $accountId;
   public $gecos;
   public $gid;
   public $homeDirectory;
+  public $operatingSystemType;
   public $primary;
   public $shell;
   public $systemId;
   public $uid;
   public $username;
 
+  public function setAccountId($accountId)
+  {
+    $this->accountId = $accountId;
+  }
+  public function getAccountId()
+  {
+    return $this->accountId;
+  }
   public function setGecos($gecos)
   {
     $this->gecos = $gecos;
@@ -49,6 +59,14 @@ class Google_Service_Directory_UserPosixAccount extends Google_Model
   public function getHomeDirectory()
   {
     return $this->homeDirectory;
+  }
+  public function setOperatingSystemType($operatingSystemType)
+  {
+    $this->operatingSystemType = $operatingSystemType;
+  }
+  public function getOperatingSystemType()
+  {
+    return $this->operatingSystemType;
   }
   public function setPrimary($primary)
   {

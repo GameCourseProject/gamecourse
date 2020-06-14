@@ -30,16 +30,16 @@
  */
 class Google_Service_Sheets extends Google_Service
 {
-  /** View and manage the files in your Google Drive. */
+  /** See, edit, create, and delete all of your Google Drive files. */
   const DRIVE =
       "https://www.googleapis.com/auth/drive";
   /** View and manage Google Drive files and folders that you have opened or created with this app. */
   const DRIVE_FILE =
       "https://www.googleapis.com/auth/drive.file";
-  /** View the files in your Google Drive. */
+  /** See and download all your Google Drive files. */
   const DRIVE_READONLY =
       "https://www.googleapis.com/auth/drive.readonly";
-  /** View and manage your spreadsheets in Google Drive. */
+  /** See, edit, create, and delete your spreadsheets in Google Drive. */
   const SPREADSHEETS =
       "https://www.googleapis.com/auth/spreadsheets";
   /** View your Google Spreadsheets. */
@@ -47,19 +47,22 @@ class Google_Service_Sheets extends Google_Service
       "https://www.googleapis.com/auth/spreadsheets.readonly";
 
   public $spreadsheets;
+  public $spreadsheets_developerMetadata;
   public $spreadsheets_sheets;
   public $spreadsheets_values;
   
   /**
    * Constructs the internal representation of the Sheets service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://sheets.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://sheets.googleapis.com/';
     $this->servicePath = '';
+    $this->batchPath = 'batch';
     $this->version = 'v4';
     $this->serviceName = 'sheets';
 
@@ -100,6 +103,51 @@ class Google_Service_Sheets extends Google_Service
                 'includeGridData' => array(
                   'location' => 'query',
                   'type' => 'boolean',
+                ),
+              ),
+            ),'getByDataFilter' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}:getByDataFilter',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->spreadsheets_developerMetadata = new Google_Service_Sheets_Resource_SpreadsheetsDeveloperMetadata(
+        $this,
+        $this->serviceName,
+        'developerMetadata',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}/developerMetadata/{metadataId}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'metadataId' => array(
+                  'location' => 'path',
+                  'type' => 'integer',
+                  'required' => true,
+                ),
+              ),
+            ),'search' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}/developerMetadata:search',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
                 ),
               ),
             ),
@@ -151,10 +199,6 @@ class Google_Service_Sheets extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'includeValuesInResponse' => array(
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ),
                 'responseValueRenderOption' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -171,9 +215,23 @@ class Google_Service_Sheets extends Google_Service
                   'location' => 'query',
                   'type' => 'string',
                 ),
+                'includeValuesInResponse' => array(
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ),
               ),
             ),'batchClear' => array(
               'path' => 'v4/spreadsheets/{spreadsheetId}/values:batchClear',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'batchClearByDataFilter' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}/values:batchClearByDataFilter',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'spreadsheetId' => array(
@@ -209,8 +267,28 @@ class Google_Service_Sheets extends Google_Service
                   'type' => 'string',
                 ),
               ),
+            ),'batchGetByDataFilter' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}/values:batchGetByDataFilter',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
             ),'batchUpdate' => array(
               'path' => 'v4/spreadsheets/{spreadsheetId}/values:batchUpdate',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'spreadsheetId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'batchUpdateByDataFilter' => array(
+              'path' => 'v4/spreadsheets/{spreadsheetId}/values:batchUpdateByDataFilter',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'spreadsheetId' => array(
@@ -248,15 +326,15 @@ class Google_Service_Sheets extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'majorDimension' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'valueRenderOption' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
                 'dateTimeRenderOption' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'majorDimension' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
@@ -275,14 +353,6 @@ class Google_Service_Sheets extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'responseDateTimeRenderOption' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
-                'includeValuesInResponse' => array(
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ),
                 'responseValueRenderOption' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -290,6 +360,14 @@ class Google_Service_Sheets extends Google_Service
                 'valueInputOption' => array(
                   'location' => 'query',
                   'type' => 'string',
+                ),
+                'responseDateTimeRenderOption' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'includeValuesInResponse' => array(
+                  'location' => 'query',
+                  'type' => 'boolean',
                 ),
               ),
             ),

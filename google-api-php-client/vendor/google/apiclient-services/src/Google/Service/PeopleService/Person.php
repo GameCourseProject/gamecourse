@@ -17,7 +17,7 @@
 
 class Google_Service_PeopleService_Person extends Google_Collection
 {
-  protected $collection_key = 'urls';
+  protected $collection_key = 'userDefined';
   protected $addressesType = 'Google_Service_PeopleService_Address';
   protected $addressesDataType = 'array';
   public $ageRange;
@@ -69,12 +69,16 @@ class Google_Service_PeopleService_Person extends Google_Collection
   protected $residencesType = 'Google_Service_PeopleService_Residence';
   protected $residencesDataType = 'array';
   public $resourceName;
+  protected $sipAddressesType = 'Google_Service_PeopleService_SipAddress';
+  protected $sipAddressesDataType = 'array';
   protected $skillsType = 'Google_Service_PeopleService_Skill';
   protected $skillsDataType = 'array';
   protected $taglinesType = 'Google_Service_PeopleService_Tagline';
   protected $taglinesDataType = 'array';
   protected $urlsType = 'Google_Service_PeopleService_Url';
   protected $urlsDataType = 'array';
+  protected $userDefinedType = 'Google_Service_PeopleService_UserDefined';
+  protected $userDefinedDataType = 'array';
 
   /**
    * @param Google_Service_PeopleService_Address
@@ -437,6 +441,20 @@ class Google_Service_PeopleService_Person extends Google_Collection
     return $this->resourceName;
   }
   /**
+   * @param Google_Service_PeopleService_SipAddress
+   */
+  public function setSipAddresses($sipAddresses)
+  {
+    $this->sipAddresses = $sipAddresses;
+  }
+  /**
+   * @return Google_Service_PeopleService_SipAddress
+   */
+  public function getSipAddresses()
+  {
+    return $this->sipAddresses;
+  }
+  /**
    * @param Google_Service_PeopleService_Skill
    */
   public function setSkills($skills)
@@ -477,5 +495,19 @@ class Google_Service_PeopleService_Person extends Google_Collection
   public function getUrls()
   {
     return $this->urls;
+  }
+  /**
+   * @param Google_Service_PeopleService_UserDefined
+   */
+  public function setUserDefined($userDefined)
+  {
+    $this->userDefined = $userDefined;
+  }
+  /**
+   * @return Google_Service_PeopleService_UserDefined
+   */
+  public function getUserDefined()
+  {
+    return $this->userDefined;
   }
 }

@@ -19,8 +19,8 @@
  * Service definition for Acceleratedmobilepageurl (v1).
  *
  * <p>
- * Retrieves the list of AMP URL (and equivalent AMP Cache URL) for a given list
- * of public URL(s).</p>
+ * Retrieves the list of AMP URLs (and equivalent AMP Cache URLs) for a given
+ * list of public URL(s).</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -39,13 +39,15 @@ class Google_Service_Acceleratedmobilepageurl extends Google_Service
    * Constructs the internal representation of the Acceleratedmobilepageurl
    * service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://acceleratedmobilepageurl.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://acceleratedmobilepageurl.googleapis.com/';
     $this->servicePath = '';
+    $this->batchPath = 'batch';
     $this->version = 'v1';
     $this->serviceName = 'acceleratedmobilepageurl';
 

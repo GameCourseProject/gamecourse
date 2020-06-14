@@ -38,6 +38,7 @@ class Google_Service_Books extends Google_Service
   public $bookshelves_volumes;
   public $cloudloading;
   public $dictionary;
+  public $familysharing;
   public $layers;
   public $layers_annotationData;
   public $layers_volumeAnnotations;
@@ -61,13 +62,15 @@ class Google_Service_Books extends Google_Service
   /**
    * Constructs the internal representation of the Books service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = 'books/v1/';
+    $this->batchPath = 'batch/books/v1';
     $this->version = 'v1';
     $this->serviceName = 'books';
 
@@ -214,6 +217,59 @@ class Google_Service_Books extends Google_Service
                   'location' => 'query',
                   'type' => 'string',
                   'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->familysharing = new Google_Service_Books_Resource_Familysharing(
+        $this,
+        $this->serviceName,
+        'familysharing',
+        array(
+          'methods' => array(
+            'getFamilyInfo' => array(
+              'path' => 'familysharing/getFamilyInfo',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'source' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'share' => array(
+              'path' => 'familysharing/share',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'docId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'source' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'volumeId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'unshare' => array(
+              'path' => 'familysharing/unshare',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'docId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'source' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'volumeId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
