@@ -92,6 +92,20 @@ $(window).resize(function() {
     checkNavbarLength();
 });
 
+function range(start, end) {
+    return Array(end - start + 1).fill().map((_, idx) => start + idx)
+}
+
+function semestersYears(start, end){
+    years = range(start, end);
+    semesters = [];
+    jQuery.each(years, function(index){
+        se = years[index].toString() + "-" + (years[index] + 1).toString();
+        semesters.push(se)
+    });
+    return semesters;
+}
+
 
 //from settings.js
 function buildTabs(info, parent, $smartboards, $scope) {

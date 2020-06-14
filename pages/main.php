@@ -38,6 +38,9 @@ $user = Core::getLoggedUser();
         <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
         <script type="text/javascript" src="js/tooltip.js"></script>
         
+        <!-- Color picker -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/> <!-- 'monolith' theme -->
+        <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.es5.min.js"></script>        
 
         <script>
             app.run(['$rootScope', function($rootScope) {

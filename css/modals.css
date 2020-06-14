@@ -134,7 +134,7 @@ cursor: pointer;
     margin: 2px 0 10px 10px;
     display: block;
     transition: all 0.3s;
-    transform: translateX(0px); /*translateY(-70px);*/
+    transform: translateX(0px);
     -webkit-transform: translateX(0px);
     color: lightgray;
     position: absolute;
@@ -159,6 +159,18 @@ cursor: pointer;
     -webkit-transform: translateX(-70px);
     transform: translateX(-70px);
 }
+.modal_content .content .inputs .color_picker #color-sample {
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+.modal_content .content .inputs .color_picker .form__label {
+    transform: translateX(-30px);
+    -webkit-transform: translateX(-30px);
+}
+
 .modal_content .save_btn {
     padding: 10px 15px;
     font-size: 18px;

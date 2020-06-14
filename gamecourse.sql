@@ -43,7 +43,7 @@ create table course(
 	name 	varchar(100),
 	short	varchar(20),
 	color	varchar(7),
-	year	int,
+	year	varchar(10),
 	defaultLandingPage varchar(100) default "",
 	lastUpdate timestamp default CURRENT_TIMESTAMP,
 	isActive boolean default true,

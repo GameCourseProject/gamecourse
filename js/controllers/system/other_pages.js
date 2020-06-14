@@ -293,6 +293,29 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $scope.createCourse = function(){
         $("#action_completed").empty();
         $scope.newCourse = {};
+
+        const inputElement_colorPicker = document.querySelector('.pickr');
+        const color_sample = $("#color-sample");
+        const pickr = new Pickr({
+            el: inputElement_colorPicker,
+            useAsButton: true,
+            default: '#ffffff',
+            theme: 'monolith',
+            components: {
+                hue: true,
+                interaction: { input: true, save: true }
+            }
+        }).on('init', pickr => {
+            inputElement_colorPicker.value = pickr.getSelectedColor().toHEXA().toString(0);
+        }).on('save', color => {
+            inputElement_colorPicker.value = color.toHEXA().toString(0);
+            pickr.hide();
+        }).on('change', color => {
+            inputElement_colorPicker.value = color.toHEXA().toString(0);
+            color_sample[0].children[0].style.backgroundColor = color.toHEXA().toString(0);
+            color_sample[0].children[1].style.borderColor = color.toHEXA().toString(0);
+        })
+
         $scope.isReadyToSubmit = function() {
             isValid = function(text){
                 return  (text != "" && text != undefined && text != null)
@@ -300,8 +323,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             //validate inputs
             if (isValid($scope.newCourse.courseName) &&
             isValid($scope.newCourse.courseShort) &&
-            isValid($scope.newCourse.courseYear) &&
-            isValid($scope.newCourse.courseColor)){
+            isValid($scope.newCourse.courseYear) ){
                 return true;
             }
             else{
@@ -310,11 +332,12 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         }
 
         $scope.submitCourse = function() {
+            courseColor = $("#color")[0].value;
             var reqData = {
                 courseName: $scope.newCourse.courseName,
                 courseShort: $scope.newCourse.courseShort,
                 courseYear: $scope.newCourse.courseYear,
-                courseColor: $scope.newCourse.courseColor,
+                courseColor: courseColor,
                 creationMode: 'blank'
             };
             $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
@@ -458,18 +481,36 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     allCourses.append($compile(action_buttons)($scope));
 
     //new course modal
+    currentYear = new Date().getFullYear();
+    yearsOptions = semestersYears(currentYear - 5, currentYear + 5); //options for combobox
     modal = $("<div class='modal' id='new-course'></div>");
     newCourse = $("<div class='modal_content'></div>");
     newCourse.append( $('<button class="close_btn icon" value="#new-course" onclick="closeModal(this)"></button>'));
     newCourse.append( $('<div class="title">New Course: </div>'));
     content = $('<div class="content">');
     box = $('<div class= "inputs">');
+    //text inputs
     box.append( $('<div class="name full"><input type="text" class="form__input " id="name" placeholder="Name *" ng-model="newCourse.courseName"/> <label for="name" class="form__label">Name</label></div>'))
     row_inputs = $('<div class= "row_inputs"></div>');
     row_inputs.append($('<div class="short_name half"><input type="text" class="form__input" id="short_name" placeholder="Short Name *" ng-model="newCourse.courseShort"/><label for="sort_name" class="form__label">Short Name</label></div>'))
-    row_inputs.append( $('<div class="year half right"><input type="text" class="form__input" id="year" placeholder="Year *" ng-model="newCourse.courseYear"/><label for="year" class="form__label">Year</label></div>'))
-    row_inputs.append( $('<div class="color_picker half"><input type="text" class="form__input" id="color" placeholder="Color *" ng-model="newCourse.courseColor"/><label for="color" class="form__label">Color</label></div>'))
+    //year combobox
+    year_section = $('<div class="year half right"></div>');
+    year_section.append( $('<input list="years" class="form__input" id="year" placeholder="Year *" ng-model="newCourse.courseYear"/>'))
+    year_section.append( $('<label for="year" class="form__label">Year</label>'))
+    datalist_options = ( $('<datalist id="years"></datalist>'))
+    jQuery.each(yearsOptions, function(index){
+        datalist_options.append( $('<option value='+ yearsOptions[index] +'>'));
+    });
+    year_section.append(datalist_options);
+    row_inputs.append(year_section);
+    //color picker
+    color_picker_section = $('<div class="color_picker half"></div>');
+    color_picker_section.append( $('<input type="text" class="form__input pickr" id="color" placeholder="Color *" ng-model="newCourse.courseColor"/>'));
+    color_picker_section.append( $('<label for="color" class="form__label">Color</label>'));
+    color_picker_section.append( $('<div id="color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 2px solid lightgray"></div>'));
+    row_inputs.append(color_picker_section);
     box.append(row_inputs);
+    //on/off inputs
     row = $('<div class= "row"></div>');
     row.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newCourse.courseActive"><span class="slider round"></span></label></div>'))
     row.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="newCourse.courseVisible"><span class="slider round"></span></label></div>'))
@@ -479,7 +520,6 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     newCourse.append(content);
     modal.append(newCourse);
     allCourses.append(modal);
-
 
     //compile the page for scope values
     $compile(allCourses)($scope);
