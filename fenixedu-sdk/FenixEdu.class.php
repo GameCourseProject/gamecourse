@@ -128,8 +128,8 @@ class FenixEdu{
 			throw new FenixEduException($result);
 		}
 	}
-	
-	protected function get($endpoint, $public = false){
+	//mudar pra protected
+	public function get($endpoint, $public = false){
 		$url = $this->buildURL($endpoint, $public);
 		$req = new RestRequest($url, 'GET');
 		$req->execute();
