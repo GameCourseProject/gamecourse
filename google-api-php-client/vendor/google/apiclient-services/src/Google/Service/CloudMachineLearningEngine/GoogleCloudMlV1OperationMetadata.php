@@ -20,8 +20,10 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1OperationMetadata
   public $createTime;
   public $endTime;
   public $isCancellationRequested;
+  public $labels;
   public $modelName;
   public $operationType;
+  public $projectNumber;
   public $startTime;
   protected $versionType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version';
   protected $versionDataType = '';
@@ -50,6 +52,14 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1OperationMetadata
   {
     return $this->isCancellationRequested;
   }
+  public function setLabels($labels)
+  {
+    $this->labels = $labels;
+  }
+  public function getLabels()
+  {
+    return $this->labels;
+  }
   public function setModelName($modelName)
   {
     $this->modelName = $modelName;
@@ -65,6 +75,14 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1OperationMetadata
   public function getOperationType()
   {
     return $this->operationType;
+  }
+  public function setProjectNumber($projectNumber)
+  {
+    $this->projectNumber = $projectNumber;
+  }
+  public function getProjectNumber()
+  {
+    return $this->projectNumber;
   }
   public function setStartTime($startTime)
   {

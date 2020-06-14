@@ -26,11 +26,15 @@
 class Google_Service_Storage_Resource_ProjectsServiceAccount extends Google_Service_Resource
 {
   /**
-   * Get the email address of this project's GCS service account.
+   * Get the email address of this project's Google Cloud Storage service account.
    * (serviceAccount.get)
    *
    * @param string $projectId Project ID
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
    * @return Google_Service_Storage_ServiceAccount
    */
   public function get($projectId, $optParams = array())

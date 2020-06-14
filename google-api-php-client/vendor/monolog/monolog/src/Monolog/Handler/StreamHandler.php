@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of the Monolog package.
@@ -22,24 +22,25 @@ use Monolog\Logger;
  */
 class StreamHandler extends AbstractProcessingHandler
 {
+    /** @var resource|null */
     protected $stream;
     protected $url;
+    /** @var string|null */
     private $errorMessage;
     protected $filePermission;
     protected $useLocking;
     private $dirCreated;
 
     /**
-     * @param resource|string $stream
-     * @param integer         $level          The minimum logging level at which this handler will be triggered
-     * @param Boolean         $bubble         Whether the messages that are handled can bubble up the stack or not
+     * @param resource|string $stream         If a missing path can't be created, an UnexpectedValueException will be thrown on first write
+     * @param string|int      $level          The minimum logging level at which this handler will be triggered
+     * @param bool            $bubble         Whether the messages that are handled can bubble up the stack or not
      * @param int|null        $filePermission Optional file permissions (default (0644) are only for owner read/write)
-     * @param Boolean         $useLocking     Try to lock log file before doing any writes
+     * @param bool            $useLocking     Try to lock log file before doing any writes
      *
-     * @throws \Exception                If a missing directory is not buildable
      * @throws \InvalidArgumentException If stream is not a resource or string
      */
-    public function __construct($stream, $level = Logger::DEBUG, $bubble = true, $filePermission = null, $useLocking = false)
+    public function __construct($stream, $level = Logger::DEBUG, bool $bubble = true, ?int $filePermission = null, bool $useLocking = false)
     {
         parent::__construct($level, $bubble);
         if (is_resource($stream)) {
@@ -57,26 +58,47 @@ class StreamHandler extends AbstractProcessingHandler
     /**
      * {@inheritdoc}
      */
-    public function close()
+    public function close(): void
     {
-        if (is_resource($this->stream)) {
+        if ($this->url && is_resource($this->stream)) {
             fclose($this->stream);
         }
         $this->stream = null;
+        $this->dirCreated = null;
+    }
+
+    /**
+     * Return the currently active stream if it is open
+     *
+     * @return resource|null
+     */
+    public function getStream()
+    {
+        return $this->stream;
+    }
+
+    /**
+     * Return the stream URL if it was configured with a URL and not an active resource
+     *
+     * @return string|null
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         if (!is_resource($this->stream)) {
-            if (!$this->url) {
+            if (null === $this->url || '' === $this->url) {
                 throw new \LogicException('Missing stream url, the stream can not be opened. This may be caused by a premature call to close().');
             }
             $this->createDir();
             $this->errorMessage = null;
-            set_error_handler(array($this, 'customErrorHandler'));
+            set_error_handler([$this, 'customErrorHandler']);
             $this->stream = fopen($this->url, 'a');
             if ($this->filePermission !== null) {
                 @chmod($this->url, $this->filePermission);
@@ -84,6 +106,7 @@ class StreamHandler extends AbstractProcessingHandler
             restore_error_handler();
             if (!is_resource($this->stream)) {
                 $this->stream = null;
+
                 throw new \UnexpectedValueException(sprintf('The stream or file "%s" could not be opened: '.$this->errorMessage, $this->url));
             }
         }
@@ -93,24 +116,31 @@ class StreamHandler extends AbstractProcessingHandler
             flock($this->stream, LOCK_EX);
         }
 
-        fwrite($this->stream, (string) $record['formatted']);
+        $this->streamWrite($this->stream, $record);
 
         if ($this->useLocking) {
             flock($this->stream, LOCK_UN);
         }
     }
 
-    private function customErrorHandler($code, $msg)
+    /**
+     * Write to stream
+     * @param resource $stream
+     * @param array    $record
+     */
+    protected function streamWrite($stream, array $record): void
     {
-        $this->errorMessage = preg_replace('{^(fopen|mkdir)\(.*?\): }', '', $msg);
+        fwrite($stream, (string) $record['formatted']);
     }
 
-    /**
-     * @param string $stream
-     *
-     * @return null|string
-     */
-    private function getDirFromStream($stream)
+    private function customErrorHandler($code, $msg): bool
+    {
+        $this->errorMessage = preg_replace('{^(fopen|mkdir)\(.*?\): }', '', $msg);
+
+        return true;
+    }
+
+    private function getDirFromStream(string $stream): ?string
     {
         $pos = strpos($stream, '://');
         if ($pos === false) {
@@ -121,10 +151,10 @@ class StreamHandler extends AbstractProcessingHandler
             return dirname(substr($stream, 7));
         }
 
-        return;
+        return null;
     }
 
-    private function createDir()
+    private function createDir(): void
     {
         // Do not try to create dir if it has already been tried.
         if ($this->dirCreated) {
@@ -134,10 +164,10 @@ class StreamHandler extends AbstractProcessingHandler
         $dir = $this->getDirFromStream($this->url);
         if (null !== $dir && !is_dir($dir)) {
             $this->errorMessage = null;
-            set_error_handler(array($this, 'customErrorHandler'));
+            set_error_handler([$this, 'customErrorHandler']);
             $status = mkdir($dir, 0777, true);
             restore_error_handler();
-            if (false === $status) {
+            if (false === $status && !is_dir($dir)) {
                 throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s" and its not buildable: '.$this->errorMessage, $dir));
             }
         }

@@ -35,8 +35,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * allAuthenticatedUsers.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    */
   public function delete($bucket, $entity, $optParams = array())
   {
@@ -54,8 +56,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * allAuthenticatedUsers.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    * @return Google_Service_Storage_BucketAccessControl
    */
   public function get($bucket, $entity, $optParams = array())
@@ -72,8 +76,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * @param Google_Service_Storage_BucketAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    * @return Google_Service_Storage_BucketAccessControl
    */
   public function insert($bucket, Google_Service_Storage_BucketAccessControl $postBody, $optParams = array())
@@ -89,8 +95,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * @param string $bucket Name of a bucket.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    * @return Google_Service_Storage_BucketAccessControls
    */
   public function listBucketAccessControls($bucket, $optParams = array())
@@ -100,8 +108,7 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
     return $this->call('list', array($params), "Google_Service_Storage_BucketAccessControls");
   }
   /**
-   * Updates an ACL entry on the specified bucket. This method supports patch
-   * semantics. (bucketAccessControls.patch)
+   * Patches an ACL entry on the specified bucket. (bucketAccessControls.patch)
    *
    * @param string $bucket Name of a bucket.
    * @param string $entity The entity holding the permission. Can be user-userId,
@@ -110,8 +117,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * @param Google_Service_Storage_BucketAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    * @return Google_Service_Storage_BucketAccessControl
    */
   public function patch($bucket, $entity, Google_Service_Storage_BucketAccessControl $postBody, $optParams = array())
@@ -130,8 +139,10 @@ class Google_Service_Storage_Resource_BucketAccessControls extends Google_Servic
    * @param Google_Service_Storage_BucketAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string userProject The project to be billed for this request, for
-   * Requester Pays buckets.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
+   * @opt_param string userProject The project to be billed for this request.
+   * Required for Requester Pays buckets.
    * @return Google_Service_Storage_BucketAccessControl
    */
   public function update($bucket, $entity, Google_Service_Storage_BucketAccessControl $postBody, $optParams = array())

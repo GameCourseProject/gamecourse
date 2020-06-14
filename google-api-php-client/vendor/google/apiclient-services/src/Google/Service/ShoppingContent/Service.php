@@ -23,9 +23,15 @@ class Google_Service_ShoppingContent_Service extends Google_Collection
   public $deliveryCountry;
   protected $deliveryTimeType = 'Google_Service_ShoppingContent_DeliveryTime';
   protected $deliveryTimeDataType = '';
+  public $eligibility;
+  protected $minimumOrderValueType = 'Google_Service_ShoppingContent_Price';
+  protected $minimumOrderValueDataType = '';
   public $name;
+  protected $pickupServiceType = 'Google_Service_ShoppingContent_PickupCarrierService';
+  protected $pickupServiceDataType = '';
   protected $rateGroupsType = 'Google_Service_ShoppingContent_RateGroup';
   protected $rateGroupsDataType = 'array';
+  public $shipmentType;
 
   public function setActive($active)
   {
@@ -65,6 +71,28 @@ class Google_Service_ShoppingContent_Service extends Google_Collection
   {
     return $this->deliveryTime;
   }
+  public function setEligibility($eligibility)
+  {
+    $this->eligibility = $eligibility;
+  }
+  public function getEligibility()
+  {
+    return $this->eligibility;
+  }
+  /**
+   * @param Google_Service_ShoppingContent_Price
+   */
+  public function setMinimumOrderValue(Google_Service_ShoppingContent_Price $minimumOrderValue)
+  {
+    $this->minimumOrderValue = $minimumOrderValue;
+  }
+  /**
+   * @return Google_Service_ShoppingContent_Price
+   */
+  public function getMinimumOrderValue()
+  {
+    return $this->minimumOrderValue;
+  }
   public function setName($name)
   {
     $this->name = $name;
@@ -72,6 +100,20 @@ class Google_Service_ShoppingContent_Service extends Google_Collection
   public function getName()
   {
     return $this->name;
+  }
+  /**
+   * @param Google_Service_ShoppingContent_PickupCarrierService
+   */
+  public function setPickupService(Google_Service_ShoppingContent_PickupCarrierService $pickupService)
+  {
+    $this->pickupService = $pickupService;
+  }
+  /**
+   * @return Google_Service_ShoppingContent_PickupCarrierService
+   */
+  public function getPickupService()
+  {
+    return $this->pickupService;
   }
   /**
    * @param Google_Service_ShoppingContent_RateGroup
@@ -86,5 +128,13 @@ class Google_Service_ShoppingContent_Service extends Google_Collection
   public function getRateGroups()
   {
     return $this->rateGroups;
+  }
+  public function setShipmentType($shipmentType)
+  {
+    $this->shipmentType = $shipmentType;
+  }
+  public function getShipmentType()
+  {
+    return $this->shipmentType;
   }
 }

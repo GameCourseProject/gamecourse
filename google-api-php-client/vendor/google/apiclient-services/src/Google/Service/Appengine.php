@@ -19,8 +19,7 @@
  * Service definition for Appengine (v1).
  *
  * <p>
- * The App Engine Admin API enables developers to provision and manage their App
- * Engine applications.</p>
+ * Provisions and manages developers' App Engine applications.</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -42,6 +41,10 @@ class Google_Service_Appengine extends Google_Service
       "https://www.googleapis.com/auth/cloud-platform.read-only";
 
   public $apps;
+  public $apps_authorizedCertificates;
+  public $apps_authorizedDomains;
+  public $apps_domainMappings;
+  public $apps_firewall_ingressRules;
   public $apps_locations;
   public $apps_operations;
   public $apps_services;
@@ -51,13 +54,15 @@ class Google_Service_Appengine extends Google_Service
   /**
    * Constructs the internal representation of the Appengine service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://appengine.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://appengine.googleapis.com/';
     $this->servicePath = '';
+    $this->batchPath = 'batch';
     $this->version = 'v1';
     $this->serviceName = 'appengine';
 
@@ -103,6 +108,321 @@ class Google_Service_Appengine extends Google_Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->apps_authorizedCertificates = new Google_Service_Appengine_Resource_AppsAuthorizedCertificates(
+        $this,
+        $this->serviceName,
+        'authorizedCertificates',
+        array(
+          'methods' => array(
+            'create' => array(
+              'path' => 'v1/apps/{appsId}/authorizedCertificates',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'delete' => array(
+              'path' => 'v1/apps/{appsId}/authorizedCertificates/{authorizedCertificatesId}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'authorizedCertificatesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'get' => array(
+              'path' => 'v1/apps/{appsId}/authorizedCertificates/{authorizedCertificatesId}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'authorizedCertificatesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'view' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'v1/apps/{appsId}/authorizedCertificates',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'view' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'patch' => array(
+              'path' => 'v1/apps/{appsId}/authorizedCertificates/{authorizedCertificatesId}',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'authorizedCertificatesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'updateMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->apps_authorizedDomains = new Google_Service_Appengine_Resource_AppsAuthorizedDomains(
+        $this,
+        $this->serviceName,
+        'authorizedDomains',
+        array(
+          'methods' => array(
+            'list' => array(
+              'path' => 'v1/apps/{appsId}/authorizedDomains',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->apps_domainMappings = new Google_Service_Appengine_Resource_AppsDomainMappings(
+        $this,
+        $this->serviceName,
+        'domainMappings',
+        array(
+          'methods' => array(
+            'create' => array(
+              'path' => 'v1/apps/{appsId}/domainMappings',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'overrideStrategy' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'delete' => array(
+              'path' => 'v1/apps/{appsId}/domainMappings/{domainMappingsId}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'domainMappingsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'get' => array(
+              'path' => 'v1/apps/{appsId}/domainMappings/{domainMappingsId}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'domainMappingsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'v1/apps/{appsId}/domainMappings',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+              ),
+            ),'patch' => array(
+              'path' => 'v1/apps/{appsId}/domainMappings/{domainMappingsId}',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'domainMappingsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'updateMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->apps_firewall_ingressRules = new Google_Service_Appengine_Resource_AppsFirewallIngressRules(
+        $this,
+        $this->serviceName,
+        'ingressRules',
+        array(
+          'methods' => array(
+            'batchUpdate' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules:batchUpdate',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'create' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'delete' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules/{ingressRulesId}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'ingressRulesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'get' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules/{ingressRulesId}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'ingressRulesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'matchingAddress' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),'patch' => array(
+              'path' => 'v1/apps/{appsId}/firewall/ingressRules/{ingressRulesId}',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'appsId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'ingressRulesId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'updateMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -186,6 +506,10 @@ class Google_Service_Appengine extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -193,10 +517,6 @@ class Google_Service_Appengine extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),
@@ -271,13 +591,13 @@ class Google_Service_Appengine extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'migrateTraffic' => array(
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ),
                 'updateMask' => array(
                   'location' => 'query',
                   'type' => 'string',
+                ),
+                'migrateTraffic' => array(
+                  'location' => 'query',
+                  'type' => 'boolean',
                 ),
               ),
             ),
@@ -363,6 +683,10 @@ class Google_Service_Appengine extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'view' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -370,10 +694,6 @@ class Google_Service_Appengine extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'view' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),'patch' => array(

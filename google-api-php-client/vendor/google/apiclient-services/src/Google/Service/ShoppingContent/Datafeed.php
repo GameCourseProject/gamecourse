@@ -17,9 +17,8 @@
 
 class Google_Service_ShoppingContent_Datafeed extends Google_Collection
 {
-  protected $collection_key = 'intendedDestinations';
+  protected $collection_key = 'targets';
   public $attributeLanguage;
-  public $contentLanguage;
   public $contentType;
   protected $fetchScheduleType = 'Google_Service_ShoppingContent_DatafeedFetchSchedule';
   protected $fetchScheduleDataType = '';
@@ -27,10 +26,10 @@ class Google_Service_ShoppingContent_Datafeed extends Google_Collection
   protected $formatType = 'Google_Service_ShoppingContent_DatafeedFormat';
   protected $formatDataType = '';
   public $id;
-  public $intendedDestinations;
   public $kind;
   public $name;
-  public $targetCountry;
+  protected $targetsType = 'Google_Service_ShoppingContent_DatafeedTarget';
+  protected $targetsDataType = 'array';
 
   public function setAttributeLanguage($attributeLanguage)
   {
@@ -39,14 +38,6 @@ class Google_Service_ShoppingContent_Datafeed extends Google_Collection
   public function getAttributeLanguage()
   {
     return $this->attributeLanguage;
-  }
-  public function setContentLanguage($contentLanguage)
-  {
-    $this->contentLanguage = $contentLanguage;
-  }
-  public function getContentLanguage()
-  {
-    return $this->contentLanguage;
   }
   public function setContentType($contentType)
   {
@@ -100,14 +91,6 @@ class Google_Service_ShoppingContent_Datafeed extends Google_Collection
   {
     return $this->id;
   }
-  public function setIntendedDestinations($intendedDestinations)
-  {
-    $this->intendedDestinations = $intendedDestinations;
-  }
-  public function getIntendedDestinations()
-  {
-    return $this->intendedDestinations;
-  }
   public function setKind($kind)
   {
     $this->kind = $kind;
@@ -124,12 +107,18 @@ class Google_Service_ShoppingContent_Datafeed extends Google_Collection
   {
     return $this->name;
   }
-  public function setTargetCountry($targetCountry)
+  /**
+   * @param Google_Service_ShoppingContent_DatafeedTarget
+   */
+  public function setTargets($targets)
   {
-    $this->targetCountry = $targetCountry;
+    $this->targets = $targets;
   }
-  public function getTargetCountry()
+  /**
+   * @return Google_Service_ShoppingContent_DatafeedTarget
+   */
+  public function getTargets()
   {
-    return $this->targetCountry;
+    return $this->targets;
   }
 }

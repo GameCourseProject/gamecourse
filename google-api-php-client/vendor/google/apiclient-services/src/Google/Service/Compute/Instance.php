@@ -21,11 +21,15 @@ class Google_Service_Compute_Instance extends Google_Collection
   public $canIpForward;
   public $cpuPlatform;
   public $creationTimestamp;
+  public $deletionProtection;
   public $description;
   protected $disksType = 'Google_Service_Compute_AttachedDisk';
   protected $disksDataType = 'array';
+  protected $displayDeviceType = 'Google_Service_Compute_DisplayDevice';
+  protected $displayDeviceDataType = '';
   protected $guestAcceleratorsType = 'Google_Service_Compute_AcceleratorConfig';
   protected $guestAcceleratorsDataType = 'array';
+  public $hostname;
   public $id;
   public $kind;
   public $labelFingerprint;
@@ -33,14 +37,21 @@ class Google_Service_Compute_Instance extends Google_Collection
   public $machineType;
   protected $metadataType = 'Google_Service_Compute_Metadata';
   protected $metadataDataType = '';
+  public $minCpuPlatform;
   public $name;
   protected $networkInterfacesType = 'Google_Service_Compute_NetworkInterface';
   protected $networkInterfacesDataType = 'array';
+  protected $reservationAffinityType = 'Google_Service_Compute_ReservationAffinity';
+  protected $reservationAffinityDataType = '';
   protected $schedulingType = 'Google_Service_Compute_Scheduling';
   protected $schedulingDataType = '';
   public $selfLink;
   protected $serviceAccountsType = 'Google_Service_Compute_ServiceAccount';
   protected $serviceAccountsDataType = 'array';
+  protected $shieldedInstanceConfigType = 'Google_Service_Compute_ShieldedInstanceConfig';
+  protected $shieldedInstanceConfigDataType = '';
+  protected $shieldedInstanceIntegrityPolicyType = 'Google_Service_Compute_ShieldedInstanceIntegrityPolicy';
+  protected $shieldedInstanceIntegrityPolicyDataType = '';
   public $startRestricted;
   public $status;
   public $statusMessage;
@@ -72,6 +83,14 @@ class Google_Service_Compute_Instance extends Google_Collection
   {
     return $this->creationTimestamp;
   }
+  public function setDeletionProtection($deletionProtection)
+  {
+    $this->deletionProtection = $deletionProtection;
+  }
+  public function getDeletionProtection()
+  {
+    return $this->deletionProtection;
+  }
   public function setDescription($description)
   {
     $this->description = $description;
@@ -95,6 +114,20 @@ class Google_Service_Compute_Instance extends Google_Collection
     return $this->disks;
   }
   /**
+   * @param Google_Service_Compute_DisplayDevice
+   */
+  public function setDisplayDevice(Google_Service_Compute_DisplayDevice $displayDevice)
+  {
+    $this->displayDevice = $displayDevice;
+  }
+  /**
+   * @return Google_Service_Compute_DisplayDevice
+   */
+  public function getDisplayDevice()
+  {
+    return $this->displayDevice;
+  }
+  /**
    * @param Google_Service_Compute_AcceleratorConfig
    */
   public function setGuestAccelerators($guestAccelerators)
@@ -107,6 +140,14 @@ class Google_Service_Compute_Instance extends Google_Collection
   public function getGuestAccelerators()
   {
     return $this->guestAccelerators;
+  }
+  public function setHostname($hostname)
+  {
+    $this->hostname = $hostname;
+  }
+  public function getHostname()
+  {
+    return $this->hostname;
   }
   public function setId($id)
   {
@@ -162,6 +203,14 @@ class Google_Service_Compute_Instance extends Google_Collection
   {
     return $this->metadata;
   }
+  public function setMinCpuPlatform($minCpuPlatform)
+  {
+    $this->minCpuPlatform = $minCpuPlatform;
+  }
+  public function getMinCpuPlatform()
+  {
+    return $this->minCpuPlatform;
+  }
   public function setName($name)
   {
     $this->name = $name;
@@ -183,6 +232,20 @@ class Google_Service_Compute_Instance extends Google_Collection
   public function getNetworkInterfaces()
   {
     return $this->networkInterfaces;
+  }
+  /**
+   * @param Google_Service_Compute_ReservationAffinity
+   */
+  public function setReservationAffinity(Google_Service_Compute_ReservationAffinity $reservationAffinity)
+  {
+    $this->reservationAffinity = $reservationAffinity;
+  }
+  /**
+   * @return Google_Service_Compute_ReservationAffinity
+   */
+  public function getReservationAffinity()
+  {
+    return $this->reservationAffinity;
   }
   /**
    * @param Google_Service_Compute_Scheduling
@@ -219,6 +282,34 @@ class Google_Service_Compute_Instance extends Google_Collection
   public function getServiceAccounts()
   {
     return $this->serviceAccounts;
+  }
+  /**
+   * @param Google_Service_Compute_ShieldedInstanceConfig
+   */
+  public function setShieldedInstanceConfig(Google_Service_Compute_ShieldedInstanceConfig $shieldedInstanceConfig)
+  {
+    $this->shieldedInstanceConfig = $shieldedInstanceConfig;
+  }
+  /**
+   * @return Google_Service_Compute_ShieldedInstanceConfig
+   */
+  public function getShieldedInstanceConfig()
+  {
+    return $this->shieldedInstanceConfig;
+  }
+  /**
+   * @param Google_Service_Compute_ShieldedInstanceIntegrityPolicy
+   */
+  public function setShieldedInstanceIntegrityPolicy(Google_Service_Compute_ShieldedInstanceIntegrityPolicy $shieldedInstanceIntegrityPolicy)
+  {
+    $this->shieldedInstanceIntegrityPolicy = $shieldedInstanceIntegrityPolicy;
+  }
+  /**
+   * @return Google_Service_Compute_ShieldedInstanceIntegrityPolicy
+   */
+  public function getShieldedInstanceIntegrityPolicy()
+  {
+    return $this->shieldedInstanceIntegrityPolicy;
   }
   public function setStartRestricted($startRestricted)
   {

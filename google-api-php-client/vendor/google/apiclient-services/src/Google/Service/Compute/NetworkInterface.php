@@ -17,9 +17,12 @@
 
 class Google_Service_Compute_NetworkInterface extends Google_Collection
 {
-  protected $collection_key = 'accessConfigs';
+  protected $collection_key = 'aliasIpRanges';
   protected $accessConfigsType = 'Google_Service_Compute_AccessConfig';
   protected $accessConfigsDataType = 'array';
+  protected $aliasIpRangesType = 'Google_Service_Compute_AliasIpRange';
+  protected $aliasIpRangesDataType = 'array';
+  public $fingerprint;
   public $kind;
   public $name;
   public $network;
@@ -39,6 +42,28 @@ class Google_Service_Compute_NetworkInterface extends Google_Collection
   public function getAccessConfigs()
   {
     return $this->accessConfigs;
+  }
+  /**
+   * @param Google_Service_Compute_AliasIpRange
+   */
+  public function setAliasIpRanges($aliasIpRanges)
+  {
+    $this->aliasIpRanges = $aliasIpRanges;
+  }
+  /**
+   * @return Google_Service_Compute_AliasIpRange
+   */
+  public function getAliasIpRanges()
+  {
+    return $this->aliasIpRanges;
+  }
+  public function setFingerprint($fingerprint)
+  {
+    $this->fingerprint = $fingerprint;
+  }
+  public function getFingerprint()
+  {
+    return $this->fingerprint;
   }
   public function setKind($kind)
   {

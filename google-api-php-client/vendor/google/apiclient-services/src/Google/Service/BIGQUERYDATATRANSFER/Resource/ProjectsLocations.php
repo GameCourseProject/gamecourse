@@ -26,35 +26,35 @@
 class Google_Service_BigQueryDataTransfer_Resource_ProjectsLocations extends Google_Service_Resource
 {
   /**
-   * Returns true if data transfer is enabled for a project. (locations.isEnabled)
+   * Gets information about a location. (locations.get)
    *
-   * @param string $name The name of the project resource in the form:
-   * `projects/{project_id}`
-   * @param Google_Service_BigQueryDataTransfer_IsEnabledRequest $postBody
+   * @param string $name Resource name for the location.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_BigQueryDataTransfer_IsEnabledResponse
+   * @return Google_Service_BigQueryDataTransfer_Location
    */
-  public function isEnabled($name, Google_Service_BigQueryDataTransfer_IsEnabledRequest $postBody, $optParams = array())
+  public function get($name, $optParams = array())
   {
-    $params = array('name' => $name, 'postBody' => $postBody);
+    $params = array('name' => $name);
     $params = array_merge($params, $optParams);
-    return $this->call('isEnabled', array($params), "Google_Service_BigQueryDataTransfer_IsEnabledResponse");
+    return $this->call('get', array($params), "Google_Service_BigQueryDataTransfer_Location");
   }
   /**
-   * Enables or disables data transfer for a project. This method requires the
-   * additional scope of 'https://www.googleapis.com/auth/cloudplatformprojects'
-   * to manage the cloud project permissions. (locations.setEnabled)
+   * Lists information about the supported locations for this service.
+   * (locations.listProjectsLocations)
    *
-   * @param string $name The name of the project resource in the form:
-   * `projects/{project_id}`
-   * @param Google_Service_BigQueryDataTransfer_SetEnabledRequest $postBody
+   * @param string $name The resource that owns the locations collection, if
+   * applicable.
    * @param array $optParams Optional parameters.
-   * @return Google_Service_BigQueryDataTransfer_BigquerydatatransferEmpty
+   *
+   * @opt_param string filter The standard list filter.
+   * @opt_param string pageToken The standard list page token.
+   * @opt_param int pageSize The standard list page size.
+   * @return Google_Service_BigQueryDataTransfer_ListLocationsResponse
    */
-  public function setEnabled($name, Google_Service_BigQueryDataTransfer_SetEnabledRequest $postBody, $optParams = array())
+  public function listProjectsLocations($name, $optParams = array())
   {
-    $params = array('name' => $name, 'postBody' => $postBody);
+    $params = array('name' => $name);
     $params = array_merge($params, $optParams);
-    return $this->call('setEnabled', array($params), "Google_Service_BigQueryDataTransfer_BigquerydatatransferEmpty");
+    return $this->call('list', array($params), "Google_Service_BigQueryDataTransfer_ListLocationsResponse");
   }
 }

@@ -18,22 +18,62 @@
 class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
 {
   protected $collection_key = 'steps';
+  public $completedParallelInputs;
+  public $computeMsAvg;
+  public $computeMsMax;
   public $computeRatioAvg;
   public $computeRatioMax;
+  public $endMs;
   public $id;
+  public $inputStages;
   public $name;
+  public $parallelInputs;
+  public $readMsAvg;
+  public $readMsMax;
   public $readRatioAvg;
   public $readRatioMax;
   public $recordsRead;
   public $recordsWritten;
+  public $shuffleOutputBytes;
+  public $shuffleOutputBytesSpilled;
+  public $slotMs;
+  public $startMs;
   public $status;
   protected $stepsType = 'Google_Service_Bigquery_ExplainQueryStep';
   protected $stepsDataType = 'array';
+  public $waitMsAvg;
+  public $waitMsMax;
   public $waitRatioAvg;
   public $waitRatioMax;
+  public $writeMsAvg;
+  public $writeMsMax;
   public $writeRatioAvg;
   public $writeRatioMax;
 
+  public function setCompletedParallelInputs($completedParallelInputs)
+  {
+    $this->completedParallelInputs = $completedParallelInputs;
+  }
+  public function getCompletedParallelInputs()
+  {
+    return $this->completedParallelInputs;
+  }
+  public function setComputeMsAvg($computeMsAvg)
+  {
+    $this->computeMsAvg = $computeMsAvg;
+  }
+  public function getComputeMsAvg()
+  {
+    return $this->computeMsAvg;
+  }
+  public function setComputeMsMax($computeMsMax)
+  {
+    $this->computeMsMax = $computeMsMax;
+  }
+  public function getComputeMsMax()
+  {
+    return $this->computeMsMax;
+  }
   public function setComputeRatioAvg($computeRatioAvg)
   {
     $this->computeRatioAvg = $computeRatioAvg;
@@ -50,6 +90,14 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   {
     return $this->computeRatioMax;
   }
+  public function setEndMs($endMs)
+  {
+    $this->endMs = $endMs;
+  }
+  public function getEndMs()
+  {
+    return $this->endMs;
+  }
   public function setId($id)
   {
     $this->id = $id;
@@ -58,6 +106,14 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   {
     return $this->id;
   }
+  public function setInputStages($inputStages)
+  {
+    $this->inputStages = $inputStages;
+  }
+  public function getInputStages()
+  {
+    return $this->inputStages;
+  }
   public function setName($name)
   {
     $this->name = $name;
@@ -65,6 +121,30 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   public function getName()
   {
     return $this->name;
+  }
+  public function setParallelInputs($parallelInputs)
+  {
+    $this->parallelInputs = $parallelInputs;
+  }
+  public function getParallelInputs()
+  {
+    return $this->parallelInputs;
+  }
+  public function setReadMsAvg($readMsAvg)
+  {
+    $this->readMsAvg = $readMsAvg;
+  }
+  public function getReadMsAvg()
+  {
+    return $this->readMsAvg;
+  }
+  public function setReadMsMax($readMsMax)
+  {
+    $this->readMsMax = $readMsMax;
+  }
+  public function getReadMsMax()
+  {
+    return $this->readMsMax;
   }
   public function setReadRatioAvg($readRatioAvg)
   {
@@ -98,6 +178,38 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   {
     return $this->recordsWritten;
   }
+  public function setShuffleOutputBytes($shuffleOutputBytes)
+  {
+    $this->shuffleOutputBytes = $shuffleOutputBytes;
+  }
+  public function getShuffleOutputBytes()
+  {
+    return $this->shuffleOutputBytes;
+  }
+  public function setShuffleOutputBytesSpilled($shuffleOutputBytesSpilled)
+  {
+    $this->shuffleOutputBytesSpilled = $shuffleOutputBytesSpilled;
+  }
+  public function getShuffleOutputBytesSpilled()
+  {
+    return $this->shuffleOutputBytesSpilled;
+  }
+  public function setSlotMs($slotMs)
+  {
+    $this->slotMs = $slotMs;
+  }
+  public function getSlotMs()
+  {
+    return $this->slotMs;
+  }
+  public function setStartMs($startMs)
+  {
+    $this->startMs = $startMs;
+  }
+  public function getStartMs()
+  {
+    return $this->startMs;
+  }
   public function setStatus($status)
   {
     $this->status = $status;
@@ -120,6 +232,22 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   {
     return $this->steps;
   }
+  public function setWaitMsAvg($waitMsAvg)
+  {
+    $this->waitMsAvg = $waitMsAvg;
+  }
+  public function getWaitMsAvg()
+  {
+    return $this->waitMsAvg;
+  }
+  public function setWaitMsMax($waitMsMax)
+  {
+    $this->waitMsMax = $waitMsMax;
+  }
+  public function getWaitMsMax()
+  {
+    return $this->waitMsMax;
+  }
   public function setWaitRatioAvg($waitRatioAvg)
   {
     $this->waitRatioAvg = $waitRatioAvg;
@@ -135,6 +263,22 @@ class Google_Service_Bigquery_ExplainQueryStage extends Google_Collection
   public function getWaitRatioMax()
   {
     return $this->waitRatioMax;
+  }
+  public function setWriteMsAvg($writeMsAvg)
+  {
+    $this->writeMsAvg = $writeMsAvg;
+  }
+  public function getWriteMsAvg()
+  {
+    return $this->writeMsAvg;
+  }
+  public function setWriteMsMax($writeMsMax)
+  {
+    $this->writeMsMax = $writeMsMax;
+  }
+  public function getWriteMsMax()
+  {
+    return $this->writeMsMax;
   }
   public function setWriteRatioAvg($writeRatioAvg)
   {

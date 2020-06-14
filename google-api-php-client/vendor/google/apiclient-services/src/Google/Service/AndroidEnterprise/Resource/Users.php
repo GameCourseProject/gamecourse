@@ -43,6 +43,8 @@ class Google_Service_AndroidEnterprise_Resource_Users extends Google_Service_Res
    * provision the given EMM-managed user account on a device. The generated token
    * is single-use and expires after a few minutes.
    *
+   * You can provision a maximum of 10 devices per user.
+   *
    * This call only works with EMM-managed accounts.
    * (users.generateAuthenticationToken)
    *
@@ -141,24 +143,21 @@ class Google_Service_AndroidEnterprise_Resource_Users extends Google_Service_Res
     return $this->call('list', array($params), "Google_Service_AndroidEnterprise_UsersListResponse");
   }
   /**
-   * Updates the details of an EMM-managed user.
+   * Revokes access to all devices currently provisioned to the user. The user
+   * will no longer be able to use the managed Play store on any of their managed
+   * devices.
    *
-   * Can be used with EMM-managed users only (not Google managed users). Pass the
-   * new details in the Users resource in the request body. Only the displayName
-   * field can be changed. Other fields must either be unset or have the currently
-   * active value. This method supports patch semantics. (users.patch)
+   * This call only works with EMM-managed accounts. (users.revokeDeviceAccess)
    *
    * @param string $enterpriseId The ID of the enterprise.
    * @param string $userId The ID of the user.
-   * @param Google_Service_AndroidEnterprise_User $postBody
    * @param array $optParams Optional parameters.
-   * @return Google_Service_AndroidEnterprise_User
    */
-  public function patch($enterpriseId, $userId, Google_Service_AndroidEnterprise_User $postBody, $optParams = array())
+  public function revokeDeviceAccess($enterpriseId, $userId, $optParams = array())
   {
-    $params = array('enterpriseId' => $enterpriseId, 'userId' => $userId, 'postBody' => $postBody);
+    $params = array('enterpriseId' => $enterpriseId, 'userId' => $userId);
     $params = array_merge($params, $optParams);
-    return $this->call('patch', array($params), "Google_Service_AndroidEnterprise_User");
+    return $this->call('revokeDeviceAccess', array($params));
   }
   /**
    * Revokes a previously generated token (activation code) for the user.

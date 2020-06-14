@@ -19,6 +19,10 @@ class Google_Service_Drive_About extends Google_Collection
 {
   protected $collection_key = 'teamDriveThemes';
   public $appInstalled;
+  public $canCreateDrives;
+  public $canCreateTeamDrives;
+  protected $driveThemesType = 'Google_Service_Drive_AboutDriveThemes';
+  protected $driveThemesDataType = 'array';
   public $exportFormats;
   public $folderColorPalette;
   public $importFormats;
@@ -39,6 +43,36 @@ class Google_Service_Drive_About extends Google_Collection
   public function getAppInstalled()
   {
     return $this->appInstalled;
+  }
+  public function setCanCreateDrives($canCreateDrives)
+  {
+    $this->canCreateDrives = $canCreateDrives;
+  }
+  public function getCanCreateDrives()
+  {
+    return $this->canCreateDrives;
+  }
+  public function setCanCreateTeamDrives($canCreateTeamDrives)
+  {
+    $this->canCreateTeamDrives = $canCreateTeamDrives;
+  }
+  public function getCanCreateTeamDrives()
+  {
+    return $this->canCreateTeamDrives;
+  }
+  /**
+   * @param Google_Service_Drive_AboutDriveThemes
+   */
+  public function setDriveThemes($driveThemes)
+  {
+    $this->driveThemes = $driveThemes;
+  }
+  /**
+   * @return Google_Service_Drive_AboutDriveThemes
+   */
+  public function getDriveThemes()
+  {
+    return $this->driveThemes;
   }
   public function setExportFormats($exportFormats)
   {

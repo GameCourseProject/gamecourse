@@ -16,15 +16,14 @@
  */
 
 /**
- * Service definition for CloudOSLogin (v1alpha).
+ * Service definition for CloudOSLogin (v1).
  *
  * <p>
- * A Google Cloud API for managing OS login configuration for Directory API
- * users.</p>
+ * You can use OS Login to manage access to your VM instances using IAM roles.</p>
  *
  * <p>
  * For more information about this service, see the API
- * <a href="https://developers.google.com/apis-explorer/#p/oslogin/v1alpha/" target="_blank">Documentation</a>
+ * <a href="https://cloud.google.com/compute/docs/oslogin/" target="_blank">Documentation</a>
  * </p>
  *
  * @author Google, Inc.
@@ -34,24 +33,27 @@ class Google_Service_CloudOSLogin extends Google_Service
   /** View and manage your data across Google Cloud Platform services. */
   const CLOUD_PLATFORM =
       "https://www.googleapis.com/auth/cloud-platform";
-  /** View your data across Google Cloud Platform services. */
-  const CLOUD_PLATFORM_READ_ONLY =
-      "https://www.googleapis.com/auth/cloud-platform.read-only";
+  /** View and manage your Google Compute Engine resources. */
+  const COMPUTE =
+      "https://www.googleapis.com/auth/compute";
 
   public $users;
+  public $users_projects;
   public $users_sshPublicKeys;
   
   /**
    * Constructs the internal representation of the CloudOSLogin service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://oslogin.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://oslogin.googleapis.com/';
     $this->servicePath = '';
-    $this->version = 'v1alpha';
+    $this->batchPath = 'batch';
+    $this->version = 'v1';
     $this->serviceName = 'oslogin';
 
     $this->users = new Google_Service_CloudOSLogin_Resource_Users(
@@ -61,7 +63,7 @@ class Google_Service_CloudOSLogin extends Google_Service
         array(
           'methods' => array(
             'getLoginProfile' => array(
-              'path' => 'v1alpha/{+name}/loginProfile',
+              'path' => 'v1/{+name}/loginProfile',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -69,12 +71,44 @@ class Google_Service_CloudOSLogin extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'projectId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'systemId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
               ),
             ),'importSshPublicKey' => array(
-              'path' => 'v1alpha/{+parent}:importSshPublicKey',
+              'path' => 'v1/{+parent}:importSshPublicKey',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'projectId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->users_projects = new Google_Service_CloudOSLogin_Resource_UsersProjects(
+        $this,
+        $this->serviceName,
+        'projects',
+        array(
+          'methods' => array(
+            'delete' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
@@ -91,7 +125,7 @@ class Google_Service_CloudOSLogin extends Google_Service
         array(
           'methods' => array(
             'delete' => array(
-              'path' => 'v1alpha/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'DELETE',
               'parameters' => array(
                 'name' => array(
@@ -101,7 +135,7 @@ class Google_Service_CloudOSLogin extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1alpha/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -111,7 +145,7 @@ class Google_Service_CloudOSLogin extends Google_Service
                 ),
               ),
             ),'patch' => array(
-              'path' => 'v1alpha/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'name' => array(

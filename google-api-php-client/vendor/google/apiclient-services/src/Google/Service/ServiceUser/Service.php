@@ -24,6 +24,8 @@ class Google_Service_ServiceUser_Service extends Google_Collection
   protected $authenticationDataType = '';
   protected $backendType = 'Google_Service_ServiceUser_Backend';
   protected $backendDataType = '';
+  protected $billingType = 'Google_Service_ServiceUser_Billing';
+  protected $billingDataType = '';
   public $configVersion;
   protected $contextType = 'Google_Service_ServiceUser_Context';
   protected $contextDataType = '';
@@ -67,8 +69,6 @@ class Google_Service_ServiceUser_Service extends Google_Collection
   protected $typesDataType = 'array';
   protected $usageType = 'Google_Service_ServiceUser_Usage';
   protected $usageDataType = '';
-  protected $visibilityType = 'Google_Service_ServiceUser_Visibility';
-  protected $visibilityDataType = '';
 
   /**
    * @param Google_Service_ServiceUser_Api
@@ -111,6 +111,20 @@ class Google_Service_ServiceUser_Service extends Google_Collection
   public function getBackend()
   {
     return $this->backend;
+  }
+  /**
+   * @param Google_Service_ServiceUser_Billing
+   */
+  public function setBilling(Google_Service_ServiceUser_Billing $billing)
+  {
+    $this->billing = $billing;
+  }
+  /**
+   * @return Google_Service_ServiceUser_Billing
+   */
+  public function getBilling()
+  {
+    return $this->billing;
   }
   public function setConfigVersion($configVersion)
   {
@@ -417,19 +431,5 @@ class Google_Service_ServiceUser_Service extends Google_Collection
   public function getUsage()
   {
     return $this->usage;
-  }
-  /**
-   * @param Google_Service_ServiceUser_Visibility
-   */
-  public function setVisibility(Google_Service_ServiceUser_Visibility $visibility)
-  {
-    $this->visibility = $visibility;
-  }
-  /**
-   * @return Google_Service_ServiceUser_Visibility
-   */
-  public function getVisibility()
-  {
-    return $this->visibility;
   }
 }

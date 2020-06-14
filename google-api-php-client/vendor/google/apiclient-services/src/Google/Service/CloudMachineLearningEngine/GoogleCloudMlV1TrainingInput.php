@@ -22,14 +22,24 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   protected $hyperparametersType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1HyperparameterSpec';
   protected $hyperparametersDataType = '';
   public $jobDir;
+  protected $masterConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig';
+  protected $masterConfigDataType = '';
   public $masterType;
   public $packageUris;
+  protected $parameterServerConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig';
+  protected $parameterServerConfigDataType = '';
   public $parameterServerCount;
   public $parameterServerType;
   public $pythonModule;
+  public $pythonVersion;
   public $region;
   public $runtimeVersion;
   public $scaleTier;
+  protected $schedulingType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling';
+  protected $schedulingDataType = '';
+  public $useChiefInTfConfig;
+  protected $workerConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig';
+  protected $workerConfigDataType = '';
   public $workerCount;
   public $workerType;
 
@@ -63,6 +73,20 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   {
     return $this->jobDir;
   }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function setMasterConfig(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig $masterConfig)
+  {
+    $this->masterConfig = $masterConfig;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function getMasterConfig()
+  {
+    return $this->masterConfig;
+  }
   public function setMasterType($masterType)
   {
     $this->masterType = $masterType;
@@ -78,6 +102,20 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   public function getPackageUris()
   {
     return $this->packageUris;
+  }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function setParameterServerConfig(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig $parameterServerConfig)
+  {
+    $this->parameterServerConfig = $parameterServerConfig;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function getParameterServerConfig()
+  {
+    return $this->parameterServerConfig;
   }
   public function setParameterServerCount($parameterServerCount)
   {
@@ -103,6 +141,14 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   {
     return $this->pythonModule;
   }
+  public function setPythonVersion($pythonVersion)
+  {
+    $this->pythonVersion = $pythonVersion;
+  }
+  public function getPythonVersion()
+  {
+    return $this->pythonVersion;
+  }
   public function setRegion($region)
   {
     $this->region = $region;
@@ -126,6 +172,42 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   public function getScaleTier()
   {
     return $this->scaleTier;
+  }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling
+   */
+  public function setScheduling(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling $scheduling)
+  {
+    $this->scheduling = $scheduling;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling
+   */
+  public function getScheduling()
+  {
+    return $this->scheduling;
+  }
+  public function setUseChiefInTfConfig($useChiefInTfConfig)
+  {
+    $this->useChiefInTfConfig = $useChiefInTfConfig;
+  }
+  public function getUseChiefInTfConfig()
+  {
+    return $this->useChiefInTfConfig;
+  }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function setWorkerConfig(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig $workerConfig)
+  {
+    $this->workerConfig = $workerConfig;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig
+   */
+  public function getWorkerConfig()
+  {
+    return $this->workerConfig;
   }
   public function setWorkerCount($workerCount)
   {

@@ -47,13 +47,15 @@ class Google_Service_Fusiontables extends Google_Service
   /**
    * Constructs the internal representation of the Fusiontables service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = 'fusiontables/v2/';
+    $this->batchPath = 'batch/fusiontables/v2';
     $this->version = 'v2';
     $this->serviceName = 'fusiontables';
 
@@ -416,6 +418,16 @@ class Google_Service_Fusiontables extends Google_Service
                 'replaceViewDefinition' => array(
                   'location' => 'query',
                   'type' => 'boolean',
+                ),
+              ),
+            ),'refetchSheet' => array(
+              'path' => 'tables/{tableId}/refetch',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'tableId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
                 ),
               ),
             ),'replaceRows' => array(

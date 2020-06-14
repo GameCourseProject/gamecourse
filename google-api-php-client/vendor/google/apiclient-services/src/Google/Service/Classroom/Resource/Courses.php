@@ -92,7 +92,8 @@ class Google_Service_Classroom_Resource_Courses extends Google_Service_Resource
   }
   /**
    * Returns a list of courses that the requesting user is permitted to view,
-   * restricted to those that match the request.
+   * restricted to those that match the request. Returned courses are ordered by
+   * creation time, with the most recently created coming first.
    *
    * This method returns the following error codes:
    *
@@ -155,7 +156,11 @@ class Google_Service_Classroom_Resource_Courses extends Google_Service_Resource
    * invalid fields are specified. The following fields are valid:
    *
    * * `name` * `section` * `descriptionHeading` * `description` * `room` *
-   * `courseState`
+   * `courseState` * `ownerId`
+   *
+   * Note: patches to ownerId are treated as being effective immediately, but in
+   * practice it may take some time for the ownership transfer of all affected
+   * resources to complete.
    *
    * When set in a query parameter, this field should be specified as
    *

@@ -28,8 +28,8 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
   /**
    * Remove membership. (members.delete)
    *
-   * @param string $groupKey Email or immutable Id of the group
-   * @param string $memberKey Email or immutable Id of the member
+   * @param string $groupKey Email or immutable ID of the group
+   * @param string $memberKey Email or immutable ID of the member
    * @param array $optParams Optional parameters.
    */
   public function delete($groupKey, $memberKey, $optParams = array())
@@ -41,8 +41,8 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
   /**
    * Retrieve Group Member (members.get)
    *
-   * @param string $groupKey Email or immutable Id of the group
-   * @param string $memberKey Email or immutable Id of the member
+   * @param string $groupKey Email or immutable ID of the group
+   * @param string $memberKey Email or immutable ID of the member
    * @param array $optParams Optional parameters.
    * @return Google_Service_Directory_Member
    */
@@ -53,9 +53,26 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
     return $this->call('get', array($params), "Google_Service_Directory_Member");
   }
   /**
+   * Checks whether the given user is a member of the group. Membership can be
+   * direct or nested. (members.hasMember)
+   *
+   * @param string $groupKey Identifies the group in the API request. The value
+   * can be the group's email address, group alias, or the unique group ID.
+   * @param string $memberKey Identifies the user member in the API request. The
+   * value can be the user's primary email address, alias, or unique ID.
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Directory_MembersHasMember
+   */
+  public function hasMember($groupKey, $memberKey, $optParams = array())
+  {
+    $params = array('groupKey' => $groupKey, 'memberKey' => $memberKey);
+    $params = array_merge($params, $optParams);
+    return $this->call('hasMember', array($params), "Google_Service_Directory_MembersHasMember");
+  }
+  /**
    * Add user to the specified group. (members.insert)
    *
-   * @param string $groupKey Email or immutable Id of the group
+   * @param string $groupKey Email or immutable ID of the group
    * @param Google_Service_Directory_Member $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Directory_Member
@@ -69,10 +86,13 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
   /**
    * Retrieve all members in a group (paginated) (members.listMembers)
    *
-   * @param string $groupKey Email or immutable Id of the group
+   * @param string $groupKey Email or immutable ID of the group
    * @param array $optParams Optional parameters.
    *
-   * @opt_param int maxResults Maximum number of results to return. Default is 200
+   * @opt_param bool includeDerivedMembership Whether to list indirect
+   * memberships. Default: false.
+   * @opt_param int maxResults Maximum number of results to return. Max allowed
+   * value is 200.
    * @opt_param string pageToken Token to specify next page in the list
    * @opt_param string roles Comma separated role values to filter list results
    * on.
@@ -88,9 +108,9 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
    * Update membership of a user in the specified group. This method supports
    * patch semantics. (members.patch)
    *
-   * @param string $groupKey Email or immutable Id of the group. If Id, it should
+   * @param string $groupKey Email or immutable ID of the group. If ID, it should
    * match with id of group object
-   * @param string $memberKey Email or immutable Id of the user. If Id, it should
+   * @param string $memberKey Email or immutable ID of the user. If ID, it should
    * match with id of member object
    * @param Google_Service_Directory_Member $postBody
    * @param array $optParams Optional parameters.
@@ -105,9 +125,9 @@ class Google_Service_Directory_Resource_Members extends Google_Service_Resource
   /**
    * Update membership of a user in the specified group. (members.update)
    *
-   * @param string $groupKey Email or immutable Id of the group. If Id, it should
+   * @param string $groupKey Email or immutable ID of the group. If ID, it should
    * match with id of group object
-   * @param string $memberKey Email or immutable Id of the user. If Id, it should
+   * @param string $memberKey Email or immutable ID of the user. If ID, it should
    * match with id of member object
    * @param Google_Service_Directory_Member $postBody
    * @param array $optParams Optional parameters.

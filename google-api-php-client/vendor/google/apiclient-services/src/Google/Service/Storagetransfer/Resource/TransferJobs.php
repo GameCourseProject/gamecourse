@@ -41,11 +41,11 @@ class Google_Service_Storagetransfer_Resource_TransferJobs extends Google_Servic
   /**
    * Gets a transfer job. (transferJobs.get)
    *
-   * @param string $jobName The job to get. Required.
+   * @param string $jobName Required. The job to get.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string projectId The ID of the Google Cloud Platform Console
-   * project that owns the job. Required.
+   * @opt_param string projectId Required. The ID of the Google Cloud Platform
+   * Console project that owns the job.
    * @return Google_Service_Storagetransfer_TransferJob
    */
   public function get($jobName, $optParams = array())
@@ -59,8 +59,8 @@ class Google_Service_Storagetransfer_Resource_TransferJobs extends Google_Servic
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string filter A list of query parameters specified as JSON text in
-   * the form of {"project_id":"my_project_id",
+   * @opt_param string filter Required. A list of query parameters specified as
+   * JSON text in the form of: {"project_id":"my_project_id",
    * "job_names":["jobid1","jobid2",...],
    * "job_statuses":["status1","status2",...]}. Since `job_names` and
    * `job_statuses` support multiple values, their values must be specified with
@@ -79,10 +79,14 @@ class Google_Service_Storagetransfer_Resource_TransferJobs extends Google_Servic
   }
   /**
    * Updates a transfer job. Updating a job's transfer spec does not affect
-   * transfer operations that are running already. Updating the scheduling of a
-   * job is not allowed. (transferJobs.patch)
+   * transfer operations that are running already. Updating a job's schedule is
+   * not allowed.
    *
-   * @param string $jobName The name of job to update. Required.
+   * Note: The job's `status` field can be modified using this RPC (for example,
+   * to set a job's status to `DELETED`, `DISABLED`, or `ENABLED`).
+   * (transferJobs.patch)
+   *
+   * @param string $jobName Required. The name of job to update.
    * @param Google_Service_Storagetransfer_UpdateTransferJobRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Storagetransfer_TransferJob

@@ -24,6 +24,7 @@ class Google_Service_Dataproc_Job extends Google_Collection
   protected $hadoopJobDataType = '';
   protected $hiveJobType = 'Google_Service_Dataproc_HiveJob';
   protected $hiveJobDataType = '';
+  public $jobUuid;
   public $labels;
   protected $pigJobType = 'Google_Service_Dataproc_PigJob';
   protected $pigJobDataType = '';
@@ -37,6 +38,8 @@ class Google_Service_Dataproc_Job extends Google_Collection
   protected $schedulingDataType = '';
   protected $sparkJobType = 'Google_Service_Dataproc_SparkJob';
   protected $sparkJobDataType = '';
+  protected $sparkRJobType = 'Google_Service_Dataproc_SparkRJob';
+  protected $sparkRJobDataType = '';
   protected $sparkSqlJobType = 'Google_Service_Dataproc_SparkSqlJob';
   protected $sparkSqlJobDataType = '';
   protected $statusType = 'Google_Service_Dataproc_JobStatus';
@@ -89,6 +92,14 @@ class Google_Service_Dataproc_Job extends Google_Collection
   public function getHiveJob()
   {
     return $this->hiveJob;
+  }
+  public function setJobUuid($jobUuid)
+  {
+    $this->jobUuid = $jobUuid;
+  }
+  public function getJobUuid()
+  {
+    return $this->jobUuid;
   }
   public function setLabels($labels)
   {
@@ -181,6 +192,20 @@ class Google_Service_Dataproc_Job extends Google_Collection
   public function getSparkJob()
   {
     return $this->sparkJob;
+  }
+  /**
+   * @param Google_Service_Dataproc_SparkRJob
+   */
+  public function setSparkRJob(Google_Service_Dataproc_SparkRJob $sparkRJob)
+  {
+    $this->sparkRJob = $sparkRJob;
+  }
+  /**
+   * @return Google_Service_Dataproc_SparkRJob
+   */
+  public function getSparkRJob()
+  {
+    return $this->sparkRJob;
   }
   /**
    * @param Google_Service_Dataproc_SparkSqlJob

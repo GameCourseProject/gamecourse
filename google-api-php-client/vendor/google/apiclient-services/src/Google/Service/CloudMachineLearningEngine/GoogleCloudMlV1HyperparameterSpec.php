@@ -18,13 +18,33 @@
 class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1HyperparameterSpec extends Google_Collection
 {
   protected $collection_key = 'params';
+  public $algorithm;
+  public $enableTrialEarlyStopping;
   public $goal;
   public $hyperparameterMetricTag;
+  public $maxFailedTrials;
   public $maxParallelTrials;
   public $maxTrials;
   protected $paramsType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ParameterSpec';
   protected $paramsDataType = 'array';
+  public $resumePreviousJobId;
 
+  public function setAlgorithm($algorithm)
+  {
+    $this->algorithm = $algorithm;
+  }
+  public function getAlgorithm()
+  {
+    return $this->algorithm;
+  }
+  public function setEnableTrialEarlyStopping($enableTrialEarlyStopping)
+  {
+    $this->enableTrialEarlyStopping = $enableTrialEarlyStopping;
+  }
+  public function getEnableTrialEarlyStopping()
+  {
+    return $this->enableTrialEarlyStopping;
+  }
   public function setGoal($goal)
   {
     $this->goal = $goal;
@@ -40,6 +60,14 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1HyperparameterSpe
   public function getHyperparameterMetricTag()
   {
     return $this->hyperparameterMetricTag;
+  }
+  public function setMaxFailedTrials($maxFailedTrials)
+  {
+    $this->maxFailedTrials = $maxFailedTrials;
+  }
+  public function getMaxFailedTrials()
+  {
+    return $this->maxFailedTrials;
   }
   public function setMaxParallelTrials($maxParallelTrials)
   {
@@ -70,5 +98,13 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1HyperparameterSpe
   public function getParams()
   {
     return $this->params;
+  }
+  public function setResumePreviousJobId($resumePreviousJobId)
+  {
+    $this->resumePreviousJobId = $resumePreviousJobId;
+  }
+  public function getResumePreviousJobId()
+  {
+    return $this->resumePreviousJobId;
   }
 }

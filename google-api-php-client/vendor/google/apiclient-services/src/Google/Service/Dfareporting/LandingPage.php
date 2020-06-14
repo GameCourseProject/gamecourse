@@ -15,21 +15,47 @@
  * the License.
  */
 
-class Google_Service_Dfareporting_LandingPage extends Google_Model
+class Google_Service_Dfareporting_LandingPage extends Google_Collection
 {
-  public $default;
+  protected $collection_key = 'deepLinks';
+  public $advertiserId;
+  public $archived;
+  protected $deepLinksType = 'Google_Service_Dfareporting_DeepLink';
+  protected $deepLinksDataType = 'array';
   public $id;
   public $kind;
   public $name;
   public $url;
 
-  public function setDefault($default)
+  public function setAdvertiserId($advertiserId)
   {
-    $this->default = $default;
+    $this->advertiserId = $advertiserId;
   }
-  public function getDefault()
+  public function getAdvertiserId()
   {
-    return $this->default;
+    return $this->advertiserId;
+  }
+  public function setArchived($archived)
+  {
+    $this->archived = $archived;
+  }
+  public function getArchived()
+  {
+    return $this->archived;
+  }
+  /**
+   * @param Google_Service_Dfareporting_DeepLink
+   */
+  public function setDeepLinks($deepLinks)
+  {
+    $this->deepLinks = $deepLinks;
+  }
+  /**
+   * @return Google_Service_Dfareporting_DeepLink
+   */
+  public function getDeepLinks()
+  {
+    return $this->deepLinks;
   }
   public function setId($id)
   {

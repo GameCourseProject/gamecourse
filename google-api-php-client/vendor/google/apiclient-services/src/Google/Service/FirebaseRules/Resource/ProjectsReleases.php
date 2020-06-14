@@ -93,6 +93,25 @@ class Google_Service_FirebaseRules_Resource_ProjectsReleases extends Google_Serv
     return $this->call('get', array($params), "Google_Service_FirebaseRules_Release");
   }
   /**
+   * Get the `Release` executable to use when enforcing rules.
+   * (releases.getExecutable)
+   *
+   * @param string $name Resource name of the `Release`.
+   *
+   * Format: `projects/{project_id}/releases/{release_id}`
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string executableVersion The requested runtime executable version.
+   * Defaults to FIREBASE_RULES_EXECUTABLE_V1.
+   * @return Google_Service_FirebaseRules_GetReleaseExecutableResponse
+   */
+  public function getExecutable($name, $optParams = array())
+  {
+    $params = array('name' => $name);
+    $params = array_merge($params, $optParams);
+    return $this->call('getExecutable', array($params), "Google_Service_FirebaseRules_GetReleaseExecutableResponse");
+  }
+  /**
    * List the `Release` values for a project. This list may optionally be filtered
    * by `Release` name, `Ruleset` name, `TestSuite` name, or any combination
    * thereof. (releases.listProjectsReleases)
@@ -143,43 +162,23 @@ class Google_Service_FirebaseRules_Resource_ProjectsReleases extends Google_Serv
     return $this->call('list', array($params), "Google_Service_FirebaseRules_ListReleasesResponse");
   }
   /**
-   * Update a `Release`.
+   * Update a `Release` via PATCH.
    *
    * Only updates to the `ruleset_name` and `test_suite_name` fields will be
    * honored. `Release` rename is not supported. To create a `Release` use the
-   * CreateRelease method. (releases.update)
+   * CreateRelease method. (releases.patch)
    *
-   * @param string $name Resource name for the `Release`.
+   * @param string $name Resource name for the project which owns this `Release`.
    *
-   * `Release` names may be structured `app1/prod/v2` or flat `app1_prod_v2` which
-   * affords developers a great deal of flexibility in mapping the name to the
-   * style that best fits their existing development practices. For example, a
-   * name could refer to an environment, an app, a version, or some combination of
-   * three.
-   *
-   * In the table below, for the project name `projects/foo`, the following
-   * relative release paths show how flat and structured names might be chosen to
-   * match a desired development / deployment strategy.
-   *
-   * Use Case     | Flat Name           | Structured Name
-   * -------------|---------------------|---------------- Environments |
-   * releases/qa         | releases/qa Apps         | releases/app1_qa    |
-   * releases/app1/qa Versions     | releases/app1_v2_qa | releases/app1/v2/qa
-   *
-   * The delimiter between the release name path elements can be almost anything
-   * and it should work equally well with the release name list filter, but in
-   * many ways the structured paths provide a clearer picture of the relationship
-   * between `Release` instances.
-   *
-   * Format: `projects/{project_id}/releases/{release_id}`
-   * @param Google_Service_FirebaseRules_Release $postBody
+   * Format: `projects/{project_id}`
+   * @param Google_Service_FirebaseRules_UpdateReleaseRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_FirebaseRules_Release
    */
-  public function update($name, Google_Service_FirebaseRules_Release $postBody, $optParams = array())
+  public function patch($name, Google_Service_FirebaseRules_UpdateReleaseRequest $postBody, $optParams = array())
   {
     $params = array('name' => $name, 'postBody' => $postBody);
     $params = array_merge($params, $optParams);
-    return $this->call('update', array($params), "Google_Service_FirebaseRules_Release");
+    return $this->call('patch', array($params), "Google_Service_FirebaseRules_Release");
   }
 }

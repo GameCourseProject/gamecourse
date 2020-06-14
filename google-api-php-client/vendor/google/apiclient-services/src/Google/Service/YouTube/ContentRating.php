@@ -64,16 +64,19 @@ class Google_Service_YouTube_ContentRating extends Google_Collection
   public $mdaRating;
   public $medietilsynetRating;
   public $mekuRating;
+  public $menaMpaaRating;
   public $mibacRating;
   public $mocRating;
   public $moctwRating;
   public $mpaaRating;
+  public $mpaatRating;
   public $mtrcbRating;
   public $nbcRating;
   public $nbcplRating;
   public $nfrcRating;
   public $nfvcbRating;
   public $nkclvRating;
+  public $nmcRating;
   public $oflcRating;
   public $pefilmRating;
   public $rcnofRating;
@@ -455,6 +458,14 @@ class Google_Service_YouTube_ContentRating extends Google_Collection
   {
     return $this->mekuRating;
   }
+  public function setMenaMpaaRating($menaMpaaRating)
+  {
+    $this->menaMpaaRating = $menaMpaaRating;
+  }
+  public function getMenaMpaaRating()
+  {
+    return $this->menaMpaaRating;
+  }
   public function setMibacRating($mibacRating)
   {
     $this->mibacRating = $mibacRating;
@@ -486,6 +497,14 @@ class Google_Service_YouTube_ContentRating extends Google_Collection
   public function getMpaaRating()
   {
     return $this->mpaaRating;
+  }
+  public function setMpaatRating($mpaatRating)
+  {
+    $this->mpaatRating = $mpaatRating;
+  }
+  public function getMpaatRating()
+  {
+    return $this->mpaatRating;
   }
   public function setMtrcbRating($mtrcbRating)
   {
@@ -534,6 +553,14 @@ class Google_Service_YouTube_ContentRating extends Google_Collection
   public function getNkclvRating()
   {
     return $this->nkclvRating;
+  }
+  public function setNmcRating($nmcRating)
+  {
+    $this->nmcRating = $nmcRating;
+  }
+  public function getNmcRating()
+  {
+    return $this->nmcRating;
   }
   public function setOflcRating($oflcRating)
   {
