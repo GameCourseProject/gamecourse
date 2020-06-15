@@ -159,7 +159,7 @@ cursor: pointer;
     -webkit-transform: translateX(-70px);
     transform: translateX(-70px);
 }
-.modal_content .content .inputs .color_picker #color-sample {
+.modal_content .content .inputs .color_picker #color-sample, #edit-color-sample {
     height: 20px;
     width: 20px;
     position: absolute;

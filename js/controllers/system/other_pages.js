@@ -48,8 +48,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         });
     };
 
-    $scope.visibleCouse = function(course_name, course_id){
-        id = "#visible-" + course_name + ":checked"; 
+    $scope.visibleCouse = function( course_id){
+        id = "#visible-" + course_id + ":checked";
         if($(id).length > 0){
             $visible = 0; //false
         }
@@ -61,12 +61,13 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 alert(err.description);
                 return;
             }
-
+            $scope.courses.find(x => x.id === course_id).isVisible = $visible;
+            $scope.allCourses.find(x => x.id === course_id).isVisible = $visible;
         });
     }
 
-    $scope.activeCouse = function(course_name, course_id){
-        id = "#active-" + course_name + ":checked"; 
+    $scope.activeCouse = function( course_id){
+        id = "#active-" + course_id + ":checked"; 
         if($(id).length > 0){
             $active = 0; //false
         }
@@ -78,7 +79,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 alert(err.description);
                 return;
             }
-
+            $scope.courses.find(x => x.id === course_id).isActive = $active;
+            $scope.allCourses.find(x => x.id === course_id).isActive = $active;
         });
     }
 
@@ -293,8 +295,11 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $scope.createCourse = function(){
         $("#action_completed").empty();
         $scope.newCourse = {};
+        //inputs start not checked
+        $scope.newCourse.courseIsActive = false;
+        $scope.newCourse.courseIsVisible = false;
 
-        const inputElement_colorPicker = document.querySelector('.pickr');
+        const inputElement_colorPicker = document.querySelector('#new_pickr');
         const color_sample = $("#color-sample");
         const pickr = new Pickr({
             el: inputElement_colorPicker,
@@ -332,14 +337,19 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         }
 
         $scope.submitCourse = function() {
-            courseColor = $("#color")[0].value;
+            courseColor = $("#new_pickr")[0].value;
+            isActive = $scope.newCourse.courseIsActive ? 1 : 0; //to transform from true-false
+            isVisible = $scope.newCourse.courseIsVisible ? 1 : 0; //same
             var reqData = {
                 courseName: $scope.newCourse.courseName,
                 courseShort: $scope.newCourse.courseShort,
                 courseYear: $scope.newCourse.courseYear,
                 courseColor: courseColor,
+                courseIsActive: isActive,
+                courseIsVisible: isVisible,
                 creationMode: 'blank'
             };
+            debugger
             $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
                 if (err) {
                     console.log(err.description);
@@ -348,6 +358,101 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 $("#new-course").hide();
                 getCourses();
                 $("#action_completed").append("New course created");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        };
+    }
+
+    $scope.modifyCourse = function(course){
+        $("#action_completed").empty();
+        $("#active_visible_inputs").remove();
+        $scope.editCourse = {};
+        $scope.editCourse.courseId = course.id;
+        $scope.editCourse.courseName = course.name;
+        $scope.editCourse.courseShort = course.short;
+        $scope.editCourse.courseYear = course.year;
+        $scope.editCourse.courseIsVisible = course.isVisible;
+        $scope.editCourse.courseIsActive = course.isActive;
+        //define color preview
+        const color_sample = $("#edit-color-sample");
+        color_sample[0].children[0].style.backgroundColor = course.color;
+        color_sample[0].children[1].style.borderColor = course.color;
+
+        //on/off inputs
+        editbox = $("#edit_box");
+        editrow = $('<div class= "row" id="active_visible_inputs"></div>');
+        if (course.isActive == 1){
+            editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editCourse.courseIsActive" checked><span class="slider round"></span></label></div>'));
+        }
+        else{
+            editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editCourse.courseIsActive"><span class="slider round"></span></label></div>'));
+        }
+        if (course.isVisible == 1){
+            editrow.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="editCourse.courseIsVisible" checked><span class="slider round"></span></label></div>'))
+        }
+        else{
+            editrow.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="editCourse.courseIsVisible" ><span class="slider round"></span></label></div>'))
+        }
+        editbox.append(editrow);
+
+
+        const inputElement_colorPicker = document.querySelector('#edit_pickr');
+        const pickr = new Pickr({
+            el: inputElement_colorPicker,
+            useAsButton: true,
+            default: course.color,
+            theme: 'monolith',
+            components: {
+                hue: true,
+                interaction: { input: true, save: true }
+            }
+        }).on('init', pickr => {
+            inputElement_colorPicker.value = pickr.getSelectedColor().toHEXA().toString(0);
+        }).on('save', color => {
+            inputElement_colorPicker.value = color.toHEXA().toString(0);
+            pickr.hide();
+        }).on('change', color => {
+            inputElement_colorPicker.value = color.toHEXA().toString(0);
+            color_sample[0].children[0].style.backgroundColor = color.toHEXA().toString(0);
+            color_sample[0].children[1].style.borderColor = color.toHEXA().toString(0);
+        })
+
+        $scope.isReadyToEdit = function() {
+            isValid = function(text){
+                return  (text != "" && text != undefined && text != null)
+            }
+            //validate inputs
+            if (isValid($scope.editCourse.courseName) &&
+            isValid($scope.editCourse.courseShort) &&
+            isValid($scope.editCourse.courseYear) ){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
+        $scope.submitEditCourse = function() {
+            courseColor = $("#edit_pickr")[0].value;
+            isActive = $scope.editCourse.courseIsActive ? 1 : 0;
+            isVisible = $scope.editCourse.courseIsVisible ? 1 : 0;
+            var reqData = {
+                courseName: $scope.editCourse.courseName,
+                courseShort: $scope.editCourse.courseShort,
+                courseYear: $scope.editCourse.courseYear,
+                courseColor: courseColor,
+                courseIsVisible: isVisible,
+                courseIsActive: isActive,
+                courseId: $scope.editCourse.courseId
+            };
+            $smartboards.request('settings', 'editCourse', reqData, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                $("#edit-course").hide();
+                getCourses();
+                $("#action_completed").append("Course: "+ $scope.editCourse.courseName + " edited");
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         };
@@ -362,6 +467,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             courseShort: course.short,
             courseYear: course.year,
             courseColor: course.color,
+            courseIsVisible: course.isVisible,
+            courseIsActive: course.isActive,
             creationMode: 'similar',
             copyFrom: course.id
         };
@@ -433,8 +540,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
               {class: "", content: "Short"},
               {class: "", content: "# Students"},
               {class: "", content: "Year"},
-              {class: "check-column", content: "Visible"},
               {class: "check-column", content: "Active"},
+              {class: "check-column", content: "Visible"},
               {class: "action-column", content: ""},
             ];
     jQuery.each(header, function(index){
@@ -447,10 +554,10 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     rowContent.append('<td>{{course.short}}</td>');
     rowContent.append('<td>{{course.nstudents}}</td>');
     rowContent.append('<td>{{course.year}}</td>');
-    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.name}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.name}}" type="checkbox"><span ng-click= "visibleCouse(course.name, course.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.name}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.name}}" type="checkbox"><span ng-click= "activeCouse(course.name, course.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.id}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.id}}" type="checkbox"><span ng-click= "activeCouse(course.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.id}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.id}}" type="checkbox"><span ng-click= "visibleCouse(course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="action-column"><div class="icon duplicate_icon" ng-click="duplicateCourse(course)"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon edit_icon" ></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-course" onclick="openModal(this)" ng-click="modifyCourse(course)"></div></td>');
     rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" onclick="openModal(this)"></div></td>');
 
     //the verification modals
@@ -505,15 +612,15 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     row_inputs.append(year_section);
     //color picker
     color_picker_section = $('<div class="color_picker half"></div>');
-    color_picker_section.append( $('<input type="text" class="form__input pickr" id="color" placeholder="Color *" ng-model="newCourse.courseColor"/>'));
+    color_picker_section.append( $('<input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" ng-model="newCourse.courseColor"/>'));
     color_picker_section.append( $('<label for="color" class="form__label">Color</label>'));
     color_picker_section.append( $('<div id="color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 2px solid lightgray"></div>'));
     row_inputs.append(color_picker_section);
     box.append(row_inputs);
     //on/off inputs
     row = $('<div class= "row"></div>');
-    row.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newCourse.courseActive"><span class="slider round"></span></label></div>'))
-    row.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="newCourse.courseVisible"><span class="slider round"></span></label></div>'))
+    row.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newCourse.courseIsActive"><span class="slider round"></span></label></div>'))
+    row.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="newCourse.courseIsVisible"><span class="slider round"></span></label></div>'))
     box.append(row);
     content.append(box);
     content.append( $('<button class="save_btn" ng-click="submitCourse()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
@@ -521,12 +628,47 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     modal.append(newCourse);
     allCourses.append(modal);
 
-    //compile the page for scope values
+    //edit course modal
+    editmodal = $("<div class='modal' id='edit-course'></div>");
+    editCourse = $("<div class='modal_content'></div>");
+    editCourse.append( $('<button class="close_btn icon" value="#edit-course" onclick="closeModal(this)"></button>'));
+    editCourse.append( $('<div class="title">Edit Course: </div>'));
+    editcontent = $('<div class="content">');
+    editbox = $('<div class= "inputs" id="edit_box">');
+    //text inputs
+    editbox.append( $('<div class="name full"><input type="text" class="form__input " id="name" placeholder="Name *" ng-model="editCourse.courseName"/> <label for="name" class="form__label">Name</label></div>'))
+    editrow_inputs = $('<div class= "row_inputs"></div>');
+    editrow_inputs.append($('<div class="short_name half"><input type="text" class="form__input" id="short_name" placeholder="Short Name *" ng-model="editCourse.courseShort"/><label for="sort_name" class="form__label">Short Name</label></div>'))
+    //year combobox
+    edityear_section = $('<div class="year half right"></div>');
+    edityear_section.append( $('<input list="years" class="form__input" id="year" placeholder="Year *" ng-model="editCourse.courseYear"/>'))
+    edityear_section.append( $('<label for="year" class="form__label">Year</label>'))
+    editdatalist_options = ( $('<datalist id="years"></datalist>'))
+    jQuery.each(yearsOptions, function(index){
+        editdatalist_options.append( $('<option value='+ yearsOptions[index] +'>'));
+    });
+    edityear_section.append(editdatalist_options);
+    editrow_inputs.append(edityear_section);
+    //color picker
+    editcolor_picker_section = $('<div class="color_picker half"></div>');
+    editcolor_picker_section.append( $('<input type="text" class="form__input pickr" id="edit_pickr" placeholder="Color *" ng-model="editCourse.courseColor"/>'));
+    editcolor_picker_section.append( $('<label for="color" class="form__label">Color</label>'));
+    editcolor_picker_section.append( $('<div id="edit-color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 2px solid lightgray"></div>'));
+    editrow_inputs.append(editcolor_picker_section);
+    editbox.append(editrow_inputs);
+    editcontent.append(editbox);
+    editcontent.append( $('<button class="save_btn" ng-click="submitEditCourse()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+    editCourse.append(editcontent);
+    editmodal.append(editCourse);
+    allCourses.append(editmodal);
+
+
+    //compile both version of the page for scope values
     $compile(allCourses)($scope);
     $compile(myCourses)($scope);
 
     
-    //it is in a function so it can be called after add new course
+    //it is in a function so it can be called after add new course, delete or edit
     getCourses = function(){
         //request to get all courses info
         $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
@@ -577,48 +719,6 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     getCourses(); //! important do not remove
     
 });
-
-// app.controller('CourseCreate', function($scope, $state, $compile, $smartboards, $element) {
-//     //setSettingsTitle('Courses > Create');
-
-//     $scope.newCourse = {};
-//     $scope.isValid = function(v) { return v != undefined && v.trim().length > 0; };
-//     $scope.isValidCourse = function (course) { return course != undefined; };
-
-//     $scope.courses = undefined;
-//     $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
-//         if (err) {
-//             alert(err.description);
-//             return;
-//         }
-
-//         $scope.courses = data.courses;
-//         $compile(createSectionWithTemplate($element, 'Course Create', 'partials/settings/course-create.html'))($scope);
-//     });
-
-//     $scope.createCourse = function() {
-//         var reqData = {
-//             courseName: $scope.newCourse.courseName,
-//             courseShort: $scope.newCourse.courseShort,
-//             courseYear: $scope.newCourse.courseYear,
-//             courseColor: $scope.newCourse.courseColor,
-//             creationMode: $scope.newCourse.creationMode
-//         };
-
-//         if ($scope.newCourse.creationMode == 'similar')
-//             reqData.copyFrom = $scope.newCourse.course.id;
-
-//         $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
-//             if (err) {
-//                 console.log(err.description);
-//                 return;
-//             }
-
-//             $scope.$emit('refreshTabs');
-//             $state.go('courses');
-//         });
-//     };
-// });
 
 app.controller('Users', function($scope, $state, $compile, $smartboards, $element) {
     $smartboards.request('core', 'users', {}, function(data, err) {

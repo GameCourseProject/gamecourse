@@ -266,11 +266,20 @@ class Course {
         return $folder;
     }
     
-    public static function newCourse($courseName,$courseShort,$courseYear,$courseColor, $copyFrom = null) {
+    public function editCourse($courseName,$courseShort,$courseYear,$courseColor, $courseIsVisible, $courseIsActive){
+        $this->setData("name",$courseName);
+        $this->setData("short",$courseShort);
+        $this->setData("year",$courseYear);
+        $this->setData("color",$courseColor);
+        $this->setActiveState($courseIsActive);
+        $this->setVisibleState($courseIsVisible);
+    }
+
+    public static function newCourse($courseName,$courseShort,$courseYear,$courseColor, $courseIsVisible, $courseIsActive, $copyFrom = null) {
         //if (static::$coursesDb->get($newCourse) !== null) // Its in the Course graveyard
         //    static::$coursesDb->delete($newCourse);
 
-        Core::$systemDB->insert("course",["name"=>$courseName, "short"=>$courseShort, "year"=>$courseYear, "color"=>$courseColor]); //adicionar campos extra aqui
+        Core::$systemDB->insert("course",["name"=>$courseName, "short"=>$courseShort, "year"=>$courseYear, "color"=>$courseColor, "isActive"=>$courseIsActive, "isVisible"=>$courseIsVisible]); //adicionar campos extra aqui
         $courseId=Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;

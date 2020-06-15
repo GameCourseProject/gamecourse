@@ -944,11 +944,18 @@ API::registerFunction('settings', 'courseBadges', function() {
 
 API::registerFunction('settings', 'createCourse', function() {
     API::requireAdminPermission();
-    API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor');
+    API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
     if (API::getValue('creationMode') == 'similar')
         API::requireValues('copyFrom');
 
-    Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), (API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+    Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+});
+
+API::registerFunction('settings', 'editCourse', function() {
+    API::requireAdminPermission();
+    API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
+    $course = Course::getCourse(API::getValue('courseId'), false);
+    $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
 });
 
 API::registerFunction('settings', 'deleteCourse', function() {
