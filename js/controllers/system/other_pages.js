@@ -349,7 +349,6 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 courseIsVisible: isVisible,
                 creationMode: 'blank'
             };
-            debugger
             $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
                 if (err) {
                     console.log(err.description);
@@ -371,8 +370,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         $scope.editCourse.courseName = course.name;
         $scope.editCourse.courseShort = course.short;
         $scope.editCourse.courseYear = course.year;
-        $scope.editCourse.courseIsVisible = course.isVisible;
-        $scope.editCourse.courseIsActive = course.isActive;
+        
         //define color preview
         const color_sample = $("#edit-color-sample");
         color_sample[0].children[0].style.backgroundColor = course.color;
@@ -381,19 +379,27 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         //on/off inputs
         editbox = $("#edit_box");
         editrow = $('<div class= "row" id="active_visible_inputs"></div>');
-        if (course.isActive == 1){
+        if (course.isActive == true){
+            console.log("active checked");
             editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editCourse.courseIsActive" checked><span class="slider round"></span></label></div>'));
+            $scope.editCourse.courseIsActive = true;
         }
         else{
             editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editCourse.courseIsActive"><span class="slider round"></span></label></div>'));
+            $scope.editCourse.courseIsActive = false;
         }
-        if (course.isVisible == 1){
+        if (course.isVisible == true){
+            console.log("visible checked");
             editrow.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="editCourse.courseIsVisible" checked><span class="slider round"></span></label></div>'))
+            $scope.editCourse.courseIsVisible = true;
         }
         else{
             editrow.append( $('<div class= "on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="editCourse.courseIsVisible" ><span class="slider round"></span></label></div>'))
+            $scope.editCourse.courseIsVisible = false;
         }
         editbox.append(editrow);
+        $compile(editbox)($scope);
+        
 
 
         const inputElement_colorPicker = document.querySelector('#edit_pickr');
