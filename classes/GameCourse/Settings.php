@@ -23,6 +23,8 @@ class Settings {
                 $configTabs[]= static::buildTabItem('Badges','course.settings.badges',true );
             if (in_array("xp", $enabledModules))
                 $configTabs[]= static::buildTabItem('Levels','course.settings.levels',true );
+            if (in_array("plugin", $enabledModules))
+                $configTabs[]= static::buildTabItem('Plugins','course.settings.plugins',true );
             static::addTab(static::buildTabItem('Configurations', 'course.settings.config', false, $configTabs));
             
             // $childTabs = array();
