@@ -84,25 +84,25 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         });
     }
 
-    $scope.reduceCoursesList = function(){
+    $scope.reduceList = function(){
         if($scope.usingMyCourses){
             $("#empty_active").empty();
             $("#empty_notactive").empty();
             $scope.coursesActive = $scope.coursesActiveAll.slice();
             $scope.coursesNotActive = $scope.coursesNotActiveAll.slice();
-            $scope.searchCourse();
+            $scope.searchList();
         }
         else{
             $("#empty_table").empty();
             $("#courses-table").show();
             $scope.courses = $scope.allCourses.slice();
-            $scope.searchCourse();
-            $scope.filtercourses();
+            $scope.searchList();
+            $scope.filterList();
         }
         
     }
 
-    $scope.searchCourse = function(){
+    $scope.searchList = function(){
         if($scope.usingMyCourses){
             text = $scope.search;
             if (validateSearch(text)){
@@ -159,7 +159,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     }
 
     //only used on admin version
-    $scope.filtercourses = function(){
+    $scope.filterList = function(){
         active = $scope.filterActive;
         inactive = $scope.filterInactive;
         visible = $scope.filterVisible;
@@ -229,7 +229,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         document.getElementById("triangle-up").classList.remove("checked");
     }
 
-    $scope.orderCourses = function(){
+    $scope.orderList = function(){
         order_by_id = $('input[type=radio]:checked', ".order-by")[0].id;
         order = getNameFromId(order_by_id);
         up = $("#triangle-up").hasClass("checked");
@@ -718,8 +718,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             //set order by parameters
             $scope.lastOrder = "none";
             $scope.lastArrow = "none";
-            $scope.orderCourses();
-            $scope.reduceCoursesList(); //to cover new course, duplicate and delete actions
+            $scope.orderList();
+            $scope.reduceList(); //to cover new course, duplicate and delete actions
         }); 
     }
     getCourses(); //! important do not remove
@@ -727,182 +727,378 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 });
 
 app.controller('Users', function($scope, $state, $compile, $smartboards, $element) {
+
+    $scope.reduceList = function(){
+
+        $("#empty_table").empty();
+        $("#users-table").show();
+        $scope.users = $scope.allUsers.slice();
+        $scope.searchList();
+        $scope.filterList();
+        
+    }
+
+    $scope.searchList = function(){
+        filteredUsers = [];
+        text = $scope.search;
+        if (validateSearch(text)){
+            //match por name e short
+            jQuery.each($scope.users , function( index ){
+                user = $scope.users[index];
+                if (user.name.toLowerCase().includes(text.toLowerCase())
+                || user.nickname.toLowerCase().includes(text.toLowerCase())
+                || user.studentNumber.toLowerCase().includes(text.toLowerCase())){
+                    filteredUsers.push(user);
+                }
+            });
+            if(filteredUsers.length == 0){
+                $("#users-table").hide();
+                $("#empty_table").append("No matches found");
+            }
+            $scope.users = filteredUsers;
+        }
+        
+    }
+
+    //only used on admin version
+    $scope.filterList = function(){
+        active = $scope.filterActive;
+        inactive = $scope.filterInactive;
+        admin = $scope.filterAdmin;
+        nonAdmin = $scope.filterNonAdmin;
+
+        //reset list of courses
+        usersList = $scope.users;
+        filteredUsers = [];
+        error_msg = "";
+
+        //cases of empty result
+        if (!active && !inactive){
+            error_msg = "You must select at least one of the options: Active or Inactive"
+        }
+        else if(!admin & !nonAdmin){
+            error_msg = "You must select at least one of the options: Admin or NonAdmin"
+        }
+        else if(active && inactive && admin & nonAdmin){
+            filteredUsers = usersList;
+        }
+        else{
+            jQuery.each(usersList , function( index ) {
+                user = usersList[index];
+                validA = false;
+                validV = false;
+                if (user.isActive == true && active){
+                    validA = true;
+                }
+                else if ( user.isActive == false && inactive){
+                    validA = true;
+                }
+                if (validA && user.isAdmin == true && admin){
+                    validV = true;
+                }
+                else if(validA && user.isAdmin == false && nonAdmin){
+                    validV = true;
+                }
+
+                if (validA && validV){
+                    filteredUsers.push(user);
+                }
+            });
+        
+            if (filteredUsers.length == 0){
+                error_msg = "No matches found for your filter"
+            }
+        }
+        if(error_msg != ""){
+            $("#users-table").hide();
+            $("#empty_table").append(error_msg);
+        }
+        $scope.users = filteredUsers;
+    }
+
+    //functions to visually change the "order by" arrows
+    $scope.sortUp = function(){
+        document.getElementById("triangle-up").classList.add("checked");
+        document.getElementById("triangle-down").classList.remove("checked");
+    }
+    $scope.sortDown = function() {
+        document.getElementById("triangle-down").classList.add("checked");
+        document.getElementById("triangle-up").classList.remove("checked");
+    }
+
+    $scope.orderList = function(){
+        order_by_id = $('input[type=radio]:checked', ".order-by")[0].id;
+        order = getNameFromId(order_by_id);
+        up = $("#triangle-up").hasClass("checked");
+
+        if (up){ arrow = "up";}
+        else{ arrow = "down";}
+
+        if ($scope.lastOrder =="none" || $scope.lastOrder != order){
+            switch (order){
+                //default sort made with arrow down
+                case "Name":
+                    $scope.users.sort(orberByName);
+                    $scope.allUsers.sort(orberByName);
+                    break;
+                case "Nickname":
+                    $scope.users.sort(orberByNickname);
+                    $scope.allUsers.sort(orberByNickname);
+                    break;
+                case "Student Number":
+                    $scope.users.sort(orberByStudentNumber);
+                    $scope.allUsers.sort(orberByStudentNumber);
+                    break;
+                case "N Courses":
+                    $scope.users.sort(orberByNCourses);
+                    $scope.allUsers.sort(orberByNCourses);
+                    break;
+                case "Last Login":
+                    $scope.users.sort(orberByLastLgin);
+                    $scope.allUsers.sort(orberByLastLgin);
+                    break;
+            }
+            if (up){ 
+                $scope.users.reverse();
+                $scope.allUsers.reverse();
+            }
+
+        }else{
+            if (arrow ==  $scope.lastArrow){
+                //nothing changes
+                return;
+            }
+            else{
+                //only the ascendent/descent order changed
+                $scope.users.reverse();
+                $scope.allUsers.reverse();
+            }
+
+        }
+
+        //set values of the existing orderby
+        $scope.lastOrder = order;
+        $scope.lastArrow = arrow;
+    }
+
+
+    mainContent = $("<div id='mainContent'></div>");
+
+    //sidebar
+    optionsFilter = ["Admin", "NonAdmin", "Active", "Inactive"];
+    optionsOrder = ["Name", "Nickname","Student Number", "# Courses","Last Login"];
+    //start checkboxs checked, tied by the ng-model in each input
+    $scope.filterAdmin=true;
+    $scope.filterNonAdmin=true;
+    $scope.filterActive=true;
+    $scope.filterInactive=true;
+    sidebarAll = createSidebar( optionsFilter, optionsOrder);
+    $compile(sidebarAll)($scope)
+
+    //table structure
+    allUsers=$("<div id='allUsers' class='data-table'></div>")
+    table = $('<table id="users-table"></table>');
+    rowHeader = $("<tr></tr>");
+    header = [{class: "name-column", content: "Name"},
+              {class: "", content: "Nickname"},
+              {class: "", content: "Student nº"},
+              {class: "", content: "# Courses"},
+              {class: "", content: "Last Login"},
+              {class: "check-column", content: "Admin"},
+              {class: "check-column", content: "Active"},
+              {class: "action-column", content: ""},
+            ];
+    jQuery.each(header, function(index){
+        rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
+    });
+
+    
+    rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
+    rowContent.append('<td class="name-column"><span>{{user.name}}</span></td>');
+    rowContent.append('<td>{{user.nickname}}</td>');
+    rowContent.append('<td>{{user.studentNumber}}</td>');
+    rowContent.append('<td>{{user.ncourses}}</td>');
+    rowContent.append('<td>{{user.lastLogin}}</td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isAdmin == true" id="admin-{{user.id}}" type="checkbox" checked><input ng-if="course.isAdmin == false" id="admin-{{user.id}}" type="checkbox"><span ng-click= "adminUser(user.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isActive == true" id="active-{{user.id}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{user.id}}" type="checkbox"><span ng-click= "activeUser(user.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
+
+    //the verification modals
+    modal = $("<div class='modal' id='delete-verification-{{user.id}}'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#delete-verification-{{user.id}}" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Are you sure you want to delete this User?</div>'));
+    verification.append( $('<div class="target">{{user.name}} - {{user.studentNumber}}</div>'));
+    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{user.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)"> Delete</button></div>'))
+    modal.append(verification);
+    rowContent.append(modal);
+
+    //append table
+    table.append(rowHeader);
+    table.append(rowContent);
+    allUsers.append(table);
+    mainContent.append(allUsers);
+    $compile(mainContent)($scope);
+
     $smartboards.request('core', 'users', {}, function(data, err) {
         if (err) {
             $($element).text(err.description);
             return;
         }
         console.log(data)
-        //$scope.pendingInvites = data.pendingInvites;
 
-        $scope.usersAdmin = [];
-        $scope.usersNonAdmin = [];
-
-        $scope.selectedUsersAdmin = [];
-        $scope.selectedUsersNonAdmin = [];
-        $scope.saved=false;
-
-        $scope.newAdmins = [];
-        $scope.newUsers = [];
-        for (var i in data.users) {
-            var user = data.users[i];
-            if (user.isAdmin==1)
-                $scope.usersAdmin.push(user);
-            else
-                $scope.usersNonAdmin.push(user);
-        }
-
-        var userAdministration = createSection($($element), 'User Administration').attr('id', 'user-administration');
-        var adminsWrapper = $('<div>');
-        adminsWrapper.append('<div>Admins:</div>')
-        var adminsSelect = $('<select>', {
-            id: 'users',
-            multiple:'',
-            'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersAdmin | orderBy:\'name\' track by user.id',
-            'ng-model': 'selectedUsersAdmin'
-        }).attr('size', 10);
-        adminsWrapper.append(adminsSelect);
-
-        var changeWrapper = $('<div>', {'class': 'buttons'});
-        changeWrapper.append($('<button>', {'ng-if': 'selectedUsersNonAdmin.length > 0', 'ng-click': 'addAdmins()', text: '<-- Add Admin'}));
-        changeWrapper.append($('<button>', {'ng-if': 'selectedUsersAdmin.length > 0', 'ng-click': 'removeAdmins()', text: 'Remove Admin -->'}));
-        changeWrapper.append($('<button>', {'ng-if': 'newAdmins.length > 0 || newUsers.length > 0', 'ng-click': 'saveChanges()', text: 'Save'}));
-        changeWrapper.append($('<span>', {'ng-if': 'saved && (selectedUsersAdmin.length == 0) && (selectedUsersNonAdmin.length==0)', text: 'Saved Admin List!'}));
+        $scope.users = data.users.slice();
+        $scope.allUsers = data.users.slice();
 
 
-        var nonAdminsWrapper = $('<div>');
-        nonAdminsWrapper.append('<div>Users:</div>')
-        var nonAdminsSelect = $('<select>', {
-            id: 'users',
-            multiple:'',
-            'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersNonAdmin | orderBy:\'name\' track by user.id',
-            'ng-model': 'selectedUsersNonAdmin'
-        }).attr('size', 10);
-        nonAdminsWrapper.append(nonAdminsSelect);
+        // $scope.usersAdmin = [];
+        // $scope.usersNonAdmin = [];
 
-        function removeArr(arr, toRemoveArr) {
-            for (var i = 0; i < toRemoveArr.length; ++i) {
-                var toRemove = toRemoveArr[i];
-                for (var j = 0; j < arr.length; ++j) {
-                    var obj = arr[j];
-                    if (angular.equals(obj, toRemove)) {
-                        arr.splice(j, 1);
-                        break;
-                    }
-                }
-            }
-        }
+        // $scope.selectedUsersAdmin = [];
+        // $scope.selectedUsersNonAdmin = [];
+        // $scope.saved=false;
 
-        // removes from one toRemove but only adds in toAddArr  if it was not found
-        function transferUser(arr, toRemoveArr, toAddArr) {
-            for (var i = 0; i < toRemoveArr.length; ++i) {
-                var toRemove = toRemoveArr[i];
-                var found = false;
-                for (var j = 0; j < arr.length; ++j) {
-                    var obj = arr[j];
-                    if (angular.equals(obj, toRemove)) {
-                        arr.splice(j, 1);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    toAddArr.push(toRemove);
-            }
-            $scope.saved=false;
-        }
+        // $scope.newAdmins = [];
+        // $scope.newUsers = [];
+        // for (var i in data.users) {
+        //     var user = data.users[i];
+        //     if (user.isAdmin==1)
+        //         $scope.usersAdmin.push(user);
+        //     else
+        //         $scope.usersNonAdmin.push(user);
+        // }
 
-        $scope.addAdmins = function() {
-            Array.prototype.push.apply($scope.usersAdmin, $scope.selectedUsersNonAdmin);
-            removeArr($scope.usersNonAdmin, $scope.selectedUsersNonAdmin);
-            transferUser($scope.newUsers, $scope.selectedUsersNonAdmin, $scope.newAdmins);
-        };
+        // var userAdministration = createSection($($element), 'User Administration').attr('id', 'user-administration');
+        // var adminsWrapper = $('<div>');
+        // adminsWrapper.append('<div>Admins:</div>')
+        // var adminsSelect = $('<select>', {
+        //     id: 'users',
+        //     multiple:'',
+        //     'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersAdmin | orderBy:\'name\' track by user.id',
+        //     'ng-model': 'selectedUsersAdmin'
+        // }).attr('size', 10);
+        // adminsWrapper.append(adminsSelect);
 
-        $scope.removeAdmins = function() {
-            Array.prototype.push.apply($scope.usersNonAdmin, $scope.selectedUsersAdmin);
-            removeArr($scope.usersAdmin, $scope.selectedUsersAdmin);
-            transferUser($scope.newAdmins, $scope.selectedUsersAdmin, $scope.newUsers);
-        };
+        // var changeWrapper = $('<div>', {'class': 'buttons'});
+        // changeWrapper.append($('<button>', {'ng-if': 'selectedUsersNonAdmin.length > 0', 'ng-click': 'addAdmins()', text: '<-- Add Admin'}));
+        // changeWrapper.append($('<button>', {'ng-if': 'selectedUsersAdmin.length > 0', 'ng-click': 'removeAdmins()', text: 'Remove Admin -->'}));
+        // changeWrapper.append($('<button>', {'ng-if': 'newAdmins.length > 0 || newUsers.length > 0', 'ng-click': 'saveChanges()', text: 'Save'}));
+        // changeWrapper.append($('<span>', {'ng-if': 'saved && (selectedUsersAdmin.length == 0) && (selectedUsersNonAdmin.length==0)', text: 'Saved Admin List!'}));
 
-        userAdministration.append(adminsWrapper);
-        userAdministration.append(changeWrapper);
-        userAdministration.append(nonAdminsWrapper);
 
-        $scope.saveChanges = function() {
-            var idsNewAdmin = $scope.newAdmins.map(function(user) { return user.id; });
-            var idsNewUser = $scope.newUsers.map(function(user) { return user.id; });
-            console.log(idsNewAdmin);
-            console.log(idsNewUser);
-            $smartboards.request('core', 'users', {setPermissions: {admins: idsNewAdmin, users: idsNewUser}}, function(data, err) {
-                if (err) {
-                    alert('Error. Refresh and try again.');
-                    console.log(err.description);
-                    return;
-                }
-                $scope.newAdmins = [];
-                $scope.newUsers = [];
-                $scope.saved=true;
-            });
-        };
-        $compile(userAdministration)($scope);
+        // var nonAdminsWrapper = $('<div>');
+        // nonAdminsWrapper.append('<div>Users:</div>')
+        // var nonAdminsSelect = $('<select>', {
+        //     id: 'users',
+        //     multiple:'',
+        //     'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersNonAdmin | orderBy:\'name\' track by user.id',
+        //     'ng-model': 'selectedUsersNonAdmin'
+        // }).attr('size', 10);
+        // nonAdminsWrapper.append(nonAdminsSelect);
 
-        /*$scope.inviteInfo = {};
-        $scope.createInvite = function() {
-            $smartboards.request('settings', 'users', {createInvite: $scope.inviteInfo}, function(data, err) {
-                if (err) {
-                    alert(err.description);
-                    return;
-                }
+        // function removeArr(arr, toRemoveArr) {
+        //     for (var i = 0; i < toRemoveArr.length; ++i) {
+        //         var toRemove = toRemoveArr[i];
+        //         for (var j = 0; j < arr.length; ++j) {
+        //             var obj = arr[j];
+        //             if (angular.equals(obj, toRemove)) {
+        //                 arr.splice(j, 1);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
 
-                if (Array.isArray($scope.pendingInvites))
-                    $scope.pendingInvites = {};
-                $scope.pendingInvites[$scope.inviteInfo.username] = {id: $scope.inviteInfo.id, username: $scope.inviteInfo.username};
-                console.log('ok!');
-            });
-        };
-        $scope.deleteInvite = function(invite) {
-            $smartboards.request('settings', 'users', {deleteInvite: invite.id}, function(data, err) {
-                if (err) {
-                    console.log(err.description);
-                    return;
-                }
+        // // removes from one toRemove but only adds in toAddArr  if it was not found
+        // function transferUser(arr, toRemoveArr, toAddArr) {
+        //     for (var i = 0; i < toRemoveArr.length; ++i) {
+        //         var toRemove = toRemoveArr[i];
+        //         var found = false;
+        //         for (var j = 0; j < arr.length; ++j) {
+        //             var obj = arr[j];
+        //             if (angular.equals(obj, toRemove)) {
+        //                 arr.splice(j, 1);
+        //                 found = true;
+        //                 break;
+        //             }
+        //         }
+        //         if (!found)
+        //             toAddArr.push(toRemove);
+        //     }
+        //     $scope.saved=false;
+        // }
 
-                delete $scope.pendingInvites[invite.username];
-                console.log('ok!');
-            });
-        };*/
-        $scope.isValidString = function(s) { return s != undefined && s.length > 0};
+        // $scope.addAdmins = function() {
+        //     Array.prototype.push.apply($scope.usersAdmin, $scope.selectedUsersNonAdmin);
+        //     removeArr($scope.usersNonAdmin, $scope.selectedUsersNonAdmin);
+        //     transferUser($scope.newUsers, $scope.selectedUsersNonAdmin, $scope.newAdmins);
+        // };
 
-        /*var pendingInvites = createSection($($element), 'Pending Invites').attr('id', 'pending-invites');
-        pendingInvites.append('<div>Pending: <ul><li ng-if="pendingInvites.length>0" ng-repeat="invite in pendingInvites">{{invite.id}}, {{invite.username}}<img src="images/trashcan.svg" ng-click="deleteInvite(invite)"></li></ul></div>');
-        var addInviteDiv = $('<div>');
-        addInviteDiv.append('<div>New invite: </div>')
-        addInviteDiv.append('<div><label for="invite-id" class="label">IST Id:</label><input type="text" class="input-text" id="invite-id" ng-model="inviteInfo.id"></div>');
-        addInviteDiv.append('<div><label for="invite-username" class="label">IST Username:</label><input type="text" class="input-text" id="invite-username" ng-model="inviteInfo.username"></div>');
-        addInviteDiv.append('<div><button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
-        pendingInvites.append(addInviteDiv);
-        $compile(pendingInvites)($scope);*/
+        // $scope.removeAdmins = function() {
+        //     Array.prototype.push.apply($scope.usersNonAdmin, $scope.selectedUsersAdmin);
+        //     removeArr($scope.usersAdmin, $scope.selectedUsersAdmin);
+        //     transferUser($scope.newAdmins, $scope.selectedUsersAdmin, $scope.newUsers);
+        // };
 
-        $scope.userUpdateInfo = {};
-        $scope.updateUsername = function() {
-            $smartboards.request('core', 'users', {updateUsername: $scope.userUpdateInfo}, function(data, err) {
-                if (err) {
-                    alert(err.description);
-                    return;
-                }
+        // userAdministration.append(adminsWrapper);
+        // userAdministration.append(changeWrapper);
+        // userAdministration.append(nonAdminsWrapper);
 
-                console.log('ok!');
-                $scope.userUpdateInfo = {};
-            });
-        };
+        // $scope.saveChanges = function() {
+        //     var idsNewAdmin = $scope.newAdmins.map(function(user) { return user.id; });
+        //     var idsNewUser = $scope.newUsers.map(function(user) { return user.id; });
+        //     console.log(idsNewAdmin);
+        //     console.log(idsNewUser);
+        //     $smartboards.request('core', 'users', {setPermissions: {admins: idsNewAdmin, users: idsNewUser}}, function(data, err) {
+        //         if (err) {
+        //             alert('Error. Refresh and try again.');
+        //             console.log(err.description);
+        //             return;
+        //         }
+        //         $scope.newAdmins = [];
+        //         $scope.newUsers = [];
+        //         $scope.saved=true;
+        //     });
+        // };
+        // $compile(userAdministration)($scope);
 
-        var updateUsernameSection = createSection($($element), 'Update usernames').attr('id', 'update-usernames');
-        var setUsernameDiv = $('<div>');
-        setUsernameDiv.append('<div>Update username: </div>')
-        setUsernameDiv.append('<div><label for="update-id" class="label">IST Id:</label><input type="text" class="input-text" id="update-id" ng-model="userUpdateInfo.id"></div>');
-        setUsernameDiv.append('<div><label for="update-username" class="label">IST Username:</label><input type="text" class="input-text" id="update-username" ng-model="userUpdateInfo.username"></div>');
-        setUsernameDiv.append('<div><button ng-disabled="!isValidString(userUpdateInfo.id) || !isValidString(userUpdateInfo.username)" ng-click="updateUsername()">Update username</button></div>');
-        updateUsernameSection.append(setUsernameDiv);
-        $compile(updateUsernameSection)($scope);
-    });
+        // $scope.isValidString = function(s) { return s != undefined && s.length > 0};
+
+        // $scope.userUpdateInfo = {};
+        // $scope.updateUsername = function() {
+        //     $smartboards.request('core', 'users', {updateUsername: $scope.userUpdateInfo}, function(data, err) {
+        //         if (err) {
+        //             alert(err.description);
+        //             return;
+        //         }
+
+        //         console.log('ok!');
+        //         $scope.userUpdateInfo = {};
+        //     });
+        // };
+
+        // var updateUsernameSection = createSection($($element), 'Update usernames').attr('id', 'update-usernames');
+        // var setUsernameDiv = $('<div>');
+        // setUsernameDiv.append('<div>Update username: </div>')
+        // setUsernameDiv.append('<div><label for="update-id" class="label">IST Id:</label><input type="text" class="input-text" id="update-id" ng-model="userUpdateInfo.id"></div>');
+        // setUsernameDiv.append('<div><label for="update-username" class="label">IST Username:</label><input type="text" class="input-text" id="update-username" ng-model="userUpdateInfo.username"></div>');
+        // setUsernameDiv.append('<div><button ng-disabled="!isValidString(userUpdateInfo.id) || !isValidString(userUpdateInfo.username)" ng-click="updateUsername()">Update username</button></div>');
+        // updateUsernameSection.append(setUsernameDiv);
+        // $compile(updateUsernameSection)($scope);
+
+        //no fim do request
+        $scope.lastOrder = "none";
+        $scope.lastArrow = "none";
+        $element.append(sidebarAll);
+        $element.append(mainContent);
+        $scope.orderList();
+        //$scope.reduceList();
+        
+    });            
+
+
+
+    
+    
 });

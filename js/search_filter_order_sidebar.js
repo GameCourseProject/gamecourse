@@ -1,14 +1,14 @@
 
 function createSidebar( optionsFilter, optionsOrder){
   sidebar = $("<div class='sidebar'></div>");
-  search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceCoursesList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceCoursesList()'></button>  </div>")
+  search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
   sidebar.append(search);
 
   
   if (optionsFilter.length > 0 ){
     filter = $(" <div class='filter'> <div class='title'>Filter</div> </div>");
     jQuery.each(optionsFilter, function(index){
-      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='reduceCoursesList()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
+      filter.append( $("<label class='container'>" + optionsFilter[index] + " <input type='checkbox' checked='checked' id='filter-" + optionsFilter[index] + "' ng-change='reduceList()' ng-model='filter"+optionsFilter[index]+"'><span class='checkmark'></span>   </label>"));
     });
     sidebar.append(filter);
   }
@@ -17,12 +17,12 @@ function createSidebar( optionsFilter, optionsOrder){
     oderby = $("<div class='order-by'> <div class='title'>Order by</div></div>");
     jQuery.each(optionsOrder, function(index){
         if (index == 0){
-          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' checked='checked' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderList()'><span class='checkmark'></span>   </label>"));
         }else{
-          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderCourses()'><span class='checkmark'></span>   </label>"));
+          oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderList()'><span class='checkmark'></span>   </label>"));
         }
       });
-    oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderCourses();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderCourses();"></div></div>' ));
+    oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderList();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderList();"></div></div>' ));
     sidebar.append(oderby);
   }
 
@@ -47,6 +47,26 @@ function orberByName(a, b) {
   if (a.name > b.name) { return 1;}
   if (a.name < b.name) { return -1;}
   // a must be equal to b
+  return 0;
+}
+function orberByNickname(a, b) {
+  if (a.nickname > b.nickname) { return 1;}
+  if (a.nickname < b.nickname) { return -1;}
+  return 0;
+}
+function orberByStudentNumber(a, b) {
+  if (a.studentNumber > b.studentNumber) { return 1;}
+  if (a.studentNumber < b.studentNumber) { return -1;}
+  return 0;
+}
+function orberByLastLgin(a, b) {
+  if (a.lastLogin > b.lastLogin) { return 1;}
+  if (a.lastLogin < b.lastLogin) { return -1;}
+  return 0;
+}
+function orberByNCourses(a, b) {
+  if (a.ncourses > b.ncourses) { return 1;}
+  if (a.ncourses < b.ncourses) { return -1;}
   return 0;
 }
 function orberByShort(a, b) {

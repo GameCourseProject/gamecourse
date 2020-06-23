@@ -386,6 +386,7 @@ API::registerFunction('settings', 'tabs', function() {
 API::registerFunction('core', 'users', function() {
     API::requireAdminPermission();
 
+    //ação guardar
     if (API::hasKey('setPermissions')) {
         $perm = API::getValue('setPermissions');
         $prevAdmins = User::getAdmins();
@@ -399,6 +400,7 @@ API::registerFunction('core', 'users', function() {
                 User::getUser($user)->setAdmin(0); //false
         }
         return;
+    //edit do usernma 
     } else if (API::hasKey('updateUsername')) {
         $updateUsername = API::getValue('updateUsername');
         $user = User::getUser($updateUsername['id']);
@@ -409,27 +411,26 @@ API::registerFunction('core', 'users', function() {
             API::error('A user with username ' . $updateUsername['username'] . ' is already registered.');
         $user->setUsername($updateUsername['username']);
         return;
-    } /*else if (API::hasKey('createInvite')) {
-        $inviteInfo = API::getValue('createInvite');
-        if (User::getUser($inviteInfo['id'])->exists())
-            API::error('A user with id ' . $inviteInfo['id'] . ' is already registered.');
-        else if (User::getUserByUsername($inviteInfo['username']) != null)
-            API::error('A user with username ' . $inviteInfo['username'] . ' is already registered.');
-        else if (Core::pendingInviteExists($inviteInfo['id']))
-            API::error('A user with username ' . $inviteInfo['username'] . ' is already invited.');
-        else
-            Core::addPendingInvites($inviteInfo);
-        return;
-    } else if (API::hasKey('deleteInvite')) {
-        $invite = API::getValue('deleteInvite');
-        
-        if (Core::pendingInviteExists($invite))
-            Core::removePendingInvites($invite);
-        return;
-    }*/
+    }
 
+    $users = User::getAllInfo(); //get all users
+    foreach($users as &$user){
+        //ir buscar lista de cursos do user
+        //contar lista de cursos
+        //last login no sistema (mais recente dos cursos)
+        $uOb = User::getUser($user['id']);
+        $courses = $uOb->getCourses();
+
+        $user['ncourses'] = sizeof($courses);
+        $user['courses'] = $courses;
+        $user['isActive'] = "1";
+        $user['nickname'] = "nick";
+        $user['studentNumber'] = $user['username'];
+        $user['lastLogin'] = "2 days ago";
+    }
+        
     // falta ir buscar info de numero de cursos, last login e see esta active ou nao
-    API::response(array('users' => User::getAllInfo()));//, 'pendingInvites' => Core::getPendingInvites()));
+    API::response(array('users' => $users));
 });
 
 //This updates the student or teachers of the course
@@ -942,6 +943,7 @@ API::registerFunction('settings', 'courseBadges', function() {
     API::response(array('badgesList' => $badges, "file"=>$file, "maxReward"=>Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward")));
 });
 
+//devia ser core
 API::registerFunction('settings', 'createCourse', function() {
     API::requireAdminPermission();
     API::requireValues('courseName', 'creationMode', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
@@ -950,14 +952,14 @@ API::registerFunction('settings', 'createCourse', function() {
 
     Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
 });
-
+//devia ser core
 API::registerFunction('settings', 'editCourse', function() {
     API::requireAdminPermission();
     API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
     $course = Course::getCourse(API::getValue('courseId'), false);
     $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
 });
-
+//devia ser core
 API::registerFunction('settings', 'deleteCourse', function() {
     API::requireAdminPermission();
     API::requireValues('course');
