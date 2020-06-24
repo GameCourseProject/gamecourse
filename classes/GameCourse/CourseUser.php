@@ -49,6 +49,9 @@ class CourseUser extends User{
     public function getUsername() {
         return parent::getData("username");
     }
+    public function getLastLogin(){
+        return $this->getData("lastActivity");
+    }
     //gets data from course_user table
     function  getData($field="*"){
         return Core::$systemDB->select("course_user",["course"=>$this->course->getId(),"id"=>$this->id],$field);

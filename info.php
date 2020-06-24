@@ -415,21 +415,23 @@ API::registerFunction('core', 'users', function() {
 
     $users = User::getAllInfo(); //get all users
     foreach($users as &$user){
-        //ir buscar lista de cursos do user
-        //contar lista de cursos
-        //last login no sistema (mais recente dos cursos)
         $uOb = User::getUser($user['id']);
-        $courses = $uOb->getCourses();
+        $coursesIds = $uOb->getCourses();
+        $courses = [];
+        foreach ($coursesIds as $id) {
+            $cOb = Course::getCourse($id, false);
+            $c = [ "id" => $id, "name" => $cOb->getName()];
+            $courses[] = $c;
+        }
+        $lastLogins = $uOb->getSystemLastLogin();
 
         $user['ncourses'] = sizeof($courses);
         $user['courses'] = $courses;
-        $user['isActive'] = "1";
-        $user['nickname'] = "nick";
-        $user['studentNumber'] = $user['username'];
-        $user['lastLogin'] = "2 days ago";
+        $user['nickname'] = "nick"; //to remove then, it is on dB
+        $user['studentNumber'] = $user['id']; //to remove then, it is on dB
+        $user['lastLogin'] = $lastLogins;
     }
         
-    // falta ir buscar info de numero de cursos, last login e see esta active ou nao
     API::response(array('users' => $users));
 });
 

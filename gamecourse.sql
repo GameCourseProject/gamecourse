@@ -34,8 +34,11 @@ create table game_course_user(
 	id 		int unsigned primary key, #81205
     name 	varchar(50) not null,
     email 	varchar(255),
+	nickname varchar(50),
+	studentNumber int,
     username varchar(50),        #ist181205
     isAdmin boolean not null default false
+	isActive boolean not null default false
 );
 
 create table course(

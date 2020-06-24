@@ -729,7 +729,6 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 app.controller('Users', function($scope, $state, $compile, $smartboards, $element) {
 
     $scope.reduceList = function(){
-
         $("#empty_table").empty();
         $("#users-table").show();
         $scope.users = $scope.allUsers.slice();
@@ -760,7 +759,6 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         
     }
 
-    //only used on admin version
     $scope.filterList = function(){
         active = $scope.filterActive;
         inactive = $scope.filterInactive;
@@ -938,6 +936,21 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     table.append(rowHeader);
     table.append(rowContent);
     allUsers.append(table);
+
+    //error section
+    allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
+    //success section
+    allUsers.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+
+    //action buttons
+    action_buttons = $("<div class='action-buttons'></div>");
+    action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
+    action_buttons.append( $("<div class='icon import_icon'></div>"));
+    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    allUsers.append($compile(action_buttons)($scope));
+
+
+    
     mainContent.append(allUsers);
     $compile(mainContent)($scope);
 
