@@ -107,17 +107,21 @@ class Plugin extends Module
         return  $googleSheetsVars;
     }
 
-
     private function setFenixVars($courseId, $fenix)
     {
         $fenixVars = Core::$systemDB->select("config_fenix", ["course" => $courseId], "*");
 
-        if (empty($fenixVars)) {
-            $arrayToDb = ["course" => $courseId, "fenixCourseId" => ""];
-            Core::$systemDB->insert("config_fenix", $arrayToDb);
+        $arrayToDb = ["course" => $courseId, "fenixCourseId" => $fenix['fenixCourseId']];
+
+        if (empty($fenix["fenixCourseId"])) {
+            return false;
         } else {
-            $arrayToDb = ["course" => $courseId, "fenixCourseId" => $fenix['fenixCourseId']];
-            Core::$systemDB->update("config_fenix", $arrayToDb);
+            if (empty($fenixVars)) {
+                Core::$systemDB->insert("config_fenix", $arrayToDb);
+            } else {
+                Core::$systemDB->update("config_fenix", $arrayToDb);
+            }
+            return true;
         }
     }
     private function setMoodleVars($courseId, $moodle)
@@ -137,10 +141,15 @@ class Plugin extends Module
             "moodleUser" => $moodle["user"]
         ];
 
-        if (empty($moodleVars)) {
-            Core::$systemDB->insert("config_moodle", $arrayToDb);
+        if (empty($moodle['dbserver']) || empty($moodle['dbuser']) || empty($moodle['db'])) {
+            return false;
         } else {
-            Core::$systemDB->update("config_moodle", $arrayToDb);
+            if (empty($moodleVars)) {
+                Core::$systemDB->insert("config_moodle", $arrayToDb);
+            } else {
+                Core::$systemDB->update("config_moodle", $arrayToDb);
+            }
+            return true;
         }
     }
     private function setClassCheckVars($courseId, $classCheck)
@@ -149,10 +158,15 @@ class Plugin extends Module
 
         $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
 
-        if (empty($classCheckVars)) {
-            Core::$systemDB->insert("config_class_check", $arrayToDb);
+        if (empty($classCheck["tsvCode"])) {
+            return false;
         } else {
-            Core::$systemDB->update("config_class_check", $arrayToDb);
+            if (empty($classCheckVars)) {
+                Core::$systemDB->insert("config_class_check", $arrayToDb);
+            } else {
+                Core::$systemDB->update("config_class_check", $arrayToDb);
+            }
+            return true;
         }
     }
     private function setGoogleSheetsVars($courseId, $googleSheets)
@@ -160,11 +174,15 @@ class Plugin extends Module
         $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
 
         $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $googleSheets["sheetName"], "sheetRange" => $googleSheets["range"]];
-
-        if (empty($googleSheetsVars)) {
-            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+        if (empty($googleSheets["spreadsheetId"])) {
+            return false;
         } else {
-            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+            if (empty($googleSheetsVars)) {
+                Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+            } else {
+                Core::$systemDB->update("config_google_sheets", $arrayToDb);
+            }
+            return true;
         }
     }
 
@@ -221,31 +239,44 @@ class Plugin extends Module
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
                 //place to verify input values
-                $newVale = $this->setFenixVars($courseId, $fenix);
-                $answer = "Variables for fenix saved, new value: " . $newVale;
-                // API::response(["updatedData"=>$answer, "url"=>$newVale] );
-                API::response(["updatedData" => ["Variables for fenix saved"]]);
+                if ($this->setFenixVars($courseId, $fenix)) {
+                    API::response(["updatedData" => ["Variables for fenix saved"]]);
+                } else {
+                    API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
+
                 return;
             }
             if (API::hasKey('moodle')) {
                 $moodle = API::getValue('moodle');
                 //place to verify input values
-                $this->setMoodleVars($courseId, $moodle);
-                API::response(["updatedData" => ["Variables for moodle saved"]]);
+                if ($this->setMoodleVars($courseId, $moodle)) {
+                    API::response(["updatedData" => ["Variables for moodle saved"]]);
+                } else {
+                    API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
                 return;
             }
             if (API::hasKey('classCheck')) {
                 $classCheck = API::getValue('classCheck');
                 //place to verify input values
-                $this->setClassCheckVars($courseId, $classCheck);
-                API::response(["updatedData" => ["Variables for Class check saved"]]);
+                if ($this->setClassCheckVars($courseId, $classCheck)) {
+                    API::response(["updatedData" => ["Variables for Class check saved"]]);
+                } else {
+                    API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
+
                 return;
             }
             if (API::hasKey('googleSheets')) {
                 $googleSheets = API::getValue('googleSheets');
                 //place to verify input values
-                $this->setGoogleSheetsVars($courseId, $googleSheets);
-                API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
+                if ($this->setGoogleSheetsVars($courseId, $googleSheets)) {
+                    API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
+                } else {
+                    API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
+
                 return;
             }
 
