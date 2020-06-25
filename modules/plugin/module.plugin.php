@@ -20,7 +20,6 @@ class Plugin extends Module
     //passo 3 substituir nas funcoes sets o registo na variavel local pelo registo na DB
     //any question just ask and I'll help ^^
 
-
     //Fenix variables
     private $fenixCourseId = "1971935449711106";
     //Moodle variables
@@ -36,100 +35,162 @@ class Plugin extends Module
     //ClassCheck variables
     private $tsvCode = "f8c691b7fc14a0455386d4cb599958d3";
     //Google sheets variables
-    private $spreadsheetId = "1N8PKwi3jgQrCA8KJ1KSnj_MDk2-E_d_RWbVfnKzrpgs";//'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
+    private $spreadsheetId = "1N8PKwi3jgQrCA8KJ1KSnj_MDk2-E_d_RWbVfnKzrpgs"; //'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
     private $sheetName = 'Folha1';
     private $range = 'A1:B2'; //$range = 'Folha1!A1:B2';
-    
 
-    //substituir o resultado do return por pedido à DB para ir buscar estes valores
-    //this info will later come from the DB, something like:
-    //$badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
-    //function structure:
-    //selectMultiple($table,$where=null,$field='*',$orderBy=null,$whereNot=[],$whereCompare=[],$group=null,$likeParams=null)
-    private function getFenixVars(){
-        $fenixVars = ["fenixCourseId" => $this->fenixCourseId]; 
+
+    private function getFenixVars($courseId)
+    {
+        $fenixVarsDB = Core::$systemDB->select("config_fenix", ["course" => $courseId], "*");
+
+        if (empty($fenixVarsDB)) {
+            $fenixVars = ["fenixCourseId" => ""];
+        } else {
+            $fenixVars = ["fenixCourseId" => $fenixVarsDB["fenixCourseId"]];
+        }
         return $fenixVars;
     }
-    private function getMoodleVars(){
-        $moodleVars= [
-            "dbserver" => $this->dbserver,
-            "dbuser" => $this->dbuser,
-            "dbpass" => $this->dbpass,
-            "db" => $this->db,
-            "dbport" => $this->dbport,
-            "prefix" => $this->prefix,
-            "time" => $this->time,
-            "course" => $this->course,
-            "user" => $this->user 
-        ];
+    private function getMoodleVars($courseId)
+    {
+        $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
+
+        if (empty($moodleVarsDB)) {
+            $moodleVars = [
+                "dbserver" => "localhost",
+                "dbuser" => "root",
+                "dbpass" => "",
+                "db" => "moodle",
+                "dbport" => "3306",
+                "prefix" => "mdl_",
+                "time" => "",
+                "course" => "",
+                "user" => ""
+            ];
+        } else {
+            $moodleVars = [
+                "dbserver" => $moodleVarsDB["dbServer"],
+                "dbuser" => $moodleVarsDB["dbUser"],
+                "dbpass" => $moodleVarsDB["dbPass"],
+                "db" => $moodleVarsDB["dbName"],
+                "dbport" => $moodleVarsDB["dbPort"],
+                "prefix" => $moodleVarsDB["tablesPrefix"],
+                "time" => $moodleVarsDB["moodleTime"],
+                "course" => $moodleVarsDB["moodleCourse"],
+                "user" => $moodleVarsDB["moodleUser"]
+            ];
+        }
+
         return $moodleVars;
     }
-    private function getClassCheckVars(){
-        $classCheckVars = ["tsvCode" => $this->tsvCode];
+    private function getClassCheckVars($courseId)
+    {
+        $classCheckDB = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
+
+        if (empty($classCheckDB)) {
+            $classCheckVars = ["tsvCode" => ""];
+        } else {
+            $classCheckVars = ["tsvCode" => $classCheckDB["tsvCode"]];
+        }
+
         return  $classCheckVars;
     }
-    private function getGoogleSheetsVars(){
-        $googleSheetsVars= [
-            "spreadsheetId" => $this->spreadsheetId,
-            "sheetName" => $this->sheetName,
-            "range" => $this->range
+    private function getGoogleSheetsVars($courseId)
+    {
+        $googleSheetsDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+        if (empty($googleSheetsDB)) {
+            $googleSheetsVars = ["spreadsheetId" => "", "sheetName" => "", "sheetRange" => ""];
+        } else {
+            $googleSheetsVars = ["spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $googleSheetsDB["sheetName"], "range" => $googleSheetsDB["sheetRange"]];
+        }
+        return  $googleSheetsVars;
+    }
+
+
+    private function setFenixVars($courseId, $fenix)
+    {
+        $fenixVars = Core::$systemDB->select("config_fenix", ["course" => $courseId], "*");
+
+        if (empty($fenixVars)) {
+            $arrayToDb = ["course" => $courseId, "fenixCourseId" => ""];
+            Core::$systemDB->insert("config_fenix", $arrayToDb);
+        } else {
+            $arrayToDb = ["course" => $courseId, "fenixCourseId" => $fenix['fenixCourseId']];
+            Core::$systemDB->update("config_fenix", $arrayToDb);
+        }
+    }
+    private function setMoodleVars($courseId, $moodle)
+    {
+        $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
+
+        $arrayToDb = [
+            "course" => $courseId,
+            "dbServer" => $moodle['dbserver'],
+            "dbUser" => $moodle['dbuser'],
+            "dbPass" => $moodle['dbpass'],
+            "dbName" => $moodle['db'],
+            "dbPort" => $moodle["dbport"],
+            "tablesPrefix" => $moodle["prefix"],
+            "moodleTime" => $moodle["time"],
+            "moodleCourse" => $moodle["course"],
+            "moodleUser" => $moodle["user"]
         ];
-        return $googleSheetsVars;
-    }
 
-    //substituir cada uma das linhas de set da variavel local pelo pedido a DB para guardar
-    //o update e feito por variavel
+        if (empty($moodleVars)) {
+            Core::$systemDB->insert("config_moodle", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_moodle", $arrayToDb);
+        }
+    }
+    private function setClassCheckVars($courseId, $classCheck)
+    {
+        $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
 
-    //save on DB using someting like this:
-    //Core::$systemDB->update("badges_config",["maxBonusReward"=>$max],["course"=>$courseId]);
-    //function structure:
-    //function updateAdd($table,$collumQuantity,$where,$whereNot=[],$whereCompare=[])
-    private function setFenixVars($fenix){
-        $this->fenixCourseId = $fenix['fenixCourseId'];
-        return $this->fenixCourseId;
+        $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
+
+        if (empty($classCheckVars)) {
+            Core::$systemDB->insert("config_class_check", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_class_check", $arrayToDb);
+        }
     }
-    private function setMoodleVars($moodle){
-         $this->dbserver = $moodle['dbserver']; 
-         $this->dbuser = $moodle['dbuser'];
-         $this->dbpass = $moodle['dbpass'];
-         $this->db = $moodle['db'];
-         $this->dbport = $moodle['dbport'];
-         $this->prefix = $moodle['prefix'];
-         $this->time = $moodle['time'];
-         $this->course = $moodle['course'];
-         $this->user = $moodle['user'];
-    }
-    private function setClassCheckVars($classCheck){
-        $this->tsvCode = $classCheck['tsvCode'];
-    }
-    private function setGoogleSheetsVars($googleSheets){
-        $this->spreadsheetId = $googleSheets["spreadsheetId"];
-        $this->sheetName = $googleSheets["sheetName"];
-        $this->range = $googleSheets["range"];
+    private function setGoogleSheetsVars($courseId, $googleSheets)
+    {
+        $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $googleSheets["sheetName"], "sheetRange" => $googleSheets["range"]];
+
+        if (empty($googleSheetsVars)) {
+            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+        }
     }
 
 
-
-    public function setupResources() {
+    public function setupResources()
+    {
         parent::addResources('js/');
         //parent::addResources('css/plugins.css');
     }
     public function init()
     {
-
         // if fenix is enabled
-        $this->fenix = new Fenix($this);
-        $listOfStudents = $this->fenix->getStudents($this->fenixCourseId);
-        $this->fenix->writeUsersToDB($listOfStudents);
+        $this->addTables("plugin", "config_fenix", "ConfigFenix");
+        //$this->fenix = new Fenix($this);
+        // $listOfStudents = $this->fenix->getStudents($this->fenixCourseId);
+        // $this->fenix->writeUsersToDB($listOfStudents);
 
         //if moodle is enabled
+        $this->addTables("plugin", "config_moodle", "ConfigMoodle");
         // $this->addTables("plugin", "moodle_logs", "Logs");
         // $this->addTables("plugin", "moodle_votes", "Votes");
         // $this->addTables("plugin", "moodle_quiz_grades", "QuizGrades");
         // $this->moodle = new Moodle($this);
 
-        // $logs = $this->moodle->getLogs($this->$time, $this->$user, $this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
-        // $this->moodle->writeLogsToDB($logs);
+        //  $logs = $this->moodle->getLogs($this->$time, $this->$user, $this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
+        //  $this->moodle->writeLogsToDB($logs);
 
         // $votes = $this->moodle->getVotes($this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
         // $this->moodle->writeVotesToDb($votes);
@@ -139,57 +200,60 @@ class Plugin extends Module
 
 
         // //if classcheck is enabled
+        $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
         // $this->classCheck = new ClassCheck($this);
         // $this->addTables("plugin", "attendance", "Attendance");
         // $this->classCheck->readAttendance($this->$tsvCode);
 
 
         //if googleSheets is enabled
+        $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
         // $this->googleSheets = new GoogleSheets($this);
         // $this->googleSheets->readGoogleSheets($this->$spreadsheetId, $this->$sheetName, $this->$range);
 
-        
+
         //do not touch bellow
         //settings page
-        API::registerFunction('settings', 'coursePlugin', function() {
+        API::registerFunction('settings', 'coursePlugin', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            
-            if (API::hasKey('fenix')){
+
+            if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
                 //place to verify input values
-                $newVale = Plugin::setFenixVars($fenix);
-                $answer = "Variables for fenix saved, new value: ". $newVale;
-                API::response(["updatedData"=>[$answer] ] );
+                $newVale = $this->setFenixVars($courseId, $fenix);
+                $answer = "Variables for fenix saved, new value: " . $newVale;
+                // API::response(["updatedData"=>$answer, "url"=>$newVale] );
+                API::response(["updatedData" => ["Variables for fenix saved"]]);
                 return;
             }
             if (API::hasKey('moodle')) {
                 $moodle = API::getValue('moodle');
                 //place to verify input values
-                Plugin::setMoodleVars($moodle);
-                API::response(["updatedData"=>["Variables for moodle saved"] ]);
+                $this->setMoodleVars($courseId, $moodle);
+                API::response(["updatedData" => ["Variables for moodle saved"]]);
                 return;
             }
             if (API::hasKey('classCheck')) {
                 $classCheck = API::getValue('classCheck');
                 //place to verify input values
-                Plugin::setClassCheckVars($classCheck);
-                API::response(["updatedData"=>["Variables for Class check saved"] ]);
+                $this->setClassCheckVars($courseId, $classCheck);
+                API::response(["updatedData" => ["Variables for Class check saved"]]);
                 return;
             }
             if (API::hasKey('googleSheets')) {
                 $googleSheets = API::getValue('googleSheets');
                 //place to verify input values
-                Plugin::setGoogleSheetsVars($googleSheets);
-                API::response(["updatedData"=>["Variables for Google Sheets saved"] ]);
+                $this->setGoogleSheetsVars($courseId, $googleSheets);
+                API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
                 return;
             }
-            
+
             //All variables
-            $fenixVars = Plugin::getFenixVars();
-            $moodleVars= Plugin::getMoodleVars();
-            $classCheckVars = Plugin::getClassCheckVars();
-            $googleSheetsVars= Plugin::getGoogleSheetsVars();
+            $fenixVars = $this->getFenixVars($courseId);
+            $moodleVars = $this->getMoodleVars($courseId);
+            $classCheckVars = $this->getClassCheckVars($courseId);
+            $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
 
             API::response(array('fenixVars' => $fenixVars, 'moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
         });
