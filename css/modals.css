@@ -9,7 +9,7 @@ cursor: pointer;
 .verification {
     width: 410px !important;
     text-align: center;
-    font-size: 20px;
+    font-size: 18px;
 }
 .verification .warning {
     margin-bottom: 5px;
@@ -20,10 +20,10 @@ cursor: pointer;
     margin-bottom: 25px;
 }
 .verification .confirmation_btns button {
-    font-size: 16px;
+    font-size: 14px;
     border-radius: 5px;
     padding: 5px 25px;
-    margin: 0 5px;
+    margin: 0 10px;
     background-color: white;
 }
 .verification .confirmation_btns .continue {
@@ -53,7 +53,7 @@ cursor: pointer;
     width: 570px;
     margin: auto;
     padding: 40px 40px;
-    font-size: 18px;
+    font-size: 16px;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -63,8 +63,8 @@ cursor: pointer;
 }
 .modal_content .close_btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
     height: 17px !important;
     width: 17px !important;
     background-image: url(/gamecourse/images/close_icon.svg);
@@ -72,7 +72,7 @@ cursor: pointer;
     background-color: white;
 }
 .modal_content .title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
     width: 100%;
     margin-bottom: 30px;
@@ -99,12 +99,31 @@ cursor: pointer;
 .modal_content .content .inputs .image {
     margin-bottom: 25px;
 }
+.modal_content .content .inputs .image input[type="file"] {
+    height: 234px;
+    opacity: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(35% - 11px) !important;
+}
 .modal_content .content .inputs .image .profile_image {
-    height: 245px;
+    height: 230px;
     background-color: lightgrey;
     margin-bottom: 10px;
     border-radius: 5px;
-    border: 2px solid gray;
+    border: 2px dashed gray;
+    display: flex;
+    opacity: 0.6;
+}
+.modal_content .content .inputs .image:hover .profile_image {
+    opacity: 1;
+}
+.modal_content .content .inputs .image .profile_image span {
+    margin: auto;
+    padding: 10px;
+    text-align: center;
 }
 .modal_content .content .inputs .image input {
     width: 100%;
@@ -123,10 +142,10 @@ cursor: pointer;
     position: relative;
 }
 .modal_content .content .inputs .bigger {
-    width: calc(60% - 22px);
+    width: calc(65% - 22px);
 }
 .modal_content .content .inputs .smaller {
-    width: calc(40% - 11px);
+    width: calc(35% - 11px);
 }
 .modal_content .content .inputs .right {
     float: right;
@@ -136,7 +155,7 @@ cursor: pointer;
 }
 .modal_content .content .inputs .form__label {
     font-family: 'Roboto', sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     margin: 2px 0 10px 10px;
     display: block;
     transition: all 0.3s;
@@ -167,7 +186,7 @@ cursor: pointer;
 .modal_content .content .inputs .form__input {
     font-family: 'Roboto', sans-serif;
     color: #333;
-    font-size: 18px;
+    font-size: 16px;
     padding: 10px;
     background-color: white;
     display: block;
@@ -196,7 +215,7 @@ cursor: pointer;
 
 .modal_content .save_btn {
     padding: 10px 15px;
-    font-size: 18px;
+    font-size: 16px;
     border-radius: 10%;
     position: absolute;
     background-color: lightgrey;

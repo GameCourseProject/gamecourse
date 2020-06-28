@@ -1,11 +1,11 @@
 .sidebar {
-  width: 200px;
+  width: 180px;
   margin-left: 20px;
   margin-top: 30px;
   float: left;
 }
 .sidebar .search {
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .sidebar .filter {
@@ -15,10 +15,10 @@
 .sidebar .filter .container .checkmark:after {
   left: 6px;
   top: 2px;
-  width: 5px;
-  height: 10px;
+  width: 4px;
+  height: 9px;
   border: solid white;
-  border-width: 0 3px 3px 0;
+  border-width: 0 2px 2px 0;
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
@@ -30,8 +30,8 @@
   border-radius: 50%;
 }
 .sidebar .order-by .container .checkmark:after {
-  top: 6px;
-  left: 6px;
+  top: 5px;
+  left: 5px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -42,6 +42,8 @@
   top: 0;
   right: 0;
   display: flex;
+  width: 48px;
+  justify-content: space-between;
 }
 .sidebar .order-by .sort .triangle {
   width: 0;
@@ -93,7 +95,7 @@
   padding-left: 35px;
   margin-bottom: 12px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -111,8 +113,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: 20px;
-  width: 20px;
+  height: 18px;
+  width: 18px;
   background-color: #eee;
 }
 .sidebar .container .checkmark:after {
@@ -130,12 +132,13 @@
   display: block;
 }
 .sidebar .title {
-  font-size: 18px;
-  border-bottom: 2px solid grey;
+  font-size: 16px;
+  border-bottom: 1px solid grey;
   margin-bottom: 10px;
+  padding-bottom: 5px;
 }
 .sidebar .subtitle {
   margin-left: 20px;
-  font-size: 18px;
+  font-size: 16px;
   margin-bottom: 5px;
 }

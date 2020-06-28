@@ -508,7 +508,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     myCourses.append( $('<div class="divider"><div class="title"><span>Active</span></div></div>'));
     containerActive = $("<div class='container'></div>");
     box = $('<div class="course_box" ng-repeat="(i, course) in coursesActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
-    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 1px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
     box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
     containerActive.append(box);
     containerActive.append( $("<div class='error_box'><div id='empty_active' class='error_msg'></div></div>"));
@@ -517,7 +517,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     myCourses.append( $('<div class="divider"><div class="title"><span>Not Active</span></div></div>'));
     containerNotActive = $("<div class='container'></div>");
     box = $('<div class="course_box" ng-repeat="(i, course) in coursesNotActive" ui-sref="course({courseName:course.nameUrl, course: course.id})"></div>');
-    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 2px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
+    box.append( $('<div class="color_box"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame frame-course" style="border: 1px solid {{course.color}}"><span style="color:{{course.color}};">{{course.name}}</span></div></div>'));
     box.append( $('<div class="footer"><div class="course_name">{{course.short}}</div><div class="course_year">{{course.year}}</div></div>'))
     containerNotActive.append(box);
     containerNotActive.append( $("<div class='error_box'><div id='empty_notactive' class='error_msg'></div></div>"));
@@ -555,7 +555,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     });
 
     rowContent = $("<tr ng-repeat='(i, course) in courses' id='course-{{course.id}}'> ></tr>");
-    rowContent.append('<td class="first-column"><div class="profile-icon"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame" style="border: 2px solid {{course.color}}"></div></div></td>');
+    rowContent.append('<td class="first-column"><div class="profile-icon"><div class="box" style="background-color:{{course.color}};"></div> <div  class="frame" style="border: 1px solid {{course.color}}"></div></div></td>');
     rowContent.append('<td class="name-column" ui-sref="course({courseName:course.nameUrl, course: course.id})"><span>{{course.name}}</span></td>');
     rowContent.append('<td>{{course.short}}</td>');
     rowContent.append('<td>{{course.nstudents}}</td>');
@@ -620,7 +620,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     color_picker_section = $('<div class="color_picker half"></div>');
     color_picker_section.append( $('<input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" ng-model="newCourse.courseColor"/>'));
     color_picker_section.append( $('<label for="color" class="form__label">Color</label>'));
-    color_picker_section.append( $('<div id="color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 2px solid lightgray"></div>'));
+    color_picker_section.append( $('<div id="color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 1px solid lightgray"></div>'));
     row_inputs.append(color_picker_section);
     box.append(row_inputs);
     //on/off inputs
@@ -659,7 +659,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     editcolor_picker_section = $('<div class="color_picker half"></div>');
     editcolor_picker_section.append( $('<input type="text" class="form__input pickr" id="edit_pickr" placeholder="Color *" ng-model="editCourse.courseColor"/>'));
     editcolor_picker_section.append( $('<label for="color" class="form__label">Color</label>'));
-    editcolor_picker_section.append( $('<div id="edit-color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 2px solid lightgray"></div>'));
+    editcolor_picker_section.append( $('<div id="edit-color-sample"><div class="box" style="background-color: white;"></div><div  class="frame" style="border: 1px solid lightgray"></div>'));
     editrow_inputs.append(editcolor_picker_section);
     editbox.append(editrow_inputs);
     editcontent.append(editbox);
@@ -1133,7 +1133,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     box = $('<div class= "inputs">');
     row_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    row_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    row_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
     //text inputs
     details = $('<div class="details bigger right"></div>')
     details.append($('<input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label>'))
@@ -1163,7 +1163,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
