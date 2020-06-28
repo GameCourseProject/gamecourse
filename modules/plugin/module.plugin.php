@@ -196,9 +196,11 @@ class Plugin extends Module
     {
         // if fenix is enabled
         $this->addTables("plugin", "config_fenix", "ConfigFenix");
+        $this->fenix = new Fenix($this);
+        $parsedHTML = $this->fenix->parseHTML();
+        $this->fenix->writeUsersToDB($parsedHTML);
         //$this->fenix = new Fenix($this);
         // $listOfStudents = $this->fenix->getStudents($this->fenixCourseId);
-        // $this->fenix->writeUsersToDB($listOfStudents);
 
         //if moodle is enabled
         $this->addTables("plugin", "config_moodle", "ConfigMoodle");

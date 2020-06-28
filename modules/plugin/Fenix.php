@@ -16,32 +16,55 @@ class Fenix
         $this->fenix = $fenix;
     }
 
-    public function getStudents($courseIdUrl)
-    {
-        $endpoint = "courses/" . $courseIdUrl . "/students";
-        $listOfStudents = Core::getStudents($endpoint);
-        // $listOfStudents = json_encode($students);
 
-        return $listOfStudents->students;
+    public function parseHTML()
+    {
+        $body = file_get_contents("C:/xampp/htdocs/gamecourse/modules/plugin/fenixAlunos.txt");
+        $dom = new \DOMDocument(5, $encoding = 'UTF-8');
+        @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $body);
+
+        $studentsTable = $dom->getElementsByTagName('table')[0];
+        $studentInfo = array();
+        if ($studentsTable != null) {
+            $elements = $studentsTable->getElementsByTagName('tr');
+            for ($i = 1; $i < $elements->length; $i++) {
+                $username = $elements[$i]->childNodes[1]->nodeValue;
+                $number = $elements[$i]->childNodes[3]->nodeValue;
+                $name = $elements[$i]->childNodes[5]->nodeValue;
+                $course = $elements[$i]->childNodes[7]->nodeValue;
+                array_push($studentInfo, ["username" => $username, "number" => $number, "name" => $name, "course" => $course]);
+            }
+        }
+        var_dump($studentInfo);
+        return $studentInfo;
     }
 
-    public function writeUsersToDB($listOfStudents)
+    // public function getStudents($courseIdUrl)
+    // {
+    //     $endpoint = "courses/" . $courseIdUrl . "/students";
+    //     $listOfStudents = Core::getStudents($endpoint);
+    //     // $listOfStudents = json_encode($students);
+
+    //     return $listOfStudents->students;
+    // }
+
+    public function writeUsersToDB($parsedHtml)
     {
         $courseId = API::getValue('course');
         $course = Core::getCourse($courseId);
         $role = "Student";
         $roleId = Course::getRoleId($role, $courseId);
 
-        foreach ($listOfStudents as $student) {
-            $username = $student->username;
-            $id = substr($username, 4, strlen($username) - 1);
-            $name = "name";
-            $email = "email";
+        foreach ($parsedHtml as $student) {
+            $id = $student["number"];
+            $username = $student["username"];
+            $name = $student["name"];
             $campus = "";
+            $email = "";
 
-            if (strpos($student->degree->name, "Alameda") == true) {
+            if (strpos($student["course"], "-A") == true) {
                 $campus = "A";
-            } else if (strpos($student->degree->name, "Taguspark") == true) {
+            } else if (strpos($student["course"], "-T") == true) {
                 $campus = "T";
             }
 
