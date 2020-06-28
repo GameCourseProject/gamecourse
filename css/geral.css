@@ -276,8 +276,8 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-/*tags for user role on course*/
-.role_tag {
+/*tags for user role (on course) or course on user list(system)*/
+.role_tag, .course_tag {
     text-transform: uppercase;
     font-size: 10px;
     background-color: lightgrey;

@@ -39,7 +39,6 @@ cursor: pointer;
     display: none;
     position: fixed; 
     z-index: 1; 
-    padding-top: 100px; 
     left: 0;
     top: 0;
     width: 100%; 
@@ -59,6 +58,8 @@ cursor: pointer;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     background-color: white;
+    margin-top: 100px;
+    margin-bottom: 50px;
 }
 .modal_content .close_btn {
     position: absolute;
@@ -89,16 +90,21 @@ cursor: pointer;
     width: 100%;
     position: relative;
 }
+.modal_content .content .inputs .row_inputs .container{
+    position: relative;
+}
 .modal_content .content .inputs .row {
     display: flex;
 }
 .modal_content .content .inputs .image {
-    margin-bottom: 40px;
+    margin-bottom: 25px;
 }
 .modal_content .content .inputs .image .profile_image {
-    height: 180px;
+    height: 245px;
     background-color: lightgrey;
     margin-bottom: 10px;
+    border-radius: 5px;
+    border: 2px solid gray;
 }
 .modal_content .content .inputs .image input {
     width: 100%;
@@ -120,7 +126,7 @@ cursor: pointer;
     width: calc(60% - 22px);
 }
 .modal_content .content .inputs .smaller {
-    width: calc(35% - 11px);
+    width: calc(40% - 11px);
 }
 .modal_content .content .inputs .right {
     float: right;
@@ -141,6 +147,23 @@ cursor: pointer;
     top: 10px;
     right: 15px;
 }
+#new-user .modal_content .content .inputs .form__input,
+#edit-user .modal_content .content .inputs .form__input
+{
+    margin-bottom: 22px;
+}
+
+#courses_list {
+    margin-bottom: 15px;
+    margin-top: -5px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.course_tag{
+    margin: 5px 5px 0 0;
+}
+
 .modal_content .content .inputs .form__input {
     font-family: 'Roboto', sans-serif;
     color: #333;

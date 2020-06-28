@@ -8,8 +8,17 @@ class User {
         $this->id = $id;
     }
     
-    public function addUserToDB($name, $username, $email){
-        Core::$systemDB->insert("game_course_user",["name"=>$name,"id"=>$this->id,"username"=>$username, "email"=>$email]);       
+
+    public static function addUserToDB($name, $username, $email, $studentNumber, $nickname, $isAdmin, $isActive ){
+        Core::$systemDB->insert("game_course_user",[
+            "name"=>$name,
+            "username"=>$username,
+            "email"=>$email,
+            "studentNumber"=>$studentNumber,
+            "nickname"=>$nickname,
+            "isAdmin"=>$isAdmin,
+            "isActive"=>$isActive
+        ]);       
     }
     
     public function exists() {
@@ -79,8 +88,16 @@ class User {
         return array_column(Core::$systemDB->selectMultiple("game_course_user",["isAdmin"=>true],'id'),'id');
     }
 
-    public function initialize($name, $username,$email) {
-        Core::$systemDB->update("game_course_user",["name" => $name,"email" => $email, "username"=>$username],["id"=>$this->id]);
+    public function editUser($name, $username, $email, $studentNumber, $nickname, $isAdmin, $isActive ) {
+        Core::$systemDB->update("game_course_user",[
+            "name"=>$name,
+            "username"=>$username,
+            "email"=>$email,
+            "studentNumber"=>$studentNumber,
+            "nickname"=>$nickname,
+            "isAdmin"=>$isAdmin,
+            "isActive"=>$isActive
+        ],["id"=>$this->id]);
         return $this;
     }
 
@@ -139,5 +156,9 @@ class User {
 
     public static function getAllInfo() {
         return Core::$systemDB->selectMultiple("game_course_user");
+    }
+
+    public static function deleteUser($userId){
+        Core::$systemDB->delete("game_course_user",["id"=>$userId]);
     }
 }

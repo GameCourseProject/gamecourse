@@ -37,12 +37,12 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
     $scope.deleteCourse = function(course) {
         $("#action_completed").empty();
-        $smartboards.request('settings', 'deleteCourse', {course: course.id}, function(data, err) {
+        $smartboards.request('core', 'deleteCourse', {course: course.id}, function(data, err) {
             if (err) {
                 alert(err.description);
                 return;
             }
-            getCourses();
+            getCourses(); //closes the modal
             $("#action_completed").append("Course: " + course.name + " deleted");
             $("#action_completed").show().delay(3000).fadeOut();
         });
@@ -349,7 +349,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 courseIsVisible: isVisible,
                 creationMode: 'blank'
             };
-            $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
+            $smartboards.request('core', 'createCourse', reqData, function(data, err) {
                 if (err) {
                     console.log(err.description);
                     return;
@@ -451,7 +451,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 courseIsActive: isActive,
                 courseId: $scope.editCourse.courseId
             };
-            $smartboards.request('settings', 'editCourse', reqData, function(data, err) {
+            $smartboards.request('core', 'editCourse', reqData, function(data, err) {
                 if (err) {
                     console.log(err.description);
                     return;
@@ -478,7 +478,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             creationMode: 'similar',
             copyFrom: course.id
         };
-        $smartboards.request('settings', 'createCourse', reqData, function(data, err) {
+        $smartboards.request('core', 'createCourse', reqData, function(data, err) {
             if (err) {
                 console.log(err.description);
                 //return;  //uncomennt after bug fixed on Course.php
@@ -726,7 +726,193 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     
 });
 
+
+
+
+//-------------------------------------USERS------------------------------
+
 app.controller('Users', function($scope, $state, $compile, $smartboards, $element) {
+
+    $scope.deleteUser = function(user) {
+        $("#action_completed").empty();
+        $smartboards.request('core', 'deleteUser', {user_id: user.id}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+            getUsers();
+            $("#action_completed").append("User: " + user.name +"-" + user.studentNumber + " deleted");
+            $("#action_completed").show().delay(3000).fadeOut();
+        });
+    };
+
+    $scope.adminUser = function( user_id){
+        id = "#admin-" + user_id + ":checked";
+        if($(id).length > 0){
+            $admin = 0; //false
+        }
+        else{
+            $admin = 1; //true
+        }
+        $smartboards.request('core', 'setUserAdmin', {user_id: user_id, isAdmin: $admin}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+            $scope.users.find(x => x.id === user_id).isAdmin = $admin;
+            $scope.allUsers.find(x => x.id === user_id).isAdmin = $admin;
+        });
+    }
+
+    $scope.activeUser = function( user_id){
+        id = "#active-" + user_id + ":checked"; 
+        if($(id).length > 0){
+            $active = 0; //false
+        }
+        else{
+            $active = 1; //true
+        }
+        $smartboards.request('core', 'setUserActive', {user_id: user_id, isActive: $active}, function(data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+            $scope.users.find(x => x.id === user_id).isActive = $active;
+            $scope.allUsers.find(x => x.id === user_id).isActive = $active;
+        });
+    }
+    $scope.createUser = function(){
+        $("#action_completed").empty();
+        $scope.newUser = {};
+        //inputs start not checked
+        $scope.newUser.userIsActive = false;
+        $scope.newUser.userIsAdmin = false;
+
+        $scope.isReadyToSubmit = function() {
+            isValid = function(text){
+                return  (text != "" && text != undefined && text != null)
+            }
+            //validate inputs
+            if (isValid($scope.newUser.userName) &&
+            isValid($scope.newUser.userStudentNumber) &&
+            isValid($scope.newUser.userEmail) ){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
+        $scope.submitUser = function() {
+            isActive = $scope.newUser.userIsActive ? 1 : 0; //to transform from true-false
+            isAdmin = $scope.newUser.userIsAdmin ? 1 : 0; //same
+            var reqData = {
+                userName: $scope.newUser.userName,
+                userStudentNumber: $scope.newUser.userStudentNumber,
+                userNickname: $scope.newUser.userNickname,
+                userUsername: null,
+                userEmail: $scope.newUser.userEmail,
+                userIsActive: isActive,
+                userIsAdmin: isAdmin
+            };
+            $smartboards.request('core', 'createUser', reqData, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    debugger
+                    return;
+                }
+                $("#new-user").hide();
+                getUsers();
+                $("#action_completed").append("New User created");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        };
+    }
+    $scope.modifyUser = function(user){
+        $("#action_completed").empty();
+        $("#active_visible_inputs").remove();
+        $("#courses_list").remove();
+        $scope.editUser = {};
+        $scope.editUser.userId = user.id;
+        $scope.editUser.userName = user.name;
+        $scope.editUser.userEmail = user.email;
+        $scope.editUser.userStudentNumber = user.studentNumber;
+        $scope.editUser.userNickname = user.nickname;
+        $scope.editUser.userUsername = user.username;
+                
+        editbox = $("#edit_box");
+        //list of courses
+        courses_row = $('<div id="courses_list"><span style="margin-right: 10px;">Courses: </span></div>')
+        jQuery.each(user.courses , function( index ) {
+            course = user.courses[index];
+            courses_row.append($('<div class="course_tag">'+course.name+'</div>'));
+        });
+        editbox.append(courses_row);
+        //on/off inputs
+        editrow = $('<div class= "row" id="active_visible_inputs"></div>');
+        if (user.isAdmin == true){
+            editrow.append( $('<div class= "on_off"><span>Admin </span><label class="switch"><input id="admin" type="checkbox" ng-model="editUser.userIsAdmin" checked><span class="slider round"></span></label></div>'))
+            $scope.editUser.userIsAdmin = true;
+            console.log("is admin");
+        }
+        else{
+            editrow.append( $('<div class= "on_off"><span>Admin </span><label class="switch"><input id="admin" type="checkbox" ng-model="editUser.userIsAdmin" ><span class="slider round"></span></label></div>'))
+            $scope.editUser.userIsAdmin = false;
+        }
+        if (user.isActive == true){
+            editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editUser.userIsActive" checked><span class="slider round"></span></label></div>'));
+            $scope.editUser.userIsActive = true;
+            console.log("is active");
+        }
+        else{
+            editrow.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="editUser.userIsActive"><span class="slider round"></span></label></div>'));
+            $scope.editUser.userIsActive = false;
+        }
+        editbox.append(editrow);
+        $compile(editbox)($scope);
+        
+
+
+        $scope.isReadyToEdit = function() {
+            isValid = function(text){
+                return  (text != "" && text != undefined && text != null)
+            }
+            //validate inputs
+            if (isValid($scope.editUser.userName) &&
+            isValid($scope.editUser.userEmail) &&
+            isValid($scope.editUser.userStudentNumber) ){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
+        $scope.submitEditUser = function() {
+            isActive = $scope.editUser.userIsActive ? 1 : 0;
+            isAdmin = $scope.editUser.userIsAdmin ? 1 : 0;
+            var reqData = {
+                userName: $scope.editUser.userName,
+                userId: $scope.editUser.userId,
+                userStudentNumber: $scope.editUser.userStudentNumber,
+                userNickname: $scope.editUser.userNickname,
+                userUsername:  $scope.editUser.userUsername,
+                userEmail: $scope.editUser.userEmail,
+                userIsActive: isActive,
+                userIsAdmin: isAdmin
+            };
+            $smartboards.request('core', 'editUser', reqData, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                $("#edit-user").hide();
+                getUsers();
+                $("#action_completed").append("User: "+ $scope.editUser.userName+"-"+ $scope.editUser.userStudentNumber + " edited");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        };
+    }
 
     $scope.reduceList = function(){
         $("#empty_table").empty();
@@ -744,9 +930,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
             //match por name e short
             jQuery.each($scope.users , function( index ){
                 user = $scope.users[index];
-                if (user.name.toLowerCase().includes(text.toLowerCase())
-                || user.nickname.toLowerCase().includes(text.toLowerCase())
-                || user.studentNumber.toLowerCase().includes(text.toLowerCase())){
+                if (user.name && user.name.toLowerCase().includes(text.toLowerCase())
+                || user.nickname && user.nickname.toLowerCase().includes(text.toLowerCase())
+                || user.studentNumber && user.studentNumber.toLowerCase().includes(text.toLowerCase())){
                     filteredUsers.push(user);
                 }
             });
@@ -917,8 +1103,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     rowContent.append('<td>{{user.studentNumber}}</td>');
     rowContent.append('<td>{{user.ncourses}}</td>');
     rowContent.append('<td>{{user.lastLogin}}</td>');
-    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isAdmin == true" id="admin-{{user.id}}" type="checkbox" checked><input ng-if="course.isAdmin == false" id="admin-{{user.id}}" type="checkbox"><span ng-click= "adminUser(user.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isActive == true" id="active-{{user.id}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{user.id}}" type="checkbox"><span ng-click= "activeUser(user.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isAdmin == true" id="admin-{{user.id}}" type="checkbox" checked><input ng-if="user.isAdmin == false" id="admin-{{user.id}}" type="checkbox"><span ng-click= "adminUser(user.id)" class="slider round"></span></label></td>');
+    rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isActive == true" id="active-{{user.id}}" type="checkbox" checked><input ng-if="user.isActive == false" id="active-{{user.id}}" type="checkbox"><span ng-click= "activeUser(user.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
     rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
 
@@ -928,7 +1114,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     verification.append( $('<button class="close_btn icon" value="#delete-verification-{{user.id}}" onclick="closeModal(this)"></button>'));
     verification.append( $('<div class="warning">Are you sure you want to delete this User?</div>'));
     verification.append( $('<div class="target">{{user.name}} - {{user.studentNumber}}</div>'));
-    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{user.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)"> Delete</button></div>'))
+    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{user.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteUser(user)"> Delete</button></div>'))
     modal.append(verification);
     rowContent.append(modal);
 
@@ -936,6 +1122,64 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     table.append(rowHeader);
     table.append(rowContent);
     allUsers.append(table);
+
+
+    //new user modal
+    modal = $("<div class='modal' id='new-user'></div>");
+    newUser = $("<div class='modal_content'></div>");
+    newUser.append( $('<button class="close_btn icon" value="#new-user" onclick="closeModal(this)"></button>'));
+    newUser.append( $('<div class="title">New User: </div>'));
+    content = $('<div class="content">');
+    box = $('<div class= "inputs">');
+    row_inputs = $('<div class= "row_inputs"></div>');
+    //image input
+    row_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    //text inputs
+    details = $('<div class="details bigger right"></div>')
+    details.append($('<input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label>'))
+    details.append($('<input type="email" class="form__input" id="email" placeholder="Email *" ng-model="newUser.userEmail"/><label for="email" class="form__label">Email</label>'))
+    details.append($('<input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="newUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label>'))
+    details.append($('<input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="newUser.userNickname"/><label for="nickname" class="form__label">Nickname</label>'))
+    row_inputs.append(details);
+    box.append(row_inputs);
+    //on/off inputs
+    row = $('<div class= "row"></div>');
+    row.append( $('<div class= "on_off"><span>Admin </span><label class="switch"><input id="admin" type="checkbox" ng-model="newUser.userIsAdmin"><span class="slider round"></span></label></div>'))
+    row.append( $('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newUser.userIsActive"><span class="slider round"></span></label></div>'))
+    box.append(row);
+    content.append(box);
+    content.append( $('<button class="save_btn" ng-click="submitUser()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+    newUser.append(content);
+    modal.append(newUser);
+    allUsers.append(modal);
+
+
+    //edit user modal
+    editmodal = $("<div class='modal' id='edit-user'></div>");
+    editUser = $("<div class='modal_content'></div>");
+    editUser.append( $('<button class="close_btn icon" value="#edit-user" onclick="closeModal(this)"></button>'));
+    editUser.append( $('<div class="title">New User: </div>'));
+    editcontent = $('<div class="content">');
+    editbox = $('<div id="edit_box" class= "inputs">');
+    editrow_inputs = $('<div class= "row_inputs"></div>');
+    //image input
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    //text inputs
+    editdetails = $('<div class="details bigger right"></div>')
+    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
+    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="editUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
+    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="editUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div>'))
+    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="editUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
+    editrow_inputs.append(editdetails);
+    editbox.append(editrow_inputs);
+    editcontent.append(editbox);
+    editcontent.append( $('<button class="save_btn" ng-click="submitEditUser()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+    editUser.append(editcontent);
+    editmodal.append(editUser);
+    allUsers.append(editmodal);
+
+
+
 
     //error section
     allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
@@ -954,162 +1198,53 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     mainContent.append(allUsers);
     $compile(mainContent)($scope);
 
-    $smartboards.request('core', 'users', {}, function(data, err) {
-        if (err) {
-            $($element).text(err.description);
-            return;
-        }
-        console.log(data)
+    getUsers = function() {
+        $smartboards.request('core', 'users', {}, function(data, err) {
+            if (err) {
+                $($element).text(err.description);
+                return;
+            }
+            console.log(data)
 
-        $scope.users = data.users.slice();
-        $scope.allUsers = data.users.slice();
-
-
-        // $scope.usersAdmin = [];
-        // $scope.usersNonAdmin = [];
-
-        // $scope.selectedUsersAdmin = [];
-        // $scope.selectedUsersNonAdmin = [];
-        // $scope.saved=false;
-
-        // $scope.newAdmins = [];
-        // $scope.newUsers = [];
-        // for (var i in data.users) {
-        //     var user = data.users[i];
-        //     if (user.isAdmin==1)
-        //         $scope.usersAdmin.push(user);
-        //     else
-        //         $scope.usersNonAdmin.push(user);
-        // }
-
-        // var userAdministration = createSection($($element), 'User Administration').attr('id', 'user-administration');
-        // var adminsWrapper = $('<div>');
-        // adminsWrapper.append('<div>Admins:</div>')
-        // var adminsSelect = $('<select>', {
-        //     id: 'users',
-        //     multiple:'',
-        //     'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersAdmin | orderBy:\'name\' track by user.id',
-        //     'ng-model': 'selectedUsersAdmin'
-        // }).attr('size', 10);
-        // adminsWrapper.append(adminsSelect);
-
-        // var changeWrapper = $('<div>', {'class': 'buttons'});
-        // changeWrapper.append($('<button>', {'ng-if': 'selectedUsersNonAdmin.length > 0', 'ng-click': 'addAdmins()', text: '<-- Add Admin'}));
-        // changeWrapper.append($('<button>', {'ng-if': 'selectedUsersAdmin.length > 0', 'ng-click': 'removeAdmins()', text: 'Remove Admin -->'}));
-        // changeWrapper.append($('<button>', {'ng-if': 'newAdmins.length > 0 || newUsers.length > 0', 'ng-click': 'saveChanges()', text: 'Save'}));
-        // changeWrapper.append($('<span>', {'ng-if': 'saved && (selectedUsersAdmin.length == 0) && (selectedUsersNonAdmin.length==0)', text: 'Saved Admin List!'}));
+            $scope.users = data.users.slice();
+            $scope.allUsers = data.users.slice();
 
 
-        // var nonAdminsWrapper = $('<div>');
-        // nonAdminsWrapper.append('<div>Users:</div>')
-        // var nonAdminsSelect = $('<select>', {
-        //     id: 'users',
-        //     multiple:'',
-        //     'ng-options': 'user.name + \' (\' + user.id + \', \' + user.username + \')\' for user in usersNonAdmin | orderBy:\'name\' track by user.id',
-        //     'ng-model': 'selectedUsersNonAdmin'
-        // }).attr('size', 10);
-        // nonAdminsWrapper.append(nonAdminsSelect);
+            // $scope.isValidString = function(s) { return s != undefined && s.length > 0};
 
-        // function removeArr(arr, toRemoveArr) {
-        //     for (var i = 0; i < toRemoveArr.length; ++i) {
-        //         var toRemove = toRemoveArr[i];
-        //         for (var j = 0; j < arr.length; ++j) {
-        //             var obj = arr[j];
-        //             if (angular.equals(obj, toRemove)) {
-        //                 arr.splice(j, 1);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
+            // $scope.userUpdateInfo = {};
+            // $scope.updateUsername = function() {
+            //     $smartboards.request('core', 'users', {updateUsername: $scope.userUpdateInfo}, function(data, err) {
+            //         if (err) {
+            //             alert(err.description);
+            //             return;
+            //         }
 
-        // // removes from one toRemove but only adds in toAddArr  if it was not found
-        // function transferUser(arr, toRemoveArr, toAddArr) {
-        //     for (var i = 0; i < toRemoveArr.length; ++i) {
-        //         var toRemove = toRemoveArr[i];
-        //         var found = false;
-        //         for (var j = 0; j < arr.length; ++j) {
-        //             var obj = arr[j];
-        //             if (angular.equals(obj, toRemove)) {
-        //                 arr.splice(j, 1);
-        //                 found = true;
-        //                 break;
-        //             }
-        //         }
-        //         if (!found)
-        //             toAddArr.push(toRemove);
-        //     }
-        //     $scope.saved=false;
-        // }
+            //         console.log('ok!');
+            //         $scope.userUpdateInfo = {};
+            //     });
+            // };
 
-        // $scope.addAdmins = function() {
-        //     Array.prototype.push.apply($scope.usersAdmin, $scope.selectedUsersNonAdmin);
-        //     removeArr($scope.usersNonAdmin, $scope.selectedUsersNonAdmin);
-        //     transferUser($scope.newUsers, $scope.selectedUsersNonAdmin, $scope.newAdmins);
-        // };
+            // var updateUsernameSection = createSection($($element), 'Update usernames').attr('id', 'update-usernames');
+            // var setUsernameDiv = $('<div>');
+            // setUsernameDiv.append('<div>Update username: </div>')
+            // setUsernameDiv.append('<div><label for="update-id" class="label">IST Id:</label><input type="text" class="input-text" id="update-id" ng-model="userUpdateInfo.id"></div>');
+            // setUsernameDiv.append('<div><label for="update-username" class="label">IST Username:</label><input type="text" class="input-text" id="update-username" ng-model="userUpdateInfo.username"></div>');
+            // setUsernameDiv.append('<div><button ng-disabled="!isValidString(userUpdateInfo.id) || !isValidString(userUpdateInfo.username)" ng-click="updateUsername()">Update username</button></div>');
+            // updateUsernameSection.append(setUsernameDiv);
+            // $compile(updateUsernameSection)($scope);
 
-        // $scope.removeAdmins = function() {
-        //     Array.prototype.push.apply($scope.usersNonAdmin, $scope.selectedUsersAdmin);
-        //     removeArr($scope.usersAdmin, $scope.selectedUsersAdmin);
-        //     transferUser($scope.newAdmins, $scope.selectedUsersAdmin, $scope.newUsers);
-        // };
-
-        // userAdministration.append(adminsWrapper);
-        // userAdministration.append(changeWrapper);
-        // userAdministration.append(nonAdminsWrapper);
-
-        // $scope.saveChanges = function() {
-        //     var idsNewAdmin = $scope.newAdmins.map(function(user) { return user.id; });
-        //     var idsNewUser = $scope.newUsers.map(function(user) { return user.id; });
-        //     console.log(idsNewAdmin);
-        //     console.log(idsNewUser);
-        //     $smartboards.request('core', 'users', {setPermissions: {admins: idsNewAdmin, users: idsNewUser}}, function(data, err) {
-        //         if (err) {
-        //             alert('Error. Refresh and try again.');
-        //             console.log(err.description);
-        //             return;
-        //         }
-        //         $scope.newAdmins = [];
-        //         $scope.newUsers = [];
-        //         $scope.saved=true;
-        //     });
-        // };
-        // $compile(userAdministration)($scope);
-
-        // $scope.isValidString = function(s) { return s != undefined && s.length > 0};
-
-        // $scope.userUpdateInfo = {};
-        // $scope.updateUsername = function() {
-        //     $smartboards.request('core', 'users', {updateUsername: $scope.userUpdateInfo}, function(data, err) {
-        //         if (err) {
-        //             alert(err.description);
-        //             return;
-        //         }
-
-        //         console.log('ok!');
-        //         $scope.userUpdateInfo = {};
-        //     });
-        // };
-
-        // var updateUsernameSection = createSection($($element), 'Update usernames').attr('id', 'update-usernames');
-        // var setUsernameDiv = $('<div>');
-        // setUsernameDiv.append('<div>Update username: </div>')
-        // setUsernameDiv.append('<div><label for="update-id" class="label">IST Id:</label><input type="text" class="input-text" id="update-id" ng-model="userUpdateInfo.id"></div>');
-        // setUsernameDiv.append('<div><label for="update-username" class="label">IST Username:</label><input type="text" class="input-text" id="update-username" ng-model="userUpdateInfo.username"></div>');
-        // setUsernameDiv.append('<div><button ng-disabled="!isValidString(userUpdateInfo.id) || !isValidString(userUpdateInfo.username)" ng-click="updateUsername()">Update username</button></div>');
-        // updateUsernameSection.append(setUsernameDiv);
-        // $compile(updateUsernameSection)($scope);
-
-        //no fim do request
-        $scope.lastOrder = "none";
-        $scope.lastArrow = "none";
-        $element.append(sidebarAll);
-        $element.append(mainContent);
-        $scope.orderList();
-        //$scope.reduceList();
-        
-    });            
-
+            //no fim do request
+            $scope.lastOrder = "none";
+            $scope.lastArrow = "none";
+            $element.append(sidebarAll);
+            $element.append(mainContent);
+            $scope.orderList();
+            //$scope.reduceList();
+            
+        });  
+    }          
+    getUsers();
 
 
     

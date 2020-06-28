@@ -31,14 +31,14 @@ drop table if exists course;
 drop table if exists game_course_user;
 
 create table game_course_user(
-	id 		int unsigned primary key, #81205
+	id 		int unsigned primary key auto_increment, #81205
     name 	varchar(50) not null,
     email 	varchar(255),
 	nickname varchar(50),
-	studentNumber int,
+	studentNumber int unique,
     username varchar(50),        #ist181205
     isAdmin boolean not null default false
-	isActive boolean not null default false
+	isActive boolean not null default true
 );
 
 create table course(
