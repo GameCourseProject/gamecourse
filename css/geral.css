@@ -326,4 +326,17 @@ input:checked + .slider:before {
     border-top: 1px solid grey;
     z-index: -1;
 }
-  
+
+/* Loading symbol*/
+#page-loading {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+#page-loading img{
+    display: block;
+    margin: 20% auto;
+}

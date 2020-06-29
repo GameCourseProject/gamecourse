@@ -213,7 +213,7 @@ $user = Core::getLoggedUser();
                 <div ui-view="main-view"></div>           
             </div>
             <div ng-hide="loaded" id="page-loading">
-                    <img style="display:block; margin:0 auto;" src="images/loader.gif">
+                    <img src="images/loader.gif">
             </div>
         </div>
     </body>
