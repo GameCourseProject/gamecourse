@@ -120,11 +120,11 @@ class User {
     public function getSystemLastLogin(){
         $allLastLogins = array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"lastActivity"),"lastActivity");
         $lastLogin = "";
-        if(!empty($allLastLogins))
+        if(!empty($allLastLogins)){
             $lastLogin = max($allLastLogins);
             if ($lastLogin == "0000-00-00 00:00:00")
                 return "never";
-            else
+            else{
                 $lastTime = new \DateTime($lastLogin);
                 $currentTime = new \DateTime(date("Y-m-d H:i:s"));
                 $interval = $currentTime->diff($lastTime);
@@ -146,6 +146,11 @@ class User {
                     return $minutes=="1" ? $minutes . " minute ago" : $minutes . " minutes ago";
                 else
                     return "now";
+            }
+        }
+        else {
+            return "never";
+        }
     }
 
    // public static function getAll() {//ToDo

@@ -44,49 +44,78 @@ function getNameFromId(id){
 
 //aux funtions to order by a attibute
 function orberByName(a, b) {
-  if (a.name > b.name) { return 1;}
-  if (a.name < b.name) { return -1;}
+  if (a.name == null || a.name > b.name) { return 1;}
+  if (b.name == null || a.name < b.name) { return -1;}
   // a must be equal to b
   return 0;
 }
 function orberByNickname(a, b) {
-  if (a.nickname > b.nickname) { return 1;}
-  if (a.nickname < b.nickname) { return -1;}
+  if (a.nickname == null || a.nickname > b.nickname) { return 1;}
+  if (b.nickname == null || a.nickname < b.nickname) { return -1;}
   return 0;
 }
 function orberByStudentNumber(a, b) {
-  if (a.studentNumber > b.studentNumber) { return 1;}
-  if (a.studentNumber < b.studentNumber) { return -1;}
+  if (a.studentNumber == null || parseInt(a.studentNumber) > parseInt(b.studentNumber)) { return 1;}
+  if (b.studentNumber == null || parseInt(a.studentNumber) < parseInt(b.studentNumber)) { return -1;}
   return 0;
 }
+function getLastLoginState( s ){
+  state = 0; //now - 0
+  if (s.includes("minute")){
+    state = 1;
+  }
+  if (s.includes("hour")){
+    state = 2;
+  }
+  if (s.includes("day")){
+    state = 3;
+  }
+  if (s.includes("month")){
+    state = 4;
+  }
+  if (s.includes("year")){
+    state = 5;
+  }
+  if (s.includes("never")){
+    state = 6;
+  }
+  return state;
+}
+
 function orberByLastLgin(a, b) {
-  if (a.lastLogin > b.lastLogin) { return 1;}
-  if (a.lastLogin < b.lastLogin) { return -1;}
-  return 0;
+  astate = getLastLoginState(a.lastLogin);
+  bstate = getLastLoginState(b.lastLogin);
+
+  if (astate > bstate) { return 1;}
+  else if (astate < bstate) { return -1;}
+  else if(astate == 0 || astate == 6) { return 0;}
+  else{
+    //evaluates the number part for equal states
+    if (parseInt(a.lastLogin) > parseInt(b.lastLogin)) { return 1;}
+    if (parseInt(a.lastLogin) < parseInt(b.lastLogin)) { return -1;}
+    return 0;
+  }
 }
+
+
 function orberByNCourses(a, b) {
-  if (a.ncourses > b.ncourses) { return 1;}
-  if (a.ncourses < b.ncourses) { return -1;}
+  if (a.ncourses == null || parseInt(a.ncourses) > parseInt(b.ncourses)) { return 1;}
+  if (b.ncourses == null || parseInt(a.ncourses) < parseInt(b.ncourses)) { return -1;}
   return 0;
 }
 function orberByShort(a, b) {
-  if (a.short > b.short) { return 1;}
-  if (a.short < b.short) { return -1;}
+  if (a.short == null || a.short > b.short) { return 1;}
+  if (b.short == null || a.short < b.short) { return -1;}
   return 0;
 }
 function orberByYear(a, b) {
-  if (a.year > b.year) { return 1;}
-  if (a.year < b.year) { return -1;}
-  return 0;
-}
-function orberByYear(a, b) {
-  if (a.year > b.year) { return 1;}
-  if (a.year < b.year) { return -1;}
+  if (a.year == null || a.year > b.year) { return 1;}
+  if (b.year == null || a.year < b.year) { return -1;}
   return 0;
 }
 function orberByNStudents(a, b) {
-  if (a.nstudents > b.nstudents) { return 1;}
-  if (a.nstudents < b.nstudents) { return -1;}
+  if (a.nstudents == null || parseInt(a.nstudents) > parseInt(b.nstudents)) { return 1;}
+  if (b.nstudents == null || parseInt(a.nstudents) < parseInt(b.nstudents)) { return -1;}
   return 0;
 }
 
