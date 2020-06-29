@@ -494,7 +494,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     mainContent = $("<div id='mainContent'></div>");
 
     //each version of the page courses
-    allCourses = $("<div id='allCourses' class='data-table'></div>")
+    allCourses = $("<div id='allCourses' ></div>")
+    allCoursesSection = $("<div class='data-table'></div>")
     myCourses = $("<div id='myCourses'></div>")
 
 
@@ -549,6 +550,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
               {class: "check-column", content: "Active"},
               {class: "check-column", content: "Visible"},
               {class: "action-column", content: ""},
+              {class: "action-column", content: ""},
+              {class: "action-column", content: ""},
             ];
     jQuery.each(header, function(index){
         rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
@@ -579,7 +582,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     //append table
     table.append(rowHeader);
     table.append(rowContent);
-    allCourses.append(table);
+    allCoursesSection.append(table);
+    allCourses.append(allCoursesSection);
 
     //error section
     allCourses.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
@@ -1080,7 +1084,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     $compile(sidebarAll)($scope)
 
     //table structure
-    allUsers=$("<div id='allUsers' class='data-table'></div>")
+
+    allUsers=$("<div id='allUsers'></div>")
+    allUsersSection = $('<div class="data-table" ></div>');
     table = $('<table id="users-table"></table>');
     rowHeader = $("<tr></tr>");
     header = [{class: "name-column", content: "Name"},
@@ -1090,6 +1096,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
               {class: "", content: "Last Login"},
               {class: "check-column", content: "Admin"},
               {class: "check-column", content: "Active"},
+              {class: "action-column", content: ""},
               {class: "action-column", content: ""},
             ];
     jQuery.each(header, function(index){
@@ -1121,7 +1128,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //append table
     table.append(rowHeader);
     table.append(rowContent);
-    allUsers.append(table);
+    allUsersSection.append(table);
+    allUsers.append(allUsersSection);
 
 
     //new user modal
@@ -1163,7 +1171,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))

@@ -208,9 +208,13 @@ pre.code .highlight {
 }
 
 .accordion-header {
-  padding: 15px;
+  padding: 15px 40px 15px 15px;
   cursor: pointer;
   transition: all .3s;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }
 
 .accordion__item {
@@ -249,6 +253,7 @@ pre.code .highlight {
   float: right;
   transition: .3s all;
   transform: rotate(0deg);
+  right: -25px;
 }
 
 .accordion__item.active > .accordion-header:after {
