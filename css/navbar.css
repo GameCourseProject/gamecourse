@@ -1,0 +1,84 @@
+.navbar {
+    width: 100%;
+    height: 50px;
+    display: block;
+    position: relative;
+    font-size: 20px;
+    font-family: "Jost", Verdana, sans-serif;
+    border-bottom: 5px solid grey;
+    margin-top: 20px;
+  }
+  .navbar .logo {
+    height: 50px;
+    width: 200px;
+    background-color: black;
+    color: white;
+    float: left;
+    left: 20px;
+    position: relative;
+  }
+  .navbar .menu {
+    display: flex;
+    position: relative;
+    list-style-type: none;
+    justify-content: center;
+  }
+  .navbar .menu.documentation {
+    margin-right: 200px;
+  }
+  .navbar .menu li {
+    margin: 15px 20px 0;
+    display: relative;
+  }
+  .navbar .menu li a {
+    text-decoration: none;
+    color: grey;
+    position: relative;
+    padding: 11px 21px;
+  }
+  .navbar .menu li a.focused{
+    color: black;
+    border-bottom: 5px solid black;
+    font-weight: bold;
+  }
+  .navbar .menu li a:not(focused):hover {
+    border-bottom: 5px solid black;
+  }
+  .navbar .menu .dropdown {
+    display: inline-block;
+  }
+  .navbar .menu .dropdown .dropdown-content {
+    display: none;
+    margin-top: 11px;
+    position: absolute;
+    z-index: 1;
+    background-color: gray;
+  }
+  .navbar .menu .dropdown .dropdown-content a {
+    display: block;
+  }
+  .navbar .menu .dropdown .dropdown-content a:hover {
+    border: none;
+    background-color: black;
+    color: white;
+  }
+  .navbar .menu .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  .navbar .user_info {
+    float: right;
+    min-width: 200px;
+    position: relative;
+    right: 20px;
+    display: flex;
+    font-size: 18px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .navbar .user_info .user_icon, .navbar .user_info .user_exit {
+    height: 30px;
+    width: 30px;
+    background-color: black;
+    margin-left: 10px;
+  }
+  

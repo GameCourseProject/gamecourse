@@ -7,160 +7,73 @@
     <script src="../../js/angular.min.js"></script>
     <script src="../../js/jquery.min.js"></script>
     <title>GameCourse Documentation - Schema</title>
-    
-    <style>
-        #fields > ul {
-            max-width: 800px;
-        }
+    <link rel="stylesheet" href="/gamecourse/css/navbar.css"/>
+    <link rel="stylesheet" href="/gamecourse/css/docs.css"/>
+    <link rel="stylesheet" href="/gamecourse/css/geral.css"/>
+    <script type="text/javascript" src="/gamecourse/docs/documentation.js"></script>
+    <script type="text/javascript" src="documentation-functions.js"></script>
 
-        ul {
-            list-style: none;
-            margin: 0;
-            padding-left: 20px;
-        }
-        ul li:not(:last-child) {
-        }
-
-        .schema-path {
-        }
-
-        .schema-path > .general {
-            position: relative;
-            font-style: italic;
-            border: 1px solid rgba(0, 0, 0, 0.3);
-            background-color: #ededed;
-            padding: 2px;
-            margin-top: 4px;
-        }
-
-        .schema-path > .children > ul {
-        }
-
-        .valueOf > .schema-path > .general {
-            background-color: #cccccc;
-        }
-
-        .name {
-            font-style: normal;
-        }
-
-        .type {
-            font-weight: bold;
-
-        }
-
-        .description {
-            font-style: normal;
-        }
-
-        .example {
-            font-style: normal;
-            font-weight: bold;
-        }
-
-        .path-copy {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            line-height: 14px;
-        }
-
-        .path-copy > div {
-            display: inline-block;
-            cursor: pointer;
-            line-height: 14px;
-            background-color: rgba(0, 0, 0, 0.04);
-            font-size: 80%;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            vertical-align: middle;
-        }
-
-        .path-copy > div:hover {
-            opacity: 0.8;
-        }
-
-        .path-copy > div:active {
-            opacity: 0.2;
-        }
-
-        .path-copy img {
-            width: 14px;
-            height: 14px;
-            vertical-align: middle;
-        }
-        code {
-          background: #EEEEEE;
-          border: 1px solid #AAAAAA;
-          padding: 1px;
-          border-radius: 2px;
-        }
-    </style>
 </head>
 <body ng-controller="SchemaController">
-    <nav><a href="../">Docs</a> | <a href=".">Functions</a> </nav>
-    Functions for Course: <select ng-options="course for course in courses" ng-model="course"></select>
-    <br><br><span>
+    <div class="navbar">  
+        <div class="logo">logo</div>
+        <ul class="menu documentation">
+            <li id="menu-views"><a href="/gamecourse/docs" >Views</a></li>
+            <li id="menu-functions"><a href="javascript:void(0);"  class="focused">Functions</a></li>
+            <li id="menu-modules"><a href="/gamecourse/docs/modules">Modules</a></li>
+        </ul>
+    </div>
+
+    <div class="page">
+        <div class="sidebar">
+            <div class="tab title" id="tab-create" >Libraries</div>
+            <div class="tab course-selector">
+                Course: <select ng-options="course for course in courses" ng-model="course"></select>
+            </div>
+            <div class="tab search" id="find-tab">
+                <input type="text" placeholder="Search.." name="search">
+                <button class="magnifying-glass" id="search-btn"></button> 
+            </div>
+        </div>
+        <div class="content">
+        </div>
+    </div>
+    
+    <!-- <br><br><span>
         The functions calls have the following structure:  <code>lib.functionName(argument1,argument2)</code>.
         <br>The arguments may be needed or not depending on the specific function and if there aren't arguments, the parentesis are not necessary.
         <br>The lib for some cases is a library name, for others it is a value provided by a function of the library, usually insida a variable.
         <br><br>This page contains all the libraries available and each of their functions.
    
-    </span>
+    </span> -->
     <script>
         var app = angular.module('schemaApp', []);
         app.controller('SchemaController', function($scope, $element, $http, $compile) {
             $http.get('getSchema.php?list').then(function(data) {
                 $scope.courses = data.data;
                 $scope.course = $scope.courses[0];
+                //vai buscar o primeiro identificado pelo id
+                //ir buscar o nome
             });
 
             $scope.$watch('course', function(n, o) {
                 if (n == o)
                     return;
 
-                var fieldsEl = document.getElementById('libraries');
-                if (fieldsEl != undefined)
-                    fieldsEl.remove();
+                clearFunctions();
                 $http.get('getSchema.php?course=' + $scope.course).then(function(data) {
                     $scope.libraries = data.data;
-                    $scope.showChildren=false;
-                    $scope.styleHide = {
-                        display: 'none'
-                    };
                     console.log("fields",$scope);
-                    //this is organized in exactly the same way as the old schema page, to keep the same look and use its css
-                    var block = $('<div id="fields">');
-                    var ul = $('<ul>');
-                    var li = $('<li ng-repeat="lib in libraries">');
-                    var library = $('<div class="schema-path">');
-                    var lib = $('<div class="general" ng-click="showChildren = !showChildren">');
-                    //info of the library
-                    lib.append('<div><span class="name"><b>{{lib.name}}</b></span></span></div>');
-                    lib.append('<div><span class="description">{{lib.desc}}</span></div>');
-                   //info of the functions of the library
-                    var functions = $('<div class="children ng-scope" ng-style="!showChildren ? styleHide : undefined">');
-                    var funUl = $('<ul>');
-                    var funLi = $('<li ng-repeat="(name, desc) in lib.functions">');
-                    var func = $('<div class="schema-path">');
-                    var fun = $('<div class="general" ng-click="showChildren = !showChildren">');
-                        
-                    fun.append('<div><span class="name"><b>{{name}}</b></span></span></div>');
-                    fun.append('<div> <span class="description">{{desc}}</span></div>');
-                    func.append(fun);
-                    funLi.append(func);
-                    funUl.append(funLi);
-                    functions.append(funUl);
-                    lib.append(functions);
-                    library.append(lib);
-                    li.append(library);
-                    console.log(lib);
-                    ul.append(li);
-                    block.append(ul);
-                    $element.append($compile(block) ($scope));
+                    addTabGroup();
+                    jQuery.each($scope.libraries , function(index, lib ) {
+                        addTab(lib.name);
+                        addContent(lib);
+                    });
+                    addClickEvents();
+                    bindSearch();
+                    accordion.init({ speed: 300, oneOpen: true });
                 });
+                
             });
         });
     </script>
