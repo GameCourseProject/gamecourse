@@ -7,8 +7,11 @@ class User {
     public function __construct($id){
         $this->id = $id;
     }
-    
 
+    //identificador interno - externo passou a ser student number
+    //id ainda existe mas nao tem referencia fora do sistema
+    
+    //previously was not static
     public static function addUserToDB($name, $username, $email, $studentNumber, $nickname, $isAdmin, $isActive ){
         Core::$systemDB->insert("game_course_user",[
             "name"=>$name,
@@ -107,6 +110,15 @@ class User {
 
     public static function getUserByUsername($username) {
         $userId=Core::$systemDB->select("game_course_user",["username"=>$username],"id");
+        if ($userId==null)
+            return null;
+        else
+            return new User($userId);
+    }
+
+    public static function getUserByStudentNumber($studentNumber) {
+        $userId = Core::$systemDB->select("game_course_user",["studentNumber"=>$studentNumber],"id");
+        // user is not on DB yet
         if ($userId==null)
             return null;
         else
