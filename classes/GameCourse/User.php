@@ -117,36 +117,40 @@ class User {
         return array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"course"),"course");
     }
 
+    public function lastLoginTimeTostring($lastLogin){
+        if ($lastLogin == "0000-00-00 00:00:00")
+            return "never";
+        else{
+            $lastTime = new \DateTime($lastLogin);
+            $currentTime = new \DateTime(date("Y-m-d H:i:s"));
+            $interval = $currentTime->diff($lastTime);
+
+            $years = $interval->format('%y');
+            $months = $interval->format('%m');
+            $days = $interval->format('%d');
+            $hours = $interval->format('%h');
+            $minutes = $interval->format('%i');
+            if ($years != "0")
+                return $years=="1" ? $years . " year ago" : $years . " years ago";
+            if ($months != "0")
+                return $months=="1" ? $months . " month ago" : $months . " months ago";
+            if ($days != "0")
+                return $days=="1" ? $days . " day ago" : $days . " days ago";
+            if ($hours != "0")
+                return $hours=="1" ? $hours . " hour ago" : $hours . " hours ago";
+            if ($minutes != "0")
+                return $minutes=="1" ? $minutes . " minute ago" : $minutes . " minutes ago";
+            else
+                return "now";
+        }
+    }
+
     public function getSystemLastLogin(){
         $allLastLogins = array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"lastActivity"),"lastActivity");
         $lastLogin = "";
         if(!empty($allLastLogins)){
             $lastLogin = max($allLastLogins);
-            if ($lastLogin == "0000-00-00 00:00:00")
-                return "never";
-            else{
-                $lastTime = new \DateTime($lastLogin);
-                $currentTime = new \DateTime(date("Y-m-d H:i:s"));
-                $interval = $currentTime->diff($lastTime);
-
-                $years = $interval->format('%y');
-                $months = $interval->format('%m');
-                $days = $interval->format('%d');
-                $hours = $interval->format('%h');
-                $minutes = $interval->format('%i');
-                if ($years != "0")
-                    return $years=="1" ? $years . " year ago" : $years . " years ago";
-                if ($months != "0")
-                    return $months=="1" ? $months . " month ago" : $months . " months ago";
-                if ($days != "0")
-                    return $days=="1" ? $days . " day ago" : $days . " days ago";
-                if ($hours != "0")
-                    return $hours=="1" ? $hours . " hour ago" : $hours . " hours ago";
-                if ($minutes != "0")
-                    return $minutes=="1" ? $minutes . " minute ago" : $minutes . " minutes ago";
-                else
-                    return "now";
-            }
+            return $this->lastLoginTimeTostring($lastLogin);
         }
         else {
             return "never";

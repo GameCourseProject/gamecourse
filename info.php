@@ -413,17 +413,17 @@ API::registerFunction('core', 'users', function() {
     API::requireAdminPermission();
 
     //edit do usernma 
-    if (API::hasKey('updateUsername')) {
-        $updateUsername = API::getValue('updateUsername');
-        $user = User::getUser($updateUsername['id']);
-        if (!$user->exists())
-            API::error('A user with id ' . $updateUsername['id'] . ' is not registered.');
-        $userWithUsername = User::getUserByUsername($updateUsername['username']);
-        if ($userWithUsername != null && $userWithUsername->getId() != $updateUsername['id'])
-            API::error('A user with username ' . $updateUsername['username'] . ' is already registered.');
-        $user->setUsername($updateUsername['username']);
-        return;
-    }
+    // if (API::hasKey('updateUsername')) {
+    //     $updateUsername = API::getValue('updateUsername');
+    //     $user = User::getUser($updateUsername['id']);
+    //     if (!$user->exists())
+    //         API::error('A user with id ' . $updateUsername['id'] . ' is not registered.');
+    //     $userWithUsername = User::getUserByUsername($updateUsername['username']);
+    //     if ($userWithUsername != null && $userWithUsername->getId() != $updateUsername['id'])
+    //         API::error('A user with username ' . $updateUsername['username'] . ' is already registered.');
+    //     $user->setUsername($updateUsername['username']);
+    //     return;
+    // }
 
     $users = User::getAllInfo(); //get all users
     foreach($users as &$user){
@@ -551,9 +551,15 @@ function updateUsers($list,$role,$course,$courseId,$replace){
     }
     return $updatedUsers;
 }
-
+API::registerFunction('core', 'courseRoles', function(){
+    API::requireCourseAdminPermission();
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    $roles = $course->getRoles("name");
+    API::response(["courseRoles"=> $roles ]);
+});
 //update courseUsers from the Students or Teacher configuration pages
-API::registerFunction('settings', 'courseUsers', function() {
+API::registerFunction('core', 'courseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
@@ -593,6 +599,7 @@ API::registerFunction('settings', 'courseUsers', function() {
     
     if (API::hasKey('role')){
         if ($role == "allRoles") {
+            ///
             $users = $course->getUsers($role);
         }
         else{
@@ -600,10 +607,17 @@ API::registerFunction('settings', 'courseUsers', function() {
         }
         
         $usersInfo = [];
+        //for security measures we send only what is needed
         foreach ($users as $userData) {
             $id = $userData['id'];
             $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'username' => $user->getUsername(), 'last_login' => $user->getLastLogin());
+            $usersInfo[] = array(
+                'id' => $id, 
+                'name' => $user->getName(), 
+                'nickname' => $user->getNickname(),
+                'studentNumber' => $user->getStudentNumber(),
+                'roles' => $user->getRolesNames(),
+                'lastLogin' => $user->getLastLogin());
         }
         
         $fileData = @file_get_contents($file);

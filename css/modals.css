@@ -179,9 +179,6 @@ cursor: pointer;
     align-items: center;
     flex-wrap: wrap;
 }
-.course_tag{
-    margin: 5px 5px 0 0;
-}
 
 .modal_content .content .inputs .form__input {
     font-family: 'Roboto', sans-serif;

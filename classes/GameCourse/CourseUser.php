@@ -49,8 +49,15 @@ class CourseUser extends User{
     public function getUsername() {
         return parent::getData("username");
     }
+    public function getNickname() {
+        return parent::getData("nickname");
+    }
+    public function getStudentNumber() {
+        return parent::getData("studentNumber");
+    }
     public function getLastLogin(){
-        return $this->getData("lastActivity");
+        $lastLogin = $this->getData("lastActivity");
+        return parent::lastLoginTimeTostring($lastLogin);
     }
     //gets data from course_user table
     function  getData($field="*"){

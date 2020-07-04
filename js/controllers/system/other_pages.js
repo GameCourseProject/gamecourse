@@ -1144,10 +1144,10 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     row_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
     //text inputs
     details = $('<div class="details bigger right"></div>')
-    details.append($('<input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label>'))
-    details.append($('<input type="email" class="form__input" id="email" placeholder="Email *" ng-model="newUser.userEmail"/><label for="email" class="form__label">Email</label>'))
-    details.append($('<input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="newUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label>'))
-    details.append($('<input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="newUser.userNickname"/><label for="nickname" class="form__label">Nickname</label>'))
+    details.append($('<div class="container"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
+    details.append($('<div class="container"><input type="email" class="form__input" id="email" placeholder="Email *" ng-model="newUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
+    details.append($('<div class="container"><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="newUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div>'))
+    details.append($('<div class="container"><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="newUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
     row_inputs.append(details);
     box.append(row_inputs);
     //on/off inputs
@@ -1248,7 +1248,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
             $element.append(sidebarAll);
             $element.append(mainContent);
             $scope.orderList();
-            //$scope.reduceList();
+            $scope.reduceList();
             
         });  
     }          
