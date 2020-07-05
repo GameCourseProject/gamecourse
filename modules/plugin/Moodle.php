@@ -10,45 +10,79 @@ use GameCourse\Course;
 
 class Moodle
 {
+    private $dbserver; //"db.rnl.tecnico.ulisboa.pt";
+    private $dbuser; //"pcm_moodle";
+    private $dbpass; //"Dkr1iRwEekJiPSHX9CeNznHlks";
+    private $dbname; //"pcm_moodle";
+    private $dbport;
+    private $prefix;
+    private $time;
+    private $course; //courseId no moodle
+    private $user;
+    private $courseId; //courseId no gamecourse
 
-    public function __construct($moodle)
+    public function __construct($courseId)
     {
-        $this->moodle = $moodle;
+        // $this->courseId = $courseId;
+        // $this->getDBConfigValues();
+
+        // $logs = $this->getLogs();
+        // $this->writeLogsToDB($logs);
+
+        // $votes = $this->getVotes();
+        // $this->writeVotesToDb($votes);
+
+        // $quiz_grades = $this->getQuizGrades();
+        // $this->writeQuizGradesToDb($quiz_grades);
     }
 
-    public function getLogs($time, $user, $course, $prefix, $dbserver, $dbuser, $dbpass, $db, $dbport)
+    public function getDBConfigValues()
     {
-        if (!isset($time) && !isset($user)) {
-            $sql = "select " . $prefix . "logstore_standard_log.id,  courseid, userid, " . $prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname,' ', lastname)  as userfullname, " . $prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $prefix . "logstore_standard_log.objectid, objecttable from " . $prefix . "user inner join " . $prefix . "logstore_standard_log on " . $prefix . "user.id=userid inner join " . $prefix . "course on " . $prefix . "course.id = courseid";
-            if (isset($course)) {
-                $sql .= " and courseid=" . $course;
+        $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $this->courseId], "*");
+        $this->dbserver = $moodleVarsDB["dbServer"];
+        $this->dbuser = $moodleVarsDB["dbUser"];
+        $this->dbpass = $moodleVarsDB["dbPass"];
+        $this->dbname = $moodleVarsDB["dbName"];
+        $this->dbport = $moodleVarsDB["dbPort"];
+        $this->prefix = $moodleVarsDB["tablesPrefix"];
+        $this->time = $moodleVarsDB["moodleTime"];
+        $this->course = $moodleVarsDB["moodleCourse"];
+        $this->user = $moodleVarsDB["moodleUser"];
+    }
+
+    public function getLogs()
+    {
+        if (!($this->time) && !($this->user)) {
+            $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname,' ', lastname)  as userfullname, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid";
+            if ($this->course) {
+                $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " order by . $prefix .logstore_standard_log.timecreated;";
-        } else if (isset($time) && !isset($user)) {
-            $sql = "select " . $prefix . "logstore_standard_log.id,  courseid, userid, " . $prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid,  " . $prefix . "logstore_standard_log.objectid, objecttable from " . $prefix . "user inner join " . $prefix . "logstore_standard_log on " . $prefix . "user.id=userid inner join " . $prefix . "course on " . $prefix . "course.id = courseid ";
-            if (isset($course)) {
-                $sql .= " and courseid=" . $course;
+            $sql .= " order by " . $this->prefix . "logstore_standard_log.timecreated;";
+        } else if ($this->time && !($this->user)) {
+            $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid,  " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid ";
+            if ($this->course) {
+                $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " where " . $prefix . "logstore_standard_log.timecreated>=" . $time . " order by  " . $prefix . "logstore_standard_log.timecreated;";
-        } else if (!isset($time) && isset($user)) {
-            $sql = "select  " . $prefix . "logstore_standard_log.id, courseid, userid, " . $prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $prefix . "logstore_standard_log.timecreated, target, action, other, component,   contextinstanceid as cmid , " . $prefix . "logstore_standard_log.objectid , objecttable from " . $prefix . "user inner join " . $prefix . "logstore_standard_log on " . $prefix . "user.id='" . $user . "' inner join " . $prefix . "course on " . $prefix . "course.id=courseid ";
-            if (isset($course)) {
-                $sql .= " and courseid=" . $course;
+            $sql .= " where " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+        } else if (!($this->time) && $this->user) {
+            $sql = "select  " . $this->prefix . "logstore_standard_log.id, courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,   contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid , objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id='" . $this->user . "' inner join " . $this->prefix . "course on " . $this->prefix . "course.id=courseid ";
+            if ($this->course) {
+                $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " order by  " . $prefix . "logstore_standard_log.timecreated;";
-        } else if (isset($time) && isset($user)) {
-            $sql = "select  " . $prefix . "logstore_standard_log.id, courseid, userid, " . $prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $prefix . "logstore_standard_log.objectid, objecttable from " . $prefix . "user inner join " . $prefix . "logstore_standard_log on " . $prefix . "user.id='" . $user . "' inner join " . $prefix . "course on " . $prefix . "course.id=courseid ";
-            if (isset($course)) {
-                $sql .= " and p.course=" . $course;
+            $sql .= " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+        } else if ($this->time && $this->user) {
+            $sql = "select  " . $this->prefix . "logstore_standard_log.id, courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, CONCAT (firstname, ' ', lastname ) as userfullname, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id='" . $this->user . "' inner join " . $this->prefix . "course on " . $this->prefix . "course.id=courseid ";
+            if ($this->course) {
+                $sql .= " and p.course=" . $this->course;
             }
-            $sql .= " where " . $prefix . "logstore_standard_log.timecreated>=" . $time . " order by  " . $prefix . "logstore_standard_log.timecreated;";
+            $sql .= " where " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
         }
-        $db = mysqli_connect($dbserver, $dbuser, $dbpass, $db, $dbport) or die("not connecting");
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
-        return array($db, $result, $prefix);
+        return array($db, $result, $this->prefix);
     }
 
-    public function parseLogsToDB($row, $db, $prefix)
+    public function parseLogsToDB($row, $db)
     {
         $temp_info = null;
         $temp_url = null;
@@ -98,7 +132,7 @@ class Moodle
             $temp_module = $row["target"];
             $temp_url = "view.php?id=" . $row['cmid'];
             if ($row["target"] == "course_module") {
-                $sqlAssign = "SELECT name FROM " . $prefix . "assign inner join " . $prefix . "logstore_standard_log on " . $prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
+                $sqlAssign = "SELECT name FROM " . $this->prefix . "assign inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
                 $resultAssign = mysqli_query($db, $sqlAssign);
                 $rowAssign = mysqli_fetch_assoc($resultAssign);
                 $temp_info = $rowAssign['name']; //$row4["name"];
@@ -106,7 +140,7 @@ class Moodle
                 $row["target"] == "submission_form" || $row["target"] == "grading_table" || $row["target"] == "grading_form"
                 || $row["target"] == "remove_submission_form" || $row["target"] == "submission_confirmation_form"
             ) {
-                $sqlAssign = "SELECT name FROM " . $prefix . "assign where id=" . $other_->assignid . ";";
+                $sqlAssign = "SELECT name FROM " . $this->prefix . "assign where id=" . $other_->assignid . ";";
                 $resultAssign = mysqli_query($db, $sqlAssign);
                 $rowAssign = mysqli_fetch_assoc($resultAssign);
                 $temp_info = $rowAssign['name']; //$row4["name"];
@@ -115,7 +149,7 @@ class Moodle
 
         if ($row['component'] == 'mod_resource') {
             $temp_action = "resource view";
-            $sql4 = "SELECT name FROM " . $prefix . "resource inner join " . $prefix . "logstore_standard_log on " . $prefix . "resource.id =objectid where component='mod_resource' and objectid=" . $row['objectid'] . ";";
+            $sql4 = "SELECT name FROM " . $this->prefix . "resource inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "resource.id =objectid where component='mod_resource' and objectid=" . $row['objectid'] . ";";
             $result4 = mysqli_query($db, $sql4);
             $row4 = mysqli_fetch_assoc($result4);
             $temp_info = $row4['name']; //$row4["name"];
@@ -187,7 +221,7 @@ class Moodle
         }
 
         if ($row['target'] == 'role') {
-            $sql3 = "SELECT shortname FROM " . $prefix . "role inner join " . $prefix . "logstore_standard_log on  " . $prefix . "role.id = objectid and target='role' and " . $prefix . "logstore_standard_log.id=" . $row['id'] . ";";
+            $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
             $result3 = mysqli_query($db, $sql3);
             $row3 = mysqli_fetch_assoc($result3);
             $temp_info = $row3['shortname'];
@@ -260,15 +294,13 @@ class Moodle
     {
         $db = $dbResult[0];
         $result = $dbResult[1];
-        $prefix = $dbResult[2];
-        $courseId = API::getValue('course');
-
+        $this->prefix = $dbResult[2];
         while ($row = mysqli_fetch_assoc($result)) {
-            $moodleField = $this->parseLogsToDB($row, $db, $prefix);
+            $moodleField = $this->parseLogsToDB($row, $db);
             Core::$systemDB->insert(
                 "moodle_logs",
                 [
-                    "course" => $courseId,
+                    "course" => $this->courseId,
                     "timecreated" => $moodleField["timecreated"],
                     "ip" => $moodleField["ip"],
                     "user" => $moodleField["userid"],
@@ -281,33 +313,32 @@ class Moodle
         }
     }
 
-    public function getVotes($course, $prefix, $dbserver, $dbuser, $dbpass, $db, $dbport)
+    public function getVotes()
     {
         $sql = "select fp.created, c.shortname, fp.userid, CONCAT (firstname,' ',lastname) AS userfullname, f.name, subject, rating, fd.id, itemid
-                from " . $prefix . "forum f
-                join " . $prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $prefix . "forum_posts fp ON fp.discussion = fd.id
-                join " . $prefix . "course c ON c.id = f.course
-                join " . $prefix . "rating r ON r.itemid = fp.id
-                join " . $prefix . "user u ON fp.userid = u.id";
-        if (isset($course)) {
-            $sql .= " WHERE f.course=" . $course;
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
+                join " . $this->prefix . "course c ON c.id = f.course
+                join " . $this->prefix . "rating r ON r.itemid = fp.id
+                join " . $this->prefix . "user u ON fp.userid = u.id";
+        if ($this->course) {
+            $sql .= " WHERE f.course=" . $this->course;
         }
         $sql .= ";";
-        $db = mysqli_connect($dbserver, $dbuser, $dbpass, $db, $dbport) or die("not connecting");
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
         return $result;
     }
 
     public function writeVotesToDb($result)
     {
-        $courseId = API::getValue('course');
         while ($row = mysqli_fetch_assoc($result)) {
             Core::$systemDB->insert(
                 "moodle_votes",
                 [
-                    "course" => $courseId,
-                    "timeCreated" =>  date('Y-m-d, H:i:s',$row['created']),
+                    "course" => $this->courseId,
+                    "timeCreated" =>  date('Y-m-d, H:i:s', $row['created']),
                     "user" => $row['userid'],
                     "forum" =>  $row['name'],
                     "topic" => $row['subject'],
@@ -318,30 +349,29 @@ class Moodle
         }
     }
 
-    public function getQuizGrades($course, $prefix, $dbserver, $dbuser, $dbpass, $db, $dbport)
+    public function getQuizGrades()
     {
         $sql = " select q.id as quizid, q.name as quiz, userid ,c.shortname as shortname, CONCAT (firstname,' ',lastname) as user, g.grade as grade, g.timemodified as timemodified
-                from " . $prefix . "user as u, " . $prefix . "quiz as q, " . $prefix . "quiz_grades as g, " . $prefix . "course as c
+                from " . $this->prefix . "user as u, " . $this->prefix . "quiz as q, " . $this->prefix . "quiz_grades as g, " . $this->prefix . "course as c
 	            where u.id = g.userid and q.course = c.id and g.quiz = q.id";
-        if (isset($course)) {
-            $sql .= " and c.id = " . $course;
+        if ($this->course) {
+            $sql .= " and c.id = " . $this->course;
         }
         $sql .= ";";
 
-        $db = mysqli_connect($dbserver, $dbuser, $dbpass, $db, $dbport) or die("not connecting");
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
         return $result;
     }
 
     public function writeQuizGradesToDb($result)
     {
-        $courseId = API::getValue('course');
         while ($row = mysqli_fetch_assoc($result)) {
             Core::$systemDB->insert(
                 "moodle_quiz_grades",
                 [
-                    "course" => $courseId,
-                    "timeModified" =>  date('Y-m-d, H:i:s',$row['timemodified']),
+                    "course" => $this->courseId,
+                    "timeModified" =>  date('Y-m-d, H:i:s', $row['timemodified']),
                     "user" =>  $row['userid'],
                     "quizName" => $row['quiz'],
                     "grade" => $row['grade'],

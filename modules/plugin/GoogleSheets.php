@@ -2,20 +2,130 @@
 
 namespace Modules\Plugin;
 
-// include BASE . '/google-api-php-client/vendor/autoload.php';
 use GameCourse\Google;
+use GameCourse\Core;
+use GameCourse\Module;
 
 class GoogleSheets
 {
-    public function __construct($sheets)
+    private $courseId;
+    private $spreadsheetId;
+    private $sheetName;
+    private $range;
+    private $service;
+    private $parent;
+
+    public function __construct($parent, $courseId)
     {
-        $this->sheets = $sheets;
+        $this->parent = $parent;
+        $this->courseId = $courseId;
+        $this->getDBConfigValues();
+        $this->service = Google::getGoogleSheets();
+        $this->readGoogleSheets();
     }
 
-    public function readGoogleSheets($spreadsheetId, $sheetName, $range)
+    public function getDBConfigValues()
     {
-        $service = Google::getGoogleSheets();
-        $response = $service->spreadsheets_values->get($spreadsheetId, $sheetName . "!" . $range);
+        $googleSheetsVarsDB = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "*");
+        $this->spreadsheetId = $googleSheetsVarsDB["spreadsheetId"];
+        $this->sheetName = $googleSheetsVarsDB["sheetName"];
+        $this->range = $googleSheetsVarsDB["sheetRange"];
+    }
+
+    public function readGoogleSheets()
+    {
+        $tableName = $this->service->spreadsheets->get($this->spreadsheetId)->properties->title;
+
+        if ($this->range) {
+            $responseColumns = $this->service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName . "!" . $this->range, ["majorDimension" => "COLUMNS"]);
+            $responseRows = $this->service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName . "!" . $this->range);
+        } else {
+            $responseColumns = $this->service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName, ["majorDimension" => "COLUMNS"]);
+            $responseRows = $this->service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName);
+        }
+        $valuesColumns = $responseColumns->getValues();
+        $valuesRows = $responseRows->getValues();
+
+        //get the array of columns
+        $columnNames = array();
+        $mergedColumns = array();
+        $allColumns = array();
+        $counter = 0;
+        foreach ($valuesColumns as $column) {
+            if (empty($column[0]) && !empty($column)) {
+                array_push($mergedColumns, $counter);
+                $allColumns[$counter] = "";
+            }
+            if (!empty($column[0])) {
+                $column[0] = preg_replace('/[^a-zA-Z0-9]/', '', $column[0]);
+                array_push($columnNames, $column[0]);
+                $allColumns[$counter] = $column[0];
+            }
+            $counter++;
+        }
+        $this->parent->addTablesByQuery($tableName, $columnNames);
+
+        //handle rows to be at the same size
+        $rowsWithValues = array();
+        for ($row = 1; $row < sizeof($valuesRows) - 1; $row++) {
+            $arrayTemp = array();
+            $counter = 0;
+            foreach ($valuesRows[$row] as $cell) {
+                if (array_key_exists($counter, $allColumns)) {
+                    if (!empty($cell)) {
+                        if (in_array($counter, $mergedColumns)) { //caso a cell seja merged
+                            $lastCell = end($arrayTemp);
+                            $lastKey = array_key_last($arrayTemp);
+                            $arrayTemp[$lastKey] = $lastCell . ";" . $cell;
+                        } else {
+                            $arrayTemp[$allColumns[$counter]] = $cell;
+                        }
+                    } else {
+                        if (!in_array($counter, $mergedColumns)) {
+                            $arrayTemp[$allColumns[$counter]] = $cell;
+                        }
+                    }
+                }
+                $counter++;
+            }
+            array_push($rowsWithValues, $arrayTemp);
+        }
+
+        foreach ($rowsWithValues as $row) {
+            $row["course"] = $this->courseId;
+            Core::$systemDB->insert(
+                $tableName,
+                $row
+            );
+        }
+    }
+
+
+    // for ($i = 1; $i < sizeof($values) - 1; $i++) {
+    //     Core::$systemDB->insert(
+    //         $tableName,
+    //         [
+    //         ]
+    //     );
+    // }
+
+
+
+    //     foreach ($values as $row) {
+    //     }
+    // }
+
+    public function read2($authcode)
+    {
+
+        return $this->google->get2($authcode);
+    }
+
+    public function aaaa()
+    {
+        $this->google = new Google;
+        $this->service = $this->google->getSheet();
+        $response = $this->service->spreadsheets_values->get("19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U", "Daniel" . "!" . "A1:E18");
         $values = $response->getValues();
         if (empty($values)) {
             print "No data found.\n";

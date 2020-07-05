@@ -15,11 +15,6 @@ class Plugin extends Module
     private $classCheck;
     private $googleSheets;
 
-    //passo 1 criacao da(s) tabela(s) com a info a registar
-    //passo 2 substituir nas funcoes gets o acesso a variavel local pelo acesso a DB
-    //passo 3 substituir nas funcoes sets o registo na variavel local pelo registo na DB
-    //any question just ask and I'll help ^^
-
     //Fenix variables
     private $fenixCourseId = "1971935449711106";
     //Moodle variables
@@ -35,9 +30,9 @@ class Plugin extends Module
     //ClassCheck variables
     private $tsvCode = "f8c691b7fc14a0455386d4cb599958d3";
     //Google sheets variables
-    private $spreadsheetId = "1N8PKwi3jgQrCA8KJ1KSnj_MDk2-E_d_RWbVfnKzrpgs"; //'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
-    private $sheetName = 'Folha1';
-    private $range = 'A1:B2'; //$range = 'Folha1!A1:B2';
+    private $spreadsheetId = "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U"; //'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
+    private $sheetName = 'Daniel';
+    private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
 
     private function getFenixVars($courseId)
@@ -186,7 +181,6 @@ class Plugin extends Module
         }
     }
 
-
     public function setupResources()
     {
         parent::addResources('js/');
@@ -194,43 +188,27 @@ class Plugin extends Module
     }
     public function init()
     {
-        // if fenix is enabled
-        $this->addTables("plugin", "config_fenix", "ConfigFenix");
-        $this->fenix = new Fenix($this);
-        $parsedHTML = $this->fenix->parseHTML();
-        $this->fenix->writeUsersToDB($parsedHTML);
-        //$this->fenix = new Fenix($this);
-        // $listOfStudents = $this->fenix->getStudents($this->fenixCourseId);
-
         //if moodle is enabled
         $this->addTables("plugin", "config_moodle", "ConfigMoodle");
-        // $this->addTables("plugin", "moodle_logs", "Logs");
-        // $this->addTables("plugin", "moodle_votes", "Votes");
-        // $this->addTables("plugin", "moodle_quiz_grades", "QuizGrades");
-        // $this->moodle = new Moodle($this);
+        $this->addTables("plugin", "moodle_logs", "Logs");
+        $this->addTables("plugin", "moodle_votes", "Votes");
+        $this->addTables("plugin", "moodle_quiz_grades", "QuizGrades");
+        new Moodle(API::getValue('course'));
 
-        //  $logs = $this->moodle->getLogs($this->$time, $this->$user, $this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
-        //  $this->moodle->writeLogsToDB($logs);
-
-        // $votes = $this->moodle->getVotes($this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
-        // $this->moodle->writeVotesToDb($votes);
-
-        // $quiz_grades = $this->moodle->getQuizGrades($this->$course, $this->$prefix, $this->$dbserver, $this->$dbuser, $this->$dbpass, $this->$db, $this->$dbport);
-        // $this->moodle->writeQuizGradesToDb($quiz_grades);
-
-
-        // //if classcheck is enabled
+        //if classcheck is enabled
         $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
-        // $this->classCheck = new ClassCheck($this);
-        // $this->addTables("plugin", "attendance", "Attendance");
-        // $this->classCheck->readAttendance($this->$tsvCode);
-
+        $this->addTables("plugin", "attendance", "Attendance");
+        new ClassCheck(API::getValue('course'));
 
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
-        // $this->googleSheets = new GoogleSheets($this);
-        // $this->googleSheets->readGoogleSheets($this->$spreadsheetId, $this->$sheetName, $this->$range);
+        new GoogleSheets($this, API::getValue('course'));
+       
+        // if fenix is enabled
+        $this->addTables("plugin", "config_fenix", "ConfigFenix");
+        new Fenix();
 
+        
 
         //do not touch bellow
         //settings page
@@ -271,11 +249,14 @@ class Plugin extends Module
                 return;
             }
             if (API::hasKey('googleSheets')) {
+
+
                 $googleSheets = API::getValue('googleSheets');
                 //place to verify input values
                 if ($this->setGoogleSheetsVars($courseId, $googleSheets)) {
                     API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
                 } else {
+                    echo "false";
                     API::response(["updatedData" => ["Please fill the mandatory fields"]]);
                 }
 

@@ -4,12 +4,11 @@ create table config_moodle(
 	dbServer varchar(200) not null,
 	dbUser varchar(200) not null,
 	dbPass varchar(200) null,
-	dbName varchar(200) not null,
-	dbPort int unsigned null,
+	dbName varchar(200)  not null,
+	dbPort int null,
 	tablesPrefix varchar(200) null,
-	moodleTime int unsigned null,
+	moodleTime int null,
 	moodleCourse varchar(200) null,
 	moodleUser varchar(200) null,
-	isEnabled boolean,
 	foreign key(course) references course(id) on delete cascade
 );

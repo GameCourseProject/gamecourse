@@ -10,16 +10,26 @@ use GameCourse\Course;
 
 class ClassCheck
 {
+    private $code;
+    private $courseId;
 
-    public function __construct($classCheck)
+    public function __construct($courseId)
     {
-        $this->classCheck = $classCheck;
+        // $this->courseId = $courseId;
+        // $this->getDBConfigValues();
+        // $this->readAttendance();
     }
 
-    public function readAttendance($code)
+    public function getDBConfigValues()
     {
-        $courseId = API::getValue('course');
-        $url = "https://classcheck.tk/tsv/course?s=" . $code;
+        $classCheckVarsDB = Core::$systemDB->select("config_class_check", ["course" => $this->courseId], "*");
+
+        $this->code = $classCheckVarsDB["tsvCode"];
+    }
+
+    public function readAttendance()
+    {
+        $url = "https://classcheck.tk/tsv/course?s=" . $this->code;
         $fp = fopen($url, 'r');
 
 
@@ -38,14 +48,12 @@ class ClassCheck
             Core::$systemDB->insert(
                 "attendance",
                 [
-                    "course" => $courseId,
+                    "course" => $this->courseId,
                     "studentId" => $studentId,
                     "action" => $action,
                     "class" => $classNumber
                 ]
             );
-                
         }
     }
-
 }

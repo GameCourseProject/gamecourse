@@ -2,7 +2,7 @@ create table moodle_logs(
 	id 		int unsigned auto_increment primary key,
 	course int unsigned not null,
 	timeCreated timestamp not null,
-	ip  varchar(200) not null,
+	ip  varchar(200) null,
 	user int unsigned not null,
 	module varchar(200) not null,
 	action varchar(200) not null,

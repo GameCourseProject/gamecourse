@@ -11,11 +11,13 @@ use GameCourse\Course;
 class Fenix
 {
 
-    public function __construct($fenix)
+    public function __construct()
     {
-        $this->fenix = $fenix;
+        // $bodyContent = $this->getStudentsInfo("https://fenix.tecnico.ulisboa.pt/disciplinas/PCM26/2018-2019/2-semestre/notas");
+        // $listOfStudents = $this->getStudents($this->fenixCourseId);
+        $parsedHTML = $this->parseHTML(); //for now it's a file, later it will access a given url
+        $this->writeUsersToDB($parsedHTML);
     }
-
 
     public function parseHTML()
     {
@@ -35,18 +37,8 @@ class Fenix
                 array_push($studentInfo, ["username" => $username, "number" => $number, "name" => $name, "course" => $course]);
             }
         }
-        var_dump($studentInfo);
         return $studentInfo;
     }
-
-    // public function getStudents($courseIdUrl)
-    // {
-    //     $endpoint = "courses/" . $courseIdUrl . "/students";
-    //     $listOfStudents = Core::getStudents($endpoint);
-    //     // $listOfStudents = json_encode($students);
-
-    //     return $listOfStudents->students;
-    // }
 
     public function writeUsersToDB($parsedHtml)
     {
@@ -87,5 +79,65 @@ class Fenix
                 $courseUser->setCampus($campus);
             }
         }
+    }
+
+    //access to fenix api, not used for now
+    public function getStudents($courseIdUrl)
+    {
+        $endpoint = "courses/" . $courseIdUrl . "/students";
+        $listOfStudents = Core::getStudents($endpoint);
+        // $listOfStudents = json_encode($students);
+
+        return $listOfStudents->students;
+    }
+
+    //with url
+    public function getStudentsInfo($courseUrl)
+    {
+        $isCLI = Core::isCLI();
+
+        if (!Core::requireSetup(false))
+            die('Please perform setup first!');
+
+        if ($isCLI) {
+            echo "aaaaaaaa";
+            // $courseId = (array_key_exists(1, $argv) ? $argv[1] : 0);
+            // $id = 2;
+            // while (array_key_exists($id, $argv)) {
+            //     $courseUrls[] = $argv[$id];
+            //     $id++;
+            // }
+        } else {
+            echo "bbbbbbb";
+            $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 0);
+            $id = 0;
+            while (array_key_exists('courseurl' . $id, $_GET)) {
+                $courseUrls[] = $_GET['courseurl' . $id];
+                $id++;
+            }
+            if (array_key_exists('backendid', $_GET))
+                $BACKENDID = $_GET['backendid'];
+            if (array_key_exists('jsessionid', $_GET))
+                $JSESSIONID = $_GET['jsessionid'];
+        }
+
+        $course = Course::getCourse($courseId);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: JSESSIONID=' . $JSESSIONID . ';BACKENDID=' . $BACKENDID));
+
+        curl_setopt($ch, CURLOPT_URL, $courseUrl);
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            die(curl_error($ch));
+        }
+
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        return substr($response, $header_size);
     }
 }
