@@ -7,6 +7,9 @@ use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
+use GameCourse\Course;
+use GameCourse\CourseUser;
+use GameCourse\User;
 
 class Plugin extends Module
 {
@@ -104,20 +107,47 @@ class Plugin extends Module
 
     private function setFenixVars($courseId, $fenix)
     {
-        $fenixVars = Core::$systemDB->select("config_fenix", ["course" => $courseId], "*");
+        $course = new Course($courseId);
+        for ($line = 1; $line < sizeof($fenix[0]) - 1; $line++) {
+            $fields = explode(";", $fenix[0][$line]);
 
-        $arrayToDb = ["course" => $courseId, "fenixCourseId" => $fenix['fenixCourseId']];
+            $username = $fields[0];
+            $studentNumber = $fields[1];
+            $studentName = $fields[2];
+            $email = $fields[3];
+            $courseName = $fields[10];
+            $campus = "";
 
-        if (empty($fenix["fenixCourseId"])) {
-            return false;
-        } else {
-            if (empty($fenixVars)) {
-                Core::$systemDB->insert("config_fenix", $arrayToDb);
+            if (strpos($courseName, 'Alameda')) {
+                $campus = "A";
+            } else if (strpos($courseName, 'Taguspark')) {
+                $campus = "T";
             } else {
-                Core::$systemDB->update("config_fenix", $arrayToDb);
+                $endpoint = "degrees?academicTerm=2019/2020";
+                $listOfCourses = Core::getFenixInfo($endpoint);
+                $courseFound = false;
+                foreach ($listOfCourses as $courseFenix) {
+                    if ($courseFound) {
+                        break;
+                    } else {
+                        if (strpos($courseName, $courseFenix->name)) {
+                            $courseFound = true;
+                            foreach ($courseFenix->campus as $campusfenix) {
+                                $campus = $campusfenix->name[0];
+                            }
+                        }
+                    }
+                }
             }
-            return true;
+            if (!User::getUserByStudentNumber($studentNumber)) {
+                User::addUserToDB($studentName, $username, $email, $studentNumber, "", 0, 1);
+                $user = User::getUserByStudentNumber($studentNumber);
+                $courseUser = new CourseUser($user->getId(), $course);
+                $courseUser->addCourseUserToDB("", $campus);
+            }
         }
+
+        return true;
     }
     private function setMoodleVars($courseId, $moodle)
     {
@@ -188,12 +218,13 @@ class Plugin extends Module
     }
     public function init()
     {
+        // if fenix is enabled
+        $this->addTables("plugin", "config_fenix", "ConfigFenix");
+        // new Fenix();
+
         //if moodle is enabled
         $this->addTables("plugin", "config_moodle", "ConfigMoodle");
-        $this->addTables("plugin", "moodle_logs", "Logs");
-        $this->addTables("plugin", "moodle_votes", "Votes");
-        $this->addTables("plugin", "moodle_quiz_grades", "QuizGrades");
-        new Moodle(API::getValue('course'));
+        // new Moodle(API::getValue('course'));
 
         //if classcheck is enabled
         $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
@@ -202,13 +233,8 @@ class Plugin extends Module
 
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
-        new GoogleSheets($this, API::getValue('course'));
-       
-        // if fenix is enabled
-        $this->addTables("plugin", "config_fenix", "ConfigFenix");
-        new Fenix();
+        // new GoogleSheets($this, API::getValue('course'));
 
-        
 
         //do not touch bellow
         //settings page
