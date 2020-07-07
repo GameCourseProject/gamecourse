@@ -15,9 +15,9 @@ class ClassCheck
 
     public function __construct($courseId)
     {
-        // $this->courseId = $courseId;
-        // $this->getDBConfigValues();
-        // $this->readAttendance();
+        $this->courseId = $courseId;
+        $this->getDBConfigValues();
+        $this->readAttendance();
     }
 
     public function getDBConfigValues()
@@ -32,28 +32,42 @@ class ClassCheck
         $url = "https://classcheck.tk/tsv/course?s=" . $this->code;
         $fp = fopen($url, 'r');
 
-
+        $course = new Course($this->courseId);
         while (!feof($fp)) {
             $line = fgets($fp);
             $data = str_getcsv($line, "\t");
-            $profNumber = $data[0];
-            $studentNumber = $data[2];
-            $studentId = substr($studentNumber, 4, strlen($studentNumber) - 1);
+            $profUsername = $data[0];
+            $studentUsername = $data[2];
             $studentName = $data[3];
             $action = $data[4];
             $att_type = $data[5];
             $classNumber = $data[6];
             $shift = $data[7];
 
-            Core::$systemDB->insert(
-                "attendance",
-                [
-                    "course" => $this->courseId,
-                    "studentId" => $studentId,
-                    "action" => $action,
-                    "class" => $classNumber
-                ]
-            );
+            $prof = User::getUserByUsername($profUsername);
+            if($prof){
+                $courseUserProf = new CourseUser($prof->getId(), $course);
+            }
+
+            $student = User::getUserByUsername($studentUsername);
+            if($student){
+                $courseUserStudent = new CourseUser($student->getId(), $course);
+            }
+            
+            if ($courseUserStudent->getData("id") && $courseUserProf->getData("id")) {
+                Core::$systemDB->insert(
+                    "participation",
+                    [
+                        "user" => $courseUserStudent->getData("id"),
+                        "course" => $this->courseId,
+                        "description" => $classNumber,
+                        "type" => $action,
+                        "moduleInstance" => "plugin",
+                        "rating" => 0,
+                        "evaluator" => $courseUserProf->getData("id")
+                    ]
+                );
+            }
         }
     }
 }
