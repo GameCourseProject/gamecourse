@@ -38,17 +38,6 @@ class Plugin extends Module
     private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
 
-    private function getFenixVars($courseId)
-    {
-        $fenixVarsDB = Core::$systemDB->select("config_fenix", ["course" => $courseId], "*");
-
-        if (empty($fenixVarsDB)) {
-            $fenixVars = ["fenixCourseId" => ""];
-        } else {
-            $fenixVars = ["fenixCourseId" => $fenixVarsDB["fenixCourseId"]];
-        }
-        return $fenixVars;
-    }
     private function getMoodleVars($courseId)
     {
         $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
@@ -218,18 +207,13 @@ class Plugin extends Module
     }
     public function init()
     {
-        // if fenix is enabled
-        $this->addTables("plugin", "config_fenix", "ConfigFenix");
-        // new Fenix();
+        //if classcheck is enabled
+        $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
+        //new ClassCheck(API::getValue('course'));
 
         //if moodle is enabled
         $this->addTables("plugin", "config_moodle", "ConfigMoodle");
-        // new Moodle(API::getValue('course'));
-
-        //if classcheck is enabled
-        $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
-        $this->addTables("plugin", "attendance", "Attendance");
-        new ClassCheck(API::getValue('course'));
+        new Moodle(API::getValue('course'));
 
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
@@ -290,12 +274,11 @@ class Plugin extends Module
             }
 
             //All variables
-            $fenixVars = $this->getFenixVars($courseId);
             $moodleVars = $this->getMoodleVars($courseId);
             $classCheckVars = $this->getClassCheckVars($courseId);
             $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
 
-            API::response(array('fenixVars' => $fenixVars, 'moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
+            API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
         });
     }
 }
