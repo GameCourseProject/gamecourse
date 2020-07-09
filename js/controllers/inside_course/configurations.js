@@ -6,7 +6,6 @@ function alertUpdateAndReload(data, err) {
         alert(err.description);
         return;
     }
-
     if (Object.keys(data.updatedData).length > 0) {
         var output = "";
         for (var i in data.updatedData) {
@@ -16,6 +15,7 @@ function alertUpdateAndReload(data, err) {
     }
     //location.reload();
 }
+
 function clearFillBox($scope) {
     if ($scope.newList !== "")
         $scope.newList = "";
@@ -272,6 +272,7 @@ app.controller('CourseLevelsSettingsController', function ($scope, $stateParams,
 
 app.controller('CoursePluginsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //uma funcao de submit para cada
+
     var fileFenixUploaded;
     var lines = [];
     $scope.upload = function () {
@@ -290,10 +291,40 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
         console.log(lines);
     }
     $scope.saveFenix = function () {
-
         $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdateAndReload);
 
-    };
+
+    }
+
+    $scope.getAuthCode = function () {
+        var win = window.open(authUrl, '_blank');
+        win.focus();
+    }
+
+    var fileCredentialsUploaded;
+    var googleSheetsCredentials = [];
+    $scope.uploadCredentials = function () {
+        const inputElement = document.getElementById("newList2");
+        fileCredentialsUploaded = inputElement.files[0];
+
+        var reader = new FileReader();
+        reader.onload = (function (reader) {
+            return function () {
+                var contents = reader.result;
+                googleSheetsCredentials.push(JSON.parse(contents));
+                console.log(googleSheetsCredentials);
+            }
+        })(reader);
+
+        reader.readAsText(fileCredentialsUploaded);
+    }
+    var authUrl;
+    $scope.saveCredentials = function () {
+        $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
+            alertUpdateAndReload(data, err);
+            authUrl = data.authUrl;
+        });
+    }
     $scope.saveMoodle = function () {
         console.log("save moodle");
         $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdateAndReload);
@@ -318,6 +349,7 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
         $scope.moodleVars = data.moodleVars;
         $scope.classCheckVars = data.classCheckVars;
         $scope.googleSheetsVars = data.googleSheetsVars;
+        $scope.googleSheetsAuthUrl = data.authUrl;
 
 
         var tabContent = $($element);
@@ -360,14 +392,23 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
 
         var googleSheetsconfigurationSection = createSection(configurationSection, 'Google Sheets Variables');
         var googleSheetsconfigSectionContent = $('<div>', { 'class': 'row' });
-        googleSheetsVars = ["spreadsheetId", "sheetName", "range"];
-        googleSheetsTitles = ["Spread Sheet Id: ", "Sheet Name: ", "Range: "];
+        googleSheetsVars = ["credentials", "authCode", "spreadsheetId", "sheetName"];
+        googleSheetsTitles = ["Credentials:", "Auth Code: ", "Spread Sheet Id: ", "Sheet Name: "];
         googleSheetsInputs = $('<div class="column" style=" width: 100%;"></div>');
         jQuery.each(googleSheetsVars, function (index) {
             model = googleSheetsVars[index];
             title = googleSheetsTitles[index];
             googleSheetsInputs.append('<span style="width: 15%; display: inline-block;">' + title + '</span>');
-            googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
+            if (model == "authCode") {
+                googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '">');
+                googleSheetsInputs.append('<button class="button small" ng-click="getAuthCode()">Get AuthCode</button><br>');
+            } else if (model == "credentials") {
+                googleSheetsInputs.append('<input type="file" style="width: 25%;margin: 5px;" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
+                googleSheetsInputs.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
+
+            } else {
+                googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
+            }
         });
         googleSheetsconfigSectionContent.append(googleSheetsInputs);
         googleSheetsconfigSectionContent.append('<button class="button small" ng-click="saveGoogleSheets()">Save Google Sheets Vars</button><br>');

@@ -9,6 +9,7 @@ use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
+use GameCourse\Google;
 use GameCourse\User;
 
 class Plugin extends Module
@@ -37,6 +38,7 @@ class Plugin extends Module
     private $sheetName = 'Daniel';
     private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
+    private $googleSheet;
 
     private function getMoodleVars($courseId)
     {
@@ -82,17 +84,22 @@ class Plugin extends Module
 
         return  $classCheckVars;
     }
+    private function getAuthUrl($courseId)
+    {
+        return Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "authUrl");
+    }
     private function getGoogleSheetsVars($courseId)
     {
         $googleSheetsDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
 
         if (empty($googleSheetsDB)) {
-            $googleSheetsVars = ["spreadsheetId" => "", "sheetName" => "", "sheetRange" => ""];
+            $googleSheetsVars = ["token" => "", "spreadsheetId" => "", "sheetName" => ""];
         } else {
-            $googleSheetsVars = ["spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $googleSheetsDB["sheetName"], "range" => $googleSheetsDB["sheetRange"]];
+            $googleSheetsVars = ["authCode" => $googleSheetsDB["authCode"], "spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $googleSheetsDB["sheetName"]];
         }
         return  $googleSheetsVars;
     }
+
 
     private function setFenixVars($courseId, $fenix)
     {
@@ -183,11 +190,44 @@ class Plugin extends Module
             return true;
         }
     }
+    private function setGSCredentials($courseId, $gsCredentials)
+    {
+        $credentialKey = key($gsCredentials[0]);
+        $credentials = $gsCredentials[0][$credentialKey];
+        $googleSheetCredentialsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+        $uris = "";
+        for ($uri = 0; $uri < sizeof($credentials["redirect_uris"]); $uri++) {
+            $uris .= $credentials["redirect_uris"][$uri];
+            if ($uri != sizeof($credentials["redirect_uris"]) - 1) {
+                $uris .= ";";
+            }
+        }
+
+        $arrayToDb = [
+            "course" => $courseId, "key_" => $credentialKey, "clientId" => $credentials["client_id"], "projectId" => $credentials["project_id"],
+            "authUri" => $credentials["auth_uri"], "tokenUri" => $credentials["token_uri"], "authProvider" => $credentials["auth_provider_x509_cert_url"],
+            "clientSecret" => $credentials["client_secret"], "redirectUris" => $uris
+        ];
+
+        if (empty($credentials)) {
+            return false;
+        } else {
+            if (empty($googleSheetCredentialsVars)) {
+                Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+            } else {
+                Core::$systemDB->update("config_google_sheets", $arrayToDb);
+            }
+            $this->googleSheet->setCredentials();
+            $this->googleSheet->setAuthCode();
+            return true;
+        }
+    }
     private function setGoogleSheetsVars($courseId, $googleSheets)
     {
         $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
 
-        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $googleSheets["sheetName"], "sheetRange" => $googleSheets["range"]];
+        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $googleSheets["sheetName"], "authCode" => $googleSheets["authCode"]];
         if (empty($googleSheets["spreadsheetId"])) {
             return false;
         } else {
@@ -196,6 +236,7 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
+            $this->googleSheet->saveTokenToDB();
             return true;
         }
     }
@@ -217,7 +258,8 @@ class Plugin extends Module
 
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
-        // new GoogleSheets($this, API::getValue('course'));
+        // $this->addTables("plugin", "config_google_sheets_token", "ConfigGoogleSheetsToken");
+        $this->googleSheet = new GoogleSheets($this, API::getValue('course'));
 
 
         //do not touch bellow
@@ -258,6 +300,17 @@ class Plugin extends Module
 
                 return;
             }
+            if (API::hasKey('credentials')) {
+                $credentials = API::getValue('credentials');
+                if ($this->setGSCredentials($courseId, $credentials)) {
+                    API::response(["updatedData" => ["Credentials saved"], "authUrl" => $this->getAuthUrl($courseId)]);
+                } else {
+                    API::response(["updatedData" => ["Please select a JSON file"]]);
+                }
+                return;
+            }
+
+
             if (API::hasKey('googleSheets')) {
 
 
@@ -277,7 +330,6 @@ class Plugin extends Module
             $moodleVars = $this->getMoodleVars($courseId);
             $classCheckVars = $this->getClassCheckVars($courseId);
             $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
-
             API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
         });
     }

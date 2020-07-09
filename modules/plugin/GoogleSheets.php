@@ -14,14 +14,90 @@ class GoogleSheets
     private $range;
     private $service;
     private $parent;
+    private $gsUser;
 
     public function __construct($parent, $courseId)
     {
         $this->parent = $parent;
         $this->courseId = $courseId;
-        $this->getDBConfigValues();
-        $this->service = Google::getGoogleSheets();
-        $this->readGoogleSheets();
+        // $this->getDBConfigValues();
+        // $this->service = Google::getGoogleSheets();
+        // $this->readGoogleSheets();
+    }
+
+    public function getCredentialsFromDB()
+    {
+        $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "*");
+
+        $uris = explode(";", $credentialDB["redirectUris"]);
+
+        $arrayKey[$credentialDB['key_']] = array(
+            'client_id' => $credentialDB['clientId'], "project_id" => $credentialDB["projectId"],
+            'auth_uri' => $credentialDB['authUri'], "token_uri" => $credentialDB["tokenUri"], "auth_provider_x509_cert_url" => $credentialDB["authProvider"],
+            'client_secret' => $credentialDB["clientSecret"], "redirect_uris" => $uris
+        );
+        return $arrayKey;
+    }
+
+    public function getTokenFromDB()
+    {
+        $accessExists = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "accessToken");
+        if ($accessExists) {
+            $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "*");
+
+            $arrayToken = array(
+                'access_token' => $credentialDB['accessToken'], "expires_in" => $credentialDB["expiresIn"],
+                'scope' => $credentialDB['scope'], "token_type" => $credentialDB["tokenType"],
+                "created" => $credentialDB["created"], 'refresh_token' => $credentialDB["refreshToken"]
+            );
+            return json_encode($arrayToken);
+        } else {
+            return null;
+        }
+    }
+
+    public function setCredentials()
+    {
+        $credentials = $this->getCredentialsFromDB();
+        Google::setCredentials(json_encode($credentials));
+    }
+
+    public function setAuthCode()
+    {
+        $response = $this->handleToken();
+        if ($response["auth_url"]) {
+            Core::$systemDB->update(
+                "config_google_sheets",
+                ["authUrl" => $response["auth_url"]]
+            );
+        }
+    }
+
+    public function handleToken()
+    {
+        $credentials = $this->getCredentialsFromDB();
+        $token = $this->getTokenFromDB();
+        $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
+        return Google::checkToken($credentials, $token, $authCode);
+    }
+
+    public function saveTokenToDB()
+    {
+        $response = $this->handleToken();
+        $token = $response["access_token"];
+        if ($token) {
+
+            $arrayToDB = array(
+                "course" => $this->courseId,
+                "accessToken" => $token["access_token"],
+                "expiresIn" => $token["expires_in"],
+                "scope" => $token["scope"],
+                "tokenType" => $token["token_type"],
+                "created" => $token["created"],
+                "refreshToken" => $token["refresh_token"]
+            );
+            Core::$systemDB->update("config_google_sheets", $arrayToDB);
+        }
     }
 
     public function getDBConfigValues()
