@@ -260,7 +260,8 @@ class Plugin extends Module
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
         // $this->addTables("plugin", "config_google_sheets_token", "ConfigGoogleSheetsToken");
         $this->googleSheet = new GoogleSheets($this, API::getValue('course'));
-
+        $valuesGS = $this->googleSheet->readGoogleSheets();
+        $this->googleSheet->writeToDB($valuesGS);
 
         //do not touch bellow
         //settings page
