@@ -14,7 +14,6 @@ use GameCourse\User;
 
 class Plugin extends Module
 {
-    private $fenix;
     private $moodle;
     private $classCheck;
     private $googleSheets;
@@ -38,7 +37,6 @@ class Plugin extends Module
     private $sheetName = 'Daniel';
     private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
-    private $googleSheet;
 
     private function getMoodleVars($courseId)
     {
@@ -145,24 +143,24 @@ class Plugin extends Module
 
         return true;
     }
-    private function setMoodleVars($courseId, $moodle)
+    private function setMoodleVars($courseId, $moodleVar)
     {
         $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
 
         $arrayToDb = [
             "course" => $courseId,
-            "dbServer" => $moodle['dbserver'],
-            "dbUser" => $moodle['dbuser'],
-            "dbPass" => $moodle['dbpass'],
-            "dbName" => $moodle['db'],
-            "dbPort" => $moodle["dbport"],
-            "tablesPrefix" => $moodle["prefix"],
-            "moodleTime" => $moodle["time"],
-            "moodleCourse" => $moodle["course"],
-            "moodleUser" => $moodle["user"]
+            "dbServer" => $moodleVar['dbserver'],
+            "dbUser" => $moodleVar['dbuser'],
+            "dbPass" => $moodleVar['dbpass'],
+            "dbName" => $moodleVar['db'],
+            "dbPort" => $moodleVar["dbport"],
+            "tablesPrefix" => $moodleVar["prefix"],
+            "moodleTime" => $moodleVar["time"],
+            "moodleCourse" => $moodleVar["course"],
+            "moodleUser" => $moodleVar["user"]
         ];
 
-        if (empty($moodle['dbserver']) || empty($moodle['dbuser']) || empty($moodle['db'])) {
+        if (empty($moodleVar['dbserver']) || empty($moodleVar['dbuser']) || empty($moodleVar['db'])) {
             return false;
         } else {
             if (empty($moodleVars)) {
@@ -170,6 +168,17 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_moodle", $arrayToDb);
             }
+
+            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
+
+            // $quizGrades = $this->moodle->getQuizGrades();
+            // $this->moodle->writeQuizGradesToDb($quizGrades);
+
+            // $votes = $this->moodle->getVotes();
+            // $this->moodle->writeVotesToDb($votes);
+
+            // $logs = $this->moodle->getLogs();
+            // $this->moodle->writeLogsToDB($logs);
             return true;
         }
     }
@@ -187,6 +196,9 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_class_check", $arrayToDb);
             }
+            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO CLASSCHECK:
+            // $this->classCheck->readAttendance();
+
             return true;
         }
     }
@@ -236,7 +248,10 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
-            $this->googleSheet->saveTokenToDB();
+            $this->googleSheets->saveTokenToDB();
+
+            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
+            // $this->googleSheets->readGoogleSheets();
             return true;
         }
     }
@@ -250,18 +265,15 @@ class Plugin extends Module
     {
         //if classcheck is enabled
         $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
-        //new ClassCheck(API::getValue('course'));
-
-        //if moodle is enabled
-        $this->addTables("plugin", "config_moodle", "ConfigMoodle");
-        new Moodle(API::getValue('course'));
+        $this->classCheck = new ClassCheck(API::getValue('course'));
 
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
-        // $this->addTables("plugin", "config_google_sheets_token", "ConfigGoogleSheetsToken");
-        $this->googleSheet = new GoogleSheets($this, API::getValue('course'));
-        $valuesGS = $this->googleSheet->readGoogleSheets();
-        $this->googleSheet->writeToDB($valuesGS);
+        $this->googleSheets = new GoogleSheets(API::getValue('course'));
+
+        //if moodle is enabled
+        $this->addTables("plugin", "config_moodle", "ConfigMoodle");
+        $this->moodle = new Moodle(API::getValue('course'));
 
         //do not touch bellow
         //settings page

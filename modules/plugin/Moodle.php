@@ -26,16 +26,6 @@ class Moodle
     {
         $this->courseId = $courseId;
         $this->courseGameCourse = new Course($this->courseId);
-        $this->getDBConfigValues();
-
-        $logs = $this->getLogs();
-        $this->writeLogsToDB($logs);
-
-        $votes = $this->getVotes();
-        $this->writeVotesToDb($votes);
-
-        $quiz_grades = $this->getQuizGrades();
-        $this->writeQuizGradesToDb($quiz_grades);
     }
 
     public function getDBConfigValues()
@@ -54,6 +44,7 @@ class Moodle
 
     public function getLogs()
     {
+        $this->getDBConfigValues();
         if (!($this->time) && !($this->user)) {
             $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid";
             if ($this->course) {
@@ -81,9 +72,8 @@ class Moodle
         }
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
-        return array($db, $result, $this->prefix);
+        return array($db, $result);
     }
-
     public function parseLogsToDB($row, $db)
     {
         $temp_info = null;
@@ -113,22 +103,22 @@ class Moodle
             $temp_module = $rowQuestionnaire['name'];
         }
 
-        if ($row['component'] == 'mod_quiz') {
-            $temp_url = 'view.php?id=' . $row['cmid'];
-            $temp_action = "quiz " . $row['action'];
-            if (
-                $row["target"] == "edit_page" || $row["target"] == "attempt_summary" || $row["target"] == "report" || $row["target"] == "attempt_preview"
-                || ($row["target"] == "attempt" && $row["action"] != "started")
-            ) {
-                $temp_info = $other_->quizid;
-            } else { //course_module
-                $temp_info = $row['objectid'];
-            }
-            $sqlQuiz = "SELECT name FROM " . $this->prefix . "quiz where id=" . $temp_info . ";";
-            $resultQuiz = mysqli_query($db, $sqlQuiz);
-            $rowQuiz = mysqli_fetch_assoc($resultQuiz);
-            $temp_module = $rowQuiz['name'];
-        }
+        // if ($row['component'] == 'mod_quiz') {
+        //     $temp_url = 'view.php?id=' . $row['cmid'];
+        //     $temp_action = "quiz " . $row['action'];
+        //     if (
+        //         $row["target"] == "edit_page" || $row["target"] == "attempt_summary" || $row["target"] == "report" || $row["target"] == "attempt_preview"
+        //         || ($row["target"] == "attempt" && $row["action"] != "started")
+        //     ) {
+        //         $temp_info = $other_->quizid;
+        //     } else { //course_module
+        //         $temp_info = $row['objectid'];
+        //     }
+        //     $sqlQuiz = "SELECT name FROM " . $this->prefix . "quiz where id=" . $temp_info . ";";
+        //     $resultQuiz = mysqli_query($db, $sqlQuiz);
+        //     $rowQuiz = mysqli_fetch_assoc($resultQuiz);
+        //     $temp_module = $rowQuiz['name'];
+        // }
 
         if ($row['component'] == 'mod_page') {
             $temp_url = "view.php?id=" . $row['cmid'];
@@ -140,23 +130,23 @@ class Moodle
             $temp_module = $rowPage['name'];
         }
 
-        if ($row['component'] == 'mod_chat') {
-            $temp_url = "view.php?id=" . $row['cmid'];
-            $temp_info = $row['objectid'];
-            $temp_action = "chat" . $row['action'];
+        // if ($row['component'] == 'mod_chat') {
+        //     $temp_url = "view.php?id=" . $row['cmid'];
+        //     $temp_info = $row['objectid'];
+        //     $temp_action = "chat" . $row['action'];
 
-            if ($row['objecttable'] == "chat_messages") {
-                $temp_action = "chat message " . $row['action'];
-                $sqlChatMessages = "SELECT name FROM " . $this->prefix . "chat_messages where id=" . $temp_info . ";";
-                $resultChatMessage = mysqli_query($db, $sqlChatMessages);
-                $rowChatMessage = mysqli_fetch_assoc($resultChatMessage);
-                $temp_info = $rowChatMessage["chatid"];
-            }
-            $sqlChat = "SELECT name FROM " . $this->prefix . "chat where id=" . $temp_info . ";";
-            $resultChat = mysqli_query($db, $sqlChat);
-            $rowChat = mysqli_fetch_assoc($resultChat);
-            $temp_module = $rowChat['name'];
-        }
+        //     if ($row['objecttable'] == "chat_messages") {
+        //         $temp_action = "chat message " . $row['action'];
+        //         $sqlChatMessages = "SELECT name FROM " . $this->prefix . "chat_messages where id=" . $temp_info . ";";
+        //         $resultChatMessage = mysqli_query($db, $sqlChatMessages);
+        //         $rowChatMessage = mysqli_fetch_assoc($resultChatMessage);
+        //         $temp_info = $rowChatMessage["chatid"];
+        //     }
+        //     $sqlChat = "SELECT name FROM " . $this->prefix . "chat where id=" . $temp_info . ";";
+        //     $resultChat = mysqli_query($db, $sqlChat);
+        //     $rowChat = mysqli_fetch_assoc($resultChat);
+        //     $temp_module = $rowChat['name'];
+        // }
 
         if ($row["component"] == "mod_assign") {
             $temp_url = "view.php?id=" . $row['cmid'];
@@ -204,24 +194,24 @@ class Moodle
                 $temp_module = $rowForum['name'];
             }
 
-            if ($row['objecttable'] == 'forum' && $row['action'] == 'viewed') {
-                $temp_action = "view forum";
-                $temp_url = "view.php?id=" . $row['cmid'];
-                $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $row["objectid"] . ";";
-                $resultForum = mysqli_query($db, $sqlForum);
-                $rowForum = mysqli_fetch_assoc($resultForum);
-                $temp_module = $rowForum['name'];
-            }
+            // if ($row['objecttable'] == 'forum' && $row['action'] == 'viewed') {
+            //     $temp_action = "view forum";
+            //     $temp_url = "view.php?id=" . $row['cmid'];
+            //     $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $row["objectid"] . ";";
+            //     $resultForum = mysqli_query($db, $sqlForum);
+            //     $rowForum = mysqli_fetch_assoc($resultForum);
+            //     $temp_module = $rowForum['name'];
+            // }
 
             if ($row['objecttable'] == 'forum_discussions') {
                 if ($row['action'] == 'created') {
                     $temp_action = "forum add discussion";
                     $temp_url = "discuss.php?d=" . $row['objectid'];
                     $temp_info = $row['objectid'];
-                } else if ($row['action'] == 'viewed') {
-                    $temp_action = "forum view discussion";
-                    $temp_url = "discuss.php?d=" . $row['cmid'];
-                    $temp_info = $row['cmid'];
+                    // } else if ($row['action'] == 'viewed') {
+                    //     $temp_action = "forum view discussion";
+                    //     $temp_url = "discuss.php?d=" . $row['cmid'];
+                    //     $temp_info = $row['cmid'];
                 } else if ($row['action'] == 'deleted') {
                     $temp_action = "forum delete discussion";
                     $temp_url = "view.php?id=" . $row['cmid'];
@@ -230,8 +220,10 @@ class Moodle
 
                 $sqlForum = "SELECT name FROM " . $this->prefix . "forum_discussions where id=" . $temp_info . ";";
                 $resultForum = mysqli_query($db, $sqlForum);
-                $rowForum = mysqli_fetch_assoc($resultForum);
-                $temp_module = $rowForum['name'];
+                if ($resultForum) {
+                    $rowForum = mysqli_fetch_assoc($resultForum);
+                    $temp_module = $rowForum['name'];
+                }
             }
 
             if ($row['objecttable'] == 'forum_posts') {
@@ -267,10 +259,10 @@ class Moodle
         //     $temp_info = $row['objectid'];
         // }
 
-        if ($row['target'] == 'course') {
-            $temp_module = "course";
-            $temp_url = "view.php?id=" . $row['courseid'];
-        }
+        // if ($row['target'] == 'course') {
+        //     $temp_module = "course";
+        //     $temp_url = "view.php?id=" . $row['courseid'];
+        // }
 
         if ($row['target'] == 'role') {
             $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
@@ -342,13 +334,10 @@ class Moodle
         );
         return $moodleFields;
     }
-
     public function writeLogsToDB($dbResult)
     {
         $db = $dbResult[0];
         $result = $dbResult[1];
-        $this->prefix = $dbResult[2];
-        file_put_contents("abc.txt", "");
         while ($row = mysqli_fetch_assoc($result)) {
             $moodleField = $this->parseLogsToDB($row, $db);
             if ($moodleField["module"]) {
@@ -364,7 +353,6 @@ class Moodle
                                 "course" => $this->courseId,
                                 "description" => $moodleField["module"],
                                 "type" => $moodleField["action"],
-                                "moduleInstance" => "plugin",
                                 "post" => $moodleField["url"],
                                 "date" => $moodleField["timecreated"]
                             ]
@@ -377,28 +365,88 @@ class Moodle
 
     public function getVotes()
     {
-        $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, fd.id, itemid
+        $this->getDBConfigValues();
+        if (!($this->time) && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "forum f
                 join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
                 join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
-                join " . $this->prefix . "course c ON c.id = f.course
                 join " . $this->prefix . "rating r ON r.itemid = fp.id
-                join " . $this->prefix . "user u ON fp.userid = u.id";
-        if ($this->course) {
-            $sql .= " WHERE f.course=" . $this->course;
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if (!($this->time) && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
+                join " . $this->prefix . "rating r ON r.itemid = fp.id
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id=" . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . "
+                join " . $this->prefix . "rating r ON r.itemid = fp.id
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . "
+                join " . $this->prefix . "rating r ON r.itemid = fp.id  
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
         }
-        $sql .= ";";
+
+        $sql .= " order by created;";
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
-        return $result;
+        return array($db, $result);
     }
-
-    public function writeVotesToDb($result)
+    public function parseVotesToDB($row, $db)
     {
+
+        $sqlEvaluator = "SELECT username FROM " . $this->prefix . "user where id=" . $row["evaluatorId"] . ";";
+        $resultEvaluator = mysqli_query($db, $sqlEvaluator);
+        $rowEvaluator = mysqli_fetch_assoc($resultEvaluator);
+        $evaluator = $rowEvaluator['username'];
+
+        $votesFields = array(
+            "user" => $row["username"],
+            "description" => $row['name'] . ", " . $row['subject'],
+            "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
+            "date" => date('Y-m-d, H:i:s', $row['created']),
+            "rating" => $row['rating'],
+            "evaluator" => $evaluator
+        );
+        return $votesFields;
+    }
+    public function writeVotesToDb($dbResult)
+    {
+        $db = $dbResult[0];
+        $result = $dbResult[1];
         $course = new Course($this->courseId);
         while ($row = mysqli_fetch_assoc($result)) {
-            $user = User::getUserByUsername($row["username"]);
-            if ($user) {
+            $votesField = $this->parseVotesToDB($row, $db);
+
+
+            $prof = User::getUserByUsername($votesField["evaluator"]);
+            $user = User::getUserByUsername($votesField["user"]);
+            if ($user && $prof) {
                 $courseUser = new CourseUser($user->getId(), $course);
 
                 if ($courseUser->getId()) {
@@ -407,12 +455,12 @@ class Moodle
                         [
                             "user" => $user->getId(),
                             "course" => $this->courseId,
-                            "description" => $row['name'] . ", " . $row['subject'],
+                            "description" => $votesField["description"],
                             "type" => "graded post",
-                            "moduleInstance" => "plugin",
-                            "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
-                            "date" => date('Y-m-d, H:i:s', $row['created']),
-                            "rating" => $row['rating']
+                            "post" => $votesField["post"],
+                            "date" => $votesField["date"],
+                            "rating" => $row['rating'],
+                            "evaluator" => $prof->getId()
                         ]
                     );
                 }
@@ -422,19 +470,25 @@ class Moodle
 
     public function getQuizGrades()
     {
+        $this->getDBConfigValues();
         $sql = " select q.id as quizid, q.name as quiz, userid ,c.shortname as shortname, username, g.grade as grade, g.timemodified as timemodified
                 from " . $this->prefix . "user as u, " . $this->prefix . "quiz as q, " . $this->prefix . "quiz_grades as g, " . $this->prefix . "course as c
 	            where u.id = g.userid and q.course = c.id and g.quiz = q.id";
         if ($this->course) {
             $sql .= " and c.id = " . $this->course;
         }
-        $sql .= ";";
+        if ($this->user) {
+            $sql .= " and u.id = " . $this->user;
+        }
+        if ($this->time) {
+            $sql .= " and g.timemodified > " . $this->time;
+        }
+        $sql .= " order by timemodified;";
 
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
         return $result;
     }
-
     public function writeQuizGradesToDb($result)
     {
         $course = new Course($this->courseId);
@@ -451,7 +505,6 @@ class Moodle
                             "course" => $this->courseId,
                             "description" => $row['quiz'],
                             "type" => "quiz grade",
-                            "moduleInstance" => "plugin",
                             "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
                             "date" => date('Y-m-d, H:i:s', $row['timemodified']),
                             "rating" => $row['grade']

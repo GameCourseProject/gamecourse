@@ -16,19 +16,18 @@ class ClassCheck
     public function __construct($courseId)
     {
         $this->courseId = $courseId;
-        $this->getDBConfigValues();
-        $this->readAttendance();
     }
-
+    
     public function getDBConfigValues()
     {
         $classCheckVarsDB = Core::$systemDB->select("config_class_check", ["course" => $this->courseId], "*");
-
+        
         $this->code = $classCheckVarsDB["tsvCode"];
     }
-
+    
     public function readAttendance()
     {
+        $this->getDBConfigValues();
         $url = "https://classcheck.tk/tsv/course?s=" . $this->code;
         $fp = fopen($url, 'r');
 
@@ -45,15 +44,15 @@ class ClassCheck
             $shift = $data[7];
 
             $prof = User::getUserByUsername($profUsername);
-            if($prof){
+            if ($prof) {
                 $courseUserProf = new CourseUser($prof->getId(), $course);
             }
 
             $student = User::getUserByUsername($studentUsername);
-            if($student){
+            if ($student) {
                 $courseUserStudent = new CourseUser($student->getId(), $course);
             }
-            
+
             if ($courseUserStudent->getData("id") && $courseUserProf->getData("id")) {
                 Core::$systemDB->insert(
                     "participation",
@@ -62,7 +61,6 @@ class ClassCheck
                         "course" => $this->courseId,
                         "description" => $classNumber,
                         "type" => $action,
-                        "moduleInstance" => "plugin",
                         "rating" => 0,
                         "evaluator" => $courseUserProf->getData("id")
                     ]

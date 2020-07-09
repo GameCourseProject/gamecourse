@@ -14,14 +14,10 @@ class GoogleSheets
     private $sheetName;
     private $google;
 
-    public function __construct($parent, $courseId)
+    public function __construct($courseId)
     {
-        $this->parent = $parent;
         $this->courseId = $courseId;
         $this->google = new Google();
-        // $this->getDBConfigValues();
-        // $this->service = Google::getGoogleSheets();
-        // $this->readGoogleSheets();
     }
 
     public function getCredentialsFromDB()
@@ -108,21 +104,20 @@ class GoogleSheets
 
     public function readGoogleSheets()
     {
-        $this->getDBConfigValues();
         $credentials = $this->getCredentialsFromDB();
         $token = $this->getTokenFromDB();
         $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
 
         $service = $this->google->getGoogleSheets($credentials, $token, $authCode);
-
+        $this->getDBConfigValues();
         // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
         $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName);
-        return $responseRows->getValues();
+
+        $this->writeToDB($responseRows->getValues());
     }
 
     public function writeToDB($valuesRows)
     {
-        $values = array();
         for ($row = 1; $row < sizeof($valuesRows); $row++) {
             $user = User::getUserByStudentNumber($valuesRows[$row][0]);
             $action = $valuesRows[$row][3];
