@@ -230,8 +230,8 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
-            $this->googleSheet->setCredentials();
-            $this->googleSheet->setAuthCode();
+            $this->googleSheets->setCredentials();
+            $this->googleSheets->setAuthCode();
             return true;
         }
     }

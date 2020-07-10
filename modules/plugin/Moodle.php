@@ -326,7 +326,7 @@ class Moodle
         // }
 
         $moodleFields = array(
-            "timecreated" => date('Y-m-d, H:i:s', $row['timecreated']),
+            "timecreated" => date('Y-m-d H:i:s', $row['timecreated']),
             "username" =>  $temp_username,
             "module" => $temp_module,
             "action" => $temp_action,
@@ -424,12 +424,11 @@ class Moodle
         $resultEvaluator = mysqli_query($db, $sqlEvaluator);
         $rowEvaluator = mysqli_fetch_assoc($resultEvaluator);
         $evaluator = $rowEvaluator['username'];
-
         $votesFields = array(
             "user" => $row["username"],
             "description" => $row['name'] . ", " . $row['subject'],
             "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
-            "date" => date('Y-m-d, H:i:s', $row['created']),
+            "date" => date('Y-m-d H:i:s', $row['created']),
             "rating" => $row['rating'],
             "evaluator" => $evaluator
         );
