@@ -1,7 +1,7 @@
 //states
-app.config(function($locationProvider, $compileProvider, $stateProvider){
+app.config(function ($locationProvider, $compileProvider, $stateProvider) {
     $locationProvider.html5Mode(true);
-    $compileProvider.debugInfoEnabled(false);
+    $compileProvider.debugInfoEnabled(true);
 
     $stateProvider.state('home', {
         url: '/',
