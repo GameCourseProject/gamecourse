@@ -18,13 +18,13 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     \GameCourse\Course::createCourseLegacyFolder($courseId, $courseName);
     $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
     
-    $db->insert("game_course_user",["id" => $teacherId,
+    $db->insert("game_course_user",["studentNumber" => $teacherId,
                         "name" => "Teacher",
                         "username"=> $teacherUsername,
                         "isAdmin"=> true]);
-    $db->insert("course_user",["id" => $teacherId,
+    $db->insert("course_user",["id" => 1,
                                 "course" => $courseId,]);
-    $db->insert("user_role",["id"=>$teacherId, "course"=>$courseId,"role"=>$roleId]);
+    $db->insert("user_role",["id"=>1, "course"=>$courseId,"role"=>$roleId]);
 
     file_put_contents('setup.done','');
 
