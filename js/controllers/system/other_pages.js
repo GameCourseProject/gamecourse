@@ -1145,9 +1145,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //text inputs
     details = $('<div class="details bigger right"></div>')
     details.append($('<div class="container"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
+    details.append($('<div class="container"><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="newUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
     details.append($('<div class="container"><input type="email" class="form__input" id="email" placeholder="Email *" ng-model="newUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
     details.append($('<div class="container"><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="newUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div>'))
-    details.append($('<div class="container"><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="newUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
     row_inputs.append(details);
     box.append(row_inputs);
     //on/off inputs
@@ -1166,7 +1166,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editmodal = $("<div class='modal' id='edit-user'></div>");
     editUser = $("<div class='modal_content'></div>");
     editUser.append( $('<button class="close_btn icon" value="#edit-user" onclick="closeModal(this)"></button>'));
-    editUser.append( $('<div class="title">New User: </div>'));
+    editUser.append( $('<div class="title">Edit User: </div>'));
     editcontent = $('<div class="content">');
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
@@ -1175,9 +1175,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
+    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="editUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="editUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="editUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div>'))
-    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="editUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
     editrow_inputs.append(editdetails);
     editbox.append(editrow_inputs);
     editcontent.append(editbox);

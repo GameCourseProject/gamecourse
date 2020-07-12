@@ -492,115 +492,229 @@ API::registerFunction('core', 'editUser', function() {
 
 //This updates the student or teachers of the course
 //receives list of users to replace/add and updates the DB
-function updateUsers($list,$role,$course,$courseId,$replace){
-    $updatedUsers=[];
-    $roleId = Course::getRoleId($role, $courseId);
-    if ($replace){
-        $prevUsers = array_column(Core::$systemDB->selectMultiple("course_user natural join user_role",
-                       ["course"=>$courseId, "role"=>$roleId],'id'), "id");
-    }
-    $keys = ['username','id', 'name', 'email'];
-    if ($role == "Student")
-        $keys = array_merge($keys,['campus']);
-    $list = preg_split('/[\r]?\n/', $list, -1, PREG_SPLIT_NO_EMPTY);
-    
-    foreach($list as &$currUser) {
-        $splitList = preg_split('/;/', $currUser);
-        if (sizeOf($splitList) != sizeOf($keys)) {
-            echo "User information was incorrectly formatted";
-            return null;
-        }
-        $currUser = array_combine($keys, $splitList);
-        if ($role == "Teacher")
-            $currUser["campus"]=null;
-        
-        $user = User::getUser($currUser['id']);
-        if (!$user->exists()) {
-            //usado aqui
-            $user->addUserToDB($currUser['name'],$currUser['username'],$currUser['email']);
-        } else {
-            //usado aqui
-            $user->initialize($currUser['name'],$currUser['username'], $currUser['email']); 
-            if ($replace)
-                unset($prevUsers[array_search($currUser['id'], $prevUsers)]);
-        }
-
-        $courseUser= new CourseUser($currUser['id'],$course);
-        if (!$courseUser->exists()) {
-            $courseUser->addCourseUserToDB($roleId, $currUser['campus']);
-            $updatedUsers[]= 'New '.$role.' ' . $currUser['id'];
-        } else {
-            $courseUser->setCampus($currUser['campus']);
-            if ($courseUser->addRole($role)===true)
-                $updatedUsers[]= "Added role of ".$role." to user ".$currUser['id'];
-        }
-    }
-    if ($replace){
-        foreach($prevUsers as $userToDelete){
-            $roles = Core::$systemDB->selectMultiple("user_role",["id"=>$userToDelete,"course"=>$courseId],"role");
-            if (sizeof($roles)>1){//delete just the role
-                Core::$systemDB->delete("user_role",["id"=>$userToDelete,"course"=>$courseId,"role"=>$roleId]);
-                $updatedUsers[]= "Removed role of ".$role." from user ".$userToDelete;
-            }
-            else{//delete the course_user
-                Core::$systemDB->delete("course_user",["id"=>$userToDelete,"course"=>$courseId]);
-                $updatedUsers[]= "Deleted ".$role." ".$userToDelete;
-            }
+// function updateUsers($list,$role,$course,$courseId,$replace){
+//     $updatedUsers=[];
+//     //vai buscar o role
+//     $roleId = Course::getRoleId($role, $courseId);
+//     if ($replace){
+//         $prevUsers = array_column(Core::$systemDB->selectMultiple("course_user natural join user_role",
+//                        ["course"=>$courseId, "role"=>$roleId],'id'), "id");
+//     }
+//     //lista de atributos do user
+//     $keys = ['username','id', 'name', 'email'];
+//     if ($role == "Student")
+//         $keys = array_merge($keys,['campus']);
+//     //list de users (por linha)
+//     $list = preg_split('/[\r]?\n/', $list, -1, PREG_SPLIT_NO_EMPTY);
+//     //para cada user
+//     foreach($list as &$currUser) {
+//         //lista de atributos do user
+//         $splitList = preg_split('/;/', $currUser);
+//         if (sizeOf($splitList) != sizeOf($keys)) {
+//             echo "User information was incorrectly formatted";
+//             return null;
+//         }
+//         //constroi user key-value
+//         $currUser = array_combine($keys, $splitList);
+//         if ($role == "Teacher")
+//             $currUser["campus"]=null;
+//         //cria user a partr do id dado
+//         $user = User::getUser($currUser['id']);
+//         if (!$user->exists()) {
+//             //se nao user existir cria na db
+//             $user->addUserToDB($currUser['name'],$currUser['username'],$currUser['email']);
+//         } else {
+//             //se user existir da-lhe update
+//             $user->initialize($currUser['name'],$currUser['username'], $currUser['email']); 
+//             if ($replace)
+//                 unset($prevUsers[array_search($currUser['id'], $prevUsers)]);
+//         }
+//         //cria um course user
+//         $courseUser= new CourseUser($currUser['id'],$course);
+//         if (!$courseUser->exists()) {
+//             //se ainda nao existir adiciona a db
+//             $courseUser->addCourseUserToDB($roleId, $currUser['campus']);
+//             $updatedUsers[]= 'New '.$role.' ' . $currUser['id'];
+//         } else {
+//             $courseUser->setCampus($currUser['campus']);
+//             if ($courseUser->addRole($role)===true)
+//                 $updatedUsers[]= "Added role of ".$role." to user ".$currUser['id'];
+//         }
+//     }
+//     if ($replace){
+//         foreach($prevUsers as $userToDelete){
+//             $roles = Core::$systemDB->selectMultiple("user_role",["id"=>$userToDelete,"course"=>$courseId],"role");
+//             if (sizeof($roles)>1){//delete just the role
+//                 Core::$systemDB->delete("user_role",["id"=>$userToDelete,"course"=>$courseId,"role"=>$roleId]);
+//                 $updatedUsers[]= "Removed role of ".$role." from user ".$userToDelete;
+//             }
+//             else{//delete the course_user
+//                 Core::$systemDB->delete("course_user",["id"=>$userToDelete,"course"=>$courseId]);
+//                 $updatedUsers[]= "Deleted ".$role." ".$userToDelete;
+//             }
             
-        }
-    }
-    return $updatedUsers;
-}
-API::registerFunction('core', 'courseRoles', function(){
+//         }
+//     }
+//     return $updatedUsers;
+// }
+API::registerFunction('course', 'courseRoles', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     $roles = $course->getRoles("name");
     API::response(["courseRoles"=> $roles ]);
 });
-//update courseUsers from the Students or Teacher configuration pages
-API::registerFunction('core', 'courseUsers', function() {
+API::registerFunction('course', 'removeUser', function(){
+    API::requireCourseAdminPermission();
+    $courseId=API::getValue('course');
+    $user_id = API::getValue('user_id');
+    $course = Course::getCourse($courseId);
+    $courseUser = new CourseUser($user_id,$course);
+    if ($courseUser->exists()) 
+        Core::$systemDB->delete("course_user",["id"=>$user_id, "course"=>$courseId]);
+    API::response(["updatedData"=>"" ]);
+    return;
+});
+API::registerFunction('course', 'editUser', function() {
+    API::requireAdminPermission();
+    API::requireValues('userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
+
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    $courseUser = new CourseUser(API::getValue('userId'), $course);
+    $user = new User(API::getValue('userId'));
+
+    $courseUser->setCampus(API::getValue('userCampus'));
+    $user->setName(API::getValue('userName'));
+    $user->setEmail(API::getValue('userEmail'));
+    $user->setStudentNumber(API::getValue('userStudentNumber'));
+    //verifiy is nickname exists
+    $user->setNickname(API::getValue('userNickname'));
+    $courseUser->setRoles(API::getValue('userRoles'));
+    //falta adiconar/substituir os roles
+});
+
+API::registerFunction('course', 'createUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    $folder = Course::getCourseLegacyFolder($courseId);
-    $file ="";
-    $role="";
-    if (API::hasKey('role')){
-        $role=API::getValue('role');
-        if ($role=="Student")
-            $file = $folder. '/students.txt';
-        else if ($role=="Teacher")
-            $file = $folder . '/teachers.txt';
+
+    API::requireValues('userName', 'userStudentNumber', 'userEmail', 'userRoles');
+    $userName = API::getValue('userName');
+    $userEmail = API::getValue('userEmail');
+    $userStudentNumber = API::getValue('userStudentNumber');
+    $userNickname = API::getValue('userNickname');
+    $userRoles = API::getValue('userRoles');
+    $userCampus = API::getValue('userCampus');
+    $userUsername = null;
+
+    //verifies if user exits on the system
+    $user = User::getUserByStudentNumber($userStudentNumber);
+    if ($user == null) {
+        User::addUserToDB($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+        $user = User::getUserByStudentNumber($userStudentNumber);
+    } else {
+        $user->editUser($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
+    }
+    //verifies if user exits on course
+    $courseUser = new CourseUser($user->getId(),$course);
+    if (!$courseUser->exists()) {
+        $courseUser->addCourseUserToDB(null, $userCampus);
+    } else {
+        $courseUser->setCampus($userCampus);
+    }
+    //adds list of roles to user
+    foreach($userRoles as $role){
+        $courseUser->addRole($role);
+    }
+
+
+});
+API::registerFunction('course', 'addUser', function(){
+    API::requireCourseAdminPermission();
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+
+    API::requireValues('users', 'role');
+    $users = API::getValue('users');
+    $role = API::getValue('role');
+
+    foreach ($users as $userData) {
+        //is user valid?
+        $user = User::getUserByStudentNumber($userData['studentNumber']);
+        if($user->getId() == $userData['id']){
+            $courseUser = new CourseUser($userData['id'],$course);
+            if (!$courseUser->exists()) {
+                $courseUser->addCourseUserToDB();
+                $courseUser->addRole($role);
+            }
+        }
+        else{
+            echo("not a valid user");
+        }
+        
+    }
+});
+
+API::registerFunction('course', 'notCourseUsers', function() {
+    API::requireCourseAdminPermission();
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    
+    $courseUsers = $course->getUsers();
+    $systemUsers = User::getAllInfo();
+
+    $courseUsersInfo = [];
+    foreach ($courseUsers as $userData) {
+        $courseUsersInfo[] = array(
+            'id' => $userData['id'], 
+            'name' => $userData['name'], 
+            'studentNumber' => $userData['studentNumber']);
+    }
+    $systemUsersInfo = [];
+    foreach ($systemUsers as $userData) {
+        $systemUsersInfo[] = array(
+            'id' => $userData['id'], 
+            'name' => $userData['name'], 
+            'studentNumber' => $userData['studentNumber']);
     }
     
-    if (API::hasKey('fullUserList') && API::hasKey('role')) {
-        $studentList = API::getValue('fullUserList');
-        $updatedUsers=updateUsers($studentList,$role,$course,$courseId,true);
-        file_put_contents($file, $studentList);
-        if ($updatedUsers!==null)
-            API::response(["updatedData"=>$updatedUsers ]);
-        return;
-    }//adding new users and deleting is not available while txt files are still used to store user info
-    else if (API::hasKey('newUsers') && API::hasKey('role')) {
-        $studentList = API::getValue('newUsers');
-        $updatedUsers=updateUsers($studentList,$role,$course,$courseId,false);
-        if ($updatedUsers!==null)
-            API::response(["updatedData"=>$updatedUsers ]);
-        return;
-    }else if (API::hasKey('deleteCourseUser')) {
-        $userToDelete = API::getValue('deleteCourseUser');
-        $courseUser= new CourseUser($userToDelete,$course);
-        if ($courseUser->exists()) 
-            Core::$systemDB->delete("course_user",["id"=>$userToDelete, "course"=>$courseId]);
-        API::response(["updatedData"=>"" ]);
-        return;
+    function udiffCompare($a, $b){
+        return $a['id'] - $b['id'];
     }
+    $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, 'udiffCompare');
+    
+    API::response(array('notCourseUsers'=> $notCourseUsers));
+});
+
+//update courseUsers from the Students or Teacher configuration pages
+API::registerFunction('course', 'courseUsers', function() {
+    API::requireCourseAdminPermission();
+    $courseId=API::getValue('course');
+    $course = Course::getCourse($courseId);
+    $role=API::getValue('role');
+    // $folder = Course::getCourseLegacyFolder($courseId);
+    // $file ="";
+    
+    // if (API::hasKey('role')){
+    //     if ($role=="Student")
+    //         $file = $folder. '/students.txt';
+    //     else if ($role=="Teacher")
+    //         $file = $folder . '/teachers.txt';
+    // }
+    
+    // if (API::hasKey('fullUserList') && API::hasKey('role')) {
+    //     $studentList = API::getValue('fullUserList');
+    //     $updatedUsers=updateUsers($studentList,$role,$course,$courseId,true);
+    //     file_put_contents($file, $studentList);
+    //     if ($updatedUsers!==null)
+    //         API::response(["updatedData"=>$updatedUsers ]);
+    //     return;
+    // }//adding new users and deleting is not available while txt files are still used to store user info
     
     if (API::hasKey('role')){
         if ($role == "allRoles") {
-            ///
-            $users = $course->getUsers($role);
+            $users = $course->getUsers();
         }
         else{
             $users = $course->getUsersWithRole($role);
@@ -617,6 +731,8 @@ API::registerFunction('core', 'courseUsers', function() {
                 'nickname' => $user->getNickname(),
                 'studentNumber' => $user->getStudentNumber(),
                 'roles' => $user->getRolesNames(),
+                'campus' => $user->getCampus(),
+                'email' => $user->getEmail(),
                 'lastLogin' => $user->getLastLogin());
         }
         

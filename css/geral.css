@@ -3,6 +3,23 @@ body{
     margin: 0px;
     height: auto;
 }
+button {
+    cursor: pointer;
+    padding: 7px 10px;
+    font-size: 14px;
+    border-radius: 10%;
+    background-color: white;
+    border: 2px solid lightgrey;
+    box-shadow: none;
+    color: grey;
+}
+input:focus, select:focus {
+    outline: none;
+}
+
+.centered{
+    text-align: center;
+}
 
 /* search bar and button*/
 .search {
@@ -294,7 +311,7 @@ input:checked + .slider:before {
 }
 
 /*tags for user role (on course) or course on user list(system)*/
-.role_tag, .course_tag {
+.role_tag, .course_tag, .user_tag {
     text-transform: uppercase;
     font-size: 10px;
     background-color: lightgrey;

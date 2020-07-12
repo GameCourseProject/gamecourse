@@ -166,7 +166,7 @@ cursor: pointer;
     top: 10px;
     right: 15px;
 }
-#new-user .modal_content .content .inputs .form__input,
+#add-user .modal_content .content .inputs .form__input,
 #edit-user .modal_content .content .inputs .form__input
 {
     margin-bottom: 22px;
@@ -180,13 +180,26 @@ cursor: pointer;
     flex-wrap: wrap;
 }
 
+#roles {
+    width: 40%;
+    margin-right: 10px;
+    height: 35px;
+    margin-bottom: 0px !important;
+    padding: 0;
+}
+#add_roles {
+    align-items: center;
+    display: flex;
+    margin-bottom: 10px;
+}
+
 .modal_content .content .inputs .form__input {
     font-family: 'Roboto', sans-serif;
     color: #333;
     font-size: 16px;
     padding: 10px;
     background-color: white;
-    display: block;
+    display: inline-block;
     transition: all 0.3s;
     border-radius: 5px;
     width: 100%;
@@ -209,7 +222,87 @@ cursor: pointer;
     transform: translateX(-30px);
     -webkit-transform: translateX(-30px);
 }
-
+.modal_content .options {
+    display: flex;
+    justify-content: space-evenly;
+ }
+.modal_content .options .option {
+    width: 200px;
+    border: 2px solid lightgray;
+    border-radius: 5px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.modal_content .options .option .icon{
+    height: 100px;
+    width: 100px;
+    margin-top: 20px;
+    /*the rest is gotten from icon on general*/
+}
+.modal_content .options .option #choose_create_new_user{
+    background-image: url(/gamecourse/images/add_user_icon.svg);
+    
+}
+.modal_content .options .option #choose_select_user{
+    background-image: url(/gamecourse/images/select_user_icon.svg);
+}
+.modal_content .options .option .description {
+    text-align: center;
+    margin: 10px;
+}
+.modal_content .role_tag:hover, .modal_content .user_tag:hover{
+    background-image: url(/gamecourse/images/delete_icon.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    cursor: pointer;
+}
+.modal_content .content .search_box{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.modal_content .content .search_box .user_tag{
+    margin: 2px 5px 2px 0;
+}
+.modal_content .content .search_box #select_system_user {
+    border: none;
+    flex-grow: 1;
+}
+.modal_content .content .select_box {
+    border: 2px solid lightgray;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    padding: 0;
+    max-height: 230px;
+    overflow: auto;
+    min-height: 120px;
+}
+.modal_content .content .select_box .line {
+    position: relative;
+    height: 35px;
+    border-bottom: 1px solid lightgrey;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px 0 10px;
+}
+.modal_content .content .select_box .line:hover {
+    background-color: #f5f5f5;
+}
+.modal_content .content .select_box .line .add_icon_no_outline {
+    background-image: url(/gamecourse/images/add_icon_no_outline.svg);
+    height: 35px;
+    width: 35px;
+}
 .modal_content .save_btn {
     padding: 10px 15px;
     font-size: 16px;
