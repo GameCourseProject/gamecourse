@@ -1,5 +1,112 @@
 //All the aux functions used to create the views of the system
 
+function addPagesBackToNavBar(isHome){
+    if (isHome){
+        $("#other-pages").remove();
+        $(".reputed").remove();
+    }
+    else if($("#other-pages")[0]){
+        menu = $('.menu')[0];
+        menu_div = $('.menu');
+        menu_length = menu.children.length;
+
+        other_pages = $("#other-pages")[0];
+        other_content = other_pages.children[1];
+
+        //to restore orther remove last options (dropdowns)
+        settings = menu.children[menu_length - 1];
+        settings.remove();
+        other_pages.remove();
+
+        while (other_content.children.length > 0) {
+            menu_option = $("<li class='reputed'></li>");
+            child = other_content.children[0];
+            menu_option.append(child);
+            menu_div.append(menu_option);
+        }
+
+        menu_div.append(settings);
+    }
+    
+
+}
+
+//so pode ser chamado até x size depois passa a versao mobile
+//to make sure everything fits on the navbar
+function checkNavbarLength(){
+    console.log("I'm going to check navbar length");
+    var menu_div = $('.menu');
+    if ( menu_div.prop('scrollWidth') > menu_div.prop('clientWidth')  ||  menu_div.height() > 55 ){
+        menu = menu_div[0];
+        menu_length = menu.children.length;
+
+        if (menu_div.find("#other-pages").size() > 0){
+            //gets the li element
+            last_before_otherpages_and_settings = menu.children[menu_length - 3];
+            //gets the a element
+            a_last_before_otherpages_and_settings = last_before_otherpages_and_settings.children[0];
+
+            //gets other pages divs
+            other_pages = $("#other-pages")[0];
+            other_content = other_pages.children[1];
+
+            last_before_otherpages_and_settings.remove();
+            other_content.prepend(a_last_before_otherpages_and_settings);
+        }
+        else{
+            settings = menu.children[menu_length - 1];
+            //gets the li element
+            last_before_settings = menu.children[menu_length - 2];
+            before_last_before_settings = menu.children[menu_length - 3];
+            //gets the a element
+            a_last_before_settings = last_before_settings.children[0];
+            a_before_last_before_settings = before_last_before_settings.children[0];
+            
+            //removes li elements from menu
+            last_before_settings.remove();
+            before_last_before_settings.remove();
+
+            //creates dropdown for other pages
+            other_pages = $("<li class='dropdown' id='other-pages'></li>");
+            other_title = $("<a>Other Pages</a>");
+            other_content = $("<div class='dropdown-content'></div>");
+
+            other_content.prepend(a_last_before_settings);
+            other_content.prepend(a_before_last_before_settings);
+
+            other_pages.append(other_title);
+            other_pages.append(other_content);
+            
+            settings.remove();
+            menu_div.append(other_pages);
+            menu_div.append(settings);
+        }
+        checkNavbarLength();
+    }
+
+}
+
+$(window).resize(function() {
+    //resize just happened, pixels changed
+    addPagesBackToNavBar(false);
+    checkNavbarLength();
+});
+
+function range(start, end) {
+    return Array(end - start + 1).fill().map((_, idx) => start + idx)
+}
+
+function semestersYears(start, end){
+    years = range(start, end);
+    semesters = [];
+    jQuery.each(years, function(index){
+        se = years[index].toString() + "-" + (years[index] + 1).toString();
+        semesters.push(se)
+    });
+    return semesters;
+}
+
+
 //from settings.js
 function buildTabs(info, parent, $smartboards, $scope) {
     var el = $('<li>');

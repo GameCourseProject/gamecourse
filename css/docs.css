@@ -2,14 +2,14 @@
 
 .page {
   width: 100%;
-  height: calc(100vh - 75px);
+  height: calc(100vh - 67px);
 }
 /* Sidebar */
 .page .sidebar {
   width: 200px;
   height: 100%;
   background-color: lightgrey;
-  font-size: 14px;
+  font-size: 12px;
   border-right: 2px solid grey;
   float: left;
 }
@@ -19,7 +19,7 @@
   height: calc(100% - 87px);
 }
 .page .sidebar .tabgroup.course-related{
-  height: calc(100% - 159px);
+  height: calc(100% - 156px);
 }
 .page .sidebar .tabgroup .tab{
   flex-grow: 1;
@@ -41,13 +41,13 @@
 /*section for the course selection and title Libraries on Functions*/
 .page .sidebar .tab.title{
   border-bottom: none;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   padding-bottom: 0px;
 }
 .page .sidebar .tab.course-selector{
   border-bottom: none;
-  font-size: 14px;
+  font-size: 12px;
   padding-bottom: 0px;
   padding-top: 10px;
 }
@@ -80,6 +80,7 @@
   margin-left: 200px;
   padding-left: 70px;
   padding-right: 70px;
+  font-size: 14px;
 }
 .page .content .section{
   display: none;
@@ -187,7 +188,7 @@ pre.code .highlight {
 
 .page .content .section .description{
   margin-bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
   color: gray;
 }
 .page .content .section .title{
@@ -198,6 +199,7 @@ pre.code .highlight {
 .accordion {
   margin: 0 auto;
   border-top: 2px solid grey;
+  font-size: 14px;
 }
 
 .accordion-header,
@@ -206,9 +208,13 @@ pre.code .highlight {
 }
 
 .accordion-header {
-  padding: 15px;
+  padding: 15px 40px 15px 15px;
   cursor: pointer;
   transition: all .3s;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }
 
 .accordion__item {
@@ -247,6 +253,7 @@ pre.code .highlight {
   float: right;
   transition: .3s all;
   transform: rotate(0deg);
+  right: -25px;
 }
 
 .accordion__item.active > .accordion-header:after {

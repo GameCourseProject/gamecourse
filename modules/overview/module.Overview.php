@@ -16,7 +16,7 @@ class Overview extends Module {
 
     public function init() {
         //page only meant for teachers
-        Core::addNavigation('images/gear.svg', 'Overview', 'course.overview', true,null,true);
+        Core::addNavigation( 'Overview', 'course.overview', true,true);
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();

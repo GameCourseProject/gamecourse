@@ -31,16 +31,22 @@ drop table if exists course;
 drop table if exists game_course_user;
 
 create table game_course_user(
-	id 		int unsigned primary key, #81205
+	id 		int unsigned primary key auto_increment, #81205
     name 	varchar(50) not null,
     email 	varchar(255),
+	nickname varchar(50),
+	studentNumber int unique,
     username varchar(50),        #ist181205
     isAdmin boolean not null default false
+	isActive boolean not null default true
 );
 
 create table course(
 	id 		int unsigned primary key auto_increment,
 	name 	varchar(100),
+	short	varchar(20),
+	color	varchar(7),
+	year	varchar(10),
 	defaultLandingPage varchar(100) default "",
 	lastUpdate timestamp default CURRENT_TIMESTAMP,
 	isActive boolean default true,

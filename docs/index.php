@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="navbar">  
-        <div class="logo">logo</div>
+        <div class="logo"></div>
         <ul class="menu documentation">
             <li id="menu-views"><a href="javascript:void(0);" class="focused">Views</a></li>
             <li id="menu-functions"><a href="/gamecourse/docs/functions">Functions</a></li>

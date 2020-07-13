@@ -35,7 +35,7 @@ class Settings {
             // }, $childTabs);
 
             // $defaultViewTab = Settings::buildTabItem('Default', 'course.settings.roles.role({role:\'Default\',id:0})', true, $childTabs);
-            static::addTab(static::buildTabItem('Roles', 'course.settings.roles', true)); //, array($defaultViewTab)
+            //static::addTab(static::buildTabItem('Roles', 'course.settings.roles', true)); //, array($defaultViewTab)
 
             foreach($course->getModules() as $module) {
                 $module->initSettingsTabs();

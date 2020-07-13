@@ -13,6 +13,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
             var tabs = $('#settings > .tabs > .tabs-container');
             tabs.html('');
             tabs.append($compile('<li><a ui-sref="course.settings.global">Global</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.roles">Roles</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));

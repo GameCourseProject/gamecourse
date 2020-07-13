@@ -49,6 +49,19 @@ class CourseUser extends User{
     public function getUsername() {
         return parent::getData("username");
     }
+    public function getEmail() {
+        return parent::getData("email");
+    }
+    public function getNickname() {
+        return parent::getData("nickname");
+    }
+    public function getStudentNumber() {
+        return parent::getData("studentNumber");
+    }
+    public function getLastLogin(){
+        $lastLogin = $this->getData("lastActivity");
+        return parent::lastLoginTimeTostring($lastLogin);
+    }
     //gets data from course_user table
     function  getData($field="*"){
         return Core::$systemDB->select("course_user",["course"=>$this->course->getId(),"id"=>$this->id],$field);
@@ -68,6 +81,9 @@ class CourseUser extends User{
     function setCampus($campus) {
         return Core::$systemDB->update("course_user",["campus"=>$campus],
                 ["course"=>$this->course->getId(),"id"=>$this->id]);
+    }
+    function getCampus(){
+        return $this->getData("campus");
     }
     
     function getRolesNames() {

@@ -15,7 +15,7 @@ class QR extends Module {
     }
 
     public function init() {
-        Core::addNavigation('images/qr-code.svg', 'QR', 'course.qr', true,null,true);
+        Core::addNavigation('QR', 'course.qr', true,true);
 
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $viewHandler->createPageOrTemplateIfNew('QR',"page");

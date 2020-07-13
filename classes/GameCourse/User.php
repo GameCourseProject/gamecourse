@@ -7,9 +7,21 @@ class User {
     public function __construct($id){
         $this->id = $id;
     }
+
+    //identificador interno - externo passou a ser student number
+    //id ainda existe mas nao tem referencia fora do sistema
     
-    public function addUserToDB($name, $username, $email){
-        Core::$systemDB->insert("game_course_user",["name"=>$name,"id"=>$this->id,"username"=>$username, "email"=>$email]);       
+    //previously was not static
+    public static function addUserToDB($name, $username, $email, $studentNumber, $nickname, $isAdmin, $isActive ){
+        Core::$systemDB->insert("game_course_user",[
+            "name"=>$name,
+            "username"=>$username,
+            "email"=>$email,
+            "studentNumber"=>$studentNumber,
+            "nickname"=>$nickname,
+            "isAdmin"=>$isAdmin,
+            "isActive"=>$isActive
+        ]);       
     }
     
     public function exists() {
@@ -48,10 +60,19 @@ class User {
     public function setUsername($username) {
         $this->setData(["username"=>$username]);
     }
-
-    public function getLastLogin(){
-        return $this->getData("lastActivity");
+    public function getNickname() {
+        return $this->getData("nickname");
     }
+    public function setNickname($nickname) {
+        $this->setData(["nickname"=>$nickname]);
+    }
+    public function getStudentNumber() {
+        return $this->getData("studentNumber");
+    }
+    public function setStudentNumber($studentNumber) {
+        $this->setData(["studentNumber"=>$studentNumber]);
+    }
+
 
     public function isAdmin() {
         return $this->getData("isAdmin");
@@ -59,12 +80,27 @@ class User {
     public function setAdmin($isAdmin) {
         $this->setData(["isAdmin"=>$isAdmin]);
     }
+    public function isActive() {
+        return $this->getData("isActive");
+    }
+    public function setActive($isActive) {
+        $this->setData(["isActive"=>$isActive]);
+    }
+
     public static function getAdmins(){
         return array_column(Core::$systemDB->selectMultiple("game_course_user",["isAdmin"=>true],'id'),'id');
     }
 
-    public function initialize($name, $username,$email) {
-        Core::$systemDB->update("game_course_user",["name" => $name,"email" => $email, "username"=>$username],["id"=>$this->id]);
+    public function editUser($name, $username, $email, $studentNumber, $nickname, $isAdmin, $isActive ) {
+        Core::$systemDB->update("game_course_user",[
+            "name"=>$name,
+            "username"=>$username,
+            "email"=>$email,
+            "studentNumber"=>$studentNumber,
+            "nickname"=>$nickname,
+            "isAdmin"=>$isAdmin,
+            "isActive"=>$isActive
+        ],["id"=>$this->id]);
         return $this;
     }
 
@@ -79,10 +115,60 @@ class User {
         else
             return new User($userId);
     }
+
+    public static function getUserByStudentNumber($studentNumber) {
+        $userId = Core::$systemDB->select("game_course_user",["studentNumber"=>$studentNumber],"id");
+        // user is not on DB yet
+        if ($userId==null)
+            return null;
+        else
+            return new User($userId);
+    }
     
     public function getCourses(){
         return array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"course"),"course");
     }
+
+    public function lastLoginTimeTostring($lastLogin){
+        if ($lastLogin == "0000-00-00 00:00:00")
+            return "never";
+        else{
+            $lastTime = new \DateTime($lastLogin);
+            $currentTime = new \DateTime(date("Y-m-d H:i:s"));
+            $interval = $currentTime->diff($lastTime);
+
+            $years = $interval->format('%y');
+            $months = $interval->format('%m');
+            $days = $interval->format('%d');
+            $hours = $interval->format('%h');
+            $minutes = $interval->format('%i');
+            if ($years != "0")
+                return $years=="1" ? $years . " year ago" : $years . " years ago";
+            if ($months != "0")
+                return $months=="1" ? $months . " month ago" : $months . " months ago";
+            if ($days != "0")
+                return $days=="1" ? $days . " day ago" : $days . " days ago";
+            if ($hours != "0")
+                return $hours=="1" ? $hours . " hour ago" : $hours . " hours ago";
+            if ($minutes != "0")
+                return $minutes=="1" ? $minutes . " minute ago" : $minutes . " minutes ago";
+            else
+                return "now";
+        }
+    }
+
+    public function getSystemLastLogin(){
+        $allLastLogins = array_column(Core::$systemDB->selectMultiple("course_user",["id"=>$this->id],"lastActivity"),"lastActivity");
+        $lastLogin = "";
+        if(!empty($allLastLogins)){
+            $lastLogin = max($allLastLogins);
+            return $this->lastLoginTimeTostring($lastLogin);
+        }
+        else {
+            return "never";
+        }
+    }
+
    // public static function getAll() {//ToDo
    //     if (static::$usersDB == null)
    //         static::initDB();
@@ -91,5 +177,9 @@ class User {
 
     public static function getAllInfo() {
         return Core::$systemDB->selectMultiple("game_course_user");
+    }
+
+    public static function deleteUser($userId){
+        Core::$systemDB->delete("game_course_user",["id"=>$userId]);
     }
 }
