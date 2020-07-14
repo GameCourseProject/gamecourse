@@ -335,8 +335,21 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
     };
     $scope.saveGoogleSheets = function () {
         console.log("save google sheets");
+        i=1;
+        $scope.googleSheetsVars.sheetName=[];
+        while (i <= $scope.numberGoogleSheets){
+            id = "#sheetname" + i;
+            sheetname = $(id)[0].value;
+            $scope.googleSheetsVars.sheetName.push(sheetname);
+            i++;
+        }
         $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdateAndReload);
     };
+    $scope.addExtraField = function(){
+        inputs = $("#sheet_names");
+        $scope.numberGoogleSheets++;
+        inputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="sheetname'+ $scope.numberGoogleSheets +'">');
+    }
 
 
     $smartboards.request('settings', 'coursePlugin', { course: $scope.course }, function (data, err) {
@@ -405,6 +418,20 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
             } else if (model == "credentials") {
                 googleSheetsInputs.append('<input type="file" style="width: 25%;margin: 5px;" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
                 googleSheetsInputs.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
+            } else if (model == "sheetName"){
+                $scope.numberGoogleSheets = 0;
+                if($scope.googleSheetsVars.sheetName.length != 0){
+                    jQuery.each($scope.googleSheetsVars.sheetName, function (index){
+                        sheetName = $scope.googleSheetsVars.sheetName[index];
+                        $scope.numberGoogleSheets++;
+                        googleSheetsInputs.append('<span id="sheet_names"><input type:"text" style="width: 25%;margin: 5px;" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"></span>');
+                    });
+                }
+                else{
+                    $scope.numberGoogleSheets++;
+                    googleSheetsInputs.append('<span id="sheet_names"><input type:"text" style="width: 25%;margin: 5px;" id="sheetname'+ $scope.numberGoogleSheets +'"></span>');
+                }
+                googleSheetsInputs.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button><br><br>');
 
             } else {
                 googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
