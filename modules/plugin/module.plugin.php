@@ -93,8 +93,10 @@ class Plugin extends Module
         if (empty($googleSheetsDB)) {
             $googleSheetsVars = ["token" => "", "spreadsheetId" => "", "sheetName" => ""];
         } else {
-            $googleSheetsVars = ["authCode" => $googleSheetsDB["authCode"], "spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $googleSheetsDB["sheetName"]];
+            $names = explode(";", $googleSheetsDB["sheetName"]);
+            $googleSheetsVars = ["authCode" => $googleSheetsDB["authCode"], "spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $names];
         }
+
         return  $googleSheetsVars;
     }
 
@@ -238,8 +240,17 @@ class Plugin extends Module
     private function setGoogleSheetsVars($courseId, $googleSheets)
     {
         $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+        $names = "";
+        foreach ($googleSheets["sheetName"] as $name) {
+            if (strlen($name) != 0) {
+                $names .= $name . ";";
+            }
+        }
 
-        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $googleSheets["sheetName"], "authCode" => $googleSheets["authCode"]];
+        if ($names != "" && substr($names, -1) == ";") {
+            $names = substr($names, 0, -1);
+        }
+        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names, "authCode" => $googleSheets["authCode"]];
         if (empty($googleSheets["spreadsheetId"])) {
             return false;
         } else {

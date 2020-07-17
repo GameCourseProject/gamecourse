@@ -111,13 +111,19 @@ class GoogleSheets
         $service = $this->google->getGoogleSheets($credentials, $token, $authCode);
         $this->getDBConfigValues();
         // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
-        $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $this->sheetName);
+        $names = explode(";", $this->sheetName);
 
-        $this->writeToDB($responseRows->getValues());
+        foreach ($names as $name) {
+            $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
+            $name = substr($name, 0, -1);
+            $this->writeToDB($name, $responseRows->getValues());
+        }
     }
 
-    public function writeToDB($valuesRows)
+    public function writeToDB($name, $valuesRows)
     {
+        $prof = User::getUserByUsername($name);
+        $profId = $prof->getId();
         for ($row = 1; $row < sizeof($valuesRows); $row++) {
             $user = User::getUserByStudentNumber($valuesRows[$row][0]);
             $action = $valuesRows[$row][3];
@@ -134,7 +140,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => $info,
                             "type" =>  $action,
-                            "rating" =>  0
+                            "rating" =>  0,
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "initial bonus" || $action == "presentation grade") {
@@ -146,7 +153,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => "",
                             "type" =>  $action,
-                            "rating" =>  $xp
+                            "rating" =>  $xp,
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "suggested presentation subject" || $action == "participated in focus groups") {
@@ -157,7 +165,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => "",
                             "type" =>  $action,
-                            "rating" =>  0
+                            "rating" =>  0,
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "quiz grade" || $action == "lab grade") {
@@ -170,7 +179,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => $info,
                             "type" =>  $action,
-                            "rating" =>  $xp
+                            "rating" =>  $xp,
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "popular choice award (presentation)" || $action == "golden star award") {
@@ -182,7 +192,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => $info,
                             "type" =>  $action,
-                            "moduleInstance" => "badges"
+                            "moduleInstance" => "badges",
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "presentation king" || $action == "lab king" || $action == "quiz king") {
@@ -193,7 +204,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => "",
                             "type" =>  $action,
-                            "moduleInstance" => "badges"
+                            "moduleInstance" => "badges",
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "hall of fame") {
@@ -206,7 +218,8 @@ class GoogleSheets
                             "description" => "",
                             "post" => $info,
                             "type" =>  $action,
-                            "moduleInstance" => "badges"
+                            "moduleInstance" => "badges",
+                            "evaluator" => $profId
                         )
                     );
                 } else if ($action == "course emperor") {
@@ -217,7 +230,8 @@ class GoogleSheets
                             "course" => $this->courseId,
                             "description" => "",
                             "type" =>  $action,
-                            "moduleInstance" => "badges"
+                            "moduleInstance" => "badges",
+                            "evaluator" => $profId
                         )
                     );
                 }
