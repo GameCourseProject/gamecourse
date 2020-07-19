@@ -33,7 +33,7 @@ input:focus, select:focus {
     border-radius: 5px;
     width: 150px;
 }
-.sidebar .search .magnifying-glass {
+.search .magnifying-glass {
     background: url(/gamecourse/images/search_icon.svg);
     height: 35px;
     width: 35px;
@@ -329,6 +329,7 @@ input:checked + .slider:before {
 }
 .divider .title {
     position: relative;
+    z-index: 2;
 }
 .divider .title span {
     background-color: white;

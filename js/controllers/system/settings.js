@@ -1,6 +1,5 @@
 
 app.controller('Settings', function($scope, $state, $compile, $smartboards) {
-    changeTitle('Settings', 0);
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
 
         var tabs = $('#settings > .tabs > .tabs-container');
@@ -11,7 +10,7 @@ app.controller('Settings', function($scope, $state, $compile, $smartboards) {
         tabs.append($compile('<li><a ui-sref="settings.about">About</a></li>')($scope));
 
         addActiveLinks($state.current.name);
-        updateTabTitle($state.current.name, $state.params);
+        //updateTabTitle($state.current.name, $state.params);
     });
     $scope.$emit('refreshTabs');
     $scope.$on('$destroy', refreshTabsBind);
@@ -49,66 +48,67 @@ app.controller('SettingsGlobal', function($scope, $element, $smartboards, $compi
             })(theme);
             themes.append(themeWrapper);
         }
+
+        //Autentication
+        var autentication = createSection(tabContent, 'Autentication');
+        //LMS
+        var sistem = createSection(tabContent, 'Learning Management System');
     });
 });
 
 
 app.controller('SettingsModules', function($scope, $element, $smartboards, $compile) {
+    
+    $scope.reduceList = function(){
+        $scope.modules = $scope.allModules;
+        filteredModules = [];
+        text = $scope.search;
+        if (validateSearch(text)){
+            //match por name e short
+            jQuery.each($scope.modules , function( index ){
+                module_obj = $scope.modules[index];
+                if (module_obj.name.toLowerCase().includes(text.toLowerCase())
+                || module_obj.discription.toLowerCase().includes(text.toLowerCase())){
+                    filteredModules.push(module_obj);
+                }
+            });
+            if(filteredModules.length == 0){
+                $("#courses-table").hide();
+                $("#empty_table").append("No matches found");
+            }
+            $scope.modules = filteredModules;
+        }
+        
+    }
+
+
+    var tabContent = $($element);
+
+    search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
+    install_btn = $("<button id='install_module' > Install New Module</button>");
+
+    modules = $('<div id="modules"></div>');
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
+    module_card.append($('<div class="icon"></div>'));
+    module_card.append($('<div class="header">{{module.name}}</div>'));
+    module_card.append($('<div class="text">{{module.description}}</div>'));
+    modules.append(module_card);
+    
+    $compile(modules)($scope);
+    $compile(search)($scope);
+    tabContent.append(search);
+    tabContent.append(install_btn);
+    tabContent.append(modules);
+    
+
     $smartboards.request('settings', 'modules', {}, function(data, err) {
         if (err) {
             $($element).text(err.description);
             return;
         }
 
-        var tabContent = $($element);
-        $scope.data = data;
-        
-        var columns = ['c1', {field:'c2', constructor: function(content) {
-            return content;
-        }}];
-
-        var modulesSection = createSection(tabContent, 'Modules');
-        modulesSection.attr('id', 'modules');
-        var modules = $scope.data;
-        for(var i in modules) {
-            var module = modules[i];
-            var dependencies = [];
-            var canEnable = true;
-            for (var d in module.dependencies) {
-                var dependency = module.dependencies[d];
-                dependencies.push(dependency.id);
-            }
-            dependencies = dependencies.join(', ');
-            if (dependencies == '')
-                dependencies = 'None';
-            var table = Builder.buildTable([
-                { c1:'Name:', c2: module.name},
-                { c1:'Version:', c2: module.version},
-                { c1:'Path:', c2: module.dir},
-                { c1:'Dependencies:', c2: dependencies}
-            ], columns);
-            modulesSection.append(table);
-        }
-    });
-});
-
-//retirar no futuro
-app.controller('SettingsCourses', function($scope, $state, $compile, $smartboards, $element) {
-
-    //talvez precise do if abaixo
-    $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
-        // make sure courses is an object
-        var courses = data.courses;
-        if (Array.isArray(courses)) {
-            var newCourses = {};
-            for (var i in courses){
-                courses[i]['active'] = courses[i]['active']==='1' ? true : false;
-                newCourses[i] = courses[i];
-            }
-            courses = newCourses;
-        }
-        $scope.courses = courses;
-        $($element).append($compile($('<ul style="list-style: none"><li ng-repeat="course in courses">{{course.name}}{{course.isActive ? \'\' : \' - Inactive\'}} <button ng-click="toggleCourse(course)">{{course.isActive ? \'Deactivate\' : \'Activate\'}}</button><img src="images/trashcan.svg" ng-click="deleteCourse(course.id)"></li></ul>'))($scope));
-        $($element).append($compile($('<button>', {'ng-click': 'newCourse()', text: 'Create new'}))($scope));
+        console.log(data);
+        $scope.modules = data;
+        $scope.allModules = data.slice();
     });
 });

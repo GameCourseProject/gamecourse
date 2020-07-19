@@ -376,16 +376,17 @@ API::registerFunction('settings', 'modules', function() {
     $allModules = ModuleLoader::getModules();
     //$enabledModules = $course->getModules();
     
-    $modulesArr = array();
+    $modulesArr = [];
     foreach ($allModules as $module) {
         $mod = array(
             'id' => $module['id'],
             'name' => $module['name'],
             'dir' => $module['dir'],
             'version' => $module['version'],
-            'dependencies' => $module['dependencies']
+            'dependencies' => $module['dependencies'],
+            'discription' => ""
         );
-        $modulesArr[$module['id']] = $mod;
+        $modulesArr[] = $mod; 
     }
     
     API::response($modulesArr);

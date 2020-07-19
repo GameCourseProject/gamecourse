@@ -1,4 +1,4 @@
-.input-text {
+/* .input-text {
   height: 26px;
   padding: 7px;
   margin-right: 4px;
@@ -518,8 +518,6 @@ nav ul > li > a span:nth-of-type(2) {
   margin: 0 auto;
 }
 div.tooltip {
-  /*width: 300px;
-  height: 60px;*/
   background-color: #bfbfbf;
   border: 1px solid #b3b3b3;
 }
@@ -536,4 +534,4 @@ div.tooltip .content .userinfo {
 }
 div.tooltip .content .userinfo .name {
   font-weight: bold;
-}
+} */

@@ -1,0 +1,172 @@
+.page {
+    width: 100%;
+    height: calc(100vh - 67px);
+}
+.tabs{
+    display: flex;
+    height: 100%;
+}
+
+/*sidebar*/
+.tabs .tabs-container {
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    position: relative;
+    list-style: none;
+    padding: 8px;
+    margin: 0px;
+}
+.tabs .tabs-container::after {
+    width: 2px;
+    height: 85%;
+    background-color: lightgrey;
+    content: "";
+    position: absolute;
+    right: 0;
+}
+
+.tabs .tabs-container > li {
+    font-weight: bold;
+    padding: 0px;
+    margin: 40px 0px;
+    font-size: 18px;
+    text-align: center;
+}
+.tabs .tabs-container li a{
+    position: relative;
+    cursor: pointer;
+    color: grey;
+    text-decoration: none;
+    display: table-caption;
+}
+.tabs .tabs-container li a.active{
+    color: black;
+}
+.tabs .tabs-container a.active::after {
+    width: 100%;
+    height: 2px;
+    background-color: black;
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+}
+.tabs .tabs-container a:hover::after {
+    width: 100%;
+    height: 2px;
+    background-color: black;
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+}
+
+/*main content*/
+
+.tab-content-wrapper{
+    padding: 80px 55px 35px 70px;
+    position: relative;
+    width: calc(100% - 305px);
+}
+.tab-content{
+    width: 100%;
+    margin-top: -30px;
+    position: relative;
+}
+#themes {
+    display: flex;
+    flex-wrap: wrap;
+}
+#themes .theme {
+    margin: 8px;
+    padding: 8px;
+    border: 1px solid #ffffff;
+    text-align: center;
+}
+#themes .theme .preview {
+    width: 120px;
+    height: 80px;
+}
+#themes .theme.current {
+    color: white;
+    background-color: #1aa35b;
+}
+#themes .theme.pointer {
+    cursor: pointer;
+}
+
+#modules {
+    display: flex;
+    flex-wrap: wrap;
+    height: 95%;
+    overflow: auto;
+}
+.module_card {
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid grey;
+    margin: 20px 20px 20px 40px;
+    position: relative;
+    height: 177px;
+}
+.module_card .icon {
+    height: 65px;
+    width: 65px;
+    border-radius: 50%;
+    border: 2px solid grey;
+    position: absolute;
+    left: -40px;
+    top: -20px;
+    z-index: 1;
+    background-color: white;
+}
+.module_card .header {
+    font-size: 14px;
+    height: 35px;
+    width: 100%;
+    line-height: 35px;
+    text-align: center;
+    border-bottom: 2px solid grey;
+}
+.module_card .text {
+    width: calc(100% - 50px);
+    font-size: 12px;
+    padding: 20px 25px;
+    height: 100px;
+}
+.module_card .status {
+    width: 100%;
+    font-size: 14px;
+    line-height: 20px;
+    vertical-align: middle;
+    text-align: center;
+    border-top: 2px solid grey;
+}
+
+.search {
+    width: 475px;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+#seach_input {
+    flex-grow: 1;
+}
+
+#install_module {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: gray;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    padding: 7px 15px;
+}
+  
+
+  

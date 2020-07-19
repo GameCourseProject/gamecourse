@@ -18,6 +18,8 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/geral.css" />
     <link rel="stylesheet" type="text/css" href="css/search_filter_sidebar.css" />
     <link rel="stylesheet" type="text/css" href="css/modals.css" />
+    <link rel="stylesheet" type="text/css" href="css/settings.css" />
+
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/angular.min.js"></script>
@@ -65,9 +67,7 @@ $user = Core::getLoggedUser();
                     if ($scope.course != undefined) {
                         changeTitle(courseName, 0, false);
                         //na funcao da API devolve o que vai aparecer na navbar
-                        $smartboards.request('core', 'getCourseInfo', {
-                            course: $scope.course
-                        }, function(data, err) {
+                        $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function(data, err) {
                             if (err) {
                                 alert(err.description);
                                 return;

@@ -125,7 +125,8 @@ function buildTabs(info, parent, $smartboards, $scope) {
 
 function createSection(parent, title) {
     var sec = $('<div>', {'class':'section'});
-    sec.append($('<div>', {'class':'title', text: title}));
+    var divider = $('<div class="divider"><div class="title"><span>'+ title +'</span></div></div>');
+    sec.append(divider);
     var content = $('<div>', {'class':'content'});
     sec.append(content);
     parent.append(sec);
