@@ -113,6 +113,7 @@ class Core
                 $_SESSION['username'] = $person->username;
                 $_SESSION['name'] = $person->name;
                 $_SESSION['email'] = $person->email;
+                $_SESSION['loginDone'] = "fenix";
             }
         } else {
             if (array_key_exists('error', $_GET)) {
@@ -129,19 +130,21 @@ class Core
                 $_SESSION['username'] =  $person->email;
                 $_SESSION['email'] =  $person->email;
                 $_SESSION['name'] =  $person->name;
+                $_SESSION['loginDone'] = "google";
             }
         }
     }
 
     public static function checkAccess($redirect = true)
     {
+        $username = $_SESSION['username'];
         static::init(); // make sure its initialized
         if (array_key_exists('user', $_SESSION)) {
             static::$loggedUser = User::getUser($_SESSION['user']);
             return true;
         }
 
-        if ($_SESSION['type'] == "fenix") {
+        if ($_SESSION['loginDone'] == "fenix") {
             $fenixAuth = static::getFenixAuth();
             $username = $fenixAuth->getUsername();
             static::$loggedUser = User::getUserByUsername($username);
@@ -153,10 +156,10 @@ class Core
                 exit;
             }
         }
-        if ($_SESSION['type'] == "google") {
+        if ($_SESSION['loginDone'] == "google") {
             $googleAuth = static::getGoogleAuth();
             $username = $googleAuth->getUsername();
-            static::$loggedUser = User::getUserByUsername("dianamlopes22@gmail.com");
+            static::$loggedUser = User::getUserByUsername($username);
             if (static::$loggedUser != null) {
                 $_SESSION['user'] = static::$loggedUser->getId();
                 return true;
