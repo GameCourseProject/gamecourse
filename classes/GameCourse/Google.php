@@ -55,4 +55,132 @@ class Google
         $this->checkToken($credentials, $token, $authCode);
         return new \Google_Service_Sheets($this->client);
     }
+
+
+
+    private static $INSTANCE;
+    private $accessKey;
+    private $secretKey;
+    private $callbackUrl;
+
+
+    protected function __construct()
+    {
+        global $_GOOGLE;
+        global $_SESSION;
+        if (php_sapi_name() != 'cli' && !session_id()) {
+            session_start();
+        }
+        $config = $_GOOGLE;
+        $this->accessKey = $config["access_key"];
+        $this->secretKey = $config["secret_key"];
+        $this->callbackUrl = isset($config["callback_url"]) ? $config["callback_url"] : null;
+
+        $this->accessToken = isset($config["access_token"]) ? $config["access_token"] : null;
+        $this->refreshToken = isset($config["refresh_token"]) ? $config["access_token"] : null;
+
+        if (isset($_SESSION['accessToken'])) {
+            $this->accessToken = $_SESSION['accessToken'];
+            $this->refreshToken = $_SESSION['accessToken'];
+            $this->expirationTime = $_SESSION['expires'];
+        }
+    }
+    public static function getSingleton()
+    {
+        if (self::$INSTANCE == null) {
+            self::$INSTANCE = new self();
+        }
+        return self::$INSTANCE;
+    }
+
+    function getAuthUrl()
+    {
+        $client = new \Google_Client();
+        $client->setClientId($this->accessKey);
+        $client->setClientSecret($this->secretKey);
+        $client->setRedirectUri($this->callbackUrl);
+        $client->addScope("email");
+        $client->addScope("profile");
+
+        return $client->createAuthUrl();
+    }
+
+    function getAccessTokenFromCode($code)
+    {
+
+        $client = new \Google_Client();
+        $client->setClientId($this->accessKey);
+        $client->setClientSecret($this->secretKey);
+        $client->setRedirectUri($this->callbackUrl);
+        $client->addScope("email");
+        $client->addScope("profile");
+
+        $token = $client->fetchAccessTokenWithAuthCode($code);
+        if ($token['access_token']) {
+            $this->accessToken = $_SESSION['accessToken'] = $token['access_token'];
+            $this->expirationTime = $_SESSION['expires'] = time() + $token['expires_in'];
+            $client->setAccessToken($token['access_token']);
+            return $client;
+        } else {
+            return false;
+        }
+    }
+
+    function getPerson($client)
+    {
+        $google_oauth = new \Google_Service_Oauth2($client);
+        $google_account_info = $google_oauth->userinfo->get();
+        return $google_account_info;
+    }
+
+
+
+    // public function getAuthCodeLogin()
+    // {
+    //     $this->client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
+    //     $this->client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
+    //     $this->client->setRedirectUri("http://localhost/gamecourse/auth");
+    //     $this->client->addScope("email");
+    //     $this->client->addScope("profile");
+    //     return $this->client->createAuthUrl();
+    // }
+
+    public function getClient()
+    {
+        $client = new \Google_Client();
+        $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
+        $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
+        $client->setRedirectUri("http://localhost/gamecourse/auth");
+        $client->addScope("email");
+        $client->addScope("profile");
+    }
+
+
+
+    // public function getAccessTokenFromCode($code)
+    // {
+    //     // $client = new \Google_Client();
+    //     // $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
+    //     // $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
+    //     // $client->setRedirectUri("http://localhost/gamecourse/auth");
+    //     // $client->addScope("email");
+    //     // $client->addScope("profile");
+    //     $token = $this->client->fetchAccessTokenWithAuthCode($code);
+    //     $this->client->setAccessToken($token['access_token']);
+    //     return $token['access_token'];
+    // }
+
+    // public function getPerson($code)
+    // {
+    //     // $client = new \Google_Client();
+    //     // $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
+    //     // $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
+    //     // $client->setRedirectUri("http://localhost/gamecourse/auth");
+    //     // $client->addScope("email");
+    //     // $client->addScope("profile");
+    //     // get profile info
+    //     $google_oauth = new \Google_Service_Oauth2($this->client);
+    //     $google_account_info = $google_oauth->userinfo->get();
+    //     return $google_account_info;
+    // }
 }

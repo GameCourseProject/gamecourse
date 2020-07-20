@@ -6,10 +6,14 @@ chdir('..');
 include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
+
 Core::denyCLI();
 if (!Core::requireSetup(false))
     header('Location: ..');
 
-Core::performLogin();
+if (array_key_exists("google", $_GET)) {
+    Core::performLogin("google");
+} else {
+    Core::performLogin("fenix");
+}
 header('Location: ..');
-?>

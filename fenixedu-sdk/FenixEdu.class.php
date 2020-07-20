@@ -6,27 +6,31 @@ require_once("RestRequest.inc.php");
 
 ini_set('display_errors', 1);
 
-class FenixEduException extends Exception {
+class FenixEduException extends Exception
+{
 
 	private $error;
 	private $errorDescription;
 
-	public function __construct($result) {
+	public function __construct($result)
+	{
 		$this->error = $result->error;
 		$this->errorDescription = $result->error_description;
 	}
 
-	public function getError() {
+	public function getError()
+	{
 		return $this->error;
 	}
 
-	public function getErrorDescription() {
+	public function getErrorDescription()
+	{
 		return $this->errorDescription;
 	}
-
 }
 
-class FenixEdu{
+class FenixEdu
+{
 
 	private static $INSTANCE;
 
@@ -40,14 +44,15 @@ class FenixEdu{
 	private $accessToken;
 	private $refreshToken;
 	private $expirationTime;
-	
+
 	private $callbackUrl;
 	private $apiBaseUrl;
-	
-	protected function __construct() {
+
+	protected function __construct()
+	{
 		global $_FENIX_EDU;
 		global $_SESSION;
-		if(php_sapi_name() != 'cli' && !session_id()) {
+		if (php_sapi_name() != 'cli' && !session_id()) {
 			session_start();
 		}
 		$config = $_FENIX_EDU;
@@ -57,22 +62,24 @@ class FenixEdu{
 		$this->refreshToken = isset($config["refresh_token"]) ? $config["access_token"] : null;
 		$this->callbackUrl = isset($config["callback_url"]) ? $config["callback_url"] : $this->getCurrentUrl();
 		$this->apiBaseUrl = isset($config["api_base_url"]) ? $config["api_base_url"] : "http://fenix.ist.utl.pt";
-		
-		if(isset($_SESSION['accessToken'])){
+
+		if (isset($_SESSION['accessToken'])) {
 			$this->accessToken = $_SESSION['accessToken'];
 			$this->refreshToken = $_SESSION['refreshToken'];
 			$this->expirationTime = $_SESSION['expires'];
 		}
 	}
-	
-	public static function getSingleton() {
-		if(self::$INSTANCE == null) {
+
+	public static function getSingleton()
+	{
+		if (self::$INSTANCE == null) {
 			self::$INSTANCE = new self();
 		}
 		return self::$INSTANCE;
 	}
-	
-	function getAuthUrl() {
+
+	function getAuthUrl()
+	{
 		$params = array(
 			'client_id'	=> $this->accessKey,
 			'redirect_uri' => $this->callbackUrl
@@ -80,158 +87,182 @@ class FenixEdu{
 		$query = http_build_query($params, '', '&');
 		return $this->apiBaseUrl . "/oauth/userdialog?" . $query;
 	}
-	
-	function getAccessTokenFromCode($code){
-		$reqbody = array( 'client_id' => $this->accessKey,  'client_secret' => $this->secretKey, 'redirect_uri' => $this->callbackUrl, 'code' => $code, 'grant_type' => 'authorization_code');
+
+	function getAccessTokenFromCode($code)
+	{
+		$reqbody = array('client_id' => $this->accessKey,  'client_secret' => $this->secretKey, 'redirect_uri' => $this->callbackUrl, 'code' => $code, 'grant_type' => 'authorization_code');
 		$url = $this->apiBaseUrl . "/oauth/access_token";
 		$req = new RestRequest($url, 'POST', $reqbody);
 		$req->execute();
 		$info = $req->getResponseInfo();
 
-		if($info['http_code'] == 200){
+		if ($info['http_code'] == 200) {
 			$json = json_decode($req->getResponseBody());
 			$this->accessToken = $_SESSION['accessToken'] = $json->access_token;
 			$this->refreshToken = $_SESSION['refreshToken'] = $json->refresh_token;
 			$this->expirationTime = $_SESSION['expires'] = time() + $json->expires;
-                        return true;
+			return true;
 		} else {
-                        return false;
+			return false;
 		}
 	}
 
-	protected function buildURL($endpoint, $public){
+	protected function buildURL($endpoint, $public)
+	{
 		$url = $this->apiBaseUrl . "/api/fenix/v1/" . $endpoint;
-		if(!$public){
-			$url .= '?access_token='. urlencode($this->getAccessToken());
+		if (!$public) {
+			$url .= '?access_token=' . urlencode($this->getAccessToken());
 		}
 		return $url;
 	}
 
-	protected function getAccessToken(){
-		if($this->expirationTime <= time()){
+	protected function getAccessToken()
+	{
+		if ($this->expirationTime <= time()) {
 			$this->refreshAccessToken();
 		}
 		return $this->accessToken;
 	}
 
-	protected function refreshAccessToken(){
+	protected function refreshAccessToken()
+	{
 		$reqbody = array('client_id' => $this->accessKey,  'client_secret' => $this->secretKey, 'refresh_token' => $this->refreshToken);
 		$url = $this->apiBaseUrl . "/oauth/refresh_token";
 		$req = new RestRequest($url, 'POST', $reqbody);
 		$req->execute();
 		$info = $req->getResponseInfo();
 		$result = json_decode($req->getResponseBody());
-		if($info['http_code'] == 200){	
+		if ($info['http_code'] == 200) {
 			$this->accessToken = $_SESSION['accessToken'] = $result->access_token;
 			$this->expirationTime = $_SESSION['expires'] = time() + $result->expires_in;
-		} elseif($info['http_code'] == 401) {
+		} elseif ($info['http_code'] == 401) {
 			throw new FenixEduException($result);
 		}
 	}
 	//mudar pra protected
-	public function get($endpoint, $public = false){
+	public function get($endpoint, $public = false)
+	{
 		$url = $this->buildURL($endpoint, $public);
 		$req = new RestRequest($url, 'GET');
 		$req->execute();
 		$result = json_decode($req->getResponseBody());
 		$info = $req->getResponseInfo();
-		if($info['http_code'] == 401)
+		if ($info['http_code'] == 401)
 			throw new FenixEduException($result);
-		elseif($info['http_code'] == 200)
+		elseif ($info['http_code'] == 200)
 			return $result;
 	}
 
-	protected function put($endpoint, $data = ""){
+	protected function put($endpoint, $data = "")
+	{
 		$url = $this->buildURL($endpoint, $public);
 		$req = new RestRequest($url, 'POST', $data);
 		$req->execute();
 		return json_decode($req->getResponseBody());
 	}
-	
-	public function getIstId() {
+
+	public function getIstId()
+	{
 		return $this->getPerson()->istId;
 	}
 
-	public function getAboutInfo() {
+	public function getAboutInfo()
+	{
 		return $this->get("about");
 	}
 
-	public function getCourse($id) {
-		return $this->get("courses/".$id);
+	public function getCourse($id)
+	{
+		return $this->get("courses/" . $id);
 	}
 
-	public function getCourseEvaluations($id) {
-		return $this->get("courses/".$id."/evaluations");
+	public function getCourseEvaluations($id)
+	{
+		return $this->get("courses/" . $id . "/evaluations");
 	}
 
-	public function getCourseGroups($id) {
-		return $this->get("courses/".$id."/groups");
+	public function getCourseGroups($id)
+	{
+		return $this->get("courses/" . $id . "/groups");
 	}
 
-	public function getCourseSchedule($id) {
-		return $this->get("courses/".$id."/schedule");
+	public function getCourseSchedule($id)
+	{
+		return $this->get("courses/" . $id . "/schedule");
 	}
 
-	public function getCourseStudents($id) {
-		return $this->get("courses/".$id."/students");
+	public function getCourseStudents($id)
+	{
+		return $this->get("courses/" . $id . "/students");
 	}
 
-	public function getDegrees() {
+	public function getDegrees()
+	{
 		return $this->get("degrees");
 	}
 
-	public function getDegree($id) {
-		return $this->get("degrees/".$id);
+	public function getDegree($id)
+	{
+		return $this->get("degrees/" . $id);
 	}
 
-	public function getDegreeCourses($id) {
-		return $this->get("degrees/".$id."/courses");
+	public function getDegreeCourses($id)
+	{
+		return $this->get("degrees/" . $id . "/courses");
 	}
 
-	public function getPerson() {
+	public function getPerson()
+	{
 		return $this->get("person");
 	}
 
-	public function getPersonCalendarClasses() {
+	public function getPersonCalendarClasses()
+	{
 		return $this->get("person/calendar/classes");
 	}
 
-	public function getPersonCalendarEvaluations() {
+	public function getPersonCalendarEvaluations()
+	{
 		return $this->get("person/calendar/evaluations");
 	}
 
-	public function getPersonCourses() {
+	public function getPersonCourses()
+	{
 		return $this->get("person/courses");
 	}
 
-	public function getCurriculum() {
+	public function getCurriculum()
+	{
 		return $this->get("person/curriculum");
 	}
 
-	public function getPersonEvaluations() {
+	public function getPersonEvaluations()
+	{
 		return $this->get("person/evaluations");
 	}
 
-	public function enrollPersonEvaluation($id) {
-		return $this->put("person/evaluations/".$id, "enrol=yes");
+	public function enrollPersonEvaluation($id)
+	{
+		return $this->put("person/evaluations/" . $id, "enrol=yes");
 	}
 
-	public function disenrollPersonEvaluation($id) {
-		return $this->put("person/evaluations/".$id, "enrol=no");
+	public function disenrollPersonEvaluation($id)
+	{
+		return $this->put("person/evaluations/" . $id, "enrol=no");
 	}
 
-	public function getPersonPayments() {
+	public function getPersonPayments()
+	{
 		return $this->get("person/payments");
 	}
 
-	public function getSpaces() {
+	public function getSpaces()
+	{
 		return $this->get("spaces");
 	}
 
-	public function getSpace($id) {
-		return $this->get("spaces/".$id);
+	public function getSpace($id)
+	{
+		return $this->get("spaces/" . $id);
 	}
-
 }
-
-?>

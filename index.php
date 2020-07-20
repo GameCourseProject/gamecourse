@@ -11,9 +11,8 @@ Core::denyCLI();
 Core::requireLogin();
 Core::requireSetup();
 Core::init();
-Core::checkAccess();
+Core::checkAccess();    
 
 ModuleLoader::scanModules();
 
 include 'pages/main.php';
-?>
