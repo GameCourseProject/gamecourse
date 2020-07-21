@@ -70,6 +70,17 @@ class FenixEdu
 		}
 	}
 
+	public function logout()
+	{
+		setcookie("JSESSIONID", "", time() - 3600);
+		setcookie("BACKENDID", "", time() - 3600);
+		setcookie("OAUTH_CLIENT_ID", "", time() - 3600);
+
+		unset($_SESSION['accessToken']);
+		unset($_SESSION['refreshToken']);
+		$this->accessToken = "";
+		$this->refreshToken = "";
+	}
 	public static function getSingleton()
 	{
 		if (self::$INSTANCE == null) {

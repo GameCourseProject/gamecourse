@@ -83,10 +83,11 @@ class Core
                 if (array_key_exists('REQUEST_URI', $_SERVER))
                     $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
                 header("Location: $authorizationUrl");
-            } else {
+            } else if ($loginType == "fenix") {
                 $_SESSION['type'] = "fenix";
                 $fenixEduClient = \FenixEdu::getSingleton();
                 $authorizationUrl = $fenixEduClient->getAuthUrl();
+
                 if (array_key_exists('REQUEST_URI', $_SERVER))
                     $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
                 header("Location: $authorizationUrl");
@@ -171,6 +172,31 @@ class Core
         return false;
     }
 
+    //NAO FUNCIONA
+    public static function logout()
+    {
+        // session_start();
+        // session_destroy();
+        session_start();
+        unset($_SESSION['user']);
+        unset($_SESSION['username']);
+        unset($_SESSION['email']);
+        unset($_SESSION['name']);
+        unset($_SESSION['loginDone']);
+        unset($_SESSION['type']);
+        unset($_SESSION['redirect_url']);
+        unset($_SESSION['accessToken']);
+        unset($_SESSION['refreshToken']);
+
+        $fenix = \FenixEdu::getSingleton();
+        $fenix->logout();
+        setcookie("JSESSIONID", 0, 1, "/", "fenix.tecnico.ulisboa.pt", true, true);
+        setcookie("BACKENDID", 0, 1, "/", "fenix.tecnico.ulisboa.pt", true, true);
+        setcookie("OAUTH_CLIENT_ID", 0, 1, "/oauth", "fenix.tecnico.ulisboa.pt", false, false);
+        session_destroy();
+
+        header('Location:index.php');
+    }
     public static function getFenixInfo($url)
     {
         $fenixEduClient = \FenixEdu::getSingleton();

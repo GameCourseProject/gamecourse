@@ -7,11 +7,15 @@ include 'classes/ClassLoader.class.php';
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
 
+if (array_key_exists("logout", $_GET)) {
+    Core::logout();
+}
+
 Core::denyCLI();
 Core::requireLogin();
 Core::requireSetup();
 Core::init();
-Core::checkAccess();    
+Core::checkAccess();
 
 ModuleLoader::scanModules();
 
