@@ -15,6 +15,10 @@
     define('GOOGLE_CLIENT_SECRET', 'hC4zsuwH1fVIWi5k0C4zjOub');
     define('GOOGLE_REDIRECT_URL', 'http://localhost/gamecourse/auth?google');
 
+    define('FACEBOOK_CLIENT_ID', '2373275799648058');
+    define('FACEBOOK_CLIENT_SECRET', 'b0405dc8de6f9512b736cb895b7642ef');
+    define('FACEBOOK_REDIRECT_URL', 'http://localhost/gamecourse/auth?facebook');
+
 
     $GLOBALS['theme'] = "default";
 

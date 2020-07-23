@@ -13,6 +13,8 @@ if (!Core::requireSetup(false))
 
 if (array_key_exists("google", $_GET)) {
     Core::performLogin("google");
+} else if (array_key_exists("facebook", $_GET)) {
+    Core::performLogin("facebook");
 } else {
     Core::performLogin("fenix");
 }

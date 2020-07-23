@@ -2,12 +2,16 @@
 
 namespace GameCourse;
 
+use Facebook\Facebook;
 use MagicDB\SQLDB;
 
 require_once 'config.php';
 
 require_once 'fenixedu-sdk/FenixEdu.class.php';
 require_once 'Google.php';
+require_once 'FacebookHandler.php';
+
+
 $_FENIX_EDU['access_key'] = FENIX_CLIENT_ID;
 $_FENIX_EDU['secret_key'] = FENIX_CLIENT_SECRET;
 $_FENIX_EDU['callback_url'] = FENIX_REDIRECT_URL;
@@ -18,6 +22,11 @@ $_GOOGLE['access_key'] = GOOGLE_CLIENT_ID;
 $_GOOGLE['secret_key'] = GOOGLE_CLIENT_SECRET;
 $_GOOGLE['callback_url'] = GOOGLE_REDIRECT_URL;
 $GLOBALS['_GOOGLE'] = $_GOOGLE;
+
+$_FACEBOOK['access_key'] = FACEBOOK_CLIENT_ID;
+$_FACEBOOK['secret_key'] = FACEBOOK_CLIENT_SECRET;
+$_FACEBOOK['callback_url'] = FACEBOOK_REDIRECT_URL;
+$GLOBALS['_FACEBOOK'] = $_FACEBOOK;
 
 class Core
 {
@@ -92,6 +101,12 @@ class Core
                     $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
                 header("Location: $authorizationUrl");
                 exit();
+            } else if ($loginType == "facebook") {
+                $_SESSION['type'] = "facebook";
+                $facebookClient = FacebookHandler::getSingleton();
+                $authorizationUrl = $facebookClient->getAuthUrl();
+                header("Location: $authorizationUrl");
+                exit();
             }
         }
         return $isLoggedIn;
@@ -116,7 +131,7 @@ class Core
                 $_SESSION['email'] = $person->email;
                 $_SESSION['loginDone'] = "fenix";
             }
-        } else {
+        } else if ($loginType == "google") {
             if (array_key_exists('error', $_GET)) {
                 die($_GET['error']);
             } else if (array_key_exists('code', $_GET)) {
@@ -133,7 +148,25 @@ class Core
                 $_SESSION['name'] =  $person->name;
                 $_SESSION['loginDone'] = "google";
             }
+        } else if ($loginType == "facebook") {
+            if (array_key_exists('error', $_GET)) {
+                die($_GET['error']);
+            } else if (array_key_exists('code', $_GET)) {
+                $code = $_GET['code'];
+                $facebookClient = FacebookHandler::getSingleton();
+                $accessToken = $facebookClient->getAccessTokenFromCode($code);
+                $person = $facebookClient->getPerson();
+                $_SESSION['username'] =  $person->email;
+                $_SESSION['email'] =  $person->email;
+                $_SESSION['name'] =  $person->name;
+                $_SESSION['loginDone'] = "facebook";
+            }
         }
+    }
+    public static function getUserInfo()
+    {
+        file_put_contents("aaaaaaaaaaa.txt", $_GET['facebookPerson']);
+        //$facebookClient = FacebookHandler::getSingleton();
     }
 
     public static function checkAccess($redirect = true)
