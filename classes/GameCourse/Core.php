@@ -2,14 +2,13 @@
 
 namespace GameCourse;
 
-use Facebook\Facebook;
 use MagicDB\SQLDB;
 
 require_once 'config.php';
 
 require_once 'fenixedu-sdk/FenixEdu.class.php';
 require_once 'Google.php';
-require_once 'FacebookHandler.php';
+require_once 'Facebook.php';
 
 
 $_FENIX_EDU['access_key'] = FENIX_CLIENT_ID;
@@ -103,7 +102,7 @@ class Core
                 exit();
             } else if ($loginType == "facebook") {
                 $_SESSION['type'] = "facebook";
-                $facebookClient = FacebookHandler::getSingleton();
+                $facebookClient = Facebook::getSingleton();
                 $authorizationUrl = $facebookClient->getAuthUrl();
                 header("Location: $authorizationUrl");
                 exit();
@@ -153,7 +152,7 @@ class Core
                 die($_GET['error']);
             } else if (array_key_exists('code', $_GET)) {
                 $code = $_GET['code'];
-                $facebookClient = FacebookHandler::getSingleton();
+                $facebookClient = Facebook::getSingleton();
                 $accessToken = $facebookClient->getAccessTokenFromCode($code);
                 $person = $facebookClient->getPerson();
                 $_SESSION['username'] =  $person->email;
@@ -163,43 +162,50 @@ class Core
             }
         }
     }
-    public static function getUserInfo()
-    {
-        file_put_contents("aaaaaaaaaaa.txt", $_GET['facebookPerson']);
-        //$facebookClient = FacebookHandler::getSingleton();
-    }
 
     public static function checkAccess($redirect = true)
     {
-        $username = $_SESSION['username'];
         static::init(); // make sure its initialized
         if (array_key_exists('user', $_SESSION)) {
             static::$loggedUser = User::getUser($_SESSION['user']);
             return true;
         }
-
-        if ($_SESSION['loginDone'] == "fenix") {
-            $fenixAuth = static::getFenixAuth();
-            $username = $fenixAuth->getUsername();
-            static::$loggedUser = User::getUserByUsername($username);
-            if (static::$loggedUser != null) {
-                $_SESSION['user'] = static::$loggedUser->getId();
-                return true;
-            } else if ($redirect) {
-                include 'pages/no-access.php';
-                exit;
+        if (array_key_exists("loginDone", $_SESSION)) {
+            if ($_SESSION['loginDone'] == "fenix") {
+                $fenixAuth = static::getFenixAuth();
+                $username = $fenixAuth->getUsername();
+                static::$loggedUser = User::getUserByUsername($username);
+                if (static::$loggedUser != null) {
+                    $_SESSION['user'] = static::$loggedUser->getId();
+                    return true;
+                } else if ($redirect) {
+                    include 'pages/no-access.php';
+                    exit;
+                }
             }
-        }
-        if ($_SESSION['loginDone'] == "google") {
-            $googleAuth = static::getGoogleAuth();
-            $username = $googleAuth->getUsername();
-            static::$loggedUser = User::getUserByUsername($username);
-            if (static::$loggedUser != null) {
-                $_SESSION['user'] = static::$loggedUser->getId();
-                return true;
-            } else if ($redirect) {
-                include 'pages/no-access.php';
-                exit;
+            if ($_SESSION['loginDone'] == "google") {
+                $googleAuth = static::getGoogleAuth();
+                $username = $googleAuth->getUsername();
+                static::$loggedUser = User::getUserByUsername($username);
+                if (static::$loggedUser != null) {
+                    $_SESSION['user'] = static::$loggedUser->getId();
+                    return true;
+                } else if ($redirect) {
+                    include 'pages/no-access.php';
+                    exit;
+                }
+            }
+            if ($_SESSION['loginDone'] == "facebook") {
+                $facebookAuth = static::getFacebookAuth();
+                $username = $facebookAuth->getUsername();
+                static::$loggedUser = User::getUserByUsername($_SESSION['username']);
+                if (static::$loggedUser != null) {
+                    $_SESSION['user'] = static::$loggedUser->getId();
+                    return true;
+                } else if ($redirect) {
+                    include 'pages/no-access.php';
+                    exit;
+                }
             }
         }
         return false;
@@ -277,6 +283,11 @@ class Core
     public static function getGoogleAuth()
     {
         return new GoogleAuth();
+    }
+
+    public static function getFacebookAuth()
+    {
+        return new FacebookAuth();
     }
 
     //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins

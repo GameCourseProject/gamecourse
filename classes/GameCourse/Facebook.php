@@ -3,7 +3,7 @@
 namespace GameCourse;
 
 
-class FacebookHandler
+class Facebook
 {
     private static $INSTANCE;
     private $accessKey;
@@ -53,7 +53,7 @@ class FacebookHandler
         $url = "https://graph.facebook.com/v7.0/oauth/access_token?client_id=" . $this->accessKey .
             "&redirect_uri=" . $this->callbackUrl . "&client_secret=" . $this->secretKey . "&code=" . $code;
 
-        $response = FacebookHandler::curlRequests($url);
+        $response = Facebook::curlRequests($url);
 
         $token = json_decode($response);
         $this->accessToken = $_SESSION['accessToken'] = $token->access_token;
@@ -64,8 +64,7 @@ class FacebookHandler
     public function getPersonId()
     {
         $url = "https://graph.facebook.com/me?access_token=" . $this->accessToken;
-        $response = FacebookHandler::curlRequests($url);
-        file_put_contents("person", $response);
+        $response = Facebook::curlRequests($url);
         $info = json_decode($response);
         return $info->id;
     }
@@ -73,13 +72,12 @@ class FacebookHandler
     public function getPerson()
     {
         $url = "https://graph.facebook.com/me?access_token=" . $this->accessToken;
-        $response = FacebookHandler::curlRequests($url);
-        file_put_contents("person", $response);
+        $response = Facebook::curlRequests($url);
         $info = json_decode($response);
         $personId = $info->id;
 
         $url = "https://graph.facebook.com/v7.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
-        $response = FacebookHandler::curlRequests($url);
+        $response = Facebook::curlRequests($url);
         $info = json_decode($response);
         return $info;
         //atençao pq o email nao le bem o @!!    
