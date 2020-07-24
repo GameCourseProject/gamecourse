@@ -43,10 +43,10 @@ class Facebook
         return "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey . "&redirect_uri=" . $this->callbackUrl . "&scope=email";
     }
 
-    public function askPermission()
-    {
-        $url = "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey . "&redirect_uri=" . $this->callbackUrl . "&auth_type=rerequest&scope=email";
-    }
+    // public function askPermission()
+    // {
+    //     $url = "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey . "&redirect_uri=" . $this->callbackUrl . "&auth_type=rerequest&scope=email";
+    // }
 
     public function getAccessTokenFromCode($code)
     {
@@ -83,6 +83,12 @@ class Facebook
         //atençao pq o email nao le bem o @!!    
     }
 
+    public function logout()
+    {
+        $url = "https://m.facebook.com/logout.php?confirm=1next=" . $this->callbackUrl . "&access_token=" . $this->accessToken;
+        file_put_contents("uuuuuuuuuuuuu.txt", $url);
+        $response = Facebook::curlRequests($url);
+    }
 
     public static function curlRequests($url)
     {
