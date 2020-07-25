@@ -87,34 +87,23 @@ class Core
             session_regenerate_id();
         }
         $isLoggedIn = array_key_exists('username', $_SESSION);
+        $client = null;
         if (!$isLoggedIn && $performLogin) {
             $loginType = (include 'pages/login.php');
+            $_SESSION['type'] = $loginType;
             if ($loginType == "google") {
-                $_SESSION['type'] = "google";
-                $google = Google::getSingleton();
-                $authorizationUrl = $google->getAuthUrl();
-                if (array_key_exists('REQUEST_URI', $_SERVER))
-                    $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
-                header("Location: $authorizationUrl");
+                $client = Google::getSingleton();
             } else if ($loginType == "fenix") {
-                $_SESSION['type'] = "fenix";
-                $fenixEduClient = \FenixEdu::getSingleton();
-                $authorizationUrl = $fenixEduClient->getAuthUrl();
-
+                $client = \FenixEdu::getSingleton();
+            } else if ($loginType == "facebook") {
+                $client = Facebook::getSingleton();
+            } else if ($loginType == "linkedin") {
+                $client = Linkedin::getSingleton();
+            }
+            if ($client) {
+                $authorizationUrl = $client->getAuthUrl();
                 if (array_key_exists('REQUEST_URI', $_SERVER))
                     $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
-                header("Location: $authorizationUrl");
-                exit();
-            } else if ($loginType == "facebook") {
-                $_SESSION['type'] = "facebook";
-                $facebookClient = Facebook::getSingleton();
-                $authorizationUrl = $facebookClient->getAuthUrl();
-                header("Location: $authorizationUrl");
-                exit();
-            } else if ($loginType == "linkedin") {
-                $_SESSION['type'] = "facebook";
-                $linkedinClient = Linkedin::getSingleton();
-                $authorizationUrl = $linkedinClient->getAuthUrl();
                 header("Location: $authorizationUrl");
                 exit();
             }
@@ -125,65 +114,29 @@ class Core
     public static function performLogin($loginType)
     {
         if ($loginType == "fenix") {
-            if (array_key_exists('error', $_GET)) {
-                die($_GET['error']);
-            } else if (array_key_exists('code', $_GET)) {
-                $code = $_GET['code'];
-                $fenixEduClient = \FenixEdu::getSingleton();
-                if (!$fenixEduClient->getAccessTokenFromCode($code)) { // this may cause infinite loop, but is better than exposing credentials i guess
-                    $authorizationUrl = $fenixEduClient->getAuthUrl();
-                    header(sprintf("Location: %s", $authorizationUrl));
-                }
-
-                $person = $fenixEduClient->getPerson();
-                $_SESSION['username'] = $person->username;
-                $_SESSION['name'] = $person->name;
-                $_SESSION['email'] = $person->email;
-                $_SESSION['loginDone'] = "fenix";
-            }
+            $client = \FenixEdu::getSingleton();
         } else if ($loginType == "google") {
-            if (array_key_exists('error', $_GET)) {
-                die($_GET['error']);
-            } else if (array_key_exists('code', $_GET)) {
-                $code = $_GET['code'];
-                $google = Google::getSingleton();
-                $client = $google->getAccessTokenFromCode($code);
-                if (!$client) {
-                    $authorizationUrl = $google->getAuthUrl();
-                    header(sprintf("Location: %s", $authorizationUrl));
-                }
-                $person = $google->getPerson($client);
-                $_SESSION['username'] =  $person->email;
-                $_SESSION['email'] =  $person->email;
-                $_SESSION['name'] =  $person->name;
-                $_SESSION['loginDone'] = "google";
-            }
+            $client = Google::getSingleton();
         } else if ($loginType == "facebook") {
-            if (array_key_exists('error', $_GET)) {
-                die($_GET['error']);
-            } else if (array_key_exists('code', $_GET)) {
-                $code = $_GET['code'];
-                $facebookClient = Facebook::getSingleton();
-                $accessToken = $facebookClient->getAccessTokenFromCode($code);
-                $person = $facebookClient->getPerson();
-                $_SESSION['username'] =  $person->email;
-                $_SESSION['email'] =  $person->email;
-                $_SESSION['name'] =  $person->name;
-                $_SESSION['loginDone'] = "facebook";
-            }
+            $client = Facebook::getSingleton();
         } else if ($loginType == "linkedin") {
+            $client = Linkedin::getSingleton();
+        }
+        if ($client) {
             if (array_key_exists('error', $_GET)) {
                 die($_GET['error']);
             } else if (array_key_exists('code', $_GET)) {
                 $code = $_GET['code'];
-                $linkedinClient = Linkedin::getSingleton();
-                file_put_contents("linkedin.txt", $code);
-                $accessToken = $linkedinClient->getAccessTokenFromCode($code);
-                $person = $linkedinClient->getPerson();
-                $_SESSION['username'] =  $person->email;
+                $accessToken = $client->getAccessTokenFromCode($code);
+                if (!$accessToken) {
+                    $authorizationUrl = $client->getAuthUrl();
+                    header(sprintf("Location: $authorizationUrl"));
+                }
+                $person = $client->getPerson();
+                $_SESSION['username'] =  $person->username;
                 $_SESSION['email'] =  $person->email;
                 $_SESSION['name'] =  $person->name;
-                $_SESSION['loginDone'] = "linkedin";
+                $_SESSION['loginDone'] = $loginType;
             }
         }
     }
@@ -196,53 +149,15 @@ class Core
             return true;
         }
         if (array_key_exists("loginDone", $_SESSION)) {
-            if ($_SESSION['loginDone'] == "fenix") {
-                $fenixAuth = static::getFenixAuth();
-                $username = $fenixAuth->getUsername();
-                static::$loggedUser = User::getUserByUsername($username);
-                if (static::$loggedUser != null) {
-                    $_SESSION['user'] = static::$loggedUser->getId();
-                    return true;
-                } else if ($redirect) {
-                    include 'pages/no-access.php';
-                    exit;
-                }
-            }
-            if ($_SESSION['loginDone'] == "google") {
-                $googleAuth = static::getGoogleAuth();
-                $username = $googleAuth->getUsername();
-                static::$loggedUser = User::getUserByUsername($username);
-                if (static::$loggedUser != null) {
-                    $_SESSION['user'] = static::$loggedUser->getId();
-                    return true;
-                } else if ($redirect) {
-                    include 'pages/no-access.php';
-                    exit;
-                }
-            }
-            if ($_SESSION['loginDone'] == "facebook") {
-                $facebookAuth = static::getFacebookAuth();
-                $username = $facebookAuth->getUsername();
-                static::$loggedUser = User::getUserByUsername($_SESSION['username']);
-                if (static::$loggedUser != null) {
-                    $_SESSION['user'] = static::$loggedUser->getId();
-                    return true;
-                } else if ($redirect) {
-                    include 'pages/no-access.php';
-                    exit;
-                }
-            }
-            if ($_SESSION['loginDone'] == "linkedin") {
-                $facebookAuth = static::getFacebookAuth();
-                $username = $facebookAuth->getUsername();
-                static::$loggedUser = User::getUserByUsername($_SESSION['username']);
-                if (static::$loggedUser != null) {
-                    $_SESSION['user'] = static::$loggedUser->getId();
-                    return true;
-                } else if ($redirect) {
-                    include 'pages/no-access.php';
-                    exit;
-                }
+            $auth = static::getAuth();
+            $username = $auth->getUsername();
+            static::$loggedUser = User::getUserByUsername($username);
+            if (static::$loggedUser != null) {
+                $_SESSION['user'] = static::$loggedUser->getId();
+                return true;
+            } else if ($redirect) {
+                include 'pages/no-access.php';
+                exit;
             }
         }
         return false;
@@ -273,6 +188,12 @@ class Core
 
         header('Location:index.php');
     }
+
+    public static function getAuth()
+    {
+        return new Auth();
+    }
+
     public static function getFenixInfo($url)
     {
         $fenixEduClient = \FenixEdu::getSingleton();
@@ -311,22 +232,6 @@ class Core
     {
         return static::$systemDB->select("course", ['id' => $id]);
     }
-
-    public static function getFenixAuth()
-    {
-        return new FenixAuth();
-    }
-
-    public static function getGoogleAuth()
-    {
-        return new GoogleAuth();
-    }
-
-    public static function getFacebookAuth()
-    {
-        return new FacebookAuth();
-    }
-
 
     //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins
     public static function addNavigation($text, $ref, $isSRef = false, $class = '', $children = false, $restrictAcess = false)

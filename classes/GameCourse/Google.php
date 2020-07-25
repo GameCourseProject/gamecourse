@@ -126,11 +126,20 @@ class Google
         }
     }
 
-    function getPerson($client)
+    function getPerson()
     {
+        $client = new \Google_Client();
+        $client->setClientId($this->accessKey);
+        $client->setClientSecret($this->secretKey);
+        $client->setRedirectUri($this->callbackUrl);
+        $client->addScope("email");
+        $client->addScope("profile");
+        $client->setAccessToken($this->accessToken);
+
         $google_oauth = new \Google_Service_Oauth2($client);
         $google_account_info = $google_oauth->userinfo->get();
-        return $google_account_info;
+        $info = (object) array("username" => $google_account_info->email, "name" => $google_account_info->name, "email" => $google_account_info->email);
+        return $info;
     }
 
 

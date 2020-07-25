@@ -73,14 +73,16 @@ class Facebook
     {
         $url = "https://graph.facebook.com/me?access_token=" . $this->accessToken;
         $response = Facebook::curlRequests($url);
-        $info = json_decode($response);
-        $personId = $info->id;
+        $infoPersonId = json_decode($response);
+        $personId = $infoPersonId->id;
 
         $url = "https://graph.facebook.com/v7.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
         $response = Facebook::curlRequests($url);
-        $info = json_decode($response);
+        $infoPerson = json_decode($response);
+
+        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email);
+
         return $info;
-        //atençao pq o email nao le bem o @!!    
     }
 
     public function logout()

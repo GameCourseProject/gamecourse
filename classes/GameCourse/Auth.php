@@ -2,11 +2,11 @@
 
 namespace GameCourse;
 
-class FacebookAuth
+class Auth
 {
     public function getUsername()
     {
-        return $_SESSION['email'];
+        return $_SESSION['username'];
     }
 
     public function getName()

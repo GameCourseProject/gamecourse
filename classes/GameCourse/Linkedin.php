@@ -76,7 +76,7 @@ class Linkedin
         $infoEmail = json_decode($response);
         $email = $infoEmail->elements[0]->handle_->emailAddress;
 
-        $info = (object) array("name" => $name, "email" => $email);
+        $info = (object) array("username" => $email, "name" => $name, "email" => $email);
 
         return $info;
     }
