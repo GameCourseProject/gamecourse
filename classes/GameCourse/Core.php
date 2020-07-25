@@ -27,6 +27,11 @@ $_FACEBOOK['secret_key'] = FACEBOOK_CLIENT_SECRET;
 $_FACEBOOK['callback_url'] = FACEBOOK_REDIRECT_URL;
 $GLOBALS['_FACEBOOK'] = $_FACEBOOK;
 
+$_LINKEDIN['access_key'] = LINKEDIN_CLIENT_ID;
+$_LINKEDIN['secret_key'] = LINKEDIN_CLIENT_SECRET;
+$_LINKEDIN['callback_url'] = LINKEDIN_REDIRECT_URL;
+$GLOBALS['_LINKEDIN'] = $_LINKEDIN;
+
 class Core
 {
     public static $systemDB;
@@ -106,6 +111,12 @@ class Core
                 $authorizationUrl = $facebookClient->getAuthUrl();
                 header("Location: $authorizationUrl");
                 exit();
+            } else if ($loginType == "linkedin") {
+                $_SESSION['type'] = "facebook";
+                $linkedinClient = Linkedin::getSingleton();
+                $authorizationUrl = $linkedinClient->getAuthUrl();
+                header("Location: $authorizationUrl");
+                exit();
             }
         }
         return $isLoggedIn;
@@ -160,6 +171,20 @@ class Core
                 $_SESSION['name'] =  $person->name;
                 $_SESSION['loginDone'] = "facebook";
             }
+        } else if ($loginType == "linkedin") {
+            if (array_key_exists('error', $_GET)) {
+                die($_GET['error']);
+            } else if (array_key_exists('code', $_GET)) {
+                $code = $_GET['code'];
+                $linkedinClient = Linkedin::getSingleton();
+                file_put_contents("linkedin.txt", $code);
+                $accessToken = $linkedinClient->getAccessTokenFromCode($code);
+                $person = $linkedinClient->getPerson();
+                $_SESSION['username'] =  $person->email;
+                $_SESSION['email'] =  $person->email;
+                $_SESSION['name'] =  $person->name;
+                $_SESSION['loginDone'] = "linkedin";
+            }
         }
     }
 
@@ -196,6 +221,18 @@ class Core
                 }
             }
             if ($_SESSION['loginDone'] == "facebook") {
+                $facebookAuth = static::getFacebookAuth();
+                $username = $facebookAuth->getUsername();
+                static::$loggedUser = User::getUserByUsername($_SESSION['username']);
+                if (static::$loggedUser != null) {
+                    $_SESSION['user'] = static::$loggedUser->getId();
+                    return true;
+                } else if ($redirect) {
+                    include 'pages/no-access.php';
+                    exit;
+                }
+            }
+            if ($_SESSION['loginDone'] == "linkedin") {
                 $facebookAuth = static::getFacebookAuth();
                 $username = $facebookAuth->getUsername();
                 static::$loggedUser = User::getUserByUsername($_SESSION['username']);
@@ -289,6 +326,7 @@ class Core
     {
         return new FacebookAuth();
     }
+
 
     //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins
     public static function addNavigation($text, $ref, $isSRef = false, $class = '', $children = false, $restrictAcess = false)

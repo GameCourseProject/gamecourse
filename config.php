@@ -19,6 +19,9 @@
     define('FACEBOOK_CLIENT_SECRET', 'b0405dc8de6f9512b736cb895b7642ef');
     define('FACEBOOK_REDIRECT_URL', 'http://localhost/gamecourse/auth?facebook');
 
+    define('LINKEDIN_CLIENT_ID', '78wgzc5jr7hrde');
+    define('LINKEDIN_CLIENT_SECRET', 'WoFLt4UdWtk8Lkyz');
+    define('LINKEDIN_REDIRECT_URL', 'http://localhost/gamecourse/auth?linkedin');
 
     $GLOBALS['theme'] = "default";
 
