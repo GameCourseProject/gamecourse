@@ -6,58 +6,6 @@ include 'google-api-php-client/vendor/autoload.php';
 
 class Google
 {
-    private $client;
-
-    public function setCredentials($credentials)
-    {
-        $client = new \Google_Client();
-        $client->setApplicationName('spreadsheets');
-        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
-        $client->setAuthConfig($credentials, false);
-        $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
-        return $client;
-    }
-
-    public function checkToken($credentials, $token, $authCode)
-    {
-        $this->client = $this->setCredentials($credentials);
-        if ($token) {
-            $accessToken = $token;
-            $this->client->setAccessToken($accessToken);
-            return array("access_token" => $this->client->getAccessToken(), "auth_url" => null);
-        }
-
-        if ($authCode) {
-            $accessToken = $this->client->fetchAccessTokenWithAuthCode($authCode);
-            $this->client->setAccessToken($accessToken);
-            return array("access_token" => $this->client->getAccessToken(), "auth_url" => null);
-        }
-
-        if ($this->client->isAccessTokenExpired()) {
-            // Refresh the token if possible, else fetch a new one.
-            if ($this->client->getRefreshToken()) {
-                $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
-                return array("access_token" => $this->client->getAccessToken(), "auth_url" => null);
-                //VER MELHOR!!!!!
-            } else {
-                // Request authorization from the user.
-                $authUrl = $this->client->createAuthUrl();
-                return array("access_token" => null, "auth_url" => $authUrl);
-                // 4/1gGIdDZ1KwcItpRm6FoytbT08e82mSs6nw6Zy5EWR4AYUTpPd5WmrpE
-
-            }
-        }
-    }
-
-    public function getGoogleSheets($credentials, $token, $authCode)
-    {
-        $this->checkToken($credentials, $token, $authCode);
-        return new \Google_Service_Sheets($this->client);
-    }
-
-
-
     private static $INSTANCE;
     private $accessKey;
     private $secretKey;
@@ -85,6 +33,7 @@ class Google
             $this->expirationTime = $_SESSION['expires'];
         }
     }
+
     public static function getSingleton()
     {
         if (self::$INSTANCE == null) {
@@ -93,7 +42,7 @@ class Google
         return self::$INSTANCE;
     }
 
-    function getAuthUrl()
+    public function getAuthUrl()
     {
         $client = new \Google_Client();
         $client->setClientId($this->accessKey);
@@ -105,7 +54,7 @@ class Google
         return $client->createAuthUrl();
     }
 
-    function getAccessTokenFromCode($code)
+    public function getAccessTokenFromCode($code)
     {
 
         $client = new \Google_Client();
@@ -126,7 +75,7 @@ class Google
         }
     }
 
-    function getPerson()
+    public function getPerson()
     {
         $client = new \Google_Client();
         $client->setClientId($this->accessKey);
@@ -142,18 +91,6 @@ class Google
         return $info;
     }
 
-
-
-    // public function getAuthCodeLogin()
-    // {
-    //     $this->client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
-    //     $this->client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
-    //     $this->client->setRedirectUri("http://localhost/gamecourse/auth");
-    //     $this->client->addScope("email");
-    //     $this->client->addScope("profile");
-    //     return $this->client->createAuthUrl();
-    // }
-
     public function getClient()
     {
         $client = new \Google_Client();
@@ -164,32 +101,49 @@ class Google
         $client->addScope("profile");
     }
 
+    public static function setCredentials($credentials)
+    {
+        $client = new \Google_Client();
+        $client->setApplicationName('spreadsheets');
+        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
+        $client->setAuthConfig($credentials, false);
+        $client->setAccessType('offline');
+        $client->setPrompt('select_account consent');
+        return $client;
+    }
 
+    public static function checkToken($credentials, $token, $authCode)
+    {
+        $client = Google::setCredentials($credentials);
+        if ($token) {
+            $accessToken = $token;
+            $client->setAccessToken($accessToken);
+            return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
+        }
 
-    // public function getAccessTokenFromCode($code)
-    // {
-    //     // $client = new \Google_Client();
-    //     // $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
-    //     // $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
-    //     // $client->setRedirectUri("http://localhost/gamecourse/auth");
-    //     // $client->addScope("email");
-    //     // $client->addScope("profile");
-    //     $token = $this->client->fetchAccessTokenWithAuthCode($code);
-    //     $this->client->setAccessToken($token['access_token']);
-    //     return $token['access_token'];
-    // }
+        if ($authCode) {
+            $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
+            $client->setAccessToken($accessToken);
+            return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
+        }
 
-    // public function getPerson($code)
-    // {
-    //     // $client = new \Google_Client();
-    //     // $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
-    //     // $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
-    //     // $client->setRedirectUri("http://localhost/gamecourse/auth");
-    //     // $client->addScope("email");
-    //     // $client->addScope("profile");
-    //     // get profile info
-    //     $google_oauth = new \Google_Service_Oauth2($this->client);
-    //     $google_account_info = $google_oauth->userinfo->get();
-    //     return $google_account_info;
-    // }
+        if ($client->isAccessTokenExpired()) {
+            // Refresh the token if possible, else fetch a new one.
+            if ($client->getRefreshToken()) {
+                $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
+                //VER MELHOR!!!!!
+            } else {
+                // Request authorization from the user.
+                $authUrl = $client->createAuthUrl();
+                return array("access_token" => null, "auth_url" => $authUrl, "client" => $client);
+            }
+        }
+    }
+
+    public static function getGoogleSheets($credentials, $token, $authCode)
+    {
+        $result = Google::checkToken($credentials, $token, $authCode);
+        return new \Google_Service_Sheets($result["client"]);
+    }
 }

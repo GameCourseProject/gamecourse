@@ -31,6 +31,7 @@ class Facebook
             $this->expirationTime = $_SESSION['expires'];
         }
     }
+
     public static function getSingleton()
     {
         if (self::$INSTANCE == null) {
@@ -38,15 +39,12 @@ class Facebook
         }
         return self::$INSTANCE;
     }
+
     public function getAuthUrl()
     {
-        return "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey . "&redirect_uri=" . $this->callbackUrl . "&scope=email";
+        return "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey .
+            "&redirect_uri=" . $this->callbackUrl . "&scope=email";
     }
-
-    // public function askPermission()
-    // {
-    //     $url = "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey . "&redirect_uri=" . $this->callbackUrl . "&auth_type=rerequest&scope=email";
-    // }
 
     public function getAccessTokenFromCode($code)
     {
@@ -59,14 +57,6 @@ class Facebook
         $this->accessToken = $_SESSION['accessToken'] = $token->access_token;
         $this->expirationTime = $_SESSION['expires'] = time() + $token->expires_in;
         return $this->accessToken;
-    }
-
-    public function getPersonId()
-    {
-        $url = "https://graph.facebook.com/me?access_token=" . $this->accessToken;
-        $response = Facebook::curlRequests($url);
-        $info = json_decode($response);
-        return $info->id;
     }
 
     public function getPerson()
@@ -83,13 +73,6 @@ class Facebook
         $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email);
 
         return $info;
-    }
-
-    public function logout()
-    {
-        $url = "https://m.facebook.com/logout.php?confirm=1next=" . $this->callbackUrl . "&access_token=" . $this->accessToken;
-        file_put_contents("uuuuuuuuuuuuu.txt", $url);
-        $response = Facebook::curlRequests($url);
     }
 
     public static function curlRequests($url)

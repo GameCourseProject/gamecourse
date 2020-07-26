@@ -31,6 +31,7 @@ class Linkedin
             $this->expirationTime = $_SESSION['expires'];
         }
     }
+
     public static function getSingleton()
     {
         if (self::$INSTANCE == null) {
@@ -38,6 +39,7 @@ class Linkedin
         }
         return self::$INSTANCE;
     }
+
     public function getAuthUrl()
     {
         return "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=" . $this->accessKey .
@@ -79,13 +81,6 @@ class Linkedin
         $info = (object) array("username" => $email, "name" => $name, "email" => $email);
 
         return $info;
-    }
-
-    public function logout()
-    {
-        $url = "https://m.facebook.com/logout.php?confirm=1next=" . $this->callbackUrl . "&access_token=" . $this->accessToken;
-        file_put_contents("uuuuuuuuuuuuu.txt", $url);
-        $response = Facebook::curlRequests($url);
     }
 
     public static function curlRequests($url, $headers = null)

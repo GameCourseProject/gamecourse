@@ -12,12 +12,10 @@ class GoogleSheets
     private $courseId;
     private $spreadsheetId;
     private $sheetName;
-    private $google;
 
     public function __construct($courseId)
     {
         $this->courseId = $courseId;
-        $this->google = new Google();
     }
 
     public function getCredentialsFromDB()
@@ -54,7 +52,7 @@ class GoogleSheets
     public function setCredentials()
     {
         $credentials = $this->getCredentialsFromDB();
-        $this->google->setCredentials(json_encode($credentials));
+        Google::setCredentials(json_encode($credentials));
     }
 
     public function setAuthCode()
@@ -73,7 +71,7 @@ class GoogleSheets
         $credentials = $this->getCredentialsFromDB();
         $token = $this->getTokenFromDB();
         $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
-        return $this->google->checkToken($credentials, $token, $authCode);
+        return Google::checkToken($credentials, $token, $authCode);
     }
 
     public function saveTokenToDB()
@@ -108,7 +106,7 @@ class GoogleSheets
         $token = $this->getTokenFromDB();
         $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
 
-        $service = $this->google->getGoogleSheets($credentials, $token, $authCode);
+        $service = Google::getGoogleSheets($credentials, $token, $authCode);
         $this->getDBConfigValues();
         // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
         $names = explode(";", $this->sheetName);

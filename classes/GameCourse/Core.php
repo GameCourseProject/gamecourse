@@ -151,6 +151,7 @@ class Core
         if (array_key_exists("loginDone", $_SESSION)) {
             $auth = static::getAuth();
             $username = $auth->getUsername();
+            //verficar qual o tipo de login
             static::$loggedUser = User::getUserByUsername($username);
             if (static::$loggedUser != null) {
                 $_SESSION['user'] = static::$loggedUser->getId();
@@ -163,27 +164,10 @@ class Core
         return false;
     }
 
-    //NAO FUNCIONA
     public static function logout()
     {
-        // session_start();
-        // session_destroy();
         session_start();
-        unset($_SESSION['user']);
-        unset($_SESSION['username']);
-        unset($_SESSION['email']);
-        unset($_SESSION['name']);
-        unset($_SESSION['loginDone']);
-        unset($_SESSION['type']);
-        unset($_SESSION['redirect_url']);
-        unset($_SESSION['accessToken']);
-        unset($_SESSION['refreshToken']);
-
-        $fenix = \FenixEdu::getSingleton();
-        $fenix->logout();
-        setcookie("JSESSIONID", 0, 1, "/", "fenix.tecnico.ulisboa.pt", true, true);
-        setcookie("BACKENDID", 0, 1, "/", "fenix.tecnico.ulisboa.pt", true, true);
-        setcookie("OAUTH_CLIENT_ID", 0, 1, "/oauth", "fenix.tecnico.ulisboa.pt", false, false);
+        $_SESSION = [];
         session_destroy();
 
         header('Location:index.php');
