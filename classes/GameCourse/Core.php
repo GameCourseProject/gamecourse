@@ -133,7 +133,7 @@ class Core {
         return false;
     }
 
-    public static function getStudents($url){
+    public static function getFenixInfo($url){
         $fenixEduClient = \FenixEdu::getSingleton();
         return $fenixEduClient->get($url, true);
     }

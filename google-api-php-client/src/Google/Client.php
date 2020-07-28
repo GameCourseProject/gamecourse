@@ -92,62 +92,62 @@ class Google_Client
   public function __construct(array $config = array())
   {
     $this->config = array_merge(
-        [
-          'application_name' => '',
+      [
+        'application_name' => '',
 
-          // Don't change these unless you're working against a special development
-          // or testing environment.
-          'base_path' => self::API_BASE_PATH,
+        // Don't change these unless you're working against a special development
+        // or testing environment.
+        'base_path' => self::API_BASE_PATH,
 
-          // https://developers.google.com/console
-          'client_id' => '',
-          'client_secret' => '',
-          'redirect_uri' => null,
-          'state' => null,
+        // https://developers.google.com/console
+        'client_id' => '',
+        'client_secret' => '',
+        'redirect_uri' => null,
+        'state' => null,
 
-          // Simple API access key, also from the API console. Ensure you get
-          // a Server key, and not a Browser key.
-          'developer_key' => '',
+        // Simple API access key, also from the API console. Ensure you get
+        // a Server key, and not a Browser key.
+        'developer_key' => '',
 
-          // For use with Google Cloud Platform
-          // fetch the ApplicationDefaultCredentials, if applicable
-          // @see https://developers.google.com/identity/protocols/application-default-credentials
-          'use_application_default_credentials' => false,
-          'signing_key' => null,
-          'signing_algorithm' => null,
-          'subject' => null,
+        // For use with Google Cloud Platform
+        // fetch the ApplicationDefaultCredentials, if applicable
+        // @see https://developers.google.com/identity/protocols/application-default-credentials
+        'use_application_default_credentials' => false,
+        'signing_key' => null,
+        'signing_algorithm' => null,
+        'subject' => null,
 
-          // Other OAuth2 parameters.
-          'hd' => '',
-          'prompt' => '',
-          'openid.realm' => '',
-          'include_granted_scopes' => null,
-          'login_hint' => '',
-          'request_visible_actions' => '',
-          'access_type' => 'online',
-          'approval_prompt' => 'auto',
+        // Other OAuth2 parameters.
+        'hd' => '',
+        'prompt' => '',
+        'openid.realm' => '',
+        'include_granted_scopes' => null,
+        'login_hint' => '',
+        'request_visible_actions' => '',
+        'access_type' => 'online',
+        'approval_prompt' => 'auto',
 
-          // Task Runner retry configuration
-          // @see Google_Task_Runner
-          'retry' => array(),
-          'retry_map' => null,
+        // Task Runner retry configuration
+        // @see Google_Task_Runner
+        'retry' => array(),
+        'retry_map' => null,
 
-          // cache config for downstream auth caching
-          'cache_config' => [],
+        // cache config for downstream auth caching
+        'cache_config' => [],
 
-          // function to be called when an access token is fetched
-          // follows the signature function ($cacheKey, $accessToken)
-          'token_callback' => null,
+        // function to be called when an access token is fetched
+        // follows the signature function ($cacheKey, $accessToken)
+        'token_callback' => null,
 
-          // Service class used in Google_Client::verifyIdToken.
-          // Explicitly pass this in to avoid setting JWT::$leeway
-          'jwt' => null,
+        // Service class used in Google_Client::verifyIdToken.
+        // Explicitly pass this in to avoid setting JWT::$leeway
+        'jwt' => null,
 
-          // Setting api_format_v2 will return more detailed error messages
-          // from certain APIs.
-          'api_format_v2' => false
-        ],
-        $config
+        // Setting api_format_v2 will return more detailed error messages
+        // from certain APIs.
+        'api_format_v2' => false
+      ],
+      $config
     );
   }
 
@@ -222,7 +222,7 @@ class Google_Client
   {
     if (!$this->isUsingApplicationDefaultCredentials()) {
       throw new DomainException(
-          'set the JSON service account credentials using'
+        'set the JSON service account credentials using'
           . ' Google_Client::setAuthConfig or set the path to your JSON file'
           . ' with the "GOOGLE_APPLICATION_CREDENTIALS" environment variable'
           . ' and call Google_Client::useApplicationDefaultCredentials to'
@@ -231,8 +231,8 @@ class Google_Client
     }
 
     $this->getLogger()->log(
-        'info',
-        'OAuth2 access token refresh with Signed JWT assertion grants.'
+      'info',
+      'OAuth2 access token refresh with Signed JWT assertion grants.'
     );
 
     $credentials = $this->createApplicationDefaultCredentials();
@@ -269,7 +269,7 @@ class Google_Client
     if (null === $refreshToken) {
       if (!isset($this->token['refresh_token'])) {
         throw new LogicException(
-            'refresh token must be passed in or set as part of setAccessToken'
+          'refresh token must be passed in or set as part of setAccessToken'
         );
       }
       $refreshToken = $this->token['refresh_token'];
@@ -318,25 +318,25 @@ class Google_Client
       : var_export($this->config['include_granted_scopes'], true);
 
     $params = array_filter(
-        [
-          'access_type' => $this->config['access_type'],
-          'approval_prompt' => $approvalPrompt,
-          'hd' => $this->config['hd'],
-          'include_granted_scopes' => $includeGrantedScopes,
-          'login_hint' => $this->config['login_hint'],
-          'openid.realm' => $this->config['openid.realm'],
-          'prompt' => $this->config['prompt'],
-          'response_type' => 'code',
-          'scope' => $scope,
-          'state' => $this->config['state'],
-        ]
+      [
+        'access_type' => $this->config['access_type'],
+        'approval_prompt' => $approvalPrompt,
+        'hd' => $this->config['hd'],
+        'include_granted_scopes' => $includeGrantedScopes,
+        'login_hint' => $this->config['login_hint'],
+        'openid.realm' => $this->config['openid.realm'],
+        'prompt' => $this->config['prompt'],
+        'response_type' => 'code',
+        'scope' => $scope,
+        'state' => $this->config['state'],
+      ]
     );
 
     // If the list of scopes contains plus.login, add request_visible_actions
     // to auth URL.
     $rva = $this->config['request_visible_actions'];
     if (strlen($rva) > 0 && false !== strpos($scope, 'plus.login')) {
-        $params['request_visible_actions'] = $rva;
+      $params['request_visible_actions'] = $rva;
     }
 
     $auth = $this->getOAuth2Service();
@@ -372,8 +372,8 @@ class Google_Client
       // add refresh subscriber to request a new token
       if (isset($token['refresh_token']) && $this->isAccessTokenExpired()) {
         $credentials = $this->createUserRefreshCredentials(
-            $scopes,
-            $token['refresh_token']
+          $scopes,
+          $token['refresh_token']
         );
       }
     }
@@ -506,7 +506,7 @@ class Google_Client
   public function getAuth()
   {
     throw new BadMethodCallException(
-        'This function no longer exists. See UPGRADING.md for more information'
+      'This function no longer exists. See UPGRADING.md for more information'
     );
   }
 
@@ -516,7 +516,7 @@ class Google_Client
   public function setAuth($auth)
   {
     throw new BadMethodCallException(
-        'This function no longer exists. See UPGRADING.md for more information'
+      'This function no longer exists. See UPGRADING.md for more information'
     );
   }
 
@@ -702,7 +702,7 @@ class Google_Client
   public function revokeToken($token = null)
   {
     $tokenRevoker = new Google_AccessToken_Revoke(
-        $this->getHttpClient()
+      $this->getHttpClient()
     );
 
     return $tokenRevoker->revokeToken($token ?: $this->getAccessToken());
@@ -721,24 +721,24 @@ class Google_Client
   public function verifyIdToken($idToken = null)
   {
     $tokenVerifier = new Google_AccessToken_Verify(
-        $this->getHttpClient(),
-        $this->getCache(),
-        $this->config['jwt']
+      $this->getHttpClient(),
+      $this->getCache(),
+      $this->config['jwt']
     );
 
     if (null === $idToken) {
       $token = $this->getAccessToken();
       if (!isset($token['id_token'])) {
         throw new LogicException(
-            'id_token must be passed in or set as part of setAccessToken'
+          'id_token must be passed in or set as part of setAccessToken'
         );
       }
       $idToken = $token['id_token'];
     }
 
     return $tokenVerifier->verifyIdToken(
-        $idToken,
-        $this->getClientId()
+      $idToken,
+      $this->getClientId()
     );
   }
 
@@ -779,7 +779,7 @@ class Google_Client
    */
   public function getScopes()
   {
-     return $this->requestedScopes;
+    return $this->requestedScopes;
   }
 
   /**
@@ -805,29 +805,29 @@ class Google_Client
   public function execute(RequestInterface $request, $expectedClass = null)
   {
     $request = $request
-        ->withHeader(
-            'User-Agent',
-            sprintf(
-                '%s %s%s',
-                $this->config['application_name'],
-                self::USER_AGENT_SUFFIX,
-                $this->getLibraryVersion()
-            )
+      ->withHeader(
+        'User-Agent',
+        sprintf(
+          '%s %s%s',
+          $this->config['application_name'],
+          self::USER_AGENT_SUFFIX,
+          $this->getLibraryVersion()
         )
-        ->withHeader(
-            'x-goog-api-client',
-            sprintf(
-                'gl-php/%s gdcl/%s',
-                phpversion(),
-                $this->getLibraryVersion()
-            )
-        );
+      )
+      ->withHeader(
+        'x-goog-api-client',
+        sprintf(
+          'gl-php/%s gdcl/%s',
+          phpversion(),
+          $this->getLibraryVersion()
+        )
+      );
 
     if ($this->config['api_format_v2']) {
-        $request = $request->withHeader(
-            'X-GOOG-API-FORMAT-VERSION',
-            2
-        );
+      $request = $request->withHeader(
+        'X-GOOG-API-FORMAT-VERSION',
+        2
+      );
     }
 
     // call the authorize method
@@ -835,11 +835,11 @@ class Google_Client
     $http = $this->authorize();
 
     return Google_Http_REST::execute(
-        $http,
-        $request,
-        $expectedClass,
-        $this->config['retry'],
-        $this->config['retry_map']
+      $http,
+      $request,
+      $expectedClass,
+      $this->config['retry'],
+      $this->config['retry_map']
     );
   }
 
@@ -863,7 +863,7 @@ class Google_Client
   public function isAppEngine()
   {
     return (isset($_SERVER['SERVER_SOFTWARE']) &&
-        strpos($_SERVER['SERVER_SOFTWARE'], 'Google App Engine') !== false);
+      strpos($_SERVER['SERVER_SOFTWARE'], 'Google App Engine') !== false);
   }
 
   public function setConfig($name, $value)
@@ -897,17 +897,20 @@ class Google_Client
    * @param string|array $config the configuration json
    * @throws Google_Exception
    */
-  public function setAuthConfig($config)
+  public function setAuthConfig($config, $isFile = true)
   {
     if (is_string($config)) {
-      if (!file_exists($config)) {
+      if (!file_exists($config) && $isFile) {
         throw new InvalidArgumentException(sprintf('file "%s" does not exist', $config));
       }
+      if ($isFile) {
+        $json = file_get_contents($config);
 
-      $json = file_get_contents($config);
-
-      if (!$config = json_decode($json, true)) {
-        throw new LogicException('invalid json for auth config');
+        if (!$config = json_decode($json, true)) {
+          throw new LogicException('invalid json for auth config');
+        }
+      } else {
+        $config = json_decode($config, true);
       }
     }
 
@@ -986,16 +989,16 @@ class Google_Client
   protected function createOAuth2Service()
   {
     $auth = new OAuth2(
-        [
-          'clientId'          => $this->getClientId(),
-          'clientSecret'      => $this->getClientSecret(),
-          'authorizationUri'   => self::OAUTH2_AUTH_URL,
-          'tokenCredentialUri' => self::OAUTH2_TOKEN_URI,
-          'redirectUri'       => $this->getRedirectUri(),
-          'issuer'            => $this->config['client_id'],
-          'signingKey'        => $this->config['signing_key'],
-          'signingAlgorithm'  => $this->config['signing_algorithm'],
-        ]
+      [
+        'clientId'          => $this->getClientId(),
+        'clientSecret'      => $this->getClientSecret(),
+        'authorizationUri'   => self::OAUTH2_AUTH_URL,
+        'tokenCredentialUri' => self::OAUTH2_TOKEN_URI,
+        'redirectUri'       => $this->getRedirectUri(),
+        'issuer'            => $this->config['client_id'],
+        'signingKey'        => $this->config['signing_key'],
+        'signingAlgorithm'  => $this->config['signing_algorithm'],
+      ]
     );
 
     return $auth;
@@ -1165,19 +1168,19 @@ class Google_Client
     //
     // @see https://github.com/google/google-api-php-client/issues/821
     return Google_AuthHandler_AuthHandlerFactory::build(
-        $this->getCache(),
-        $this->config['cache_config']
+      $this->getCache(),
+      $this->config['cache_config']
     );
   }
 
   private function createUserRefreshCredentials($scope, $refreshToken)
   {
     $creds = array_filter(
-        array(
-          'client_id' => $this->getClientId(),
-          'client_secret' => $this->getClientSecret(),
-          'refresh_token' => $refreshToken,
-        )
+      array(
+        'client_id' => $this->getClientId(),
+        'client_secret' => $this->getClientSecret(),
+        'refresh_token' => $refreshToken,
+      )
     );
 
     return new UserRefreshCredentials($scope, $creds);

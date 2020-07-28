@@ -16,6 +16,9 @@ app.run(['$rootScope', '$state', function ($rootScope, $state) {
 }]);
 
 app.config(function($stateProvider){
+    //saving the state provider so we can latter and config pages
+    //so they are only available when module is activated
+    app.stateProvider = $stateProvider;
     $stateProvider.state('settings', {
         url: '/settings',
         views: {
@@ -93,14 +96,6 @@ app.config(function($stateProvider){
         views : {
             'tabContent': {
                 controller: 'CourseSkillsSettingsController'
-            }
-        }
-        //to later remove
-    }).state('course.settings.badges', {
-        url: '/badges',
-        views : {
-            'tabContent': {
-                controller: 'CourseBadgesSettingsController'
             }
         }
         //to later remove

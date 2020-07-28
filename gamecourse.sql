@@ -37,7 +37,7 @@ create table game_course_user(
 	nickname varchar(50),
 	studentNumber int unique,
     username varchar(50),        #ist181205
-    isAdmin boolean not null default false
+    isAdmin boolean not null default false,
 	isActive boolean not null default true
 );
 
@@ -59,8 +59,8 @@ create table course_user
    (id  int unsigned,
    	course  int unsigned,
     campus 	char(1),
-    lastActivity timestamp default 0,
-    previousActivity timestamp default 0,
+    lastActivity timestamp default CURRENT_TIMESTAMP,
+    previousActivity timestamp default  CURRENT_TIMESTAMP,
     primary key(id, course),
     foreign key(id) references game_course_user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
@@ -132,7 +132,7 @@ create table participation(#for now this is just used for badges
 	course 	int unsigned not null,
 	description varchar(50) not null,
 	type 	varchar(50) not null, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
-	moduleInstance int unsigned,#id of badge/skill (will be null for other types)
+	moduleInstance VARCHAR(200) ,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
 	date timestamp,
 	rating int,
@@ -141,7 +141,7 @@ create table participation(#for now this is just used for badges
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
-create table award_participation(#this table may be pointles if participations haven't got more than 1 award
+create table award_participation(#this table may be pointles if participations havent got more than 1 award
 	award int unsigned,
 	participation int unsigned,
 	primary key (award,participation),

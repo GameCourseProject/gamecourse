@@ -17,11 +17,12 @@ class AwardList extends Module {
 
     public function init() {
         $user = Core::getLoggedUser();
+        $viewsModule = $this->getParent()->getModule('views');
+        $viewHandler = $viewsModule->getViewHandler();
+        
         if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
             $viewHandler->createPageOrTemplateIfNew('AwardList',"page","ROLE_SINGLE");
             
-            $viewsModule = $this->getParent()->getModule('views');
-            $viewHandler = $viewsModule->getViewHandler();
             // $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
                 //     'type' => ViewHandler::VT_SINGLE
                 // ));

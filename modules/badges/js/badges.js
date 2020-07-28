@@ -54,3 +54,13 @@ angular.module('module.badges').directive('badgeStudentImage', function($state) 
         }
     }
 });
+
+//add config page to course
+app.stateProvider.state('course.settings.badges', {
+    url: '/badges',
+    views : {
+        'tabContent': {
+            controller: 'CourseBadgesSettingsController'
+        }
+    }
+});

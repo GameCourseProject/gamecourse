@@ -118,7 +118,7 @@ class ModuleLoader {
 
                 if ($canLoad) {
                     $loadedModules[$moduleId] = $module;
-                    array_splice($modulesToLoad, $m, 1);
+                    //array_splice($modulesToLoad, $m, 1);
 
                     foreach($module['dependencies'] as $dependency) {
                         if ($dependency['mode'] == 'soft')
