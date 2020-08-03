@@ -26,6 +26,7 @@ if (array_key_exists("Linkedin", $_POST)) {
 </head>
 
 <body>
+    <!-- <div class="background"></div> -->
     <div style="text-align:center;">
         <div id="logo"></div>
         <h3>Login using:</h3>
