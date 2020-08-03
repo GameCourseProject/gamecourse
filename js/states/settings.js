@@ -83,13 +83,6 @@ app.config(function($stateProvider){
                 controller: 'CourseSettingsModules'
             }
         }
-    }).state('course.settings.about', {
-        url: '/about',
-        views : {
-            'tabContent': {
-                templateUrl: 'partials/settings/about.html'
-            }
-        }
         //to later remove
     }).state('course.settings.skills', {
         url: '/skills',

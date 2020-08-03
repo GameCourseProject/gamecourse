@@ -1,12 +1,11 @@
 .dd {
   position: relative;
   display: block;
-  margin: 4px 0px;
+  margin: 4px auto;
   padding: 0;
-  max-width: 600px;
   list-style: none;
   font-size: 13px;
-  line-height: 20px;
+  max-width: 850px;
 }
 .dd-list {
   display: block;
@@ -17,6 +16,9 @@
 }
 .dd > .dd-list {
   padding: 2px 0px;
+}
+.dd-list.first-layer.dd-has-children > .dd-item {
+  padding-left: 4px;
 }
 .dd-list.dd-has-children > .dd-item {
   padding-left: 25px;
@@ -35,38 +37,34 @@
   margin: 0;
   min-height: 20px;
   font-size: 13px;
-  line-height: 20px;
 }
 .dd-handle {
   display: inline-block;
-  vertical-align: top;
+  vertical-align: middle;
+  padding: 5px 10px 5px 0;
+  border: none;
+  width: 20px;
   height: 20px;
-  margin: 3px 4px 3px 0px;
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  background: #fafafa;
-  background: -webkit-linear-gradient(top, #fafafa 0%, #eee 100%);
-  background: -moz-linear-gradient(top, #fafafa 0%, #eee 100%);
-  background: linear-gradient(top, #fafafa 0%, #eee 100%);
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
+  background-image: url(/gamecourse/images/drag_icon.svg);
+  opacity: 0.5;
 }
 .dd-content {
-  display: inline;
-  line-height: 26px;
+  display: inline-block;
   color: #333;
-  font-weight: bold;
-  margin-right: 36px;
+  margin-right: 10px;
+  width: calc(50% - 66px);
+  border: 2px solid lightgray;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12px;
 }
 .dd-handle:hover {
-  color: #2ea8e5;
-  background: #fff;
+  opacity: 1;
 }
 .dd-item {
   padding-left: 4px;
   background: #ffffff;
+  margin: 15px 0px;
 }
 .dd-item > button {
   display: block;
@@ -136,16 +134,19 @@
 .dd-add {
   position: absolute;
   float: right;
-  right: 26px;
-  top: 5px;
-  width: 16px;
-  z-index: 1000;
+  right: 30px;
+  z-index: 2;
+  height: 35px;
+  width: 35px;
+  opacity: 0.8;
 }
 .dd-remove {
   position: absolute;
   float: right;
-  right: 8px;
+  right: 0px;
   top: 5px;
-  width: 16px;
-  z-index: 1000;
+  z-index: 2;
+  height: 23px;
+  width: 23px;
+  opacity: 0.8;
 }

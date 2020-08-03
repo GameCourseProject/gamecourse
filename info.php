@@ -134,10 +134,10 @@ API::registerFunction('core', 'getCourseInfo', function() {
     if ($isAdmin)
         Core::addNavigation( "Users", 'course.users', true); 
         Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
-        Core::addSettings('About', 'course.settings.about', true);
-        Core::addSettings('Global', 'course.settings.global', true);
-        Core::addSettings('Modules', 'course.settings.modules', true);
+        Core::addSettings('This Course', 'course.settings.global', true);
         Core::addSettings('Roles', 'course.settings.roles', true);
+        Core::addSettings('Modules', 'course.settings.modules', true);
+        Core::addSettings('Views', 'course.settings.views', true);
 
     $navPages = Core::getNavigation();
     $navSettings = Core::getSettings();
@@ -237,24 +237,25 @@ API::registerFunction('settings', 'roles', function() {
         $roles = $hierarchy['roles'];
         
         http_response_code(201);
-    } else if (API::hasKey('usersRoleChanges')) {
-        $course = Course::getCourse(API::getValue('course'));
-        $usersRoleChanges = API::getValue('usersRoleChanges');
-        foreach ($usersRoleChanges as $userId => $roles) {
-            $course->getUser($userId)->setRoles($roles);
-        }
-        http_response_code(201);
+    // } else if (API::hasKey('usersRoleChanges')) {
+    //     $course = Course::getCourse(API::getValue('course'));
+    //     $usersRoleChanges = API::getValue('usersRoleChanges');
+    //     foreach ($usersRoleChanges as $userId => $roles) {
+    //         $course->getUser($userId)->setRoles($roles);
+    //     }
+    //     http_response_code(201);
     } else {
         $course = Course::getCourse(API::getValue('course'));
-        $users = $course->getUsers();
-        $usersInfo = [];
-        foreach ($users as $userData) {
-            $id = $userData['id'];
-            $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
-        }
+        // $users = $course->getUsers();
+        // $usersInfo = [];
+        // foreach ($users as $userData) {
+        //     $id = $userData['id'];
+        //     $user = new \GameCourse\CourseUser($id,$course);
+        //     $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
+        // }
         $globalInfo = array(
-            'users' => $usersInfo,
+            // 'users' => $usersInfo,
+            'pages' => $course->getAvailablePages(),
             'roles' => array_column($course->getRoles("name"),"name"),
             'roles_obj' => $course->getRoles(),
             'rolesHierarchy' => $course->getRolesHierarchy(),
@@ -319,7 +320,7 @@ API::registerFunction('settings', 'courseModules', function() {
         $allModules = ModuleLoader::getModules();
         $enabledModules = $course->getModules();
        
-        $modulesArr = array();
+        $modulesArr = [];
         foreach ($allModules as $module) {
             $mod = array(
                 'id' => $module['id'],
@@ -327,15 +328,12 @@ API::registerFunction('settings', 'courseModules', function() {
                 'dir' => $module['dir'],
                 'version' => $module['version'],
                 'enabled' => array_key_exists($module['id'], $enabledModules),
-                'dependencies' => $module['dependencies']
+                'dependencies' => $module['dependencies'],
+                'discription' => ""
             );
-            $modulesArr[$module['id']] = $mod;
+            $modulesArr[] = $mod;
         }
-        
-        $globalInfo = array(
-            'modules' => $modulesArr
-        );
-        API::response($globalInfo);
+        API::response($modulesArr);
     }
 });
 

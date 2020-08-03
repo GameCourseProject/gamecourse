@@ -10,6 +10,7 @@
 /*sidebar*/
 .tabs .tabs-container {
     width: 180px;
+    height: calc(100% - 16px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -22,7 +23,7 @@
 }
 .tabs .tabs-container::after {
     width: 2px;
-    height: 85%;
+    height: 87%;
     background-color: lightgrey;
     content: "";
     position: absolute;
@@ -42,6 +43,7 @@
     color: grey;
     text-decoration: none;
     display: table-caption;
+    outline: none;
 }
 .tabs .tabs-container li a.active{
     color: black;
@@ -71,11 +73,11 @@
     padding: 80px 55px 35px 70px;
     position: relative;
     width: calc(100% - 305px);
+    height: calc(100% - 115px);
+    overflow: auto;
 }
 .tab-content{
     width: 100%;
-    margin-top: -30px;
-    position: relative;
 }
 #themes {
     display: flex;
@@ -99,29 +101,31 @@
     cursor: pointer;
 }
 
+/*modules page*/
 #modules {
-    display: flex;
-    flex-wrap: wrap;
-    height: 95%;
-    overflow: auto;
+    margin-left: -35px;
+    display: inline-grid;
+    grid-template-columns: repeat(auto-fill, 219px);
+    width: calc(100% + 35px);
+    justify-content: space-between;
 }
 .module_card {
     width: 180px;
     display: flex;
     flex-direction: column;
-    border: 2px solid grey;
-    margin: 20px 20px 20px 40px;
+    margin: 20px 0px 20px 35px;
     position: relative;
     height: 177px;
+    cursor: pointer;
 }
 .module_card .icon {
-    height: 65px;
-    width: 65px;
+    height: 60px;
+    width: 60px;
     border-radius: 50%;
     border: 2px solid grey;
     position: absolute;
-    left: -40px;
-    top: -20px;
+    left: -35px;
+    top: -15px;
     z-index: 1;
     background-color: white;
 }
@@ -131,13 +135,18 @@
     width: 100%;
     line-height: 35px;
     text-align: center;
-    border-bottom: 2px solid grey;
+    border: 2px solid grey;
 }
 .module_card .text {
     width: calc(100% - 50px);
     font-size: 12px;
     padding: 20px 25px;
     height: 100px;
+    border-left: 2px solid grey;
+    border-right: 2px solid grey;
+}
+.module_card .text.no-status {
+    border-bottom: 2px solid grey;
 }
 .module_card .status {
     width: 100%;
@@ -145,22 +154,47 @@
     line-height: 20px;
     vertical-align: middle;
     text-align: center;
-    border-top: 2px solid grey;
+    position: relative;
+    z-index: 1;
+}
+.module_card .status.disable{
+    border: 2px solid red;
+}
+.module_card .status.enable{
+    border: 2px solid green;
+}
+.module_card .status .background {
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+.module_card .status.disable .background {
+    background-color: red;
+}
+.module_card .status.enable .background {
+    background-color: green;
 }
 
-.search {
-    width: 475px;
+
+.tab-content-wrapper .search {
+    width: 50%;
     justify-content: flex-start;
     margin-bottom: 20px;
+    max-width: 470px;
+    position: absolute;
+    top: 30px;
 }
-#seach_input {
+.tab-content-wrapper #seach_input {
     flex-grow: 1;
 }
 
 #install_module {
-    position: absolute;
-    top: 0;
-    right: 0;
+    width: auto;
     background-color: gray;
     border: none;
     color: white;
@@ -168,5 +202,35 @@
     padding: 7px 15px;
 }
   
+/*roles page*/
+#roles-config{
+    width: 100%;
+}
+#roles-config .header{
+    width: 100%;
+    display: inline-flex;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+.role_sections{
+    width: calc(50% + 15px);
+}
+.page_sections{
+    width: calc(50% - 100px);
+}
+#add_role_button_box {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
+}
+#add_role_button_box  .add_button {
+    width: calc(100% - 101px);
+    margin-left: 34px;
+    background-image: url(/gamecourse/images/add_icon_no_outline.svg);
+    height: 35px;
+    background-color: #f2f2f2;
+}
+
 
   

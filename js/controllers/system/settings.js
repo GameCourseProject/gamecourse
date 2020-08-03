@@ -59,6 +59,8 @@ app.controller('SettingsGlobal', function($scope, $element, $smartboards, $compi
 
 app.controller('SettingsModules', function($scope, $element, $smartboards, $compile) {
     
+    //falta o add, imagem e descricao de cada modulo
+
     $scope.reduceList = function(){
         $scope.modules = $scope.allModules;
         filteredModules = [];
@@ -85,13 +87,13 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     var tabContent = $($element);
 
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
-    install_btn = $("<button id='install_module' > Install New Module</button>");
+    install_btn = $("<button id='install_module' class='action-buttons'> Install New Module</button>");
 
     modules = $('<div id="modules"></div>');
     module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
     module_card.append($('<div class="icon"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
-    module_card.append($('<div class="text">{{module.description}}</div>'));
+    module_card.append($('<div class="text no-status">{{module.description}}</div>'));
     modules.append(module_card);
     
     $compile(modules)($scope);

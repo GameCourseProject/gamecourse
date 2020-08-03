@@ -40,8 +40,8 @@
             noDragClass     : 'dd-nodrag',
             emptyClass      : 'dd-empty',
             noDropClass     : 'dd-nodrop',
-            addClass        : 'dd-add',
-            removeClass     : 'dd-remove',
+            addClass        : 'dd-add icon',
+            removeClass     : 'dd-remove icon',
             hasChildrenClass: 'dd-has-children',
             expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
             collapseBtnHTML : '<button data-action="collapse" type="button">Collapse</button>',
@@ -234,8 +234,13 @@
                     item.data(dataKeys[i], data[dataKeys[i]]);
                 }
             }
-            item.append($('<div>', {'class': list.options.handleClass}));
-            item.append($('<div>', {'class': list.options.contentClass, text: text}));
+            item.append($('<div>', {'class': list.options.handleClass})); //da append dos 3 pontos
+            item.append($('<div>', {'class': list.options.contentClass, text: text})); // da append do texto
+            page_section = $('<select>', {'class':"dd-content", 'ng-model': text});
+            // da append da select box
+            page_section.append($('<option> Default Page</option><option> Users</option><option> Leaderboard</option>'))
+            item.append(page_section);
+            
             li.append(item);
             if (li.parent().hasClass(list.options.itemClass))
                 list.setParent(li.parent());
@@ -260,7 +265,7 @@
             if (item.parents(list.options.listNodeName).length >= list.options.maxDepth)
                 return;
 
-            var img = $('<img>', {'class': list.options.addClass, src: 'images/add.svg'});
+            var img = $('<img>', {'class': list.options.addClass, src: 'images/add_icon_no_outline.svg'});
             item.append(img);
             img.click(function(e) {
                 var childList = $(this).parent().children('.' + list.options.listClass);
@@ -269,7 +274,7 @@
                 var root = $(this).closest('.' + list.options.rootClass);
                 var ret = [];
                 root.trigger('additem', [ret]);
-                childList.append(list.createItem(childList, ret[1], {'name': ret[0]}));
+                childList.append(list.createItem(childList, ret[1], {'name': ret[0]})); //tenho de passar as opcoes de listagem
                 root.trigger('change');
             });
         },
@@ -277,7 +282,7 @@
         createRemove: function(item) {
             var list = this;
 
-            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/trashcan.svg'});
+            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/delete_icon.svg'});
             item.append(imgRemove);
             imgRemove.click(function(e) {
                 var root = $(this).closest('.' + list.options.rootClass);
@@ -344,8 +349,8 @@
         setParent: function(li)
         {
             if (li.children(this.options.listNodeName).length) {
-                li.prepend($(this.options.expandBtnHTML));
-                li.prepend($(this.options.collapseBtnHTML));
+                //li.prepend($(this.options.expandBtnHTML));
+                //li.prepend($(this.options.collapseBtnHTML));
                 li.parent().addClass(this.options.hasChildrenClass);
             }
             li.children('[data-action="expand"]').hide();

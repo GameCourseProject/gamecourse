@@ -144,12 +144,17 @@ class Course
     public function setRoles($newroles)
     {
         //ToDo:If this is suposed to work with repeated roles, then there should be hiearchy info in role table in DB
-        $oldRoles = $this->getRoles();
-        foreach ($newroles as $role) {
-            $inOldRoles = array_search($role, $oldRoles);
-            if ($inOldRoles === false) {
-                Core::$systemDB->insert("role", ["name" => $role, "course" => $this->cid]);
-            } else {
+        $oldRoles=$this->getRoles();
+
+        // em vez de colocar todos novos e apagar antigos -> problemas de id
+        // dos novos ver quais sao antigos
+        // criar apenas os que nao existiam
+        // update dos antigos
+        foreach ($newroles as $role){
+            $inOldRoles=array_search($role, $oldRoles);
+            if ($inOldRoles===false){
+                Core::$systemDB->insert("role",["name"=>$role,"course"=>$this->cid]);
+            }else{
                 unset($oldRoles[$inOldRoles]);
             }
         }
@@ -567,5 +572,8 @@ class Course
             $whereCondition,
             "library.name as library ,variables.name as name, returnType"
         );
+    }
+    public function getAvailablePages(){
+        return Core::$systemDB->selectMultiple("page",["course"=>$this->cid], 'name');
     }
 }

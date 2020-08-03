@@ -7,7 +7,7 @@ button {
     cursor: pointer;
     padding: 7px 10px;
     font-size: 14px;
-    border-radius: 10%;
+    border-radius: 5px;
     background-color: white;
     border: 2px solid lightgrey;
     box-shadow: none;
@@ -323,13 +323,17 @@ input:checked + .slider:before {
 }
 
 /*Text Dividers*/
+.section{
+    margin-bottom: 15px;
+    background-color: white !important;
+}
 .divider {
     font-size: 18px;
-    margin: 15px 0;
+    margin-bottom: 15px;
 }
 .divider .title {
     position: relative;
-    z-index: 2;
+    z-index: 1;
 }
 .divider .title span {
     background-color: white;
