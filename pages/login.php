@@ -22,17 +22,35 @@ if (array_key_exists("Linkedin", $_POST)) {
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
     <base href="<?php echo Utils::createBase(); ?>" target="_blank">
     <title>GameCourse</title>
-    <link rel="stylesheet" type="text/css" href="css/simple-page.css" />
+    <link rel="stylesheet" type="text/css" href="css/login.css" />
 </head>
 
 <body>
     <div style="text-align:center;">
-        <h3>Login</h3>
+        <div id="logo"></div>
+        <h3>Login using:</h3>
         <form action="?login" method="post" target="_self">
-            <input name="Fenix" id="Fenix" type="submit" class="button big" value="Fenix">
-            <input name="Google" id="Google" type="submit" class="button big" value="Google">
-            <input name="Facebook" id="Facebook" type="submit" class="button big" value="Facebook">
-            <input name="Linkedin" id="Linkedin" type="submit" class="button big" value="Linkedin">
+            <div class="block">
+                <div class="hovicon effect-1 sub-a">
+                    <input name="Fenix" id="Fenix" type="submit" class="icon" value="Fenix">
+                </div>
+            </div>
+            <div class="block">
+                <div class="hovicon effect-1 sub-a">
+                    <input name="Google" id="Google" type="submit" class="icon" value="Google">
+                </div>
+            </div>
+            <div class="block">
+                <div class="hovicon effect-1 sub-a">
+                    <input name="Facebook" id="Facebook" type="submit" class="icon" value="Facebook">
+                </div>
+            </div>
+            <div class="block">
+                <div class="hovicon effect-1 sub-a">
+                    <input name="Linkedin" id="Linkedin" type="submit" class="icon" value="Linkedin">
+                </div>
+            </div>
+            
         </form>
     </div>
 </body>

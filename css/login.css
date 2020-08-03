@@ -1,0 +1,130 @@
+body{
+    display: flex;
+    justify-content: center;
+    /* background-image: url(/gamecourse/images/ist.jpg); */
+    background-size: cover;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+
+/* Effect 1 */
+.hovicon.effect-1 {
+    -webkit-transition: background 0.2s, color 0.2s;
+    -moz-transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s;
+}
+.hovicon.effect-1:after {
+    top: 5px;
+    left: -7px;
+    padding: 7px;
+    box-shadow: 0 0 0 4px #484848;
+    -webkit-transition: -webkit-transform 0.2s, opacity 0.2s;
+    -webkit-transform: scale(.8);
+    -moz-transition: -moz-transform 0.2s, opacity 0.2s;
+    -moz-transform: scale(.8);
+    -ms-transform: scale(.8);
+    transition: transform 0.2s, opacity 0.2s;
+    transform: scale(.8);
+    opacity: 0;
+}
+.hovicon.effect-1.sub-a:hover {
+    color: #41ab6b;
+}
+.hovicon.effect-1.sub-a:hover i {
+    color: #41ab6b;
+}
+.hovicon.effect-1.sub-a:hover:after {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+}
+.hovicon {
+    display: inline-block;
+    font-size: 45px;
+    line-height: 90px;
+    cursor: pointer;
+    margin: 20px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    text-align: center;
+    position: relative;
+    text-decoration: none;
+    z-index: 1;
+    color: #fff;
+}
+.hovicon:after {
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    content:'';
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+}
+.hovicon:before {
+    speak: none;
+    font-size: 48px;
+    line-height: 90px;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    display: block;
+    -webkit-font-smoothing: antialiased;
+}
+.icon{
+    height: 100%;
+    width: 100%;
+    margin: 10% auto;
+    display: inline-block;
+    cursor: pointer;
+    background-size: contain;
+    background-position: top;
+    background-repeat: no-repeat;
+    border: none;
+    background-color: transparent;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    color: transparent;
+}
+.icon-camera-retro{
+    background-image:  url(/gamecourse/images/duplicate_icon.svg);
+}
+#Fenix{
+    background-image:  url(/gamecourse/images/fenix_icon.png);
+}
+#Google{
+    background-image:  url(/gamecourse/images/google_icon.png);
+}
+#Facebook{
+    background-image:  url(/gamecourse/images/facebook_icon.png);
+}
+#Linkedin{
+    background-image:  url(/gamecourse/images/linkedin_icon.png);
+}
+
+form{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#logo{
+    background-image:  url(/gamecourse/images/logo_horz.svg);
+    background-size: contain;
+    background-position: top;
+    background-repeat: no-repeat;
+    height: 115px;
+    margin-top: 20vh;
+    margin-bottom: 10vh;
+}
+h3{
+    margin: 0;
+}
