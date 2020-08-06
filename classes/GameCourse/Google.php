@@ -87,8 +87,16 @@ class Google
 
         $google_oauth = new \Google_Service_Oauth2($client);
         $google_account_info = $google_oauth->userinfo->get();
-        $info = (object) array("username" => $google_account_info->email, "name" => $google_account_info->name, "email" => $google_account_info->email);
+        $info = (object) array("username" => $google_account_info->email, "name" => $google_account_info->name, "email" => $google_account_info->email, "pictureUrl" => $google_account_info->picture);
         return $info;
+    }
+
+    public function downloadPhoto($pictureUrl, $userId)
+    {
+        $pictureUrl = str_replace("\\", "", $pictureUrl);
+        $pic = file_get_contents($pictureUrl);
+        $path = 'photos/' . $userId . '.png';
+        file_put_contents($path, $pic);
     }
 
     public function getClient()

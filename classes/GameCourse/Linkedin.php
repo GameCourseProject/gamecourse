@@ -67,20 +67,34 @@ class Linkedin
 
         $url = "https://api.linkedin.com/v2/me";
         $response = Linkedin::curlRequests($url, $headers);
-        file_put_contents("person.txt", $response);
-        $infoName = json_decode($response);
-        $name = $infoName->localizedFirstName . " " . $infoName->localizedLastName;
+        $infoPerson = json_decode($response);
+        $name = $infoPerson->localizedFirstName . " " . $infoPerson->localizedLastName;
+        $personId = $infoPerson->id;
 
         $url = "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))";
         $response = Linkedin::curlRequests($url, $headers);
         $response = str_replace("~", "_", $response);
-        file_put_contents("eeeee.txt", $response);
         $infoEmail = json_decode($response);
         $email = $infoEmail->elements[0]->handle_->emailAddress;
 
-        $info = (object) array("username" => $email, "name" => $name, "email" => $email);
+        $url = "https://api.linkedin.com/v2/me?projection=(id,profilePicture(displayImage~:playableStreams))";
+        $info = (object) array("username" => $email, "name" => $name, "email" => $email, "pictureUrl" => $url);
 
         return $info;
+    }
+
+    public function downloadPhoto($pictureUrl, $userId)
+    {
+        $headers = [
+            'Authorization: Bearer ' . $this->accessToken,
+        ];
+        $response = Linkedin::curlRequests($pictureUrl, $headers);
+        $response = str_replace("~", "_", $response);
+        $infoPicture = json_decode($response);
+        $photoUrl = $infoPicture->profilePicture->displayImage_->elements[0]->identifiers[0]->identifier;
+        $pic = file_get_contents($photoUrl);
+        $path = 'photos/' . $userId . '.png';
+        file_put_contents($path, $pic);
     }
 
     public static function curlRequests($url, $headers = null)

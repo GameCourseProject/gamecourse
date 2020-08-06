@@ -70,17 +70,6 @@ class FenixEdu
 		}
 	}
 
-	public function logout()
-	{
-		setcookie("JSESSIONID", "", time() - 3600);
-		setcookie("BACKENDID", "", time() - 3600);
-		setcookie("OAUTH_CLIENT_ID", "", time() - 3600);
-
-		unset($_SESSION['accessToken']);
-		unset($_SESSION['refreshToken']);
-		$this->accessToken = "";
-		$this->refreshToken = "";
-	}
 	public static function getSingleton()
 	{
 		if (self::$INSTANCE == null) {
@@ -150,6 +139,14 @@ class FenixEdu
 			throw new FenixEduException($result);
 		}
 	}
+
+	public function downloadPhoto($pictureUrl, $userId)
+	{
+		$pic = base64_decode($pictureUrl);
+		$path = 'photos/' . $userId . '.png';
+		file_put_contents($path, $pic);
+	}
+
 	//mudar pra protected
 	public function get($endpoint, $public = false)
 	{

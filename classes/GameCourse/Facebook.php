@@ -70,9 +70,16 @@ class Facebook
         $response = Facebook::curlRequests($url);
         $infoPerson = json_decode($response);
 
-        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email);
+        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => "https://graph.facebook.com/v7.0/" . $personId . "/picture?type=normal");
 
         return $info;
+    }
+
+    public function downloadPhoto($pictureUrl, $userId)
+    {
+        $pic = file_get_contents($pictureUrl);
+        $path = 'photos/' . $userId . '.png';
+        file_put_contents($path, $pic);
     }
 
     public static function curlRequests($url)

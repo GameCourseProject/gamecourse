@@ -136,6 +136,7 @@ class Core
                 $_SESSION['username'] =  $person->username;
                 $_SESSION['email'] =  $person->email;
                 $_SESSION['name'] =  $person->name;
+                $_SESSION['pictureUrl'] = $loginType == "fenix" ? $person->photo->data : $person->pictureUrl;
                 $_SESSION['loginDone'] = $loginType;
             }
         }
@@ -153,8 +154,23 @@ class Core
             $username = $auth->getUsername();
             //verficar qual o tipo de login
             static::$loggedUser = User::getUserByUsername($username);
+            $_SESSION['user'] = static::$loggedUser->getId();
+
             if (static::$loggedUser != null) {
-                $_SESSION['user'] = static::$loggedUser->getId();
+                if (!file_exists('photos/' . $_SESSION['user'] . 'png')) { //se n existir foto
+                    if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
+                        if ($_SESSION['type'] == "fenix") {
+                            $client = \FenixEdu::getSingleton();
+                        } elseif ($_SESSION['type'] == "google") {
+                            $client = Google::getSingleton();
+                        } else if ($_SESSION['type'] == "facebook") {
+                            $client = Facebook::getSingleton();
+                        } else if ($_SESSION['type'] == "linkedin") {
+                            $client = Linkedin::getSingleton();
+                        }
+                        $client->downloadPhoto($_SESSION['pictureUrl'], $_SESSION['user']);
+                    }
+                }
                 return true;
             } else if ($redirect) {
                 include 'pages/no-access.php';
