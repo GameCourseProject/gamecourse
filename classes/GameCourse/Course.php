@@ -145,21 +145,30 @@ class Course
     {
         //ToDo:If this is suposed to work with repeated roles, then there should be hiearchy info in role table in DB
         $oldRoles=$this->getRoles();
-
-        // em vez de colocar todos novos e apagar antigos -> problemas de id
-        // dos novos ver quais sao antigos
-        // criar apenas os que nao existiam
-        // update dos antigos
+        // $newroles-> array of obj with: name, id, landingPage
+        // $oldRoles-> array of obj with: name, id, landingPage, course
         foreach ($newroles as $role){
-            $inOldRoles=array_search($role, $oldRoles);
-            if ($inOldRoles===false){
-                Core::$systemDB->insert("role",["name"=>$role,"course"=>$this->cid]);
-            }else{
-                unset($oldRoles[$inOldRoles]);
+            //updates existing role
+            if( $role["id"] != null){
+                Core::$systemDB->update("role",["landingPage"=>$role["landingPage"]],["id"=>$role["id"]]);
+            }
+            //creates new role
+            else{
+                Core::$systemDB->insert("role",["name"=>$role["name"],"landingPage"=>$role["landingPage"],"course"=>$this->cid]);
             }
         }
-        foreach ($oldRoles as $role) {
-            Core::$systemDB->delete("role", ["name" => $role, "course" => $this->cid]);
+
+        foreach($oldRoles as $oldRole){
+            $isPresent = false;
+            foreach($newroles as $newRole) {
+                if ($oldRole["id"] == $newRole["id"] ) {
+                    $isPresent = true;
+                    break;
+                }
+            }
+            if (!$isPresent){
+                Core::$systemDB->delete("role",["id"=>$oldRole["id"] ]);
+            }
         }
     }
 

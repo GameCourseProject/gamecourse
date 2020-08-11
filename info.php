@@ -227,34 +227,23 @@ API::registerFunction('settings', 'landingPages', function() {
 //change user roles or role hierarchy
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $course = Course::getCourse(API::getValue('course'));
 
     if (API::hasKey('updateRoleHierarchy')) {
-        $hierarchy = API::getValue('updateRoleHierarchy');
-        $course = Course::getCourse(API::getValue('course'));
-        //ToDo: add a prompt to confirm deleting roles (maybe just if they're assigned to users)
-        $course->setRoles($hierarchy['roles']);
-        $course->setRolesHierarchy($hierarchy['hierarchy']);
-        $roles = $hierarchy['roles'];
         
+        API::requireValues('hierarchy');
+        API::requireValues('roles');
+        
+        $hierarchy = API::getValue('hierarchy');
+        $newRoles = API::getValue('roles');
+        
+        $course->setRoles($newRoles);
+        $course->setRolesHierarchy($hierarchy);
         http_response_code(201);
-    // } else if (API::hasKey('usersRoleChanges')) {
-    //     $course = Course::getCourse(API::getValue('course'));
-    //     $usersRoleChanges = API::getValue('usersRoleChanges');
-    //     foreach ($usersRoleChanges as $userId => $roles) {
-    //         $course->getUser($userId)->setRoles($roles);
-    //     }
-    //     http_response_code(201);
+
     } else {
-        $course = Course::getCourse(API::getValue('course'));
-        // $users = $course->getUsers();
-        // $usersInfo = [];
-        // foreach ($users as $userData) {
-        //     $id = $userData['id'];
-        //     $user = new \GameCourse\CourseUser($id,$course);
-        //     $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
-        // }
         $globalInfo = array(
-            // 'users' => $usersInfo,
             'pages' => $course->getAvailablePages(),
             'roles' => array_column($course->getRoles("name"),"name"),
             'roles_obj' => $course->getRoles(),

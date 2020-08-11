@@ -193,6 +193,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 
         var tabContent = $($element);
         $scope.data = data;
+        $scope.data.newRoles = $scope.data.roles;
        
         
         // Roles
@@ -202,8 +203,10 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         dd.append('<div class="header"><span class="role_sections">Roles</span><span class="page_sections">Landing Page</span></div>')
 
 
+        // constroi linha na primeira vez
         function buildItem(roleName) {
             var item = $('<li>', {'class': 'dd-item', 'data-name': roleName});
+            
             item.append($('<div>', {'class': 'dd-handle icon'}));
             item.append($('<div>', {'class': 'dd-content', text: roleName}));
             page_section = $('<select>', {'class':"dd-content", 'ng-model': roleName});
@@ -214,9 +217,15 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 page_section.append($('<option>', {text: page.name, 'value': page.name}));
             });
             item.append(page_section);
+            $compile(item)($scope)
+            
+            //initialize scope value a select right option on dropdown
+            role = $scope.data.roles_obj.find(x => x.name == roleName);
+            $scope[roleName] = role.landingPage;
             return item;
         }
 
+        // constroi tabela a primira vez
         function buildRoles(parent, roles) {
             var list = $('<ol>', {'class': 'dd-list first-layer'});
             for (var n = 0; n < roles.length; n++) {
@@ -242,20 +251,36 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             }
         }
         
-        if ($scope.data.newRoles == undefined)
-            $scope.data.newRoles = $scope.data.roles;
         buildRoles(dd, $scope.data.rolesHierarchy);
         
+        // add button no fim da lista
         add_new_role = $('<div id="add_role_button_box"><button ng-click="addRole()" class="add_button icon"></button></div>')
         $compile(add_new_role)($scope)
 
         rolesSection.append(dd);
         rolesSection.append(add_new_role);
 
-        dd.nestable().on('change', function() {
+        options = {}
+        options.dropdown = $scope.data.pages
+        dd.nestable(options);
+
+        dd.on('change', function() {
             var list = $(this);
             createChangeButtonIfNone('role-change', rolesSection, function (status) {
-                $smartboards.request('settings', 'roles', {course: $scope.course, updateRoleHierarchy: {hierarchy: list.nestable('serialize'), roles: $scope.data.newRoles}}, function(data, err) {
+                var newRolesAllInfo = [];
+
+                jQuery.each($scope.data.newRoles, function( index ){
+                    role_name = $scope.data.newRoles[index];
+                    role_page = $scope[role_name];
+                    role_obj = $scope.data.roles_obj.find(x => x.name == role_name);
+                    role_id = role_obj ? role_obj.id : null;
+                    roleInfo = {name: role_name,
+                                id: role_id,
+                                landingPage: role_page};
+                    newRolesAllInfo.push(roleInfo);
+                });
+
+                $smartboards.request('settings', 'roles', {course: $scope.course, updateRoleHierarchy:true, hierarchy: list.nestable('serialize'), roles: newRolesAllInfo}, function(data, err) {
                     if (err) {
                         status.text('Error, please try again!');
                         return;
@@ -266,15 +291,15 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 });
             });
         }).on('additem', function (event, ret) {
+
             ret[0] = ret[1] = prompt('New role name: ');
-            if ($scope.data.newRoles == undefined)
-                $scope.data.newRoles = $scope.data.roles;
             $scope.data.newRoles.push(ret[0]);
             $scope.data.rolesHierarchy = dd.nestable('serialize');
+            $scope[ret[0]] = "";
+
         }).on('removeitem', function (event, data) {
+            //delete de um role no nestable
             var roleName = data.name;
-            if ($scope.data.newRoles == undefined)
-                $scope.data.newRoles = $scope.data.roles;
             deleteRoleAndChildren(dd.nestable('serialize'),roleName);
         });
 
@@ -282,12 +307,10 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             var newRole = prompt('New role name: ');
             if (newRole === null)
                 return;
-            if ($scope.data.newRoles == undefined)
-                $scope.data.newRoles = $scope.data.roles;
             $scope.data.newRoles.push(newRole);
+            $scope[newRole] = "";
             dd.nestable('createRootItem')(newRole, {name: newRole}); //passar lista de opcoes do select
             $scope.data.rolesHierarchy = dd.nestable('serialize');
-            //$(dd.children().get(0)).append(buildItem(newRole));
             dd.trigger('change');
         };
     });
