@@ -13,6 +13,12 @@ button {
     box-shadow: none;
     color: grey;
 }
+button:disabled {
+    color: lightgray;
+    background-color: white;
+    border: 1px solid;
+    cursor: not-allowed;
+}
 input:focus, select:focus {
     outline: none;
 }
