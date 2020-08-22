@@ -292,7 +292,9 @@
             var list = this;
 
             var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/delete_icon.svg'});
+            var imgRemoveBlocker = $('<div>', {'class': "dd-delete-blocker"});
             item.append(imgRemove);
+            item.append(imgRemoveBlocker);
             imgRemove.click(function(e) {
                 var root = $(this).closest('.' + list.options.rootClass);
                 var item = $(this).parent();

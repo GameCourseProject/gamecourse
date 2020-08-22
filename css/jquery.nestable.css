@@ -126,10 +126,23 @@
   -webkit-box-shadow: 2px 4px 6px 0 rgba(0, 0, 0, 0.1);
   box-shadow: 2px 4px 6px 0 rgba(0, 0, 0, 0.1);
 }
-.dd-nodrag > .dd-handle {
-  background: #666;
-  border-color: #777;
-  color: #eee;
+.dd-nodrag > .dd-handle{
+  opacity: 0.1;
+  cursor: not-allowed;
+}
+.dd-nodrag > .dd-remove {
+  opacity: 0.1;
+  pointer-events: none;
+}
+.dd-nodrag > .dd-delete-blocker{
+  cursor: not-allowed;
+  position: absolute;
+  float: right;
+  right: 0px;
+  top: 5px;
+  z-index: 2;
+  height: 23px;
+  width: 23px;
 }
 .dd-add {
   position: absolute;

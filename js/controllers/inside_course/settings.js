@@ -187,8 +187,10 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
     
     function buildItem(roleName) {
         var item = $('<li>', {'class': 'dd-item', 'data-name': roleName});
-        // se o rolename for os default: Teacher, Student, Watcher
-        // addClass dd-nodrag
+        //default values can not be dragged or deletes
+        if(roleName == "Teacher" || roleName=="Student" || roleName=="Watcher"){
+            item.addClass("dd-nodrag");
+        }
         item.append($('<div>', {'class': 'dd-handle icon'}));
         item.append($('<div>', {'class': 'dd-content', text: roleName}));
         page_section = $('<select>', {'class':"dd-content", 'ng-model': roleName});
@@ -234,7 +236,6 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
     }
 
 
-    
     function createChangeButtonIfNone( anchor, action, list) {
         if (anchor.parent().find('#role-change-button').length == 0) {
             var pageStatus = anchor.parent().find('#role-change-status');
@@ -305,11 +306,8 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         add_new_role = $('<div id="add_role_button_box"><button ng-click="addRole()" class="add_button icon"></button></div>')
         $compile(add_new_role)($scope)
 
-        
-
         //action buttons
         action_buttons = $("<div class='action-buttons'></div>");
-
 
         rolesSection.append(dd);
         rolesSection.append(add_new_role);
@@ -353,29 +351,12 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 return;
             $scope.data.newRoles.push(newRole);
             $scope[newRole] = "";
-            dd.nestable('createRootItem')(newRole, {name: newRole}); //passar lista de opcoes do select
+            dd.nestable('createRootItem')(newRole, {name: newRole});
             $scope.data.rolesHierarchy = dd.nestable('serialize');
             dd.trigger('change');
         };
     });
 
-    // $smartboards.request('settings', 'landingPages', {course : $scope.course}, function(data, err) {
-        
-    //     var $landingPageSection = createSection($element, 'Landing pages');
-    //     //fazer identificador por linha
-    //     //colocar valor atual na caixa
-    //     //nput vai passar a ser dropdown 
-    //     for (role of data.roles){
-    //         var title = "<b>" + role.name + "</b><br>";
-    //         $landingPageSection.append(title);
-    //         //ngModel =  'data.roles.landingPage' --- not working here, but is going to be changend anyway
-
-    //         var input = createInputWithChange('landing-page-'+ role.id, 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.roles.landingPage', 'settings', 'landingPages', 'landingPage', {course: $scope.course, id: role.id}, 'New landing page is set!');
-    //         $landingPageSection.append(input);
-
-    //     }
-        
-    // });
 });
 
 app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
