@@ -208,7 +208,6 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         $scope[roleName] = role.landingPage;
         return item;
     }
-
     // constroi tabela a primira vez
     function buildRoles(parent, roles) {
         var list = $('<ol>', {'class': 'dd-list first-layer'});
@@ -234,7 +233,6 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 deleteRoleAndChildren(hierarchy[i]['children'],roleToDelete);  
         }
     }
-
 
     function createChangeButtonIfNone( anchor, action, list) {
         if (anchor.parent().find('#role-change-button').length == 0) {
@@ -269,7 +267,8 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                         landingPage: role_page};
             newRolesAllInfo.push(roleInfo);
         });
-
+        $("#action_completed").empty();
+        $("#action_not_completed").empty();
         $smartboards.request('settings', 'roles', {course: $scope.course, updateRoleHierarchy:true, hierarchy: list.nestable('serialize'), roles: newRolesAllInfo}, function(data, err) {
             if (err) {
                 $("#action_not_completed").append("Error, please try again!");
@@ -281,6 +280,41 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             $("#action_completed").append("Role hierarchy changed!");
             $("#action_completed").show().delay(3000).fadeOut();
         });
+    }
+    function addNewRole(){
+        $("#new-role").show();
+        $scope.newRole = {};
+        $scope.newRole.name = "";
+        $("#role_name").val("") //for the add coming from nestable, it does not clean field with scope
+        $scope.isReadyToSubmit = function() {
+            isValid = function(text){
+                return  (text != "" && text != undefined && text != null)
+            }
+            //does role already exists?
+            existing_role = $scope.data.newRoles.includes($scope.newRole.name);
+            
+            if (isValid($scope.newRole.name) && !existing_role){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        function getUserInput(){
+            return new Promise((resolve, reject) => {
+                //enter no input
+                $('#role_name').keydown(function(e) {
+                  if (e.keyCode == 13 && $scope.isReadyToSubmit()) {
+                    resolve($scope.newRole.name);
+                  }
+                });
+                //click no button
+                $("#submit_role").click(function(e){
+                    resolve($scope.newRole.name);
+                });
+              });
+        }
+
+        return getUserInput();
     }
 
     $smartboards.request('settings', 'roles', {course: $scope.course}, function(data, err) {
@@ -318,6 +352,20 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         rolesSection.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
 
 
+        modal = $("<div class='modal' id='new-role'></div>");
+        newRole = $("<div class='modal_content little_modal'></div>");
+        newRole.append( $('<button class="close_btn icon" value="#new-role" onclick="closeModal(this)"></button>'));
+        newRole.append( $('<div class="title">New Role: </div>'));
+        content = $('<div class="content">');
+        box = $('<div class= "inputs">');
+        box.append( $('<div class="name full"><input type="text" class="form__input " id="role_name" placeholder="Name *" ng-model="newRole.name"/> <label for="name" class="form__label">Name</label></div>'));
+        content.append(box);
+        content.append( $('<button class="save_btn" id="submit_role" ng-disabled="!isReadyToSubmit()" > Continue </button>'))
+        newRole.append(content);
+        modal.append(newRole);
+        $compile(modal)($scope)
+        rolesSection.append(modal);
+
         options = {}
         options.dropdown = $scope.data.pages
         dd.nestable(options);
@@ -328,14 +376,14 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
             var list = $(this);
             updateChangeButton(action_buttons, false);
         }).on('additem', function (event, ret) {
-            // add feito por outro roles pelo nestable
-
-            //adiconar verificacao para nome unico
-            //novo modal tambem
-            ret[0] = ret[1] = prompt('New role name: ');
-            $scope.data.newRoles.push(ret[0]);
-            $scope.data.rolesHierarchy = dd.nestable('serialize');
-            $scope[ret[0]] = "";
+            ret[0] = addNewRole();
+            ret[0].then((roleName) => {
+                $scope.data.newRoles.push(roleName);
+                $scope.data.rolesHierarchy = dd.nestable('serialize');
+                $scope[roleName] = "";
+                $("#new-role").hide();
+            });            
+                   
             
         }).on('removeitem', function (event, data) {
             //delete de um role no nestable
@@ -346,14 +394,16 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 
         // add role pelo add button
         $scope.addRole = function() {
-            var newRole = prompt('New role name: ');
-            if (newRole === null)
-                return;
-            $scope.data.newRoles.push(newRole);
-            $scope[newRole] = "";
-            dd.nestable('createRootItem')(newRole, {name: newRole});
-            $scope.data.rolesHierarchy = dd.nestable('serialize');
-            dd.trigger('change');
+            rolePromise = addNewRole();   
+            rolePromise.then((roleName) => {
+                $scope.data.newRoles.push(roleName);
+                $scope[roleName] = "";
+                dd.nestable('createRootItem')(roleName, {name: roleName});
+                $scope.data.rolesHierarchy = dd.nestable('serialize');
+                dd.trigger('change');
+                $("#new-role").hide(); 
+            });
+                
         };
     });
 

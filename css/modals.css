@@ -173,6 +173,15 @@ cursor: pointer;
     margin-bottom: 22px;
 }
 
+/*New Role version of the modal*/
+.little_modal{
+    width: 410px;
+}
+.little_modal .content .inputs .form__input{
+    margin-bottom: 50px !important;
+}
+
+
 #courses_list {
     margin-bottom: 15px;
     margin-top: -5px;

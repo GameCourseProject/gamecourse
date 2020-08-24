@@ -148,6 +148,7 @@
   position: absolute;
   float: right;
   right: 30px;
+  top: 0px;
   z-index: 2;
   height: 35px;
   width: 35px;

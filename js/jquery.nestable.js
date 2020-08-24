@@ -283,8 +283,11 @@
                 var root = $(this).closest('.' + list.options.rootClass);
                 var ret = [];
                 root.trigger('additem', [ret]);
-                childList.append(list.createItem(childList, ret[1], {'name': ret[0]})); 
-                root.trigger('change');
+                ret[0].then((input) => {
+                    childList.append(list.createItem(childList, input, {'name': input})); 
+                    root.trigger('change');
+                });
+                
             });
         },
 
