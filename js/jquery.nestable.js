@@ -41,6 +41,7 @@
             emptyClass      : 'dd-empty',
             noDropClass     : 'dd-nodrop',
             addClass        : 'dd-add icon',
+            addClassOnly    : 'dd-add',
             removeClass     : 'dd-remove icon',
             hasChildrenClass: 'dd-has-children',
             expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
@@ -430,8 +431,8 @@
                 this.setParent(el);
 
             if (el.parents(this.options.listNodeName).length >= this.options.maxDepth) {
-                el.children('.' + this.options.addClass).remove();
-            } else if (el.children('.' + this.options.addClass).length == 0) {
+                el.children('.' + this.options.addClassOnly).remove();
+            } else if (el.children('.' + this.options.addClassOnly).length == 0) {
                 this.createAdd(el);
             }
 

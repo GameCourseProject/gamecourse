@@ -283,6 +283,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
     }
     function addNewRole(){
         $("#new-role").show();
+        $("#new-role input:text,#new-role textarea").first().focus();
         $scope.newRole = {};
         $scope.newRole.name = "";
         $("#role_name").val("") //for the add coming from nestable, it does not clean field with scope
@@ -310,6 +311,10 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
                 //click no button
                 $("#submit_role").click(function(e){
                     resolve($scope.newRole.name);
+                });
+                //close modal
+                $("#cancel_role").click(function(e){
+                    reject();
                 });
               });
         }
@@ -354,7 +359,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 
         modal = $("<div class='modal' id='new-role'></div>");
         newRole = $("<div class='modal_content little_modal'></div>");
-        newRole.append( $('<button class="close_btn icon" value="#new-role" onclick="closeModal(this)"></button>'));
+        newRole.append( $('<button class="close_btn icon" id="cancel_role" value="#new-role" onclick="closeModal(this)"></button>'));
         newRole.append( $('<div class="title">New Role: </div>'));
         content = $('<div class="content">');
         box = $('<div class= "inputs">');
