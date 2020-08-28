@@ -252,6 +252,12 @@ input:focus, select:focus {
 .action-buttons .export_icon{
     background-image: url(/gamecourse/images/export_icon.svg);
 }
+.action-buttons .undo_icon{
+    background-image: url(/gamecourse/images/undo_icon.svg);
+}
+.action-buttons .redo_icon{
+    background-image: url(/gamecourse/images/redo_icon.svg);
+}
 
 /* all buttons using images*/
 .icon{

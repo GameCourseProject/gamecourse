@@ -233,5 +233,14 @@
     background-color: #f2f2f2;
 }
 
-
-  
+#roles_page .action-buttons{
+    width: 190px;
+}
+.action-buttons .undo_icon.disabled{
+    opacity: 0.3;
+    pointer-events: none;
+}
+.action-buttons .redo_icon.disabled{
+    opacity: 0.3;
+    pointer-events: none;
+}

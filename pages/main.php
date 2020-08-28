@@ -41,6 +41,8 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/d3.min.js"></script>
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
+    <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
+
 
     <!-- Color picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" /> <!-- 'monolith' theme -->

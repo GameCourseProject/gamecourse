@@ -246,7 +246,7 @@ API::registerFunction('settings', 'roles', function() {
         $globalInfo = array(
             'pages' => $course->getAvailablePages(),
             'roles' => array_column($course->getRoles("name"),"name"),
-            'roles_obj' => $course->getRoles(),
+            'roles_obj' => $course->getRoles('id, name, landingPage'), //
             'rolesHierarchy' => $course->getRolesHierarchy(),
         );
         API::response($globalInfo);
