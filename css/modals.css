@@ -167,6 +167,7 @@ cursor: pointer;
     right: 15px;
 }
 #add-user .modal_content .content .inputs .form__input,
+#new-user .modal_content .content .inputs .form__input,
 #edit-user .modal_content .content .inputs .form__input
 {
     margin-bottom: 22px;
