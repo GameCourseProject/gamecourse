@@ -238,7 +238,7 @@
             }
             item.append($('<div>', {'class': list.options.handleClass})); //da append dos 3 pontos
             item.append($('<div>', {'class': list.options.contentClass, text: text})); // da append do texto
-            page_section = $('<select>', {'class':"dd-content", 'ng-model': text});
+            page_section = $('<select>', {'class':"dd-content", 'ng-model': text, 'ng-change': "saveLandingPage('"+text+"')"});
             page_section.append($('<option>', {text: 'Default Course Page', 'value':''}));
             //append select box
             jQuery.each(list.options.dropdown, function( index ){

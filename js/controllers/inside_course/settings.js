@@ -328,9 +328,11 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         return getUserInput();
     }
     function redoTable(state){
+        //tenho de copiar por valor tambem
+        //para nao alterar os valores/objetos que estao guardados no statemanager
         newHierarchy = Object.values(state['dd']);
-        newRoles = state['roles'];
-        newRolesObjs = state['obj'];
+        newRoles = state['roles'].slice();
+        newRolesObjs = duplicateRolesObjs(state['obj']);
         //update scope
         $scope.data.rolesHierarchy = newHierarchy;
         $scope.data.newRoles = newRoles;
@@ -368,14 +370,19 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         role.landingPage = $scope[role_name];
     }
 
-    function newAction(state){
-        //preciso de "duplicar" objs do roles_obj
+    function duplicateRolesObjs(roles){
         duplicated_roles_obj = [];
-        jQuery.each($scope.data.roles_obj, function( index ){
-            role_obj = $scope.data.roles_obj[index];
+        jQuery.each(roles, function( index ){
+            role_obj = roles[index];
             new_obj = Object.assign({}, role_obj);
             duplicated_roles_obj.push(new_obj);
         });
+        return duplicated_roles_obj;
+    }
+
+    function newAction(state){
+        //preciso de "duplicar" objs do roles_obj
+        duplicated_roles_obj = duplicateRolesObjs($scope.data.roles_obj);
 
         $scope.state_manager.newState({'dd': state, 'roles': $scope.data.newRoles.slice(), 'obj': duplicated_roles_obj});
         $("#undo_icon").removeClass("disabled");
@@ -442,10 +449,12 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         dd.nestable(options);
 
         dd.on('change', function() {
+            $compile(dd)($scope); //new elements need to be compiled into scope
             $scope.data.rolesHierarchy = dd.nestable('serialize');
             newAction($scope.data.rolesHierarchy);
             var list = $(this);
             updateChangeButton( false);
+
         }).on('additem', function (event, ret) {
             ret[0] = addNewRole();
             ret[0].then((roleName) => {
