@@ -7,7 +7,7 @@ use MagicDB\SQLDB;
 require_once 'config.php';
 
 require_once 'fenixedu-sdk/FenixEdu.class.php';
-require_once 'Google.php';
+require_once 'GoogleHandler.php';
 require_once 'Facebook.php';
 
 
@@ -92,7 +92,7 @@ class Core
             $loginType = (include 'pages/login.php');
             $_SESSION['type'] = $loginType;
             if ($loginType == "google") {
-                $client = Google::getSingleton();
+                $client = GoogleHandler::getSingleton();
             } else if ($loginType == "fenix") {
                 $client = \FenixEdu::getSingleton();
             } else if ($loginType == "facebook") {
@@ -116,7 +116,7 @@ class Core
         if ($loginType == "fenix") {
             $client = \FenixEdu::getSingleton();
         } else if ($loginType == "google") {
-            $client = Google::getSingleton();
+            $client = GoogleHandler::getSingleton();
         } else if ($loginType == "facebook") {
             $client = Facebook::getSingleton();
         } else if ($loginType == "linkedin") {
@@ -162,7 +162,7 @@ class Core
                         if ($_SESSION['type'] == "fenix") {
                             $client = \FenixEdu::getSingleton();
                         } elseif ($_SESSION['type'] == "google") {
-                            $client = Google::getSingleton();
+                            $client = GoogleHandler::getSingleton();
                         } else if ($_SESSION['type'] == "facebook") {
                             $client = Facebook::getSingleton();
                         } else if ($_SESSION['type'] == "linkedin") {

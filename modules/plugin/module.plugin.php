@@ -9,7 +9,6 @@ use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
-use GameCourse\Google;
 use GameCourse\User;
 
 class Plugin extends Module
@@ -262,7 +261,7 @@ class Plugin extends Module
             $this->googleSheets->saveTokenToDB();
 
             //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            // $this->googleSheets->readGoogleSheets();
+            $this->googleSheets->readGoogleSheets();
             return true;
         }
     }

@@ -4,7 +4,7 @@ namespace GameCourse;
 
 include 'google-api-php-client/vendor/autoload.php';
 
-class Google
+class GoogleHandler
 {
     private static $INSTANCE;
     private $accessKey;
@@ -122,7 +122,7 @@ class Google
 
     public static function checkToken($credentials, $token, $authCode)
     {
-        $client = Google::setCredentials($credentials);
+        $client = GoogleHandler::setCredentials($credentials);
         if ($token) {
             $accessToken = $token;
             $client->setAccessToken($accessToken);
@@ -151,7 +151,7 @@ class Google
 
     public static function getGoogleSheets($credentials, $token, $authCode)
     {
-        $result = Google::checkToken($credentials, $token, $authCode);
+        $result = GoogleHandler::checkToken($credentials, $token, $authCode);
         return new \Google_Service_Sheets($result["client"]);
     }
 }

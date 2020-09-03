@@ -2,7 +2,7 @@
 
 namespace Modules\Plugin;
 
-use GameCourse\Google;
+use GameCourse\GoogleHandler;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\User;
@@ -52,7 +52,7 @@ class GoogleSheets
     public function setCredentials()
     {
         $credentials = $this->getCredentialsFromDB();
-        Google::setCredentials(json_encode($credentials));
+        GoogleHandler::setCredentials(json_encode($credentials));
     }
 
     public function setAuthCode()
@@ -71,7 +71,7 @@ class GoogleSheets
         $credentials = $this->getCredentialsFromDB();
         $token = $this->getTokenFromDB();
         $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
-        return Google::checkToken($credentials, $token, $authCode);
+        return GoogleHandler::checkToken($credentials, $token, $authCode);
     }
 
     public function saveTokenToDB()
@@ -106,7 +106,7 @@ class GoogleSheets
         $token = $this->getTokenFromDB();
         $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "authCode");
 
-        $service = Google::getGoogleSheets($credentials, $token, $authCode);
+        $service = GoogleHandler::getGoogleSheets($credentials, $token, $authCode);
         $this->getDBConfigValues();
         // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
         $names = explode(";", $this->sheetName);
