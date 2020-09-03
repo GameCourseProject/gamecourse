@@ -154,9 +154,9 @@ class Core
             $username = $auth->getUsername();
             //verficar qual o tipo de login
             static::$loggedUser = User::getUserByUsername($username);
-            $_SESSION['user'] = static::$loggedUser->getId();
 
             if (static::$loggedUser != null) {
+                $_SESSION['user'] = static::$loggedUser->getId();
                 if (!file_exists('photos/' . $_SESSION['user'] . 'png')) { //se n existir foto
                     if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
                         if ($_SESSION['type'] == "fenix") {
