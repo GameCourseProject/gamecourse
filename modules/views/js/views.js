@@ -345,7 +345,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
         box.append(row);
         content.append(box);
-        content.append( $('<button class="save_btn" ng-click="saveView()" ng-disabled="" > Save </button>'))
+        content.append( $('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newView.append(content);
         modal.append(newView);
         $compile(modal)($scope);
@@ -391,6 +391,20 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                     location.reload();
                 });
             };
+            //criar funcao de verificacao
+            $scope.isReadyToSubmit = function() {
+                isValid = function(text){
+                    return  (text != "" && text != undefined && text != null)
+                }
+                //validate inputs
+                if (isValid($scope.newView.name) &&
+                isValid($scope.newView.roleType) ){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
 
             if (pageOrTemp == "page"){
                 $("#active_page").show();
