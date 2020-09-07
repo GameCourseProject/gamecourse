@@ -13,7 +13,7 @@ if (array_key_exists("logout", $_GET)) {
 
 Core::denyCLI();
 Core::requireLogin();
-Core::requireSetup();
+// Core::requireSetup();
 Core::init();
 Core::checkAccess();
 

@@ -88,7 +88,7 @@ class Core
         }
         $isLoggedIn = array_key_exists('username', $_SESSION);
         $client = null;
-        if (!$isLoggedIn && $performLogin) {
+        if (!$isLoggedIn && $performLogin && Core::requireSetup()) {
             $loginType = (include 'pages/login.php');
             $_SESSION['type'] = $loginType;
             if ($loginType == "google") {
