@@ -292,6 +292,20 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             return;
         }
 
+        //associate information to scope -> accessible on search
+        $scope.pages = Object.values(data.pages);
+        $scope.templates = Object.values(data.templates);
+        $scope.globals = Object.values(data.globals);
+        
+        //all the information is saved so we can filter it
+        $scope.allPages = Object.values(data.pages);
+        $scope.allTemplates = Object.values(data.templates);
+        $scope.allGlobals = Object.values(data.globals);
+
+        search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
+        $compile(search)($scope);
+        $element.append(search);
+
         //pages section
         var viewsArea = createSection($($element),"Pages");
         viewsArea.attr("id","pages");
@@ -302,7 +316,9 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $compile(box)($scope);
         viewsArea.append(box);
         viewsArea.append($compile('<div class="add_button icon" ng-click="createView(\'page\')"></div>')($scope));
-        
+        //error section
+        viewsArea.append( $("<div class='error_box'><div id='empty_pages' class='error_msg'></div></div>"));
+    
         //templates section
         var TemplateArea = createSection($($element),"View Templates");
         TemplateArea.attr("id", "templates");
@@ -318,7 +334,9 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $compile(box)($scope);
         TemplateArea.append(box);
         TemplateArea.append($compile('<div class="add_button icon" ng-click="createView(\'template\')"></div>')($scope));
-        
+        //error section
+        TemplateArea.append( $("<div class='error_box'><div id='empty_templates' class='error_msg'></div></div>"));
+    
         // global templates section
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.attr("id", "templates");
@@ -328,6 +346,9 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         globalTemplateArea.append(box);
+        //error section
+        globalTemplateArea.append( $("<div class='error_box'><div id='empty_globals' class='error_msg'></div></div>"));
+    
      
 
         //new view modal
@@ -469,6 +490,54 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             }
             
         };
+        $scope.reduceList = function(){
+            $("#empty_pages").empty();
+            $("#empty_templates").empty();
+            $("#empty_globals").empty();
+            $scope.pages = $scope.allPages;
+            $scope.templates = $scope.allTemplates;
+            $scope.globals = $scope.allGlobals;
+
+            filteredPages = [];
+            filteredTemplates = [];
+            filteredGlobals = [];
+            text = $scope.search;
+            if (validateSearch(text)){
+                //match por name e short
+                jQuery.each($scope.pages , function( index ){
+                    view_obj = $scope.pages[index];
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                        filteredPages.push(view_obj);
+                    }
+                });
+                jQuery.each($scope.templates , function( index ){
+                    view_obj = $scope.templates[index];
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                        filteredTemplates.push(view_obj);
+                    }
+                });
+                jQuery.each($scope.globals , function( index ){
+                    view_obj = $scope.globals[index];
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                        filteredGlobals.push(view_obj);
+                    }
+                });
+                
+                if(filteredPages.length == 0){
+                    $("#empty_pages").append("No matches found");
+                }
+                if(filteredTemplates.length == 0){
+                    $("#empty_templates").append("No matches found");
+                }
+                if(filteredGlobals.length == 0){
+                    $("#empty_globals").append("No matches found");
+                }
+                $scope.pages = filteredPages;
+                $scope.templates = filteredTemplates;
+                $scope.globals = filteredGlobals;
+            }
+            
+        }
     });
 });
 
