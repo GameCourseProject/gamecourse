@@ -59,14 +59,14 @@ input:focus, select:focus {
   }
 /* error messages*/
 .error_box {
-    width: 90%;
+    width: 100%;
     text-align: center;
     position: absolute;
-    top: 60px;
+    top: 0;
 }
 .error_msg {
     color: red;
-    padding-top: 30px;
+    padding-top: 20px;
 }
 /* success messages*/
 .success_box {
@@ -93,6 +93,11 @@ input:focus, select:focus {
     position: absolute;
     top: 0;
     /*border: 2px solid red; - filled by course color*/
+}
+
+
+#allUsers, #modules, #allCourses{
+    position: relative;
 }
 
 /*tables structure*/
@@ -219,10 +224,6 @@ input:focus, select:focus {
 .section .content {
     margin-bottom: 20px;
 }
-.section .content .error_msg{
-    padding-top: 0;
-    padding-bottom: 30px;
-}
 .section .content .card {
     display: flex;
     flex-direction: column;
@@ -263,6 +264,13 @@ input:focus, select:focus {
 }
 .section .content .card .color_box .frame-course span:hover {
     opacity: 1;
+}
+
+.section .content .error_box .error_msg{
+    padding-top: 30px;
+}
+.section .content .error_box {
+    margin-left: 20px;
 }
 
   

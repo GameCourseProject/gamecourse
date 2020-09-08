@@ -247,6 +247,14 @@
     pointer-events: none;
 }
 
+#roles_page .error_box{
+    top: 35px;
+}
+#roles_page .error_box .error_msg{
+    padding-top: 0;
+}
+
+
 /*Views page*/
 .section .add_button{
     position: absolute;

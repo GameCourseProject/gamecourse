@@ -69,6 +69,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     //falta imagem e descricao de cada modulo
 
     $scope.reduceList = function(){
+        $("#empty_search").empty();
         $scope.modules = $scope.allModules;
         filteredModules = [];
         text = $scope.search;
@@ -83,7 +84,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
             });
             if(filteredModules.length == 0){
                 $("#courses-table").hide();
-                $("#empty_table").append("No matches found");
+                $("#empty_search").append("No matches found");
             }
             $scope.modules = filteredModules;
         }
@@ -94,6 +95,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     var tabContent = $($element);
 
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
+    
 
     modules = $('<div id="modules"></div>');
     module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
@@ -103,6 +105,9 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     module_card.append($('<div ng-if="module.enabled != true" class="status disable">Disabled <div class="background"></div></div>'));
     module_card.append($('<div ng-if="module.enabled == true" class="status enable">Enabled <div class="background"></div></div>'));
     modules.append(module_card);
+    //error section
+    modules.append( $("<div class='error_box'><div id='empty_search' class='error_msg'></div></div>"));
+    
     
     $compile(modules)($scope);
     $compile(search)($scope);

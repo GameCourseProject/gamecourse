@@ -586,14 +586,14 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     //error section
     allCourses.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
     //success section
-    allCourses.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+    success_box = $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>");
 
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
     action_buttons.append( $("<div class='icon import_icon'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
-    allCourses.append($compile(action_buttons)($scope));
+    $compile(action_buttons)($scope);
 
     //new course modal
     currentYear = new Date().getFullYear();
@@ -714,6 +714,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             else{
                 $element.append(sidebarAll);
                 mainContent.append(allCourses);
+                mainContent.append(success_box);
+                mainContent.append(action_buttons);
             }
             $element.append(mainContent);
 
@@ -1190,14 +1192,14 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //error section
     allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
     //success section
-    allUsers.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+    mainContent.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
 
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
     action_buttons.append( $("<div class='icon import_icon'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
-    allUsers.append($compile(action_buttons)($scope));
+    mainContent.append($compile(action_buttons)($scope));
 
 
     

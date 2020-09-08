@@ -402,9 +402,13 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $("#empty_table").empty();
         $("#users-table").show();
         $scope.users = $scope.allUsers.slice();
+        $scope.error_msg = '';
         $scope.searchList();
         $scope.filterList();
-        
+        if($scope.error_msg != ''){
+            $("#users-table").hide();
+            $("#empty_table").append($scope.error_msg);
+        }
     }
 
     $scope.searchList = function(){
@@ -420,13 +424,11 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                     filteredUsers.push(user);
                 }
             });
-            if(filteredUsers.length == 0){
-                $("#users-table").hide();
-                $("#empty_table").append("No matches found");
-            }
             $scope.users = filteredUsers;
-        }
-        
+            if(filteredUsers.length == 0){
+                $scope.error_msg = "No matches found";
+            }
+        }        
     }
 
     $scope.filterList = function(){
@@ -448,12 +450,11 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 filteredUsers.push(user)
             }
         });
-        if (filteredUsers.length == 0){
-            error_msg = "No matches found for your filter";
-            $("#users-table").hide();
-            $("#empty_table").append(error_msg);
-        }
+        
         $scope.users = filteredUsers;
+        if (filteredUsers.length == 0){
+            $scope.error_msg = "No matches found for your filter";
+        }
     }
 
     //functions to visually change the "order by" arrows
@@ -633,17 +634,16 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     //error section
     allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
     //success section
-    allUsers.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+    mainContent.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
 
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
     action_buttons.append( $("<div class='icon import_icon'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
-    allUsers.append($compile(action_buttons)($scope));
+    mainContent.append($compile(action_buttons)($scope));
 
 
-    
     mainContent.append(allUsers);
     $compile(mainContent)($scope);
 
