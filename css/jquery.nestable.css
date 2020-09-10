@@ -148,10 +148,10 @@
   position: absolute;
   float: right;
   right: 30px;
-  top: 0px;
+  top: 5px;
   z-index: 2;
-  height: 35px;
-  width: 35px;
+  height: 23px;
+  width: 23px;
   opacity: 0.8;
 }
 .dd-remove {

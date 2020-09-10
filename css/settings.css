@@ -233,6 +233,8 @@
     background-image: url(/gamecourse/images/add_icon_no_outline.svg);
     height: 35px;
     background-color: #f2f2f2;
+    background-size: 25px;
+    background-position: center;
 }
 
 #roles_page .action-buttons{
