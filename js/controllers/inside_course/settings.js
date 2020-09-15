@@ -99,7 +99,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
     modules = $('<div id="modules"></div>');
     module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
-    module_card.append($('<div class="icon"></div>'));
+    module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text">{{module.description}}</div>'));
     module_card.append($('<div ng-if="module.enabled != true" class="status disable">Disabled <div class="background"></div></div>'));
