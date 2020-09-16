@@ -8,6 +8,7 @@ abstract class Module
 {
     private $id;
     private $name;
+    private $description;
     private $version;
     private $dependencies;
     private $dir;
@@ -30,6 +31,10 @@ abstract class Module
     public function getName()
     {
         return $this->name;
+    }
+    public function getDescription()
+    {
+        return $this->description;
     }
 
     public function getVersion()

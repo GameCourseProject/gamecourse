@@ -33,6 +33,7 @@ class Leaderboard extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'leaderboard',
     'name' => 'Leaderboard',
+    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

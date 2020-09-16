@@ -250,11 +250,13 @@ class XPLevels extends Module
 ModuleLoader::registerModule(array(
     'id' => 'xp',
     'name' => 'XP and Levels',
+    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),
-    'factory' => function () {
+    'factory' => function() {
         return new XPLevels();
     }
 ));
+?>

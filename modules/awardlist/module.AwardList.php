@@ -64,6 +64,7 @@ class AwardList extends Module
 ModuleLoader::registerModule(array(
     'id' => 'awardlist',
     'name' => 'Award List',
+    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam. ',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

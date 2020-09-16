@@ -38,6 +38,7 @@ class Profile extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'profile',
     'name' => 'Profile',
+    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

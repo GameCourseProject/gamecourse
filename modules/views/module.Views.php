@@ -1321,6 +1321,7 @@ separated by a ;. Any key may be an expression.', 'collection');
 ModuleLoader::registerModule(array(
     'id' => 'views',
     'name' => 'Views',
+    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
     'version' => '0.1',
     'factory' => function () {
         return new Views();

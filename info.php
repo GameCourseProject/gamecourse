@@ -318,7 +318,7 @@ API::registerFunction('settings', 'courseModules', function() {
                 'version' => $module['version'],
                 'enabled' => array_key_exists($module['id'], $enabledModules),
                 'dependencies' => $module['dependencies'],
-                'discription' => ""
+                'description' => $module['description']
             );
             $modulesArr[] = $mod;
         }
@@ -371,7 +371,7 @@ API::registerFunction('settings', 'modules', function() {
             'dir' => $module['dir'],
             'version' => $module['version'],
             'dependencies' => $module['dependencies'],
-            'discription' => ""
+            'description' => $module['description']
         );
         $modulesArr[] = $mod; 
     }
