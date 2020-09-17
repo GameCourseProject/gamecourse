@@ -27,7 +27,11 @@ drop table if exists module;
 drop table if exists user_role;
 drop table if exists role;
 drop table if exists course_user;
+drop table if exists config_class_check;
+drop table if exists config_google_sheets;
+drop table if exists config_moodle;
 drop table if exists course;
+drop table if exists auth;
 drop table if exists game_course_user;
 
 create table game_course_user(
@@ -36,9 +40,16 @@ create table game_course_user(
     email 	varchar(255),
 	nickname varchar(50),
 	studentNumber int unique,
-    username varchar(50),        #ist181205
     isAdmin boolean not null default false,
 	isActive boolean not null default true
+);
+
+create table auth(
+	id int unsigned primary key auto_increment,
+	game_course_user_id int unsigned not null,
+	username varchar(50),
+	authentication_service enum ('fenix','google','facebook','linkedin'),
+	foreign key(game_course_user_id) references game_course_user(id) on delete cascade
 );
 
 create table course(

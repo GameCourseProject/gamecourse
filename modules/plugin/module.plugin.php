@@ -135,13 +135,12 @@ class Plugin extends Module
                 }
             }
             if (!User::getUserByStudentNumber($studentNumber)) {
-                User::addUserToDB($studentName, $username, $email, $studentNumber, "", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
                 $courseUser->addCourseUserToDB("", $campus);
             }
         }
-
         return true;
     }
     private function setMoodleVars($courseId, $moodleVar)
