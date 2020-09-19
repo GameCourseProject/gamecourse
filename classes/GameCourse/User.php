@@ -145,12 +145,17 @@ class User
     {
         $userId = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
         // $userId = Core::$systemDB->select("game_course_user", ["username" => $username], "id");
-        if ($userId == null)
+        if ($userId == null) {
             return null;
-        else
+        } else {
             return new User($userId);
+        }
     }
 
+    public static function getUserIdByUsername($username)
+    {
+        return Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
+    }
     public static function getUserAuthenticationService($username)
     {
         return Core::$systemDB->select("auth", ["username" => $username], "authentication_service");

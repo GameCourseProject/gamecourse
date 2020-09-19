@@ -120,8 +120,7 @@ class GoogleSheets
 
     public function writeToDB($name, $valuesRows)
     {
-        $prof = User::getUserByUsername($name);
-        $profId = $prof == null ? null : $prof->getId();
+        $profId = User::getUserIdByUsername($name);
         for ($row = 1; $row < sizeof($valuesRows); $row++) {
             $user = User::getUserByStudentNumber($valuesRows[$row][0]);
             $action = $valuesRows[$row][3];

@@ -3,14 +3,13 @@
 namespace Modules\Plugin;
 
 use GameCourse\Core;
-use GameCourse\API;
 use GameCourse\User;
 use GameCourse\CourseUser;
 use GameCourse\Course;
 
+
 class ClassCheck
 {
-    private $code;
     private $courseId;
 
     public function __construct($courseId)
@@ -21,14 +20,17 @@ class ClassCheck
     public function getDBConfigValues()
     {
         $classCheckVarsDB = Core::$systemDB->select("config_class_check", ["course" => $this->courseId], "*");
-        
-        $this->code = $classCheckVarsDB["tsvCode"];
+        if ($classCheckVarsDB) {
+            return $classCheckVarsDB["tsvCode"];
+        } else {
+            return null;
+        }
     }
-    
-    public function readAttendance()
+
+    public function readAttendance($code)
     {
         $this->getDBConfigValues();
-        $url = "https://classcheck.tk/tsv/course?s=" . $this->code;
+        $url = "https://classcheck.tk/tsv/course?s=" . $code;
         $fp = fopen($url, 'r');
 
         $course = new Course($this->courseId);
@@ -43,17 +45,17 @@ class ClassCheck
             $classNumber = $data[6];
             $shift = $data[7];
 
-            $prof = User::getUserByUsername($profUsername);
+            $prof = User::getUserIdByUsername($profUsername);
             if ($prof) {
-                $courseUserProf = new CourseUser($prof->getId(), $course);
+                $courseUserProf = new CourseUser($prof, $course);
             }
 
-            $student = User::getUserByUsername($studentUsername);
+            $student = User::getUserIdByUsername($studentUsername);
             if ($student) {
-                $courseUserStudent = new CourseUser($student->getId(), $course);
+                $courseUserStudent = new CourseUser($student, $course);
             }
 
-            if ($courseUserStudent->getData("id") && $courseUserProf->getData("id")) {
+            if ($courseUserStudent && $courseUserProf) {
                 Core::$systemDB->insert(
                     "participation",
                     [

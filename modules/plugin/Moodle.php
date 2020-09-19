@@ -79,30 +79,15 @@ class Moodle
         $temp_info = null;
         $temp_url = null;
         $temp_module = null;
-        $temp_action = $row['action'];
-        $other_ = json_decode($row['other']);
-        $temp_username = $row["username"];
+
+        $temp_action = array_key_exists("action", $row) ? $row['action'] : null;
+        $other_ = array_key_exists("other", $row) ? json_decode($row['other']) : null;
+        $temp_username = array_key_exists("username", $row) ?  $row["username"] : null;
         // if ($row['target'] == 'calendar_event') {
         //     $temp_module = "calendar";
         //     $temp_url = "event.php?action=edit&id=" . $row['objectid'];
         //     $temp_info = $other_->name;
         // }
-
-        if ($row['component'] == 'mod_questionnaire') {
-            $temp_url = 'view.php?id=' . $row['cmid'];
-            $temp_action = "questionnaire " . $row['action'];
-            if ($row["action"] == "submitted") {
-                $temp_info = $other_->questionnaireid;
-            } else {
-                $temp_info = $row['objectid'];
-            }
-
-            $sqlQuestionnaire = "SELECT name FROM " . $this->prefix . "questionnaire where id=" . $temp_info . ";";
-            $resultQuestionnaire = mysqli_query($db, $sqlQuestionnaire);
-            $rowQuestionnaire = mysqli_fetch_assoc($resultQuestionnaire);
-            $temp_module = $rowQuestionnaire['name'];
-        }
-
         // if ($row['component'] == 'mod_quiz') {
         //     $temp_url = 'view.php?id=' . $row['cmid'];
         //     $temp_action = "quiz " . $row['action'];
@@ -119,17 +104,6 @@ class Moodle
         //     $rowQuiz = mysqli_fetch_assoc($resultQuiz);
         //     $temp_module = $rowQuiz['name'];
         // }
-
-        if ($row['component'] == 'mod_page') {
-            $temp_url = "view.php?id=" . $row['cmid'];
-            $temp_action = "page " . $row['action'];
-            $temp_info = $row['objectid'];
-            $sqlPage = "SELECT name FROM " . $this->prefix . "page where id=" . $temp_info . ";";
-            $resultPage = mysqli_query($db, $sqlPage);
-            $rowPage = mysqli_fetch_assoc($resultPage);
-            $temp_module = $rowPage['name'];
-        }
-
         // if ($row['component'] == 'mod_chat') {
         //     $temp_url = "view.php?id=" . $row['cmid'];
         //     $temp_info = $row['objectid'];
@@ -147,104 +121,143 @@ class Moodle
         //     $rowChat = mysqli_fetch_assoc($resultChat);
         //     $temp_module = $rowChat['name'];
         // }
+        if (array_key_exists("component", $row)) {
 
-        if ($row["component"] == "mod_assign") {
-            $temp_url = "view.php?id=" . $row['cmid'];
-            $temp_action = "assignment " . $row['action'];
-            if ($row["target"] == "course_module") {
-                $sqlAssign = "SELECT name FROM " . $this->prefix . "assign inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
-                $resultAssign = mysqli_query($db, $sqlAssign);
-                $rowAssign = mysqli_fetch_assoc($resultAssign);
-                $temp_module = $rowAssign['name'];
-            } else if (
-                $row["target"] == "submission_form" || $row["target"] == "grading_table" || $row["target"] == "grading_form"
-                || $row["target"] == "remove_submission_form" || $row["target"] == "submission_confirmation_form"
-            ) {
-                $sqlAssign = "SELECT name FROM " . $this->prefix . "assign where id=" . $other_->assignid . ";";
-                $resultAssign = mysqli_query($db, $sqlAssign);
-                $rowAssign = mysqli_fetch_assoc($resultAssign);
-                $temp_module = $rowAssign['name'];
-            }
-        }
-
-        if ($row['component'] == 'mod_resource') {
-            $temp_action = "resource view";
-            $temp_url = "view.php?id=" . $row['cmid'];
-            $sql4 = "SELECT name FROM " . $this->prefix . "resource inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "resource.id =objectid where component='mod_resource' and objectid=" . $row['objectid'] . ";";
-            $result4 = mysqli_query($db, $sql4);
-            $row4 = mysqli_fetch_assoc($result4);
-            $temp_module = $row4['name'];
-        }
-
-        if ($row['component'] == 'mod_forum') {
-
-            if ($row['objecttable'] == "forum_subscriptions" || $row['objecttable'] == "forum_discussion_subs") {
-                if ($row['action'] == "created") {
-                    $temp_action = "subscribe forum";
-                    $temp_url = "view.php?id=" . $other_->forumid;
-                    $temp_info = $other_->forumid;
-                } else if ($row['action'] == "deleted") {
-                    $temp_action = "unsubscribe forum";
-                    $temp_url = "view.php?id=" . $other_->forumid;
-                    $temp_info = $other_->forumid;
-                }
-                $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $temp_info . ";";
-                $resultForum = mysqli_query($db, $sqlForum);
-                $rowForum = mysqli_fetch_assoc($resultForum);
-                $temp_module = $rowForum['name'];
-            }
-
-            // if ($row['objecttable'] == 'forum' && $row['action'] == 'viewed') {
-            //     $temp_action = "view forum";
-            //     $temp_url = "view.php?id=" . $row['cmid'];
-            //     $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $row["objectid"] . ";";
-            //     $resultForum = mysqli_query($db, $sqlForum);
-            //     $rowForum = mysqli_fetch_assoc($resultForum);
-            //     $temp_module = $rowForum['name'];
-            // }
-
-            if ($row['objecttable'] == 'forum_discussions') {
-                if ($row['action'] == 'created') {
-                    $temp_action = "forum add discussion";
-                    $temp_url = "discuss.php?d=" . $row['objectid'];
+            if ($row['component'] == 'mod_questionnaire') {
+                $temp_url = 'view.php?id=' . $row['cmid'];
+                $temp_action = "questionnaire " . $row['action'];
+                if ($row["action"] == "submitted") {
+                    $temp_info = $other_->questionnaireid;
+                } else {
                     $temp_info = $row['objectid'];
-                    // } else if ($row['action'] == 'viewed') {
-                    //     $temp_action = "forum view discussion";
-                    //     $temp_url = "discuss.php?d=" . $row['cmid'];
-                    //     $temp_info = $row['cmid'];
-                } else if ($row['action'] == 'deleted') {
-                    $temp_action = "forum delete discussion";
-                    $temp_url = "view.php?id=" . $row['cmid'];
-                    $temp_info = $row['cmid'];
                 }
 
-                $sqlForum = "SELECT name FROM " . $this->prefix . "forum_discussions where id=" . $temp_info . ";";
-                $resultForum = mysqli_query($db, $sqlForum);
-                if ($resultForum) {
-                    $rowForum = mysqli_fetch_assoc($resultForum);
-                    $temp_module = $rowForum['name'];
+                $sqlQuestionnaire = "SELECT name FROM " . $this->prefix . "questionnaire where id=" . $temp_info . ";";
+                $resultQuestionnaire = mysqli_query($db, $sqlQuestionnaire);
+                if ($resultQuestionnaire) {
+                    $rowQuestionnaire = mysqli_fetch_assoc($resultQuestionnaire);
+                    if ($rowQuestionnaire) {
+                        $temp_module = array_key_exists("name", $rowQuestionnaire) ?  $rowQuestionnaire['name'] : null;
+                    }
                 }
             }
 
-            if ($row['objecttable'] == 'forum_posts') {
-                if ($row['action'] == 'created') {
-                    $temp_action = "forum add post";
-                    $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
-                } else if ($row['action'] == 'uploaded') {
-                    $temp_action = "forum upload post";
-                    $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
-                } else if ($row['action'] == 'deleted') {
-                    $temp_action = "forum delete post";
-                    $temp_url = "discuss.php?d=" . $other_->discussionid;
-                } else if ($row['action'] == 'updated') {
-                    $temp_action = "forum update post";
-                    $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
-                }
+            if ($row['component'] == 'mod_page') {
+                $temp_url = "view.php?id=" . $row['cmid'];
+                $temp_action = "page " . $row['action'];
+                $temp_info = $row['objectid'];
+                $sqlPage = "SELECT name FROM " . $this->prefix . "page where id=" . $temp_info . ";";
+                $resultPage = mysqli_query($db, $sqlPage);
+                $rowPage = mysqli_fetch_assoc($resultPage);
+                $temp_module = $rowPage['name'];
+            }
 
-                $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
-                $resultForum = mysqli_query($db, $sqlForum);
-                $rowForum = mysqli_fetch_assoc($resultForum);
-                $temp_module = $rowForum['subject'];
+            if ($row["component"] == "mod_assign") {
+                $temp_url = "view.php?id=" . $row['cmid'];
+                $temp_action = "assignment " . $row['action'];
+                if ($row["target"] == "course_module") {
+                    $sqlAssign = "SELECT name FROM " . $this->prefix . "assign inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
+                    $resultAssign = mysqli_query($db, $sqlAssign);
+                    $rowAssign = mysqli_fetch_assoc($resultAssign);
+                    $temp_module = $rowAssign['name'];
+                } else if (
+                    $row["target"] == "submission_form" || $row["target"] == "grading_table" || $row["target"] == "grading_form"
+                    || $row["target"] == "remove_submission_form" || $row["target"] == "submission_confirmation_form"
+                ) {
+                    $sqlAssign = "SELECT name FROM " . $this->prefix . "assign where id=" . $other_->assignid . ";";
+                    $resultAssign = mysqli_query($db, $sqlAssign);
+                    $rowAssign = mysqli_fetch_assoc($resultAssign);
+                    $temp_module = $rowAssign['name'];
+                }
+            }
+
+            if ($row['component'] == 'mod_resource') {
+                $temp_action = "resource view";
+                $temp_url = "view.php?id=" . $row['cmid'];
+                $sql4 = "SELECT name FROM " . $this->prefix . "resource inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "resource.id =objectid where component='mod_resource' and objectid=" . $row['objectid'] . ";";
+                $result4 = mysqli_query($db, $sql4);
+                $row4 = mysqli_fetch_assoc($result4);
+                $temp_module = $row4['name'];
+            }
+            if ($row['component'] == 'mod_forum') {
+
+                // if ($row['objecttable'] == 'forum' && $row['action'] == 'viewed') {
+                //     $temp_action = "view forum";
+                //     $temp_url = "view.php?id=" . $row['cmid'];
+                //     $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $row["objectid"] . ";";
+                //     $resultForum = mysqli_query($db, $sqlForum);
+                //     $rowForum = mysqli_fetch_assoc($resultForum);
+                //     $temp_module = $rowForum['name'];
+                // }
+
+                if (array_key_exists("objecttable", $row)) {
+
+                    if ($row['objecttable'] == "forum_subscriptions" || $row['objecttable'] == "forum_discussion_subs") {
+                        if ($row['action'] == "created") {
+                            $temp_action = "subscribe forum";
+                            $temp_url = "view.php?id=" . $other_->forumid;
+                            $temp_info = $other_->forumid;
+                        } else if ($row['action'] == "deleted") {
+                            $temp_action = "unsubscribe forum";
+                            $temp_url = "view.php?id=" . $other_->forumid;
+                            $temp_info = $other_->forumid;
+                        }
+                        $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $temp_info . ";";
+                        $resultForum = mysqli_query($db, $sqlForum);
+                        $rowForum = mysqli_fetch_assoc($resultForum);
+                        $temp_module = $rowForum['name'];
+                    }
+
+                    if ($row['objecttable'] == 'forum_discussions') {
+                        if ($row['action'] == 'created') {
+                            $temp_action = "forum add discussion";
+                            $temp_url = "discuss.php?d=" . $row['objectid'];
+                            $temp_info = $row['objectid'];
+                            // } else if ($row['action'] == 'viewed') {
+                            //     $temp_action = "forum view discussion";
+                            //     $temp_url = "discuss.php?d=" . $row['cmid'];
+                            //     $temp_info = $row['cmid'];
+                        } else if ($row['action'] == 'deleted') {
+                            $temp_action = "forum delete discussion";
+                            $temp_url = "view.php?id=" . $row['cmid'];
+                            $temp_info = $row['cmid'];
+                        }
+
+                        $sqlForum = "SELECT name FROM " . $this->prefix . "forum_discussions where id=" . $temp_info . ";";
+                        $resultForum = mysqli_query($db, $sqlForum);
+                        if ($resultForum) {
+                            $rowForum = mysqli_fetch_assoc($resultForum);
+                            if ($rowForum) {
+                                $temp_module = array_key_exists("subject", $rowForum) ? $rowForum['name'] : null;
+                            }
+                        }
+                    }
+
+                    if ($row['objecttable'] == 'forum_posts') {
+                        if ($row['action'] == 'created') {
+                            $temp_action = "forum add post";
+                            $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        } else if ($row['action'] == 'uploaded') {
+                            $temp_action = "forum upload post";
+                            $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        } else if ($row['action'] == 'deleted') {
+                            $temp_action = "forum delete post";
+                            $temp_url = "discuss.php?d=" . $other_->discussionid;
+                        } else if ($row['action'] == 'updated') {
+                            $temp_action = "forum update post";
+                            $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
+                        }
+
+                        $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
+                        $resultForum = mysqli_query($db, $sqlForum);
+                        if ($resultForum) {
+                            $rowForum = mysqli_fetch_assoc($resultForum);
+                            if ($rowForum) {
+                                $temp_module = array_key_exists("subject", $rowForum) ? $rowForum['subject'] : null;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -263,16 +276,6 @@ class Moodle
         //     $temp_module = "course";
         //     $temp_url = "view.php?id=" . $row['courseid'];
         // }
-
-        if ($row['target'] == 'role') {
-            $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
-            $result3 = mysqli_query($db, $sql3);
-            $row3 = mysqli_fetch_assoc($result3);
-            $temp_module = $row3['shortname'];
-            $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
-        }
-
-
         /////////////////////////////
         // if ($row['target'] == 'grade_item') {
         //     $module = $other_->itemmodule;
@@ -283,27 +286,6 @@ class Moodle
         //     $temp_module = $other_->finalgrade;
         // }
         ///////////////////////////
-
-        if ($row['target'] == 'course_section') {
-            $temp_module = $other_->sectionnum;
-            $temp_action = "course section " . $row["action"];
-        }
-
-        if ($row['target'] == 'enrol_instance') {
-            $temp_module =  $other_->enrol;
-            $temp_action = "enrol instance " . $row["action"];
-        }
-
-        if ($row['target'] == 'user_enrolment') {
-            $temp_module = $row["target"];
-            $temp_url = "../enrol/users.php?id=" . $row['courseid'];
-            if ($row['action'] == 'created') {
-                $temp_action = "enrol user";
-            } else if ($row['action'] == 'deleted') {
-                $temp_action = "unenrol user";
-            }
-        }
-
         // if ($row['target'] == 'user_list' || $row['target'] == 'user_profile') {
         //     $temp_info = $row['objectid'];
         // }
@@ -325,6 +307,37 @@ class Moodle
         //     $temp_info = $other_->itemname;
         // }
 
+        if (array_key_exists("target", $row)) {
+
+            if ($row['target'] == 'role') {
+                $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
+                $result3 = mysqli_query($db, $sql3);
+                $row3 = mysqli_fetch_assoc($result3);
+                $temp_module = $row3['shortname'];
+                $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
+            }
+
+            if ($row['target'] == 'course_section') {
+                $temp_module = $other_->sectionnum;
+                $temp_action = "course section " . $row["action"];
+            }
+
+            if ($row['target'] == 'enrol_instance') {
+                $temp_module =  $other_->enrol;
+                $temp_action = "enrol instance " . $row["action"];
+            }
+
+            if ($row['target'] == 'user_enrolment') {
+                $temp_module = $row["target"];
+                $temp_url = "../enrol/users.php?id=" . $row['courseid'];
+                if ($row['action'] == 'created') {
+                    $temp_action = "enrol user";
+                } else if ($row['action'] == 'deleted') {
+                    $temp_action = "unenrol user";
+                }
+            }
+        }
+
         $moodleFields = array(
             "timecreated" => date('Y-m-d H:i:s', $row['timecreated']),
             "username" =>  $temp_username,
@@ -341,9 +354,9 @@ class Moodle
         while ($row = mysqli_fetch_assoc($result)) {
             $moodleField = $this->parseLogsToDB($row, $db);
             if ($moodleField["module"]) {
-                $user = User::getUserByUsername($moodleField["username"]);
+                $user = User::getUserIdByUsername($moodleField["username"]);
                 if ($user) {
-                    $courseUser = new CourseUser($user->getId(), $this->courseGameCourse);
+                    $courseUser = new CourseUser($user, $this->courseGameCourse);
 
                     if ($courseUser->getId()) {
                         Core::$systemDB->insert(
@@ -442,24 +455,22 @@ class Moodle
         while ($row = mysqli_fetch_assoc($result)) {
             $votesField = $this->parseVotesToDB($row, $db);
 
-
-            $prof = User::getUserByUsername($votesField["evaluator"]);
-            $user = User::getUserByUsername($votesField["user"]);
+            $prof = User::getUserIdByUsername($votesField["evaluator"]);
+            $user = User::getUserIdByUsername($votesField["user"]);
             if ($user && $prof) {
-                $courseUser = new CourseUser($user->getId(), $course);
-
+                $courseUser = new CourseUser($user, $course);
                 if ($courseUser->getId()) {
                     Core::$systemDB->insert(
                         "participation",
                         [
-                            "user" => $user->getId(),
+                            "user" => $user,
                             "course" => $this->courseId,
                             "description" => $votesField["description"],
                             "type" => "graded post",
                             "post" => $votesField["post"],
                             "date" => $votesField["date"],
                             "rating" => $row['rating'],
-                            "evaluator" => $prof->getId()
+                            "evaluator" => $prof
                         ]
                     );
                 }
@@ -492,15 +503,15 @@ class Moodle
     {
         $course = new Course($this->courseId);
         while ($row = mysqli_fetch_assoc($result)) {
-            $user = User::getUserByUsername($row["username"]);
+            $user = User::getUserIdByUsername($row["username"]);
             if ($user) {
-                $courseUser = new CourseUser($user->getId(), $course);
+                $courseUser = new CourseUser($user, $course);
 
                 if ($courseUser->getId()) {
                     Core::$systemDB->insert(
                         "participation",
                         [
-                            "user" => $user->getId(),
+                            "user" => $user,
                             "course" => $this->courseId,
                             "description" => $row['quiz'],
                             "type" => "quiz grade",
