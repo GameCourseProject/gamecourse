@@ -179,6 +179,7 @@ class Plugin extends Module
 
             // $logs = $this->moodle->getLogs();
             // $this->moodle->writeLogsToDB($logs);
+            new CronJob("Moodle");
             return true;
         }
     }
