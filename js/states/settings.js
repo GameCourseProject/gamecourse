@@ -83,22 +83,6 @@ app.config(function($stateProvider){
                 controller: 'CourseSettingsModules'
             }
         }
-        //to later remove
-    }).state('course.settings.skills', {
-        url: '/skills',
-        views : {
-            'tabContent': {
-                controller: 'CourseSkillsSettingsController'
-            }
-        }
-        //to later remove
-    }).state('course.settings.levels', {
-        url: '/levels',
-        views : {
-            'tabContent': {
-                controller: 'CourseLevelsSettingsController'
-            }
-        }
     }).state('course.settings.roles', {
         url: '/roles',
         views : {
@@ -106,6 +90,7 @@ app.config(function($stateProvider){
                 controller: 'CourseRolesSettingsController'
             }
         }
+        //to remove - no longer used
     }).state('course.settings.roles.role', {
         url: '/{role:[A-Za-z.]+}-{id:[0-9]+}',
         views : {

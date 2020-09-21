@@ -479,6 +479,10 @@ class Badges extends Module
         if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
             $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getId());
     }
+
+    public function is_configurable(){
+        return true;
+    }
 }
 
 ModuleLoader::registerModule(array(

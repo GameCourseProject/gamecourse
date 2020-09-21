@@ -544,6 +544,9 @@ class Quest extends Module {
         $solution[$level][] = array($user, $time, $verification);
         $quest->set('info', $questInfo);*/
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(

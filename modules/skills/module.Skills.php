@@ -410,7 +410,7 @@ class Skills extends Module
         $viewHandler->registerFunction('studentsWithSkill', function($skillName) use (&$skillsCache) {
             return new \Modules\Views\Expression\ValueNode($skillsCache[$skillName]);
         });
-*/
+        */
         if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE))
             $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'));
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
@@ -447,6 +447,11 @@ class Skills extends Module
             API::error('Skill ' . $skillName . ' not found.', 404);
         });
     }
+    public function is_configurable(){
+        return true;
+    }
+
+
 }
 
 ModuleLoader::registerModule(array(

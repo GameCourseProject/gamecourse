@@ -56,9 +56,14 @@ class AwardList extends Module
 
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));
-
+            
         if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
-            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));
+            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));  
+    }
+
+
+    public function is_configurable(){
+        return true;
     }
 }
 ModuleLoader::registerModule(array(

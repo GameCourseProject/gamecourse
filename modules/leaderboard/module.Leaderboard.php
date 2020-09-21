@@ -28,6 +28,10 @@ class Leaderboard extends Module {
     }
 
     public function initSettingsTabs() {}
+    
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(

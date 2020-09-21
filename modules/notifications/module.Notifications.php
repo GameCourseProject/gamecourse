@@ -116,6 +116,10 @@ class Notifications extends Module
         if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
             $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'));
     }
+
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(

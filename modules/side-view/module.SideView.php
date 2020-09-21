@@ -29,6 +29,9 @@ class SideView extends Module {
   
         
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(

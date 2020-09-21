@@ -25,6 +25,9 @@ class Overview extends Module {
         if (!$viewsModule->templateExists(self::USERS_OVERVIEW_TEMPLATE_NAME))
            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'));
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'overview',

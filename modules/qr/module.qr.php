@@ -21,6 +21,9 @@ class QR extends Module {
         $viewHandler->createPageOrTemplateIfNew('QR',"page");
         //ToDo add QR tables to database
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'qr',

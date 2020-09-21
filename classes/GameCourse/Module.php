@@ -223,4 +223,7 @@ abstract class Module
         $this->checkArray($object, "object", $field, $field);
         return new ValueNode($object["value"][$field]);
     }
+
+
+    public function is_configurable(){}
 }
