@@ -10,7 +10,7 @@ use GameCourse\User;
 class CronJob
 {
     //tratar depois da periodicidade com base no que o user escolheu
-    public function __construct($script)
+    public function __construct($script, $course)
     {
         $cronFile = "/var/spool/cron/crontabs/root";
         $path = null;
@@ -40,7 +40,7 @@ class CronJob
             }
 
             //corre de 5 em 5 minutos
-            $file .= "*/5 * * * * /usr/bin/php " . $path . "\n";
+            $file .= "*/5 * * * * /usr/bin/php " . $path . " " . $course . "\n";
             file_put_contents($cronFile, $file);
         }
     }

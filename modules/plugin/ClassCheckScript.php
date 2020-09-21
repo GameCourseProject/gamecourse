@@ -10,7 +10,7 @@ use GameCourse\Core;
 
 Core::init();
 
-$cc = new ClassCheck(1);
+$cc = new ClassCheck($argv[1]);
 $code = $cc->getDBConfigValues();
 if ($code != null) {
     $cc->readAttendance($code);

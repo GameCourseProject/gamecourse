@@ -10,5 +10,5 @@ use GameCourse\Core;
 
 Core::init();
 
-$moodle = new GoogleSheets(1);
+$moodle = new GoogleSheets($argv[1]);
 $moodle->readGoogleSheets();

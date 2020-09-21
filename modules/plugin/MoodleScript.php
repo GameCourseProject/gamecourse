@@ -10,7 +10,7 @@ use GameCourse\Core;
 
 Core::init();
 
-$moodle = new Moodle(1);
+$moodle = new Moodle($argv[1]);
 $values = $moodle->getVotes();
 $moodle->writeVotesToDb($values);
 
