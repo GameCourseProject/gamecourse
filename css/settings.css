@@ -154,6 +154,16 @@
     border-bottom: 1px solid grey;
 }
 
+#view-module #description{
+    margin-bottom: 20px;
+}
+#view-module .row{
+    margin-bottom: 10px;
+}
+#view-module .row .details{
+    color: gray;
+}
+
 /*satatus bar also used on the views page*/
 .status {
     width: 100%;

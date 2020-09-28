@@ -77,6 +77,25 @@ cursor: pointer;
     width: 100%;
     margin-bottom: 30px;
 }
+
+.modal_content .header{
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal_content .header .icon {
+    height: 50px;
+    width: 50px;
+    margin-right: 5px;
+}
+.modal_content .header .title {
+    width: auto;
+    margin-bottom: 0;
+    margin-right: 30px;
+    font-size: 25px;
+    color: #484848;
+}
+
 .modal_content .content {
     width: 100%;
     position: relative;
@@ -316,12 +335,12 @@ cursor: pointer;
 .modal_content .save_btn {
     padding: 10px 15px;
     font-size: 16px;
-    border-radius: 10%;
+    border-radius: 5px;
     position: absolute;
     background-color: lightgrey;
     bottom: 0px;
     right: 0;
-    border: none;
+    border: 1px solid white;
     box-shadow: none;
 }
 
@@ -330,6 +349,17 @@ cursor: pointer;
     background-color: white;
     border: 1px solid;
     cursor: not-allowed;
+}
+.modal_content .config_btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    position: absolute;
+    background-color: lightgrey;
+    bottom: 0px;
+    right: 80px;
+    border: 1px solid white;
+    box-shadow: none;
 }
 
 .on_off {
@@ -365,6 +395,10 @@ cursor: pointer;
     background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
+}
+
+.slider.disabled{
+    background-color: #e9e9e9;
 }
 
 .slider:before {

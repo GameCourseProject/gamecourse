@@ -310,17 +310,32 @@ API::registerFunction('settings', 'courseModules', function() {
         $enabledModules = $course->getModules();
        
         $modulesArr = [];
-        foreach ($allModules as $module) {
+        foreach ($allModules as $module) {            
+            
+            if (array_key_exists($module['id'], $enabledModules)){
+                $moduleObj = $enabledModules[$module['id']];
+                $module['hasConfiguration'] = $moduleObj->is_configurable();
+                $module['enabled'] = true;
+            }
+            else{
+                $module['hasConfiguration'] = false;
+                $module['enabled'] = false;
+            }
+
             $mod = array(
                 'id' => $module['id'],
                 'name' => $module['name'],
                 'dir' => $module['dir'],
                 'version' => $module['version'],
-                'enabled' => array_key_exists($module['id'], $enabledModules),
+                'enabled' => $module['enabled'],
                 'dependencies' => $module['dependencies'],
-                'description' => $module['description']
+                'description' => $module['description'],
+                'hasConfiguration' => $module['hasConfiguration']
             );
             $modulesArr[] = $mod;
+            //$modulesArr["enabled"] = $enabledModules;
+
+            //passar info das dependencias que estao em falta
         }
         API::response($modulesArr);
     }
@@ -938,84 +953,6 @@ function updateSkills($list,$tree,$replace, $folder){
     API::response(["updatedData"=>$updatedData ]);
     return;
 }
-//update list of skills of the course skill tree, from the skills configuration page
-//ToDo make ths work for multiple skill trees
-API::registerFunction('settings', 'courseSkills', function() {
-    API::requireCourseAdminPermission();
-    $courseId=API::getValue('course');
-    $folder = Course::getCourseLegacyFolder($courseId);
-    //For now we only have 1 skill tree per course, if we have more this line needs to change
-    $tree = Core::$systemDB->select("skill_tree",["course"=>$courseId]);
-    $treeId=$tree["id"];
-    if (API::hasKey('maxReward')) {
-        $max=API::getValue('maxReward');
-        if ($tree["maxReward"] != $max) {
-            Core::$systemDB->update("skill_tree", ["maxReward" => $max], ["id" => $treeId]);
-        }
-        API::response(["updatedData"=>["Max Reward set to ".$max] ]);
-        return;
-    }
-    if (API::hasKey('skillsList')) {
-        updateSkills(API::getValue('skillsList'), $treeId, true, $folder);
-        return;
-    }if (API::hasKey('tiersList')) {
-        $keys = array('tier', 'reward');
-        $tiers = preg_split('/[\r]?\n/', API::getValue('tiersList'), -1, PREG_SPLIT_NO_EMPTY);
-        
-        $tiersInDB= array_column(Core::$systemDB->selectMultiple("skill_tier",
-                                        ["treeId"=>$treeId],"tier"),'tier');
-        $tiersToDelete= $tiersInDB;
-        $updatedData=[];
-        foreach($tiers as $tier) {
-            $splitInfo =preg_split('/;/', $tier);
-            if (sizeOf($splitInfo) != sizeOf($keys)) {
-                echo "Tier information was incorrectly formatted";
-                return null;
-            }
-            $tier = array_combine($keys, $splitInfo);
-            
-            if (!in_array($tier["tier"], $tiersInDB)){
-                Core::$systemDB->insert("skill_tier",
-                        ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$treeId]);
-                $updatedData[]= "Added Tier ".$tier["tier"];
-            }else{
-                Core::$systemDB->update("skill_tier",["reward"=>$tier["reward"]],
-                                        ["tier"=>$tier["tier"],"treeId"=>$treeId]);           
-                unset($tiersToDelete[array_search($tier['tier'], $tiersToDelete)]);
-            }
-        }
-        foreach ($tiersToDelete as $tierToDelete){
-            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"treeId"=>$treeId]);
-            $updatedData[]= "Deleted Tier ".$tierToDelete." and all its skills. The Skill List may need to be updated";
-        }
-        API::response(["updatedData"=>$updatedData ]);
-        return;
-    }
-    /*else if (API::hasKey('newSkillsList')) {
-        updateSkills(API::getValue('newSkillsList'), $courseId, false, $folder);
-        return;
-    }*/
-    
-    $tierText="";
-    $tiers = Core::$systemDB->selectMultiple("skill_tier",
-                                ["treeId"=>$treeId],'tier,reward',"tier");
-    $tiersAndSkills=[];
-    foreach ($tiers as &$t){//add page, have deps working, have 3 3 dependencies
-        $skills = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier"=>$t["tier"]],
-                                    'id,tier,name,color',"name");
-        $tiersAndSkills[$t["tier"]]=array_merge($t,["skills" => $skills]);
-        $tierText.=$t["tier"].';'.$t["reward"]."\n";
-    }
-    foreach ($tiersAndSkills as &$t){
-        foreach ($t["skills"] as &$s){
-            $s['dependencies'] = getSkillDependencies($s['id']);
-        }
-    }
-    
-    $file = @file_get_contents($folder . '/tree.txt');
-    if ($file===FALSE){$file="";}
-    API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText, "maxReward"=>$tree["maxReward"]));
-});
 
 
 
