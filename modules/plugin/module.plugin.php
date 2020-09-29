@@ -103,8 +103,8 @@ class Plugin extends Module
     private function setFenixVars($courseId, $fenix)
     {
         $course = new Course($courseId);
-        for ($line = 1; $line < sizeof($fenix[0]) - 1; $line++) {
-            $fields = explode(";", $fenix[0][$line]);
+        for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
+            $fields = explode(";", $fenix[$line]);
 
             $username = $fields[0];
             $studentNumber = $fields[1];
@@ -139,6 +139,9 @@ class Plugin extends Module
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
                 $courseUser->addCourseUserToDB("", $campus);
+            } else {
+                $existentUser = User::getUserByStudentNumber($studentNumber);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
             }
         }
         return true;
@@ -304,8 +307,9 @@ class Plugin extends Module
 
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
+                $lastFileUploaded = count($fenix) - 1;
                 //place to verify input values
-                if ($this->setFenixVars($courseId, $fenix)) {
+                if ($this->setFenixVars($courseId, $fenix[$lastFileUploaded])) {
                     API::response(["updatedData" => ["Variables for fenix saved"]]);
                 } else {
                     API::response(["updatedData" => ["Please fill the mandatory fields"]]);
