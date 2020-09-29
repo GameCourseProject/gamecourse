@@ -354,6 +354,16 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
+/* Disabled slider*/
+.switch.disabled{
+    cursor: not-allowed;
+}
+.switch.disabled .slider{
+    background-color: #e9e9e9;
+    pointer-events: none;
+}
+
+
 /*tags for user role (on course) or course on user list(system)*/
 .role_tag, .course_tag, .user_tag {
     text-transform: uppercase;

@@ -322,24 +322,38 @@ API::registerFunction('settings', 'courseModules', function() {
                 $module['enabled'] = false;
             }
 
+            $dependencies = [];
+            $canBeEnabled = true;
+            foreach($module['dependencies'] as $dependency){
+                if ($dependency['mode'] != 'optional'){
+                    if(array_key_exists($dependency['id'], $enabledModules)){
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
+                    }
+                    else{
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
+                        $canBeEnabled = false;
+                    } 
+                }
+            }
+
             $mod = array(
                 'id' => $module['id'],
                 'name' => $module['name'],
                 'dir' => $module['dir'],
                 'version' => $module['version'],
                 'enabled' => $module['enabled'],
-                'dependencies' => $module['dependencies'],
+                'canBeEnabled' => $canBeEnabled,
+                'dependencies' => $dependencies,
                 'description' => $module['description'],
                 'hasConfiguration' => $module['hasConfiguration']
             );
             $modulesArr[] = $mod;
-            //$modulesArr["enabled"] = $enabledModules;
-
-            //passar info das dependencias que estao em falta
         }
         API::response($modulesArr);
     }
 });
+
+
 
 //get tabs for course settings
 API::registerFunction('settings', 'courseTabs', function() {

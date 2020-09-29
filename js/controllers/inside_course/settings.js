@@ -100,6 +100,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
         $scope.module_open.enabled = module.enabled;
         $scope.module_open.dependencies = module.dependencies;
         $scope.module_open.hasConfiguration = module.hasConfiguration;
+        $scope.module_open.canBeEnabled = module.canBeEnabled;
 
 
         $scope.needsToBeSaved = function(){
@@ -111,7 +112,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
         }
 
         $scope.saveModule = function(){
-            //submeter mudanca de enabled state do module
+
             $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, function(data, err) {
                 if (err) {
                     alert(err.description);
@@ -153,14 +154,20 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     header.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module_open.id}}/icon.svg)"></div>'));
     header.append( $('<div class="title">{{module_open.name}} </div>'));
     //se tiver dependencias pendentes tira-se o input e a class slider leva disabled
-    header.append( $('<div class= "on_off"><label class="switch"><input id="active" type="checkbox" ng-model="module_open.enabled"><span class="slider round"></span></label></div>'))
+    header.append( $('<div class= "on_off" ng-if="module_open.canBeEnabled == true"><label class="switch"><input id="active" type="checkbox" ng-model="module_open.enabled"><span class="slider round"></span></label></div>'))
+    header.append( $('<div class= "on_off" ng-if="module_open.canBeEnabled != true"><label class="switch disabled"><input id="active" type="checkbox" ng-model="module_open.enabled" disabled><span class="slider round"></span></label></div>'))
+
+    
+    
     viewModal.append(header);
     content = $('<div class="content">');
     box = $('<div class="inputs">');
     box.append( $('<div class="full" id="description">{{module_open.description}}</div>'))
     dependencies_row = $('<div class= "row"></div>');
     dependencies = $('<div ><span>Dependencies: </span></div>');
-    dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies">{{dependency.id}} | </span>'))
+    dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled == true" ><span style="color: green">{{dependency.id}}</span> | </span>'))
+    dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled != true" ><span style="color: red">{{dependency.id}}</span> | </span>'))
+
     dependencies_row.append(dependencies);
     box.append(dependencies_row);
     box.append( $('<div class= "row"><div ><span>Version: </span><span class="details">{{module_open.version}}</span></div></div>'))
