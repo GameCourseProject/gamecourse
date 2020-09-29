@@ -16,7 +16,7 @@ class ClassCheck
     {
         $this->courseId = $courseId;
     }
-    
+
     public function getDBConfigValues()
     {
         $classCheckVarsDB = Core::$systemDB->select("config_class_check", ["course" => $this->courseId], "*");
@@ -56,17 +56,20 @@ class ClassCheck
             }
 
             if ($courseUserStudent && $courseUserProf) {
-                Core::$systemDB->insert(
-                    "participation",
-                    [
-                        "user" => $courseUserStudent->getData("id"),
-                        "course" => $this->courseId,
-                        "description" => $classNumber,
-                        "type" => $action,
-                        "rating" => 0,
-                        "evaluator" => $courseUserProf->getData("id")
-                    ]
-                );
+                $count = Core::$systemDB->select("participation", ["user" => $courseUserStudent->getData("id"), "description" => $classNumber]);
+                if (!$count) {
+                    Core::$systemDB->insert(
+                        "participation",
+                        [
+                            "user" => $courseUserStudent->getData("id"),
+                            "course" => $this->courseId,
+                            "description" => $classNumber,
+                            "type" => $action,
+                            "rating" => 0,
+                            "evaluator" => $courseUserProf->getData("id")
+                        ]
+                    );
+                }
             }
         }
     }
