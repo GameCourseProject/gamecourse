@@ -179,10 +179,10 @@ class Plugin extends Module
 
             // $logs = $this->moodle->getLogs();
             // $this->moodle->writeLogsToDB($logs);
-            new CronJob("Moodle", $this->course);
             return true;
         }
     }
+
     private function setClassCheckVars($courseId, $classCheck)
     {
         $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
@@ -266,6 +266,17 @@ class Plugin extends Module
         }
     }
 
+    private function setCronJob($script, $courseId, $vars)
+    {
+        if (empty($vars['number']) || empty($vars['time'])) {
+            return false;
+        } else {
+            new CronJob($script, $courseId, $vars['number'], $vars['time']);
+            return true;
+        }
+    }
+
+
     public function setupResources()
     {
         parent::addResources('js/');
@@ -309,6 +320,36 @@ class Plugin extends Module
                     API::response(["updatedData" => ["Variables for moodle saved"]]);
                 } else {
                     API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
+                return;
+            }
+            if (API::hasKey('moodlePeriodicity')) {
+                $moodle = API::getValue('moodlePeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("Moodle", $courseId, $moodle)) {
+                    API::response(["updatedData" => ["Plugin Moodle enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                }
+                return;
+            }
+            if (API::hasKey('classCheckPeriodicity')) {
+                $classCheck = API::getValue('classCheckPeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("ClassCheck", $courseId, $classCheck)) {
+                    API::response(["updatedData" => ["Plugin Class Check enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                }
+                return;
+            }
+            if (API::hasKey('googleSheetsPeriodicity')) {
+                $googleSheets = API::getValue('googleSheetsPeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
+                    API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
                 }
                 return;
             }

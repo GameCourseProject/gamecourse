@@ -10,7 +10,7 @@ use GameCourse\User;
 class CronJob
 {
     //tratar depois da periodicidade com base no que o user escolheu
-    public function __construct($script, $course)
+    public function __construct($script, $course, $number, $time)
     {
         $cronFile = "/var/spool/cron/crontabs/root";
         $path = null;
@@ -23,7 +23,7 @@ class CronJob
             $path = getcwd() . "/GoogleSheetsScript.php";
         }
 
-        if ($path) {
+        if ($path && file_exists($cronFile)) {
             $file = file_get_contents($cronFile);
             $lines = explode("\n", $file);
             $exclude = array();
@@ -39,8 +39,16 @@ class CronJob
                 $file = implode("\n", $exclude);
             }
 
-            //corre de 5 em 5 minutos
-            $file .= "*/5 * * * * /usr/bin/php " . $path . " " . $course . "\n";
+            $periodStr = "";
+            if ($time == "minutos") {
+                $periodStr = "*/" . $number . " * * * *";
+            } else if ($time == "horas") {
+                $periodStr = "0 */" . $number . " * * *";
+            } else if ($time == "meses") {
+                $periodStr = "* * */" . $number . " * *";
+            }
+
+            $file .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             file_put_contents($cronFile, $file);
         }
     }
