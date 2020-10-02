@@ -40,7 +40,7 @@ if (isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["cou
     $error = TRUE;
   } else if (!(inclass($_REQUEST["aluno"], $_REQUEST["course"]))) {
     $error_student_number_en = "The student with that Student Number is not enrolled in class.";
-    // $error = TRUE;
+    $error = TRUE;
   } else {
     $error_student_number_en = "";
   }
