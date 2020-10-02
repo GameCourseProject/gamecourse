@@ -232,4 +232,27 @@ class User
     {
         Core::$systemDB->delete("game_course_user", ["id" => $userId]);
     }
+
+    public static function saveImage($img, $userId)
+    {
+        file_put_contents($userId . ".png", $img);
+    }
+
+    public static function exportUsers()
+    {
+        $listOfUsers = User::getAllInfo();
+        $file = "";
+        $i = 0;
+        $len = count($listOfUsers);
+        foreach ($listOfUsers as $user) {
+            $userObj = new User(($user["id"]));
+            $numberCourses = $userObj->getCourses();
+            $file .= $user["name"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . count($numberCourses) . "," . $userObj->getSystemLastLogin() . "," . $user["isAdmin"] . "," . $user["isActive"];
+            if ($i != $len - 1) {
+                $file .= "\n";
+            }
+            $i++;
+        }
+        return $file;
+    }
 }
