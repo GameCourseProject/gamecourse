@@ -173,15 +173,16 @@ class Plugin extends Module
             }
 
             //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
+            $logs = $this->moodle->getLogs();
+            $this->moodle->writeLogsToDB($logs);
 
-            // $quizGrades = $this->moodle->getQuizGrades();
-            // $this->moodle->writeQuizGradesToDb($quizGrades);
+            $quizGrades = $this->moodle->getQuizGrades();
+            $this->moodle->writeQuizGradesToDb($quizGrades);
 
-            // $votes = $this->moodle->getVotes();
-            // $this->moodle->writeVotesToDb($votes);
+            $votes = $this->moodle->getVotes();
+            $this->moodle->writeVotesToDb($votes);
 
-            // $logs = $this->moodle->getLogs();
-            // $this->moodle->writeLogsToDB($logs);
+            $this->moodle->updateMoodleConfigTime();
             return true;
         }
     }

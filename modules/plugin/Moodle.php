@@ -7,6 +7,7 @@ use GameCourse\API;
 use GameCourse\User;
 use GameCourse\CourseUser;
 use GameCourse\Course;
+use mysqli;
 
 class Moodle
 {
@@ -21,6 +22,7 @@ class Moodle
     private $user;
     private $courseId; //courseId no gamecourse
     private $courseGameCourse;
+    private $timeToUpdate = null;
 
     public function __construct($courseId)
     {
@@ -42,33 +44,261 @@ class Moodle
         $this->user = $moodleVarsDB["moodleUser"];
     }
 
+    public function getQuizGrades()
+    {
+        $this->getDBConfigValues();
+        $sql = " select q.id as quizid, q.name as quiz, userid ,c.shortname as shortname, username, g.grade as grade, g.timemodified as timemodified
+        from " . $this->prefix . "user as u, " . $this->prefix . "quiz as q, " . $this->prefix . "quiz_grades as g, " . $this->prefix . "course as c
+        where u.id = g.userid and q.course = c.id and g.quiz = q.id";
+        if ($this->course) {
+            $sql .= " and c.id = " . $this->course;
+        }
+        if ($this->user) {
+            $sql .= " and u.id = " . $this->user;
+        }
+        if ($this->time) {
+            $sql .= " and g.timemodified > " . $this->time;
+        }
+        if ($this->timeToUpdate) {
+            $sql .= " and g.timemodified <= " . $this->timeToUpdate;
+        }
+        $sql .= " order by timemodified;";
+
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+        $result = mysqli_query($db, $sql);
+        return $result;
+    }
+    public function writeQuizGradesToDb($result)
+    {
+        $course = new Course($this->courseId);
+        $row_ = array();
+        while ($line = mysqli_fetch_assoc($result)) {
+            array_push($row_, $line);
+        }
+        foreach ($row_ as $row) {
+            $user = User::getUserIdByUsername($row["username"]);
+            if ($user) {
+                $courseUser = new CourseUser($user, $course);
+                if ($courseUser->getId()) {
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
+                    if (!$result) {
+
+                        Core::$systemDB->insert(
+                            "participation",
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $row['quiz'],
+                                "type" => "quiz grade",
+                                "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
+                                //"date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                                "rating" => $row['grade']
+                            ]
+                        );
+                    } else {
+                        Core::$systemDB->update(
+                            "participation",
+                            array(
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $row['quiz'],
+                                "type" => "quiz grade",
+                                "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
+                                // "date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                                "rating" => $row['grade']
+                            ),
+                            array(
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "type" => "quiz grade",
+                                "description" => $row['quiz']
+
+                            )
+                        );
+                    }
+                }
+            }
+        }
+        if (!empty($row_) && $this->timeToUpdate == null) {
+            $lastRecord = end($row_);
+            $this->timeToUpdate = $lastRecord["timemodified"];
+        }
+    }
+
+    public function getVotes()
+    {
+        $timeUpLimit = "";
+        if ($this->timeToUpdate) {
+            $timeUpLimit = " and r.timemodified <= " . $this->timeToUpdate;
+        }
+        $this->getDBConfigValues();
+        if (!($this->time) && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating,  r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if (!($this->time) && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating,  r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id  
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id=" . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "forum f
+                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        }
+
+        $sql .= " order by r.timemodified;";
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+        $result = mysqli_query($db, $sql);
+        return array($db, $result);
+    }
+    public function parseVotesToDB($row, $db)
+    {
+
+        $sqlEvaluator = "SELECT username FROM " . $this->prefix . "user where id=" . $row["evaluatorId"] . ";";
+        $resultEvaluator = mysqli_query($db, $sqlEvaluator);
+        $rowEvaluator = mysqli_fetch_assoc($resultEvaluator);
+        $evaluator = $rowEvaluator['username'];
+        $votesFields = array(
+            "user" => $row["username"],
+            "description" => $row['name'] . ", " . $row['subject'],
+            "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
+            "date" => date('Y-m-d H:i:s', $row['timemodified']),
+            "rating" => $row['rating'],
+            "evaluator" => $evaluator
+        );
+        return $votesFields;
+    }
+    public function writeVotesToDb($dbResult)
+    {
+        $db = $dbResult[0];
+        $result = $dbResult[1];
+        $course = new Course($this->courseId);
+        $row_ = array();
+        while ($line = mysqli_fetch_assoc($result)) {
+            array_push($row_, $line);
+        }
+        foreach ($row_ as $row) {
+            $votesField = $this->parseVotesToDB($row, $db);
+
+            $prof = User::getUserIdByUsername($votesField["evaluator"]);
+            $user = User::getUserIdByUsername($votesField["user"]);
+            if ($user && $prof) {
+                $courseUser = new CourseUser($user, $course);
+                if ($courseUser->getId()) {
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
+                    if (!$result) {
+
+                        Core::$systemDB->insert(
+                            "participation",
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $votesField["description"],
+                                "type" => "graded post",
+                                "post" => $votesField["post"],
+                                // "date" => $votesField["date"],
+                                "rating" => $row['rating'],
+                                "evaluator" => $prof
+                            ]
+                        );
+                    } else {
+                        Core::$systemDB->update(
+                            "participation",
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $votesField["description"],
+                                "type" => "graded post",
+                                "post" => $votesField["post"],
+                                // "date" => $votesField["date"],
+                                "rating" => $row['rating'],
+                                "evaluator" => $prof
+                            ],
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "type" => "graded post",
+                                "post" => $votesField["post"]
+
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+
+        if (!empty($row_) && $this->timeToUpdate == null) {
+            $lastRecord = end($row_);
+            $this->timeToUpdate = $lastRecord["timemodified"];
+        }
+    }
+
     public function getLogs()
     {
+        $timeUpLimit = "";
+        if ($this->timeToUpdate && $this->time) {
+            $timeUpLimit =  $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and ";
+        } else if ($this->timeToUpdate && !($this->time)) {
+            $timeUpLimit = " where " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate;
+        }
+
         $this->getDBConfigValues();
         if (!($this->time) && !($this->user)) {
             $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid";
             if ($this->course) {
                 $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " order by " . $this->prefix . "logstore_standard_log.timecreated;";
+            $sql .= $timeUpLimit . " order by " . $this->prefix . "logstore_standard_log.timecreated;";
         } else if ($this->time && !($this->user)) {
             $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid,  " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid ";
             if ($this->course) {
                 $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " where " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+            $sql .= " where "  . $timeUpLimit .  $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
         } else if (!($this->time) && $this->user) {
             $sql = "select  " . $this->prefix . "logstore_standard_log.id, courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,   contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid , objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id='" . $this->user . "' inner join " . $this->prefix . "course on " . $this->prefix . "course.id=courseid ";
             if ($this->course) {
                 $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+            $sql .= $timeUpLimit . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
         } else if ($this->time && $this->user) {
             $sql = "select  " . $this->prefix . "logstore_standard_log.id, courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id='" . $this->user . "' inner join " . $this->prefix . "course on " . $this->prefix . "course.id=courseid ";
             if ($this->course) {
                 $sql .= " and p.course=" . $this->course;
             }
-            $sql .= " where " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+            $sql .= " where " . $timeUpLimit . $this->timeToUpdate . " and " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
         }
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
@@ -351,177 +581,46 @@ class Moodle
     {
         $db = $dbResult[0];
         $result = $dbResult[1];
-        while ($row = mysqli_fetch_assoc($result)) {
+        $row_ = array();
+        while ($line = mysqli_fetch_assoc($result)) {
+            array_push($row_, $line);
+        }
+        foreach ($row_ as $row) {
             $moodleField = $this->parseLogsToDB($row, $db);
             if ($moodleField["module"]) {
                 $user = User::getUserIdByUsername($moodleField["username"]);
                 if ($user) {
                     $courseUser = new CourseUser($user, $this->courseGameCourse);
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
+                    if (!$result) {
 
-                    if ($courseUser->getId()) {
-                        Core::$systemDB->insert(
-                            "participation",
-                            [
-                                "user" => $courseUser->getId(),
-                                "course" => $this->courseId,
-                                "description" => $moodleField["module"],
-                                "type" => $moodleField["action"],
-                                "post" => $moodleField["url"],
-                                "date" => $moodleField["timecreated"]
-                            ]
-                        );
+                        if ($courseUser->getId()) {
+                            Core::$systemDB->insert(
+                                "participation",
+                                [
+                                    "user" => $courseUser->getId(),
+                                    "course" => $this->courseId,
+                                    "description" => $moodleField["module"],
+                                    "type" => $moodleField["action"],
+                                    "post" => $moodleField["url"]
+                                    // "date" => $moodleField["timecreated"]
+                                ]
+                            );
+                        }
                     }
                 }
             }
         }
-    }
-
-    public function getVotes()
-    {
-        $this->getDBConfigValues();
-        if (!($this->time) && !($this->user)) {
-            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
-                from " . $this->prefix . "forum f
-                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
-                join " . $this->prefix . "rating r ON r.itemid = fp.id
-                join " . $this->prefix . "user u ON fp.userid = u.id
-                join " . $this->prefix . "course c ON c.id = f.course";
-            if ($this->course) {
-                $sql .= " and f.course=" . $this->course;
-            }
-        } else if (!($this->time) && $this->user) {
-            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
-                from " . $this->prefix . "forum f
-                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
-                join " . $this->prefix . "rating r ON r.itemid = fp.id
-                join " . $this->prefix . "user u ON fp.userid = u.id and u.id=" . $this->user . " 
-                join " . $this->prefix . "course c ON c.id = f.course";
-            if ($this->course) {
-                $sql .= " and f.course=" . $this->course;
-            }
-        } else if ($this->time && !($this->user)) {
-            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
-                from " . $this->prefix . "forum f
-                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . "
-                join " . $this->prefix . "rating r ON r.itemid = fp.id
-                join " . $this->prefix . "user u ON fp.userid = u.id
-                join " . $this->prefix . "course c ON c.id = f.course";
-            if ($this->course) {
-                $sql .= " and f.course=" . $this->course;
-            }
-        } else if ($this->time && $this->user) {
-            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.userid as evaluatorId, fd.id, itemid
-                from " . $this->prefix . "forum f
-                join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . "
-                join " . $this->prefix . "rating r ON r.itemid = fp.id  
-                join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
-                join " . $this->prefix . "course c ON c.id = f.course";
-            if ($this->course) {
-                $sql .= " and f.course=" . $this->course;
-            }
-        }
-
-        $sql .= " order by created;";
-        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
-        $result = mysqli_query($db, $sql);
-        return array($db, $result);
-    }
-    public function parseVotesToDB($row, $db)
-    {
-
-        $sqlEvaluator = "SELECT username FROM " . $this->prefix . "user where id=" . $row["evaluatorId"] . ";";
-        $resultEvaluator = mysqli_query($db, $sqlEvaluator);
-        $rowEvaluator = mysqli_fetch_assoc($resultEvaluator);
-        $evaluator = $rowEvaluator['username'];
-        $votesFields = array(
-            "user" => $row["username"],
-            "description" => $row['name'] . ", " . $row['subject'],
-            "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
-            "date" => date('Y-m-d H:i:s', $row['created']),
-            "rating" => $row['rating'],
-            "evaluator" => $evaluator
-        );
-        return $votesFields;
-    }
-    public function writeVotesToDb($dbResult)
-    {
-        $db = $dbResult[0];
-        $result = $dbResult[1];
-        $course = new Course($this->courseId);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $votesField = $this->parseVotesToDB($row, $db);
-
-            $prof = User::getUserIdByUsername($votesField["evaluator"]);
-            $user = User::getUserIdByUsername($votesField["user"]);
-            if ($user && $prof) {
-                $courseUser = new CourseUser($user, $course);
-                if ($courseUser->getId()) {
-                    Core::$systemDB->insert(
-                        "participation",
-                        [
-                            "user" => $user,
-                            "course" => $this->courseId,
-                            "description" => $votesField["description"],
-                            "type" => "graded post",
-                            "post" => $votesField["post"],
-                            "date" => $votesField["date"],
-                            "rating" => $row['rating'],
-                            "evaluator" => $prof
-                        ]
-                    );
-                }
-            }
+        if (!empty($row_) && $this->timeToUpdate == null) {
+            $lastRecord = end($row_);
+            $this->timeToUpdate = $lastRecord["timecreated"];
         }
     }
 
-    public function getQuizGrades()
+    public function updateMoodleConfigTime()
     {
-        $this->getDBConfigValues();
-        $sql = " select q.id as quizid, q.name as quiz, userid ,c.shortname as shortname, username, g.grade as grade, g.timemodified as timemodified
-                from " . $this->prefix . "user as u, " . $this->prefix . "quiz as q, " . $this->prefix . "quiz_grades as g, " . $this->prefix . "course as c
-	            where u.id = g.userid and q.course = c.id and g.quiz = q.id";
-        if ($this->course) {
-            $sql .= " and c.id = " . $this->course;
-        }
-        if ($this->user) {
-            $sql .= " and u.id = " . $this->user;
-        }
-        if ($this->time) {
-            $sql .= " and g.timemodified > " . $this->time;
-        }
-        $sql .= " order by timemodified;";
-
-        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
-        $result = mysqli_query($db, $sql);
-        return $result;
-    }
-    public function writeQuizGradesToDb($result)
-    {
-        $course = new Course($this->courseId);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $user = User::getUserIdByUsername($row["username"]);
-            if ($user) {
-                $courseUser = new CourseUser($user, $course);
-
-                if ($courseUser->getId()) {
-                    Core::$systemDB->insert(
-                        "participation",
-                        [
-                            "user" => $user,
-                            "course" => $this->courseId,
-                            "description" => $row['quiz'],
-                            "type" => "quiz grade",
-                            "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                            "date" => date('Y-m-d, H:i:s', $row['timemodified']),
-                            "rating" => $row['grade']
-                        ]
-                    );
-                }
-            }
+        if ($this->timeToUpdate) {
+            Core::$systemDB->update("config_moodle", ["moodleTime" => $this->timeToUpdate], ["course" => $this->courseId]);
         }
     }
 }
