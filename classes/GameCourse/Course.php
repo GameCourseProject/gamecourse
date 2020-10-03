@@ -466,13 +466,52 @@ class Course
         $i = 0;
         $len = count($allCourses);
         foreach ($allCourses as $course) {
-            $nrStudents = count(Core::$systemDB->selectMultiple("course_user", ["course" => $course["id"]], 'id'));
-            $file .= $course["color"] . "," . $course["name"] . "," . $course["short"] . "," . $nrStudents . "," . $course["year"] . "," . $course["isActive"] . "," .  $course["isVisible"];
+            $file .= $course["color"] . "," . $course["name"] . "," . $course["short"] . "," . $course["year"] . "," . $course["isActive"] . "," .  $course["isVisible"];
             if ($i != $len - 1) {
                 $file .= "\n";
             }
             $i++;
         }
         return $file;
+    }
+
+    //nao importa curso com o mesmo nome no mesmo ano
+    //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
+    public static function importCourses($file)
+    {
+        $file = fopen($file, "r");
+        while (!feof($file)) {
+            $course = fgetcsv($file);
+            if (!$course[3]) {
+                if (!Core::$systemDB->select("course", ["name" => $course[1]])) {
+                    Core::$systemDB->insert(
+                        "course",
+                        [
+                            "color" => $course[0],
+                            "name" => $course[1],
+                            "short" => $course[2],
+                            "year" => $course[3],
+                            "isActive" => $course[4],
+                            "isVisible" => $course[5]
+                        ]
+                    );
+                }
+            } else {
+                if (!Core::$systemDB->select("course", ["name" => $course[1], "year" => $course[3]])) {
+                    Core::$systemDB->insert(
+                        "course",
+                        [
+                            "color" => $course[0],
+                            "name" => $course[1],
+                            "short" => $course[2],
+                            "year" => $course[3],
+                            "isActive" => $course[4],
+                            "isVisible" => $course[5]
+                        ]
+                    );
+                }
+            }
+        }
+        fclose($file);
     }
 }

@@ -245,14 +245,35 @@ class User
         $i = 0;
         $len = count($listOfUsers);
         foreach ($listOfUsers as $user) {
-            $userObj = new User(($user["id"]));
-            $numberCourses = $userObj->getCourses();
-            $file .= $user["name"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . count($numberCourses) . "," . $userObj->getSystemLastLogin() . "," . $user["isAdmin"] . "," . $user["isActive"];
+            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," . $user["isActive"];
             if ($i != $len - 1) {
                 $file .= "\n";
             }
             $i++;
         }
         return $file;
+    }
+
+
+    public static function importUsers($file)
+    {
+        $file = fopen($file, "r");
+        while (!feof($file)) {
+            $user = fgetcsv($file);
+            if (!User::getUserByStudentNumber($user[3])) {
+                Core::$systemDB->insert(
+                    "game_course_user",
+                    [
+                        "name" => $user[0],
+                        "email" => $user[1],
+                        "nickname" => $user[2],
+                        "studentNumber" => $user[3],
+                        "isAdmin" => $user[4],
+                        "isActive" => $user[5]
+                    ]
+                );
+            }
+        }
+        fclose($file);
     }
 }

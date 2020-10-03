@@ -204,14 +204,64 @@ class CourseUser extends User
         $i = 0;
         $len = count($listOfUsers);
         foreach ($listOfUsers as $courseUser) {
-            $userObj = new User($courseUser["id"]);
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
-            $file .= $user["name"] . "," . $user["nickname"] . "," . $courseUser["campus"] . "," . $user["studentNumber"] . "," . $userObj->getSystemLastLogin();
+            $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["id"]]);
+            if (!$role) {
+                $roleId = "";
+            } else {
+                $roleId = $role["id"];
+            }
+            $file .= $courseUser["course"] . "," .  $user["name"] . "," . $user["nickname"] . "," . $user["email"] . "," .
+                $courseUser["campus"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," . $roleId;
             if ($i != $len - 1) {
                 $file .= "\n";
             }
             $i++;
         }
         return $file;
+    }
+
+    public static function importCourseUsers($file)
+    {
+        $file = fopen($file, "r");
+        while (!feof($file)) {
+            $courseUser = fgetcsv($file);
+            if (!User::getUserByStudentNumber($courseUser[5])) {
+                Core::$systemDB->insert(
+                    "game_course_user",
+                    [
+                        "name" => $courseUser[1],
+                        "nickname" => $courseUser[2],
+                        "email" => $courseUser[3],
+                        "studentNumber" => $courseUser[5],
+                        "isAdmin" => $courseUser[6],
+                        "isActive" => $courseUser[7]
+                    ]
+                );
+            }
+            $newUser = User::getUserByStudentNumber($courseUser[5]);
+            if (!Core::$systemDB->select("course_user", ["id" => $newUser->getId(), "course" => $courseUser[0]])) {
+
+                Core::$systemDB->insert(
+                    "course_user",
+                    [
+                        "id" => $newUser->getId(),
+                        "course" => $courseUser[0],
+                        "campus" => $courseUser[4]
+                    ]
+                );
+                if ($courseUser[8]) {
+
+                    Core::$systemDB->insert(
+                        "role",
+                        [
+                            "id" => $newUser->getId(),
+                            "course" => $courseUser[0],
+                            "role" => $courseUser[8]
+                        ]
+                    );
+                }
+            }
+        }
     }
 }
