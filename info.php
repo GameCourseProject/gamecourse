@@ -353,6 +353,7 @@ API::registerFunction('settings', 'courseModules', function() {
     }
 });
 
+
 API::registerFunction('settings', 'getModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
@@ -366,7 +367,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
 
     $generalInputs=[];
     if($module->has_general_inputs()){
-        $generalInputs = $module->get_general_inputs();
+        $generalInputs = $module->get_general_inputs($course->getId());
     }
 
     // $generalInputs=[];
@@ -389,6 +390,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
 
 });
 
+
 API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
@@ -396,7 +398,7 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function() {
 
     if($module->has_general_inputs()){
         $generalInputs = API::getValue('generalInputs');
-        $module->save_general_inputs($generalInputs);
+        $module->save_general_inputs($generalInputs, $course->getId());
     }
     
     // if($module->has_personalized_config()){

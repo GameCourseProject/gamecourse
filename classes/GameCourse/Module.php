@@ -231,8 +231,8 @@ abstract class Module
     public function has_personalized_config (){}
     
     public function has_general_inputs (){}
-    public function get_general_inputs (){}
-    public function save_general_inputs(){}
+    public function get_general_inputs ($courseId){}
+    public function save_general_inputs($generalInputs,$courseId){}
 
     public function has_listing_items (){}
     public function get_listing_items (){}

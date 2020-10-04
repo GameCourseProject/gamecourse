@@ -11,6 +11,7 @@ use GameCourse\Course;
 class Badges extends Module
 {
     const BADGES_TEMPLATE_NAME = 'Badges block - by badges';
+    const MAX_BONUS_BADGES = 500;
 
     public function setupResources()
     {
@@ -348,136 +349,125 @@ class Badges extends Module
         $viewHandler->registerFunction('indicator', function($indicator) {
             return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
         });
-    */
+        */
 
-
+    
+    
         //add API request to list of requests
         //update list of badges for course, from the badges configuration page
-        API::registerFunction('settings', 'courseBadges', function () {
+        API::registerFunction('settings', 'courseBadges', function() {
             API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $folder = Course::getCourseLegacyFolder($courseId); // Course::getCourseLegacyFolder($courseId);
-            $badges = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*", "name");
-
-            if (API::hasKey('maxReward')) {
-                $max = API::getValue('maxReward');
-                Core::$systemDB->update("badges_config", ["maxBonusReward" => $max], ["course" => $courseId]);
-                API::response(["updatedData" => ["Max Reward set to " . $max]]);
+            $courseId=API::getValue('course');
+            $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
+            $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
+            
+            //set maxreward
+            if (API::hasKey('maxReward')){
+                $max=API::getValue('maxReward');
+                Core::$systemDB->update("badges_config",["maxBonusReward"=>$max],["course"=>$courseId]);
+                API::response(["updatedData"=>["Max Reward set to ".$max] ] );
                 return;
             }
+            //set badges
             if (API::hasKey('badgesList')) {
-                $keys = [
-                    'name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3',
-                    'countBased', 'postBased', 'pointBased', 'count1', 'count2', 'count3'
-                ];
+                $keys = ['name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 
+                    'countBased', 'postBased', 'pointBased','count1', 'count2', 'count3'];
                 $achievements = preg_split('/[\r]?\n/', API::getValue('badgesList'), -1, PREG_SPLIT_NO_EMPTY);
-
-                $badgesToDelete = array_column($badges, 'name');
-                $badgesInDB = array_combine($badgesToDelete, $badges);
+                
+                $badgesToDelete = array_column($badges,'name');
+                $badgesInDB = array_combine($badgesToDelete,$badges);
                 $totalLevels = 0;
-                $updatedData = [];
+                $updatedData=[];
 
-                foreach ($achievements as &$achievement) {
-                    $splitInfo = preg_split('/;/', $achievement);
+                foreach($achievements as &$achievement) {
+                    $splitInfo =preg_split('/;/', $achievement);
                     if (sizeOf($splitInfo) != sizeOf($keys)) {
                         echo "Badges information was incorrectly formatted";
                         return null;
                     }
                     $achievement = array_combine($keys, $splitInfo);
-                    $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
+                    $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
                     //if badge doesn't exit, add it to DB
-                    $badgeData = [
-                        "maxLevel" => $maxLevel, "name" => $achievement['name'],
-                        "course" => $courseId, "description" => $achievement['description'],
-                        "isExtra" => ($achievement['xp1'] < 0),
-                        "isBragging" => ($achievement['xp1'] == 0),
-                        "isCount" => ($achievement['countBased'] == 'True'),
-                        "isPost" => ($achievement['postBased'] == 'True'),
-                        "isPoint" => ($achievement['pointBased'] == 'True')
-                    ];
-                    if (!array_key_exists($achievement['name'], $badgesInDB)) {
-                        //if (empty(Core::$systemDB->select("badge",["name"=>$achievement['name'],"course"=>$courseId]))){
-                        Core::$systemDB->insert("badge", $badgeData);
-                        $badgeId = Core::$systemDB->getLastId();
-                        for ($i = 1; $i <= $maxLevel; $i++) {
-                            Core::$systemDB->insert("level", [
-                                "number" => $i, "course" => $courseId,
-                                "description" => $achievement['desc' . $i],
-                                "goal" => $achievement['count' . $i]
-                            ]);
-                            $levelId = Core::$systemDB->getLastId();
-                            Core::$systemDB->insert("badge_has_level", [
-                                "badgeId" => $badgeId, "levelId" => $levelId,
-                                "reward" => abs($achievement['xp' . $i])
-                            ]);
-                        }
-                        $updatedData[] = "New badge: " . $achievement["name"];
-                    } else {
-                        Core::$systemDB->update("badge", $badgeData, ["course" => $courseId, "name" => $achievement["name"]]);
+                    $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
+                                "course"=>$courseId,"description"=>$achievement['description'],
+                                "isExtra"=> ($achievement['xp1'] < 0),
+                                "isBragging"=>($achievement['xp1'] == 0),
+                                "isCount"=>($achievement['countBased'] == 'True'),
+                                "isPost"=>($achievement['postBased'] == 'True'),
+                                "isPoint"=>($achievement['pointBased'] == 'True')];
+                    if (!array_key_exists($achievement['name'],$badgesInDB)){
+                    //if (empty(Core::$systemDB->select("badge",["name"=>$achievement['name'],"course"=>$courseId]))){
+                        Core::$systemDB->insert("badge",$badgeData);
+                        $badgeId=Core::$systemDB->getLastId();
+                        for ($i=1;$i<=$maxLevel;$i++){
+                            Core::$systemDB->insert("level",["number"=>$i,"course"=>$courseId,
+                                                    "description"=>$achievement['desc'.$i],
+                                                    "goal"=>$achievement['count'.$i]]);
+                            $levelId=Core::$systemDB->getLastId();
+                            Core::$systemDB->insert("badge_has_level",["badgeId"=>$badgeId,"levelId"=>$levelId,
+                                                    "reward"=>abs($achievement['xp'.$i])]);
+                        }  
+                        $updatedData[]= "New badge: ".$achievement["name"];
+                    }else{
+                        Core::$systemDB->update("badge",$badgeData,["course"=>$courseId,"name"=>$achievement["name"]]);
                         $badge = $badgesInDB[$achievement['name']];
-                        for ($i = 1; $i <= $badge["maxLevel"]; $i++) {
-                            $badgeLevel = Core::$systemDB->select(
-                                "badge_has_level join level on id=levelId",
-                                ["number" => $i, "course" => $courseId, "badgeId" => $badge['id']]
-                            );
-
-                            Core::$systemDB->update("level", [
-                                "description" => $achievement['desc' . $i],
-                                "goal" => $achievement['count' . $i]
-                            ], ["id" => $badgeLevel['id']]);
-
-                            Core::$systemDB->update(
-                                "badge_has_level",
-                                ["reward" => abs($achievement['xp' . $i])],
-                                ["levelId" => $badgeLevel['id'], "badgeId" => $badge['id']]
-                            );
+                        for ($i=1;$i<=$badge["maxLevel"];$i++){
+                            $badgeLevel = Core::$systemDB->select("badge_has_level join level on id=levelId",
+                                    ["number"=>$i,"course"=>$courseId, "badgeId"=>$badge['id']]);
+                            
+                            Core::$systemDB->update("level",["description"=>$achievement['desc'.$i],
+                                                    "goal"=>$achievement['count'.$i]],["id"=>$badgeLevel['id']]);
+                            
+                            Core::$systemDB->update("badge_has_level",["reward"=>abs($achievement['xp'.$i])],
+                                    ["levelId"=>$badgeLevel['id'],"badgeId"=>$badge['id']]);
                         }
                         //ToDo: consider cases where maxLevel changes 
                         unset($badgesToDelete[array_search($achievement['name'], $badgesToDelete)]);
                     }
-                    $totalLevels += $maxLevel;
+                    $totalLevels += $maxLevel; 
                 }
-                foreach ($badgesToDelete as $badgeToDelete) {
+                foreach ($badgesToDelete as $badgeToDelete){
                     $badge = $badgesInDB[$badgeToDelete];
-                    $badgeLevels = Core::$systemDB->selectMultiple(
-                        "badge_has_level join level on id=levelId",
-                        ["course" => $courseId, "badgeId" => $badge['id']],
-                        "id"
-                    );
-                    foreach ($badgeLevels as $level) {
-                        Core::$systemDB->delete("level", ["id" => $level['id']]);
+                    $badgeLevels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId",
+                                    ["course"=>$courseId, "badgeId"=>$badge['id']],"id");
+                    foreach($badgeLevels as $level){
+                        Core::$systemDB->delete("level",["id"=>$level['id']]);
                     }
-                    Core::$systemDB->delete("badge", ["id" => $badge['id']]);
-                    $updatedData[] = "Deleted badge: " . $badgeToDelete;
+                    Core::$systemDB->delete("badge",["id"=>$badge['id']]);
+                    $updatedData[]= "Deleted badge: ".$badgeToDelete;
                 }
                 //Core::$systemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
-
-                file_put_contents($folder . '/achievements.txt', API::getValue('badgesList'));
-                API::response(["updatedData" => $updatedData]);
+                
+                file_put_contents($folder . '/achievements.txt',API::getValue('badgesList'));
+                API::response(["updatedData"=>$updatedData ]);
                 return;
             }
-
-
-            foreach ($badges as &$badge) {
+            
+            
+            foreach($badges as &$badge){
                 //$levels = Core::$systemDB->selectMultiple("badge_level",["course"=>$courseId, "badgeName"=>$badge["name"]],"*","level");
-                $levels = Core::$systemDB->selectMultiple(
-                    "badge_has_level join level on id=levelId",
-                    ["course" => $courseId, "badgeId" => $badge['id']]
-                );
+                $levels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId",
+                                    ["course"=>$courseId, "badgeId"=>$badge['id']]);
 
-                foreach ($levels as $level) {
-                    $badge["levels"][] = $level;
+                foreach ($levels as $level){
+                    $badge["levels"][]=$level;
                 }
             }
-
+            
             $file = @file_get_contents($folder . '/achievements.txt');
-            if ($file === FALSE) {
-                $file = "";
-            }
-            API::response(array('badgesList' => $badges, "file" => $file, "maxReward" => Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward")));
+            if ($file===FALSE){$file="";}
+            API::response(array('badgesList' => $badges, "file"=>$file, "maxReward"=>Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward")));
         });
+    
         if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getId());
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'),$this->getId());   
+    }
+
+    public function saveMaxReward($max, $courseId){
+        Core::$systemDB->update("badges_config",["maxBonusReward"=>$max],["course"=>$courseId]);
+    }
+    public function getMaxReward( $courseId){
+        return Core::$systemDB->select("badges_config",["course"=>$courseId], "maxBonusReward");
     }
 
     public function is_configurable(){
@@ -491,19 +481,23 @@ class Badges extends Module
     
 
     public function has_general_inputs (){ return true; }
-    public function get_general_inputs (){
-        $input1 = array('name' => "input 1", 'id'=> 'input1', 'type' => "text", 'options' => "", 'current_val' => "cenas");
-        $input2 = array('name' => "input 2", 'id'=> 'input2', 'type' => "date", 'options' => "", 'current_val' => "");
-        $input3 = array('name' => "input 3", 'id'=> 'input3', 'type' => "on_off button", 'options' => '', 'current_val' => true);
-        $input4 = array('name' => "input 4", 'id'=> 'input4', 'type' => "select", 'options' => ["OpA","OpB","OpC"], 'current_val' => "");
-        $input5 = array('name' => "input 5", 'id'=> 'input5', 'type' => "color", 'options' => "", 'current_val' => "#121212");
-        $input7 = array('name' => "input 7", 'id'=> 'input7', 'type' => "number", 'options' => "", 'current_val' => "");
-        $input8 = array('name' => "input 8", 'id'=> 'input8', 'type' => "paragraph", 'options' => "", 'current_val' => "my text here");
+    public function get_general_inputs ($courseId){
+        // $input1 = array('name' => "input 1", 'id'=> 'input1', 'type' => "text", 'options' => "", 'current_val' => "cenas");
+        // $input2 = array('name' => "input 2", 'id'=> 'input2', 'type' => "date", 'options' => "", 'current_val' => "");
+        // $input3 = array('name' => "input 3", 'id'=> 'input3', 'type' => "on_off button", 'options' => '', 'current_val' => true);
+        // $input4 = array('name' => "input 4", 'id'=> 'input4', 'type' => "select", 'options' => ["OpA","OpB","OpC"], 'current_val' => "");
+        // $input5 = array('name' => "input 5", 'id'=> 'input5', 'type' => "color", 'options' => "", 'current_val' => "#121212");
+        // $input7 = array('name' => "input 7", 'id'=> 'input7', 'type' => "number", 'options' => "", 'current_val' => "");
+        // $input8 = array('name' => "input 8", 'id'=> 'input8', 'type' => "paragraph", 'options' => "", 'current_val' => "my text here");
 
+        $input = array('name' => "Max Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
 
-        return [$input1, $input2, $input3, $input4, $input5, $input7, $input8];
+        return [$input];
     }
-    public function save_general_inputs(){}
+    public function save_general_inputs($generalInputs,$courseId){
+        $maxVal = $generalInputs["maxReward"];
+        $this->saveMaxReward($maxVal, $courseId);
+    }
 
 
 

@@ -85,7 +85,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         //funcao delete
     $scope.saveData = function(){
         debugger
-        $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $scope.module, generalInputs: $scope.inputs }, function (data, err) {
+        $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, function (data, err) {
             if (err) {
                 alert(err.description);
                 return;
@@ -128,8 +128,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         generalInputsDiv = $("<div id='inputs'></div>");
         configPage.append(generalInputsDiv);
 
-        $scope.inputs = [];
-        $scope.initialInputs = [];
+        $scope.inputs = {};
+        $scope.initialInputs = {};
         jQuery.each($scope.generalInputs, function( index ){
             input = $scope.generalInputs[index];
             row = $("<div class='row'></div>");
