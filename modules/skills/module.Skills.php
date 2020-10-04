@@ -118,12 +118,12 @@ class Skills extends Module {
             //this is slightly pointless if the skill tree only has id and course
             //but it could eventualy have more atributes
             return $this->createNode(Core::$systemDB->select("skill_tree",["id"=>$id]),'skillTrees');
-        });
+        }, 'library');
         
         //skillTrees.trees, returns collection w all trees
         $viewHandler->registerFunction('skillTrees','trees', function() use ($courseId){ 
             return $this->createNode(Core::$systemDB->selectMultiple("skill_tree",["course"=>$courseId]),'skillTrees',"collection");
-        });
+        }, 'library');
         //skillTrees.getAllSkills(...) or %tree.getAllSkills(...),returns collection
         $viewHandler->registerFunction('skillTrees','getAllSkills', 
             function($tree=null,$tier=null,$dependsOn=null,$requiredBy=null) use ($courseId){ 
@@ -155,7 +155,8 @@ class Skills extends Module {
                 return $this->createNode(Core::$systemDB->selectMultiple(
                         "skill s natural join skill_tier t join skill_tree tr on tr.id=treeId",
                         $skillWhere,"s.*,t.*"),'skillTrees',"collection",$parent);
-        });
+            },
+            'library');
         //%tree.getSkill(name), returns skill object
         $viewHandler->registerFunction('skillTrees','getSkill', function($tree,$name) { 
             $this->checkArray($tree, "object", "getSkill()");
@@ -399,4 +400,3 @@ ModuleLoader::registerModule(array(
         return new Skills();
     }
 ));
-?>

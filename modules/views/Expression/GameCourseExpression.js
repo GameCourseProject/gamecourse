@@ -442,7 +442,7 @@ var GameCourseExpression = (function () {
             return true;
         },
         autocomplete: function autocomplete(input, libraries) {
-
+            console.log(libraries);
             if (input && libraries) {
                 input = input.replace("{", "");
                 input = input.replace("}", "");
@@ -452,8 +452,10 @@ var GameCourseExpression = (function () {
                         var re = new RegExp(input, "g");
                         var librariesMatched = [];
                         libraries.forEach(element => {
-                            if (element["library"].match(re)) {
-                                librariesMatched.push(element["library"]);
+                            if (element["name"].match(re)) {
+                                if (!librariesMatched.includes(element["name"])) {
+                                    librariesMatched.push(element["name"]);
+                                }
                             }
                         });
                         console.log(librariesMatched);
@@ -468,7 +470,7 @@ var GameCourseExpression = (function () {
                                 functionsAvailable.push(element["keyword"]);
                             }
                         });
-                        console.log(functionsAvailable);
+                        // console.log(functionsAvailable);
                         //verificação da funçao regex e dps ver dos argumentos
                     }
                 }

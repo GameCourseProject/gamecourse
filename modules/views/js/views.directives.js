@@ -1,4 +1,4 @@
-angular.module('module.views').directive('sbMenu', function() {
+angular.module('module.views').directive('sbMenu', function () {
     return {
         replace: true,
         restrict: 'E',
@@ -10,7 +10,7 @@ angular.module('module.views').directive('sbMenu', function() {
         },
         template: '<div class="sb-menu"><div class="header"><img class="icon" ng-src="{{icon}}"><span>{{title}}</span></div><div class="content" ng-transclude></div></div>'
     };
-}).directive('sbCheckbox', function($parse) {
+}).directive('sbCheckbox', function ($parse) {
     var uid = 0;
     return {
         replace: true,
@@ -23,8 +23,8 @@ angular.module('module.views').directive('sbMenu', function() {
             if ($scope.default === undefined)
                 $scope.default = '';
             $scope.label = attrs.sbCheckboxLabel;
-            $scope.isChecked = function() { return $scope.what($scope) != undefined; };
-            $scope.toggle = function() {
+            $scope.isChecked = function () { return $scope.what($scope) != undefined; };
+            $scope.toggle = function () {
                 if ($scope.what($scope) == undefined)
                     $scope.what.assign($scope, angular.copy($scope.default));
                 else {
@@ -42,7 +42,7 @@ angular.module('module.views').directive('sbMenu', function() {
         },
         template: '<div class="sb-checkbox">\n\<input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()">\n\<label for="{{elid}}">{{label}}</label>\n\<a ng-href="{{link}}" target="_blank">\n\<img ng-if="value != undefined" title="{{value}}" class="info" src="images/info.svg"></a>\n\<div class="content" ng-if="isChecked()" ng-transclude></div></div>'
     };
-}).directive('sbInput', function($parse) {
+}).directive('sbInput', function ($parse) {
     var uid = 0;
     return {
         replace: true,
@@ -51,15 +51,17 @@ angular.module('module.views').directive('sbMenu', function() {
         transclude: true,
         link: function ($scope, element, attrs) {
             var parsedValue = $parse(attrs.sbInput);
-            $scope.value = function() { return function() {
-                return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
-            }; };
+            $scope.value = function () {
+                return function () {
+                    return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
+                };
+            };
             $scope.label = attrs.sbInputLabel;
             $scope.elid = 'ip-' + (++uid);
         },
         template: '<div class="sb-input"><label for="{{elid}}">{{label}}</label><input id="{{elid}}" type="text" ng-model="value()" ng-model-options="{ getterSetter: true }"><div class="content" ng-transclude></div></div>'
     };
-}).directive('sbExpression', function($parse, $timeout) {
+}).directive('sbExpression', function ($parse, $timeout) {
     CodeAssistant = {};
     CodeAssistant.fields = {};
     CodeAssistant.path = {
@@ -70,7 +72,7 @@ angular.module('module.views').directive('sbMenu', function() {
     CodeAssistant.suggestions = [];
     CodeAssistant.suggestionSelected = 0;
 
-    CodeAssistant.reset = function() {
+    CodeAssistant.reset = function () {
         CodeAssistant.path = {
             path: '',
             totalPath: '',
@@ -80,17 +82,17 @@ angular.module('module.views').directive('sbMenu', function() {
         CodeAssistant.suggestionSelected = 0;
     };
 
-    CodeAssistant.setPath = function(path) {
+    CodeAssistant.setPath = function (path) {
         CodeAssistant.path.path = path;
     };
 
-    CodeAssistant.pushPath = function() {
+    CodeAssistant.pushPath = function () {
         CodeAssistant.followPathField();
         CodeAssistant.path.totalPath += (CodeAssistant.path.totalPath != '' ? '.' : '') + CodeAssistant.path.path;
         CodeAssistant.path.path = '';
     };
 
-    CodeAssistant.pathFollowKey = function() {
+    CodeAssistant.pathFollowKey = function () {
         CodeAssistant.pushPath();
         CodeAssistant.setPath(CodeAssistant.getFields()[0].field);
 
@@ -119,7 +121,7 @@ angular.module('module.views').directive('sbMenu', function() {
             return [];
     };
 
-    CodeAssistant.followPathField = function() {
+    CodeAssistant.followPathField = function () {
         var path = CodeAssistant.path.path;
         var obj = CodeAssistant.path.objectPath;
         if (obj == undefined)
@@ -137,21 +139,21 @@ angular.module('module.views').directive('sbMenu', function() {
         CodeAssistant.path.objectPath = obj;
     };
 
-    CodeAssistant.getCurrentType = function() {
+    CodeAssistant.getCurrentType = function () {
         var obj = CodeAssistant.path.objectPath;
         if (obj == undefined)
             return undefined;
         return obj.type;
     };
 
-    CodeAssistant.processError = function(err) {
+    CodeAssistant.processError = function (err) {
         if (typeof err === 'object' && err.hash) {
             if (CodeAssistant.path.path != '' || (err.hash.expected.length == 1 && err.hash.expected[0] == '\'PATH\'')) {
                 CodeAssistant.suggestions = [];
                 var allFields = CodeAssistant.getFields();
-                var possibleFields = allFields.filter(function(v) { return v.field.startsWith(CodeAssistant.path.path); });
+                var possibleFields = allFields.filter(function (v) { return v.field.startsWith(CodeAssistant.path.path); });
                 if ((possibleFields.length == 1 && possibleFields[0].field != CodeAssistant.path.path) || possibleFields.length > 1) {
-                    CodeAssistant.suggestions = possibleFields.sort(function(a, b) { return a.field.localeCompare(b.field); });
+                    CodeAssistant.suggestions = possibleFields.sort(function (a, b) { return a.field.localeCompare(b.field); });
                     CodeAssistant.suggestionSelected = 0;
                 }
             }
@@ -170,13 +172,15 @@ angular.module('module.views').directive('sbMenu', function() {
             CodeAssistant.fields = $scope.editData.fieldsTree;
             $scope.ca = CodeAssistant;
             var parsedValue = $parse(attrs.sbExpression);
-            $scope.value = function() { return function() {
-                return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
-            }; };
+            $scope.value = function () {
+                return function () {
+                    return arguments.length > 0 ? parsedValue.assign($scope, arguments[0]) : parsedValue($scope);
+                };
+            };
             $scope.label = attrs.sbExpressionLabel;
             $scope.link = attrs.sbExpressionLink;
             $scope.info = attrs.sbExpressionInfo;
-            $scope.tryAutoComplete = function($event) {
+            $scope.tryAutoComplete = function ($event) {
                 if ($event.keyCode == 9 || $event.keyCode == 13) {
                     if (CodeAssistant.suggestions.length > 0) {
                         $event.preventDefault();
@@ -191,7 +195,7 @@ angular.module('module.views').directive('sbMenu', function() {
                 $scope.applyResize($event);
             };
 
-            $scope.performAutoComplete = function(id) {
+            $scope.performAutoComplete = function (id) {
                 var autoComplete = CodeAssistant.suggestions[id].field.substr(CodeAssistant.path.path.length);
                 var currentType = CodeAssistant.suggestions[id].type;
                 var line = $scope.error.hash.loc.first_line;
@@ -211,7 +215,7 @@ angular.module('module.views').directive('sbMenu', function() {
                 //parsedValue.assign($scope, parsedValue($scope) + autoComplete);
             };
 
-            $scope.applyResize = function() {
+            $scope.applyResize = function () {
                 var target = element.children('.expression');
                 var content = target.val();
                 var sizerDiv = $(document.createElement('div'));
@@ -229,11 +233,11 @@ angular.module('module.views').directive('sbMenu', function() {
                 sizerDiv.remove();
             };
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $scope.applyResize();
             }, 20);
 
-            $scope.typeName = function(type) {
+            $scope.typeName = function (type) {
                 switch (type) {
                     case 0: return 'Value';
                     case 1: return 'Array';
@@ -260,10 +264,10 @@ angular.module('module.views').directive('sbMenu', function() {
                 $scope.updateSuggestionStyle();
             };
 
-            $scope.selectedStyle = {backgroundColor: 'rgba(0, 0, 0, 0.1)'};
-            $scope.updateSuggestionStyle = function(hide) {
+            $scope.selectedStyle = { backgroundColor: 'rgba(0, 0, 0, 0.1)' };
+            $scope.updateSuggestionStyle = function (hide) {
                 if ((typeof $scope.error == 'string' && $scope.error == 'OK') || hide) {
-                    $timeout(function() {
+                    $timeout(function () {
                         $scope.suggestionsStyle = {
                             display: 'none'
                         };
@@ -280,19 +284,19 @@ angular.module('module.views').directive('sbMenu', function() {
                 }
             };
 
-            $scope.needVariable = {display: 'none'};
-            $scope.updateVisibility = function(visible) {
+            $scope.needVariable = { display: 'none' };
+            $scope.updateVisibility = function (visible) {
                 $scope.updateSuggestionStyle(!visible);
 
                 if (visible)
-                    $scope.needField = {display: 'inline'};
+                    $scope.needField = { display: 'inline' };
                 else
-                    $timeout(function() { $scope.needField = {display: 'none'}; }, 200);
+                    $timeout(function () { $scope.needField = { display: 'none' }; }, 200);
             };
 
-            $scope.needField = {display: 'none'};
-            $scope.searchFieldContext = {searchVariable: '', showFieldSearch: false};
-            $scope.$watch('searchFieldContext.searchVariable', function(newValue, oldValue) {
+            $scope.needField = { display: 'none' };
+            $scope.searchFieldContext = { searchVariable: '', showFieldSearch: false };
+            $scope.$watch('searchFieldContext.searchVariable', function (newValue, oldValue) {
                 if (newValue == oldValue)
                     return;
 
@@ -306,80 +310,80 @@ angular.module('module.views').directive('sbMenu', function() {
                 }
             });
 
-            $scope.selectField = function(field) {
+            $scope.selectField = function (field) {
                 parsedValue.assign($scope, parsedValue($scope) + field.fieldExp);
                 $scope.searchFieldContext.showFieldSearch = false;
-                $timeout(function() { $scope.applyResize(); });
+                $timeout(function () { $scope.applyResize(); });
             };
 
             $scope.testExpression(parsedValue($scope));
 
-            $scope.$watch(attrs.sbExpression, function(newValue, oldValue) {
+            $scope.$watch(attrs.sbExpression, function (newValue, oldValue) {
                 if (newValue == oldValue)
                     return;
                 $scope.testExpression(newValue);
             });
         },
         template: '<div class="sb-expression">' +
-        '<label for="{{elid}}">{{label}}</label>' +
-        '<textarea id="{{elid}}" ng-blur="updateVisibility(false)" ng-focus="updateVisibility(true)" ng-model="value()" ng-model-options="{ getterSetter: true }" class="expression" placeholder="Expression" ng-keydown="tryAutoComplete($event)" ng-keyup="applyResize()"></textarea>' +
-        //'<a ng-style="needField" ng-mousedown="searchFieldContext.showFieldSearch = true">Need a field?</a>' +
-        //'<div class="expression-field-search" ng-if="searchFieldContext.showFieldSearch == true">' +
-        //'<div><label for="label-search-{{elid}}">Search Field</label><input id="label-search-{{elid}}" type="text" ng-model="searchFieldContext.searchVariable">' +
-        //'<img src="images/close.svg" ng-click="searchFieldContext.showFieldSearch = false"></div>' +
-        //'<div class="value-filtered-fields">' +
-        //'<div ng-repeat="result in filteredResults" ng-click="selectField(result)">' +
-        //'<div class="field">{{result.fieldExp}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>' +
-        //'</div>' +
-        //'</div>' +
-        //'</div>' +
-        //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
-        '<a ng-href="{{link}}" target="_blank">'+
-        '<img ng-if="info != undefined" title="{{info}}" class="info" src="images/info.svg"></a>'+
-                
-        '<div class="content" ng-transclude></div>' +
-        '</div>'
+            '<label for="{{elid}}">{{label}}</label>' +
+            '<textarea id="{{elid}}" ng-blur="updateVisibility(false)" ng-focus="updateVisibility(true)" ng-model="value()" ng-model-options="{ getterSetter: true }" class="expression" placeholder="Expression" ng-keydown="tryAutoComplete($event)" ng-keyup="applyResize()"></textarea>' +
+            //'<a ng-style="needField" ng-mousedown="searchFieldContext.showFieldSearch = true">Need a field?</a>' +
+            //'<div class="expression-field-search" ng-if="searchFieldContext.showFieldSearch == true">' +
+            //'<div><label for="label-search-{{elid}}">Search Field</label><input id="label-search-{{elid}}" type="text" ng-model="searchFieldContext.searchVariable">' +
+            //'<img src="images/close.svg" ng-click="searchFieldContext.showFieldSearch = false"></div>' +
+            //'<div class="value-filtered-fields">' +
+            //'<div ng-repeat="result in filteredResults" ng-click="selectField(result)">' +
+            //'<div class="field">{{result.fieldExp}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>' +
+            //'</div>' +
+            //'</div>' +
+            //'</div>' +
+            //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
+            '<a ng-href="{{link}}" target="_blank">' +
+            '<img ng-if="info != undefined" title="{{info}}" class="info" src="images/info.svg"></a>' +
+
+            '<div class="content" ng-transclude></div>' +
+            '</div>'
     };
-}).directive('events', function($state,$compile,$rootScope,$sbviews) {
+}).directive('events', function ($state, $compile, $rootScope, $sbviews) {
     return {
-        link: function($scope, $element) {
-            $scope.goToPage = function(pageName,id=null,user=null) {
-                console.log("goToPage",pageName);
-                if(id!==null){
-                    if (user!==null){
-                        $state.go("course.customUserPage", {name:pageName, id: id, userID: user});
-                    }else{
-                        $state.go("course.customPage",{name:pageName, id: id});
+        link: function ($scope, $element) {
+            $scope.goToPage = function (pageName, id = null, user = null) {
+                console.log("goToPage", pageName);
+                if (id !== null) {
+                    if (user !== null) {
+                        $state.go("course.customUserPage", { name: pageName, id: id, userID: user });
+                    } else {
+                        $state.go("course.customPage", { name: pageName, id: id });
                     }
-                }else{
-                    var state="course."+pageName.toLowerCase();
-                    if (user!==null){
-                        $state.go(state, {userID: user});
-                    }else{
+                } else {
+                    var state = "course." + pageName.toLowerCase();
+                    if (user !== null) {
+                        $state.go(state, { userID: user });
+                    } else {
                         $state.go(state);
                     }
                 }
-                
-                
+
+
             };
-            $scope.hideView = function(label) {
-                console.log("hide view",label);
-                $compile($("[label-for-events='"+label+"']").hide())($scope);
+            $scope.hideView = function (label) {
+                console.log("hide view", label);
+                $compile($("[label-for-events='" + label + "']").hide())($scope);
             };
-            $scope.showView = function(label) {
-                console.log("show view",label);
-                $compile($("[label-for-events='"+label+"']").show())($scope);
+            $scope.showView = function (label) {
+                console.log("show view", label);
+                $compile($("[label-for-events='" + label + "']").show())($scope);
             };
-            $scope.toggleView = function(label) {
-                console.log("togles hiden",label);
-                $compile($("[label-for-events='"+label+"']").toggle())($scope);
+            $scope.toggleView = function (label) {
+                console.log("togles hiden", label);
+                $compile($("[label-for-events='" + label + "']").toggle())($scope);
             };
-            
+
             $scope.tooltipBound = false;
-            $scope.popupBound=false;
+            $scope.popupBound = false;
             //contructs the block of the template for a popup or tooltip
-            $scope.makePopupTooltipContents = function(template){
-                var view =JSON.parse(template);
+            $scope.makePopupTooltipContents = function (template) {
+                var view = JSON.parse(template);
                 var viewScope = $rootScope.$new(true);
                 viewScope.view = view;
                 viewScope.viewBlock = {
@@ -388,7 +392,7 @@ angular.module('module.views').directive('sbMenu', function() {
                     children: viewScope.view.children,
                     role: viewScope.view.role
                 };
-                
+
                 var viewBlock = $sbviews.build(viewScope, 'viewBlock');
                 viewBlock.removeClass('block');
                 viewBlock.addClass('view');
@@ -397,27 +401,27 @@ angular.module('module.views').directive('sbMenu', function() {
                     element: $compile(viewBlock)(viewScope)
                 };
 
-                var contents = $('<div>', {'class': 'block'});    
+                var contents = $('<div>', { 'class': 'block' });
                 contents.append(view.element);
                 return contents;
             };
-            $scope.showToolTip = function(template) {
-                if ($scope.tooltipBound){
+            $scope.showToolTip = function (template) {
+                if ($scope.tooltipBound) {
                     return;
                 }
                 let tooltipContent = $scope.makePopupTooltipContents(template);
-                $element.tooltip({offset: [0, 0], html: tooltipContent});
-                $scope.tooltipBound = true; 
+                $element.tooltip({ offset: [0, 0], html: tooltipContent });
+                $scope.tooltipBound = true;
                 $element.trigger('mouseover');
             };
-            $scope.showPopUp = function(template) {
+            $scope.showPopUp = function (template) {
                 console.log("showPopUp");
-                if ($scope.popupBound){
+                if ($scope.popupBound) {
                     return;
                 }
                 popupContent = $scope.makePopupTooltipContents(template);
-                $element.popup({ html: popupContent, event: $scope.event});
-                $scope.popupBound = true; 
+                $element.popup({ html: popupContent, event: $scope.event });
+                $scope.popupBound = true;
                 $element.trigger($scope.event);
             };
         }

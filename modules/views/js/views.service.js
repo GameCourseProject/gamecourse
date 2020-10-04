@@ -1,12 +1,12 @@
-angular.module('module.views').service('$sbviews', function($smartboards, $rootScope, $compile, $parse, $timeout) {
+angular.module('module.views').service('$sbviews', function ($smartboards, $rootScope, $compile, $parse, $timeout) {
     var $sbviews = this;
-    this.request = function (view, params, func, pageOrTemp="page") {
-        $smartboards.request('views', 'view', $.extend({view: view, pageOrTemp: pageOrTemp}, params), function(data, err) {  
+    this.request = function (view, params, func, pageOrTemp = "page") {
+        $smartboards.request('views', 'view', $.extend({ view: view, pageOrTemp: pageOrTemp }, params), function (data, err) {
             if (err) {
                 func(undefined, err);
                 return;
             }
-            console.log("view",data.view);
+            console.log("view", data.view);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.viewBlock = {
@@ -19,24 +19,24 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
             viewBlock.removeClass('block');
             viewBlock.addClass('view');
-            
+
             var view = {
                 scope: viewScope,
                 element: $compile(viewBlock)(viewScope)
             };
 
-            func(view, undefined);           
+            func(view, undefined);
             //$rootScope.loaded=true;
         });
     };
 
-    this.requestEdit = function(view,pageOrTemp, params, func) {
-        $smartboards.request('views', 'getEdit', $.extend({view: view, pageOrTemp:pageOrTemp}, params), function(data, err) {
+    this.requestEdit = function (view, pageOrTemp, params, func) {
+        $smartboards.request('views', 'getEdit', $.extend({ view: view, pageOrTemp: pageOrTemp }, params), function (data, err) {
             if (err) {
                 func(undefined, err);
                 return;
             }
-            console.log("getEdit",data);
+            console.log("getEdit", data);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.fields = data.fields;
@@ -85,7 +85,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 children: viewScope.view.children,
                 role: viewScope.view.role
             };
-            $rootScope.role=viewScope.view.role;
+            $rootScope.role = viewScope.view.role;
 
             function build() {
                 var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
@@ -97,7 +97,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
 
             var viewBlock = build();
 
-            viewScope.$watch('viewBlock', function(newValue, oldValue) {
+            viewScope.$watch('viewBlock', function (newValue, oldValue) {
                 if ((newValue != oldValue) && !changing) {
                     undoStack.push(oldValue);
                     redoStack.length = 0;
@@ -108,10 +108,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             var view = {
                 scope: viewScope,
                 element: viewBlock,
-                get: function() {
+                get: function () {
                     return viewScope.view;
                 },
-                undo: function() {
+                undo: function () {
                     if (undoStack.length > 0) {
                         changing = true;
                         redoStack.push(angular.copy(viewScope.viewBlock));
@@ -122,7 +122,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         view.element = viewBlock = newView;
                     }
                 },
-                redo: function() {
+                redo: function () {
                     if (redoStack.length > 0) {
                         changing = true;
                         undoStack.push(angular.copy(viewScope.viewBlock));
@@ -133,10 +133,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         view.element = viewBlock = newView;
                     }
                 },
-                canUndo: function() {
+                canUndo: function () {
                     return undoStack.length > 0;
                 },
-                canRedo: function() {
+                canRedo: function () {
                     return redoStack.length > 0;
                 }
             };
@@ -145,78 +145,78 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
     };
 
     this.registeredPartType = [];
-    this.registerPartType = function(type, options) {
+    this.registerPartType = function (type, options) {
         this.registeredPartType[type] = options;
     };
 
-    this.build = function(scope, what, options) {
+    this.build = function (scope, what, options) {
         var part = $parse(what)(scope);
         return this.buildElement(scope, part, options);
     };
 
-    this.buildElement = function(parentScope, part, options) {
+    this.buildElement = function (parentScope, part, options) {
         var options = $.extend({}, options);
-        if (options.edit && part.partType=="image")
-            part.edit=true;
+        if (options.edit && part.partType == "image")
+            part.edit = true;
         if (options.type != undefined)
             part.partType = options.partType;
-        
+
         var partScope = parentScope.$new(true);
         partScope.part = part;
-        if (part.partType=="templateRef"){//adding background color, border and a warning message if its a template reference
+        if (part.partType == "templateRef") {//adding background color, border and a warning message if its a template reference
             //ToDo: improve the look of the template references
-            tempRefOptions=angular.copy(options);
-            tempRefOptions.toolOptions.canSwitch=false;
-            tempRefOptions.toolOptions.noSettings=true;
-            tempRefOptions.toolOptions.canDuplicate=false;
-            tempRefOptions.toolOptions.canSaveTemplate=false;
-            tempRefOptions.toolOptions.canSaveTemplateRef=false;
+            tempRefOptions = angular.copy(options);
+            tempRefOptions.toolOptions.canSwitch = false;
+            tempRefOptions.toolOptions.noSettings = true;
+            tempRefOptions.toolOptions.canDuplicate = false;
+            tempRefOptions.toolOptions.canSaveTemplate = false;
+            tempRefOptions.toolOptions.canSaveTemplateRef = false;
             var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
             element.prepend($('<span style="color: #8f0707;display: table; margin: auto;">Warning: Any changes made to this block will affect the original template</span>'));
-            element.attr("style","padding: 10px; background-color: #ddedeb; border: 1px solid rgba(255, 0, 0, 0.2);");//#881111
+            element.attr("style", "padding: 10px; background-color: #ddedeb; border: 1px solid rgba(255, 0, 0, 0.2);");//#881111
         }
-        else{
+        else {
             if (this.registeredPartType[part.partType] == undefined) {
                 console.error('Unknown part type: ' + part.partType);
                 return;
             }
             var element = this.registeredPartType[part.partType].build(partScope, part, options);
         }
-        
+
         this.applyCommonFeatures(partScope, part, element, options);
-        
+
         element.data('scope', partScope);
         return element;
     };
 
-    this.buildStandalone = function(part, options) {
+    this.buildStandalone = function (part, options) {
         return this.buildElement($rootScope, part, options);
     };
 
-    this.destroy = function(element) {
+    this.destroy = function (element) {
         var scope = element.data('scope');
         if (scope == null || scope.part == null)
             return;
-        if (scope.part.partType=="templateRef")
-            scope.part.partType="block";
+        if (scope.part.partType == "templateRef")
+            scope.part.partType = "block";
         this.registeredPartType[scope.part.partType].destroy(element, scope.part);
         scope.$destroy();
         element.remove();
     };
 
-    this.applyCommonFeatures = function(scope, part, element, options) {
+    this.applyCommonFeatures = function (scope, part, element, options) {
         if (!options.edit && part.events && !options.disableEvents) {
             var keys = Object.keys(part.events);
             for (var i = 0; i < keys.length; ++i) {
                 var key = keys[i];
-                
-                part.events[key]=part.events[key].replace(/\\n/g,'');
-                
+
+                part.events[key] = part.events[key].replace(/\\n/g, '');
+
                 var fn = $parse(part.events[key]);
-                (function(key, fn) {
-                    element.on(key, function(e) {
+                (function (key, fn) {
+                    element.on(key, function (e) {
                         scope.event = key;
-                        if(e.stopPropagation)
+                        if (e.stopPropagation)
                             e.stopPropagation();
                         fn(scope);
                     });
@@ -231,15 +231,15 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         if (part.style !== undefined)
             element.attr('style', part.style);
         if (part.label !== undefined)
-            element.attr('label-for-events',part.label);
-        
+            element.attr('label-for-events', part.label);
+
         //add events attribute so they can acess functions of events directive
         element.attr("events", '');
         $compile(element)(scope);
         element.removeAttr("events");
     };
 
-    this.openOverlay = function(callbackFunc, closeFunc) {
+    this.openOverlay = function (callbackFunc, closeFunc) {
         var overlay = $('<div class="settings-overlay">');
         var overlayCenter = $('<div class="settings-overlay-center"></div>');
         overlay.append(overlayCenter);
@@ -265,11 +265,11 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             }
         }
 
-        destroyListener = $rootScope.$on('$stateChangeStart', function() {
+        destroyListener = $rootScope.$on('$stateChangeStart', function () {
             execClose(true);
         });
 
-        overlay.mousedown(function(event) {
+        overlay.mousedown(function (event) {
             if (event.target == this)
                 execClose();
         });
@@ -280,23 +280,23 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         $(document.body).append(overlay);
     };
 
-    this.createTool = function(title, img, click) {
-        return $(document.createElement('img')).addClass('btn').attr('title', title).attr('src', img).on('click', function() {
+    this.createTool = function (title, img, click) {
+        return $(document.createElement('img')).addClass('btn').attr('title', title).attr('src', img).on('click', function () {
             var thisArg = this;
             var args = arguments;
-            $timeout(function() { click.apply(thisArg, args); });
+            $timeout(function () { click.apply(thisArg, args); });
         });
     };
 
-    this.createToolbar = function(scope, part, toolbarOptions) {
+    this.createToolbar = function (scope, part, toolbarOptions) {
         var toolbar = $(document.createElement('div')).addClass('edit-toolbar');
-        
-        if (!toolbarOptions.tools.noSettings){
-            toolbar.append($sbviews.createTool('Edit Settings', 'images/gear.svg', function() {
+
+        if (!toolbarOptions.tools.noSettings) {
+            toolbar.append($sbviews.createTool('Edit Settings', 'images/gear.svg', function () {
                 var optionsScope = scope.$new();
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = angular.copy(part);
-                optionsScope.toggleProperty = function(part, path, defaultValue) {
+                optionsScope.toggleProperty = function (part, path, defaultValue) {
                     if (defaultValue == undefined)
                         defaultValue = '';
 
@@ -306,7 +306,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     var pathKeys = path.split('.');
                     if (pathKeys.length > 1) {
                         key = pathKeys.pop();
-                        obj = pathKeys.reduce(function (obj,i) { return obj[i]; }, part);
+                        obj = pathKeys.reduce(function (obj, i) { return obj[i]; }, part);
                     }
 
                     if (obj[key] == undefined)
@@ -320,24 +320,24 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     delete obj[k];
                 };
 
-                optionsScope.toggleVisCondition = function(){
+                optionsScope.toggleVisCondition = function () {
                     var sbExp = $(($(document.getElementById('visCondition'))).children().get(1));
-                    
-                    if (optionsScope.part.visibilityType==="visible" || optionsScope.part.visibilityType==="invisible"){
+
+                    if (optionsScope.part.visibilityType === "visible" || optionsScope.part.visibilityType === "invisible") {
                         //disable condition input if visibility is visible or invisible
                         sbExp.prop('disabled', true);
                     }
-                    else{//enable condition input if visibility is by condition
+                    else {//enable condition input if visibility is by condition
                         sbExp.prop('disabled', false);
                     }
                 };
-                
+
                 var options = toolbarOptions.overlayOptions;
                 optionsScope.options = options;
 
-                $timeout(function() { // this is needed because the scope was created in the same digest..
+                $timeout(function () { // this is needed because the scope was created in the same digest..
                     function watch(path, fn) {
-                        optionsScope.$watch(path, function(n, o) {
+                        optionsScope.$watch(path, function (n, o) {
                             if (n != o) {
                                 /*var notifiedPart = part;
                                 if (toolbarOptions.notifiedPart != null)
@@ -352,8 +352,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             }
                         }, true);
                     }
-                    $sbviews.openOverlay(function(el, execClose) {
-                        optionsScope.closeOverlay = function() {
+                    $sbviews.openOverlay(function (el, execClose) {
+                        optionsScope.closeOverlay = function () {
                             execClose();
                         };
                         var scopeToConfig = optionsScope;
@@ -363,7 +363,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
                         el.append(container);
-                        el.on('mouseenter', function() {
+                        el.on('mouseenter', function () {
                             //this ensures that when visibility is not conditional, the field will be disabled
                             optionsScope.toggleVisCondition();
                         });
@@ -379,19 +379,19 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             }
                         } else {
                             missingEvents = events;
-                            optionsScope.part.events={};
+                            optionsScope.part.events = {};
                         }
                         optionsScope.missingEvents = missingEvents;
                         optionsScope.events = {
                             eventToAdd: undefined
                         };
-                        optionsScope.addEvent = function() {
+                        optionsScope.addEvent = function () {
                             var eventType = optionsScope.events.eventToAdd;
                             optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
                             optionsScope.part.events[eventType] = '';
                         };
 
-                        optionsScope.addEventToMissing = function(type) {
+                        optionsScope.addEventToMissing = function (type) {
                             optionsScope.missingEvents.push(type);
                         };
 
@@ -401,19 +401,19 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                             dataKey: undefined
                         };
 
-                        optionsScope.addVariable = function() {
-                            optionsScope.part.variables[optionsScope.variables.dataKey] = {value: ''};
+                        optionsScope.addVariable = function () {
+                            optionsScope.part.variables[optionsScope.variables.dataKey] = { value: '' };
                             optionsScope.variables.dataKey = '';
                         };
-                        $timeout(function() {
+                        $timeout(function () {
                             if (options.callbackFunc != undefined)
                                 options.callbackFunc(container.next(), execClose, optionsScope, watch);
                         }, 50);
-                        
-                    }, function(cancel) {
-                        console.log("close settings",optionsScope.part);
+
+                    }, function (cancel) {
+                        console.log("close settings", optionsScope.part);
                         if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
-                            $timeout(function() {
+                            $timeout(function () {
                                 objSync(part, optionsScope.part);
 
                                 optionsScope.$destroy();
@@ -429,9 +429,9 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 });
             }));
         }
-        
+
         if (toolbarOptions.layoutEditor) {
-            var tool = $sbviews.createTool('Edit Layout', 'images/layout-edit.svg', function() {
+            var tool = $sbviews.createTool('Edit Layout', 'images/layout-edit.svg', function () {
                 if (toolbarOptions.toolFunctions.layoutEdit)
                     toolbarOptions.toolFunctions.layoutEdit(tool);
             });
@@ -439,8 +439,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         }
 
         if (toolbarOptions.tools.canDelete) {
-            toolbar.append($sbviews.createTool('Remove', 'images/trashcan.svg', function() {
-                
+            toolbar.append($sbviews.createTool('Remove', 'images/trashcan.svg', function () {
+
                 toolbarOptions.toolFunctions.remove(part);
             }));
         }
@@ -448,8 +448,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         if (toolbarOptions.tools.canSwitch) {
             toolbar.append($sbviews.createTool('Switch part', 'images/switch.svg', function () {
                 var optionsScope = scope.$new();
-                $sbviews.openOverlay(function(el, execClose) {
-                    optionsScope.closeOverlay = function() {
+                $sbviews.openOverlay(function (el, execClose) {
+                    optionsScope.closeOverlay = function () {
                         execClose();
                     };
                     var wrapper = $('<div>');
@@ -461,7 +461,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     addPartsDiv.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
                     var partsList = $(document.createElement('select')).attr('id', 'partList');
                     partsList.append('<option disabled>-- Part --</option>');
-                    for(var type in $sbviews.registeredPartType) {
+                    for (var type in $sbviews.registeredPartType) {
                         var partDef = $sbviews.registeredPartType[type];
                         if (partDef.name != undefined && partDef.defaultPart != undefined) {
                             var option = $(document.createElement('option'));
@@ -472,28 +472,28 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     }
 
                     partsList.append('<option disabled>-- Template --</option>');
-                    
+
                     var templates = toolbarOptions.editData.templates;
                     for (var t in templates) {
                         var template = templates[t];
                         var option = $(document.createElement('option'));
-                        option.text(template["name"]+" ("+template['id']+")");
+                        option.text(template["name"] + " (" + template['id'] + ")");
                         option.val('temp:' + t);
                         partsList.append(option);
                     }
-                    
+
                     var turnButton = $(document.createElement('button')).text('Turn');
-                    turnButton.click(function() {
+                    turnButton.click(function () {
                         var value = partsList.val();
                         var id = value.substr(5);
                         var newPart;
-                        if (value.indexOf('part:') == 0){
+                        if (value.indexOf('part:') == 0) {
                             newPart = $sbviews.registeredPartType[id].defaultPart();
                             toolbarOptions.toolFunctions.switch(part, newPart);
                             execClose();
                         }
-                        else if (value.indexOf('temp:') === 0){
-                            templates[id].role=$rootScope.role;
+                        else if (value.indexOf('temp:') === 0) {
+                            templates[id].role = $rootScope.role;
                             $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                 if (err) {
                                     alert(err.description);
@@ -502,7 +502,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                                 newPart = data.template;
                                 toolbarOptions.toolFunctions.switch(part, newPart);
                                 execClose();
-                            });     
+                            });
                         }
                     });
 
@@ -510,7 +510,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     wrapper.append(partsList);
                     wrapper.append(turnButton);
                     el.append(wrapper);
-                }, function() {
+                }, function () {
                     optionsScope.$destroy();
                 });
             }));
@@ -542,7 +542,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         };
 
                         optionsScope.saveTemplate = function () {
-                            optionsScope.template.part.role=$rootScope.role;
+                            optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
                                     alert(err.description);
@@ -565,7 +565,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 });
             }));
         }
-        
+
         if (toolbarOptions.tools.canSaveTemplateRef) {
             toolbar.append($sbviews.createTool('Save template by reference', 'images/save2.svg', function () {
                 var optionsScope = scope.$new();
@@ -586,12 +586,12 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                     $sbviews.openOverlay(function (el, execClose) {
                         optionsScope.closeOverlay = function () {
                             execClose();
-                        };                      
+                        };
 
                         var templateIndex = optionsScope.editData.templates.length - 1;
 
                         optionsScope.saveTemplateRef = function () {
-                            optionsScope.template.part.role=$rootScope.role;
+                            optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
                                     alert(err.description);
@@ -601,8 +601,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                                 alert('Template saved!');
                                 optionsScope.editData.templates[templateIndex] = optionsScope.template;
                             });
-                            
-                            $smartboards.request('views', 'getTemplateReference',  optionsScope.editData.templates[templateIndex], function (data, err) {
+
+                            $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
                                 if (err) {
                                     alert(err.description);
                                     return;
@@ -612,7 +612,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                                 console.log(newPart);
                                 toolbarOptions.toolFunctions.switch(part, newPart);
                                 execClose();
-                            });   
+                            });
                         };
 
                         var wrapper = $('<div>');
@@ -633,7 +633,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         return toolbar;
     };
 
-    this.editOptions = function(options, extend) {
+    this.editOptions = function (options, extend) {
         return $.extend({
             edit: options.edit,
             editData: options.editData,
@@ -641,7 +641,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         }, extend);
     };
 
-    this.bindToolbar = function(element, scope, part, partOptions, options) {
+    this.bindToolbar = function (element, scope, part, partOptions, options) {
         var myToolbar = undefined;
         var toolbarOptions;
         var layoutEditing = false;
@@ -651,8 +651,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         var overlayOptions = partOptions.overlayOptions != undefined ? partOptions.overlayOptions : {};
         var editData = partOptions.editData != undefined ? partOptions.editData : {};
 
-        toolFunctions.layoutEdit = function(tool) {
-            layoutEditing  = !layoutEditing;
+        toolFunctions.layoutEdit = function (tool) {
+            layoutEditing = !layoutEditing;
             if (layoutEditing) {
                 if (toolbarOptions.toolFunctions.layoutEditStart)
                     toolbarOptions.toolFunctions.layoutEditStart();
@@ -664,7 +664,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             }
         };
 
-        element.on('mouseenter', function() {
+        element.on('mouseenter', function () {
             if (myToolbar)
                 return;
 
@@ -685,8 +685,8 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                 },
                 view: partOptions.view
             };
-            
-            if (element.parent().hasClass("header")){
+
+            if (element.parent().hasClass("header")) {
                 defaultOptions.overlayOptions.allowEvents = true;
                 defaultOptions.overlayOptions.allowStyle = true;
                 defaultOptions.overlayOptions.allowClass = true;
@@ -702,24 +702,24 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             if (element.hasClass('view')) {
                 toolOptions.noSettings = true;
             }
-            toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
+            toolbarOptions = $.extend(true, defaultOptions, { tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions }, options);
             toolbarOptions.editData = editData;
-            
+
             myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
-  
+
             myToolbar.css({
                 position: 'absolute',
                 top: 0,
                 right: 0
             });
-            if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
+            if (element.parent().prop("tagName") != "TD")//not highlighting table element because it moves things arround
                 element.addClass('highlight');
-            
+
             element.append(myToolbar);
             //console.log("mouseenter",element.data());
         });
 
-        element.on('mouseleave', function(e) {
+        element.on('mouseleave', function (e) {
             if (layoutEditing)
                 return;
             //element.css('padding-top', element.data('true-margin'));
@@ -730,7 +730,7 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         });
     };
 
-    this.defaultPart = function(partType) {
+    this.defaultPart = function (partType) {
         var part = $sbviews.registeredPartType[partType].defaultPart();
         return part;
     };
@@ -742,18 +742,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
         watch('part.' + path, fn);
         return $compile(root)(scope);
     };
-    
+
     // updates the original to have the same keys has copy
     function objSync(original, copy) {
         var originalKeys = Object.keys(original);
         var copyKeys = Object.keys(copy);
-        var newKeys = copyKeys.filter(function(val) {
+        var newKeys = copyKeys.filter(function (val) {
             return originalKeys.indexOf(val) == -1;
         });
-        var commonKeys = copyKeys.filter(function(val) {
+        var commonKeys = copyKeys.filter(function (val) {
             return originalKeys.indexOf(val) > -1;
         });
-        var oldKeys = originalKeys.filter(function(val) {
+        var oldKeys = originalKeys.filter(function (val) {
             return copyKeys.indexOf(val) == -1;
         });
 
@@ -776,18 +776,18 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
             delete original[oldKeys[i]];
         }
     };
-    this.setDefaultParamters = function(part) {
+    this.setDefaultParamters = function (part) {
         //sets some fields contents to '{}' 
-        if (part.variables===undefined || Array.isArray(part.variables))
-            part.variables={};
-        if (part.events===undefined || Array.isArray(part.events))
-            part.events={};
-        if (part.loopData===undefined)
-            part.loopData="{}";
-        if (part.visibilityCondition===undefined)
-            part.visibilityCondition="{}";
-        if (part.visibilityType===undefined)
-            part.visibilityType="conditional";
+        if (part.variables === undefined || Array.isArray(part.variables))
+            part.variables = {};
+        if (part.events === undefined || Array.isArray(part.events))
+            part.events = {};
+        if (part.loopData === undefined)
+            part.loopData = "{}";
+        if (part.visibilityCondition === undefined)
+            part.visibilityCondition = "{}";
+        if (part.visibilityType === undefined)
+            part.visibilityType = "conditional";
     };
-    
+
 });

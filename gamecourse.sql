@@ -23,7 +23,9 @@ drop table if exists award_participation;
 drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
-drop table if exists dictionary;
+drop table if exists functions;
+drop table if exists library;
+drop table if exists library_functions;
 drop table if exists course_module;
 drop table if exists module;
 drop table if exists user_role;
@@ -110,14 +112,21 @@ create table course_module(
 	foreign key(course) references course(id) on delete cascade
 );
 
-create table dictionary(
-	course int unsigned not null,
+create table library(
+	id	int unsigned auto_increment primary key,
 	moduleId varchar(50) not null,
-	library varchar(50),
+	name varchar(50) unique not null,
+	description varchar(255)
+);
+
+create table functions(
+	id	int unsigned auto_increment primary key,
+	libraryId int unsigned null,
+	refersTo varchar(50) not null,
 	keyword varchar(50),
-	description varchar(255),
-	primary key(course,moduleId,library,keyword),
-	foreign key(moduleId, course) references course_module (moduleId,course)
+	args varchar(100),
+	description varchar(1000),
+	foreign key(libraryId) references library(id) on delete cascade
 );
 
 create table award(
