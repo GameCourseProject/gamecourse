@@ -514,4 +514,22 @@ class Course
         }
         fclose($file);
     }
+    public function getDictionary()
+    {
+        return Core::$systemDB->select("dictionary", ["course" => $this->cid]);
+    }
+
+    public function getLibraries($moduleId)
+    {
+        return Core::$systemDB->selectMultiple("dictionary", ["moduleId" => $moduleId, "course" => $this->cid], "library");
+    }
+
+    public function getEnabledLibraries()
+    {
+        return Core::$systemDB->selectMultiple(
+            "dictionary natural join course_module",
+            ["dictionary.course" => $this->cid, "isEnabled" => "1"],
+            "library, keyword"
+        );
+    }
 }

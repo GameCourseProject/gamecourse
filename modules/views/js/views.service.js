@@ -356,7 +356,10 @@ angular.module('module.views').service('$sbviews', function($smartboards, $rootS
                         optionsScope.closeOverlay = function() {
                             execClose();
                         };
-
+                        var scopeToConfig = optionsScope;
+                        $smartboards.request('views', 'getDictionary', { course: $rootScope.course }, function (data, err) {
+                            scopeToConfig.dictionary = data;
+                        });
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
                         el.append(container);

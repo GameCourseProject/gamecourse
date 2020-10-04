@@ -953,6 +953,16 @@ class Views extends Module {
             $templates= $this->getTemplates();
             API::response(array('view' => $view, 'fields' => [], 'templates' =>$templates ));
         });
+        //getsDictionaryData
+        API::registerFunction('views', 'getDictionary', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('course');
+            $courseId = API::getValue('course');
+            //get course libraries
+            $course = new Course($courseId);
+
+            API::response($course->getEnabledLibraries());
+        });
         //save the view being edited
         API::registerFunction('views', 'saveEdit', function() {
             $this->saveOrPreview(true);

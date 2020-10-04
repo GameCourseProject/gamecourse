@@ -243,7 +243,9 @@ angular.module('module.views').directive('sbMenu', function() {
                 }
             };
 
-            $scope.testExpression = function(newValue) {
+            $scope.testExpression = function (newValue) {
+                var libraryData = $scope.$parent.$parent.$parent.$parent.dictionary;
+                GameCourseExpression.autocomplete(newValue, libraryData);
                 try {
                     CodeAssistant.reset();
                     if (newValue != undefined)
