@@ -647,8 +647,7 @@ class ViewHandler
     public function callFunction($funcLib, $funcName, $args, $context = null)
     {
         if (!$funcLib) {
-            var_dump($funcLib);
-            $function = Core::$systemDB->select("functions", ["name" => null, "keyword" => $funcName]);
+            $function = Core::$systemDB->select("functions", ["libraryId" => null, "keyword" => $funcName]);
             if ($function) {
                 $fun = $this->registeredFunctions[$function["id"]];
             } else {
@@ -660,8 +659,8 @@ class ViewHandler
             if (!$library) {
                 throw new \Exception('Called function ' . $funcName . ' on an unexistent library ' . $funcLib);
             } else {
-                $function = Core::$systemDB->select("functions", ["name" => $funcLib, "keyword" => $funcName]);
-                if (Core::$systemDB->select("library_functions", ["libraryId" => $library["id"], "functionId" => $function["id"]])) {
+                $function = Core::$systemDB->select("functions", ["libraryId" => $library["id"], "keyword" => $funcName]);
+                if ($function) {
                     $fun = $this->registeredFunctions[$function["id"]];
                 } else {
                     throw new \Exception('Function ' . $funcName . ' is not defined in library ' . $funcLib);
