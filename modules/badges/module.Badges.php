@@ -476,10 +476,9 @@ class Badges extends Module
 
     
     public function has_personalized_config (){
-        return true;
+        return false;
     }
     
-
     public function has_general_inputs (){ return true; }
     public function get_general_inputs ($courseId){
         // $input1 = array('name' => "input 1", 'id'=> 'input1', 'type' => "text", 'options' => "", 'current_val' => "cenas");

@@ -197,7 +197,11 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         });
         $compile(generalInputsDiv)($scope);
 
+        //personalized configuration Section
+        //personalizedConfig($scope, $element, $smartboards, $compile)
         
+        functionName = data.personalizedConfig;
+        window[functionName]($scope, configPage, $smartboards, $compile);        
 
 
         action_buttons = $("<div class='action-buttons'></div>");
@@ -311,6 +315,8 @@ app.controller('CourseSkillsSettingsController', function ($scope, $stateParams,
     });
 });
 app.controller('CourseBadgesSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+    //old version, not used, only here for verification
+    
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Badges with the ones on the input box?"))
             $smartboards.request('settings', 'courseBadges', { course: $scope.course, badgesList: arg }, alertUpdateAndReload);

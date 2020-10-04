@@ -370,10 +370,10 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
         $generalInputs = $module->get_general_inputs($course->getId());
     }
 
-    // $generalInputs=[];
-    // if($module->has_general_inputs()){
-    //     $generalInputs = $module->get_general_inputs();
-    // }
+    $personalizedConfig=[];
+    if($module->has_personalized_config()){
+        $personalizedConfig = $module->get_personalized_function();
+    }
 
     $listingItems=[];
     if($module->has_listing_items()){
@@ -383,6 +383,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
     $info = array(
         'generalInputs' => $generalInputs,
         'listingItems' => $listingItems,
+        'personalizedConfig' => $personalizedConfig,
         'module' => $moduleInfo
     );
 

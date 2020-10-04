@@ -229,6 +229,7 @@ abstract class Module
 
      
     public function has_personalized_config (){}
+    public function get_personalized_function(){}
     
     public function has_general_inputs (){}
     public function get_general_inputs ($courseId){}

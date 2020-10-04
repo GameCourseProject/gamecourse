@@ -402,10 +402,19 @@ class Plugin extends Module
             API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
         });
     }
+
     
     public function is_configurable(){
         return true;
     }
+    public function has_personalized_config (){ return true;}
+    public function get_personalized_function(){
+        return "pluginPersonalizedConfig";
+    }
+    
+    public function has_general_inputs (){ return false; }
+    public function has_listing_items (){ return  false; }
+
 }
 ModuleLoader::registerModule(array(
     'id' => 'plugin',
