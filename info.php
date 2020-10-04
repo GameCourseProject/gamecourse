@@ -397,21 +397,21 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     $course = Course::getCourse(API::getValue('course'));
     $module = $course->getModule(API::getValue('module'));
 
-    if($module->has_general_inputs()){
+    if(API::hasKey('generalInputs')){
         $generalInputs = API::getValue('generalInputs');
         $module->save_general_inputs($generalInputs, $course->getId());
     }
     
-    // if($module->has_personalized_config()){
-    //     $personalizedConfig = API::getValue('personalizedConfig');
-    //     $module->save_personalized_config($personalizedConfig);
-    // }
-    if($module->has_listing_items()){
+    //personalized configuration should create its own API request
+    //inside the currespondent module 
+
+    if(API::hasKey('listingItems')){
         $listingItems = API::getValue('listingItems');
         $module->save_listing_items($listingItems);
     }
 
 });
+
 
 //get tabs for course settings
 API::registerFunction('settings', 'courseTabs', function() {

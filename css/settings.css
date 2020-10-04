@@ -223,6 +223,16 @@
     right: 15px;
 }
 
+#configPage .config_save_button {
+    position: absolute;
+    top: -6px;
+    right: 0;
+    background-color: white;
+    z-index: 1;
+    padding-left: 20px;
+    background-position: right;
+  }
+
 
 /*satatus bar also used on the views page*/
 .status {
