@@ -71,6 +71,146 @@ function constructConfigPage(data, err, $scope, $element, $compile, name, text, 
     configurationSection.append(configSectionContent);
 }
 
+app.controller('ConfigurationController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse){
+    $stateParams.module //ja tem o id do modulo selecionado
+
+    //chamar API geral para configuracoes
+
+
+        //zona de configuracao personalizavel
+
+        //zona de listagem
+        //preciso nomes das colunas, lista de objectos
+        //modal para add, info dos campos e possiveis validacoes
+        //funcao delete
+    $scope.saveData = function(){
+        debugger
+        $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $scope.module, generalInputs: $scope.inputs }, function (data, err) {
+            if (err) {
+                alert(err.description);
+                return;
+            }
+            location.reload();
+        });
+    }
+    $scope.informationChanged = function(){
+        changed = false;
+        jQuery.each($scope.generalInputs, function( index ){
+            inputName = $scope.generalInputs[index].id
+            initialInput = $scope.initialInputs[inputName];
+            currentInput = $scope.inputs[inputName];
+            if (initialInput != currentInput){
+                changed =  true;
+            }
+        })
+        return changed;
+    }    
+    $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        
+        //page title
+        $scope.module = data.module;
+        configPage = $("<div id='configPage'></div>");
+        $element.append(configPage);
+
+        header = $("<div class='header'></div>");
+        header.append($('<div id="name">{{module.name}} Configuration</div><div id="description">{{module.description}}</div>'))
+        $compile(header)($scope);
+        configPage.append(header);
+        
+        
+        
+        //general inputs section
+        $scope.generalInputs = data.generalInputs;
+        generalInputsDiv = $("<div id='inputs'></div>");
+        configPage.append(generalInputsDiv);
+
+        $scope.inputs = [];
+        $scope.initialInputs = [];
+        jQuery.each($scope.generalInputs, function( index ){
+            input = $scope.generalInputs[index];
+            row = $("<div class='row'></div>");
+            row.append('<span >' + input.name + '</span>');
+            switch (input.type) {
+                case 'text':
+                    row.append('<input class="config_input" type="text"  ng-model="inputs.' + input.id + '"><br>');
+                    break;
+                case 'select':
+                    select = $('<select class="config_input"></select>');
+                    jQuery.each(input.options, function( index ){
+                        option = input.options[index];
+                        select.append($('<option value="'+option+'">'+option+'</option>'))
+                    });
+                    row.append(select);
+                    break;
+                case 'on_off button':
+                    row.append( $('<div class="on_off"><label class="switch"><input type="checkbox" ng-model="inputs.' + input.id + '"><span class="slider round"></span></label></div>'))
+                    break;
+                case 'date':
+                    row.append('<input class="config_input" type="date"  ng-model="inputs.' + input.id + '"><br>');
+                    break;
+                case 'number':
+                    row.append('<input class="config_input" type="number"  ng-model="inputs.' + input.id + '"><br>');
+                    break;
+                case 'paragraph':
+                    row.append('<textarea class="config_input"  ng-model="inputs.' + input.id + '"><br>');
+                    break;
+                case 'color':
+                    color_picker_section = $('<div class="color_picker"></div>');
+                    color_picker_section.append( $('<input type="text" class="config_input pickr" id="'+input.id+'" placeholder="Color *" ng-model="inputs.' + input.id + '"/>'));
+                    color_picker_section.append( $('<div id="'+input.id+'-color-sample" class="color-sample"><div class="box" style="background-color: '+input.current_val+';"></div><div  class="frame" style="border: 1px solid '+input.current_val+'"></div>'));
+                    row.append(color_picker_section);
+                    generalInputsDiv.append(row);
+
+                    const inputElement_colorPicker = $('#'+input.id)[0];
+                    const pickr = new Pickr({
+                        el: inputElement_colorPicker,
+                        useAsButton: true,
+                        default: input.current_val,
+                        theme: 'monolith',
+                        components: {
+                            hue: true,
+                            interaction: { input: true, save: true }
+                        }
+                    }).on('init', pickr => {
+                        inputElement_colorPicker.value = pickr.getSelectedColor().toHEXA().toString(0);
+                    }).on('save', color => {
+                        inputElement_colorPicker.value = color.toHEXA().toString(0);
+                        pickr.hide();
+                    }).on('change', color => {
+                        inputElement_colorPicker.value = color.toHEXA().toString(0);
+                        color_sample = $('#'+input.id+'-color-sample');
+                        color_sample[0].children[0].style.backgroundColor = color.toHEXA().toString(0);
+                        color_sample[0].children[1].style.borderColor = color.toHEXA().toString(0);
+                        $scope.inputs[input.id] = input.current_val;
+                    })
+                    break;
+              }
+            
+           
+            generalInputsDiv.append(row);
+            $scope.inputs[input.id] = input.current_val;
+            $scope.initialInputs[input.id] = input.current_val; //duplicated value to keep track of changes
+        });
+        $compile(generalInputsDiv)($scope);
+
+        
+
+
+        action_buttons = $("<div class='action-buttons'></div>");
+        action_buttons.append($('<button>', {id: 'role-change-button', text: "Save Changes", 'class': 'button', 'disabled': true, 'ng-disabled': '!informationChanged()', 'ng-click': 'saveData()'})) 
+        $compile(action_buttons)($scope);
+        $element.append(action_buttons);
+    });
+    
+    
+
+});
+
+
 app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))

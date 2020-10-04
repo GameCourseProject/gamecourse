@@ -60,7 +60,10 @@ app.stateProvider.state('course.settings.badges', {
     url: '/badges',
     views : {
         'tabContent': {
-            controller: 'CourseBadgesSettingsController'
+            controller: 'ConfigurationController'
         }
+    },
+    params: {
+        'module': 'badges'
     }
 });

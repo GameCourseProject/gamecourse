@@ -353,7 +353,62 @@ API::registerFunction('settings', 'courseModules', function() {
     }
 });
 
+API::registerFunction('settings', 'getModuleConfigInfo', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
+    $module = $course->getModule(API::getValue('module'));
 
+    $moduleInfo = array(
+        'id' => $module->getId(),
+        'name' => $module->getName(),
+        'description' => $module->getDescription()
+    );
+
+    $generalInputs=[];
+    if($module->has_general_inputs()){
+        $generalInputs = $module->get_general_inputs();
+    }
+
+    // $generalInputs=[];
+    // if($module->has_general_inputs()){
+    //     $generalInputs = $module->get_general_inputs();
+    // }
+
+    $listingItems=[];
+    if($module->has_listing_items()){
+        $listingItems = $module->save_listing_items();
+    }
+
+    $info = array(
+        'generalInputs' => $generalInputs,
+        'listingItems' => $listingItems,
+        'module' => $moduleInfo
+    );
+
+    API::response($info);
+
+});
+
+API::registerFunction('settings', 'saveModuleConfigInfo', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
+    $module = $course->getModule(API::getValue('module'));
+
+    if($module->has_general_inputs()){
+        $generalInputs = API::getValue('generalInputs');
+        $module->save_general_inputs($generalInputs);
+    }
+    
+    // if($module->has_personalized_config()){
+    //     $personalizedConfig = API::getValue('personalizedConfig');
+    //     $module->save_personalized_config($personalizedConfig);
+    // }
+    if($module->has_listing_items()){
+        $listingItems = API::getValue('listingItems');
+        $module->save_listing_items($listingItems);
+    }
+
+});
 
 //get tabs for course settings
 API::registerFunction('settings', 'courseTabs', function() {

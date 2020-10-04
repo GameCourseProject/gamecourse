@@ -483,6 +483,35 @@ class Badges extends Module
     public function is_configurable(){
         return true;
     }
+
+    
+    public function has_personalized_config (){
+        return true;
+    }
+    
+
+    public function has_general_inputs (){ return true; }
+    public function get_general_inputs (){
+        $input1 = array('name' => "input 1", 'id'=> 'input1', 'type' => "text", 'options' => "", 'current_val' => "cenas");
+        $input2 = array('name' => "input 2", 'id'=> 'input2', 'type' => "date", 'options' => "", 'current_val' => "");
+        $input3 = array('name' => "input 3", 'id'=> 'input3', 'type' => "on_off button", 'options' => '', 'current_val' => true);
+        $input4 = array('name' => "input 4", 'id'=> 'input4', 'type' => "select", 'options' => ["OpA","OpB","OpC"], 'current_val' => "");
+        $input5 = array('name' => "input 5", 'id'=> 'input5', 'type' => "color", 'options' => "", 'current_val' => "#121212");
+        $input7 = array('name' => "input 7", 'id'=> 'input7', 'type' => "number", 'options' => "", 'current_val' => "");
+        $input8 = array('name' => "input 8", 'id'=> 'input8', 'type' => "paragraph", 'options' => "", 'current_val' => "my text here");
+
+
+        return [$input1, $input2, $input3, $input4, $input5, $input7, $input8];
+    }
+    public function save_general_inputs(){}
+
+
+
+    public function has_listing_items (){ return  true; }
+    public function get_listing_items (){
+    }
+    public function save_listing_items (){
+    }
 }
 
 ModuleLoader::registerModule(array(

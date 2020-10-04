@@ -67,6 +67,9 @@ app.stateProvider.state('course.settings.skills', {
         'tabContent': {
             controller: 'CourseSkillsSettingsController'
         }
+    },
+    params: {
+        'module': 'skills'
     }
 });
 

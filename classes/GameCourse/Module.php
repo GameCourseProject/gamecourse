@@ -224,6 +224,17 @@ abstract class Module
         return new ValueNode($object["value"][$field]);
     }
 
-
+    //functions for the module configuration page
     public function is_configurable(){}
+
+     
+    public function has_personalized_config (){}
+    
+    public function has_general_inputs (){}
+    public function get_general_inputs (){}
+    public function save_general_inputs(){}
+
+    public function has_listing_items (){}
+    public function get_listing_items (){}
+    public function save_listing_items (){}
 }
