@@ -618,7 +618,7 @@ class ViewHandler
         }
         if (Core::$systemDB->select("functions", ["keyword" => $funcName])) {
             if ($funcLib) {
-                if (Core::$systemDB->select("library", ["name" => $funcLib])) {
+                if (Core::$systemDB->select("functions", ["libraryId" => $libraryId, "keyword" => $funcName])) {
                     new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
                 } else { //caso queira registar uma função com a mesma keyword, mas numa library diferente
                     Core::$systemDB->insert("functions", [
