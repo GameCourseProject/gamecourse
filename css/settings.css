@@ -177,6 +177,9 @@
 #configPage .header #description {
     font-size: 14px;
 }
+#configPage .content {
+    margin-top: 40px;
+}
 
 #configPage .config_input{
     font-family: 'Roboto', sans-serif;
@@ -190,32 +193,32 @@
     flex: 3;
     margin-left: 20px;
 }
-#configPage #inputs{
+#configPage .multiple_inputs{
     grid-template-columns: repeat(auto-fill, 460px);
     display: grid;
     justify-content: space-between;
 }
-#configPage #inputs .row {
+#configPage .row {
     display: flex;
     align-items: baseline;
-    margin-bottom: 31px;
+    margin-bottom: 25px;
 }
-#configPage #inputs .row span {
+#configPage .row span {
     flex: 1;
     font-size: 14px;
 }
-#configPage #inputs .row .on_off,
-#configPage #inputs .row .color_picker {
+#configPage .row .on_off,
+#configPage .row .color_picker {
     position: relative;
     margin-right: 0px;
     flex: 3;
     margin-left: 15px;
 }
-#configPage #inputs .row .color_picker input{
+#configPage .row .color_picker input{
     width: 100%;
     margin-left: 0;
 }
-#configPage #inputs .row .color-sample{
+#configPage .row .color-sample{
     height: 20px;
     width: 20px;
     position: absolute;

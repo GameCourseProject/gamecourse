@@ -126,8 +126,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.generalInputs = data.generalInputs;
         if ($scope.generalInputs.length != 0){
             generalInputsDiv = createSection(configPage, 'Variables');
-            generalInputsDiv.id = 'inputs';
-            //configPage.append(generalInputsDiv);
+            generalInputsDiv.attr("class","multiple_inputs content"); 
 
             $scope.inputs = {};
             $scope.initialInputs = {};

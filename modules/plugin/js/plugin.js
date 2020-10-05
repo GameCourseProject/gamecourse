@@ -87,7 +87,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     $scope.addExtraField = function(){
         inputs = $("#sheet_names");
         $scope.numberGoogleSheets++;
-        inputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="sheetname'+ $scope.numberGoogleSheets +'">');
+        inputs.append('<input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'">');
     }
 
 
@@ -104,81 +104,96 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         $scope.googleSheetsAuthUrl = data.authUrl;
 
 
-        var tabContent = $($element);
-        var configurationSection = createSection(tabContent, 'Manage Plugins');
+        var configurationSection = $($element);
 
-        var fenixconfigurationSection = createSection(configurationSection, 'Fenix Variables');
-        var fenixconfigSectionContent = $('<div>', { 'class': 'row' });
-        fenixInputs = $('<div class="column" style=" width: 100%;"></div>');
-        fenixInputs.append('<span style="width: 15%; display: inline-block;">Fenix Course Id: </span>');
-        fenixInputs.append('<input type="file" style="width: 25%;margin: 5px;" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
-        fenixconfigSectionContent.append(fenixInputs);
+        //Fenix
+        var fenixconfigurationSection = createSection(configurationSection, 'Fenix Variables');~
+        fenixconfigurationSection.attr("class","multiple_inputs content");
+        fenixInputs = $('<div class="row" ></div>');
+        fenixInputs.append('<span  ">Fenix Course Id: </span>');
+        fenixInputs.append('<input class="config_input" type="file" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
+        fenixconfigurationSection.append(fenixInputs);
 
-        fenixconfigSectionContent.append('<button class="button small" ng-click="saveFenix()">Save Fenix Vars</button><br>');
-        fenixconfigurationSection.append(fenixconfigSectionContent);
+        action_buttons = $("<div class='config_save_button'></div>");
+        action_buttons.append('<button class="button small" ng-click="saveFenix()">Save Fenix Vars</button><br>');
+        fenixconfigurationSection.append(action_buttons);
 
+
+        //moodle
         var moodleconfigurationSection = createSection(configurationSection, 'Moodle Variables');
-        var moodleconfigSectionContent = $('<div>', { 'class': 'row' });
+        moodleconfigurationSection.attr("class","multiple_inputs content");
         moodleVars = ["dbserver", "dbuser", "dbpass", "db", "dbport", "prefix", "time", "course", "user"];
         moodleTitles = ["DB Server:", "DB User:", "DB Pass:", "DB:", "DB Port:", "Prefix:", "Time:", "Course:", "User:"];
-        moodleInputs = $('<div class="column" style=" width: 100%;"></div>');
         jQuery.each(moodleVars, function (index) {
             model = moodleVars[index];
             title = moodleTitles[index];
-            moodleInputs.append('<span style="width: 15%; display: inline-block;">' + title + '</span>');
-            moodleInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="moodleVars.' + model + '"><br>');
+            row = $("<div class='row'></div>");
+            row.append('<span >' + title + '</span>');
+            row.append('<input class="config_input" type:"text"  id="newList" ng-model="moodleVars.' + model + '"><br>');
+            moodleconfigurationSection.append(row);
         });
-        moodleconfigSectionContent.append(moodleInputs);
-        moodleconfigSectionContent.append('<button class="button small" ng-click="saveMoodle()">Save Moodle Vars</button><br>');
-        moodleconfigurationSection.append(moodleconfigSectionContent);
+        
+        action_buttons = $("<div class='config_save_button'></div>");
+        action_buttons.append('<button class="button small" ng-click="saveMoodle()">Save Moodle Vars</button><br>');
+        moodleconfigurationSection.append(action_buttons);
 
+
+        //class check
         var classCheckconfigurationSection = createSection(configurationSection, 'Class Check Variables');
-        var classCheckconfigSectionContent = $('<div>', { 'class': 'row' });
-        classCheckInputs = $('<div class="column" style=" width: 100%;"></div>');
-        classCheckInputs.append('<span style="width: 15%; display: inline-block;">TSV Code: </span>');
-        classCheckInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="classCheckVars.tsvCode"><br>');
-        classCheckconfigSectionContent.append(classCheckInputs);
-        classCheckconfigSectionContent.append('<button class="button small" ng-click="saveClassCheck()">Save Class Check Vars</button><br>');
-        classCheckconfigurationSection.append(classCheckconfigSectionContent);
+        classCheckconfigurationSection.attr("class","multiple_inputs content");
+        row = $("<div class='row'></div>");      
+        row.append('<span>TSV Code: </span>');
+        row.append('<input class="config_input" type:"text" id="newList" ng-model="classCheckVars.tsvCode"><br>');
+        classCheckconfigurationSection.append(row);
+
+        action_buttons = $("<div class='config_save_button'></div>");
+        action_buttons.append('<button class="button small" ng-click="saveClassCheck()">Save Class Check Vars</button><br>');
+        classCheckconfigurationSection.append(action_buttons);
 
 
+        //google sheets
         var googleSheetsconfigurationSection = createSection(configurationSection, 'Google Sheets Variables');
-        var googleSheetsconfigSectionContent = $('<div>', { 'class': 'row' });
+        googleSheetsconfigurationSection.attr("id","googleSheets");
         googleSheetsVars = ["credentials", "authCode", "spreadsheetId", "sheetName"];
         googleSheetsTitles = ["Credentials:", "Auth Code: ", "Spread Sheet Id: ", "Sheet Name: "];
-        googleSheetsInputs = $('<div class="column" style=" width: 100%;"></div>');
         jQuery.each(googleSheetsVars, function (index) {
             model = googleSheetsVars[index];
             title = googleSheetsTitles[index];
-            googleSheetsInputs.append('<span style="width: 15%; display: inline-block;">' + title + '</span>');
+            row = $("<div class='plugin_row'></div>");
+            row.append('<span >' + title + '</span>');
             if (model == "authCode") {
-                googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '">');
-                googleSheetsInputs.append('<button class="button small" ng-click="getAuthCode()">Get AuthCode</button><br>');
+                row.append('<input class="config_input" type:"text" id="newList" ng-model="googleSheetsVars.' + model + '">');
+                row.append('<button class="button small" ng-click="getAuthCode()">Get AuthCode</button><br>');
             } else if (model == "credentials") {
-                googleSheetsInputs.append('<input type="file" style="width: 25%;margin: 5px;" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
-                googleSheetsInputs.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
+                row.append('<input class="config_input" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
+                row.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
             } else if (model == "sheetName"){
+                row.attr('id','sheet_names_row');
                 $scope.numberGoogleSheets = 0;
                 if($scope.googleSheetsVars.sheetName.length != 0){
+                    inputsButton = $("<div class='input_with_button' ><div id='sheet_names'></div></div>");
                     jQuery.each($scope.googleSheetsVars.sheetName, function (index){
                         sheetName = $scope.googleSheetsVars.sheetName[index];
                         $scope.numberGoogleSheets++;
-                        googleSheetsInputs.append('<span id="sheet_names"><input type:"text" style="width: 25%;margin: 5px;" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"></span>');
+                        inputsButton.append('<input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'">');
                     });
                 }
                 else{
+                    inputsButton = $("<div class='input_with_button'></div>");
                     $scope.numberGoogleSheets++;
-                    googleSheetsInputs.append('<span id="sheet_names"><input type:"text" style="width: 25%;margin: 5px;" id="sheetname'+ $scope.numberGoogleSheets +'"></span>');
+                    inputsButton.append('<div id="sheet_names"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"></div>');
                 }
-                googleSheetsInputs.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button><br><br>');
-
+                inputsButton.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button><br><br>');
+                row.append(inputsButton);
             } else {
-                googleSheetsInputs.append('<input type:"text" style="width: 25%;margin: 5px;" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
+                row.append('<input class="config_input" type:"text" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
             }
+            googleSheetsconfigurationSection.append(row);
         });
-        googleSheetsconfigSectionContent.append(googleSheetsInputs);
-        googleSheetsconfigSectionContent.append('<button class="button small" ng-click="saveGoogleSheets()">Save Google Sheets Vars</button><br>');
-        googleSheetsconfigurationSection.append(googleSheetsconfigSectionContent);
+        
+        action_buttons = $("<div class='config_save_button'></div>");
+        action_buttons.append('<button class="button small" ng-click="saveGoogleSheets()">Save Google Sheets Vars</button><br>');
+        googleSheetsconfigurationSection.append(action_buttons);
 
         $compile(configurationSection)($scope);
 
@@ -191,13 +206,6 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         // tsvCode (é uma sequencia de caracteres que aparece no final de um url,
         // por isso podes meter "https://classcheck.tk/tsv/course?s=" e depois deixar um campo
         // pro user preencher com o código)
-
-        // Moodle:
-        // Servidor da BD
-        // User da BD
-        // Pass da BD
-        // Port da BD (este campo não é de preenchimento obrigatório)
-        // Prefixo das tabelas (podes por preenchido já com "mdl_", porque também aparece assim na configuração do moodle, se a pessoa quiser, depois altera)
 
     });
 }

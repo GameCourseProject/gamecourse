@@ -284,7 +284,7 @@ class Plugin extends Module
     public function setupResources()
     {
         parent::addResources('js/');
-        //parent::addResources('css/plugins.css');
+        parent::addResources('css/');
     }
     public function init()
     {

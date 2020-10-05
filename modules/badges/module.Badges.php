@@ -488,10 +488,12 @@ class Badges extends Module
         // $input5 = array('name' => "input 5", 'id'=> 'input5', 'type' => "color", 'options' => "", 'current_val' => "#121212");
         // $input7 = array('name' => "input 7", 'id'=> 'input7', 'type' => "number", 'options' => "", 'current_val' => "");
         // $input8 = array('name' => "input 8", 'id'=> 'input8', 'type' => "paragraph", 'options' => "", 'current_val' => "my text here");
+        // return [$input1, $input2, $input3, $input4, $input5, $input7, $input8];
 
         $input = array('name' => "Max Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
-
         return [$input];
+        
+
     }
     public function save_general_inputs($generalInputs,$courseId){
         $maxVal = $generalInputs["maxReward"];
