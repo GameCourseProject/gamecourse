@@ -72,17 +72,7 @@ function constructConfigPage(data, err, $scope, $element, $compile, name, text, 
 }
 
 app.controller('ConfigurationController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse){
-    $stateParams.module //ja tem o id do modulo selecionado
 
-    //chamar API geral para configuracoes
-
-
-        //zona de configuracao personalizavel
-
-        //zona de listagem
-        //preciso nomes das colunas, lista de objectos
-        //modal para add, info dos campos e possiveis validacoes
-        //funcao delete
     $scope.saveDataGeneralInputs = function(){
         $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, function (data, err) {
             if (err) {
@@ -103,7 +93,77 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             }
         })
         return changed;
-    }    
+    }   
+    $scope.addItem = function(){
+        $scope.openItem = {};
+        //reset atributes fields
+        jQuery.each($scope.listingItems.allAtributes, function(index){
+            atribute = $scope.listingItems.allAtributes[index];
+            switch (atribute.type) {
+                case 'text':
+                    $scope.openItem[atribute.id] = "";
+                    break;
+                case 'select':
+                    $scope.openItem[atribute.id] = "";
+                    break;
+                case 'on_off button':
+                    $scope.openItem[atribute.id] = 0;
+                    break;
+                case 'date':
+                    $scope.openItem[atribute.id] = "";
+                    break;
+                case 'number':
+                    $scope.openItem[atribute.id] = 0;
+                    break;
+            }
+        })
+        $("#open_item_action").text('New '+$scope.listingItems.itemName+': ');
+
+        $scope.submitItem = function (){
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'new'}, function (data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        }
+    } 
+    $scope.editItem = function(item){
+        $scope.openItem = {};
+        $scope.openItem.id = item.id;
+        $("#open_item_action").text('Edit '+$scope.listingItems.itemName+': ');
+
+        jQuery.each($scope.listingItems.allAtributes, function(index){
+            atribute = $scope.listingItems.allAtributes[index];
+            $scope.openItem[atribute.id] = item[atribute.id];
+        });
+        
+        $scope.submitItem = function (){
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'edit'}, function (data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        }
+    }
+    $scope.deleteItem = function(item){
+        $scope.openItem = {};
+        $scope.openItem.id = item.id;
+        $('#delete_action_info').text( $scope.listingItems.itemName + ': ' + $scope.openItem.id);
+
+        $scope.confirmDelete = function (){
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, function (data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        }
+    }
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
         if (err) {
             console.log(err);
@@ -212,12 +272,103 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             window[functionName]($scope, configPage, $smartboards, $compile);
         }      
                 
+        //listing items section
+        if (data.listingItems.length != 0){
+            $scope.listingItems = data.listingItems;
 
+            allItems = createSection(configPage, $scope.listingItems.listName);
+            allItems.attr('id', 'allItems')
+            allItemsSection = $('<div class="data-table"></div>');
+            table = $('<table></table>');
+            rowHeader = $("<tr></tr>");
+            jQuery.each($scope.listingItems.header, function(index){
+                header = $scope.listingItems.header[index];
+                rowHeader.append( $("<th>" + header + "</th>"));
+            });
+            rowHeader.append( $("<th class='action-column'></th>"));
+            rowHeader.append( $("<th class='action-column'></th>"));
+            
+            rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}'> ></tr>");
+            jQuery.each($scope.listingItems.displayAtributes, function(index){
+                atribute = $scope.listingItems.displayAtributes[index];
+                stg = "item." + atribute;
+                rowContent.append($('<td>{{'+stg+'}}</td>'));
+            });
+            rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#open-item" onclick="openModal(this)" ng-click="editItem(item)"></div></td>');
+            rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification" onclick="openModal(this)" ng-click="deleteItem(item)"></div></td>');
         
+            //append table
+            table.append(rowHeader);
+            table.append(rowContent);
+            allItemsSection.append(table);
+            allItems.append(allItemsSection);
+            $compile(allItems)($scope);
+
+            //add and edit item modal
+            modal = $("<div class='modal' id='open-item'></div>");
+            open_item = $("<div class='modal_content'></div>");
+            open_item.append( $('<button class="close_btn icon" value="#open-item" onclick="closeModal(this)"></button>'));
+            open_item.append( $('<div class="title" id="open_item_action"></div>'));
+            content = $('<div class="content">');
+            box = $('<div id="new_box" class= "inputs">');
+            row_inputs = $('<div class= "row_inputs"></div>');
+
+            $scope.listingItems.allAtributes
+            details = $('<div class="details full config_item"></div>');
+            jQuery.each($scope.listingItems.allAtributes, function(index){
+                atribute = $scope.listingItems.allAtributes[index];
+                switch (atribute.type) {
+                    case 'text':
+                        details.append($('<div class="half"><div class="container"><input type="text" class="form__input" placeholder="'+atribute.name+'" ng-model="openItem.'+atribute.id+'"/> <label for="name" class="form__label">'+atribute.name+'</label></div></div>'))
+                        break;
+                    case 'select':
+                        select_box = $('<div class="options_box half"></div>');
+                        select_box.append($('<span >'+atribute.name+': </span>'))
+                        select = $('<select class="form__input" ng-model="openItem.'+atribute.id+'"></select>');
+                        jQuery.each(atribute.options, function( index ){
+                            option = atribute.options[index];
+                            select.append($('<option value="'+option+'">'+option+'</option>'))
+                        });
+                        select_box.append(select);
+                        details.append(select_box);
+                        break;
+                    case 'on_off button':
+                        details.append( $('<div class= "on_off"><span>'+atribute.name+' </span><label class="switch"><input  type="checkbox" ng-model="openItem.'+atribute.id+'"><span class="slider round"></span></label></div>'))
+                        break;
+                    case 'date':
+                        details.append('<div class="half"><div class="container"><input type="date" class="form__input"  ng-model="openItem.' + atribute.id + '"><label for="name" class="form__label date_label">'+atribute.name+'</label></div></div>');
+                        break;
+                    case 'number':
+                        details.append($('<div class="half"><div class="container"><input type="number" class="form__input"  ng-model="openItem.'+atribute.id+'"/> <label for="name" class="form__label number_label">'+atribute.name+'</label></div></div>'))
+                        break;
+                }
+            });            
+            row_inputs.append(details);
+            box.append(row_inputs);
+            content.append(box);
+            content.append( $('<button class="save_btn" ng-click="submitItem()" > Save </button>'))
+            open_item.append(content);
+            modal.append(open_item);
+            $compile(modal)($scope);
+            allItems.append(modal);
+
+
+            //delete verification modal
+            deletemodal = $("<div class='modal' id='delete-verification'></div>");
+            verification = $("<div class='verification modal_content'></div>");
+            verification.append( $('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
+            verification.append( $('<div class="warning">Are you sure you want to delete</div>'));
+            verification.append( $('<div class="target" id="delete_action_info"></div>'));
+            verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="confirmDelete()"> Delete</button></div>'))
+            deletemodal.append(verification);
+            rowContent.append(deletemodal);
+
+            action_buttons = $("<div class='config_save_button'></div>");
+            action_buttons.append( $("<div class='icon add_icon' value='#open-item' onclick='openModal(this)' ng-click='addItem()'></div>"));
+            allItems.append($compile(action_buttons)($scope));
+        }
     });
     
-    
-
 });
 
 

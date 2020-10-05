@@ -38,7 +38,7 @@ cursor: pointer;
 .modal{
     display: none;
     position: fixed; 
-    z-index: 1; 
+    z-index: 2; 
     left: 0;
     top: 0;
     width: 100%; 
@@ -99,6 +99,7 @@ cursor: pointer;
 .modal_content .content {
     width: 100%;
     position: relative;
+    margin-bottom: 0;
 }
 .modal_content .content .inputs {
     display: flex;
@@ -329,8 +330,8 @@ cursor: pointer;
 }
 .modal_content .content .select_box .line .add_icon_no_outline {
     background-image: url(/gamecourse/images/add_icon_no_outline.svg);
-    height: 35px;
-    width: 35px;
+    height: 25px;
+    width: 25px;
 }
 .modal_content .save_btn {
     padding: 10px 15px;

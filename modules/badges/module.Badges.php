@@ -503,9 +503,53 @@ class Badges extends Module
 
 
     public function has_listing_items (){ return  true; }
-    public function get_listing_items (){
+    public function get_listing_items ($courseId){
+        //tenho de dar header
+        $header = ['Name', 'Description', 'XP', 'Is Post', 'Is Count', 'Is Point', 'Is Extra'] ;
+        $displayAtributes = ['name', 'description', 'xp', 'isPost', 'isCount', 'isPoint', 'isExtra'];
+        // items (pela mesma ordem do header)
+        $items = [
+           array( 'id' => '1',
+               'name' => 'badge1',
+               'description' => 'badge teste 1',
+               'xp' => 500,
+               'isPost' => true,
+               'isCount' => true,
+               'isPoint' => false,
+               'isExtra' => false,
+               'levels' => 3)
+           ];
+        //argumentos para add/edit
+        $allAtributes = [
+            array('name' => "Name", 'id'=> 'name', 'type' => "text", 'options' => ""),
+            array('name' => "Description", 'id'=> 'description', 'type' => "text", 'options' => ""), 
+            array('name' => "XP", 'id'=> 'xp', 'type' => "number", 'options' => ""),
+            array('name' => "Levels", 'id'=> 'levels', 'type' => "number", 'options' => ""),
+            array('name' => "Is Post", 'id'=> 'isPost', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id'=> 'isCount', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Point", 'id'=> 'isPoint', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Extra", 'id'=> 'isExtra', 'type' => "on_off button", 'options' => "")
+        ];
+        return array( 'listName'=> 'Badges', 'itemName'=> 'Badge','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
     }
-    public function save_listing_items (){
+    public function save_listing_item ($actiontype, $listingItem, $courseId){
+        if($actiontype == 'new'){
+            // print_r('New Badge | ');
+            // print_r($listingItem);
+
+            //attention to on_off fields with boolean values
+            //true comes 1, false comes empty instead of 0
+
+        }
+        elseif ($actiontype == 'edit'){
+            // print_r('Edit Badge');
+            // print_r($listingItem);
+
+        }elseif($actiontype == 'delete'){
+            // print_r('Delete Badge');
+            // print_r($courseId);
+            // print_r($listingItem['id']);
+        }
     }
 }
 

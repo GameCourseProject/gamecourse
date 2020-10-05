@@ -236,6 +236,6 @@ abstract class Module
     public function save_general_inputs($generalInputs,$courseId){}
 
     public function has_listing_items (){}
-    public function get_listing_items (){}
-    public function save_listing_items (){}
+    public function get_listing_items ($courseId){}
+    public function save_listing_item ($actiontype, $listingItem, $courseId){}
 }

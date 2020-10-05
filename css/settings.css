@@ -234,7 +234,39 @@
     z-index: 1;
     padding-left: 20px;
     background-position: right;
-  }
+}
+
+#configPage .config_save_button .icon {
+    height: 30px;
+    width: 30px;
+}
+
+#configPage #new_box {
+    padding-bottom: 30px;
+}
+#configPage .config_item {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+#configPage .config_item .on_off{
+    display: flex;
+    align-items: center;
+    margin: 0 0 31px 0;
+}
+#configPage .config_item .number_label,
+#configPage .config_item .date_label {
+    right: 35px !important;
+}
+#configPage .config_item .options_box {
+    display: flex;
+    align-items: baseline;
+}
+#configPage .config_item .options_box span {
+    margin-right: 15px;
+}
+
+
 
 
 /*satatus bar also used on the views page*/

@@ -377,7 +377,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
 
     $listingItems=[];
     if($module->has_listing_items()){
-        $listingItems = $module->save_listing_items();
+        $listingItems = $module->get_listing_items($course->getId());
     }
 
     $info = array(
@@ -390,7 +390,6 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
     API::response($info);
 
 });
-
 
 API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
@@ -407,10 +406,12 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function() {
 
     if(API::hasKey('listingItems')){
         $listingItems = API::getValue('listingItems');
-        $module->save_listing_items($listingItems);
+        $action_type = API::getValue('action_type'); //new, edit, delete
+        $module->save_listing_item($action_type, $listingItems, $course->getId());
     }
 
 });
+
 
 
 //get tabs for course settings
