@@ -529,7 +529,7 @@ class Course
         return Core::$systemDB->selectMultiple(
             "library right join functions on libraryId = library.id;",
             null,
-            "name, keyword, refersTo, args"
+            "name, keyword, refersTo, returnType, args"
         );
     }
 }

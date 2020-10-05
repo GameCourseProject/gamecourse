@@ -584,7 +584,7 @@ class ViewHandler
             Core::$systemDB->insert("library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
-    public function registerFunction($funcLib, $funcName, $processFunc, $refersTo = "object", $description = null)
+    public function registerFunction($funcLib, $funcName, $processFunc,  $returnType, $refersTo = "object", $description = null)
     {
         if ($funcLib) {
             $libraryId = Core::$systemDB->select("library", ["name" => $funcLib], "id");
@@ -604,12 +604,13 @@ class ViewHandler
                 $i = -1;
                 foreach ($arguments as $argument) {
                     $i++;
-                    if ($i == 0) {
+                    if ($i == 0 && ($refersTo == "object" || $funcLib == null)) {
                         continue;
                     }
                     $optional = $argument->isOptional() ? "1" : "0";
                     $tempArr = [];
                     $tempArr["name"] = $argument->getName();
+                    $tempArr["type"] = (string)$argument->getType();
                     $tempArr["optional"] = $optional;
                     array_push($arg, $tempArr);
                 }
@@ -625,8 +626,10 @@ class ViewHandler
                 if (Core::$systemDB->select("functions", ["libraryId" => $libraryId, "keyword" => $funcName])) {
                     new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
                 } else { //caso queira registar uma função com a mesma keyword, mas numa library diferente
+
                     Core::$systemDB->insert("functions", [
                         "libraryId" => $libraryId,
+                        "returnType" => $returnType,
                         "refersTo" => $refersTo,
                         "keyword" => $funcName,
                         "args" => $arg,
@@ -639,6 +642,7 @@ class ViewHandler
         } else {
             Core::$systemDB->insert("functions", [
                 "libraryId" => $libraryId,
+                "returnType" => $returnType,
                 "refersTo" => $refersTo,
                 "keyword" => $funcName,
                 "args" => $arg,

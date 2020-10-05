@@ -122,9 +122,10 @@ create table library(
 create table functions(
 	id	int unsigned auto_increment primary key,
 	libraryId int unsigned null,
+	returnType varchar(50),
 	refersTo varchar(50) not null,
 	keyword varchar(50),
-	args varchar(100),
+	args varchar(1000),
 	description varchar(1000),
 	foreign key(libraryId) references library(id) on delete cascade
 );

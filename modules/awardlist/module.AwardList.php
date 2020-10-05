@@ -45,7 +45,7 @@ class AwardList extends Module
                 $allAwards[] = $award;
             }
             return new \Modules\Views\Expression\ValueNode($allAwards);
-        }, 'library');
+        }, 'collection', 'library');
 
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));

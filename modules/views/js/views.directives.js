@@ -249,7 +249,35 @@ angular.module('module.views').directive('sbMenu', function () {
 
             $scope.testExpression = function (newValue) {
                 var libraryData = $scope.$parent.$parent.$parent.$parent.dictionary;
-                GameCourseExpression.autocomplete(newValue, libraryData);
+                var allAllows = $scope.$parent.$parent.$$watchers;
+                var allows = [];
+                allAllows.forEach(element => {
+                    var temp = element["exp"];
+                    if (temp != undefined && typeof (temp) !== 'function') {
+                        if (temp.startsWith("options.") || temp.startsWith("missingEvents.")) {
+                            allows.push(element["exp"]);
+                        }
+                    }
+                });
+                if (allows.length != 0) {
+                    if (allows.length == 1) {
+                        //verificar o scope e o options
+                        if (allows[0] == "options.allowDataLoop") {
+                            GameCourseExpression.autocomplete(newValue, libraryData, "loop");
+                        } else if (allows[0] == "missingEvents.length > 0") {
+                            GameCourseExpression.autocomplete(newValue, libraryData, "events");
+                        } else if (allows[0] == "options.allowVariables") {
+                            GameCourseExpression.autocomplete(newValue, libraryData, "variables");
+                        }
+                    } else {
+                        if (allows[0] == "options.allowIf") {
+                            GameCourseExpression.autocomplete(newValue, libraryData, "if");
+                        }
+
+                    }
+                } else if ($scope.elid = "ex-6") { //content n tem watchers
+                    GameCourseExpression.autocomplete(newValue, libraryData, "content");
+                }
                 try {
                     CodeAssistant.reset();
                     if (newValue != undefined)
