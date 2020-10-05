@@ -217,7 +217,7 @@ class Badges extends Module
             return $this->basicGetterFunction($level, "number");
         });
 
-
+        
 
         /*$badgeCache = array();
         $viewHandler->registerFunction("badges",'userBadgesCache', function() use (&$badgeCache) {

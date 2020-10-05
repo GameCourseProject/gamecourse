@@ -527,7 +527,9 @@ class Course
     public function getEnabledLibraries()
     {
         return Core::$systemDB->selectMultiple(
-            "functions"
+            "library right join functions on libraryId = library.id;",
+            null,
+            "name, keyword, refersTo, args"
         );
     }
 }

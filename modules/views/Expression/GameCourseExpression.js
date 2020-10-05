@@ -442,7 +442,6 @@ var GameCourseExpression = (function () {
             return true;
         },
         autocomplete: function autocomplete(input, libraries) {
-            console.log(libraries);
             if (input && libraries) {
                 input = input.replace("{", "");
                 input = input.replace("}", "");
@@ -452,9 +451,11 @@ var GameCourseExpression = (function () {
                         var re = new RegExp(input, "g");
                         var librariesMatched = [];
                         libraries.forEach(element => {
-                            if (element["name"].match(re)) {
-                                if (!librariesMatched.includes(element["name"])) {
-                                    librariesMatched.push(element["name"]);
+                            if (element["name"] != null) {
+                                if (element["name"].match(re)) {
+                                    if (!librariesMatched.includes(element["name"])) {
+                                        librariesMatched.push(element["name"]);
+                                    }
                                 }
                             }
                         });
@@ -463,15 +464,43 @@ var GameCourseExpression = (function () {
                     //faz match com as funções
                     else if ((input.split('.').length - 1) == 1) {
                         var libraryChosen = input.split('.')[0];
+                        var inputNow = input.split('.')[1];
+
                         var functionsAvailable = [];
-                        var re = new RegExp(libraryChosen, "g");
                         libraries.forEach(element => {
-                            if (element["library"].match(re)) {
-                                functionsAvailable.push(element["keyword"]);
+                            if (element["name"] != null) {
+                                if (element["name"] == libraryChosen && element["refersTo"] == "library") {
+                                    var args = JSON.parse(element["args"]);
+                                    if (args == null) {
+                                        functionsAvailable.push(element["keyword"]);
+
+                                    } else {
+                                        var allArgs = [];
+                                        args.forEach(arg => {
+                                            if (arg.optional == "1") {
+                                                allArgs.push("[" + arg.name + "]");
+                                            } else {
+                                                allArgs.push(arg.name);
+                                            }
+                                        });
+                                        functionsAvailable.push(element["keyword"] + "(" + allArgs + ")");
+                                    }
+                                }
                             }
                         });
-                        // console.log(functionsAvailable);
-                        //verificação da funçao regex e dps ver dos argumentos
+
+                        var functionsMatched = [];
+                        var functionsToShow = [];
+                        var re = new RegExp(inputNow, "g");
+                        functionsAvailable.forEach(element => {
+                            if (element.match(re)) {
+                                functionsMatched.push(element);
+                                functionsToShow.push(libraryChosen + "." + element);
+
+                            }
+                        });
+                        console.log(functionsToShow);
+
                     }
                 }
             }

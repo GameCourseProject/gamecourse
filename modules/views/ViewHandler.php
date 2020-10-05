@@ -2,6 +2,7 @@
 
 namespace Modules\Views;
 
+use ArrayObject;
 use Modules\Views\Expression\EvaluateVisitor;
 use Modules\Views\Expression\ExpressionEvaluatorBase;
 use Modules\Views\Expression\ValueNode;
@@ -606,8 +607,11 @@ class ViewHandler
                     if ($i == 0) {
                         continue;
                     }
-                    $mandatory = $argument->isOptional() ? "0" : "1";
-                    $arg[$argument->getName()] = $mandatory;
+                    $optional = $argument->isOptional() ? "1" : "0";
+                    $tempArr = [];
+                    $tempArr["name"] = $argument->getName();
+                    $tempArr["optional"] = $optional;
+                    array_push($arg, $tempArr);
                 }
                 if (empty($arg)) {
                     $arg = null;
