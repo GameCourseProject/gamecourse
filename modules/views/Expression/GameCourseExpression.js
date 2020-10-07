@@ -462,161 +462,15 @@ var GameCourseExpression = (function () {
                         });
                     }
                 }
-                if (input && libraries) {
-                    input = input.replace("{", "");
-                    input = input.replace("}", "");
-                    if (input) {
-                        //faz match com libraries
-                        if ((input.split('.').length - 1) == 0) {
-                            if (input.match(new RegExp("^[a-z]+$"))) {
-
-                                var re = new RegExp(input, "g");
-                                var librariesMatched = [];
-                                libraries.forEach(element => {
-                                    if (element["name"] != null) {
-                                        if (element["name"].match(re)) {
-                                            if (!librariesMatched.includes(element["name"])) {
-                                                librariesMatched.push(element["name"]);
-                                            }
-                                        }
-                                    }
-                                });
-                                console.log(librariesMatched);
+                if (input) {
+                    if (input[0] == "{" && input[input.length - 1] == "}") {
+                        var libraryShow = new checkLibrary(input, libraries);
+                        if (libraryShow != "collection") {
+                            if (Object.keys(libraryShow).length !== 0) {
+                                console.log(libraryShow);
                             }
-                        }
-                        //faz match com as funções
-                        else if (input.match(new RegExp("\."))) {
-                            var dotNumber = input.split('.').length;
-                            var libraryChosen = input.split('.')[0];
-                            var inputNow = input.split('.')[1];
-                            var inputCollection = input.split('.')[2];
-                            var functionsAvailable = new Object();
-
-                            libraries.forEach(element => {
-                                if (element["name"] != null) {
-                                    if (element["name"] == libraryChosen && element["refersTo"] == "library") {
-                                        var args = JSON.parse(element["args"]);
-                                        if (args == null) {
-                                            functionsAvailable[element["keyword"]] = null;
-
-                                        } else {
-                                            var allArgs = [];
-                                            var allArgsInfo = [];
-                                            args.forEach(arg => {
-                                                if (arg.optional == "1") {
-                                                    allArgs.push("[" + arg.name + "]");
-                                                } else {
-                                                    allArgs.push(arg.name);
-                                                }
-                                                allArgsInfo.push(arg.type);
-                                            });
-                                            //lista com info a mostrar e com info interna dos args
-                                            functionsAvailable[element["keyword"]] = [allArgs, allArgsInfo];
-                                        }
-                                    }
-                                }
-                            });
-
-                            if (inputNow.match(new RegExp("^[a-zA-Z0-9_\,()]*$"))) {
-
-                                //faz match com os argumentos
-                                var argInfoList = [];
-                                var argList = [];
-                                if (inputNow.match(new RegExp("[(]"))) {
-                                    inputNow_ = inputNow.substring(0, inputNow.indexOf("("));
-                                    var functionMatched = "";
-                                    var functionToShow = "";
-                                    for (var key in functionsAvailable) {
-                                        var args = functionsAvailable[key];
-                                        if (key.startsWith(inputNow_)) {
-                                            functionMatched = libraryChosen + "." + key;
-                                            functionToShow = libraryChosen + "." + key + "(" + args[0] + ")";
-                                            argInfoList = args[1];
-                                            argList = args[0];
-                                        }
-                                    }
-                                    if (option == "loop") {
-                                        if (inputNow.split(")").count != 0) {
-                                            var showCollectionFunction = [];
-                                            if (inputCollection) {
-                                                if (inputCollection.length != 0) {
-                                                    if (inputCollection.indexOf("(") == -1 && inputCollection.indexOf(")") == -1) {
-
-                                                        var re = new RegExp(inputCollection, "g");
-
-                                                        libraries.forEach(element => {
-                                                            if (element["refersTo"] == "collection" && element["keyword"].match(re)) {
-                                                                if (element["args"] == null) {
-                                                                    showCollectionFunction.push(element["keyword"]);
-                                                                } else {
-                                                                    var collectionArgs = JSON.parse(element["args"]);
-                                                                    var collectionShowArgs = [];
-                                                                    collectionArgs.forEach(arg => {
-                                                                        if (arg.optional == "1") {
-                                                                            collectionShowArgs.push("[" + arg.name + "]");
-                                                                        } else {
-                                                                            collectionShowArgs.push(arg.name);
-                                                                        }
-                                                                    });
-                                                                    showCollectionFunction.push(element["keyword"] + "(" + collectionShowArgs + ")");
-                                                                }
-                                                            }
-                                                        });
-                                                        console.log(showCollectionFunction);
-                                                    }
-                                                }
-                                            } else if (dotNumber == 3) {
-                                                libraries.forEach(element => {
-                                                    if (element["refersTo"] == "collection") {
-                                                        if (element["args"] == null) {
-                                                            showCollectionFunction.push(element["keyword"]);
-                                                        } else {
-                                                            var collectionArgs = JSON.parse(element["args"]);
-                                                            var collectionShowArgs = [];
-                                                            collectionArgs.forEach(arg => {
-                                                                if (arg.optional == "1") {
-                                                                    collectionShowArgs.push("[" + arg.name + "]");
-                                                                } else {
-                                                                    collectionShowArgs.push(arg.name);
-                                                                }
-                                                            });
-                                                            showCollectionFunction.push(element["keyword"] + "(" + collectionShowArgs + ")");
-                                                        }
-                                                    }
-                                                });
-                                                console.log(showCollectionFunction);
-                                            }
-                                        } else {
-                                            console.log(functionToShow);
-                                        }
-                                    }
-
-                                } else {
-                                    var functionsMatched = [];
-                                    var functionsToShow = [];
-                                    var re = new RegExp(inputNow, "g");
-                                    for (var key in functionsAvailable) {
-                                        if (key.match(re)) {
-                                            var argsTemp = functionsAvailable[key];
-                                            var args = null;
-                                            if (functionsAvailable && argsTemp != null) {
-                                                args = argsTemp[0];
-                                            }
-
-                                            functionsMatched.push(key);
-                                            if (args == null) {
-                                                functionsToShow.push(libraryChosen + "." + key);
-                                            } else {
-                                                functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
-                                            }
-
-                                        }
-                                    }
-
-                                    console.log(functionsToShow);
-                                }
-
-                            }
+                        } else {
+                            console.log("checkCollection");
                         }
                     }
                 }
@@ -633,7 +487,7 @@ var GameCourseExpression = (function () {
                 }
                 if (input && libraries) {
                     if (input) {
-                        console.log(libraries);
+
                     }
                     // if ((input.split('.').length - 1) == 0) {
                     //     if (input.match(new RegExp("^[a-z]+$"))) {
@@ -656,6 +510,141 @@ var GameCourseExpression = (function () {
             }
 
 
+        }
+    };
+    function checkLibrary(input, libraries) {
+
+        if (libraries) {
+            input = input.replace("{", "");
+            input = input.replace("}", "");
+            if (input) {
+                //faz match com libraries
+                if ((input.split('.').length - 1) == 0) {
+                    if (input.match(new RegExp("^[a-z]+$"))) {
+
+                        var re = new RegExp(input, "g");
+                        var librariesMatched = [];
+                        libraries.forEach(element => {
+                            if (element["name"] != null) {
+                                if (element["name"].match(re)) {
+                                    if (!librariesMatched.includes(element["name"])) {
+                                        librariesMatched.push(element["name"]);
+                                    }
+                                }
+                            }
+                        });
+                        if (librariesMatched.length == 0) {
+                            return new Object();
+                        } else {
+                            return new Object(librariesMatched);
+                        }
+                    } else {
+                        return new Object();
+                    }
+                }
+                //faz match com as funções
+                else if (input.match(new RegExp("\."))) {
+                    var dotNumber = input.split('.').length;
+                    var libraryChosen = input.split('.')[0];
+                    var inputNow = input.split('.')[1];
+                    var inputCollection = input.split('.')[2];
+                    var functionsAvailable = new Array();
+
+                    libraries.forEach(element => {
+                        if (element["name"] != null) {
+                            if (element["name"] == libraryChosen && element["refersTo"] == "library") {
+                                var args = JSON.parse(element["args"]);
+                                if (args == null) {
+                                    functionsAvailable[element["keyword"]] = element["returnType"];
+
+                                } else {
+                                    var allArgs = [];
+                                    var allArgsInfo = [];
+                                    args.forEach(arg => {
+                                        if (arg.optional == "1") {
+                                            allArgs.push("[" + arg.name + "]");
+                                        } else {
+                                            allArgs.push(arg.name);
+                                        }
+                                        allArgsInfo.push(arg.type);
+                                    });
+                                    functionsAvailable[element["keyword"]] = [element["returnType"], allArgs];
+                                }
+                            }
+                        }
+                    });
+
+                    if (inputNow.match(new RegExp("^[a-zA-Z0-9_\,()]*$"))) {
+
+                        //faz match com os argumentos
+                        var argList = [];
+                        if (inputNow.match(new RegExp("[(]"))) {
+                            inputNow_ = inputNow.substring(0, inputNow.indexOf("("));
+                            var functionMatched = "";
+                            var functionToShow = "";
+                            var returnType = "";
+                            for (var key in functionsAvailable) {
+                                var infoFunction = functionsAvailable[key];
+                                if (key == inputNow_) {
+                                    if (infoFunction.constructor === Array) {
+                                        returnType = infoFunction[0];
+                                        argList = infoFunction[1];
+                                    } else {
+                                        returnType = infoFunction;
+                                    }
+                                    functionMatched = libraryChosen + "." + key;
+                                    functionToShow = libraryChosen + "." + key + "(" + argList + ")";
+                                }
+                            }
+                            if (inputNow.match(new RegExp("[)]"))) {
+                                if (functionMatched != "") {
+                                    return new Object(returnType);
+                                } else {
+                                    return new Object();
+                                }
+                            } else {
+                                if (functionToShow != "") {
+                                    return new Object(functionToShow);
+                                } else {
+                                    return new Object();
+                                }
+                            }
+                        }
+                        else {
+                            var functionsMatched = [];
+                            var functionsToShow = [];
+                            var re = new RegExp(inputNow, "g");
+                            for (var key in functionsAvailable) {
+                                if (key.match(re)) {
+                                    var argsTemp = functionsAvailable[key];
+                                    var args = null;
+                                    if (functionsAvailable && argsTemp.constructor === Array) {
+                                        args = argsTemp[1];
+                                    }
+
+                                    functionsMatched.push(key);
+                                    if (args == null) {
+                                        functionsToShow.push(libraryChosen + "." + key);
+                                    } else {
+                                        functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
+                                    }
+
+                                }
+                            }
+                            if (functionsToShow.length == 0) {
+                                return new Object();
+                            } else {
+                                return new Object(functionsToShow);
+                            }
+                        }
+
+                    } else {
+                        return new Object();
+                    }
+                }
+            } else {
+                return new Object();
+            }
         }
     };
     /* generated by jison-lex 0.3.4 */
