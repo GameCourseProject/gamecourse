@@ -526,9 +526,22 @@ class Course
 
     public function getEnabledLibraries()
     {
-        return Core::$systemDB->selectMultiple(
-            "library right join functions on libraryId = library.id;",
-            null,
+        $modulesEnabled = $this->getEnabledModules();
+        $whereCondition = "";
+
+        $i = 0;
+        foreach ($modulesEnabled as $module) {
+            $whereCondition .=  "moduleId=\"" . $module . "\"";
+
+            if ($i != count($modulesEnabled) - 1) {
+                $whereCondition .= " or ";
+            }
+            $i++;
+        }
+
+        return Core::$systemDB->selectMultipleSegmented(
+            "library right join functions on libraryId = library.id",
+            $whereCondition,
             "name, keyword, refersTo, returnType, args"
         );
     }

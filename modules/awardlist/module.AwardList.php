@@ -32,20 +32,27 @@ class AwardList extends Module
         // ));
 
         $course = $this->getParent();
-        $viewHandler->registerFunction('awardlist', 'getAllAwards', function () use ($course) {
-            $courseId = $course->getId();
-            $allAwards = array();
-            $awards = Core::$systemDB->selectMultiple("award", ["course" => $courseId]);
-            $studentNames = [];
-            foreach ($awards as $award) {
-                $id = $award['student'];
-                if (!array_key_exists($id, $studentNames))
-                    $studentNames[$id] = \GameCourse\User::getUser($id)->getName();
-                $award['Studentname'] = $studentNames[$id];
-                $allAwards[] = $award;
-            }
-            return new \Modules\Views\Expression\ValueNode($allAwards);
-        }, 'collection', 'library');
+        $viewHandler->registerFunction(
+            'awardlist',
+            'getAllAwards',
+            function () use ($course) {
+                $courseId = $course->getId();
+                $allAwards = array();
+                $awards = Core::$systemDB->selectMultiple("award", ["course" => $courseId]);
+                $studentNames = [];
+                foreach ($awards as $award) {
+                    $id = $award['student'];
+                    if (!array_key_exists($id, $studentNames))
+                        $studentNames[$id] = \GameCourse\User::getUser($id)->getName();
+                    $award['Studentname'] = $studentNames[$id];
+                    $allAwards[] = $award;
+                }
+                return new \Modules\Views\Expression\ValueNode($allAwards);
+            },
+            'collection',
+            'Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
+            'library'
+        );
 
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));

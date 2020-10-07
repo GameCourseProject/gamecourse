@@ -126,7 +126,7 @@ class XPLevels extends Module
             $where = $levelWhere($badgesExist);
             $levels = Core::$systemDB->selectMultiple($table, $where);
             return $this->createNode($levels, 'xp', "collection");
-        }, 'collection');
+        }, 'collection', 'Returns a collection with all the levels on a Course.');
         //xp.getLevel(user,number,goal) returns level object
         $viewHandler->registerFunction('xp', 'getLevel', function (int $user = null, int $number = null, string $goal = null) use ($levelWhere, $levelTable) {
             $badgesExist = ($this->getParent()->getModule("badges") !== null);
@@ -154,44 +154,41 @@ class XPLevels extends Module
             if (empty($level))
                 throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
             return $this->createNode($level, 'xp');
-        }, 'object');
+        }, 'object', 'Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.');
         //xp.getBadgesXP(user) returns value of badge xp for user
         $viewHandler->registerFunction('xp', 'getBadgesXP', function ($user) use ($courseId) {
             $userId = $this->getUserId($user);
             $badgeXP = $this->calculateBadgeXP($userId, $courseId);
             return new ValueNode($badgeXP);
-        }, 'integer');
+        }, 'integer', 'Returns the sum of XP that all Badges provide as reward from a GameCourseUser identified by user.');
         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
         $viewHandler->registerFunction('xp', 'getBonusBadgesXP', function ($user) use ($courseId) {
             $userId = $this->getUserId($user);
             $badgeXP = $this->calculateBonusBadgeXP($userId, $courseId);
             return new ValueNode($badgeXP);
-        }, 'integer');
+        }, 'integer', 'Returns the sum of XP that all Bonus Badges provide as reward from a GameCourseUser identified by user.');
         //xp.getSkillTreeXP(user) returns value of skill xp for user
         $viewHandler->registerFunction('xp', 'getSkillTreeXP', function ($user) use ($courseId) {
             $userId = $this->getUserId($user);
             $skillXP = $this->calculateSkillXP($userId, $courseId);
             return new ValueNode($skillXP);
-        }, 'integer');
+        }, 'integer', 'Returns the sum of XP that all SkillTrees provide as reward from a GameCourseUser identified by user.');
         //xp.getXP(user) returns value of xp for user
         $viewHandler->registerFunction('xp', 'getXP', function ($user) use ($courseId) {
             return new ValueNode($this->calculateXP($user, $courseId));
-        }, 'integer'); //same function 
-        $viewHandler->registerFunction('xp', 'getXp', function ($user) use ($courseId) {
-            return new ValueNode($this->calculateXP($user, $courseId));
-        }, 'integer');
+        }, 'integer', 'Returns the sum of XP that all Modules provide as reward from a GameCourseUser identified by user.');
         //%level.description
         $viewHandler->registerFunction('xp', 'description', function ($level) {
             return $this->basicGetterFunction($level, "description");
-        }, 'string');
+        }, 'string', 'Returns a string with information regarding the level.');
         //%level.goal
         $viewHandler->registerFunction('xp', 'goal', function ($level) {
             return $this->basicGetterFunction($level, "goal");
-        }, 'string');
+        }, 'string', 'Returns a string with the goal regarding the level.');
         //%level.number
         $viewHandler->registerFunction('xp', 'number', function ($level) {
             return $this->basicGetterFunction($level, "number");
-        }, 'string');
+        }, 'string', 'Returns a string with the number regarding the level.');
 
         /*$viewHandler->registerFunction('awardLatestImage', function($award, $course) {
             switch ($award['type']) {

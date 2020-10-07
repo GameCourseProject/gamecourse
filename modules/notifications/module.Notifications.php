@@ -85,7 +85,7 @@ class Notifications extends Module
             //$courseId = $this->getParent()->getId();
             //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
             return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
-        }, 'integer', 'library');
+        }, 'integer', null, 'library');
 
         $viewHandler->registerFunction('notifications', 'getNotifications', 'library', function (int $userId) {
             $pendingNotifications = $this->notificationList;
@@ -100,7 +100,7 @@ class Notifications extends Module
 
             return GameCourse\DataRetrieverContinuation::buildForArray($notifications);*/
             return new \Modules\Views\Expression\ValueNode($pendingNotifications);
-        }, 'collection', 'library');
+        }, 'collection', null, 'library');
 
         API::registerFunction('notifications', 'removeNotification', function () {
             /*$id = API::getValue('notification');

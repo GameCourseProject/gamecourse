@@ -43,7 +43,7 @@ class SQLDB
         foreach ($data as $key => $value) {
             if ($add)
                 $sql .= $key . '= ' . $key . ' + ' . $value . $separator;
-            elseif ($value === null && $separator == "&&")
+            elseif ($value === null && ($separator == "&&" || $separator == "||"))
                 $sql .= $key . " is ? " . $separator;
             else
                 $sql .= $key . '= ? ' . $separator;
@@ -51,7 +51,7 @@ class SQLDB
         }
         $data = array_values($data);
         foreach ($whereNot as $not) { // [key , value] 
-            if ($not[1] === null && $separator == "&&")
+            if ($not[1] === null && ($separator == "&&" || $separator == "||"))
                 $sql .= $not[0] . " is not ? " . $separator;
             else
                 $sql .= $not[0] . "!= ? " . $separator;
@@ -175,6 +175,23 @@ class SQLDB
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function selectMultipleSegmented($table, $where, $field = "*", $orderBy = null, $group = null)
+    {
+        $sql = "select " . $field . " from " . $table;
+        if ($where) {
+            $sql .= " where " . $where;
+        }
+        if ($group) {
+            $sql .= " group by " . $group;
+        }
+        if ($orderBy) {
+            $sql .= " order by " . $orderBy;
+        }
+
+        $sql .= ';';
+        $result = $this->executeQuery($sql);
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    }
     //this returns the last auto_increment id after an insertion in the DB
     public function getLastId()
     {

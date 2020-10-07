@@ -584,7 +584,7 @@ class ViewHandler
             Core::$systemDB->insert("library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
-    public function registerFunction($funcLib, $funcName, $processFunc,  $returnType, $refersTo = "object", $description = null)
+    public function registerFunction($funcLib, $funcName, $processFunc,  $returnType,  $description = null, $refersTo = "object")
     {
         if ($funcLib) {
             $libraryId = Core::$systemDB->select("library", ["name" => $funcLib], "id");
