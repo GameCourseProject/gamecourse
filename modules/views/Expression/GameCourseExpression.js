@@ -445,6 +445,8 @@ var GameCourseExpression = (function () {
 
             if (option == "loop" || option == "events") {
                 var libraries = [];
+                var librariesForCollection = [];
+                var returnTypes = [];
                 if (library) {
                     if (option == "events") {
 
@@ -459,18 +461,36 @@ var GameCourseExpression = (function () {
                             if (element["returnType"] == "collection" || element["refersTo"] == "collection") {
                                 libraries.push(element);
                             }
+                            if (element["refersTo"] == "collection") {
+                                librariesForCollection.push(element);
+                                if (!returnTypes.includes(element["returnType"])) {
+                                    returnTypes.push(element["returnType"]);
+                                }
+                            }
+
                         });
                     }
                 }
                 if (input) {
                     if (input[0] == "{" && input[input.length - 1] == "}") {
                         var libraryShow = new checkLibrary(input, libraries);
-                        if (libraryShow != "collection") {
-                            if (Object.keys(libraryShow).length !== 0) {
-                                console.log(libraryShow);
+                        if (!libraryShow.hasOwnProperty("returnType")) {
+                            if (libraryShow.returnType == "collection") {
+                                console.log(libraryShow.toShow);
+                            }
+                            if (libraryShow.hasOwnProperty("toShow")) {
+                                console.log(libraryShow.toShow);
                             }
                         } else {
-                            console.log("checkCollection");
+                            //enters here if library+function matched
+                            var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
+                            var libraryShow = new checkFunctionsForLibrary(inputAfterLibrary, librariesForCollection);
+                            if (libraryShow.hasOwnProperty("toShow")) {
+                                console.log(libraryShow.toShow);
+                            }
+                            if (libraryShow.hasOwnProperty("returnType")) {
+                                console.log(libraryShow.returnType);
+                            }
                         }
                     }
                 }
@@ -534,20 +554,18 @@ var GameCourseExpression = (function () {
                             }
                         });
                         if (librariesMatched.length == 0) {
-                            return new Object();
+                            return {};
                         } else {
-                            return new Object(librariesMatched);
+                            return { "toShow": librariesMatched };
                         }
                     } else {
-                        return new Object();
+                        return {};
                     }
                 }
                 //faz match com as funções
                 else if (input.match(new RegExp("\."))) {
-                    var dotNumber = input.split('.').length;
                     var libraryChosen = input.split('.')[0];
                     var inputNow = input.split('.')[1];
-                    var inputCollection = input.split('.')[2];
                     var functionsAvailable = new Array();
 
                     libraries.forEach(element => {
@@ -598,15 +616,15 @@ var GameCourseExpression = (function () {
                             }
                             if (inputNow.match(new RegExp("[)]"))) {
                                 if (functionMatched != "") {
-                                    return new Object(returnType);
+                                    return { "returnType": returnType };
                                 } else {
-                                    return new Object();
+                                    return {};
                                 }
                             } else {
                                 if (functionToShow != "") {
-                                    return new Object(functionToShow);
+                                    return { "toShow": functionToShow };
                                 } else {
-                                    return new Object();
+                                    return {};
                                 }
                             }
                         }
@@ -632,21 +650,135 @@ var GameCourseExpression = (function () {
                                 }
                             }
                             if (functionsToShow.length == 0) {
-                                return new Object();
+                                return {};
                             } else {
-                                return new Object(functionsToShow);
+                                return { "toShow": functionsToShow };
                             }
                         }
 
                     } else {
-                        return new Object();
+                        return {};
                     }
                 }
             } else {
-                return new Object();
+                return {};
             }
         }
     };
+    function checkFunctionsForLibrary(input, libraries) {
+        input = input.replace("}", "");
+
+        if (input) {
+            if (input.match(new RegExp("\."))) {
+                var functionsAvailable = new Array();
+                input = input.split(".")[1];
+                libraries.forEach(element => {
+                    if (element["refersTo"] == "collection") {
+                        var args = JSON.parse(element["args"]);
+                        if (args == null) {
+                            functionsAvailable[element["keyword"]] = element["returnType"];
+
+                        } else {
+                            var allArgs = [];
+                            var allArgsInfo = [];
+                            args.forEach(arg => {
+                                if (arg.optional == "1") {
+                                    allArgs.push("[" + arg.name + "]");
+                                } else {
+                                    allArgs.push(arg.name);
+                                }
+                                allArgsInfo.push(arg.type);
+                            });
+                            functionsAvailable[element["keyword"]] = [element["returnType"], allArgs];
+                        }
+                    }
+                });
+                if (input.match(new RegExp("^[a-zA-Z0-9_\,()]*$"))) {
+
+                    //faz match com os argumentos
+                    var argList = [];
+                    if (input.match(new RegExp("[(]"))) {
+                        inputNow_ = input.substring(0, input.indexOf("("));
+                        inputArg = input.split("(")[1];
+                        var functionMatched = "";
+                        var functionToShow = "";
+                        var returnType = "";
+                        if (input.match(new RegExp("[)]"))) {
+                            for (var key in functionsAvailable) {
+                                var infoFunction = functionsAvailable[key];
+                                if (key == inputNow_) {
+                                    if (infoFunction.constructor === Array) {
+                                        returnType = infoFunction[0];
+                                        argList = infoFunction[1];
+                                    } else {
+                                        returnType = infoFunction;
+                                    }
+                                    functionMatched = key;
+                                    functionToShow = key + "(" + argList + ")";
+                                    return { "returnType": returnType };
+                                }
+                            }
+                        } else {
+                            if (inputArg.length == 0) {
+                                for (var key in functionsAvailable) {
+                                    var infoFunction = functionsAvailable[key];
+
+                                    if (key == inputNow_) {
+                                        if (infoFunction.constructor === Array) {
+                                            argList = infoFunction[1];
+                                        } else {
+                                            returnType = infoFunction;
+                                        }
+                                        functionToShow = key + "(" + argList + ")";
+                                        return { "toShow": functionToShow };
+                                    }
+                                }
+                            }
+                            return {};
+                        }
+                    } else {
+                        var functionMatched = "";
+                        var functionsToShow = [];
+                        var re = new RegExp(input, "g");
+                        for (var key in functionsAvailable) {
+                            if (key.match(re)) {
+                                var argsTemp = functionsAvailable[key];
+                                var args = null;
+                                if (functionsAvailable && argsTemp.constructor === Array) {
+                                    args = argsTemp[1];
+                                }
+                                if (args == null) {
+                                    functionsToShow.push(key);
+                                    if (input == key) {
+                                        functionMatched = key;
+                                    }
+                                } else {
+                                    functionsToShow.push(key + "(" + args + ")");
+                                    if (input == key + "(" + args + ")") {
+                                        functionMatched = key + "(" + args + ")";
+                                    }
+                                }
+
+                            }
+                        }
+                        if (functionsToShow.length == 0) {
+                            return {};
+                        } else {
+                            if (functionMatched != "") {
+                                return {};
+                            } else {
+                                return { "toShow": functionsToShow };
+                            }
+                        }
+                    }
+
+                } else {
+                    return {};
+                }
+            }
+        }
+    }
+
     /* generated by jison-lex 0.3.4 */
     var lexer = (function () {
         var lexer = ({

@@ -527,7 +527,7 @@ class Course
     public function getEnabledLibraries()
     {
         $modulesEnabled = $this->getEnabledModules();
-        $whereCondition = "";
+        $whereCondition = "libraryId is null or ";
 
         $i = 0;
         foreach ($modulesEnabled as $module) {
