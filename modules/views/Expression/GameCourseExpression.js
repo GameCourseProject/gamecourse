@@ -73,6 +73,8 @@
 */
 var GameCourseExpression = (function () {
     var o = function (k, v, o, l) { for (o = o || {}, l = k.length; l--; o[k[l]] = v); return o }, $V0 = [1, 4], $V1 = [1, 5], $V2 = [1, 6], $V3 = [1, 13], $V4 = [1, 18], $V5 = [1, 12], $V6 = [1, 10], $V7 = [1, 11], $V8 = [1, 15], $V9 = [1, 16], $Va = [1, 17], $Vb = [1, 19], $Vc = [1, 20], $Vd = [1, 21], $Ve = [1, 12, 14, 15], $Vf = [1, 23], $Vg = [1, 24], $Vh = [1, 25], $Vi = [1, 26], $Vj = [1, 27], $Vk = [1, 28], $Vl = [1, 29], $Vm = [1, 30], $Vn = [1, 31], $Vo = [1, 32], $Vp = [1, 33], $Vq = [1, 34], $Vr = [8, 11, 13, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28], $Vs = [8, 11, 13, 16, 17, 21, 22, 23, 25, 26, 27, 28], $Vt = [8, 11, 13, 21, 22, 26, 27, 28], $Vu = [8, 11, 13, 21, 22, 23, 25, 26, 27, 28], $Vv = [8, 11, 13], $Vw = [8, 11, 13, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 38], $Vx = [1, 67];
+    var inputGlobal = "";
+    var libraryGlobalCollection = [];
     var parser = {
         trace: function trace() { },
         yy: {},
@@ -446,7 +448,6 @@ var GameCourseExpression = (function () {
             if (option == "loop" || option == "events") {
                 var libraries = [];
                 var librariesForCollection = [];
-                var returnTypes = [];
                 if (library) {
                     if (option == "events") {
 
@@ -461,17 +462,11 @@ var GameCourseExpression = (function () {
                             if (element["returnType"] == "collection" || element["refersTo"] == "collection") {
                                 libraries.push(element);
                             }
-                            if (element["refersTo"] == "collection") {
-                                librariesForCollection.push(element);
-                                if (!returnTypes.includes(element["returnType"])) {
-                                    returnTypes.push(element["returnType"]);
-                                }
-                            }
-
                         });
                     }
                 }
                 if (input) {
+                    var lastFunction = [];
                     if (input[0] == "{" && input[input.length - 1] == "}") {
                         var libraryShow = new checkLibrary(input, libraries);
                         if (!libraryShow.hasOwnProperty("returnType")) {
@@ -483,13 +478,15 @@ var GameCourseExpression = (function () {
                             }
                         } else {
                             //enters here if library+function matched
+                            inputGlobal = input;
+                            libraryGlobalCollection = library;
+
                             var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                            var libraryShow = new checkFunctionsForLibrary(inputAfterLibrary, librariesForCollection);
-                            if (libraryShow.hasOwnProperty("toShow")) {
-                                console.log(libraryShow.toShow);
-                            }
-                            if (libraryShow.hasOwnProperty("returnType")) {
-                                console.log(libraryShow.returnType);
+                            inputAfterLibrary = inputAfterLibrary.replace("{", "");
+                            inputAfterLibrary = inputAfterLibrary.replace("}", "");
+                            var functionToShow = new checkFunctions(inputAfterLibrary, "collection");
+                            if (functionToShow.hasOwnProperty("toShow")) {
+                                console.log(functionToShow.toShow);
                             }
                         }
                     }
@@ -616,7 +613,7 @@ var GameCourseExpression = (function () {
                             }
                             if (inputNow.match(new RegExp("[)]"))) {
                                 if (functionMatched != "") {
-                                    return { "returnType": returnType };
+                                    return { "functionMatched": functionMatched, "returnType": returnType };
                                 } else {
                                     return {};
                                 }
@@ -665,10 +662,12 @@ var GameCourseExpression = (function () {
             }
         }
     };
-    function checkFunctionsForLibrary(input, libraries) {
-        input = input.replace("}", "");
 
+    function checkFunctionsForLibrary(input, libraries) {
         if (input) {
+            // console.log("-------" + inputSinceBegin);
+            // console.log("+++++++" + input);
+
             if (input.match(new RegExp("\."))) {
                 var functionsAvailable = new Array();
                 input = input.split(".")[1];
@@ -715,7 +714,7 @@ var GameCourseExpression = (function () {
                                     }
                                     functionMatched = key;
                                     functionToShow = key + "(" + argList + ")";
-                                    return { "returnType": returnType };
+                                    return { "returnType": returnType, "index": input.length + 1 };
                                 }
                             }
                         } else {
@@ -776,6 +775,28 @@ var GameCourseExpression = (function () {
                     return {};
                 }
             }
+        }
+    }
+    function checkFunctions(input, returnType) {
+        var returnTypes = [];
+        var librariesForCollection = [];
+        libraryGlobalCollection.forEach(element => {
+            if (element["returnType"] == "collection" && element["refersTo"] == returnType) {
+                librariesForCollection.push(element);
+                if (!returnTypes.includes(element["returnType"])) {
+                    returnTypes.push(element["returnType"]);
+                }
+            }
+        });
+
+        var libraryShow = new checkFunctionsForLibrary(input, librariesForCollection);
+        if (libraryShow.hasOwnProperty("toShow")) {
+            console.log(libraryShow.toShow);
+            return { "toShow": libraryShow.toShow };
+        }
+        if (libraryShow.hasOwnProperty("returnType")) {
+            input = input.substr(libraryShow.index);
+            new checkFunctions(input, libraryShow.returnType);
         }
     }
 
