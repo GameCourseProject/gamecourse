@@ -593,7 +593,7 @@ var GameCourseExpression = (function () {
                         var argList = [];
                         if (inputNow.match(new RegExp("[(]"))) {
                             inputNow_ = inputNow.substring(0, inputNow.indexOf("("));
-                            var inputArg = input.split("(")[1];
+                            var inputArg = input.substring(input.indexOf("(") + 1);
                             var functionMatched = "";
                             var functionToShow = "";
                             var returnType = "";
@@ -623,32 +623,36 @@ var GameCourseExpression = (function () {
                                     return {};
                                 }
                             }
-                        }
-                        else {
-                            var functionsMatched = [];
-                            var functionsToShow = [];
-                            var re = new RegExp(inputNow, "g");
-                            for (var key in functionsAvailable) {
-                                if (key.match(re)) {
-                                    var argsTemp = functionsAvailable[key];
-                                    var args = null;
-                                    if (functionsAvailable && argsTemp.constructor === Array) {
-                                        args = argsTemp[1];
-                                    }
+                        } else {
+                            if (!inputNow.match(new RegExp("[)]"))) {
 
-                                    functionsMatched.push(key);
-                                    if (args == null) {
-                                        functionsToShow.push(libraryChosen + "." + key);
-                                    } else {
-                                        functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
-                                    }
+                                var functionsMatched = [];
+                                var functionsToShow = [];
+                                var re = new RegExp(inputNow, "g");
+                                for (var key in functionsAvailable) {
+                                    if (key.match(re)) {
+                                        var argsTemp = functionsAvailable[key];
+                                        var args = null;
+                                        if (functionsAvailable && argsTemp.constructor === Array) {
+                                            args = argsTemp[1];
+                                        }
 
+                                        functionsMatched.push(key);
+                                        if (args == null) {
+                                            functionsToShow.push(libraryChosen + "." + key);
+                                        } else {
+                                            functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
+                                        }
+
+                                    }
                                 }
-                            }
-                            if (functionsToShow.length == 0) {
-                                return {};
+                                if (functionsToShow.length == 0) {
+                                    return {};
+                                } else {
+                                    return { "toShow": functionsToShow };
+                                }
                             } else {
-                                return { "toShow": functionsToShow };
+                                return {};
                             }
                         }
 
@@ -692,12 +696,12 @@ var GameCourseExpression = (function () {
                 if (input.match(new RegExp("^[a-zA-Z0-9_\,()]*$"))) {
                     //faz match com os argumentos
                     var argList = [];
+                    var returnType = "";
                     if (input.match(new RegExp("[(]"))) {
                         inputNow_ = input.substring(0, input.indexOf("("));
-                        inputArg = input.split("(")[1];
+                        var inputArg = input.substring(input.indexOf("(") + 1);
                         var functionMatched = "";
                         var functionToShow = "";
-                        var returnType = "";
                         if (input.match(new RegExp("[)]"))) {
                             for (var key in functionsAvailable) {
                                 var infoFunction = functionsAvailable[key];
@@ -717,7 +721,6 @@ var GameCourseExpression = (function () {
                             if (inputArg.length == 0) {
                                 for (var key in functionsAvailable) {
                                     var infoFunction = functionsAvailable[key];
-
                                     if (key == inputNow_) {
                                         if (infoFunction.constructor === Array) {
                                             argList = infoFunction[1];
@@ -732,38 +735,44 @@ var GameCourseExpression = (function () {
                             return {};
                         }
                     } else {
-                        var functionMatched = "";
-                        var functionsToShow = [];
-                        var re = new RegExp(input, "g");
-                        for (var key in functionsAvailable) {
-                            if (key.match(re)) {
-                                var argsTemp = functionsAvailable[key];
-                                var args = null;
-                                if (functionsAvailable && argsTemp.constructor === Array) {
-                                    args = argsTemp[1];
-                                }
-                                if (args == null) {
-                                    functionsToShow.push(key);
-                                    if (input == key) {
-                                        functionMatched = key;
+                        if (!input.match(new RegExp("[)]"))) {
+                            var functionMatched = "";
+                            var functionsToShow = [];
+                            var re = new RegExp(input, "g");
+                            for (var key in functionsAvailable) {
+                                if (key.match(re)) {
+                                    var argsTemp = functionsAvailable[key];
+                                    var args = null;
+                                    if (functionsAvailable && argsTemp.constructor === Array) {
+                                        args = argsTemp[1];
+                                        returnType = argsTemp[0];
+                                    } else {
+                                        returnType = argsTemp;
                                     }
-                                } else {
-                                    functionsToShow.push(key + "(" + args + ")");
-                                    if (input == key + "(" + args + ")") {
-                                        functionMatched = key + "(" + args + ")";
+                                    if (args == null) {
+                                        functionsToShow.push(key);
+                                        if (input == key) {
+                                            functionMatched = key;
+                                        }
+                                    } else {
+                                        functionsToShow.push(key + "(" + args + ")");
+                                        if (input == key + "(" + args + ")") {
+                                            functionMatched = key + "(" + args + ")";
+                                        }
                                     }
                                 }
-
                             }
-                        }
-                        if (functionsToShow.length == 0) {
-                            return {};
-                        } else {
-                            if (functionMatched != "") {
+                            if (functionsToShow.length == 0) {
                                 return {};
                             } else {
-                                return { "toShow": functionsToShow };
+                                if (functionMatched != "") {
+                                    return { "returnType": returnType, "index": input.length + 1 };
+                                } else {
+                                    return { "toShow": functionsToShow };
+                                }
                             }
+                        } else {
+                            return {};
                         }
                     }
 
