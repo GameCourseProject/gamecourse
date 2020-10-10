@@ -445,8 +445,7 @@ var GameCourseExpression = (function () {
             }
             return true;
         },
-        autocomplete: function autocomplete(input, library, option) {
-
+        autocomplete: function autocomplete(input, library, option, caret) {
             if (option == "loop" || option == "events") {
                 var libraries = [];
                 if (library) {
@@ -491,7 +490,7 @@ var GameCourseExpression = (function () {
                     }
                 }
 
-            } else if (option == "if") {
+            } else if (option == "if" || option == "content") {
                 if (input) {
                     var libraries = [];
                     if (library) {
@@ -505,13 +504,28 @@ var GameCourseExpression = (function () {
                     if (input[0] == "{" && input[input.length - 1] == "}") {
                         input = input.replace("{", "");
                         input = input.replace("}", "");
-                        // if (input.length > 1) {
-                        //     if (input[input.length - 2] == "!") {
-                        //         console.log("asdas");
-                        //         input = input.substr(input.length - 1);
-                        //     }
-                        // }
-                        console.log(input);
+                        caret = caret - 1;
+                        var matches = input.match(new RegExp("([%!|&\*\+\-<>=]){0,1}(([a-zA-Z\.])+((\((.*?)\)){0,1}))", "g"));
+                        var acc = 0;
+                        var matched = "";
+                        if (matches) {
+                            for (let index = 0; index < matches.length; index++) {
+                                if (caret > acc) {
+                                    acc = acc + matches[index].length;
+                                    var foundMatch = matches[index];
+                                    if (index != matches.length - 1) {
+                                        foundMatch = foundMatch.slice(0, -1);
+                                    }
+                                    if (foundMatch[0].match(new RegExp("([%!|&\*\+\-<>=])", "g"))) {
+                                        foundMatch = foundMatch.substr(1);
+                                    }
+                                    matched = foundMatch;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        input = matched;
                         var libraryShow = new checkLibrary(input, libraries);
                         if (!libraryShow.hasOwnProperty("returnType")) {
                             if (libraryShow.hasOwnProperty("toShow")) {
@@ -519,7 +533,6 @@ var GameCourseExpression = (function () {
                             } else {
                                 output = "";
                             }
-
                         }
                         else {
                             output = "";
@@ -532,7 +545,7 @@ var GameCourseExpression = (function () {
                         }
                     }
                 }
-            } else if (option == "variables" || option == "content") {
+            } else if (option == "variables") {
                 var libraries = library;
                 if (input && libraries) {
                     if (input) {
@@ -553,7 +566,6 @@ var GameCourseExpression = (function () {
             if (input) {
                 //faz match com libraries
                 if ((input.split('.').length - 1) == 0) {
-                    console.log(input);
                     if (input.match(new RegExp("^[a-z]+$"))) {
                         var re = new RegExp(input, "g");
                         var librariesMatched = [];

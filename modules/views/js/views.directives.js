@@ -271,7 +271,19 @@ angular.module('module.views').directive('sbMenu', function () {
                         }
                     } else {
                         if (allows[0] == "options.allowIf") {
-                            GameCourseExpression.autocomplete(newValue, libraryData, "if");
+                            var textArea = "";
+                            var ifCaret = ""
+                            var ifChildren = document.getElementById("visCondition").children;
+                            ifChildren.forEach(element => {
+                                if (element.nodeName == "TEXTAREA") {
+                                    textArea = element;
+                                }
+                            });
+                            if (textArea) {
+                                ifCaret = textArea.selectionStart;
+                            }
+
+                            GameCourseExpression.autocomplete(newValue, libraryData, "if", ifCaret);
                         }
 
                     }
