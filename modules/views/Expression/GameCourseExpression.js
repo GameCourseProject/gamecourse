@@ -535,7 +535,7 @@ var GameCourseExpression = (function () {
 
                         if (caret < endInput) {
 
-                            var matches = input.match(new RegExp("(([%!|&\*\+\-<>=]){0,1}([a-zA-Z.\(\)\,])+)", "g"));
+                            var matches = input.match(new RegExp("(([!|&\*\+\-<>=]){0,1}([a-zA-Z0-9.\(\)\,])+)", "g"));
                             var acc = 0;
                             var matched = "";
                             if (matches) {
@@ -546,8 +546,11 @@ var GameCourseExpression = (function () {
                                         if (index != matches.length - 1) {
                                             foundMatch = foundMatch.slice(0, -1);
                                         }
-                                        if (foundMatch[0].match(new RegExp("([%!|&\*\+\-<>=])", "g"))) {
-                                            foundMatch = foundMatch.substr(1);
+                                        if (foundMatch) {
+
+                                            if (foundMatch[0].match(new RegExp("([!|&\*\+\-<>=])", "g"))) {
+                                                foundMatch = foundMatch.substr(1);
+                                            }
                                         }
                                         matched = foundMatch;
                                     } else {
@@ -555,10 +558,7 @@ var GameCourseExpression = (function () {
                                     }
                                 }
                             }
-                            // console.log(input);
                             input = matched;
-                            // console.log(input);
-                            // console.log("------------");
                             var libraryShow = new checkLibrary(input, libraries);
                             if (!libraryShow.hasOwnProperty("returnType")) {
                                 if (libraryShow.hasOwnProperty("toShow")) {
@@ -761,89 +761,93 @@ var GameCourseExpression = (function () {
                         }
                     }
                 });
-                if (input.match(new RegExp("^[a-zA-Z0-9_\,()]*$"))) {
-                    //faz match com os argumentos
-                    var argList = [];
-                    var returnType = "";
-                    if (input.match(new RegExp("[(]"))) {
-                        inputNow_ = input.substring(0, input.indexOf("("));
-                        var inputArg = input.substring(input.indexOf("(") + 1);
-                        var functionMatched = "";
-                        var functionToShow = "";
-                        if (input.match(new RegExp("[)]"))) {
-                            for (var key in functionsAvailable) {
-                                var infoFunction = functionsAvailable[key];
-                                if (key == inputNow_) {
-                                    if (infoFunction.constructor === Array) {
-                                        returnType = infoFunction[0];
-                                        argList = infoFunction[1];
-                                    } else {
-                                        returnType = infoFunction;
-                                    }
-                                    functionMatched = key;
-                                    functionToShow = key + "(" + argList + ")";
-                                    return { "returnType": returnType, "index": input.length + 1 };
-                                }
-                            }
-                        } else {
-                            if (inputArg.length == 0) {
+                if (input) {
+                    if (input.match(new RegExp("^[a-zA-Z0-9_()]*$"))) {
+                        //faz match com os argumentos
+                        var argList = [];
+                        var returnType = "";
+                        if (input.match(new RegExp("[(]"))) {
+                            inputNow_ = input.substring(0, input.indexOf("("));
+                            var inputArg = input.substring(input.indexOf("(") + 1);
+                            var functionMatched = "";
+                            var functionToShow = "";
+                            if (input.match(new RegExp("[)]"))) {
                                 for (var key in functionsAvailable) {
                                     var infoFunction = functionsAvailable[key];
                                     if (key == inputNow_) {
                                         if (infoFunction.constructor === Array) {
+                                            returnType = infoFunction[0];
                                             argList = infoFunction[1];
                                         } else {
                                             returnType = infoFunction;
                                         }
+                                        functionMatched = key;
                                         functionToShow = key + "(" + argList + ")";
-                                        return { "toShow": functionToShow };
+                                        return { "returnType": returnType, "index": input.length + 1 };
                                     }
                                 }
-                            }
-                            return {};
-                        }
-                    } else {
-                        if (!input.match(new RegExp("[)]"))) {
-                            var functionMatched = "";
-                            var functionsToShow = [];
-                            var re = new RegExp(input, "g");
-                            for (var key in functionsAvailable) {
-                                if (key.match(re)) {
-                                    var argsTemp = functionsAvailable[key];
-                                    var args = null;
-                                    if (functionsAvailable && argsTemp.constructor === Array) {
-                                        args = argsTemp[1];
-                                        returnType = argsTemp[0];
-                                    } else {
-                                        returnType = argsTemp;
-                                    }
-                                    if (args == null) {
-                                        functionsToShow.push(key);
-                                        if (input == key) {
-                                            functionMatched = key;
-                                        }
-                                    } else {
-                                        functionsToShow.push(key + "(" + args + ")");
-                                        if (input == key + "(" + args + ")") {
-                                            functionMatched = key + "(" + args + ")";
-                                        }
-                                    }
-                                }
-                            }
-                            if (functionsToShow.length == 0) {
-                                return {};
                             } else {
-                                if (functionMatched != "") {
-                                    return { "returnType": returnType, "index": input.length + 1 };
-                                } else {
-                                    return { "toShow": functionsToShow };
+                                if (inputArg.length == 0) {
+                                    for (var key in functionsAvailable) {
+                                        var infoFunction = functionsAvailable[key];
+                                        if (key == inputNow_) {
+                                            if (infoFunction.constructor === Array) {
+                                                argList = infoFunction[1];
+                                            } else {
+                                                returnType = infoFunction;
+                                            }
+                                            functionToShow = key + "(" + argList + ")";
+                                            return { "toShow": functionToShow };
+                                        }
+                                    }
                                 }
+                                return {};
                             }
                         } else {
-                            return {};
+                            if (!input.match(new RegExp("[)]"))) {
+                                var functionMatched = "";
+                                var functionsToShow = [];
+                                var re = new RegExp(input, "g");
+                                for (var key in functionsAvailable) {
+                                    if (key.match(re)) {
+                                        var argsTemp = functionsAvailable[key];
+                                        var args = null;
+                                        if (functionsAvailable && argsTemp.constructor === Array) {
+                                            args = argsTemp[1];
+                                            returnType = argsTemp[0];
+                                        } else {
+                                            returnType = argsTemp;
+                                        }
+                                        if (args == null) {
+                                            functionsToShow.push(key);
+                                            if (input == key) {
+                                                functionMatched = key;
+                                            }
+                                        } else {
+                                            functionsToShow.push(key + "(" + args + ")");
+                                            if (input == key + "(" + args + ")") {
+                                                functionMatched = key + "(" + args + ")";
+                                            }
+                                        }
+                                    }
+                                }
+                                if (functionsToShow.length == 0) {
+                                    return {};
+                                } else {
+                                    if (functionMatched != "") {
+                                        return { "returnType": returnType, "index": input.length + 1 };
+                                    } else {
+                                        return { "toShow": functionsToShow };
+                                    }
+                                }
+                            } else {
+                                return {};
+                            }
                         }
-                    }
 
+                    } else {
+                        return {};
+                    }
                 } else {
                     return {};
                 }
