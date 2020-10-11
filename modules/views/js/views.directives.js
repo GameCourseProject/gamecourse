@@ -288,7 +288,22 @@ angular.module('module.views').directive('sbMenu', function () {
 
                     }
                 } else if ($scope.elid = "ex-6") { //content n tem watchers
-                    GameCourseExpression.autocomplete(newValue, libraryData, "content");
+                    var textArea = "";
+                    var contentCaret = "";
+                    var content = document.getElementById("visContent");
+                    if (content) {
+                        var contentChildren = content.children;
+                        contentChildren.forEach(element => {
+                            if (element.nodeName == "TEXTAREA") {
+                                textArea = element;
+                            }
+                        });
+                    }
+                    if (textArea) {
+                        contentCaret = textArea.selectionStart;
+                    }
+
+                    GameCourseExpression.autocomplete(newValue, libraryData, "content", contentCaret);
                 }
                 try {
                     CodeAssistant.reset();

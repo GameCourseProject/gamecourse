@@ -500,49 +500,87 @@ var GameCourseExpression = (function () {
                             }
                         });
                     }
-
+                    if (option == "content") {
+                        var diferentMatches = {};
+                        var inputMatches = input.match(new RegExp("(\{(.*?)\})", "g"));
+                        var allInputMatches = input.match(new RegExp("([A-Za-z0-9.,\(\) \{])+(\})", "g"));
+                        var inputAcc = 0;
+                        var inputMatched = "";
+                        if (inputMatches) {
+                            var i = 0;
+                            inputMatches.forEach(element => {
+                                if (diferentMatches[element] !== undefined) {
+                                    diferentMatches[element]++;
+                                } else {
+                                    diferentMatches[element] = 1;
+                                }
+                                if (caret > inputAcc) {
+                                    if (allInputMatches) {
+                                        inputAcc += allInputMatches[i].length;
+                                    }
+                                    inputMatched = element;
+                                }
+                                i++;
+                            });
+                        }
+                        var allMatches = input.split(inputMatched)[0].length;
+                        caret = caret - allMatches;
+                        input = inputMatched;
+                    }
                     if (input[0] == "{" && input[input.length - 1] == "}") {
+                        var endInput = input.indexOf("}");
                         input = input.replace("{", "");
                         input = input.replace("}", "");
                         caret = caret - 1;
-                        var matches = input.match(new RegExp("([%!|&\*\+\-<>=]){0,1}(([a-zA-Z\.])+((\((.*?)\)){0,1}))", "g"));
-                        var acc = 0;
-                        var matched = "";
-                        if (matches) {
-                            for (let index = 0; index < matches.length; index++) {
-                                if (caret > acc) {
-                                    acc = acc + matches[index].length;
-                                    var foundMatch = matches[index];
-                                    if (index != matches.length - 1) {
-                                        foundMatch = foundMatch.slice(0, -1);
+
+                        if (caret < endInput) {
+
+                            var matches = input.match(new RegExp("(([%!|&\*\+\-<>=]){0,1}([a-zA-Z.\(\)\,])+)", "g"));
+                            var acc = 0;
+                            var matched = "";
+                            if (matches) {
+                                for (let index = 0; index < matches.length; index++) {
+                                    if (caret > acc) {
+                                        acc = acc + matches[index].length;
+                                        var foundMatch = matches[index];
+                                        if (index != matches.length - 1) {
+                                            foundMatch = foundMatch.slice(0, -1);
+                                        }
+                                        if (foundMatch[0].match(new RegExp("([%!|&\*\+\-<>=])", "g"))) {
+                                            foundMatch = foundMatch.substr(1);
+                                        }
+                                        matched = foundMatch;
+                                    } else {
+                                        break;
                                     }
-                                    if (foundMatch[0].match(new RegExp("([%!|&\*\+\-<>=])", "g"))) {
-                                        foundMatch = foundMatch.substr(1);
-                                    }
-                                    matched = foundMatch;
-                                } else {
-                                    break;
                                 }
                             }
-                        }
-                        input = matched;
-                        var libraryShow = new checkLibrary(input, libraries);
-                        if (!libraryShow.hasOwnProperty("returnType")) {
-                            if (libraryShow.hasOwnProperty("toShow")) {
-                                output = libraryShow.toShow;
+                            // console.log(input);
+                            input = matched;
+                            // console.log(input);
+                            // console.log("------------");
+                            var libraryShow = new checkLibrary(input, libraries);
+                            if (!libraryShow.hasOwnProperty("returnType")) {
+                                if (libraryShow.hasOwnProperty("toShow")) {
+                                    output = libraryShow.toShow;
+                                } else {
+                                    output = "";
+                                }
                             } else {
                                 output = "";
+                                //enters here if library+function matched
+                                inputGlobal = input;
+                                libraryGlobalCollection = library;
+                                libraryChosen = libraryShow.libraryChosen
+                                var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
+                                new checkFunctions(inputAfterLibrary, libraryShow.returnType);
                             }
-                        }
-                        else {
+                        } else {
                             output = "";
-                            //enters here if library+function matched
-                            inputGlobal = input;
-                            libraryGlobalCollection = library;
-                            libraryChosen = libraryShow.libraryChosen
-                            var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                            new checkFunctions(inputAfterLibrary, libraryShow.returnType);
                         }
+
+                    } else {
+                        output = "";
                     }
                 }
             } else if (option == "variables") {
