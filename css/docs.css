@@ -101,11 +101,19 @@ pre.code {
   border: 1px solid #AAAAAA;
   border-radius: 2px;
   white-space: pre-wrap;
-  padding: 2px;
+  padding: 10px;
 }
 pre.code .highlight {
   background-color: rgba(0, 200, 0, 0.3);
   display: inline-block;
+}
+img {
+  margin: auto;
+  border: 2px solid gray;
+  border-radius: 2px;
+  text-align: center;
+  display: block;
+  padding: 10px;
 }
 
 /*notification for search*/

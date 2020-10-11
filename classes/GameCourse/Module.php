@@ -225,17 +225,17 @@ abstract class Module
     }
 
     //functions for the module configuration page
-    public function is_configurable(){}
+    public function is_configurable(){ return false; } //default is false
 
      
-    public function has_personalized_config (){}
+    public function has_personalized_config (){ return false; } //default is false
     public function get_personalized_function(){}
     
-    public function has_general_inputs (){}
+    public function has_general_inputs (){ return false; } //default is false
     public function get_general_inputs ($courseId){}
     public function save_general_inputs($generalInputs,$courseId){}
 
-    public function has_listing_items (){}
+    public function has_listing_items (){ return false; } //default is false
     public function get_listing_items ($courseId){}
     public function save_listing_item ($actiontype, $listingItem, $courseId){}
 }

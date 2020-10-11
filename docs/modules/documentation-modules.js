@@ -2,8 +2,8 @@ function addClickEvents(){
     prevTab = "#tab-create";
     prevSection = "#create";
     
-    tabs = ["#tab-create","#tab-init","#tab-resources","#tab-data"]
-    sections = ["#create","#init","#resources","#data"]    
+    tabs = ["#tab-create","#tab-init","#tab-config","#tab-resources","#tab-data"]
+    sections = ["#create","#init","#config","#resources","#data"]    
 
     //tabs onclick events
     jQuery.each(tabs , function( index ) {
