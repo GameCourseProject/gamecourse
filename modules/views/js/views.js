@@ -168,6 +168,11 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     var loadedView;
     var initialViewContent;
 
+    //colocar links para tras breadcrumb
+
+    var viewEditorWindow = $('<div id="viewEditor"></div>')
+    $element.append(viewEditorWindow);
+
     var reqData = {course: $scope.course};
     if ($state.current.name == 'course.settings.views.view.edit-role-single')
         reqData.info = {role: $stateParams.role};
@@ -176,7 +181,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
     $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function(view, err) {
         if (err) {
-            $element.html(err);
+            viewEditorWindow.html(err);
             console.log(err);
             return;
         }
@@ -276,8 +281,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         controlsDiv.append(btnPreview);
 
 
-        $element.html(view.element);
-        $element.prepend(controlsDiv);
+        viewEditorWindow.html(view.element);
+        viewEditorWindow.prepend(controlsDiv);
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function($event, toState, toParams) {
@@ -294,6 +299,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         } else
             watcherDestroy();
     });
+
+    
 });
 
 angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state,$sbviews) {
@@ -583,7 +590,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-single', {
         url: '/edit',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }
@@ -591,7 +598,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-role-single', {
         url: '/edit/{role:[A-Za-z0-9.]+}',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }

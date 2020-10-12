@@ -1,3 +1,10 @@
+#viewEditor {
+  /* styles for inside view editor*/
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 80px 55px 35px;
+}
 .preview {
   margin-top: 4px;
 }
