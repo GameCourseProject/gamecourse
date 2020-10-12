@@ -183,8 +183,28 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         loadedView = view;
         initialViewContent = angular.copy(view.get());
 
-        var controlsDiv = $('<div>');
-        var btnSave = $('<button>Save</button>');
+        var controlsDiv = $('<div class="action-buttons" id="view_editor_actions">');
+        
+        $scope.canUndo = view.canUndo;
+        $scope.undo = view.undo;
+        var btnUndoActive = $('<div ng-if="canUndo()" id="undo_icon" class="icon undo_icon" ng-click="undo()"></div>');
+        var btnUndoDisabled = $('<div ng-if="!canUndo()" id="undo_icon" class="icon undo_icon disabled" ></div>');
+        $compile(btnUndoActive)($scope);
+        $compile(btnUndoDisabled)($scope);
+        controlsDiv.append(btnUndoActive);
+        controlsDiv.append(btnUndoDisabled);
+
+        $scope.canRedo = view.canRedo;
+        $scope.redo = view.redo;
+        var btnRedoActive = $('<div ng-if="canRedo()" id="redo_icon" class="icon redo_icon" ng-click="redo()"></div>');
+        var btnRedoDisabled = $('<div ng-if="!canRedo()" id="redo_icon" class="icon redo_icon disabled" ></div>');
+        $compile(btnRedoActive)($scope);
+        $compile(btnRedoDisabled)($scope);
+        controlsDiv.append(btnRedoActive);
+        controlsDiv.append(btnRedoDisabled);
+
+        //meter so save quando e preciso
+        var btnSave = $('<button>Save Changes</button>');
         btnSave.click(function() {
             btnSave.prop('disabled', true);
             var saveData = $.extend({}, reqData);
@@ -240,30 +260,21 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 view.element.hide();
                 controlsDiv.hide();
 
+                acion_buttons = $('<div class="action-buttons" >');
                 var btnClosePreview = $('<button>Close Preview</button>');
                 btnClosePreview.click(function() {
                     viewBlock.remove();
-                    btnClosePreview.remove();
+                    acion_buttons.remove();
                     view.element.show();
                     controlsDiv.show();
                 });
+                acion_buttons.append(btnClosePreview);
                 $element.append(viewBlock);
-                $element.prepend(btnClosePreview);
+                $element.prepend(acion_buttons);
             });
         });
         controlsDiv.append(btnPreview);
 
-        $scope.canUndo = view.canUndo;
-        $scope.undo = view.undo;
-        var btnUndo = $('<button ng-if="canUndo()" ng-click="undo()">Undo</button>');
-        $compile(btnUndo)($scope);
-        controlsDiv.append(btnUndo);
-
-        $scope.canRedo = view.canRedo;
-        $scope.redo = view.redo;
-        var btnRedo = $('<button ng-if="canRedo()" ng-click="redo()">Redo</button>');
-        $compile(btnRedo)($scope);
-        controlsDiv.append(btnRedo);
 
         $element.html(view.element);
         $element.prepend(controlsDiv);

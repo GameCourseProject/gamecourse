@@ -451,3 +451,8 @@
     width: 20px;
     margin-left: 7px;
 }
+
+/* View Editor */
+#view_editor_actions{
+    width: 270px;
+}
