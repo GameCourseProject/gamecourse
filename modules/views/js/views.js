@@ -230,7 +230,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                     giveMessage('Saved!');
                 }
                 initialViewContent = angular.copy(saveData.content);
-                location.reload();//reloading to prevent bug that kept adding new parts over again
+                //location.reload();//reloading to prevent bug that kept adding new parts over again
             });
         });
         controlsDiv.append(btnSave);

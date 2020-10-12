@@ -48,13 +48,13 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                         element.replaceWith(newEl);
                         element = newEl;
                         element.data(data);
-                        element.css('padding-top', 18);
+                        //element.css('padding-top', 18);
                         bindToolbar();
                         optionsDivEl = undefined;
                     }}});
                 }
                 bindToolbar();
-                element.css('padding-top', 18);
+                //element.css('padding-top', 18);
             }
             return element;
         },

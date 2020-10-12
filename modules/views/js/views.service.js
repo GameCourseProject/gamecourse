@@ -90,7 +90,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             function build() {
                 var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
                 element.removeClass('block');
-                element.css('padding-top', 18);
+                //element.css('padding-top', 18);
                 element.addClass('view editing');
                 return element;
             }
@@ -645,6 +645,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         var myToolbar = undefined;
         var toolbarOptions;
         var layoutEditing = false;
+        var fistclickdone = false;
 
         var toolOptions = partOptions.toolOptions != undefined ? partOptions.toolOptions : {};
         var toolFunctions = partOptions.toolFunctions != undefined ? $.extend({}, partOptions.toolFunctions) : {};
@@ -664,69 +665,91 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         };
 
-        element.on('mouseenter', function () {
-            if (myToolbar)
-                return;
+        
 
-            var defaultOptions = {
-                layoutEditor: false,
-                overlayOptions: {
-                    allowClass: true,
-                    allowStyle: true,
-                    allowDirective: true
-                },
-                tools: {
-                    noSettings: false,
-                    canSwitch: false,
-                    canDelete: false,
-                    canDuplicate: false,
-                    canSaveTemplate: false,
-                    canSaveTemplateRef: false
-                },
-                view: partOptions.view
-            };
+        element.on('click', function(e) {
+            
+            //click only works on the closest div.
+            e.stopPropagation(); 
 
-            if (element.parent().hasClass("header")) {
-                defaultOptions.overlayOptions.allowEvents = true;
-                defaultOptions.overlayOptions.allowStyle = true;
-                defaultOptions.overlayOptions.allowClass = true;
+            //second click closes the toolbar
+            if (fistclickdone){
+                if (layoutEditing){
+                    return;
+                }
+                    
+                element.removeClass('highlight');
+                if (myToolbar != undefined)
+                    myToolbar.remove();
+                myToolbar = undefined;
+                fistclickdone = false;
             }
-            else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view')) { // children of ui-block
-                defaultOptions.overlayOptions.allowDataLoop = true;
-                defaultOptions.overlayOptions.allowIf = true;
-                defaultOptions.overlayOptions.allowEvents = true;
-                defaultOptions.overlayOptions.allowVariables = true;
-                defaultOptions.overlayOptions.allowStyle = true;
-                defaultOptions.overlayOptions.allowClass = true;
+
+            //first click opens the toolbar
+            else{
+                //remove highlight and toolbar from preiously selected elements
+                previousHighlighted = $(".highlight");
+                jQuery.each(previousHighlighted , function( index ) {
+                    item = previousHighlighted[index];
+                    item.click();
+                });
+                
+                if (myToolbar)
+                    return;
+
+                var defaultOptions = {
+                    layoutEditor: false,
+                    overlayOptions: {
+                        allowClass: true,
+                        allowStyle: true,
+                        allowDirective: true
+                    },
+                    tools: {
+                        noSettings: false,
+                        canSwitch: false,
+                        canDelete: false,
+                        canDuplicate: false,
+                        canSaveTemplate: false,
+                        canSaveTemplateRef: false
+                    },
+                    view: partOptions.view
+                };
+                
+                if (element.parent().hasClass("header")){
+                    defaultOptions.overlayOptions.allowEvents = true;
+                    defaultOptions.overlayOptions.allowStyle = true;
+                    defaultOptions.overlayOptions.allowClass = true;
+                }
+                else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view')) { // children of ui-block
+                    defaultOptions.overlayOptions.allowDataLoop = true;
+                    defaultOptions.overlayOptions.allowIf = true;
+                    defaultOptions.overlayOptions.allowEvents = true;
+                    defaultOptions.overlayOptions.allowVariables = true;
+                    defaultOptions.overlayOptions.allowStyle = true;
+                    defaultOptions.overlayOptions.allowClass = true;
+                }
+                if (element.hasClass('view')) {
+                    toolOptions.noSettings = true;
+                }
+                toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
+                toolbarOptions.editData = editData;
+                
+                myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
+    
+                
+                // myToolbar.css({
+                //     position: 'absolute',
+                //     top: 0,
+                //     right: 0
+                // });
+                //if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
+                    element.addClass('highlight');
+                
+                element.append(myToolbar);
+                fistclickdone = true;
+                //console.log("mouseenter",element.data());
             }
-            if (element.hasClass('view')) {
-                toolOptions.noSettings = true;
-            }
-            toolbarOptions = $.extend(true, defaultOptions, { tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions }, options);
-            toolbarOptions.editData = editData;
-
-            myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
-
-            myToolbar.css({
-                position: 'absolute',
-                top: 0,
-                right: 0
-            });
-            if (element.parent().prop("tagName") != "TD")//not highlighting table element because it moves things arround
-                element.addClass('highlight');
-
-            element.append(myToolbar);
-            //console.log("mouseenter",element.data());
-        });
-
-        element.on('mouseleave', function (e) {
-            if (layoutEditing)
-                return;
-            //element.css('padding-top', element.data('true-margin'));
-            element.removeClass('highlight');
-            if (myToolbar != undefined)
-                myToolbar.remove();
-            myToolbar = undefined;
+            
         });
     };
 

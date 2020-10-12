@@ -41,6 +41,10 @@
   position: relative;
   margin-bottom: 16px;
 }
+#viewEditor .view {
+  border: 2px solid lightgray;
+  border-radius: 5px;
+}
 .view.editing {
   margin-top: 20px;
   margin-bottom: 200px;
@@ -53,17 +57,40 @@
 .view .image {
   display: inline-block;
 }
+
+#viewEditor .view .block,
+#viewEditor .view .image,
+#viewEditor .view .value,
+#viewEditor .view .table {
+  border: 2px solid lightgray;
+  border-radius: 5px;
+}
+#viewEditor .view .table {
+  width: auto;
+}
 .view.highlight,
 .view .highlight {
-  border: 1px solid rgba(255, 0, 0, 0.2) !important;
+  border: 2px solid grey !important;
 }
+.edit-toolbar{
+  position: fixed;
+  bottom: 0px;
+  right: 40%;
+  right: 0;
+  width: 100vw;
+  display: flex;
+  z-index: 5;
+  justify-content: center;
+}
+
+
 .view .edit-toolbar > img {
-  width: 12px !important;
-  height: 12px !important;
-  padding: 1px !important;
+  width: 50px !important;
+  height: 45px !important;
+  padding: 5px !important;
   border: 1px solid #868686 !important;
   border-right: none !important;
-  background-color: #e4e4e4 !important;
+  background-color:white;
 }
 .view .edit-toolbar > img:last-child {
   border-right: 1px solid #868686 !important;
