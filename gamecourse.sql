@@ -24,8 +24,8 @@ drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
 drop table if exists functions;
+drop table if exists variables;
 drop table if exists library;
-drop table if exists library_functions;
 drop table if exists course_module;
 drop table if exists module;
 drop table if exists user_role;
@@ -126,6 +126,14 @@ create table functions(
 	refersTo varchar(50) not null,
 	keyword varchar(50),
 	args varchar(1000),
+	description varchar(1000),
+	foreign key(libraryId) references library(id) on delete cascade
+);
+
+create table variables(
+	id	int unsigned auto_increment primary key,
+	libraryId int unsigned null,
+	name unique varchar(50),
 	description varchar(1000),
 	foreign key(libraryId) references library(id) on delete cascade
 );

@@ -247,8 +247,10 @@ angular.module('module.views').directive('sbMenu', function () {
                 }
             };
 
+
+
             $scope.testExpression = function (newValue) {
-                var libraryData = $scope.$parent.$parent.$parent.$parent.dictionary;
+                var dictionary = $scope.$parent.$parent.$parent.$parent.dictionary;
                 var allAllows = $scope.$parent.$parent.$$watchers;
                 var allows = [];
                 allAllows.forEach(element => {
@@ -259,51 +261,26 @@ angular.module('module.views').directive('sbMenu', function () {
                         }
                     }
                 });
-                if (allows.length != 0) {
-                    if (allows.length == 1) {
-                        //verificar o scope e o options
-                        if (allows[0] == "options.allowDataLoop") {
-                            GameCourseExpression.autocomplete(newValue, libraryData, "loop");
-                        } else if (allows[0] == "missingEvents.length > 0") {
-                            GameCourseExpression.autocomplete(newValue, libraryData, "events");
-                        } else if (allows[0] == "options.allowVariables") {
-                            GameCourseExpression.autocomplete(newValue, libraryData, "variables");
-                        }
-                    } else {
-                        if (allows[0] == "options.allowIf") {
-                            var textArea = "";
-                            var ifCaret = ""
-                            var ifChildren = document.getElementById("visCondition").children;
-                            ifChildren.forEach(element => {
-                                if (element.nodeName == "TEXTAREA") {
-                                    textArea = element;
-                                }
-                            });
-                            if (textArea) {
-                                ifCaret = textArea.selectionStart;
+                if (dictionary) {
+                    if (allows.length != 0) {
+                        if (allows.length == 1) {
+                            //verificar o scope e o options
+                            if (allows[0] == "options.allowDataLoop") {
+                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "loop");
+                            } else if (allows[0] == "missingEvents.length > 0") {
+                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "events");
+                            } else if (allows[0] == "options.allowVariables") {
+                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "variables");
+                            }
+                        } else {
+                            if (allows[0] == "options.allowIf") {
+                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "if");
                             }
 
-                            GameCourseExpression.autocomplete(newValue, libraryData, "if", ifCaret);
                         }
-
+                    } else if ($scope.elid = "ex-6") { //content n tem watchers
+                        GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "content");
                     }
-                } else if ($scope.elid = "ex-6") { //content n tem watchers
-                    var textArea = "";
-                    var contentCaret = "";
-                    var content = document.getElementById("visContent");
-                    if (content) {
-                        var contentChildren = content.children;
-                        contentChildren.forEach(element => {
-                            if (element.nodeName == "TEXTAREA") {
-                                textArea = element;
-                            }
-                        });
-                    }
-                    if (textArea) {
-                        contentCaret = textArea.selectionStart;
-                    }
-
-                    GameCourseExpression.autocomplete(newValue, libraryData, "content", contentCaret);
                 }
                 try {
                     CodeAssistant.reset();

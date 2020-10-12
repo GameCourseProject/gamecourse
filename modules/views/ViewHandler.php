@@ -584,6 +584,20 @@ class ViewHandler
             Core::$systemDB->insert("library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
+    public function registerVariable($name, $libraryName = null, $description = null)
+    {
+        if (!Core::$systemDB->select("variables", ["name" => $name])) {
+            if ($libraryName) {
+                $libraryId = Core::$systemDB->select("library", ["name" => $libraryName], "id");
+                if (!$libraryId) {
+                    new \Exception('Library named ' . $libraryName . ' not found.');
+                }
+            } else {
+                $libraryId = null;
+            }
+            Core::$systemDB->insert("variables", ["name" => $name, "libraryId" => $libraryId, "description" => $description]);
+        }
+    }
     public function registerFunction($funcLib, $funcName, $processFunc,  $returnType,  $description = null, $refersTo = "object")
     {
         if ($funcLib) {

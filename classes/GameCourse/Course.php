@@ -545,4 +545,27 @@ class Course
             "name, keyword, refersTo, returnType, args"
         );
     }
+
+    //enabled porque no futuro podem haver variáveis dependentes de modules
+    public function getEnabledVariables()
+    {
+        $modulesEnabled = $this->getEnabledModules();
+        $whereCondition = "libraryId is null or ";
+
+        $i = 0;
+        foreach ($modulesEnabled as $module) {
+            $whereCondition .=  "moduleId=\"" . $module . "\"";
+
+            if ($i != count($modulesEnabled) - 1) {
+                $whereCondition .= " or ";
+            }
+            $i++;
+        }
+
+        return Core::$systemDB->selectMultipleSegmented(
+            "library right join variables on libraryId = library.id",
+            $whereCondition,
+            "library.name as library ,variables.name as name"
+        );
+    }
 }

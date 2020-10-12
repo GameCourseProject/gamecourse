@@ -22,8 +22,8 @@
 </sb-menu>
 
 <sb-menu sb-menu-title="Variables" sb-menu-icon="images/gear.svg">
-    <div ng-if="options.allowVariables" ng-repeat="(key, variables) in part.variables">
-        <sb-expression sb-expression="part.variables[key].value" sb-expression-label="%{{key}}" sb-expression-link="./docs/#ViewsVariables" sb-expression-info="Define the value of a variables for the element"><!--
+    <div ng-if="options.allowVariables"ng-repeat="(key, variables) in part.variables">
+        <sb-expression id="visVariable"  sb-expression="part.variables[key].value" sb-expression-label="%{{key}}" sb-expression-link="./docs/#ViewsVariables" sb-expression-info="Define the value of a variables for the element"><!--
             --><button ng-click="delete(part.variables, key)">Remove</button><!--
         --></sb-expression>
     </div>

@@ -201,6 +201,8 @@ class Views extends Module
         $this->viewHandler = new ViewHandler($this);
         $course = $this->getParent();
         $courseId = $course->getId();
+        $this->viewHandler->registerVariable("%index", null, "Represents the current index while iterating a collection");
+        $this->viewHandler->registerVariable("%item", null, "Represents the object that is currently being iterated in that view");
         $this->viewHandler->registerLibrary("views", "system", "This library provides general functionalities that aren't related with getting info from the database");
         //functions of views' expression language
         $this->viewHandler->registerFunction('system', 'if', function (&$cond, &$val1, &$val2) {
@@ -385,7 +387,8 @@ separated by a ;. Any key may be an expression.', 'collection');
         }, null, 'Creates a template view referred by name in a form of a pop-up.', 'library');
 
         $this->viewHandler->registerLibrary("views", "users", "This library provides access to information regarding Users and their info.");
-
+        $this->viewHandler->registerVariable("%user", "users", "Represents the user associated to the page which is being displayed");
+        $this->viewHandler->registerVariable("%viewer", "users", "Represents the user that is currently logged in watching the page");
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
         $this->viewHandler->registerFunction('users', 'getAllUsers', function (string $role = null, int $courseId = null) use ($course) {
@@ -476,6 +479,7 @@ separated by a ;. Any key may be an expression.', 'collection');
         );
 
         $this->viewHandler->registerLibrary("views", "courses", "This library provides access to information regarding Courses and their info.");
+        $this->viewHandler->registerVariable("%course", "courses", "Represents the course that the user is manipulating");
 
         //functions of course library
         //courses.getAllCourses(isActive,isVisible) returns collection of courses
@@ -1064,8 +1068,8 @@ separated by a ;. Any key may be an expression.', 'collection');
             $courseId = API::getValue('course');
             //get course libraries
             $course = new Course($courseId);
-
-            API::response($course->getEnabledLibraries());
+            
+            API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
         });
         //save the view being edited
         API::registerFunction('views', 'saveEdit', function () {
