@@ -36,7 +36,7 @@ class Core
 {
     public static $systemDB;
     //public static $active_courses = array();
-    //public static $courses = array();   
+    //public static $courses = array();
     public static $theme = 'default';
 
     private static $loggedUser = null;
@@ -150,10 +150,12 @@ class Core
             return true;
         }
         if (array_key_exists("loginDone", $_SESSION)) {
-            $auth = static::getAuth();
-            $username = $auth->getUsername();
+            $username = $_SESSION['username'];
+
             //verficar qual o tipo de login
-            static::$loggedUser = User::getUserByUsername($username);
+            if (User::getUserAuthenticationService($username) == $_SESSION['type']) {
+                static::$loggedUser = User::getUserByUsername($username);
+            }
 
             if (static::$loggedUser != null) {
                 $_SESSION['user'] = static::$loggedUser->getId();

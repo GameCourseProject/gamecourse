@@ -103,8 +103,8 @@ class Plugin extends Module
     private function setFenixVars($courseId, $fenix)
     {
         $course = new Course($courseId);
-        for ($line = 1; $line < sizeof($fenix[0]) - 1; $line++) {
-            $fields = explode(";", $fenix[0][$line]);
+        for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
+            $fields = explode(";", $fenix[$line]);
 
             $username = $fields[0];
             $studentNumber = $fields[1];
@@ -135,13 +135,15 @@ class Plugin extends Module
                 }
             }
             if (!User::getUserByStudentNumber($studentNumber)) {
-                User::addUserToDB($studentName, $username, $email, $studentNumber, "", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
                 $courseUser->addCourseUserToDB("", $campus);
+            } else {
+                $existentUser = User::getUserByStudentNumber($studentNumber);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
             }
         }
-
         return true;
     }
     private function setMoodleVars($courseId, $moodleVar)
@@ -171,18 +173,20 @@ class Plugin extends Module
             }
 
             //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
+            $logs = $this->moodle->getLogs();
+            $this->moodle->writeLogsToDB($logs);
 
-            // $quizGrades = $this->moodle->getQuizGrades();
-            // $this->moodle->writeQuizGradesToDb($quizGrades);
+            $quizGrades = $this->moodle->getQuizGrades();
+            $this->moodle->writeQuizGradesToDb($quizGrades);
 
-            // $votes = $this->moodle->getVotes();
-            // $this->moodle->writeVotesToDb($votes);
+            $votes = $this->moodle->getVotes();
+            $this->moodle->writeVotesToDb($votes);
 
-            // $logs = $this->moodle->getLogs();
-            // $this->moodle->writeLogsToDB($logs);
+            $this->moodle->updateMoodleConfigTime();
             return true;
         }
     }
+
     private function setClassCheckVars($courseId, $classCheck)
     {
         $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
@@ -266,6 +270,17 @@ class Plugin extends Module
         }
     }
 
+    private function setCronJob($script, $courseId, $vars)
+    {
+        if (empty($vars['number']) || empty($vars['time'])) {
+            return false;
+        } else {
+            new CronJob($script, $courseId, $vars['number'], $vars['time']);
+            return true;
+        }
+    }
+
+
     public function setupResources()
     {
         parent::addResources('js/');
@@ -293,8 +308,9 @@ class Plugin extends Module
 
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
+                $lastFileUploaded = count($fenix) - 1;
                 //place to verify input values
-                if ($this->setFenixVars($courseId, $fenix)) {
+                if ($this->setFenixVars($courseId, $fenix[$lastFileUploaded])) {
                     API::response(["updatedData" => ["Variables for fenix saved"]]);
                 } else {
                     API::response(["updatedData" => ["Please fill the mandatory fields"]]);
@@ -309,6 +325,36 @@ class Plugin extends Module
                     API::response(["updatedData" => ["Variables for moodle saved"]]);
                 } else {
                     API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                }
+                return;
+            }
+            if (API::hasKey('moodlePeriodicity')) {
+                $moodle = API::getValue('moodlePeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("Moodle", $courseId, $moodle)) {
+                    API::response(["updatedData" => ["Plugin Moodle enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                }
+                return;
+            }
+            if (API::hasKey('classCheckPeriodicity')) {
+                $classCheck = API::getValue('classCheckPeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("ClassCheck", $courseId, $classCheck)) {
+                    API::response(["updatedData" => ["Plugin Class Check enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                }
+                return;
+            }
+            if (API::hasKey('googleSheetsPeriodicity')) {
+                $googleSheets = API::getValue('googleSheetsPeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
+                    API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                } else {
+                    API::response(["updatedData" => ["Please select a periodicity"]]);
                 }
                 return;
             }
