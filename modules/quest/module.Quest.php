@@ -552,7 +552,7 @@ class Quest extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'quest',
     'name' => 'Quest',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Generates a sequence of pages that create a treasure hunt game.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'soft')

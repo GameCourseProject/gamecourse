@@ -28,7 +28,7 @@ class QR extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'qr',
     'name' => 'QR',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Generates a QR code to be used for student participation in class.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

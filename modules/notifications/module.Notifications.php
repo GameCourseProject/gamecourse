@@ -125,7 +125,7 @@ class Notifications extends Module
 ModuleLoader::registerModule(array(
     'id' => 'notifications',
     'name' => 'Notifications',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Allows email notifications when a badge or points are atributed to a student.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

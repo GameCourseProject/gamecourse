@@ -359,6 +359,7 @@ class Badges extends Module
             API::requireCourseAdminPermission();
             $courseId=API::getValue('course');
             $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
+            
             $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
             
             //set maxreward
@@ -556,7 +557,7 @@ class Badges extends Module
 ModuleLoader::registerModule(array(
     'id' => 'badges',
     'name' => 'Badges',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Enables Badges with 3 levels and xp points that ca be atributed to a student in certain conditions.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

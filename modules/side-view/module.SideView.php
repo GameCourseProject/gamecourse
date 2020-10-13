@@ -37,7 +37,7 @@ class SideView extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'side-view',
     'name' => 'Side View',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Creates a view template with a side view with information of the userlogged in.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

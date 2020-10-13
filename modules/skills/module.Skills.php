@@ -457,7 +457,7 @@ class Skills extends Module
 ModuleLoader::registerModule(array(
     'id' => 'skills',
     'name' => 'Skills',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Generates a skill tree where students have to complete several skills to achieve a higher layer',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

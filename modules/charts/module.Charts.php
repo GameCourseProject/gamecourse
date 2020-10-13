@@ -362,7 +362,7 @@ class Charts extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'charts',
     'name' => 'Charts',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard'),

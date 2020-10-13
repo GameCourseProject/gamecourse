@@ -332,7 +332,7 @@ class XPLevels extends Module
 ModuleLoader::registerModule(array(
     'id' => 'xp',
     'name' => 'XP and Levels',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

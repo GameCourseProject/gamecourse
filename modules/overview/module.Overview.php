@@ -32,7 +32,7 @@ class Overview extends Module {
 ModuleLoader::registerModule(array(
     'id' => 'overview',
     'name' => 'Overview',
-    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis laoreet non nulla at nullam.',
+    'description' => 'Creates a view template with all the skills done.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
