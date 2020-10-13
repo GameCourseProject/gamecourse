@@ -79,6 +79,7 @@ var GameCourseExpression = (function () {
     var libraryChosen = [];
     var varChosenGlobal = "";
     var testeGlobal = 0;
+    var variablesTemp = [];
     var inputGlobal = "";
 
     var parser = {
@@ -629,13 +630,58 @@ var GameCourseExpression = (function () {
                 var matched = "";
                 var library = "";
                 var returnType = "";
-                variables.forEach(element => {
+
+                variablesTemp = [];
+                var vars = document.querySelectorAll("[id='visVariable']");
+                if (vars) {
+                    var returnLib = null;
+                    var returnFinal = null;
+                    var name = "";
+                    var returnType = "";
+
+                    vars.forEach(element => {
+                        name = element.getElementsByTagName("LABEL")[0].innerText;
+                        returnType = element.getElementsByTagName("TEXTAREA")[0].value;
+
+                        returnType = returnType.replace("}", "");
+                        returnType = returnType.split(".");
+                        returnType = returnType[returnType.length - 1];
+
+                        if (returnType.split("(")) {
+                            returnType = returnType.substr(0, returnType.indexOf("("));
+                        }
+
+                        if (returnType) {
+                            libraryGlobalCollection.forEach(element => {
+                                if (element["keyword"] == returnType) {
+                                    if (element["returnType"] == "object") {
+                                        returnLib = element["name"];
+                                    }
+                                    returnFinal = element["returnType"];
+                                }
+                            });
+                        }
+                        if (name && returnFinal) {
+                            var exists = false;
+                            Object.keys(variablesTemp).forEach(function (key) {
+                                if (variablesTemp[key] == name) {
+                                    exists = true;
+                                }
+                            });
+                            if (!exists) {
+                                variablesTemp.push({ "name": name, "returnType": returnFinal, "library": returnLib });
+                            }
+                        }
+                    });
+                }
+                var merge = variables.concat(variablesTemp);
+                merge.forEach(element => {
                     if (element["name"] != null) {
                         if (element["name"].match(re)) {
                             if (input == element["name"]) {
                                 matched = element["name"];
                                 returnType = element["returnType"];
-                                if (library) {
+                                if (element["library"]) {
 
                                     library = element["library"];
                                 } else {
@@ -935,7 +981,6 @@ var GameCourseExpression = (function () {
         var now = 0;
         if (divisao.length > 2) {
             refersTo = returnTypeGlobal;
-            console.log(returnTypeGlobal);
             now = divisao[divisao.length - 1].length + 1;
             var a = inputGlobal.length;
             input = inputGlobal.substr(a - now);
@@ -944,11 +989,7 @@ var GameCourseExpression = (function () {
 
             if (element["refersTo"] == refersTo) {
                 if (libraryChosen) {
-                    var condition = element["name"] == libraryChosen || element["name"] == null
-                    if (inputGlobal[0] == "%") {
-                        condition = element["name"] == libraryChosen
-                    }
-                    if (condition) {
+                    if (element["name"] == libraryChosen || element["name"] == null) {
                         if (returnType) {
                             if (element["returnType"] == returnType) {
                                 libraries.push(element);
@@ -960,7 +1001,6 @@ var GameCourseExpression = (function () {
 
                             if (returnType) {
                                 if (element["returnType"] == returnType) {
-                                    console.log(element);
                                     returnTypes.push(element["returnType"]);
                                 } else {
                                     returnTypes.push(element["returnType"]);

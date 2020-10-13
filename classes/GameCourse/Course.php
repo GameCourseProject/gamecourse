@@ -365,7 +365,7 @@ class Course
 
             //copy content of tables to new course
             Course::copyCourseContent("course_module", $copyFrom, $courseId);
-            Course::copyCourseContent("dictionary", $copyFrom, $courseId);
+            // Course::copyCourseContent("dictionary", $copyFrom, $courseId);
             //copy roles, create mapping from old roles to new
             $oldRoles = Course::copyCourseContent("role", $copyFrom, $courseId, true);
             $oldRolesById = array_combine(array_column($oldRoles, "id"), $oldRoles);
@@ -419,6 +419,7 @@ class Course
                     $handler->updateViewAndChildren($v, null, true);
                 }
                 $p["viewId"] = $defaultAspectId;
+
                 Core::$systemDB->insert("page", $p);
             }
             //copy templates
@@ -554,7 +555,7 @@ class Course
         }
 
         return Core::$systemDB->selectMultipleSegmented(
-            "library right join functions on libraryId = library.id",
+            "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
             $whereCondition,
             "name, keyword, refersTo, returnType, args"
         );
@@ -577,9 +578,9 @@ class Course
         }
 
         return Core::$systemDB->selectMultipleSegmented(
-            "library right join variables on libraryId = library.id",
+            "dictionary_library right join dictionary_variable on libraryId = dictionary_library.id",
             $whereCondition,
-            "library.name as library ,variables.name as name, returnType"
+            "dictionary_library.name as library, dictionary_variable.name as name, returnType"
         );
     }
     public function getAvailablePages(){
