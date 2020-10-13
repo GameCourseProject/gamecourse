@@ -108,6 +108,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     break;
                 case 'on_off button':
                     $scope.openItem[atribute.id] = 0;
+                    $("#"+atribute.id)[0].checked = false;
                     break;
                 case 'date':
                     $scope.openItem[atribute.id] = "";
@@ -137,6 +138,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         jQuery.each($scope.listingItems.allAtributes, function(index){
             atribute = $scope.listingItems.allAtributes[index];
             $scope.openItem[atribute.id] = item[atribute.id];
+            
+            //click on on/off inputs to visually change to on
+            if(atribute["type"] == "on_off button" && 
+            (item[atribute.id] == "1" || item[atribute.id] == 'true' 
+            || item[atribute.id] == true || item[atribute.id] == 1)){
+                $("#"+atribute.id)[0].checked = true;
+            }
+            
         });
         
         $scope.submitItem = function (){
@@ -333,7 +342,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         details.append(select_box);
                         break;
                     case 'on_off button':
-                        details.append( $('<div class= "on_off"><span>'+atribute.name+' </span><label class="switch"><input  type="checkbox" ng-model="openItem.'+atribute.id+'"><span class="slider round"></span></label></div>'))
+                        details.append( $('<div class= "on_off"><span>'+atribute.name+' </span><label class="switch"><input id="'+atribute.id+'" type="checkbox" ng-model="openItem.'+atribute.id+'"><span class="slider round"></span></label></div>'))
                         break;
                     case 'date':
                         details.append('<div class="half"><div class="container"><input type="date" class="form__input"  ng-model="openItem.' + atribute.id + '"><label for="name" class="form__label date_label">'+atribute.name+'</label></div></div>');
