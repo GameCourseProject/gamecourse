@@ -40,8 +40,9 @@
             noDragClass     : 'dd-nodrag',
             emptyClass      : 'dd-empty',
             noDropClass     : 'dd-nodrop',
-            addClass        : 'dd-add',
-            removeClass     : 'dd-remove',
+            addClass        : 'dd-add icon',
+            addClassOnly    : 'dd-add',
+            removeClass     : 'dd-remove icon',
             hasChildrenClass: 'dd-has-children',
             expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
             collapseBtnHTML : '<button data-action="collapse" type="button">Collapse</button>',
@@ -158,6 +159,7 @@
                             sub  = li.children(list.options.listNodeName);
 
                         delete item.$$init;
+                        delete item.$scope;
 
                         if (sub.length) {
                             item.children = step(sub, depth + 1);
@@ -234,8 +236,17 @@
                     item.data(dataKeys[i], data[dataKeys[i]]);
                 }
             }
-            item.append($('<div>', {'class': list.options.handleClass}));
-            item.append($('<div>', {'class': list.options.contentClass, text: text}));
+            item.append($('<div>', {'class': list.options.handleClass})); //da append dos 3 pontos
+            item.append($('<div>', {'class': list.options.contentClass, text: text})); // da append do texto
+            page_section = $('<select>', {'class':"dd-content", 'ng-model': text, 'ng-change': "saveLandingPage('"+text+"')"});
+            page_section.append($('<option>', {text: 'Default Course Page', 'value':''}));
+            //append select box
+            jQuery.each(list.options.dropdown, function( index ){
+                page = list.options.dropdown[index];
+                page_section.append($('<option>', {text: page.name, 'value': page.name}));
+            });
+            item.append(page_section);
+            
             li.append(item);
             if (li.parent().hasClass(list.options.itemClass))
                 list.setParent(li.parent());
@@ -260,25 +271,34 @@
             if (item.parents(list.options.listNodeName).length >= list.options.maxDepth)
                 return;
 
-            var img = $('<img>', {'class': list.options.addClass, src: 'images/add.svg'});
+            if(item.find("img.dd-add.icon").length != 0)
+                return;
+
+            var img = $('<img>', {'class': list.options.addClass, src: 'images/add_icon_no_outline.svg'});
             item.append(img);
             img.click(function(e) {
+                //funcao callback para criar linhas filhas 
                 var childList = $(this).parent().children('.' + list.options.listClass);
                 if (childList.length == 0)
                     $(this).parent().append(childList = $('<' + list.options.listNodeName + '>', {'class': list.options.listClass}));
                 var root = $(this).closest('.' + list.options.rootClass);
                 var ret = [];
                 root.trigger('additem', [ret]);
-                childList.append(list.createItem(childList, ret[1], {'name': ret[0]}));
-                root.trigger('change');
+                ret[0].then((input) => {
+                    childList.append(list.createItem(childList, input, {'name': input})); 
+                    root.trigger('change');
+                });
+                
             });
         },
 
         createRemove: function(item) {
             var list = this;
 
-            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/trashcan.svg'});
+            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/delete_icon.svg'});
+            var imgRemoveBlocker = $('<div>', {'class': "dd-delete-blocker"});
             item.append(imgRemove);
+            item.append(imgRemoveBlocker);
             imgRemove.click(function(e) {
                 var root = $(this).closest('.' + list.options.rootClass);
                 var item = $(this).parent();
@@ -344,8 +364,8 @@
         setParent: function(li)
         {
             if (li.children(this.options.listNodeName).length) {
-                li.prepend($(this.options.expandBtnHTML));
-                li.prepend($(this.options.collapseBtnHTML));
+                //li.prepend($(this.options.expandBtnHTML));
+                //li.prepend($(this.options.collapseBtnHTML));
                 li.parent().addClass(this.options.hasChildrenClass);
             }
             li.children('[data-action="expand"]').hide();
@@ -411,8 +431,8 @@
                 this.setParent(el);
 
             if (el.parents(this.options.listNodeName).length >= this.options.maxDepth) {
-                el.children('.' + this.options.addClass).remove();
-            } else if (el.children('.' + this.options.addClass).length == 0) {
+                el.children('.' + this.options.addClassOnly).remove();
+            } else if (el.children('.' + this.options.addClassOnly).length == 0) {
                 this.createAdd(el);
             }
 

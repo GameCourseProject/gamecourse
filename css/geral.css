@@ -7,11 +7,17 @@ button {
     cursor: pointer;
     padding: 7px 10px;
     font-size: 14px;
-    border-radius: 10%;
+    border-radius: 5px;
     background-color: white;
     border: 2px solid lightgrey;
     box-shadow: none;
     color: grey;
+}
+button:disabled {
+    color: lightgray;
+    background-color: white;
+    border: 1px solid;
+    cursor: not-allowed;
 }
 input:focus, select:focus {
     outline: none;
@@ -33,7 +39,7 @@ input:focus, select:focus {
     border-radius: 5px;
     width: 150px;
 }
-.sidebar .search .magnifying-glass {
+.search .magnifying-glass {
     background: url(/gamecourse/images/search_icon.svg);
     height: 35px;
     width: 35px;
@@ -53,14 +59,14 @@ input:focus, select:focus {
   }
 /* error messages*/
 .error_box {
-    width: 90%;
+    width: 100%;
     text-align: center;
     position: absolute;
-    top: 60px;
+    top: 0;
 }
 .error_msg {
     color: red;
-    padding-top: 30px;
+    padding-top: 20px;
 }
 /* success messages*/
 .success_box {
@@ -87,6 +93,11 @@ input:focus, select:focus {
     position: absolute;
     top: 0;
     /*border: 2px solid red; - filled by course color*/
+}
+
+
+#allUsers, #modules, #allCourses{
+    position: relative;
 }
 
 /*tables structure*/
@@ -157,31 +168,63 @@ input:focus, select:focus {
     width: 23px;
     opacity: 0.8;
 }
-.data-table table .duplicate_icon{
+
+/*icons*/
+.duplicate_icon{
     background-image: url(/gamecourse/images/duplicate_icon.svg);
 }
-.data-table table .edit_icon{
+.edit_icon{
     background-image: url(/gamecourse/images/edit_icon.svg);
 }
-.data-table table .delete_icon{
+.delete_icon{
     background-image: url(/gamecourse/images/delete_icon.svg);
+}
+.config_icon{
+    background-image: url(/gamecourse/images/config_icon.svg);
+}
+.globalize_icon{
+    background-image: url(/gamecourse/images/globalize_icon.svg);
+}
+.de_globalize_icon{
+    background-image: url(/gamecourse/images/de_globalize_icon.svg);
+}
+.add_icon{
+    background-image: url(/gamecourse/images/add_icon.svg);
+}
+.add_icon_no_outline{
+    background-image: url(/gamecourse/images/add_icon_no_outline.svg);
+}
+.import_icon{
+    background-image: url(/gamecourse/images/import_icon.svg);
+}
+.export_icon{
+    background-image: url(/gamecourse/images/export_icon.svg);
+}
+.export_icon_no_outline{
+    background-image: url(/gamecourse/images/export_icon_no_outline.svg);
+}
+.undo_icon{
+    background-image: url(/gamecourse/images/undo_icon.svg);
+}
+.redo_icon{
+    background-image: url(/gamecourse/images/redo_icon.svg);
 }
 
 /*line of cards structure*/
 #myCourses{
     margin-top: -30px;
 }
-.container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+#not_active_courses, #active_courses {
+    margin-left: -20px;
+    display: inline-grid;
+    grid-template-columns: repeat(auto-fill, 219px);
+    width: calc(100% + 15px);
+    justify-content: space-between;
 }
-.container .error_msg{
-    padding-top: 0;
-    padding-bottom: 30px;
+.section .content {
+    margin-bottom: 20px;
 }
-.container .course_box {
+.section .content .card {
     display: flex;
     flex-direction: column;
     height: 170px;
@@ -190,29 +233,14 @@ input:focus, select:focus {
     cursor: pointer;
     font-size: 14px;
 }
-.container .course_box .color_box {
+.section .content .card .color_box {
     flex-grow: 500;
     position: relative;
 }
-.container .course_box .color_box .box{
+.section .content .card .color_box .box{
     border: 0;
 }
-.container .course_box .color_box .frame-course{
-    width: calc(100% - 2px);
-    height: calc(100% - 1px);
-    text-align: center;
- }
-.container .course_box .color_box .frame-course span {
-    opacity: 0.2;
-    height: 70%;
-    display: inline-block;
-    padding: 40px 0;
-    width: 95%;
-}
-.container .course_box .color_box .frame-course span:hover {
-    opacity: 1;
-}
-.container .course_box .footer {
+.section .content .card .footer {
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
@@ -220,6 +248,31 @@ input:focus, select:focus {
     border: 1px solid grey;
     background-color: white;
 }
+
+/*courses page - non admin version*/
+.section .content .card .color_box .frame-course{
+    width: calc(100% - 2px);
+    height: calc(100% - 1px);
+    text-align: center;
+ }
+.section .content .card .color_box .frame-course span {
+    opacity: 0.2;
+    height: 70%;
+    display: inline-block;
+    padding: 40px 0;
+    width: 95%;
+}
+.section .content .card .color_box .frame-course span:hover {
+    opacity: 1;
+}
+
+.section .content .error_box .error_msg{
+    padding-top: 30px;
+}
+.section .content .error_box {
+    margin-left: 20px;
+}
+
   
 
 
@@ -236,15 +289,6 @@ input:focus, select:focus {
 .action-buttons .icon{
     height: 32px;
     width: 32px;
-}
-.action-buttons .add_icon{
-    background-image: url(/gamecourse/images/add_icon.svg);
-}
-.action-buttons .import_icon{
-    background-image: url(/gamecourse/images/import_icon.svg);
-}
-.action-buttons .export_icon{
-    background-image: url(/gamecourse/images/export_icon.svg);
 }
 
 /* all buttons using images*/
@@ -323,12 +367,18 @@ input:checked + .slider:before {
 }
 
 /*Text Dividers*/
+.section{
+    margin-bottom: 15px;
+    background-color: white !important;
+    position: relative;
+}
 .divider {
-    font-size: 18px;
-    margin: 15px 0;
+    font-size: 16px;
+    margin-bottom: 15px;
 }
 .divider .title {
     position: relative;
+    z-index: 1;
 }
 .divider .title span {
     background-color: white;

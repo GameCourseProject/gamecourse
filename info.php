@@ -134,10 +134,10 @@ API::registerFunction('core', 'getCourseInfo', function() {
     if ($isAdmin)
         Core::addNavigation( "Users", 'course.users', true); 
         Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
-        Core::addSettings('About', 'course.settings.about', true);
-        Core::addSettings('Global', 'course.settings.global', true);
-        Core::addSettings('Modules', 'course.settings.modules', true);
+        Core::addSettings('This Course', 'course.settings.global', true);
         Core::addSettings('Roles', 'course.settings.roles', true);
+        Core::addSettings('Modules', 'course.settings.modules', true);
+        Core::addSettings('Views', 'course.settings.views', true);
 
     $navPages = Core::getNavigation();
     $navSettings = Core::getSettings();
@@ -227,36 +227,26 @@ API::registerFunction('settings', 'landingPages', function() {
 //change user roles or role hierarchy
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $course = Course::getCourse(API::getValue('course'));
 
     if (API::hasKey('updateRoleHierarchy')) {
-        $hierarchy = API::getValue('updateRoleHierarchy');
-        $course = Course::getCourse(API::getValue('course'));
-        //ToDo: add a prompt to confirm deleting roles (maybe just if they're assigned to users)
-        $course->setRoles($hierarchy['roles']);
-        $course->setRolesHierarchy($hierarchy['hierarchy']);
-        $roles = $hierarchy['roles'];
         
+        API::requireValues('hierarchy');
+        API::requireValues('roles');
+        
+        $hierarchy = API::getValue('hierarchy');
+        $newRoles = API::getValue('roles');
+        
+        $course->setRoles($newRoles);
+        $course->setRolesHierarchy($hierarchy);
         http_response_code(201);
-    } else if (API::hasKey('usersRoleChanges')) {
-        $course = Course::getCourse(API::getValue('course'));
-        $usersRoleChanges = API::getValue('usersRoleChanges');
-        foreach ($usersRoleChanges as $userId => $roles) {
-            $course->getUser($userId)->setRoles($roles);
-        }
-        http_response_code(201);
+
     } else {
-        $course = Course::getCourse(API::getValue('course'));
-        $users = $course->getUsers();
-        $usersInfo = [];
-        foreach ($users as $userData) {
-            $id = $userData['id'];
-            $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[$id] = array('id' => $id, 'name' => $user->getName(), 'roles' => $user->getRolesNames());
-        }
         $globalInfo = array(
-            'users' => $usersInfo,
+            'pages' => $course->getAvailablePages(),
             'roles' => array_column($course->getRoles("name"),"name"),
-            'roles_obj' => $course->getRoles(),
+            'roles_obj' => $course->getRoles('id, name, landingPage'), //
             'rolesHierarchy' => $course->getRolesHierarchy(),
         );
         API::response($globalInfo);
@@ -319,7 +309,7 @@ API::registerFunction('settings', 'courseModules', function() {
         $allModules = ModuleLoader::getModules();
         $enabledModules = $course->getModules();
        
-        $modulesArr = array();
+        $modulesArr = [];
         foreach ($allModules as $module) {
             $mod = array(
                 'id' => $module['id'],
@@ -327,15 +317,12 @@ API::registerFunction('settings', 'courseModules', function() {
                 'dir' => $module['dir'],
                 'version' => $module['version'],
                 'enabled' => array_key_exists($module['id'], $enabledModules),
-                'dependencies' => $module['dependencies']
+                'dependencies' => $module['dependencies'],
+                'discription' => ""
             );
-            $modulesArr[$module['id']] = $mod;
+            $modulesArr[] = $mod;
         }
-        
-        $globalInfo = array(
-            'modules' => $modulesArr
-        );
-        API::response($globalInfo);
+        API::response($modulesArr);
     }
 });
 
@@ -376,16 +363,17 @@ API::registerFunction('settings', 'modules', function() {
     $allModules = ModuleLoader::getModules();
     //$enabledModules = $course->getModules();
     
-    $modulesArr = array();
+    $modulesArr = [];
     foreach ($allModules as $module) {
         $mod = array(
             'id' => $module['id'],
             'name' => $module['name'],
             'dir' => $module['dir'],
             'version' => $module['version'],
-            'dependencies' => $module['dependencies']
+            'dependencies' => $module['dependencies'],
+            'discription' => ""
         );
-        $modulesArr[$module['id']] = $mod;
+        $modulesArr[] = $mod; 
     }
     
     API::response($modulesArr);
