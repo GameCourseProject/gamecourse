@@ -584,7 +584,7 @@ class ViewHandler
             Core::$systemDB->insert("library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
-    public function registerVariable($name, $libraryName = null, $description = null)
+    public function registerVariable($name, $returnType, $libraryName = null, $description = null)
     {
         if (!Core::$systemDB->select("variables", ["name" => $name])) {
             if ($libraryName) {
@@ -595,7 +595,7 @@ class ViewHandler
             } else {
                 $libraryId = null;
             }
-            Core::$systemDB->insert("variables", ["name" => $name, "libraryId" => $libraryId, "description" => $description]);
+            Core::$systemDB->insert("variables", ["name" => $name, "libraryId" => $libraryId, "returnType" => $returnType, "description" => $description]);
         }
     }
     public function registerFunction($funcLib, $funcName, $processFunc,  $returnType,  $description = null, $refersTo = "object")

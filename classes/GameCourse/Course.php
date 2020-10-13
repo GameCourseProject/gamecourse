@@ -565,7 +565,7 @@ class Course
         return Core::$systemDB->selectMultipleSegmented(
             "library right join variables on libraryId = library.id",
             $whereCondition,
-            "library.name as library ,variables.name as name"
+            "library.name as library ,variables.name as name, returnType"
         );
     }
 }

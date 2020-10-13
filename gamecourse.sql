@@ -133,7 +133,8 @@ create table functions(
 create table variables(
 	id	int unsigned auto_increment primary key,
 	libraryId int unsigned null,
-	name unique varchar(50),
+	name varchar(50) unique,
+	returnType varchar(50) not null,
 	description varchar(1000),
 	foreign key(libraryId) references library(id) on delete cascade
 );
