@@ -6,12 +6,12 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 partType: 'table',
                 columns: 1,//[{}],//[{sortMode: 'def'}],
                 headerRows: [],
-                rows: [{values: [], loopData: "{}",visibilityCondition: "{}",visibilityType: "conditional"} ],
+                rows: [{ values: [], loopData: "{}", visibilityCondition: "{}", visibilityType: "conditional" }],
                 loopData: "{}",
                 visibilityCondition: "{}",
                 visibilityType: "conditional"
             };
-            part.rows[0].values.push({value: $sbviews.defaultPart('text')});
+            part.rows[0].values.push({ value: $sbviews.defaultPart('text') });
             return part;
         },
         build: function (scope, part, options) {
@@ -75,14 +75,14 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             }
 
             var thead = $(document.createElement('thead'));
-            for (var ridx in  part.headerRows) {
+            for (var ridx in part.headerRows) {
                 var row = part.headerRows[ridx];
                 //$sbviews.setDefaultParamters(part.headerRows);
                 $sbviews.setDefaultParamters(part.headerRows[ridx]);
                 var rowEl = $(document.createElement('tr'));
-                $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
+                $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({ disableEvents: true }, options));
 
-                for (var cidx=0;cidx<part.columns;cidx++) {
+                for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('th'));
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
@@ -95,11 +95,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
                         var fn = $parse(row.events[key]);
-                        (function(key, fn, row) {
+                        (function (key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.event = key;
                             rowScope.row = row;
-                            rowEl.on(key, function() { fn(rowScope); });
+                            rowEl.on(key, function () { fn(rowScope); });
                         })(key, fn, row);
                     }
                 }
@@ -109,14 +109,14 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             table.append(thead);
 
             var tbody = $(document.createElement('tbody'));
-            for (var ridx in  part.rows) {
+            for (var ridx in part.rows) {
                 var row = part.rows[ridx];
-               // $sbviews.setDefaultParamters(part.rows);
+                // $sbviews.setDefaultParamters(part.rows);
                 $sbviews.setDefaultParamters(part.rows[ridx]);
                 var rowEl = $(document.createElement('tr'));
-                $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
+                $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({ disableEvents: true }, options));
 
-                for (var cidx =0; cidx<part.columns;cidx++) {
+                for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('td'));
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
@@ -129,11 +129,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     for (var i = 0; i < keys.length; ++i) {
                         var key = keys[i];
                         var fn = $parse(row.events[key]);
-                        (function(key, fn, row) {
+                        (function (key, fn, row) {
                             var rowScope = scope.$new();
                             rowScope.event = key;
                             rowScope.row = row;
-                            rowEl.on(key, function() { fn(rowScope); });
+                            rowEl.on(key, function () { fn(rowScope); });
                         })(key, fn, row);
                     }
                 }
@@ -143,9 +143,9 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             table.append(tbody);
             tableDiv.append(table);
 
-            if (!options.edit ){//&& part.sort != undefined && part.sort) 
-                table.tablesorter({sortList: [], headers: {} });
-            }
+            // if (!options.edit ){//&& part.sort != undefined && part.sort) 
+            //     table.tablesorter({sortList: [], headers: {} });
+            // }
 
             if (part.filterBox != undefined && !options.edit) {
                 var filterField = part.filterBox.value;
@@ -153,17 +153,17 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 var applyFilter;
                 var removeFilter;
                 if (part.filterBox.mode == 'fade') {
-                    applyFilter = function(el) {
-                        el.css({opacity: 0.2});
+                    applyFilter = function (el) {
+                        el.css({ opacity: 0.2 });
                     };
-                    removeFilter = function(el) {
-                        el.css({opacity: 1.0});
+                    removeFilter = function (el) {
+                        el.css({ opacity: 1.0 });
                     };
                 } else if (part.filterBox.mode == 'hide') {
-                    applyFilter = function(el) {
+                    applyFilter = function (el) {
                         el.hide();
                     };
-                    removeFilter = function(el) {
+                    removeFilter = function (el) {
                         el.show();
                     };
                 } else {
@@ -171,7 +171,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 }
 
                 var values = [];
-                for (var ridx in  part.headerRows) {
+                for (var ridx in part.headerRows) {
                     if (part.headerRows[ridx].data == undefined)
                         continue;
                     var value = part.headerRows[ridx].data[filterField];
@@ -179,7 +179,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         values.push(value.value);
                 }
 
-                for (var ridx in  part.rows) {
+                for (var ridx in part.rows) {
                     if (part.rows[ridx].data == undefined)
                         continue;
                     var value = part.rows[ridx].data[filterField];
@@ -187,7 +187,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         values.push(value.value);
                 }
 
-                values.sort(function(a, b) {
+                values.sort(function (a, b) {
                     return a.localeCompare(b);
                 });
 
@@ -197,12 +197,12 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var opt in values)
                     selectBox.append($(document.createElement('option')).text(values[opt]));
                 tableDiv.prepend(selectBox);
-                selectBox.on('change', function() {
+                selectBox.on('change', function () {
                     var val = selectBox.val();
-                    thead.children().each(function() { removeFilter($(this)); });
-                    tbody.children().each(function() { removeFilter($(this)); });
+                    thead.children().each(function () { removeFilter($(this)); });
+                    tbody.children().each(function () { removeFilter($(this)); });
                     if (val != filterDefault) {
-                        for (var ridx in  part.headerRows) {
+                        for (var ridx in part.headerRows) {
                             if (part.headerRows[ridx].data == undefined)
                                 continue;
                             var value = part.headerRows[ridx].data[filterField];
@@ -210,7 +210,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                                 applyFilter($(thead.children().get(ridx)));
                         }
 
-                        for (var ridx in  part.rows) {
+                        for (var ridx in part.rows) {
                             if (part.rows[ridx].data == undefined)
                                 continue;
                             var value = part.rows[ridx].data[filterField];
@@ -227,20 +227,20 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 var checkEmpty;
 
                 function insertColumn(idx) {
-                    
+
                     part.columns++;
                     $($(thead.children().get(0)).children().get(idx)).before(buildColumnToolbar(idx));
 
                     for (var rid = 0; rid < part.headerRows.length; ++rid) {
                         var newPart = $sbviews.defaultPart('text');
-                        part.headerRows[rid].values.splice(idx, 0, {value: newPart});
+                        part.headerRows[rid].values.splice(idx, 0, { value: newPart });
                         var newPartEl = $sbviews.buildElement(scope, newPart, childOptions);
                         var th = $(document.createElement('th')).append(newPartEl);
                         $($(thead.children().get(rid + 1)).children().get(idx)).before(th);
                     }
                     for (var rid = 0; rid < part.rows.length; ++rid) {
                         var newPart = $sbviews.defaultPart('text');
-                        part.rows[rid].values.splice(idx, 0, {value: newPart});
+                        part.rows[rid].values.splice(idx, 0, { value: newPart });
                         var newPartEl = $sbviews.buildElement(scope, newPart, childOptions);
                         var td = $(document.createElement('td')).append(newPartEl);
                         $($(tbody.children().get(rid)).children().get(idx)).before(td);
@@ -269,12 +269,12 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                 function insertRow(container, idx, header) {
                     var rowIdx = idx - (header ? 1 : 0);
-                    var row = {values:[], loopData: "{}",visibilityCondition: "{}" };
+                    var row = { values: [], loopData: "{}", visibilityCondition: "{}" };
                     var newRowEl = $(document.createElement('tr'));
-                    $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({disableEvents: true}, options));
-                    for (var cid=0;cid<part.columns;cid++) {
+                    $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({ disableEvents: true }, options));
+                    for (var cid = 0; cid < part.columns; cid++) {
                         var newPart = $sbviews.defaultPart('text');
-                        row.values.push({value: newPart});
+                        row.values.push({ value: newPart });
                         $sbviews.setDefaultParamters(row);
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, newPart, childOptions)));
                     }
@@ -334,7 +334,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 }
 
                 function moveRow(container, oldIdx, newIdx, header) {
-                    if (header){//bug fix:header toolbar is in a th, so the index counting inst acurate
+                    if (header) {//bug fix:header toolbar is in a th, so the index counting inst acurate
                         oldIdx--;
                         newIdx--;
                     }
@@ -347,16 +347,16 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     var newRowEl = $(document.createElement('tr'));
                     var newRowEl2 = $(document.createElement('tr'));
-                    for (var cid=0;cid< part.columns;cid++) {
+                    for (var cid = 0; cid < part.columns; cid++) {
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, container[oldIdx].values[cid].value, childOptions)));
                         newRowEl2.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, container[newIdx].values[cid].value, childOptions)));
                     }
                     newRowEl.append(buildRowToolbar(container, container[oldIdx], header));
                     newRowEl2.append(buildRowToolbar(container, container[newIdx], header));
-                    $sbviews.applyCommonFeatures(scope, container[oldIdx], newRowEl, $.extend({disableEvents: true}, options));
-                    $sbviews.applyCommonFeatures(scope, container[newIdx], newRowEl2, $.extend({disableEvents: true}, options));
-                    
-                    if (header){//going back to the inacurate indx values (because they match the table elements)
+                    $sbviews.applyCommonFeatures(scope, container[oldIdx], newRowEl, $.extend({ disableEvents: true }, options));
+                    $sbviews.applyCommonFeatures(scope, container[newIdx], newRowEl2, $.extend({ disableEvents: true }, options));
+
+                    if (header) {//going back to the inacurate indx values (because they match the table elements)
                         oldIdx++;
                         newIdx++;
                     }
@@ -371,7 +371,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     var columnEl = $(document.createElement('th'));
                     var toolbar = $sbviews.createToolbar(scope, {}, {
                         view: options.view,
-                        notifiedPart: part,                        
+                        notifiedPart: part,
                         tools: {
                             noSettings: true
                         },
@@ -398,7 +398,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     columnEl.append(toolbar);
                     return columnEl;
                 };
-                buildRowToolbar = function(container, row, header) {
+                buildRowToolbar = function (container, row, header) {
                     var rowEl = $(document.createElement(header ? 'th' : 'td'));
                     var toolbar = $sbviews.createToolbar(scope, row, {
                         view: options.view,
@@ -431,11 +431,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         removeRow(container, rowEl.parent().index(), header);
                     }));
                     rowEl.append(toolbar);
-                    rowEl.css({'text-align': 'center'});
+                    rowEl.css({ 'text-align': 'center' });
                     return rowEl;
                 };
 
-                checkEmpty = function(editing) {
+                checkEmpty = function (editing) {
                     var emptyTableDivSearch = tableDiv.find('.empty-table');
                     var hasEmptyTableDiv = emptyTableDivSearch.length != 0;
                     var emptyTable = (part.headerRows.length == 0 && part.rows.length == 0) || part.columns == 0;
@@ -453,10 +453,10 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     if (!hasHeaderRows && editing) {
                         if (!hasAddHeaderRowsRow) {
-                            var addRow = $(document.createElement('button')).text('Add Header Row').on('click', function() {
+                            var addRow = $(document.createElement('button')).text('Add Header Row').on('click', function () {
                                 insertRow(part.headerRows, 1, true);
                             });
-                            thead.append($('<tr>', {'class': 'add-header-rows'}).append($('<th>').append(addRow)));
+                            thead.append($('<tr>', { 'class': 'add-header-rows' }).append($('<th>').append(addRow)));
                         }
                     } else if (hasAddHeaderRowsRow) {
                         addHeaderRowsRowSearch.remove();
@@ -468,10 +468,10 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     if (!hasBodyRows && editing) {
                         if (!hasAddBodyRowsRow) {
-                            var addRow = $(document.createElement('button')).text('Add Row').on('click', function() {
+                            var addRow = $(document.createElement('button')).text('Add Row').on('click', function () {
                                 insertRow(part.rows, 0, false);
                             });
-                            tbody.append($('<tr>', {'class': 'add-body-rows'}).append($('<td>').append(addRow)));
+                            tbody.append($('<tr>', { 'class': 'add-body-rows' }).append($('<td>').append(addRow)));
                         }
                     } else if (hasAddBodyRowsRow) {
                         addBodyRowsRowSearch.remove();
@@ -483,10 +483,10 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     if (!hasColumn && editing) {
                         if (!hasAddColumnRow) {
-                            var addColumn = $(document.createElement('button')).text('Add Column').on('click', function() {
+                            var addColumn = $(document.createElement('button')).text('Add Column').on('click', function () {
                                 insertColumn(0);
                             });
-                            thead.prepend($('<tr>', {'class': 'add-column'}).append($('<th>').append(addColumn)));
+                            thead.prepend($('<tr>', { 'class': 'add-column' }).append($('<th>').append(addColumn)));
                         }
                     } else if (hasAddColumnRow) {
                         addColumnRowSearch.remove();
@@ -527,7 +527,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         }
                     },
                     overlayOptions: {
-                        callbackFunc: function(el, execClose, optionsScope, watch) {
+                        callbackFunc: function (el, execClose, optionsScope, watch) {
                             /*var partSpecificMenu = $('<sb-menu sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
                             var filterBox = $('<sb-checkbox sb-checkbox="part.filterBox" sb-checkbox-label="Enable Filter" sb-checkbox-default="{value: \'\', mode: \'hide\'}" sb-checkbox-info="Allows the viewer to filter the items in the table." sb-checkbox-link="./docs/#PartTableFilter"></sb-checkbox>');
                             filterBox.append($('<sb-input sb-input="part.filterBox.value" sb-input-label="Filter"></sb-input>'));

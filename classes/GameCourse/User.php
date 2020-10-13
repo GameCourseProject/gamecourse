@@ -232,4 +232,48 @@ class User
     {
         Core::$systemDB->delete("game_course_user", ["id" => $userId]);
     }
+
+    public static function saveImage($img, $userId)
+    {
+        file_put_contents($userId . ".png", $img);
+    }
+
+    public static function exportUsers()
+    {
+        $listOfUsers = User::getAllInfo();
+        $file = "";
+        $i = 0;
+        $len = count($listOfUsers);
+        foreach ($listOfUsers as $user) {
+            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," . $user["isActive"];
+            if ($i != $len - 1) {
+                $file .= "\n";
+            }
+            $i++;
+        }
+        return $file;
+    }
+
+
+    public static function importUsers($file)
+    {
+        $file = fopen($file, "r");
+        while (!feof($file)) {
+            $user = fgetcsv($file);
+            if (!User::getUserByStudentNumber($user[3])) {
+                Core::$systemDB->insert(
+                    "game_course_user",
+                    [
+                        "name" => $user[0],
+                        "email" => $user[1],
+                        "nickname" => $user[2],
+                        "studentNumber" => $user[3],
+                        "isAdmin" => $user[4],
+                        "isActive" => $user[5]
+                    ]
+                );
+            }
+        }
+        fclose($file);
+    }
 }

@@ -1,7 +1,7 @@
 <div class="title"><span>Part Settings</span><img title="Close" src="images/close.svg" ng-click="closeOverlay()"><a target="_blank" href="./docs/#ViewsPartSettings"><img title="Help" src="images/help.svg"></a></div>
 
 <sb-menu sb-menu-title="DOM Manipulations" sb-menu-icon="images/gear.svg">
-    <sb-expression ng-if="options.allowDataLoop" sb-expression="part.loopData" sb-expression-label="Data" sb-expression-link="./docs/#ViewsLoop" sb-expression-info="Data allows to repeat the element, for example to make lists."></sb-expression>
+    <sb-expression ng-if="options.allowDataLoop" id="visLoop" sb-expression="part.loopData" sb-expression-label="Data" sb-expression-link="./docs/#ViewsLoop" sb-expression-info="Data allows to repeat the element, for example to make lists."></sb-expression>
     <!--sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.loopData" sb-checkbox-label="Enable Loop" sb-checkbox-default="" sb-checkbox-info="Loop allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
         <sb-expression sb-expression="part.loopData" sb-expression-label="Loop Data"></sb-expression>
         <!--sb-input sb-input="part.repeat.key" sb-input-label="Key"></sb-input>
@@ -22,8 +22,8 @@
 </sb-menu>
 
 <sb-menu sb-menu-title="Variables" sb-menu-icon="images/gear.svg">
-    <div ng-if="options.allowVariables" ng-repeat="(key, variables) in part.variables">
-        <sb-expression sb-expression="part.variables[key].value" sb-expression-label="%{{key}}" sb-expression-link="./docs/#ViewsVariables" sb-expression-info="Define the value of a variables for the element"><!--
+    <div ng-if="options.allowVariables"ng-repeat="(key, variables) in part.variables">
+        <sb-expression id="visVariable"  sb-expression="part.variables[key].value" sb-expression-label="%{{key}}" sb-expression-link="./docs/#ViewsVariables" sb-expression-info="Define the value of a variables for the element"><!--
             --><button ng-click="delete(part.variables, key)">Remove</button><!--
         --></sb-expression>
     </div>

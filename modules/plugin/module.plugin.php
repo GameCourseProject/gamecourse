@@ -138,7 +138,7 @@ class Plugin extends Module
                 User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
-                $courseUser->addCourseUserToDB("", $campus);
+                $courseUser->addCourseUserToDB(2, $campus);
             } else {
                 $existentUser = User::getUserByStudentNumber($studentNumber);
                 $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);

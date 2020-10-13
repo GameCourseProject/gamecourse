@@ -1,32 +1,36 @@
 <?php
+
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
-class Notifications extends Module {
-    
-    public $notificationList=[];//contains an array of notfics of current user
-    
-    public function setupResources() {
+class Notifications extends Module
+{
+
+    public $notificationList = []; //contains an array of notfics of current user
+
+    public function setupResources()
+    {
         parent::addResources('js/');
         parent::addResources('css/notifications.css');
     }
 
-    public function init() {
+    public function init()
+    {
         // TODO: iterate all courses the user is in..
         $course = $this->getParent();
-        $courseId=$course->getId();
+        $courseId = $course->getId();
         $user = $course->getLoggedUser();
         $userId = $user->getId();
         if ($user->hasRole('Student')) {
             $activity = $user->getData("prevActivity");
-            
-            $awards = Core::$systemDB->selectMultiple("award",["course"=>$courseId,"student"=>$userId],"awardDate");
+
+            $awards = Core::$systemDB->selectMultiple("award", ["course" => $courseId, "student" => $userId], "awardDate");
             if (is_null($awards) || !is_array($awards))
                 return;
 
-            $notificationFor = array_filter($awards, function($award) use ($activity) {
+            $notificationFor = array_filter($awards, function ($award) use ($activity) {
                 return $award['awardDate'] >= $activity;
             });
 
@@ -34,32 +38,31 @@ class Notifications extends Module {
             foreach ($notificationFor as $award) {
                 if ($award['type'] == 'badge') {
                     $badgeLevel = $award['level'];
-                    
+
                     $notification = array(
                         'type' => 'badge',
                         //'badgeName' => $badgeName,
                         'level' => $badgeLevel,
                         //'reward' => $reward
-                        "name"=>$award['name'],
+                        "name" => $award['name'],
                         "awardDate" => $award["awardDate"]
                     );
-                    
+
                     //$notifications['badge-' . $badgeName . '-' . $badgeLevel] = $notification;
-                    $notifications[]=$notification;
-                    $this->notificationList[]=$notification;
-                } 
-                else if ($award['type'] == 'skill') {
+                    $notifications[] = $notification;
+                    $this->notificationList[] = $notification;
+                } else if ($award['type'] == 'skill') {
                     $notification = array(
                         'type' => 'skill',
                         //'skillName' => $award['name'],
                         //'reward' => $award['reward']
-                        "name"=>$award['name'],
+                        "name" => $award['name'],
                         "awardDate" => $award["awardDate"]
                     );
-                    
+
                     //$notifications['skill-' . $award['name']] = $notification;
                     //$notifications[]=$notification;
-                    $this->notificationList[]=$notification;
+                    $this->notificationList[] = $notification;
                 }
             }
 
@@ -73,23 +76,23 @@ class Notifications extends Module {
                 }*/
             }
         }
-        
+
         $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();//
-        $viewHandler->registerFunction('notifications','checkNotifications', function($userId) {
-            $pendingNotifications=$this->notificationList;
-            
+        $viewHandler = $viewsModule->getViewHandler(); //
+        $viewHandler->registerFunction('notifications', 'checkNotifications', function (int $userId) {
+            $pendingNotifications = $this->notificationList;
+
             //$courseId = $this->getParent()->getId();
             //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
             return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
-        });
+        }, 'integer', null, 'library');
 
-        $viewHandler->registerFunction('notifications','getNotifications', function($userId) {
-            $pendingNotifications=$this->notificationList;
+        $viewHandler->registerFunction('notifications', 'getNotifications', 'library', function (int $userId) {
+            $pendingNotifications = $this->notificationList;
             //$courseId = $this->getParent()->getId();
             //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
             //                                                    ["course"=>$courseId,"student"=>$userId]);
-            
+
             /*$notifications = array();
             foreach($pendingNotifications as $id => $notification) {
                 $notifications[$id] = GameCourse\DataRetrieverContinuation::buildForArray($notification);
@@ -97,9 +100,9 @@ class Notifications extends Module {
 
             return GameCourse\DataRetrieverContinuation::buildForArray($notifications);*/
             return new \Modules\Views\Expression\ValueNode($pendingNotifications);
-        });
+        }, 'collection', null, 'library');
 
-        API::registerFunction('notifications', 'removeNotification', function() {
+        API::registerFunction('notifications', 'removeNotification', function () {
             /*$id = API::getValue('notification');
             $userId = Core::getLoggedUser()->getId();
             $moduleData = $this->getData();
@@ -109,10 +112,9 @@ class Notifications extends Module {
                 $moduleData->getWrapped('list')->set($istID, $notifications);
             }*/
         });
-        
+
         if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
             $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'));
-        
     }
 }
 
@@ -123,8 +125,7 @@ ModuleLoader::registerModule(array(
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),
-    'factory' => function() {
+    'factory' => function () {
         return new Notifications();
     }
 ));
-?>

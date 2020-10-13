@@ -1,4 +1,5 @@
 <?php
+
 namespace Modules\Views;
 
 use Modules\Views\Expression\ValueNode;
@@ -10,10 +11,12 @@ use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Settings;
 
-class Views extends Module {
+class Views extends Module
+{
     private $viewHandler;
-    
-    public function setupResources() {
+
+    public function setupResources()
+    {
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
         parent::addResources('js/views.part.text.js');
@@ -22,43 +25,47 @@ class Views extends Module {
         parent::addResources('css/views.css');
     }
 
-    public function initSettingsTabs() {
+    public function initSettingsTabs()
+    {
         $childTabs = array();
         $pages = $this->viewHandler->getPages();
-        $viewTabs=[];
+        $viewTabs = [];
         foreach ($pages as $pageId => $page) {
             $childTabs[] = Settings::buildTabItem($page['name'], 'course.settings.views.view({pageOrTemp:\'page\',view:\'' . $pageId . '\'})', true);
         }
         $viewTabs[] = Settings::buildTabItem('Pages', 'course.settings.views', true, $childTabs);
-        
+
         $templates = $this->getTemplates();
-        $childTempTabs=[];
+        $childTempTabs = [];
         foreach ($templates as $template) {
             $childTempTabs[] = Settings::buildTabItem($template['name'], 'course.settings.views.view({pageOrTemp:\'template\',view:\'' . $template["id"] . '\'})', true);
         }
         $viewTabs[] = Settings::buildTabItem('Templates', 'course.settings.views', true, $childTempTabs);
-        
+
         Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $viewTabs));
     }
 
-    private function breakTableRows(&$rows, &$savePart) {
-        ViewEditHandler::breakRepeat($rows, $savePart, function(&$row) use(&$savePart) {
-            foreach($row['values'] as &$cell) {
+    private function breakTableRows(&$rows, &$savePart)
+    {
+        ViewEditHandler::breakRepeat($rows, $savePart, function (&$row) use (&$savePart) {
+            foreach ($row['values'] as &$cell) {
                 ViewEditHandler::breakPart($cell['value'], $savePart);
             }
         });
     }
 
-    function putTogetherRows(&$rows, &$getPart) {
-        ViewEditHandler::putTogetherRepeat($rows, $getPart, function(&$row) use(&$getPart) {
-            foreach($row['values'] as &$cell) {
+    function putTogetherRows(&$rows, &$getPart)
+    {
+        ViewEditHandler::putTogetherRepeat($rows, $getPart, function (&$row) use (&$getPart) {
+            foreach ($row['values'] as &$cell) {
                 ViewEditHandler::putTogetherPart($cell['value'], $getPart);
             }
         });
     }
 
-    private function parseTableRows(&$rows) {
-        for($i = 0; $i < count($rows); ++$i) {
+    private function parseTableRows(&$rows)
+    {
+        for ($i = 0; $i < count($rows); ++$i) {
             $row = &$rows[$i];
             if (array_key_exists('style', $row))
                 $this->viewHandler->parseSelf($row['style']);
@@ -75,410 +82,486 @@ class Views extends Module {
         }
     }
 
-    private function processTableRows(&$rows, $viewParams, $visitor) {
-        $this->viewHandler->processLoop($rows, $viewParams, $visitor, function(&$row, $viewParams, $visitor) {
-            $this->viewHandler->processVariables($row, $viewParams, $visitor, function($viewParams, $visitor) use(&$row) {
+    private function processTableRows(&$rows, $viewParams, $visitor)
+    {
+        $this->viewHandler->processLoop($rows, $viewParams, $visitor, function (&$row, $viewParams, $visitor) {
+            $this->viewHandler->processVariables($row, $viewParams, $visitor, function ($viewParams, $visitor) use (&$row) {
                 if (array_key_exists('style', $row))
                     $row['style'] = $row['style']->accept($visitor)->getValue();
                 if (array_key_exists('class', $row))
                     $row['class'] = $row['class']->accept($visitor)->getValue();
                 $this->viewHandler->processEvents($row, $visitor);
-                foreach($row['values'] as &$cell) {
+                foreach ($row['values'] as &$cell) {
                     $this->viewHandler->processPart($cell['value'], $viewParams, $visitor);
                 }
             });
         });
     }
     //auxiliar functions for the expression language functions
-    public function getModuleNameOfAwardOrParticipation($object,$award=true){
-        if (array_key_exists("name",$object["value"]))
+    public function getModuleNameOfAwardOrParticipation($object, $award = true)
+    {
+        if (array_key_exists("name", $object["value"]))
             return $object["value"]["name"];
-        $type=$object["value"]["type"];
-        if ($type=="badge"){
-            return Core::$systemDB->select($type,["id"=>$object["value"]["moduleInstance"]],"name");
+        $type = $object["value"]["type"];
+        if ($type == "badge") {
+            return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
         }
-        if  ($type=="skill"){
+        if ($type == "skill") {
             if ($award)
                 return $object["value"]["description"];
             else
-                return Core::$systemDB->select($type,["id"=>$object["value"]["moduleInstance"]],"name");
-        }            
+                return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
+        }
         return null;
     }
     //gets timestamps and converts it to DD/MM/YYYY
-    public function getDate($object){
+    public function getDate($object)
+    {
         $this->checkArray($object, "object", "date");
-        $date = implode("/",array_reverse(explode("-",explode(" ",$object["value"]["date"])[0])));
+        $date = implode("/", array_reverse(explode("-", explode(" ", $object["value"]["date"])[0])));
         return new ValueNode($date);
     }
     //get award or participations from DB
-    public function getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object="award"){
-        $awardParticipation = $this->getAwardOrParticipation($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where=[],$object);
-        return $this->createNode($awardParticipation,$object."s","collection");
+    public function getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object = "award")
+    {
+        $awardParticipation = $this->getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object);
+        return $this->createNode($awardParticipation, $object . "s", "collection");
     }
     //expression lang function, convert string to int
-    public function toInt($val, $funName){
-        if(is_array($val))
-            throw new \Exception("'."+$funName+"' can only be called over string.");
-        return new ValueNode(intval($val)); 
+    public function toInt($val, $funName)
+    {
+        if (is_array($val))
+            throw new \Exception("'." + $funName + "' can only be called over string.");
+        return new ValueNode(intval($val));
     }
-    function evaluateKey(&$key, &$collection,$courseId,$i=0){
-        if(!array_key_exists($key, $collection["value"][0])){
+    function evaluateKey(&$key, &$collection, $courseId, $i = 0)
+    {
+        if (!array_key_exists($key, $collection["value"][0])) {
             //key is not a parameter of objects in collection, it should be an expression of the language
             if (strpos($key, "{") !== 0) {
                 $key = "{" . $key . "}";
             }
             $this->viewHandler->parseSelf($key);
-            foreach($collection["value"] as &$object){
+            foreach ($collection["value"] as &$object) {
                 $viewParams = array(
                     'course' => (string)$courseId,
                     'viewer' => (string)Core::getLoggedUser()->getId(),
-                    'item' => $this->createNode($object,$object["libraryOfVariable"])->getValue(),
-                    'index'=>$i
+                    'item' => $this->createNode($object, $object["libraryOfVariable"])->getValue(),
+                    'index' => $i
                 );
                 $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
                 $value = $key->accept($visitor)->getValue();
 
-                $object["sortVariable".$i]=$value;
+                $object["sortVariable" . $i] = $value;
             }
-            $key="sortVariable".$i;
+            $key = "sortVariable" . $i;
         }
     }
     //conditions for the filter function
-    public function evalCondition($a,$b,$op){
-        switch($op) {
-            case '=':  case'==': return $a == $b;
-            case '===':return           $a === $b;
-            case '!==':return           $a !== $b;
-            case '!=': return           $a != $b; 
-            case '>':  return           $a > $b;
-            case '>=': return           $a >= $b;
-            case '<':  return           $a < $b;
-            case '<=': return           $a <= $b;  
+    public function evalCondition($a, $b, $op)
+    {
+        switch ($op) {
+            case '=':
+            case '==':
+                return $a == $b;
+            case '===':
+                return           $a === $b;
+            case '!==':
+                return           $a !== $b;
+            case '!=':
+                return           $a != $b;
+            case '>':
+                return           $a > $b;
+            case '>=':
+                return           $a >= $b;
+            case '<':
+                return           $a < $b;
+            case '<=':
+                return           $a <= $b;
         }
     }
     //receives templateName, current view parameters, funcNAme= showPopUp or showToolTip,course, and user
     //renders template view and returns it inside a function call for views.directive.js which deals w events
-    private function popUpOrToolTip($templateName,$params,$funcName,$course,$user){
-        $template = $this->getTemplate(null,$templateName); 
-        if ($user!=null){//rendering a user view
+    private function popUpOrToolTip($templateName, $params, $funcName, $course, $user)
+    {
+        $template = $this->getTemplate(null, $templateName);
+        if ($user != null) { //rendering a user view
             $userId = $this->getUserId($user);
-            $params["user"]=$userId;
+            $params["user"] = $userId;
         }
-        $userView = $this->viewHandler->handle($template,$course,$params);
+        $userView = $this->viewHandler->handle($template, $course, $params);
         $encodedView = json_encode($userView);
-        if (strlen($encodedView)>100000)//preventing the use of tooltips with big templates
-            throw new \Exception("Tooltips and PopUps can only be used with smaller templates, '".$templateName."' is too big.");
-        return new ValueNode($funcName."('".$encodedView."')");
+        if (strlen($encodedView) > 100000) //preventing the use of tooltips with big templates
+            throw new \Exception("Tooltips and PopUps can only be used with smaller templates, '" . $templateName . "' is too big.");
+        return new ValueNode($funcName . "('" . $encodedView . "')");
     }
-    
-    public function init() {
+
+    public function init()
+    {
         $this->viewHandler = new ViewHandler($this);
         $course = $this->getParent();
         $courseId = $course->getId();
+        $this->viewHandler->registerVariable("%index", "integer", null, "Represents the current index while iterating a collection");
+        $this->viewHandler->registerVariable("%item", "object", null, "Represents the object that is currently being iterated in that view");
+        $this->viewHandler->registerLibrary("views", "system", "This library provides general functionalities that aren't related with getting info from the database");
         //functions of views' expression language
-        $this->viewHandler->registerFunction('system','if', function($cond, $val1, $val2) {
+        $this->viewHandler->registerFunction('system', 'if', function (&$cond, &$val1, &$val2) {
             return new ValueNode($cond ? $val1 :  $val2);
-        });
-        $this->viewHandler->registerFunction('system','abs', function($val) { return new ValueNode(abs($val)); });    
-        $this->viewHandler->registerFunction('system','min', function($val1, $val2) { return new ValueNode(min($val1, $val2)); });
-        $this->viewHandler->registerFunction('system','max', function($val1, $val2) { return new ValueNode(max($val1, $val2)); });      
-        $this->viewHandler->registerFunction('system','time', function() {
+        }, 'mixed', null, 'library');
+        $this->viewHandler->registerFunction('system', 'abs', function (int $val) {
+            return new ValueNode(abs($val));
+        },  'integer', 'Returns the absolute value of an integer.', 'library');
+        $this->viewHandler->registerFunction('system', 'min', function (int $val1, int $val2) {
+            return new ValueNode(min($val1, $val2));
+        }, 'integer', 'Returns the smallest number between two integers.', 'library');
+        $this->viewHandler->registerFunction('system', 'max', function (int $val1, int $val2) {
+            return new ValueNode(max($val1, $val2));
+        }, 'integer', 'Returns the greatest number between two integers.', 'library');
+        $this->viewHandler->registerFunction('system', 'time', function () {
             return new ValueNode(time());
-        });
+        }, 'integer', 'Returns the time in seconds since the epoch as a floating point number. The specific date of the epoch and the handling of leap seconds is platform dependent. On Windows and most Unix systems, the epoch is January 1, 1970, 00:00:00 (UTC) and leap seconds are not counted towards the time in seconds since the epoch. This is commonly referred to as Unix time.', 'library');
         //functions without library
         //%string.strip  -> removes spaces
-        $this->viewHandler->registerFunction(null,'strip', function($val) { 
-            if(!is_string($val))
+        $this->viewHandler->registerFunction(null, 'strip', function (string $val) {
+            if (!is_string($val))
                 throw new \Exception("'.strip' can only be called over an string.");
             return new ValueNode(str_replace(' ', '', $val));
-        });
+        }, 'string', 'Removes the string spaces', 'string');
         //%integer.abs
-        $this->viewHandler->registerFunction(null,'abs', function($val) { 
-            if(!is_int($val))
+        $this->viewHandler->registerFunction(null, 'abs', function (int $val) {
+            if (!is_int($val))
                 throw new \Exception("'.abs' can only be called over an int.");
             return new ValueNode(abs($val));
-        });
+        }, 'integer', 'Returns the absolute value of an integer.', 'integer');
         //%string.integer or %string.int   converts string to int
-        $this->viewHandler->registerFunction(null,'int', function($val) { return $this->toInt($val,"int");});
-        $this->viewHandler->registerFunction(null,'integer', function($val) { return $this->toInt($val,"integer"); });
+        $this->viewHandler->registerFunction(null, 'int', function (string $val) {
+            return $this->toInt($val, "int");
+        }, 'integer', 'Returns an integer representation of the string.', 'string');
+        $this->viewHandler->registerFunction(null, 'integer', function (string $val) {
+            return $this->toInt($val, "integer");
+        }, 'integer', 'Returns an integer representation of the string.', 'string');
         //%object.id
-        $this->viewHandler->registerFunction(null,'id', function($object) {
-            return $this->basicGetterFunction($object,"id");
-        });
+        $this->viewHandler->registerFunction(null, 'id', function ($object) {
+            return $this->basicGetterFunction($object, "id");
+        }, 'integer', 'Returns an integer that identifies the object.');
         //%item.parent returns the parent(aka the %item of the previous context)
-        $this->viewHandler->registerFunction(null,'parent', function($object) { 
-            return $this->basicGetterFunction($object,"parent");
-        });
+        $this->viewHandler->registerFunction(null, 'parent', function ($object) {
+            return $this->basicGetterFunction($object, "parent");
+        }, 'object', 'Returns an object in the next hierarchical level.');
         //functions to be called on %collection
         //%collection.item(index) returns item w the given index
-        $this->viewHandler->registerFunction(null,'item', function($collection, $index) { 
+        $this->viewHandler->registerFunction(null, 'item', function ($collection, int $i) {
             $this->checkArray($collection, "collection", "item()");
-            if (is_array($collection["value"][$index]))
-                return $this->createNode($collection["value"][$index]);
-            else 
-                return new ValueNode($collection["value"][$index]);
-        });
+            if (is_array($collection["value"][$i]))
+                return $this->createNode($collection["value"][$i]);
+            else
+                return new ValueNode($collection["value"][$i]);
+        }, 'object', 'Returns the element x such that i is the index of x in the collection.', 'collection');
         //%collection.index(item)  returns the index of the item in the collection
-        $this->viewHandler->registerFunction(null,'index', function($collection, $item) {
+        $this->viewHandler->registerFunction(null, 'index', function ($collection, $x) {
             $this->checkArray($collection, "collection", "index()");
-            $result = array_search($item["value"]["id"], array_column($collection["value"],"id"));
-            if ($result ===false){
+            $result = array_search($x["value"]["id"], array_column($collection["value"], "id"));
+            if ($result === false) {
                 throw new \Exception("In function .index(x): Coudn't find the x in the collection");
             }
-            return new ValueNode($result );
-        });
+            return new ValueNode($result);
+        }, 'integer', 'Returns the smallest i such that i is the index of the first occurrence of x in the collection.', 'collection');
         //%collection.count  returns size of the collection
-        $this->viewHandler->registerFunction(null,'count', function($collection) { 
-            $this->checkArray($collection, "collection", "count");    
+        $this->viewHandler->registerFunction(null, 'count', function ($collection) {
+            $this->checkArray($collection, "collection", "count");
             return new ValueNode(sizeof($collection["value"]));
-        });
+        }, 'integer',  'Returns the number of elements in the collection.', 'collection');
         //%collection.crop(start,end) returns collection croped to start and end (inclusive)
-        $this->viewHandler->registerFunction(null,'crop', function($collection,$start,$end) { 
-            $this->checkArray($collection, "collection", "crop()");  
-            $collection["value"] = array_slice($collection["value"],$start,$end-$start+1);
+        $this->viewHandler->registerFunction(null, 'crop', function ($collection, int $start, int $end) {
+            $this->checkArray($collection, "collection", "crop()");
+            $collection["value"] = array_slice($collection["value"], $start, $end - $start + 1);
             return new ValueNode($collection);
-        });
+        }, 'collection', null, 'collection');
         //$collection.filter(key,val,op) returns collection w items that pass the condition of the filter
-        $this->viewHandler->registerFunction(null,'filter', function($collection,$key,$value,$operation)use ($courseId) { 
-            $this->checkArray($collection, "collection", "filter()");  
-            
+        $this->viewHandler->registerFunction(null, 'filter', function ($collection, string $key, string $value, string $operation) use ($courseId) {
+            $this->checkArray($collection, "collection", "filter()");
+
             $this->evaluateKey($key, $collection, $courseId);
-            $newCollectionVals=[];
-            foreach ($collection["value"] as $item){
-                if ($this->evalCondition($item[$key], $value, $operation)){
-                    $newCollectionVals[]=$item;
+            $newCollectionVals = [];
+            foreach ($collection["value"] as $item) {
+                if ($this->evalCondition($item[$key], $value, $operation)) {
+                    $newCollectionVals[] = $item;
                 }
             }
-            $collection["value"]=$newCollectionVals;
+            $collection["value"] = $newCollectionVals;
             return new ValueNode($collection);
-        });
+        }, 'collection', 'Returns the collection only with objects that have an index between start and end, inclusively.', 'collection');
         //%collectio.sort(order=(asc|des),keys) returns collection sorted by key
-        $this->viewHandler->registerFunction(null,'sort', function($collection=null,$order=null,$keys=null) use ($courseId){ 
+        $this->viewHandler->registerFunction(null, 'sort', function ($collection = null, string $order = null, string $keys = null) use ($courseId) {
             if (empty($collection["value"]))
                 return new ValueNode($collection);
-            
+
             $this->checkArray($collection, "collection", "sort()");
-            if ($order===null) throw new \Exception("On function .sort(order,keys), no order was given.");
-            if ($keys===null) throw new \Exception("On function .sort(order,keys), no keys were given.");
-            $keys = explode(";",$keys);
-            $i=0;
-            foreach ($keys as &$key){
-                if(!array_key_exists($key, $collection["value"][0])){
+            if ($order === null) throw new \Exception("On function .sort(order,keys), no order was given.");
+            if ($keys === null) throw new \Exception("On function .sort(order,keys), no keys were given.");
+            $keys = explode(";", $keys);
+            $i = 0;
+            foreach ($keys as &$key) {
+                if (!array_key_exists($key, $collection["value"][0])) {
                     //key is not a parameter of objects in collection, it should be an expression of the language
-                    if(strpos($key, "{")!==0)
-                            $key = "{".$key."}";
-                    
+                    if (strpos($key, "{") !== 0)
+                        $key = "{" . $key . "}";
+
                     $this->viewHandler->parseSelf($key);
-                    foreach($collection["value"] as &$object){
+                    foreach ($collection["value"] as &$object) {
                         $viewParams = array(
                             'course' => (string)$courseId,
                             'viewer' => (string)Core::getLoggedUser()->getId(),
-                            'item' => $this->createNode($object,$object["libraryOfVariable"])->getValue(),
-                            'index'=>$i
+                            'item' => $this->createNode($object, $object["libraryOfVariable"])->getValue(),
+                            'index' => $i
                         );
                         $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
                         $value = $key->accept($visitor)->getValue();
-                        
-                        $object["sortVariable".$i]=$value;
+
+                        $object["sortVariable" . $i] = $value;
                     }
-                    $key="sortVariable".$i;
+                    $key = "sortVariable" . $i;
                 }
                 $i++;
             }
-            if ($order=="asc" || $order=="ascending"){
-                usort($collection["value"], function($a, $b) use($keys) {
-                    foreach($keys as $key){
+            if ($order == "asc" || $order == "ascending") {
+                usort($collection["value"], function ($a, $b) use ($keys) {
+                    foreach ($keys as $key) {
                         if ($a[$key] > $b[$key]) return 1;
                         else if ($a[$key] < $b[$key]) return -1;
-                    }return 1;
+                    }
+                    return 1;
                 });
-            }else if ($order=="des" || $order=="descending"){
-                usort($collection["value"], function($a, $b)  use($keys) {
-                    foreach($keys as $key){
+            } else if ($order == "des" || $order == "descending") {
+                usort($collection["value"], function ($a, $b)  use ($keys) {
+                    foreach ($keys as $key) {
                         if ($a[$key] < $b[$key]) return 1;
                         else if ($a[$key] > $b[$key]) return -1;
-                    } return 1;
+                    }
+                    return 1;
                 });
-            }else{
+            } else {
                 throw new \Exception("On function .sort(order,keys), the order must be ascending or descending.");
-            }  
+            }
             return new ValueNode($collection);
-        });
+        }, 'collection', 'Returns the collection with objects sorted in a specific order by variables keys, from left to right
+separated by a ;. Any key may be an expression.', 'collection');
         //functions of actions(events) library, 
         //they don't really do anything, they're just here so their arguments can be processed 
-        $this->viewHandler->registerFunction("actions",'goToPage', function($page,$user=null) { 
-            $id = $this->viewHandler->getPages(null,$page)["id"];
+        $this->viewHandler->registerLibrary("views", "actions", "Library to be used only on EVENTS. These functions define the response to event triggers");
+        $this->viewHandler->registerFunction("actions", 'goToPage', function (string $page, $user = null) {
+            $id = $this->viewHandler->getPages(null, $page)["id"];
             if ($id !== null) {
                 $response = "goToPage('" . $page . "'," . $id;
             } else {
                 $response = "goToPage('" . $page . "',null";
             }
-            if ($user !== null) {//if user is specified get its value
+            if ($user !== null) { //if user is specified get its value
                 $userId = $this->getUserId($user);
                 $response .= "," . $userId . ")";
             } else {
                 $response .= ")";
             }
             return new ValueNode($response);
-        });
+        }, null, 'Changes the current page to the page referred by name.', 'library');
+
         //fucntions to change the visibility of a view element with the specified label
         //the $visitor parameter is provided by the visitor itself
-        $this->viewHandler->registerFunction("actions",'hideView', function($label,$visitor) { 
-            return new ValueNode("hideView('".$label->accept($visitor)->getValue()."')");
-        });
-        $this->viewHandler->registerFunction("actions",'showView', function($label,$visitor) { 
-            return new ValueNode("showView('".$label->accept($visitor)->getValue()."')");
-        });
-        $this->viewHandler->registerFunction("actions",'toggleView', function($label,$visitor) { 
+        $this->viewHandler->registerFunction("actions", 'hideView', function ($label, $visitor) {
+            return new ValueNode("hideView('" . $label->accept($visitor)->getValue() . "')");
+        }, null, 'Changes the visibility of a view referred by label to make it invisible.', 'library');
+        $this->viewHandler->registerFunction("actions", 'showView', function ($label, $visitor) {
+            return new ValueNode("showView('" . $label->accept($visitor)->getValue() . "')");
+        }, null, 'Changes the visibility of a view referred by label to make it invisible.', 'library');
+        $this->viewHandler->registerFunction("actions", 'toggleView', function ($label, $visitor) {
             $this->viewHandler->parseSelf($label);
-            return new ValueNode("toggleView('".$label->accept($visitor)->getValue()."')");
-        });
+            return new ValueNode("toggleView('" . $label->accept($visitor)->getValue() . "')");
+        }, null, 'Toggles the visibility of a view referred by label.', 'library');
         //call view handle template (parse and process its view)
         //the $params argument is provided by the visitor
-        $this->viewHandler->registerFunction("actions",'showToolTip', function($templateName,$user,$params) use ($course){ 
-            return $this->popUpOrToolTip($templateName,$params,"showToolTip",$course,$user);
-        });
-        $this->viewHandler->registerFunction("actions",'showPopUp', function($templateName,$user,$params) use ($course){ 
-            return $this->popUpOrToolTip($templateName,$params,"showPopUp",$course,$user);
-        });
+        $this->viewHandler->registerFunction("actions", 'showToolTip', function (string $templateName, $user, $params) use ($course) {
+            return $this->popUpOrToolTip($templateName, $params, "showToolTip", $course, $user);
+        }, null,  'Creates a template view referred by name in a form of a tooltip.', 'library');
+        $this->viewHandler->registerFunction("actions", 'showPopUp', function (string $templateName, $user, $params) use ($course) {
+            return $this->popUpOrToolTip($templateName, $params, "showPopUp", $course, $user);
+        }, null, 'Creates a template view referred by name in a form of a pop-up.', 'library');
+
+        $this->viewHandler->registerLibrary("views", "users", "This library provides access to information regarding Users and their info.");
+        $this->viewHandler->registerVariable("%user", "object", "users", "Represents the user associated to the page which is being displayed");
+        $this->viewHandler->registerVariable("%viewer", "object", "users", "Represents the user that is currently logged in watching the page");
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
-        $this->viewHandler->registerFunction('users','getAllUsers',function($role=null,$courseId=null) use ($course){
-            if ($courseId!==null){
+        $this->viewHandler->registerFunction('users', 'getAllUsers', function (string $role = null, int $courseId = null) use ($course) {
+            if ($courseId !== null) {
                 $course = new Course($courseId);
             }
-            if ($role==null)
-                return $this->createNode($course->getUsers(),'users',"collection");
+            if ($role == null)
+                return $this->createNode($course->getUsers(), 'users', "collection");
             else
-                return $this->createNode($course->getUsersWithRole($role),'users',"collection");
-        });
+                return $this->createNode($course->getUsersWithRole($role), 'users', "collection");
+        }, 'collection', null, 'library');
         //users.getUser(id) returns user object
-        $this->viewHandler->registerFunction('users','getUser',function($id) use ($course){
-            $user = $course->getUser($id)->getAllData();
-            if (empty($user)){
-                throw new \Exception("In function getUser(id): The ID given doesn't match any user");
-            }
-            return $this->createNode($user,'users');
-        });
+        $this->viewHandler->registerFunction(
+            'users',
+            'getUser',
+            function (int $id) use ($course) {
+                $user = $course->getUser($id)->getAllData();
+                if (empty($user)) {
+                    throw new \Exception("In function getUser(id): The ID given doesn't match any user");
+                }
+                return $this->createNode($user, 'users');
+            },
+            'object',
+            'Returns a collection with all GameCourseUsers. The optional parameters can be used to find GameCourseUsers that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.',
+            'library'
+        );
         //%user.campus
-        $this->viewHandler->registerFunction('users','campus',function($user){
-            return $this->basicGetterFunction($user,"campus");
-        });
+        $this->viewHandler->registerFunction('users', 'campus', function ($user) {
+            return $this->basicGetterFunction($user, "campus");
+        }, 'string', 'Returns a string with the campus of the GameCourseUser.');
         //%user.email
-        $this->viewHandler->registerFunction('users','email',function($user){
-            return $this->basicGetterFunction($user,"email");
-        });
+        $this->viewHandler->registerFunction('users', 'email', function ($user) {
+            return $this->basicGetterFunction($user, "email");
+        }, 'string', 'Returns a string with the email of the GameCourseUser.');
         //%user.isAdmin
-        $this->viewHandler->registerFunction('users','isAdmin',function($user){
-            return $this->basicGetterFunction($user,"isAdmin");
-        });
+        $this->viewHandler->registerFunction('users', 'isAdmin', function ($user) {
+            return $this->basicGetterFunction($user, "isAdmin");
+        }, 'boolean', 'Returns a boolean regarding whether the GameCourseUser has admin permissions.');
         //%user.lastActivity
-        $this->viewHandler->registerFunction('users','lastActivity',function($user){
-            return $this->basicGetterFunction($user,"lastActivity");
-        });
+        $this->viewHandler->registerFunction('users', 'lastActivity', function ($user) {
+            return $this->basicGetterFunction($user, "lastActivity");
+        }, 'string', 'Returns a string with the timestamp with the last action of the GameCourseUser in the system.');
         //%user.name 
-        $this->viewHandler->registerFunction('users','name',function($user){
-            return $this->basicGetterFunction($user,"name");
-        });
+        $this->viewHandler->registerFunction('users', 'name', function ($user) {
+            return $this->basicGetterFunction($user, "name");
+        }, 'string', 'Returns a string with the name of the GameCourseUser.');
         //%user.roles returns collection of role names
-        $this->viewHandler->registerFunction('users','roles',function($user)use ($course){
-            $this->checkArray($user,"object","roles","id");
+        $this->viewHandler->registerFunction('users', 'roles', function ($user) use ($course) {
+            $this->checkArray($user, "object", "roles", "id");
             return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRoles(),
-                                    null, "collection");
-        });
+                null,
+                "collection"
+            );
+        }, 'collection', 'Returns a collection with the roles of the GameCourseUser in the Course.');
         //%users.username
-        $this->viewHandler->registerFunction('users','username',function($user){
-            return $this->basicGetterFunction($user,"username");
-        });
+        $this->viewHandler->registerFunction('users', 'username', function ($user) {
+            return $this->basicGetterFunction($user, "username");
+        }, 'string', 'Returns a string with the username of the GameCourseUser.');
         //%users.picture
-        $this->viewHandler->registerFunction('users','picture',function($user){
-            $this->checkArray($user,"object","picture","username");
-            return new ValueNode("photos/".$user["value"]["username"].".png");
-        });
+        $this->viewHandler->registerFunction('users', 'picture', function ($user) {
+            $this->checkArray($user, "object", "picture", "username");
+            return new ValueNode("photos/" . $user["value"]["username"] . ".png");
+        }, 'picture', 'Returns the picture of the profile of the GameCourseUser.');
         //%user.getAllCourses(role)
-        $this->viewHandler->registerFunction('users','getAllCourses',function($user,$role=null) {
-            $this->checkArray($user, "object", "getAllCourses");
-            if ($role==null){
-                $courses = Core::$systemDB->selectMultiple(
+        $this->viewHandler->registerFunction(
+            'users',
+            'getAllCourses',
+            function ($user, string $role = null) {
+                $this->checkArray($user, "object", "getAllCourses");
+                if ($role == null) {
+                    $courses = Core::$systemDB->selectMultiple(
                         "course c join course_user u on course=c.id",
-                        ["u.id"=>$user["value"]["id"]],"c.*");
-            } else{
-                $courses = Core::$systemDB->selectMultiple(
+                        ["u.id" => $user["value"]["id"]],
+                        "c.*"
+                    );
+                } else {
+                    $courses = Core::$systemDB->selectMultiple(
                         "course_user u natural join user_role join role r on r.id=role " .
-                        "join course c on u.course=c.id",
-                        ["u.id"=>$user["value"]["id"],"r.name"=>$role],"c.*");
-            }
-            return $this->createNode($courses,"courses","collection",$user);
-        });
-        
+                            "join course c on u.course=c.id",
+                        ["u.id" => $user["value"]["id"], "r.name" => $role],
+                        "c.*"
+                    );
+                }
+                return $this->createNode($courses, "courses", "collection", $user);
+            },
+            'collection',
+            'Returns a collection of Courses to which the CourseUser is associated. Receives an optional specific role to search for Courses to which the CourseUser is associated with that role.'
+        );
+
+        $this->viewHandler->registerLibrary("views", "courses", "This library provides access to information regarding Courses and their info.");
+        $this->viewHandler->registerVariable("%course", "object", "courses", "Represents the course that the user is manipulating");
+
         //functions of course library
         //courses.getAllCourses(isActive,isVisible) returns collection of courses
-        $this->viewHandler->registerFunction('courses','getAllCourses',function($isActive=null,$isVisible=null){
-            $where=[];
-            if ($isActive!==null)
-                $where["isActive"]=$isActive;
-            if ($isVisible!==null)
-                $where["isVisible"]=$isVisible;
-            return $this->createNode(Core::$systemDB->selectMultiple("course",$where), "courses", "collection");
-        });
+        $this->viewHandler->registerFunction(
+            'courses',
+            'getAllCourses',
+            function (bool $isActive = null, bool $isVisible = null) {
+                $where = [];
+                if ($isActive !== null)
+                    $where["isActive"] = $isActive;
+                if ($isVisible !== null)
+                    $where["isVisible"] = $isVisible;
+                return $this->createNode(Core::$systemDB->selectMultiple("course", $where), "courses", "collection");
+            },
+            'collection',
+            'Returns a collection with all the courses in the system. The optional parameters can be used to find courses that specify a given combination of conditions:\nisActive: active or inactive depending whether the course is active.\nisVisible: visible or invisible depending whether the course is visible.',
+            'library'
+        );
         //courses.getCourse(id) returns course object
-        $this->viewHandler->registerFunction('courses','getCourse',function($id){
-            $course = Core::$systemDB->select("course",["id"=>$id]);
+        $this->viewHandler->registerFunction('courses', 'getCourse', function (int $id) {
+            $course = Core::$systemDB->select("course", ["id" => $id]);
             if (empty($course))
-                throw new \Exception("In function courses.getCourse(...): Coudn't find course with id=".$id);
-            return $this->createNode($course, "courses","object");
-        });
+                throw new \Exception("In function courses.getCourse(...): Coudn't find course with id=" . $id);
+            return $this->createNode($course, "courses", "object");
+        }, 'object', 'Returns the object course with the specific id.', 'library');
         //%course.isActive
-        $this->viewHandler->registerFunction('courses','isActive',function($course){
-            return $this->basicGetterFunction($course,"isActive");
-        });
+        $this->viewHandler->registerFunction('courses', 'isActive', function ($course) {
+            return $this->basicGetterFunction($course, "isActive");
+        }, 'boolean', 'Returns a boolean on whether the course is active.');
         //%course.isVisible
-        $this->viewHandler->registerFunction('courses','isVisible',function($course){
-            return $this->basicGetterFunction($course,"isVisible");
-        });
+        $this->viewHandler->registerFunction('courses', 'isVisible', function ($course) {
+            return $this->basicGetterFunction($course, "isVisible");
+        }, 'boolean', 'Returns a boolean on whether the course is visible.');
         //%course.name
-        $this->viewHandler->registerFunction('courses','name',function($course){
-            return $this->basicGetterFunction($course,"name");
-        });
+        $this->viewHandler->registerFunction('courses', 'name', function ($course) {
+            return $this->basicGetterFunction($course, "name");
+        }, 'string', 'Returns a string with the name of the course.');
         //%course.roles   returns collection of roles(which are just strings
-        $this->viewHandler->registerFunction('courses','roles',function($course){
+        $this->viewHandler->registerFunction('courses', 'roles', function ($course) {
             $this->checkArray($course, "object", "roles");
-            $roles = array_column(Core::$systemDB->selectMultiple("role",["course"=>$course["value"]["id"]],"name"),"name");
-            return $this->createNode($roles,null,"collection");
-        });
-        
+            $roles = array_column(Core::$systemDB->selectMultiple("role", ["course" => $course["value"]["id"]], "name"), "name");
+            return $this->createNode($roles, null, "collection");
+        }, 'collection', 'Returns a collection with all the roles in the course.');
+
+        $this->viewHandler->registerLibrary("views", "awards", "This library provides access to information regarding Awards.");
+
         //functions of awards library
         //awards.getAllAwards(user,type,moduleInstance,initialdate,finaldate)
-        $this->viewHandler->registerFunction('awards','getAllAwards', 
-        function($user=null,$type=null,$moduleInstance=null,$initialDate=null,$finalDate=null) use ($courseId){
-            return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate);
-        });
+        $this->viewHandler->registerFunction(
+            'awards',
+            'getAllAwards',
+            function (int $user = null, string $type = null, string $moduleInstance = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate);
+            },
+            'collection',
+            'Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
+            'library'
+        );
         //%award.renderPicture(item=(user|type)) returns the img or block ok the award (should be used on text views)
-        $this->viewHandler->registerFunction('awards','renderPicture',function($award,$item){
-            $this->checkArray($award,"object","renderPicture()");
-            if ($item=="user"){
-                $username = Core::$systemDB->select("game_course_user",["id"=>$award["value"]["user"]],"username");
+        $this->viewHandler->registerFunction('awards', 'renderPicture', function ($award, string $item) {
+            $this->checkArray($award, "object", "renderPicture()");
+            if ($item == "user") {
+                $username = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "username");
                 if (empty($username))
                     throw new \Exception("In function renderPicture('user'): couldn't find user.");
-                return new ValueNode("photos/".$username.".png");
-            }
-            else if ($item=="type"){
+                return new ValueNode("photos/" . $username . ".png");
+            } else if ($item == "type") {
                 switch ($award["value"]['type']) {
                     case 'grade':
                         return new ValueNode('<img src="images/quiz.svg">');
                     case 'badge':
                         $name = $this->getModuleNameOfAwardOrParticipation($award);
-                        if ($name===null)
+                        if ($name === null)
                             throw new \Exception("In function renderPicture('type'): couldn't find badge.");
-                        $level = substr($award["value"]["description"],-2,1);//assuming that level are always single digit
+                        $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
                         $imgName = str_replace(' ', '', $name . '-' . $level);
                         return new ValueNode('<img src="badges/' . $imgName . '.png">');
                     case 'skill':
                         $color = '#fff';
-                        $skillColor = Core::$systemDB->select("skill",["id"=>$award['value']["moduleInstance"]],"color");
-                        if($skillColor)
-                            $color=$skillColor;
+                        $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
+                        if ($skillColor)
+                            $color = $skillColor;
                         //needs width and height , should have them if it has latest-awards class in a profile
                         return new ValueNode('<div class="skill" style="background-color: ' . $color . '">');
                     case 'bonus':
@@ -486,91 +569,102 @@ class Views extends Module {
                     default:
                         return new ValueNode('<img src="images/quiz.svg">');
                 }
-            }else
+            } else
                 throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
-        });
+        }, 'picture');
         //%award.description
-        $this->viewHandler->registerFunction('awards','description',function($award){
-            return $this->basicGetterFunction($award,"description");
-        });
+        $this->viewHandler->registerFunction('awards', 'description', function ($award) {
+            return $this->basicGetterFunction($award, "description");
+        }, 'string', 'Returns a picture of the item associated to the award. item can refer to the GameCourseUser that won it ("user") and the type of the award ("type").');
         //%award.moduleInstance
-        $this->viewHandler->registerFunction('awards','moduleInstance',function($award){
+        $this->viewHandler->registerFunction('awards', 'moduleInstance', function ($award) {
             $this->checkArray($award, "object", "moduleInstance");
             return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
-        });
+        }, 'string', 'Returns a string with the name of the Module instance that provided the award.');
         //%award.reward
-        $this->viewHandler->registerFunction('awards','reward',function($award){
-            return $this->basicGetterFunction($award,"reward");
-        });
+        $this->viewHandler->registerFunction('awards', 'reward', function ($award) {
+            return $this->basicGetterFunction($award, "reward");
+        }, 'string', 'Returns a string with the reward provided by the award.');
         //%award.type
-        $this->viewHandler->registerFunction('awards','type',function($award){
-            return $this->basicGetterFunction($award,"type");
-        });
+        $this->viewHandler->registerFunction('awards', 'type', function ($award) {
+            return $this->basicGetterFunction($award, "type");
+        }, 'string', 'Returns a string with the type of the event that provided the award.');
         //%award.date
-        $this->viewHandler->registerFunction('awards','date',function($award){
+        $this->viewHandler->registerFunction('awards', 'date', function ($award) {
             return $this->getDate($award);
-        });
+        }, 'string', 'Returns a string in DD/MM/YYYY format of the date the award was created.');
         //%award.user
-        $this->viewHandler->registerFunction('awards','user',function($award){
-            return $this->basicGetterFunction($award,"user");
-        });
-        
+        $this->viewHandler->registerFunction('awards', 'user', function ($award) {
+            return $this->basicGetterFunction($award, "user");
+        }, 'string', 'Returns a string with the id of the GameCourseUser that received the award.');
+
+        $this->viewHandler->registerLibrary("views", "participations", "This library provides access to information regarding Participations.");
+
         //functions of the participation library
         //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate)
-        $this->viewHandler->registerFunction('participations','getAllParticipations', 
-        function($user=null,$type=null,$moduleInstance=null,$rating=null,$evaluator=null,$initialDate=null,$finalDate=null) use ($courseId){
-            $where=[];
-            if ($rating !== null) {
-                $where["rating"]=$rating;
-            }
-            if ($evaluator !== null) {
-                $where["evaluator"]=$evaluator;
-            }
-            return $this->getAwardOrParticipationAux($courseId,$user,$type,$moduleInstance,$initialDate,$finalDate,$where,"participation");
-        });
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getAllParticipations',
+            function (int $user = null, string $type = null, string $moduleInstance = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+                $where = [];
+                if ($rating !== null) {
+                    $where["rating"] = $rating;
+                }
+                if ($evaluator !== null) {
+                    $where["evaluator"] = $evaluator;
+                }
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation");
+            },
+            'collection',
+            'Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
+            'library'
+        );
         //%participation.date
-        $this->viewHandler->registerFunction('participations','date',function($participation){
+        $this->viewHandler->registerFunction('participations', 'date', function ($participation) {
             return $this->getDate($participation);
-        });
+        }, 'string', 'Returns a string in DD/MM/YYYY format of the date of the participation.');
         //%participation.description
-        $this->viewHandler->registerFunction('participations','description',function($participation){
-            return $this->basicGetterFunction($participation,"description");
-        });
-        
+        $this->viewHandler->registerFunction('participations', 'description', function ($participation) {
+            return $this->basicGetterFunction($participation, "description");
+        }, 'string', 'Returns a string with the information of the participation.');
+
         //%participation.evaluator
-        $this->viewHandler->registerFunction('participations','evaluator',function($participation){
-            return $this->basicGetterFunction($participation,"evaluator");
-        });        
+        $this->viewHandler->registerFunction('participations', 'evaluator', function ($participation) {
+            return $this->basicGetterFunction($participation, "evaluator");
+        }, 'string', 'Returns a string with the id of the user that rated the participation.');
         //%participation.moduleInstance
-        $this->viewHandler->registerFunction('participations','moduleInstance',function($participation){
-            return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation,false));
-        });
+        $this->viewHandler->registerFunction('participations', 'moduleInstance', function ($participation) {
+            return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation, false));
+        }, 'string', 'Returns a string with the name of the Module instance where the user participated.');
         //%participation.post
-        $this->viewHandler->registerFunction('participations','post',function($participation){
-            return $this->basicGetterFunction($participation,"post");
-        });
+        $this->viewHandler->registerFunction('participations', 'post', function ($participation) {
+            return $this->basicGetterFunction($participation, "post");
+        }, 'string', 'Returns a string with the link to the post where the user participated.');
         //%participation.rating
-        $this->viewHandler->registerFunction('participations','rating',function($participation){
-            return $this->basicGetterFunction($participation,"rating");
-        });
+        $this->viewHandler->registerFunction('participations', 'rating', function ($participation) {
+            return $this->basicGetterFunction($participation, "rating");
+        }, 'string', 'Returns a string with the rating of the participation.');
         //%participation.type
-        $this->viewHandler->registerFunction('participations','type',function($participation){
-            return $this->basicGetterFunction($participation,"type");
-        });
+        $this->viewHandler->registerFunction('participations', 'type', function ($participation) {
+            return $this->basicGetterFunction($participation, "type");
+        }, 'string', 'Returns a string with the type of the participation.');
         //%participation.user
-        $this->viewHandler->registerFunction('participations','user',function($participation){
-            return $this->basicGetterFunction($participation,"user");
-        });
-        
+        $this->viewHandler->registerFunction('participations', 'user', function ($participation) {
+            return $this->basicGetterFunction($participation, "user");
+        }, 'string', 'Returns a string with the id of the user that participated.');
+
         //parts
-        $this->viewHandler->registerPartType('text', null, null,
-            function(&$value) {//parse function
-                if (array_key_exists('link', $value)){
+        $this->viewHandler->registerPartType(
+            'text',
+            null,
+            null,
+            function (&$value) { //parse function
+                if (array_key_exists('link', $value)) {
                     $this->viewHandler->parseSelf($value['link']);
                 }
                 $this->viewHandler->parseSelf($value["value"]);
             },
-            function(&$value, $viewParams, $visitor) {//processing function
+            function (&$value, $viewParams, $visitor) { //processing function
                 if (array_key_exists('link', $value)) {
                     $value['link'] = $value['link']->accept($visitor)->getValue();
                 }
@@ -578,16 +672,19 @@ class Views extends Module {
                 $value["value"] = $value["value"]->accept($visitor)->getValue();
             }
         );
-        
-        $this->viewHandler->registerPartType('image', null, null,
-            function(&$image) {//parse function
-                if (array_key_exists('link', $image)){
+
+        $this->viewHandler->registerPartType(
+            'image',
+            null,
+            null,
+            function (&$image) { //parse function
+                if (array_key_exists('link', $image)) {
                     $this->viewHandler->parseSelf($image['link']);
                 }
                 $this->viewHandler->parseSelf($image["value"]);
                 $image['edit'] = false;
             },
-            function(&$image, $viewParams, $visitor) {//processing function
+            function (&$image, $viewParams, $visitor) { //processing function
                 if (array_key_exists('link', $image))
                     $image['link'] = $image['link']->accept($visitor)->getValue();
 
@@ -595,27 +692,31 @@ class Views extends Module {
             }
         );
 
-        $this->viewHandler->registerPartType('table',
-            function(&$table, &$savePart) {
+        $this->viewHandler->registerPartType(
+            'table',
+            function (&$table, &$savePart) {
                 $this->breakTableRows($table['headerRows'], $savePart);
                 $this->breakTableRows($table['rows'], $savePart);
             },
-            function(&$table, &$getPart) {
+            function (&$table, &$getPart) {
                 $this->putTogetherTableRows($table['headerRows'], $getPart);
                 $this->putTogetherTableRows($table['rows'], $getPart);
             },
-            function(&$table) {//parse function
+            function (&$table) { //parse function
                 $this->parseTableRows($table['headerRows']);
                 $this->parseTableRows($table['rows']);
             },
-            function(&$table, $viewParams, $visitor) {//processing function
+            function (&$table, $viewParams, $visitor) { //processing function
                 $this->processTableRows($table['headerRows'], $viewParams, $visitor);
                 $this->processTableRows($table['rows'], $viewParams, $visitor);
             }
         );
 
-        $this->viewHandler->registerPartType('block', null, null,
-            function(&$block) {//parse function
+        $this->viewHandler->registerPartType(
+            'block',
+            null,
+            null,
+            function (&$block) { //parse function
                 if (array_key_exists('header', $block)) {
                     $block['header']['title']['type'] = 'value';
                     $block['header']['image']['type'] = 'image';
@@ -629,30 +730,30 @@ class Views extends Module {
                     }
                 }
             },
-            function(&$block, $viewParams, $visitor) {//processing function
+            function (&$block, $viewParams, $visitor) { //processing function
                 if (array_key_exists('header', $block)) {
                     $this->viewHandler->processPart($block['header']['title'], $viewParams, $visitor);
                     $this->viewHandler->processPart($block['header']['image'], $viewParams, $visitor);
                 }
 
                 if (array_key_exists('children', $block)) {
-                    $this->viewHandler->processLoop($block['children'], $viewParams, $visitor, function(&$child, $params, $visitor) {
+                    $this->viewHandler->processLoop($block['children'], $viewParams, $visitor, function (&$child, $params, $visitor) {
                         $this->viewHandler->processPart($child, $params, $visitor);
                     });
                 }
             }
         );
-//API functions (functions called in js)
-        
+        //API functions (functions called in js)
+
         //gets a parsed and processed view
-        API::registerFunction('views', 'view', function() {//this is just being used for pages but can also deal with templates
+        API::registerFunction('views', 'view', function () { //this is just being used for pages but can also deal with templates
             $data = $this->getViewSettings();
             $course = $data["course"];
             $courseUser = $course->getLoggedUser();
             $courseUser->refreshActivity();
-            if (API::hasKey('needPermission') && API::getValue('needPermission')==true ){
+            if (API::hasKey('needPermission') && API::getValue('needPermission') == true) {
                 $user = Core::getLoggedUser();
-                $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
+                $isAdmin = (($user != null && $user->isAdmin()) || $courseUser->isTeacher());
                 if (!$isAdmin) {
                     API::error("This page can only be acessd by Adminis or Teachers, you don't have permission");
                 }
@@ -661,71 +762,77 @@ class Views extends Module {
                 'course' => (string)$data["courseId"],
                 'viewer' => (string)$courseUser->getId()
             ];
-            if ($data["viewSettings"]["roleType"] == "ROLE_INTERACTION"){
+            if ($data["viewSettings"]["roleType"] == "ROLE_INTERACTION") {
                 API::requireValues('user');
                 $viewParams['user'] = (string) API::getValue('user');
             }
-            
+
             API::response([ //'fields' => ,//not beeing user currently
-                'view' => $this->viewHandler->handle($data["viewSettings"],$course,$viewParams)
-            ]); 
+                'view' => $this->viewHandler->handle($data["viewSettings"], $course, $viewParams)
+            ]);
         });
         //gets list of pages and templates for the views page
-        API::registerFunction('views', 'listViews', function() {
+        API::registerFunction('views', 'listViews', function () {
             API::requireCourseAdminPermission();
             API::requireValues('course');
-            $templates=$this->getTemplates(true);
-            $response=['pages' => $this->viewHandler->getPages(), 
-                'templates' => $templates[0], "globals"=>$templates[1]];
+            $templates = $this->getTemplates(true);
+            $response = [
+                'pages' => $this->viewHandler->getPages(),
+                'templates' => $templates[0], "globals" => $templates[1]
+            ];
             $response['types'] = array(
-                ['id'=> "ROLE_SINGLE", 'name' => 'Role - Single'],
-                ['id'=> "ROLE_INTERACTION", 'name' => 'Role - Interaction']
+                ['id' => "ROLE_SINGLE", 'name' => 'Role - Single'],
+                ['id' => "ROLE_INTERACTION", 'name' => 'Role - Interaction']
             );
             API::response($response);
         });
         //creates a page or template
-        API::registerFunction('views', 'createView', function() {
+        API::registerFunction('views', 'createView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('course','name','pageOrTemp','roleType');
-            
-            $roleType =API::getValue('roleType');
-            if ($roleType=="ROLE_INTERACTION") {
-                $defaultRole ="role.Default>role.Default";
-            }else {
-                $defaultRole ="role.Default";
+            API::requireValues('course', 'name', 'pageOrTemp', 'roleType');
+
+            $roleType = API::getValue('roleType');
+            if ($roleType == "ROLE_INTERACTION") {
+                $defaultRole = "role.Default>role.Default";
+            } else {
+                $defaultRole = "role.Default";
             }
 
             //create new aspectClass
             Core::$systemDB->insert("aspect_class");
             $aspectClass = Core::$systemDB->getLastId();
-            
+
             //insert default aspect view
-            Core::$systemDB->insert("view",["aspectClass"=>$aspectClass,"partType"=>"block","parent"=>null,"role"=>$defaultRole]);
-            $viewId=Core::$systemDB->getLastId();
+            Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
+            $viewId = Core::$systemDB->getLastId();
             //page or template to insert in db
-            $newView=["name"=>API::getValue('name'),"course"=>API::getValue('course'),"roleType"=>$roleType];
-            if (API::getValue('pageOrTemp')=="page"){
-                $newView["viewId"]=$viewId;
-                Core::$systemDB->insert("page",$newView);
-            }else{
-                Core::$systemDB->insert("template",$newView);
-                $templateId=Core::$systemDB->getLastId();
-                Core::$systemDB->insert("view_template",["viewId"=>$viewId,"templateId"=>$templateId]);
+            $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => $roleType];
+            if (API::getValue('pageOrTemp') == "page") {
+                $newView["viewId"] = $viewId;
+                Core::$systemDB->insert("page", $newView);
+            } else {
+                Core::$systemDB->insert("template", $newView);
+                $templateId = Core::$systemDB->getLastId();
+                Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
             }
         });
         //creates a new aspect for the page/template, copies content of closest aspect
-        API::registerFunction('views', 'createAspectView', function() {
-            $data=$this->getViewSettings();
+        API::registerFunction('views', 'createAspectView', function () {
+            $data = $this->getViewSettings();
             API::requireValues('info');
-            $this->viewHandler->createAspect($data["viewSettings"]["roleType"],
-                            $data["viewSettings"]["viewId"],$data["course"],API::getValue('info'));
-            
+            $this->viewHandler->createAspect(
+                $data["viewSettings"]["roleType"],
+                $data["viewSettings"]["viewId"],
+                $data["course"],
+                API::getValue('info')
+            );
+
             http_response_code(201);
             return;
         });
         //Delete an aspect view of a page or template
-        API::registerFunction('views', 'deleteAspectView', function() {
-            $data=$this->getViewSettings();
+        API::registerFunction('views', 'deleteAspectView', function () {
+            $data = $this->getViewSettings();
             $viewSettings = $data["viewSettings"];
             $type = $viewSettings['roleType'];
             API::requireValues('info');
@@ -735,28 +842,26 @@ class Views extends Module {
                 API::error('Missing roleOne in info');
             }
             $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
-            
-            $isTemplate=$data["pageOrTemp"] == "template";
+
+            $isTemplate = $data["pageOrTemp"] == "template";
             if ($type == "ROLE_INTERACTION" && !array_key_exists('roleTwo', $info)) {
-                $role=["role"=>$info['roleOne'].'>%'];
-                $this->deleteTemplateRefs($isTemplate,$data["viewId"],$info['roleOne'].'>%',false);
+                $role = ["role" => $info['roleOne'] . '>%'];
+                $this->deleteTemplateRefs($isTemplate, $data["viewId"], $info['roleOne'] . '>%', false);
                 //This is assuming that there is always an undeletable default aspect
-                Core::$systemDB->delete("view",["aspectClass"=>$aspects[0]["aspectClass"],"partType"=>"block","parent"=>null],$role );
-            } 
-            else{
-                $aspectsByRole = array_combine(array_column($aspects,"role"),$aspects);
-                if ($type == "ROLE_SINGLE" ) {
-                    $role =$info["roleOne"];
-                    $this->deleteTemplateRefs($isTemplate,$data["viewId"],"%>".$role,false);
-                    
-                }else if ($type == "ROLE_INTERACTION") {
-                    $role = $info['roleOne'].'>'.$info['roleTwo'];
-                    $this->deleteTemplateRefs($isTemplate,$data["viewId"],$info['roleTwo'],true);
+                Core::$systemDB->delete("view", ["aspectClass" => $aspects[0]["aspectClass"], "partType" => "block", "parent" => null], $role);
+            } else {
+                $aspectsByRole = array_combine(array_column($aspects, "role"), $aspects);
+                if ($type == "ROLE_SINGLE") {
+                    $role = $info["roleOne"];
+                    $this->deleteTemplateRefs($isTemplate, $data["viewId"], "%>" . $role, false);
+                } else if ($type == "ROLE_INTERACTION") {
+                    $role = $info['roleOne'] . '>' . $info['roleTwo'];
+                    $this->deleteTemplateRefs($isTemplate, $data["viewId"], $info['roleTwo'], true);
                 }
                 $aspect = $aspectsByRole[$role];
-                $this->deleteTemplateRefs($isTemplate,$data["viewId"],$role,true);
-                
-                Core::$systemDB->delete("view",["id"=>$aspect["id"]]);
+                $this->deleteTemplateRefs($isTemplate, $data["viewId"], $role, true);
+
+                Core::$systemDB->delete("view", ["id" => $aspect["id"]]);
             }
             // if(sizeof($aspects)==2){//only 1 aspect after deletion -> aspectClass becomes null
             //     Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspects[0]["aspectClass"]]);
@@ -764,49 +869,49 @@ class Views extends Module {
             http_response_code(200);
             return;
         });
-      
+
         //gets page/template info, show aspects (for the page/template settings page)
-        API::registerFunction('views', 'getInfo', function() {
+        API::registerFunction('views', 'getInfo', function () {
             $data = $this->getViewSettings();
-            $viewSettings=$data["viewSettings"];
-            $course=$data["course"];
+            $viewSettings = $data["viewSettings"];
+            $course = $data["course"];
             $response = ['viewSettings' => $viewSettings];
             $type = $viewSettings['roleType'];
             $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
             $result = [];
 
             //function to get role details from the role in aspect
-            $parseRoleName = function($aspectRole){
-                $roleInfo = explode(".",$aspectRole);//e.g: role.Default
+            $parseRoleName = function ($aspectRole) {
+                $roleInfo = explode(".", $aspectRole); //e.g: role.Default
                 $roleSpecification = $roleInfo[1];
-                return ["id"=>$aspectRole,"name"=>$roleSpecification];
+                return ["id" => $aspectRole, "name" => $roleSpecification];
             };
 
-            $doubleRoles=[];//for views w role interaction
-            foreach ($aspects as $aspects){
-                $aspectRole=$aspects['role'];//string like 'role.Default'
+            $doubleRoles = []; //for views w role interaction
+            foreach ($aspects as $aspects) {
+                $aspectRole = $aspects['role']; //string like 'role.Default'
                 if ($type == "ROLE_INTERACTION") {
                     $roleTwo = substr($aspectRole, strpos($aspectRole, '>') + 1, strlen($aspectRole));
                     $roleOne = substr($aspectRole, 0, strpos($aspectRole, '>'));
                     $doubleRoles[$roleOne][] = $roleTwo;
-                } else{
+                } else {
                     $result[] = $parseRoleName($aspectRole);
                 }
             }
 
             if ($type == "ROLE_INTERACTION") {
-                foreach($doubleRoles as $roleOne => $rolesTwo){
+                foreach ($doubleRoles as $roleOne => $rolesTwo) {
                     $viewedBy = [];
-                    foreach($rolesTwo as $roleTwo ){
+                    foreach ($rolesTwo as $roleTwo) {
                         $viewedBy[] = $parseRoleName($roleTwo);
                     }
-                    $result[]=array_merge($parseRoleName($roleOne),['viewedBy'=>$viewedBy]);                   
+                    $result[] = array_merge($parseRoleName($roleOne), ['viewedBy' => $viewedBy]);
                 }
             }
 
             $response['viewSpecializations'] = $result;
             $response['allIds'] = array();
-            $roles = array_merge([["name"=>'Default',"id"=>"Default"]], $course->getRolesData());
+            $roles = array_merge([["name" => 'Default', "id" => "Default"]], $course->getRolesData());
             $users = $course->getUsersIds();
             $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
             foreach ($roles as $role) {
@@ -815,15 +920,15 @@ class Views extends Module {
             foreach ($users as $user) {
                 $response['allIds'][] = array('id' => 'user.' . $user, 'name' => $user);
             }
-            $response["pageOrTemp"]=$data["pageOrTemp"];
+            $response["pageOrTemp"] = $data["pageOrTemp"];
             API::response($response);
         });
 
         //gets contents of template to put it in the view being edited
-        API::registerFunction('views', 'getTemplateContent', function() {
+        API::registerFunction('views', 'getTemplateContent', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('role', 'id', 'roleType','course');
-            $templateView = $this->getTemplateContents(API::getValue("role"),API::getValue("id"),API::getValue("course"),API::getValue("roleType"));
+            API::requireValues('role', 'id', 'roleType', 'course');
+            $templateView = $this->getTemplateContents(API::getValue("role"), API::getValue("id"), API::getValue("course"), API::getValue("roleType"));
             //the template needs to be contained in 1 view part, if there are multiple we put everything in a block
             if (sizeOf($templateView["children"]) > 1) {
                 $block = $templateView;
@@ -835,106 +940,110 @@ class Views extends Module {
             API::response(array('template' => $block));
         });
         //gets 
-        API::registerFunction('views', 'getTemplateReference', function() {
-            API::requireCourseAdminPermission();//course/id/isglobal/name/role/roletype/viewid
-            API::requireValues('role', 'id', 'roleType','course');
+        API::registerFunction('views', 'getTemplateReference', function () {
+            API::requireCourseAdminPermission(); //course/id/isglobal/name/role/roletype/viewid
+            API::requireValues('role', 'id', 'roleType', 'course');
             //get content of template to put in the view
-            $templateId=API::getValue("id");
-            $templateView = $this->getTemplateContents(API::getValue("role"),$templateId,API::getValue("course"),API::getValue("roleType"));      
+            $templateId = API::getValue("id");
+            $templateView = $this->getTemplateContents(API::getValue("role"), $templateId, API::getValue("course"), API::getValue("roleType"));
             $templateView["partType"] = "templateRef";
-            $templateView["templateId"] =$templateId;
-            $templateView["aspectId"] =$templateView["id"];
+            $templateView["templateId"] = $templateId;
+            $templateView["aspectId"] = $templateView["id"];
             API::response(array('template' => $templateView));
         });
 
-        
+
         //save a part of the view as a template or templateRef while editing the view
-        API::registerFunction('views', 'saveTemplate', function() {
+        API::registerFunction('views', 'saveTemplate', function () {
             API::requireCourseAdminPermission();
             API::requireValues('course', 'name', 'part');
             $templateName = API::getValue('name');
             $content = API::getValue('part');
-            $courseId=API::getValue("course");
-            
+            $courseId = API::getValue("course");
+
             $roleType = $this->viewHandler->getRoleType($content["role"]);
-            if ($roleType=="ROLE_INTERACTION") {
-                $defaultRole ="role.Default>role.Default";
-            }else {
-                $defaultRole ="role.Default";
+            if ($roleType == "ROLE_INTERACTION") {
+                $defaultRole = "role.Default>role.Default";
+            } else {
+                $defaultRole = "role.Default";
             }
             $aspects = [];
-            $aspects[] = ["role"=>$content["role"], "partType"=>"block","parent"=>null];
+            $aspects[] = ["role" => $content["role"], "partType" => "block", "parent" => null];
             Core::$systemDB->insert("aspect_class");
             $aspectClass = Core::$systemDB->getLastId();
-            $this->setTemplateHelper($aspects, $aspectClass,$courseId, $templateName, $roleType,$content);
+            $this->setTemplateHelper($aspects, $aspectClass, $courseId, $templateName, $roleType, $content);
         });
         //toggle isGlobal parameter of a template
-        API::registerFunction('views',"globalizeTemplate",function(){
+        API::registerFunction('views', "globalizeTemplate", function () {
             API::requireCourseAdminPermission();
-            API::requireValues('id','isGlobal');
-            Core::$systemDB->update("template",["isGlobal"=>!API::getValue("isGlobal")],["id"=>API::getValue("id")]);
+            API::requireValues('id', 'isGlobal');
+            Core::$systemDB->update("template", ["isGlobal" => !API::getValue("isGlobal")], ["id" => API::getValue("id")]);
             http_response_code(201);
             return;
         });
         //make copy of global template for the current course
-        API::registerFunction('views',"copyGlobalTemplate",function(){
+        API::registerFunction('views', "copyGlobalTemplate", function () {
             API::requireCourseAdminPermission();
-            API::requireValues('template','course');
+            API::requireValues('template', 'course');
             $template = API::getValue("template");
-            
-            $aspect=Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"block","parent"=>null,"templateId"=>$template["id"]]);
-            $aspect["aspectClass"]=null;
+
+            $aspect = Core::$systemDB->select(
+                "view_template join view on viewId=id",
+                ["partType" => "block", "parent" => null, "templateId" => $template["id"]]
+            );
+            $aspect["aspectClass"] = null;
             $views = $this->viewHandler->getViewWithParts($aspect["id"]);
 
             //just coppying the default aspect because we don't know if the other course has the same roles
-            $aspectClass=null;
+            $aspectClass = null;
             $views = [$views[0]];
-            $this->setTemplateHelper($views,$aspectClass,API::getValue("course"),$template["name"],$template["roleType"]);
+            $this->setTemplateHelper($views, $aspectClass, API::getValue("course"), $template["name"], $template["roleType"]);
             http_response_code(201);
             return;
         });
         //delete page/template
-        API::registerFunction('views', 'deleteView', function() {
+        API::registerFunction('views', 'deleteView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('id','course','pageOrTemp');
-            $id=API::getValue('id');
-            
-            if (API::getValue("pageOrTemp")=="template"){
-                $pageOrTemplates = Core::$systemDB->selectMultiple("view_template",["templateId"=>$id]);
-            }else{
-                $pageOrTemplates = Core::$systemDB->selectMultiple("page",["id"=>$id]);
+            API::requireValues('id', 'course', 'pageOrTemp');
+            $id = API::getValue('id');
+
+            if (API::getValue("pageOrTemp") == "template") {
+                $pageOrTemplates = Core::$systemDB->selectMultiple("view_template", ["templateId" => $id]);
+            } else {
+                $pageOrTemplates = Core::$systemDB->selectMultiple("page", ["id" => $id]);
             }
-            
-            foreach($pageOrTemplates as $pageTemp){//aspect views of pages or template or templateReferences
-                $aspectView = Core::$systemDB->select("view",["id"=>$pageTemp["viewId"]]);
-                if ($aspectView["partType"]=="block" && $aspectView["parent"]==null && $aspectView["aspectClass"]!=null){
-                    Core::$systemDB->delete("view",["aspectClass"=>$aspectView["aspectClass"]]);
-                    Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspectView["aspectClass"]]);
+
+            foreach ($pageOrTemplates as $pageTemp) { //aspect views of pages or template or templateReferences
+                $aspectView = Core::$systemDB->select("view", ["id" => $pageTemp["viewId"]]);
+                if ($aspectView["partType"] == "block" && $aspectView["parent"] == null && $aspectView["aspectClass"] != null) {
+                    Core::$systemDB->delete("view", ["aspectClass" => $aspectView["aspectClass"]]);
+                    Core::$systemDB->delete("aspect_class", ["aspectClass" => $aspectView["aspectClass"]]);
                 }
-                Core::$systemDB->delete("view",["id"=>$pageTemp["viewId"]]);
+                Core::$systemDB->delete("view", ["id" => $pageTemp["viewId"]]);
             }
-            Core::$systemDB->delete(API::getValue("pageOrTemp"),["id"=>$id]);
+            Core::$systemDB->delete(API::getValue("pageOrTemp"), ["id" => $id]);
         });
         //export template to a txt file on main project folder, it needs to be moved to a module folder to be used
-        API::registerFunction('views', 'exportTemplate', function() {
+        API::registerFunction('views', 'exportTemplate', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('id',"name",'course');
+            API::requireValues('id', "name", 'course');
             $templateId = API::getValue('id');
             //get aspect
-            $aspect=Core::$systemDB->select("view_template join view on viewId=id",
-                    ["partType"=>"block","parent"=>null,"templateId"=>$templateId]);
+            $aspect = Core::$systemDB->select(
+                "view_template join view on viewId=id",
+                ["partType" => "block", "parent" => null, "templateId" => $templateId]
+            );
             //will get all the aspects (and contents) of the template
             $views = $this->viewHandler->getViewWithParts($aspect["id"]);
-            $filename = "Template-".preg_replace("/[^a-zA-Z0-9-]/", "", API::getValue('name'))."-".$templateId . ".txt";
-            file_put_contents($filename, json_encode($views)); 
-            API::response(array('filename' => $filename ));
+            $filename = "Template-" . preg_replace("/[^a-zA-Z0-9-]/", "", API::getValue('name')) . "-" . $templateId . ".txt";
+            file_put_contents($filename, json_encode($views));
+            API::response(array('filename' => $filename));
         });
         //get contents of a view with a specific aspect, for the edit page
-        API::registerFunction('views', 'getEdit', function() {
+        API::registerFunction('views', 'getEdit', function () {
             API::requireCourseAdminPermission();
             $data = $this->getViewSettings();
-            $viewSettings=$data["viewSettings"];
+            $viewSettings = $data["viewSettings"];
             $viewType = $viewSettings['roleType'];
             API::requireValues('info');
             $info = API::getValue('info');
@@ -943,54 +1052,64 @@ class Views extends Module {
                     API::error('Missing role');
                 }
                 $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['role']);
-            } 
-            else if ($viewType == "ROLE_INTERACTION") {
+            } else if ($viewType == "ROLE_INTERACTION") {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
                     API::error('Missing roleOne and/or roleTwo in info');
                 }
-                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['roleOne'].'>'.$info['roleTwo']);
-            } 
-            $templates= $this->getTemplates();
-            API::response(array('view' => $view, 'fields' => [], 'templates' =>$templates ));
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['roleOne'] . '>' . $info['roleTwo']);
+            }
+            $templates = $this->getTemplates();
+            API::response(array('view' => $view, 'fields' => [], 'templates' => $templates));
+        });
+        //getDictionary
+        API::registerFunction('views', 'getDictionary', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('course');
+            $courseId = API::getValue('course');
+            //get course libraries
+            $course = new Course($courseId);
+
+            API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
         });
         //save the view being edited
-        API::registerFunction('views', 'saveEdit', function() {
+        API::registerFunction('views', 'saveEdit', function () {
             $this->saveOrPreview(true);
         });
         //gets data to show preview of the view being edited
-        API::registerFunction('views', 'previewEdit', function() {
+        API::registerFunction('views', 'previewEdit', function () {
             $this->saveOrPreview(false);
         });
     }
     //tests view parsing and processing
-    function testView($course,$courseId,&$testDone,&$view,$viewerRole,$userRole=null){
-        try{//ToDo: for preview viewer should be the current user if they have the role
+    function testView($course, $courseId, &$testDone, &$view, $viewerRole, $userRole = null)
+    {
+        try { //ToDo: for preview viewer should be the current user if they have the role
             $viewerId = $this->getUserIdWithRole($course, $viewerRole);
-            $params=['course' => (string)$courseId];
+            $params = ['course' => (string)$courseId];
 
-            if ($userRole!==null){//if view has role interaction
+            if ($userRole !== null) { //if view has role interaction
                 $userId = $this->getUserIdWithRole($course, $userRole);
-                if ($userId == -1){
+                if ($userId == -1) {
                     return;
                 }
-                $params["user"]=(string)$userId;
+                $params["user"] = (string)$userId;
             }
             if ($viewerId != -1) {
                 $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
             }
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
     }
     //test view edit and save it or show preview
-    function saveOrPreview($saving=true){
+    function saveOrPreview($saving = true)
+    {
         API::requireCourseAdminPermission();
-        $data=$this->getViewSettings();
-        $courseId=$data["courseId"];
-        $course=$data["course"];
+        $data = $this->getViewSettings();
+        $courseId = $data["courseId"];
+        $course = $data["course"];
         $viewContent = API::getValue('content');
         $viewType = $data["viewSettings"]['roleType'];
 
@@ -1006,36 +1125,34 @@ class Views extends Module {
             }
         }
         $testDone = false;
-        $warning=false;
+        $warning = false;
         $viewCopy = $viewContent;
         try {
             $this->viewHandler->parseView($viewCopy);
             if ($viewType == "ROLE_SINGLE") {
                 $this->testView($course, $courseId, $testDone, $viewCopy, $info['role']);
             } else if ($viewType == "ROLE_INTERACTION") {
-                $this->testView($course, $courseId, $testDone, $viewCopy, $info['roleTwo'],$info['roleOne']);
-            } 
+                $this->testView($course, $courseId, $testDone, $viewCopy, $info['roleTwo'], $info['roleOne']);
+            }
         } catch (\Exception $e) {
-            $msg =$e->getMessage();
-            if (!$saving){
+            $msg = $e->getMessage();
+            if (!$saving) {
                 API::error('Error in preview: ' . $msg);
-            }
-            else if ($data["pageOrTemp"] == "page" || strpos($msg, 'Unknown variable') === null) {
+            } else if ($data["pageOrTemp"] == "page" || strpos($msg, 'Unknown variable') === null) {
                 API::error('Error saving view: ' . $msg);
-            }
-            else {//template with variable error, probably because it belong to an unknow context, save anyway
+            } else { //template with variable error, probably because it belong to an unknow context, save anyway
                 $msgArr = explode(": ", $msg);
                 $varName = end($msgArr);
                 $warning = true;
                 $warningMsg = "Warning: Template was saved but not tested because of the unknow variable: " . $varName;
             }
         }
-        if ($saving){
+        if ($saving) {
             //print_R($viewContent);
             $this->viewHandler->updateViewAndChildren($viewContent);
-            $errorMsg="Saved, but skipping test (no users in role to test or special role";
-        }else{
-            $errorMsg="Previewing of Views for Roles with no users or Special Roles is not implemented.";
+            $errorMsg = "Saved, but skipping test (no users in role to test or special role";
+        } else {
+            $errorMsg = "Previewing of Views for Roles with no users or Special Roles is not implemented.";
         }
         if (!$testDone) {
             if ($warning) {
@@ -1043,20 +1160,21 @@ class Views extends Module {
             }
             API::error($errorMsg);
         }
-        if (!$saving){
+        if (!$saving) {
             API::response(array('view' => $viewCopy));
         }
-        return;    
+        return;
     }
     //receives roles like 'role.Default','role.1',etc and get a user of that role
-    function getUserIdWithRole($course, $role) {
+    function getUserIdWithRole($course, $role)
+    {
         $uid = -1;
         if (strpos($role, 'role.') === 0) {
             $role = substr($role, 5);
             if ($role == 'Default')
                 return $course->getUsersIds()[0];
-            $loggedUserId=Core::getLoggedUser()->getId();
-            $loggedUser = new \GameCourse\CourseUser($loggedUserId,$course);
+            $loggedUserId = Core::getLoggedUser()->getId();
+            $loggedUser = new \GameCourse\CourseUser($loggedUserId, $course);
             if (in_array($role, $loggedUser->getRolesNames()))
                 return $loggedUserId;
             $users = $course->getUsersWithRole($role);
@@ -1067,121 +1185,136 @@ class Views extends Module {
         }
         return $uid;
     }
-  
-    
-    public function getTemplateContents($role,$templateId,$courseId,$templateRoleType){
+
+
+    public function getTemplateContents($role, $templateId, $courseId, $templateRoleType)
+    {
         $course = new Course($courseId);
-        $anAspect = Core::$systemDB->select("view_template join view on viewId=id",
-                ["partType"=>"block","parent"=>null,"templateId"=>$templateId]);
-        $referenceRoleType=$this->viewHandler->getRoleType($role);
-        
-        if ($templateRoleType=="ROLE_INTERACTION"){
-            if ($referenceRoleType=="ROLE_SINGLE" ){
-                $role = "role.Default>".$role;
+        $anAspect = Core::$systemDB->select(
+            "view_template join view on viewId=id",
+            ["partType" => "block", "parent" => null, "templateId" => $templateId]
+        );
+        $referenceRoleType = $this->viewHandler->getRoleType($role);
+
+        if ($templateRoleType == "ROLE_INTERACTION") {
+            if ($referenceRoleType == "ROLE_SINGLE") {
+                $role = "role.Default>" . $role;
             }
             $roles = explode(">", $role);
-            $view=$this->viewHandler->getClosestAspect($course,$templateRoleType,$roles[0],$anAspect["id"],$roles[1]);
-        }else{
-            if ($referenceRoleType=="ROLE_INTERACTION" ){
+            $view = $this->viewHandler->getClosestAspect($course, $templateRoleType, $roles[0], $anAspect["id"], $roles[1]);
+        } else {
+            if ($referenceRoleType == "ROLE_INTERACTION") {
                 $role = explode(">", $role)[1];
             }
-            $view=$this->viewHandler->getClosestAspect($course,$templateRoleType,$role,$anAspect["id"]);
+            $view = $this->viewHandler->getClosestAspect($course, $templateRoleType, $role, $anAspect["id"]);
         }
         return $view;
     }
-    public function &getViewHandler() {
+    public function &getViewHandler()
+    {
         return $this->viewHandler;
     }
-    public function deleteTemplateRefs($isTemplate,$templateId,$role,$isRoleExact=true){
+    public function deleteTemplateRefs($isTemplate, $templateId, $role, $isRoleExact = true)
+    {
         if ($isTemplate) {
-            $deleteTempRefTable="view_template left join view on viewId=id";
-            if ($isRoleExact){
-               $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef","role"=>$role],"id");
-            }else{
-                $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef"],"id",null,[],[],null, ["role"=>$role]);     
+            $deleteTempRefTable = "view_template left join view on viewId=id";
+            if ($isRoleExact) {
+                $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef", "role" => $role], "id");
+            } else {
+                $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef"], "id", null, [], [], null, ["role" => $role]);
             }
-            foreach ($viewDelete as $view){
+            foreach ($viewDelete as $view) {
                 Core::$systemDB->delete("view", ["id" => $view["id"]]);
             }
         }
     }
     //gets templates of this course
-    public function getTemplates($includeGlobals=false){
-        $temps = Core::$systemDB->selectMultiple('template t join view_template on templateId=id join view v on v.id=viewId',
-                ['course'=>$this->getCourseId(),"partType"=>"block","parent"=>null],
-                "t.id,name,course,isGlobal,roleType,viewId,role");
+    public function getTemplates($includeGlobals = false)
+    {
+        $temps = Core::$systemDB->selectMultiple(
+            'template t join view_template on templateId=id join view v on v.id=viewId',
+            ['course' => $this->getCourseId(), "partType" => "block", "parent" => null],
+            "t.id,name,course,isGlobal,roleType,viewId,role"
+        );
         if ($includeGlobals) {
-            $globalTemp = Core::$systemDB->selectMultiple("template",["isGlobal" => true]);
+            $globalTemp = Core::$systemDB->selectMultiple("template", ["isGlobal" => true]);
             return [$temps, $globalTemp];
         }
         return $temps;
     }
     //gets template by id
-    public function getTemplate($id=null,$name=null) {
-        $tables="template t join view_template on templateId=id join view v on v.id=viewId";
-        $where=['course'=>$this->getCourseId(),"partType"=>"block","parent"=>null];
-        if ($id){
-            $where["t.id"]=$id;
-        }else{
-            $where["name"]=$name;
+    public function getTemplate($id = null, $name = null)
+    {
+        $tables = "template t join view_template on templateId=id join view v on v.id=viewId";
+        $where = ['course' => $this->getCourseId(), "partType" => "block", "parent" => null];
+        if ($id) {
+            $where["t.id"] = $id;
+        } else {
+            $where["name"] = $name;
         }
-        $fields="t.id,name,course,isGlobal,roleType,viewId,role";
-        return Core::$systemDB->select($tables,$where,$fields);
+        $fields = "t.id,name,course,isGlobal,roleType,viewId,role";
+        return Core::$systemDB->select($tables, $where, $fields);
     }
-    
+
     //checks if a template with a given name exists in the DB
-    public function templateExists($name) {
-        return !empty(Core::$systemDB->select('template',['name'=>$name,'course'=>$this->getCourseId()]));
+    public function templateExists($name)
+    {
+        return !empty(Core::$systemDB->select('template', ['name' => $name, 'course' => $this->getCourseId()]));
     }
-    
+
     //receives the template name, its encoded contents, and puts it in the database
-    public function setTemplate($name, $template) {
-        $aspects = json_decode($template,true);
-        $aspectClass=null;
+    public function setTemplate($name, $template)
+    {
+        $aspects = json_decode($template, true);
+        $aspectClass = null;
         if (sizeof($aspects) > 1) {
             Core::$systemDB->insert("aspect_class");
-            $aspectClass=Core::$systemDB->getLastId();
+            $aspectClass = Core::$systemDB->getLastId();
         }
         $roleType = $this->viewHandler->getRoleType($aspects[0]["role"]);
-        $this->setTemplateHelper($aspects, $aspectClass,$this->getCourseId(), $name, $roleType);
+        $this->setTemplateHelper($aspects, $aspectClass, $this->getCourseId(), $name, $roleType);
     }
     //inserts data into template and view_template tables
-    function setTemplateHelper($aspects,$aspectClass,$courseId,$name,$roleType,$content=null){
-        foreach($aspects as &$aspect){
-            $aspect["aspectClass"]=$aspectClass;
-            Core::$systemDB->insert("view",["role"=>$aspect["role"],"partType"=>$aspect["partType"],"aspectClass"=>$aspectClass]);
-            $aspect["id"]=Core::$systemDB->getLastId();
+    function setTemplateHelper($aspects, $aspectClass, $courseId, $name, $roleType, $content = null)
+    {
+        foreach ($aspects as &$aspect) {
+            $aspect["aspectClass"] = $aspectClass;
+            Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+            $aspect["id"] = Core::$systemDB->getLastId();
             //print_r($aspect);
             if ($content) {
                 $aspect["children"][] = $content;
             }
-            $this->viewHandler->updateViewAndChildren($aspect, false, true); 
+            $this->viewHandler->updateViewAndChildren($aspect, false, true);
         }
-        Core::$systemDB->insert("template",["course"=>$courseId,"name"=>$name,"roleType"=>$roleType]);
+        Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
-        Core::$systemDB->insert("view_template",["viewId"=>$aspects[0]["id"],"templateId"=>$templateId]);
+        Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["id"], "templateId" => $templateId]);
     }
     //get settings of page/template 
-    function getViewSettings(){
-        API::requireValues('view','pageOrTemp','course');
-        $id = API::getValue('view');//page or template id
-        $pgOrTemp=API::getValue('pageOrTemp');
-        if ($pgOrTemp=="page"){
-            if (is_numeric($id)){
+    function getViewSettings()
+    {
+        API::requireValues('view', 'pageOrTemp', 'course');
+        $id = API::getValue('view'); //page or template id
+        $pgOrTemp = API::getValue('pageOrTemp');
+        if ($pgOrTemp == "page") {
+            if (is_numeric($id)) {
                 $viewSettings = $this->viewHandler->getPages($id);
-            } else{//for pages, the value of 'view' could be a name instead of an id
-                $viewSettings = $this->viewHandler->getPages(null,$id);
+            } else { //for pages, the value of 'view' could be a name instead of an id
+                $viewSettings = $this->viewHandler->getPages(null, $id);
             }
-        }else {//template
+        } else { //template
             $viewSettings = $this->getTemplate($id);
         }
         if (empty($viewSettings)) {
-            API::error('Unknown '.$pgOrTemp .' ' . $id);
+            API::error('Unknown ' . $pgOrTemp . ' ' . $id);
         }
-        $courseId=API::getValue('course');
+        $courseId = API::getValue('course');
         $course = Course::getCourse($courseId);
-        return ["courseId"=>$courseId,"course"=>$course,"viewId"=>$id,
-            "pageOrTemp"=>$pgOrTemp,"viewSettings"=>$viewSettings];
+        return [
+            "courseId" => $courseId, "course" => $course, "viewId" => $id,
+            "pageOrTemp" => $pgOrTemp, "viewSettings" => $viewSettings
+        ];
     }
 }
 
@@ -1189,7 +1322,7 @@ ModuleLoader::registerModule(array(
     'id' => 'views',
     'name' => 'Views',
     'version' => '0.1',
-    'factory' => function() {
+    'factory' => function () {
         return new Views();
     }
 ));
