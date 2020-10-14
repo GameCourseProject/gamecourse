@@ -1321,6 +1321,7 @@ separated by a ;. Any key may be an expression.', 'collection');
 ModuleLoader::registerModule(array(
     'id' => 'views',
     'name' => 'Views',
+    'description' => 'Enables views and the view editor to create pages with expression language.',
     'version' => '0.1',
     'factory' => function () {
         return new Views();

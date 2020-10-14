@@ -21,10 +21,14 @@ class QR extends Module {
         $viewHandler->createPageOrTemplateIfNew('QR',"page");
         //ToDo add QR tables to database
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'qr',
     'name' => 'QR',
+    'description' => 'Generates a QR code to be used for student participation in class.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

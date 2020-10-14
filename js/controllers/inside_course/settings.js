@@ -90,6 +90,38 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
         }
         
     }
+    $scope.openModule = function(module){
+        $scope.module_open = {};
+        $scope.module_open.id = module.id;
+        $scope.module_open.name = module.name;
+        $scope.module_open.description = module.description;
+        $scope.module_open.dir = module.dir;
+        $scope.module_open.version = module.version;
+        $scope.module_open.enabled = module.enabled;
+        $scope.module_open.dependencies = module.dependencies;
+        $scope.module_open.hasConfiguration = module.hasConfiguration;
+        $scope.module_open.canBeEnabled = module.canBeEnabled;
+
+
+        $scope.needsToBeSaved = function(){
+            if ($scope.module_open.enabled != module.enabled){
+                return true
+            }else{
+                return false
+            }
+        }
+
+        $scope.saveModule = function(){
+
+            $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, function(data, err) {
+                if (err) {
+                    alert(err.description);
+                    return;
+                }
+                location.reload();
+            });
+        }
+    }
 
 
     var tabContent = $($element);
@@ -98,8 +130,8 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     
 
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
-    module_card.append($('<div class="icon"></div>'));
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules" value="#view-module" onclick="openModal(this)" ng-click="openModule(module)"></div> ')
+    module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text">{{module.description}}</div>'));
     module_card.append($('<div ng-if="module.enabled != true" class="status disable">Disabled <div class="background"></div></div>'));
@@ -114,6 +146,41 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     tabContent.append(search);
     tabContent.append(modules);
     
+    //modal for details of the module
+    modal = $("<div class='modal' style='' id='view-module'></div>");
+    viewModal = $("<div class='modal_content'></div>");
+    viewModal.append( $('<button class="close_btn icon" value="#view-module" onclick="closeModal(this)"></button>'));
+    header = $('<div class= "header"></div>');
+    header.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module_open.id}}/icon.svg)"></div>'));
+    header.append( $('<div class="title">{{module_open.name}} </div>'));
+    //se tiver dependencias pendentes tira-se o input e a class slider leva disabled
+    header.append( $('<div class= "on_off" ng-if="module_open.canBeEnabled == true"><label class="switch"><input id="active" type="checkbox" ng-model="module_open.enabled"><span class="slider round"></span></label></div>'))
+    header.append( $('<div class= "on_off" ng-if="module_open.canBeEnabled != true"><label class="switch disabled"><input id="active" type="checkbox" ng-model="module_open.enabled" disabled><span class="slider round"></span></label></div>'))
+
+    
+    
+    viewModal.append(header);
+    content = $('<div class="content">');
+    box = $('<div class="inputs">');
+    box.append( $('<div class="full" id="description">{{module_open.description}}</div>'))
+    dependencies_row = $('<div class= "row"></div>');
+    dependencies = $('<div ><span>Dependencies: </span></div>');
+    dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled == true" ><span style="color: green">{{dependency.id}}</span> | </span>'))
+    dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled != true" ><span style="color: red">{{dependency.id}}</span> | </span>'))
+
+    dependencies_row.append(dependencies);
+    box.append(dependencies_row);
+    box.append( $('<div class= "row"><div ><span>Version: </span><span class="details">{{module_open.version}}</span></div></div>'))
+    box.append( $('<div class= "row"><div ><span>Path: </span><span class="details">{{module_open.dir}}</span></div></div>'))
+    content.append(box);
+    content.append( $('<button class="save_btn" ng-click="saveModule()" ng-disabled="!needsToBeSaved()" > Save </button>'))
+    content.append($('<button ng-if="module_open.hasConfiguration == true" class="config_btn" ui-sref="course.settings.{{module_open.id}}"> Configurate </button>'));
+    viewModal.append(content);
+    modal.append(viewModal);
+    $compile(modal)($scope);
+    $element.append(modal);
+
+
 
     $smartboards.request('settings', 'courseModules', {course: $scope.course}, function(data, err) {
         if (err) {

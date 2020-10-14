@@ -8,6 +8,7 @@ abstract class Module
 {
     private $id;
     private $name;
+    private $description;
     private $version;
     private $dependencies;
     private $dir;
@@ -30,6 +31,10 @@ abstract class Module
     public function getName()
     {
         return $this->name;
+    }
+    public function getDescription()
+    {
+        return $this->description;
     }
 
     public function getVersion()
@@ -218,4 +223,19 @@ abstract class Module
         $this->checkArray($object, "object", $field, $field);
         return new ValueNode($object["value"][$field]);
     }
+
+    //functions for the module configuration page
+    public function is_configurable(){ return false; } //default is false
+
+     
+    public function has_personalized_config (){ return false; } //default is false
+    public function get_personalized_function(){}
+    
+    public function has_general_inputs (){ return false; } //default is false
+    public function get_general_inputs ($courseId){}
+    public function save_general_inputs($generalInputs,$courseId){}
+
+    public function has_listing_items (){ return false; } //default is false
+    public function get_listing_items ($courseId){}
+    public function save_listing_item ($actiontype, $listingItem, $courseId){}
 }

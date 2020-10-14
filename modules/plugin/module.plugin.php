@@ -173,16 +173,16 @@ class Plugin extends Module
             }
 
             //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            $logs = $this->moodle->getLogs();
-            $this->moodle->writeLogsToDB($logs);
+            // $logs = $this->moodle->getLogs();
+            // $this->moodle->writeLogsToDB($logs);
 
-            $quizGrades = $this->moodle->getQuizGrades();
-            $this->moodle->writeQuizGradesToDb($quizGrades);
+            // $quizGrades = $this->moodle->getQuizGrades();
+            // $this->moodle->writeQuizGradesToDb($quizGrades);
 
-            $votes = $this->moodle->getVotes();
-            $this->moodle->writeVotesToDb($votes);
+            // $votes = $this->moodle->getVotes();
+            // $this->moodle->writeVotesToDb($votes);
 
-            $this->moodle->updateMoodleConfigTime();
+            // $this->moodle->updateMoodleConfigTime();
             return true;
         }
     }
@@ -265,7 +265,7 @@ class Plugin extends Module
             $this->googleSheets->saveTokenToDB();
 
             //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            $this->googleSheets->readGoogleSheets();
+            // $this->googleSheets->readGoogleSheets();
             return true;
         }
     }
@@ -284,7 +284,7 @@ class Plugin extends Module
     public function setupResources()
     {
         parent::addResources('js/');
-        //parent::addResources('css/plugins.css');
+        parent::addResources('css/');
     }
     public function init()
     {
@@ -402,10 +402,24 @@ class Plugin extends Module
             API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
         });
     }
+
+    
+    public function is_configurable(){
+        return true;
+    }
+    public function has_personalized_config (){ return true;}
+    public function get_personalized_function(){
+        return "pluginPersonalizedConfig";
+    }
+    
+    public function has_general_inputs (){ return false; }
+    public function has_listing_items (){ return  false; }
+
 }
 ModuleLoader::registerModule(array(
     'id' => 'plugin',
     'name' => 'Plugin',
+    'description' => 'Allows multiple sources of information to be automaticaly included on gamcourse.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

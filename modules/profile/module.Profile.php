@@ -33,11 +33,15 @@ class Profile extends Module {
 
     public function initSettingsTabs() {
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(
     'id' => 'profile',
     'name' => 'Profile',
+    'description' => 'Creates a view template for a profile page where all the stats of the user are shown.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

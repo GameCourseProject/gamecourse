@@ -25,10 +25,14 @@ class Overview extends Module {
         if (!$viewsModule->templateExists(self::USERS_OVERVIEW_TEMPLATE_NAME))
            $viewsModule->setTemplate(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'));
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'overview',
     'name' => 'Overview',
+    'description' => 'Creates a view template with all the skills done.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

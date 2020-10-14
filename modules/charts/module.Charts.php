@@ -354,11 +354,15 @@ class Charts extends Module {
             );
         });
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(
     'id' => 'charts',
     'name' => 'Charts',
+    'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard'),

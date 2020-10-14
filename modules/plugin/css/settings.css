@@ -1,0 +1,37 @@
+#configPage .plugin_row{
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+#configPage .plugin_row input {
+    width: 334px;
+}
+#configPage .plugin_row span {
+    width: 105px;
+    display: inline-block;
+}
+#configPage .plugin_row .button {
+    margin-left: 20px;
+}
+
+#configPage .column{
+    display: flex;
+    flex-direction: column;
+}
+#configPage #sheet_names_row {
+    display: inline-flex !important;
+}
+
+#configPage #sheet_names{
+    width: calc(100% - 105px);
+}
+#configPage .input_with_button{
+    width: calc(100% - 155px);
+}
+
+#configPage .periodicity input {
+    width: 150px;
+}
+#configPage .periodicity select {
+    width: 165px;
+}

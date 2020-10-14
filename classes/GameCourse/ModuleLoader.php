@@ -20,6 +20,7 @@ class ModuleLoader {
 
         static::requireProp($module, 'id');
         static::requireProp($module, 'name');
+        static::requireProp($module, 'description');
         static::requireProp($module, 'version');
         if (!array_key_exists('dependencies', $module))
             $module['dependencies'] = array();
@@ -32,11 +33,14 @@ class ModuleLoader {
         static::$loadingModuleDir = null;
         
         if (empty(Core::$systemDB->select("module",['moduleId' => $module['id']]))) {
-            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name']]);
+            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name'], 'description' => $module['description']]);
             $courses= array_column(Core::$systemDB->selectMultiple("course",null,"id"),"id");
             foreach ($courses as $course) {
                 Core::$systemDB->insert("course_module",["course"=>$course,"moduleId"=>$module['id']]);
             }
+        }
+        else{
+            Core::$systemDB->update("module", [ 'name' => $module['name'], 'description' => $module['description']], ['moduleId' => $module['id']]);
         }
     }
 
@@ -146,6 +150,7 @@ class ModuleLoader {
             $module->id = $moduleInfo['id'];
             $module->dir = $moduleInfo['dir'];
             $module->name = $moduleInfo['name'];
+            $module->description = $moduleInfo['description'];
             $module->version = $moduleInfo['version'];
             $module->dependencies = $moduleInfo['dependencies'];
 

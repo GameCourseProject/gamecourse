@@ -47,6 +47,7 @@ angular.module('module.skills').config(function($stateProvider) {
     });
 });
 
+//duplicado
 angular.module('module.skills').config(function($stateProvider) {
     $stateProvider.state('course.skill', {
         url: '/skill/{skillName:[A-z0-9]+}',
@@ -58,6 +59,21 @@ angular.module('module.skills').config(function($stateProvider) {
         }
     });
 });
+
+//add config page to course
+app.stateProvider.state('course.settings.skills', {
+    url: '/skills',
+    views : {
+        'tabContent': {
+            controller: 'CourseSkillsSettingsController'
+        }
+    },
+    params: {
+        'module': 'skills'
+    }
+});
+
+
 
 angular.module('module.skills').directive('skillStudentImage', function($state) {
     return {

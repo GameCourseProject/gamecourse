@@ -56,14 +56,20 @@ class AwardList extends Module
 
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));
-
+            
         if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
-            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));
+            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));  
+    }
+
+
+    public function is_configurable(){
+        return true;
     }
 }
 ModuleLoader::registerModule(array(
     'id' => 'awardlist',
     'name' => 'Award List',
+    'description' => 'Enables Awards and creates a view template with list of awards per student.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')

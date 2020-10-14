@@ -310,21 +310,109 @@ API::registerFunction('settings', 'courseModules', function() {
         $enabledModules = $course->getModules();
        
         $modulesArr = [];
-        foreach ($allModules as $module) {
+        foreach ($allModules as $module) {            
+            
+            if (array_key_exists($module['id'], $enabledModules)){
+                $moduleObj = $enabledModules[$module['id']];
+                $module['hasConfiguration'] = $moduleObj->is_configurable();
+                $module['enabled'] = true;
+            }
+            else{
+                $module['hasConfiguration'] = false;
+                $module['enabled'] = false;
+            }
+
+            $dependencies = [];
+            $canBeEnabled = true;
+            foreach($module['dependencies'] as $dependency){
+                if ($dependency['mode'] != 'optional'){
+                    if(array_key_exists($dependency['id'], $enabledModules)){
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
+                    }
+                    else{
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
+                        $canBeEnabled = false;
+                    } 
+                }
+            }
+
             $mod = array(
                 'id' => $module['id'],
                 'name' => $module['name'],
                 'dir' => $module['dir'],
                 'version' => $module['version'],
-                'enabled' => array_key_exists($module['id'], $enabledModules),
-                'dependencies' => $module['dependencies'],
-                'discription' => ""
+                'enabled' => $module['enabled'],
+                'canBeEnabled' => $canBeEnabled,
+                'dependencies' => $dependencies,
+                'description' => $module['description'],
+                'hasConfiguration' => $module['hasConfiguration']
             );
             $modulesArr[] = $mod;
         }
         API::response($modulesArr);
     }
 });
+
+
+API::registerFunction('settings', 'getModuleConfigInfo', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
+    $module = $course->getModule(API::getValue('module'));
+
+    $moduleInfo = array(
+        'id' => $module->getId(),
+        'name' => $module->getName(),
+        'description' => $module->getDescription()
+    );
+
+    $generalInputs=[];
+    if($module->has_general_inputs()){
+        $generalInputs = $module->get_general_inputs($course->getId());
+    }
+
+    $personalizedConfig=[];
+    if($module->has_personalized_config()){
+        $personalizedConfig = $module->get_personalized_function();
+    }
+
+    $listingItems=[];
+    if($module->has_listing_items()){
+        $listingItems = $module->get_listing_items($course->getId());
+    }
+
+    $info = array(
+        'generalInputs' => $generalInputs,
+        'listingItems' => $listingItems,
+        'personalizedConfig' => $personalizedConfig,
+        'module' => $moduleInfo
+    );
+
+    API::response($info);
+
+});
+
+API::registerFunction('settings', 'saveModuleConfigInfo', function() {
+    API::requireCourseAdminPermission();
+    $course = Course::getCourse(API::getValue('course'));
+    $module = $course->getModule(API::getValue('module'));
+
+    if(API::hasKey('generalInputs')){
+        $generalInputs = API::getValue('generalInputs');
+        $module->save_general_inputs($generalInputs, $course->getId());
+    }
+    
+    //personalized configuration should create its own API request
+    //inside the currespondent module 
+
+    if(API::hasKey('listingItems')){
+        $listingItems = API::getValue('listingItems');
+        $action_type = API::getValue('action_type'); //new, edit, delete
+        $module->save_listing_item($action_type, $listingItems, $course->getId());
+    }
+
+});
+
+
 
 //get tabs for course settings
 API::registerFunction('settings', 'courseTabs', function() {
@@ -371,7 +459,7 @@ API::registerFunction('settings', 'modules', function() {
             'dir' => $module['dir'],
             'version' => $module['version'],
             'dependencies' => $module['dependencies'],
-            'discription' => ""
+            'description' => $module['description']
         );
         $modulesArr[] = $mod; 
     }
@@ -938,84 +1026,6 @@ function updateSkills($list,$tree,$replace, $folder){
     API::response(["updatedData"=>$updatedData ]);
     return;
 }
-//update list of skills of the course skill tree, from the skills configuration page
-//ToDo make ths work for multiple skill trees
-API::registerFunction('settings', 'courseSkills', function() {
-    API::requireCourseAdminPermission();
-    $courseId=API::getValue('course');
-    $folder = Course::getCourseLegacyFolder($courseId);
-    //For now we only have 1 skill tree per course, if we have more this line needs to change
-    $tree = Core::$systemDB->select("skill_tree",["course"=>$courseId]);
-    $treeId=$tree["id"];
-    if (API::hasKey('maxReward')) {
-        $max=API::getValue('maxReward');
-        if ($tree["maxReward"] != $max) {
-            Core::$systemDB->update("skill_tree", ["maxReward" => $max], ["id" => $treeId]);
-        }
-        API::response(["updatedData"=>["Max Reward set to ".$max] ]);
-        return;
-    }
-    if (API::hasKey('skillsList')) {
-        updateSkills(API::getValue('skillsList'), $treeId, true, $folder);
-        return;
-    }if (API::hasKey('tiersList')) {
-        $keys = array('tier', 'reward');
-        $tiers = preg_split('/[\r]?\n/', API::getValue('tiersList'), -1, PREG_SPLIT_NO_EMPTY);
-        
-        $tiersInDB= array_column(Core::$systemDB->selectMultiple("skill_tier",
-                                        ["treeId"=>$treeId],"tier"),'tier');
-        $tiersToDelete= $tiersInDB;
-        $updatedData=[];
-        foreach($tiers as $tier) {
-            $splitInfo =preg_split('/;/', $tier);
-            if (sizeOf($splitInfo) != sizeOf($keys)) {
-                echo "Tier information was incorrectly formatted";
-                return null;
-            }
-            $tier = array_combine($keys, $splitInfo);
-            
-            if (!in_array($tier["tier"], $tiersInDB)){
-                Core::$systemDB->insert("skill_tier",
-                        ["tier"=>$tier["tier"],"reward"=>$tier["reward"],"treeId"=>$treeId]);
-                $updatedData[]= "Added Tier ".$tier["tier"];
-            }else{
-                Core::$systemDB->update("skill_tier",["reward"=>$tier["reward"]],
-                                        ["tier"=>$tier["tier"],"treeId"=>$treeId]);           
-                unset($tiersToDelete[array_search($tier['tier'], $tiersToDelete)]);
-            }
-        }
-        foreach ($tiersToDelete as $tierToDelete){
-            Core::$systemDB->delete("skill_tier",["tier"=>$tierToDelete,"treeId"=>$treeId]);
-            $updatedData[]= "Deleted Tier ".$tierToDelete." and all its skills. The Skill List may need to be updated";
-        }
-        API::response(["updatedData"=>$updatedData ]);
-        return;
-    }
-    /*else if (API::hasKey('newSkillsList')) {
-        updateSkills(API::getValue('newSkillsList'), $courseId, false, $folder);
-        return;
-    }*/
-    
-    $tierText="";
-    $tiers = Core::$systemDB->selectMultiple("skill_tier",
-                                ["treeId"=>$treeId],'tier,reward',"tier");
-    $tiersAndSkills=[];
-    foreach ($tiers as &$t){//add page, have deps working, have 3 3 dependencies
-        $skills = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier"=>$t["tier"]],
-                                    'id,tier,name,color',"name");
-        $tiersAndSkills[$t["tier"]]=array_merge($t,["skills" => $skills]);
-        $tierText.=$t["tier"].';'.$t["reward"]."\n";
-    }
-    foreach ($tiersAndSkills as &$t){
-        foreach ($t["skills"] as &$s){
-            $s['dependencies'] = getSkillDependencies($s['id']);
-        }
-    }
-    
-    $file = @file_get_contents($folder . '/tree.txt');
-    if ($file===FALSE){$file="";}
-    API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText, "maxReward"=>$tree["maxReward"]));
-});
 
 
 

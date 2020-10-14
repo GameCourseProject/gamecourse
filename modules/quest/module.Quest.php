@@ -544,11 +544,15 @@ class Quest extends Module {
         $solution[$level][] = array($user, $time, $verification);
         $quest->set('info', $questInfo);*/
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(
     'id' => 'quest',
     'name' => 'Quest',
+    'description' => 'Generates a sequence of pages that create a treasure hunt game.',
     'version' => '0.1',
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'soft')

@@ -38,7 +38,7 @@ cursor: pointer;
 .modal{
     display: none;
     position: fixed; 
-    z-index: 1; 
+    z-index: 2; 
     left: 0;
     top: 0;
     width: 100%; 
@@ -77,9 +77,29 @@ cursor: pointer;
     width: 100%;
     margin-bottom: 30px;
 }
+
+.modal_content .header{
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal_content .header .icon {
+    height: 50px;
+    width: 50px;
+    margin-right: 5px;
+}
+.modal_content .header .title {
+    width: auto;
+    margin-bottom: 0;
+    margin-right: 30px;
+    font-size: 25px;
+    color: #484848;
+}
+
 .modal_content .content {
     width: 100%;
     position: relative;
+    margin-bottom: 0;
 }
 .modal_content .content .inputs {
     display: flex;
@@ -310,18 +330,18 @@ cursor: pointer;
 }
 .modal_content .content .select_box .line .add_icon_no_outline {
     background-image: url(/gamecourse/images/add_icon_no_outline.svg);
-    height: 35px;
-    width: 35px;
+    height: 25px;
+    width: 25px;
 }
 .modal_content .save_btn {
     padding: 10px 15px;
     font-size: 16px;
-    border-radius: 10%;
+    border-radius: 5px;
     position: absolute;
     background-color: lightgrey;
     bottom: 0px;
     right: 0;
-    border: none;
+    border: 1px solid white;
     box-shadow: none;
 }
 
@@ -330,6 +350,17 @@ cursor: pointer;
     background-color: white;
     border: 1px solid;
     cursor: not-allowed;
+}
+.modal_content .config_btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    position: absolute;
+    background-color: lightgrey;
+    bottom: 0px;
+    right: 80px;
+    border: 1px solid white;
+    box-shadow: none;
 }
 
 .on_off {
@@ -340,64 +371,4 @@ cursor: pointer;
 .on_off span {
     padding-right: 10px;
     line-height: 26px;
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 26px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
-}
-
-input:checked + .slider {
-    background-color: #2196F3;
-}
-
-input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-    -webkit-transform: translateX(22px);
-    -ms-transform: translateX(22px);
-    transform: translateX(22px);
-}
-
-/* Rounded sliders */
-.slider.round {
-    border-radius: 34px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
 }
