@@ -77,8 +77,7 @@ var GameCourseExpression = (function () {
     var libraryGlobalCollection = [];
     var returnTypeGlobal = "";
     var libraryChosen = [];
-    var varChosenGlobal = "";
-    var testeGlobal = 0;
+    var errorMessage = "";
     var variablesTemp = [];
     var inputGlobal = "";
 
@@ -451,6 +450,7 @@ var GameCourseExpression = (function () {
             return true;
         },
         autocomplete: function autocomplete(input, library, variables, option, caret) {
+            errorMessage = "";
             var caret = 0;
             if (document.activeElement.tagName == "TEXTAREA") {
                 caret = document.activeElement.selectionStart;
@@ -458,21 +458,18 @@ var GameCourseExpression = (function () {
             if (option == "loop" || option == "events") {
                 var libraries = [];
                 if (library) {
-                    if (option == "events") {
 
-                        library.forEach(element => {
+                    library.forEach(element => {
+                        if (option == "events") {
                             if (element["name"] == "actions") {
                                 libraries.push(element);
                             }
-                        });
-                    } else {
-
-                        library.forEach(element => {
+                        } else {
                             if (element["returnType"] == "collection" || element["refersTo"] == "collection") {
                                 libraries.push(element);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
                 if (input) {
                     if (input[0] == "{" && input[input.length - 1] == "}") {
@@ -615,7 +612,10 @@ var GameCourseExpression = (function () {
             }
 
             if (output != "") {
-                console.log(output);
+                // console.log(output);
+            }
+            if (errorMessage != "") {
+                console.log(errorMessage);
             }
         }
     };
@@ -685,13 +685,7 @@ var GameCourseExpression = (function () {
 
                                     library = element["library"];
                                 } else {
-                                    var children = document.getElementById("visLoop").children;
-                                    var txtContent = "";
-                                    children.forEach(element => {
-                                        if (element.tagName == "TEXTAREA") {
-                                            txtContent = element.value;
-                                        }
-                                    });
+                                    var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
                                     txtContent = txtContent.replace("{", "");
                                     txtContent = txtContent.replace("}", "");
                                     library = txtContent.split(".")[0];
@@ -740,6 +734,7 @@ var GameCourseExpression = (function () {
                             return { "toShow": librariesMatched };
                         }
                     } else {
+                        errorMessage = "Correct the library name (check the suggestions).";
                         return {};
                     }
                     //faz match com as funções
@@ -750,10 +745,14 @@ var GameCourseExpression = (function () {
                     }
                     var splittedByDot = input.split('.');
                     var libraryChosen = splittedByDot[0];
+                    var libraryExists = 0;
                     var teste = input.replace(libraryChosen + ".", "");
                     var inputNow = teste;
                     var functionsAvailable = new Array();
                     libraries.forEach(element => {
+                        if (element["name"] == libraryChosen) {
+                            libraryExists++;
+                        }
                         if (element["name"] != null) {
                             if (element["name"] == libraryChosen && element["refersTo"] == "library") {
                                 var args = JSON.parse(element["args"]);
@@ -771,7 +770,7 @@ var GameCourseExpression = (function () {
                                         }
                                         allArgsInfo.push(arg.type);
                                     });
-                                    functionsAvailable[element["keyword"]] = [element["returnType"], allArgs];
+                                    functionsAvailable[element["keyword"]] = [element["returnType"], allArgs, allArgsInfo];
                                 }
                             }
                         }
@@ -779,18 +778,22 @@ var GameCourseExpression = (function () {
 
                     //faz match com os argumentos
                     var argList = [];
+                    var argInfo = [];
+                    var inputArg = "";
+                    var returnType = "";
+                    var functionMatched = "";
+                    var mandatory = []
                     if (inputNow.match(new RegExp("[(]"))) {
                         inputNow_ = inputNow.substring(0, inputNow.indexOf("("));
-                        var inputArg = input.substring(input.indexOf("(") + 1);
-                        var functionMatched = "";
+                        inputArg = input.substring(input.indexOf("(") + 1);
                         var functionToShow = "";
-                        var returnType = "";
                         for (var key in functionsAvailable) {
                             var infoFunction = functionsAvailable[key];
                             if (key == inputNow_) {
                                 if (infoFunction.constructor === Array) {
                                     returnType = infoFunction[0];
                                     argList = infoFunction[1];
+                                    argInfo = infoFunction[2];
                                 } else {
                                     returnType = infoFunction;
                                 }
@@ -798,16 +801,72 @@ var GameCourseExpression = (function () {
                                 functionToShow = libraryChosen + "." + key + "(" + argList + ")";
                             }
                         }
+                        for (let i = 0; i < argList.length; i++) {
+                            if (argList[i][0] != "[" && argList[i][argList[i].length - 1] != "]") {
+                                mandatory.push(argList[i]);
+                            }
+                        }
                         if (inputNow.match(new RegExp("[)]"))) {
                             if (functionMatched != "") {
+                                if (inputArg.length == 1) {
+                                    if (mandatory.length > 0) {
+                                        errorMessage = "The function " + functionMatched + " has " + mandatory.length + "  mandatory arguments";
+                                    }
+
+                                }
                                 return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType };
                             } else {
+                                if (libraryExists) {
+                                    errorMessage = "Correct the function name (check the suggestions)";
+                                } else {
+                                    errorMessage = "Correct the library name (check the suggestions)";
+
+                                }
                                 return {};
                             }
                         } else {
                             if (inputArg.length == 0 && functionToShow != "") {
+                                errorMessage = "Close the parentheses";
                                 return { "toShow": functionToShow };
                             } else {
+                                if (argInfo && argList.length > 0) {
+                                    console.log(argList);
+                                    //todo: verificar virgula dentro de strings
+                                    var args = inputArg.split(new RegExp(",", "g"));
+                                    if (args.length > argList.length) {
+                                        errorMessage = "The maximum number of arguments for this function is " + argList.length + ".";
+                                    } else if (args.length < mandatory.length) {
+                                        var missingArgs = mandatory.length - args.length;
+                                        if (missingArgs == 1) {
+                                            errorMessage = "There is 1 mandatory arguments missing";
+                                        } else {
+                                            errorMessage = "There are " + missingArgs + " mandatory arguments missing.";
+
+                                        }
+                                    } else {
+                                        for (let i = 0; i < args.length; i++) {
+                                            if (argInfo[i] == "int") {
+                                                if (!inputArg.match(new RegExp("[0-9]+", "g"))) {
+                                                    if (argList[i][0] == "[") {
+                                                        argList[i] = argList[i].substring(1, argList[i].length - 1);
+                                                    }
+                                                    errorMessage = "The argument " + argList[i] + " must be an integer.";
+                                                    break;
+                                                }
+                                            } else if (argInfo[i] == "string") {
+                                                //todo: o match não funciona bem
+                                                if (!inputArg.match(new RegExp("([\"'])(?:(?=(\\?))\2.)*?\1", "g"))) {
+                                                    if (argList[i][0] == "[") {
+                                                        argList[i] = argList[i].substring(1, argList[i].length - 1);
+                                                    }
+                                                    errorMessage = "The argument " + argList[i] + " must be a string.";
+                                                    break;
+                                                }
+                                            }
+                                            //todo: verificar como vejo object
+                                        }
+                                    }
+                                }
                                 return {};
                             }
                         }
@@ -834,11 +893,18 @@ var GameCourseExpression = (function () {
                                 }
                             }
                             if (functionsToShow.length == 0) {
+                                if (libraryExists) {
+                                    errorMessage = "Correct the library name (check the suggestions)."
+                                } else {
+                                    errorMessage = "Correct the function name (check the suggestions)."
+                                }
                                 return {};
                             } else {
+                                errorMessage = "Finish the function name."
                                 return { "toShow": functionsToShow };
                             }
                         } else {
+                            errorMessage = "Closing parentheses without an opening one"
                             return {};
                         }
                     }
@@ -974,7 +1040,7 @@ var GameCourseExpression = (function () {
             }
         }
     }
-    function checkFunctions(input, refersTo, returnType = null, cutLength = 0) {
+    function checkFunctions(input, refersTo, returnType = null) {
         var returnTypes = [];
         var libraries = [];
         var divisao = input.split(".");

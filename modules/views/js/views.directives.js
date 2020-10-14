@@ -284,8 +284,9 @@ angular.module('module.views').directive('sbMenu', function () {
                 }
                 try {
                     CodeAssistant.reset();
-                    if (newValue != undefined)
+                    if (newValue != undefined) {
                         GameCourseExpression.parse(newValue);
+                    }
                     $scope.error = 'OK';
                     element.children('.expression').removeClass('err');
                 } catch (err) {
