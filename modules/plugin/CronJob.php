@@ -40,11 +40,11 @@ class CronJob
             }
 
             $periodStr = "";
-            if ($time == "minutes") {
+            if ($time == "Minutes") {
                 $periodStr = "*/" . $number . " * * * *";
-            } else if ($time == "hours") {
+            } else if ($time == "Hours") {
                 $periodStr = "0 */" . $number . " * * *";
-            } else if ($time == "months") {
+            } else if ($time == "Months") {
                 $periodStr = "* * */" . $number . " * *";
             }
 
