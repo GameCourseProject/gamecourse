@@ -235,6 +235,10 @@ cursor: pointer;
     width: 100%;
     margin-bottom: 31px;
 }
+.modal_content .content .inputs select.form__input {
+    padding: 9px 10px;
+
+}
 .modal_content .content .inputs .form__input:placeholder-shown + .form__label {
     opacity: 0;
     visibility: hidden;

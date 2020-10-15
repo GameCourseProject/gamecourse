@@ -517,6 +517,8 @@ API::registerFunction('core', 'users', function() {
         $user['ncourses'] = sizeof($courses);
         $user['courses'] = $courses;
         $user['lastLogin'] = $lastLogins;
+        $user['username'] = $uOb->getUsername();
+        $user['authenticationService'] = User::getUserAuthenticationService($user['username']);
     }
         
     API::response(array('users' => $users));
@@ -554,15 +556,15 @@ API::registerFunction('core', 'deleteUser', function() {
 });
 API::registerFunction('core', 'createUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userName', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
-    User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    API::requireValues('userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
 });
 API::registerFunction('core', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userId','userName', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    API::requireValues('userId','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
 
     $user = new User(API::getValue('userId'));
-    $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
 });
 
 //------------------Users inside the course
