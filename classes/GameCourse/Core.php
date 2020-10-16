@@ -175,7 +175,11 @@ class Core
                 }
                 return true;
             } else if ($redirect) {
-                include 'pages/no-access.php';
+                $goBack = (include 'pages/no-access.php');
+                if ($goBack == "goBack") {
+                    $_SESSION = [];
+                    header('Location:index.php');
+                }
                 exit;
             }
         }
