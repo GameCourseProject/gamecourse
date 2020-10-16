@@ -560,7 +560,7 @@ var GameCourseExpression = (function () {
                                 }
                                 //new checkFunctions(input, libraryShow.returnType);
                             } else {
-                                var matches = input.match(new RegExp("([!|&\*<>= ]){0,1}([a-zA-Z.]+([(][^\)]{0,}[)]){0,1})+", "g"));
+                                var matches = input.match(new RegExp("([!|&\*<>= ]){0,1}([a-zA-Z.]+([(][^\)]{0,}[)]{0,1}){0,1})+", "g"));
                                 var acc = 0;
                                 var matched = "";
                                 if (matches) {
@@ -568,9 +568,10 @@ var GameCourseExpression = (function () {
                                         if (caret > acc) {
                                             acc = acc + matches[index].length;
                                             var foundMatch = matches[index];
-                                            if (index != matches.length - 1) {
-                                                foundMatch = foundMatch.slice(0, -1);
-                                            }
+                                            // if (index != matches.length - 1) {
+                                            // foundMatch = foundMatch.slice(0, -1);
+                                            // console.log(foundMatch);
+                                            // }
                                             if (foundMatch) {
 
                                                 if (foundMatch[0].match(new RegExp("([!|&\*\+\-<>= ])", "g"))) {
@@ -614,9 +615,7 @@ var GameCourseExpression = (function () {
             if (output != "") {
                 // console.log(output);
             }
-            if (errorMessage != "") {
-                console.log(errorMessage);
-            }
+            return errorMessage;
         }
     };
     function checkVariable(input, variables) {
@@ -698,11 +697,13 @@ var GameCourseExpression = (function () {
                     }
                 });
                 if (variableMatched.length == 0) {
+                    errorMessage = "Correct the variable name.";
                     return {};
                 } else {
                     if (matched) {
                         return { "library": library, "variable": matched, "returnType": returnType };
                     } else {
+                        errorMessage = "Finish the variable name.";
                         return { "toShow": variableMatched };
                     }
                 }
@@ -729,8 +730,10 @@ var GameCourseExpression = (function () {
                             }
                         });
                         if (librariesMatched.length == 0) {
+                            errorMessage = "";
                             return {};
                         } else {
+                            errorMessage = "Finish the library name.";
                             return { "toShow": librariesMatched };
                         }
                     } else {
@@ -782,7 +785,7 @@ var GameCourseExpression = (function () {
                     var inputArg = "";
                     var returnType = "";
                     var functionMatched = "";
-                    var mandatory = []
+                    var mandatory = [];
                     if (inputNow.match(new RegExp("[(]"))) {
                         inputNow_ = inputNow.substring(0, inputNow.indexOf("("));
                         inputArg = input.substring(input.indexOf("(") + 1);
@@ -808,65 +811,65 @@ var GameCourseExpression = (function () {
                         }
                         if (inputNow.match(new RegExp("[)]"))) {
                             if (functionMatched != "") {
-                                if (inputArg.length == 1) {
-                                    if (mandatory.length > 0) {
-                                        errorMessage = "The function " + functionMatched + " has " + mandatory.length + "  mandatory arguments";
+                                inputArg = inputArg.substring(0, inputArg.indexOf(")"));
+                                var args = inputArg.split(",");
+                                if (args.length > argList.length) {
+                                    errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                } else if (args.length < mandatory.length) {
+                                    var missingArgs = mandatory.length - args.length + 1;
+                                    if (missingArgs == 1) {
+                                        errorMessage = "There is 1 mandatory argument missing for the function " + functionMatched;
+                                    } else {
+                                        errorMessage = "There are " + missingArgs + " mandatory arguments missing for the function " + functionMatched;
+
+                                    }
+                                } else {
+                                    if (inputArg[inputArg.length - 1] != ",") {
+                                        new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                     }
 
                                 }
                                 return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType };
                             } else {
                                 if (libraryExists) {
-                                    errorMessage = "Correct the function name (check the suggestions)";
+                                    errorMessage = "Correct the function name (check the suggestions).";
                                 } else {
-                                    errorMessage = "Correct the library name (check the suggestions)";
-
+                                    errorMessage = "Correct the library name (check the suggestions).";
                                 }
                                 return {};
                             }
                         } else {
                             if (inputArg.length == 0 && functionToShow != "") {
-                                errorMessage = "Close the parentheses";
+                                errorMessage = "Close the parentheses.";
                                 return { "toShow": functionToShow };
                             } else {
-                                if (argInfo && argList.length > 0) {
-                                    console.log(argList);
-                                    //todo: verificar virgula dentro de strings
-                                    var args = inputArg.split(new RegExp(",", "g"));
-                                    if (args.length > argList.length) {
-                                        errorMessage = "The maximum number of arguments for this function is " + argList.length + ".";
-                                    } else if (args.length < mandatory.length) {
-                                        var missingArgs = mandatory.length - args.length;
-                                        if (missingArgs == 1) {
-                                            errorMessage = "There is 1 mandatory arguments missing";
-                                        } else {
-                                            errorMessage = "There are " + missingArgs + " mandatory arguments missing.";
+                                if (functionMatched != "") {
+                                    if (argInfo && argList.length > 0) {
+                                        //todo: verificar virgula dentro de strings
+                                        var args = inputArg.split(new RegExp(",", "g"));
+                                        if (args.length > argList.length) {
+                                            errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                        } else if (args.length < mandatory.length) {
+                                            var missingArgs = mandatory.length - args.length + 1;
+                                            if (missingArgs == 1) {
+                                                console.log("Aa");
+                                                errorMessage = "There is 1 mandatory arguments missing for the function " + functionMatched;
+                                            } else {
+                                                errorMessage = "There are " + missingArgs + " mandatory arguments missing for the function " + functionMatched;
 
-                                        }
-                                    } else {
-                                        for (let i = 0; i < args.length; i++) {
-                                            if (argInfo[i] == "int") {
-                                                if (!inputArg.match(new RegExp("[0-9]+", "g"))) {
-                                                    if (argList[i][0] == "[") {
-                                                        argList[i] = argList[i].substring(1, argList[i].length - 1);
-                                                    }
-                                                    errorMessage = "The argument " + argList[i] + " must be an integer.";
-                                                    break;
-                                                }
-                                            } else if (argInfo[i] == "string") {
-                                                //todo: o match não funciona bem
-                                                if (!inputArg.match(new RegExp("([\"'])(?:(?=(\\?))\2.)*?\1", "g"))) {
-                                                    if (argList[i][0] == "[") {
-                                                        argList[i] = argList[i].substring(1, argList[i].length - 1);
-                                                    }
-                                                    errorMessage = "The argument " + argList[i] + " must be a string.";
-                                                    break;
-                                                }
                                             }
-                                            //todo: verificar como vejo object
+                                        } else {
+                                            if (inputArg[inputArg.length - 1] != ",") {
+                                                // inputArg = inputArg.substring(0, inputArg.indexOf(")"));
+                                                console.log(argList);
+                                                new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                            }
+
                                         }
                                     }
                                 }
+                                errorMessage = "Correct the function name (check the suggestions).";
+
                                 return {};
                             }
                         }
@@ -904,7 +907,7 @@ var GameCourseExpression = (function () {
                                 return { "toShow": functionsToShow };
                             }
                         } else {
-                            errorMessage = "Closing parentheses without an opening one"
+                            errorMessage = "Closing parentheses without an opening one."
                             return {};
                         }
                     }
@@ -916,7 +919,66 @@ var GameCourseExpression = (function () {
             }
         }
     };
+    function checkArgs(args, argList, argInfo, inputArg, functionMatched) {
+        if (inputArg.length != 0) {
 
+            var indexArr = [];
+            var index = inputArg.indexOf(",");
+            indexArr.push(0);
+            if (index != -1) {
+                indexArr.push(index);
+            }
+
+            while (index >= 0) {
+                index = inputArg.indexOf(",", index + 1);
+                if (index != -1) {
+                    indexArr.push(index);
+                }
+            }
+            for (let i = 0; i < args.length; i++) {
+                var inputArgNow = "";
+                if (i != indexArr.length - 1) {
+                    inputArgNow = inputArg.substring(indexArr[i], indexArr[i + 1]);
+                } else {
+                    inputArgNow = inputArg.substring(indexArr[i]);
+                }
+                if (inputArgNow[0] == ",") {
+                    inputArgNow = inputArgNow.substring(1);
+                }
+
+                if (argInfo[i] == "int") {
+                    inputArgNow = inputArgNow.trim();
+                    if (!inputArgNow.match(new RegExp("^[0-9]+$", "g"))) {
+                        if (argList[i][0] == "[") {
+                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                        }
+                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be an integer.";
+                        break;
+                    }
+                } else if (argInfo[i] == "string") {
+                    inputArgNow = inputArgNow.trim();
+                    if (!(inputArgNow[0] == "\"" && inputArgNow[inputArgNow.length - 1] == "\"") && !(inputArgNow[0] == "\'" && inputArgNow[inputArgNow.length - 1] == "\'")) {
+                        if (argList[i][0] == "[") {
+                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                        }
+                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
+                        break;
+                    }
+                } else if (argInfo[i] == "bool") {
+                    inputArgNow = inputArgNow.trim();
+                    if (!inputArgNow.match(new RegExp("^[ ]{0,}(true|false|1|0)[ ]{0,}$"), "g")
+                        && !inputArgNow.match(new RegExp("^[ ]{0,}[\"]{1}[ ]{0,}(true|false|1|0){1}[ ]{0,}[\"]{1}[ ]{0,}$"), "i")) {
+                        if (argList[i][0] == "[") {
+                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                        }
+                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a boolean.";
+                        break;
+                    }
+                }
+            }
+        }
+
+    }
     function checkFunctionsForLibrary(input, libraries, refersTo) {
         if (input) {
             if (input.match(new RegExp("[\.]"))) {
@@ -946,17 +1008,19 @@ var GameCourseExpression = (function () {
                                 }
                                 allArgsInfo.push(arg.type);
                             });
-                            functionsAvailable[element["keyword"]] = [element["returnType"], allArgs];
+                            functionsAvailable[element["keyword"]] = [element["returnType"], allArgs, allArgsInfo];
                         }
                     }
                 });
                 //faz match com os argumentos
                 var argList = [];
+                var argInfo = [];
+                var mandatory = [];
                 var returnType = "";
+                var inputArg = input.substring(input.indexOf("(") + 1);
                 if (input !== undefined) {
                     if (input.match(new RegExp("[(]"))) {
                         inputNow_ = input.substring(0, input.indexOf("("));
-                        var inputArg = input.substring(input.indexOf("(") + 1);
                         var functionMatched = "";
                         var functionToShow = "";
                         if (input.match(new RegExp("[)]"))) {
@@ -966,16 +1030,42 @@ var GameCourseExpression = (function () {
                                     if (infoFunction.constructor === Array) {
                                         returnType = infoFunction[0];
                                         argList = infoFunction[1];
+                                        argInfo = infoFunction[2];
                                     } else {
                                         returnType = infoFunction;
                                     }
                                     functionMatched = key;
                                     functionToShow = key + "(" + argList + ")";
+
+                                    for (let i = 0; i < argList.length; i++) {
+                                        if (argList[i][0] != "[" && argList[i][argList[i].length - 1] != "]") {
+                                            mandatory.push(argList[i]);
+                                        }
+                                    }
+                                    inputArg = inputArg.substr(0, inputArg.indexOf(")"));
+                                    var args = inputArg.split(",");
+                                    if (args.length > argList.length) {
+                                        errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                    } else if (args.length < mandatory.length) {
+                                        var missingArgs = mandatory.length - args.length + 1;
+                                        if (missingArgs == 1) {
+                                            errorMessage = "There is 1 mandatory arguments missing for the function " + functionMatched;
+                                        } else {
+                                            errorMessage = "There are " + missingArgs + " mandatory arguments missing for the function " + functionMatched;
+
+                                        }
+                                    } else {
+                                        if (inputArg[inputArg.length - 1] != ",") {
+                                            new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                        }
+                                    }
                                     return { "returnType": returnType, "index": input.length + 1 };
                                 }
                             }
+                            errorMessage = "Correct the function name (check the suggestions)."
                         } else {
                             if (inputArg.length == 0) {
+                                errorMessage = "Close the parentheses.";
                                 for (var key in functionsAvailable) {
                                     var infoFunction = functionsAvailable[key];
                                     if (key == inputNow_) {
@@ -988,6 +1078,48 @@ var GameCourseExpression = (function () {
                                         return { "toShow": functionToShow };
                                     }
                                 }
+                            } else {
+                                if (inputArg[inputArg.length - 1] != ",") {
+                                    for (var key in functionsAvailable) {
+                                        var infoFunction = functionsAvailable[key];
+                                        if (key == inputNow_) {
+                                            if (infoFunction.constructor === Array) {
+                                                argList = infoFunction[1];
+                                                argInfo = infoFunction[2];
+                                            } else {
+                                                returnType = infoFunction;
+                                            }
+                                            functionMatched = key;
+                                            functionToShow = key + "(" + argList + ")";
+                                        }
+                                    }
+                                    if (functionMatched != "") {
+
+                                        for (let i = 0; i < argList.length; i++) {
+                                            if (argList[i][0] != "[" && argList[i][argList[i].length - 1] != "]") {
+                                                mandatory.push(argList[i]);
+                                            }
+                                        }
+                                        var args = inputArg.split(new RegExp(",", "g"));
+                                        if (args.length > argList.length) {
+                                            errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                        } else if (args.length < mandatory.length) {
+                                            var missingArgs = mandatory.length - args.length + 1;
+                                            if (missingArgs == 1) {
+                                                errorMessage = "There is 1 mandatory arguments missing for the function " + functionMatched;
+                                            } else {
+                                                errorMessage = "There are " + missingArgs + " mandatory arguments missing for the function " + functionMatched;
+                                            }
+                                        } else {
+                                            if (inputArg[inputArg.length - 1] != ",") {
+                                                console.log(argList);
+                                                new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                            }
+
+                                        }
+                                    }
+                                }
+
                             }
                             return {};
                         }
@@ -1020,15 +1152,18 @@ var GameCourseExpression = (function () {
                                 }
                             }
                             if (functionsToShow.length == 0) {
+                                errorMessage = "Correct the function name (check for suggestions).";
                                 return {};
                             } else {
                                 if (functionMatched != "") {
                                     return { "returnType": returnType, "index": input.length + 1 };
                                 } else {
+                                    errorMessage = "Finish the function name.";
                                     return { "toShow": functionsToShow };
                                 }
                             }
                         } else {
+                            errorMessage = "Closing parentheses without an opening one.";
                             return {};
                         }
                     }

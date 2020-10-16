@@ -261,37 +261,46 @@ angular.module('module.views').directive('sbMenu', function () {
                         }
                     }
                 });
+
+                var errorMessage = ""
                 if (dictionary) {
                     if (allows.length != 0) {
                         if (allows.length == 1) {
                             //verificar o scope e o options
                             if (allows[0] == "options.allowDataLoop") {
-                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "loop");
+                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "loop");
                             } else if (allows[0] == "missingEvents.length > 0") {
-                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "events");
+                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "events");
                             } else if (allows[0] == "options.allowVariables") {
-                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "variables");
+                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "variables");
                             }
                         } else {
                             if (allows[0] == "options.allowIf") {
-                                GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "if");
+                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "if");
                             }
 
                         }
                     } else if ($scope.elid = "ex-6") { //content n tem watchers
-                        GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "content");
+                        errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "content");
                     }
+                }
+                if (errorMessage != "") {
+                    console.log(errorMessage);
                 }
                 try {
                     CodeAssistant.reset();
                     if (newValue != undefined) {
                         GameCourseExpression.parse(newValue);
                     }
-                    $scope.error = 'OK';
-                    element.children('.expression').removeClass('err');
+                    if (errorMessage == "") {
+                        $scope.error = 'OK';
+                        element.children('.expression').removeClass('err');
+                    }
                 } catch (err) {
                     $scope.error = err;
-                    element.children('.expression').addClass('err');
+                    if (errorMessage) {
+                        element.children('.expression').addClass('err');
+                    }
                     CodeAssistant.processError(err);
                 }
                 $scope.updateSuggestionStyle();
