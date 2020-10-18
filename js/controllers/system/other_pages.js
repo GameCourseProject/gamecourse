@@ -792,6 +792,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $scope.newUser.userIsActive = false;
         $scope.newUser.userIsAdmin = false;
         $scope.newUser.userImage = null;
+        $scope.newUser.userHasImage = "false";
 
 
         var imageInput = document.getElementById('profile_image');
@@ -811,6 +812,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 					var img = new Image();
                     img.src = reader.result;
                     $scope.newUser.userImage = reader.result;
+                    $scope.newUser.userHasImage = "true";
                     imageDisplayArea.appendChild(img);
 				}
 
@@ -820,6 +822,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 $('#display_profile_image').empty();
                 $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
                 $scope.newUser.userImage = null;
+                $scope.newUser.userHasImage = "false";
             }
 		});
 
@@ -853,7 +856,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 userIsActive: isActive,
                 userIsAdmin: isAdmin,
                 userAuthService: $scope.newUser.userAuthService,
-                userImage: $scope.newUser.userImage
+                userImage: $scope.newUser.userImage,
+                userHasImage: $scope.newUser.userHasImage
             };
             $smartboards.request('core', 'createUser', reqData, function(data, err) {
                 if (err) {

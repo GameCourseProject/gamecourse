@@ -556,11 +556,14 @@ API::registerFunction('core', 'deleteUser', function() {
 });
 API::registerFunction('core', 'createUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    API::requireValues('userHasImage','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
     $id = User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
-
-    $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-    User::saveImage($img, $id);
+    
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, $id);
+    }
 });
 API::registerFunction('core', 'editUser', function() {
     API::requireAdminPermission();
@@ -684,7 +687,7 @@ API::registerFunction('course', 'createUser', function(){
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
 
-    API::requireValues('userName', 'userStudentNumber', 'userEmail', 'userRoles');
+    API::requireValues('userHasImage','userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
     $userName = API::getValue('userName');
     $userEmail = API::getValue('userEmail');
     $userStudentNumber = API::getValue('userStudentNumber');
@@ -712,6 +715,11 @@ API::registerFunction('course', 'createUser', function(){
     //adds list of roles to user
     $courseUser->setRoles(API::getValue('userRoles'));
 
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, $user->getId());
+    }
 
 });
 //add existing user to course

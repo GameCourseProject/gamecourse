@@ -213,7 +213,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         box = $('<div id="new_box" class= "inputs">');
         row_inputs = $('<div class= "row_inputs"></div>');
         //image input
-        row_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+        row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
         //text inputs
         details = $('<div class="details bigger right"></div>')
         details.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -267,6 +267,40 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         }
         
 
+        $scope.newUser.userImage = null;
+        $scope.newUser.userHasImage = "false";
+        //image preview
+        var imageInput = document.getElementById('profile_image');
+		var imageDisplayArea = document.getElementById('display_profile_image');
+
+
+		imageInput.addEventListener('change', function(e) {
+			var file = imageInput.files[0];
+			var imageType = /image.*/;
+
+			if (file.type.match(imageType)) {
+				var reader = new FileReader();
+
+				reader.onload = function(e) {
+					imageDisplayArea.innerHTML = "";
+
+					var img = new Image();
+                    img.src = reader.result;
+                    $scope.newUser.userImage = reader.result;
+                    $scope.newUser.userHasImage = "true";
+                    imageDisplayArea.appendChild(img);
+				}
+
+                reader.readAsDataURL(file);	
+                
+			} else {
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
+                $scope.newUser.userImage = null;
+                $scope.newUser.userHasImage = "false";
+            }
+		});
+
         $scope.isReadyToSubmit = function() {
             isValid = function(text){
                 return  (text != "" && text != undefined && text != null)
@@ -297,7 +331,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userRoles: $scope.newUser.userRoles,
                 userCampus: $scope.newUser.userCampus,
                 userUsername: $scope.newUser.userUsername,
-                userAuthService: $scope.newUser.userAuthService
+                userAuthService: $scope.newUser.userAuthService,
+                userImage: $scope.newUser.userImage,
+                userHasImage: $scope.newUser.userHasImage
             };
             $smartboards.request('course', 'createUser', reqData, function(data, err) {
                 if (err) {
