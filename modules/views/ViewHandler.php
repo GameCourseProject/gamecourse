@@ -644,7 +644,7 @@ class ViewHandler
         }
         if (Core::$systemDB->select("dictionary_function", ["keyword" => $funcName])) {
             if ($funcLib) {
-                if (Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName])) {
+                if (Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName, "refersToType" => $refersToType, "refersToName" => $refersToName])) {
                     new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
                 } else { //caso queira registar uma função com a mesma keyword, mas numa library diferente
                     Core::$systemDB->insert("dictionary_function", [
@@ -659,7 +659,7 @@ class ViewHandler
                     ]);
                 }
             } else {
-                if (!Core::$systemDB->select("dictionary_function", ["keyword" => $funcName, "libraryId" => null])) {
+                if (!Core::$systemDB->select("dictionary_function", ["keyword" => $funcName, "libraryId" => null, "refersToType" => $refersToType, "refersToName" => $refersToName] )) {
                     Core::$systemDB->insert("dictionary_function", [
                         "libraryId" => $libraryId,
                         "returnType" => $returnType,

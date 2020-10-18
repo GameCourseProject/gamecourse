@@ -127,14 +127,17 @@ class Badges extends Module
                     $where["isBragging"] = $isBragging;
                 return $this->getBadge(true, $where);
             },
+            "Returns a collection with all the badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisExtra: Badge has a reward.\nisBragging: Badge has no reward.",
             'collection',
-            "Returns a collection with all the badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions: ( isExtra: Badge has a reward; isBragging: Badge has no reward).",
-            'library'
+            'badge',
+            'library',
+            null
+
         );
         //badges.getBadge(name)
         $viewHandler->registerFunction('badges', 'getBadge', function (string $name = null) {
             return $this->getBadge(false, ["name" => $name]);
-        }, 'object', 'library', "Returns the badge object with the specific name.");
+        }, 'object', "Returns the badge object with the specific name.", 'library');
         //badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction(
             'badges',
@@ -142,9 +145,11 @@ class Badges extends Module
             function ($user = null) {
                 return new ValueNode($this->getBadgeCount($user));
             },
-            'integer',
             "Returns an integer with the number of badges of the GameCourseUser identified by user. If no argument is provided, the function returns the number of badges of the course.",
-            'library'
+            'integer',
+            null,
+            'library',
+            null
         );
         //%badge.description
         $viewHandler->registerFunction(
@@ -153,8 +158,11 @@ class Badges extends Module
             function ($arg) {
                 return $this->basicGetterFunction($arg, "description");
             },
+            "Returns a string with information regarding the name of the badge, the goal to obtain it and the reward associated to it.",
             'string',
-            "Returns a string with information regarding the name of the badge, the goal to obtain it and the reward associated to it."
+            null,
+            'object',
+            'badge'
         );
         //%badge.name
         $viewHandler->registerFunction(
@@ -163,8 +171,11 @@ class Badges extends Module
             function ($badge) {
                 return $this->basicGetterFunction($badge, "name");
             },
+            "Returns a string with the name of the badge.",
             'string',
-            "Returns a string with the name of the badge."
+            null,
+            'object',
+            'badge'
         );
         //%badge.maxLevel
         $viewHandler->registerFunction(
@@ -173,8 +184,11 @@ class Badges extends Module
             function ($badge) {
                 return $this->basicGetterFunction($badge, "maxLevel");
             },
+            "Returns a Level object corresponding to the maximum Level from that badge.",
             'object',
-            "Returns a Level object corresponding to the maximum Level from that badge."
+            'level',
+            'object',
+            'badge'
         );
         //%badge.isExtra
         $viewHandler->registerFunction(
@@ -183,17 +197,38 @@ class Badges extends Module
             function ($badge) {
                 return $this->basicGetterFunction($badge, "isExtra");
             },
+            "Returns a boolean regarding whether the badge provides reward.",
             'boolean',
-            "Returns a boolean regarding whether the badge provides reward."
+            null,
+            'object',
+            'badge'
         );
         //%badge.isCount
-        $viewHandler->registerFunction('badges', 'isCount', function ($badge) {
-            return $this->basicGetterFunction($badge, "isCount");
-        }, 'boolean');
+        $viewHandler->registerFunction(
+            'badges',
+            'isCount',
+            function ($badge) {
+                return $this->basicGetterFunction($badge, "isCount");
+            },
+            '',
+            'boolean',
+            null,
+            'object',
+            'badge'
+        );
         //%badge.isPost
-        $viewHandler->registerFunction('badges', 'isPost', function ($badge) {
-            return $this->basicGetterFunction($badge, "isPost");
-        }, 'boolean');
+        $viewHandler->registerFunction(
+            'badges',
+            'isPost',
+            function ($badge) {
+                return $this->basicGetterFunction($badge, "isPost");
+            },
+            '',
+            'boolean',
+            null,
+            'object',
+            'badge'
+        );
         //%badge.isBragging
         $viewHandler->registerFunction(
             'badges',
@@ -201,68 +236,152 @@ class Badges extends Module
             function ($badge) {
                 return $this->basicGetterFunction($badge, "isBragging");
             },
+            "Returns a boolean regarding whether the badge provides no reward.",
             'boolean',
-            "Returns a boolean regarding whether the badge provides no reward."
+            null,
+            'object',
+            'badge'
         );
         //%badge.renderPicture(number) return expression for the image of the badge in the specified level
-        $viewHandler->registerFunction('badges', 'renderPicture', function ($badge, $level) {
-            //$level num or object
-            if (is_array($level))
-                $levelNum = $level["number"];
-            else
-                $levelNum = $level;
-            $name = str_replace(' ', '', $badge["value"]["name"]);
-            return new ValueNode("badges/" . $name . "-" . $levelNum . ".png");
-        }, 'picture', 'Return a picture of a badge’s level.');
+        $viewHandler->registerFunction(
+            'badges',
+            'renderPicture',
+            function ($badge, $level) {
+                //$level num or object
+                if (is_array($level))
+                    $levelNum = $level["number"];
+                else
+                    $levelNum = $level;
+                $name = str_replace(' ', '', $badge["value"]["name"]);
+                return new ValueNode("badges/" . $name . "-" . $levelNum . ".png");
+            },
+            'Return a picture of a badge’s level.',
+            'picture',
+            null,
+            'object',
+            'badge'
+        );
         //%badge.levels returns collection of level objects
-        $viewHandler->registerFunction('badges', 'levels', function ($badge) {
-            $this->checkArray($badge, "object", 'levels');
-            return $this->getLevel(null, $badge);
-        }, 'collection', 'Returns a collection of Level objects from that badge.');
+        $viewHandler->registerFunction(
+            'badges',
+            'levels',
+            function ($badge) {
+                $this->checkArray($badge, "object", 'levels');
+                return $this->getLevel(null, $badge);
+            },
+            'Returns a collection of Level objects from that badge.',
+            'collection',
+            'level',
+            'object',
+            'badge'
+        );
         //%badge.getLevel(number) returns level object
-        $viewHandler->registerFunction('badges', 'getLevel', function ($badge, $level) {
-            $this->checkArray($badge, "object", 'getLevel');
-            $this->checkArray($level, "object", 'getLevel');
-            return $this->getLevel($level, $badge);
-        }, 'object', 'Returns a Level object corresponding to Level number from that badge.');
+        $viewHandler->registerFunction(
+            'badges',
+            'getLevel',
+            function ($badge, $level) {
+                $this->checkArray($badge, "object", 'getLevel');
+                $this->checkArray($level, "object", 'getLevel');
+                return $this->getLevel($level, $badge);
+            },
+            'Returns a Level object corresponding to Level number from that badge.',
+            'object',
+            'level',
+            'object',
+            'badge'
+        );
         //%badge.currLevel(%user) returns object of the current level of user
-        $viewHandler->registerFunction('badges', 'currLevel', function ($badge, $user) {
-            $this->checkArray($badge, "object", 'currLevel');
-            $levelNum = $this->getLevelNum($badge, $user);
-            return $this->getLevel($levelNum, $badge);
-        }, 'object', 'Returns a Level object corresponding to the current Level of a GameCourseUser identified by user from that badge.');
+        $viewHandler->registerFunction(
+            'badges',
+            'currLevel',
+            function ($badge, $user) {
+                $this->checkArray($badge, "object", 'currLevel');
+                $levelNum = $this->getLevelNum($badge, $user);
+                return $this->getLevel($levelNum, $badge);
+            },
+            'Returns a Level object corresponding to the current Level of a GameCourseUser identified by user from that badge.',
+            'object',
+            'level',
+            'object',
+            'badge'
+        );
         //%badge.nextLevel(user) %level.nextLevel  returns level object
-        $viewHandler->registerFunction('badges', 'nextLevel', function ($arg, $user = null) {
-            $this->checkArray($arg, "object", 'nextLevel');
-            if ($user === null) { //arg is a level
-                $levelNum = $arg["value"]["number"];
-            } else { //arg is badge
-                $levelNum = $this->getLevelNum($arg, $user);
-            }
-            return $this->getLevel($levelNum + 1, $arg);
-        }, 'object', 'Returns a Level object corresponding to the next Level of a GameCourseUser identified by user from that badge.');
+        $viewHandler->registerFunction(
+            'badges',
+            'nextLevel',
+            function ($arg, $user = null) {
+                $this->checkArray($arg, "object", 'nextLevel');
+                if ($user === null) { //arg is a level
+                    $levelNum = $arg["value"]["number"];
+                } else { //arg is badge
+                    $levelNum = $this->getLevelNum($arg, $user);
+                }
+                return $this->getLevel($levelNum + 1, $arg);
+            },
+            'Returns a Level object corresponding to the next Level of a GameCourseUser identified by user from that badge.',
+            'object',
+            'level',
+            'object',
+            'badge'
+        );
         //%badge.previousLevel(user) %level.previousLevel  returns level object
-        $viewHandler->registerFunction('badges', 'previousLevel', function ($arg, $user = null) {
-            $this->checkArray($arg, "object", 'previousLevel');
-            if ($user === null) { //arg is a level
-                $levelNum = $arg["value"]["number"];
-            } else { //arg is badge
-                $levelNum = $this->getLevelNum($arg, $user);
-            }
-            return $this->getLevel($levelNum - 1, $arg);
-        }, 'object', 'Returns a Level object corresponding to the previous Level of a GameCourseUser identified by user from that badge.');
+        $viewHandler->registerFunction(
+            'badges',
+            'previousLevel',
+            function ($arg, $user = null) {
+                $this->checkArray($arg, "object", 'previousLevel');
+                if ($user === null) { //arg is a level
+                    $levelNum = $arg["value"]["number"];
+                } else { //arg is badge
+                    $levelNum = $this->getLevelNum($arg, $user);
+                }
+                return $this->getLevel($levelNum - 1, $arg);
+            },
+            'Returns a Level object corresponding to the previous Level of a GameCourseUser identified by user from that badge.',
+            'object',
+            'level',
+            'object',
+            'badge'
+        );
         //%level.goal
-        $viewHandler->registerFunction('badges', 'goal', function ($level) {
-            return $this->basicGetterFunction($level, "goal");
-        }, 'string', 'Returns a string with the goal of the Level.');
+        $viewHandler->registerFunction(
+            'badges',
+            'goal',
+            function ($level) {
+                return $this->basicGetterFunction($level, "goal");
+            },
+            'Returns a string with the goal of the Level.',
+            'string',
+            null,
+            'object',
+            'level'
+        );
         //%level.reward
-        $viewHandler->registerFunction('badges', 'reward', function ($level) {
-            return $this->basicGetterFunction($level, "reward");
-        }, 'string', 'Returns a string with the reward of the Level.');
+        $viewHandler->registerFunction(
+            'badges',
+            'reward',
+            function ($level) {
+                return $this->basicGetterFunction($level, "reward");
+            },
+            'Returns a string with the reward of the Level.',
+            'string',
+            null,
+            'object',
+            'level'
+        );
         //%level.number
-        $viewHandler->registerFunction('badges', 'number', function ($level) {
-            return $this->basicGetterFunction($level, "number");
-        }, 'string', 'Returns a string with the number of the Level.');
+        $viewHandler->registerFunction(
+            'badges',
+            'number',
+            function ($level) {
+                return $this->basicGetterFunction($level, "number");
+            },
+            'Returns a string with the number of the Level.',
+            'string',
+            null,
+            'object',
+            'level'
+        );
 
 
 

@@ -295,6 +295,8 @@ angular.module('module.views').directive('sbMenu', function () {
                     if (errorMessage == "") {
                         $scope.error = 'OK';
                         element.children('.expression').removeClass('err');
+                    } else {
+                        element.children('.expression').addClass('err');
                     }
                 } catch (err) {
                     $scope.error = err;

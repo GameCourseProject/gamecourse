@@ -542,7 +542,7 @@ var GameCourseExpression = (function () {
                         input = input.replace("}", "");
                         caret = caret - 1;
                         if (caret < endInput) {
-                            if (input.match(new RegExp("%([a-z]{0,})"))) {
+                            if (input.match(new RegExp("%([a-zA-Z]{0,})"))) {
                                 var variableShow = new checkVariable(input, variables);
                                 if (!variableShow.hasOwnProperty("library")) {
                                     if (variableShow.hasOwnProperty("toShow")) {
@@ -730,7 +730,7 @@ var GameCourseExpression = (function () {
             if (input) {
                 //faz match com libraries
                 if ((input.split('.').length - 1) == 0) {
-                    if (input.match(new RegExp("^[a-z]+$"))) {
+                    if (input.match(new RegExp("^[a-zA-Z]+$"))) {
                         var re = new RegExp(input, "g");
                         var librariesMatched = [];
                         libraries.forEach(element => {
@@ -824,10 +824,14 @@ var GameCourseExpression = (function () {
                             if (functionMatched != "") {
                                 inputArg = inputArg.substring(0, inputArg.indexOf(")"));
                                 var args = inputArg.split(",");
+                                var subtract = 0;
+                                if (args.length == 1 && args[0] == "") {
+                                    subtract = -1;
+                                }
                                 if (args.length > argList.length) {
                                     errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
-                                } else if (args.length < mandatory.length) {
-                                    var missingArgs = mandatory.length - args.length + 1;
+                                } else if (args.length + subtract < mandatory.length) {
+                                    var missingArgs = mandatory.length - args.length - subtract;
                                     if (missingArgs == 1) {
                                         errorMessage = "There is 1 mandatory argument missing for the function " + functionMatched;
                                     } else {
@@ -870,7 +874,6 @@ var GameCourseExpression = (function () {
                                             }
                                         } else {
                                             if (inputArg[inputArg.length - 1] != ",") {
-                                                // inputArg = inputArg.substring(0, inputArg.indexOf(")"));
                                                 new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                             }
 
@@ -955,7 +958,7 @@ var GameCourseExpression = (function () {
                     inputArgNow = inputArgNow.substring(1);
                 }
 
-                if (argInfo[i] == "int") {
+                if (argInfo[i] == "integer") {
                     inputArgNow = inputArgNow.trim();
                     if (!inputArgNow.match(new RegExp("^[0-9]+$", "g"))) {
                         if (argList[i][0] == "[") {
@@ -973,7 +976,7 @@ var GameCourseExpression = (function () {
                         errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
                         break;
                     }
-                } else if (argInfo[i] == "bool") {
+                } else if (argInfo[i] == "boolen") {
                     inputArgNow = inputArgNow.trim();
                     if (!inputArgNow.match(new RegExp("^[ ]{0,}(true|false|1|0)[ ]{0,}$"), "g")
                         && !inputArgNow.match(new RegExp("^[ ]{0,}[\"]{1}[ ]{0,}(true|false|1|0){1}[ ]{0,}[\"]{1}[ ]{0,}$"), "i")) {
@@ -1057,10 +1060,14 @@ var GameCourseExpression = (function () {
                                     }
                                     inputArg = inputArg.substr(0, inputArg.indexOf(")"));
                                     var args = inputArg.split(",");
+                                    var subtract = 0;
+                                    if (args.length == 1 && args[0] == "") {
+                                        subtract = -1;
+                                    }
                                     if (args.length > argList.length) {
                                         errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
-                                    } else if (args.length < mandatory.length) {
-                                        var missingArgs = mandatory.length - args.length + 1;
+                                    } else if (args.length + subtract < mandatory.length) {
+                                        var missingArgs = mandatory.length - args.length - subtract;
                                         if (missingArgs == 1) {
                                             errorMessage = "There is 1 mandatory arguments missing for the function " + functionMatched;
                                         } else {
@@ -1068,10 +1075,12 @@ var GameCourseExpression = (function () {
 
                                         }
                                     } else {
+                                        console.log(argList);
                                         if (inputArg[inputArg.length - 1] != ",") {
                                             new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                         }
                                     }
+
                                     return { "returnType": returnType, "returnName": returnName, "index": input.length + 1 };
                                 }
                             }
@@ -1148,6 +1157,7 @@ var GameCourseExpression = (function () {
                                     var args = null;
                                     if (functionsAvailable) {
                                         returnType = argsTemp[0];
+                                        returnName = argsTemp[1];
                                         if (argsTemp.length > 2) {
                                             args = argsTemp[2];
                                         }
@@ -1201,11 +1211,11 @@ var GameCourseExpression = (function () {
             var a = inputGlobal.length;
             input = inputGlobal.substr(a - now);
         }
+
         libraryGlobalCollection.forEach(element => {
             if (element["refersToType"] == refersToType && (element["refersToName"] == refersToName || !element["refersToName"])) {
                 if (returnType) {
                     if (element["returnType"] == returnType && (element["returnName"] == returnName || !element["returnName"])) {
-                        console.log(element);
                         libraries.push(element);
                     }
                 } else {
