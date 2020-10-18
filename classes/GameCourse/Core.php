@@ -265,36 +265,5 @@ class Core
         return static::$settings;
     }
 
-    public static function importModules($zipFile){
-        $zip = new \ZipArchive;
-        if ($zip->open($zipFile) === TRUE) {
-            //mudar depois pra modules
-            $zip->extractTo('testeModules');
-            $zip->close();
-            echo 'ok';
-        } else {
-            echo 'failed';
-        }
-    }
-    
-    public static function exportModules(){
-        
-        $zip = new \ZipArchive();
-        if ($zip->open('aaaaaaaa.zip', \ZipArchive::CREATE) == TRUE){
-            $rootPath = realpath("modules");
-            $files = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($rootPath),
-                        \RecursiveIteratorIterator::LEAVES_ONLY
-                    );
-            
-            foreach ($files as $name => $file) {
-                if (!$file->isDir()) {
-                        $filePath = $file->getRealPath();
-                        $relativePath = substr($filePath, strlen($rootPath) + 1);
-                        $zip->addFile($filePath, $relativePath);
-                    }
-                }
-                $zip->close();
-            }
-        }
+
 }
