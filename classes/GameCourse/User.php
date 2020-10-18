@@ -30,6 +30,7 @@ class User
             "username" => $username,
             "authentication_service" => $authenticationService
         ]);
+        return $id;
     }
 
     public function exists()
@@ -239,7 +240,7 @@ class User
 
     public static function saveImage($img, $userId)
     {
-        file_put_contents($userId . ".png", $img);
+        file_put_contents("photos/". $userId . ".png", $img);
     }
 
     public static function exportUsers()

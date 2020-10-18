@@ -791,6 +791,38 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         //inputs start not checked
         $scope.newUser.userIsActive = false;
         $scope.newUser.userIsAdmin = false;
+        $scope.newUser.userImage = null;
+
+
+        var imageInput = document.getElementById('profile_image');
+		var imageDisplayArea = document.getElementById('display_profile_image');
+
+
+		imageInput.addEventListener('change', function(e) {
+			var file = imageInput.files[0];
+			var imageType = /image.*/;
+
+			if (file.type.match(imageType)) {
+				var reader = new FileReader();
+
+				reader.onload = function(e) {
+					imageDisplayArea.innerHTML = "";
+
+					var img = new Image();
+                    img.src = reader.result;
+                    $scope.newUser.userImage = reader.result;
+                    imageDisplayArea.appendChild(img);
+				}
+
+                reader.readAsDataURL(file);	
+                
+			} else {
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
+                $scope.newUser.userImage = null;
+            }
+		});
+
 
         $scope.isReadyToSubmit = function() {
             isValid = function(text){
@@ -820,15 +852,20 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 userEmail: $scope.newUser.userEmail,
                 userIsActive: isActive,
                 userIsAdmin: isAdmin,
-                userAuthService: $scope.newUser.userAuthService
+                userAuthService: $scope.newUser.userAuthService,
+                userImage: $scope.newUser.userImage
             };
             $smartboards.request('core', 'createUser', reqData, function(data, err) {
                 if (err) {
                     console.log(err.description);
-                    debugger
+                    //falta apanhar erro de student number ja existente
                     return;
                 }
                 $("#new-user").hide();
+                //set profile image to initial state
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Select a profile image</span>"));
+                
                 getUsers();
                 $("#action_completed").append("New User created");
                 $("#action_completed").show().delay(3000).fadeOut();
@@ -1149,7 +1186,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     box = $('<div class= "inputs">');
     row_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    row_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
     //text inputs
     details = $('<div class="details bigger right"></div>')
     details.append($('<div class="container"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))

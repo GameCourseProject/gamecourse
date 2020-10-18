@@ -557,7 +557,10 @@ API::registerFunction('core', 'deleteUser', function() {
 API::registerFunction('core', 'createUser', function() {
     API::requireAdminPermission();
     API::requireValues('userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
-    User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    $id = User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+
+    $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+    User::saveImage($img, $id);
 });
 API::registerFunction('core', 'editUser', function() {
     API::requireAdminPermission();
