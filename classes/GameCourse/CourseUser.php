@@ -253,7 +253,7 @@ class CourseUser extends User
                 if ($courseUser[8]) {
 
                     Core::$systemDB->insert(
-                        "role",
+                        "user_role",
                         [
                             "id" => $newUser->getId(),
                             "course" => $courseUser[0],
