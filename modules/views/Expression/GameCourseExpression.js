@@ -76,6 +76,7 @@ var GameCourseExpression = (function () {
     var output = "";
     var libraryGlobalCollection = [];
     var returnTypeGlobal = "";
+    var returnNameGlobal = "";
     var libraryChosen = [];
     var errorMessage = "";
     var variablesTemp = [];
@@ -465,7 +466,7 @@ var GameCourseExpression = (function () {
                                 libraries.push(element);
                             }
                         } else {
-                            if (element["returnType"] == "collection" || element["refersTo"] == "collection") {
+                            if (element["returnType"] == "collection" && (element["refersToType"] == "collection" || element["refersToType"] == "library")) {
                                 libraries.push(element);
                             }
                         }
@@ -487,12 +488,12 @@ var GameCourseExpression = (function () {
                         } else {
                             output = "";
                             inputGlobal = input;
-                            //enters here if library+function matched
+                            //enters here if library+function matched   
                             libraryGlobalCollection = library;
                             libraryChosen = libraryShow.libraryChosen;
 
                             var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                            new checkFunctions(inputAfterLibrary, "collection", "collection");
+                            new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, "collection", libraryShow.returnName);
                         }
                     }
 
@@ -556,7 +557,7 @@ var GameCourseExpression = (function () {
                                     libraryGlobalCollection = library;
                                     libraryChosen = variableShow.library;
                                     varChosenGlobal = variableShow.variable;
-                                    new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType);
+                                    new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType, variableShow.returnName, null, null);
                                 }
                                 //new checkFunctions(input, libraryShow.returnType);
                             } else {
@@ -599,7 +600,7 @@ var GameCourseExpression = (function () {
                                     libraryGlobalCollection = library;
                                     libraryChosen = libraryShow.libraryChosen
                                     var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                                    new checkFunctions(inputAfterLibrary, libraryShow.returnType);
+                                    new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, null, null);
                                 }
                             }
                         } else {
@@ -613,7 +614,7 @@ var GameCourseExpression = (function () {
             }
 
             if (output != "") {
-                // console.log(output);
+                console.log(output);
             }
             return errorMessage;
         }
@@ -655,6 +656,7 @@ var GameCourseExpression = (function () {
                                 if (element["keyword"] == returnType) {
                                     if (element["returnType"] == "object") {
                                         returnLib = element["name"];
+                                        returnName = element["returnName"]
                                     }
                                     returnFinal = element["returnType"];
                                 }
@@ -668,26 +670,37 @@ var GameCourseExpression = (function () {
                                 }
                             });
                             if (!exists) {
-                                variablesTemp.push({ "name": name, "returnType": returnFinal, "library": returnLib });
+                                variablesTemp.push({ "name": name, "returnType": returnFinal, "returnName": returnName, "library": returnLib });
                             }
                         }
                     });
                 }
+                var returnName = null;
                 var merge = variables.concat(variablesTemp);
                 merge.forEach(element => {
                     if (element["name"] != null) {
                         if (element["name"].match(re)) {
                             if (input == element["name"]) {
+                                console.log(element);
                                 matched = element["name"];
                                 returnType = element["returnType"];
                                 if (element["library"]) {
-
                                     library = element["library"];
+                                    returnName = element["returnName"];
                                 } else {
                                     var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
                                     txtContent = txtContent.replace("{", "");
                                     txtContent = txtContent.replace("}", "");
-                                    library = txtContent.split(".")[0];
+                                    $splitted = txtContent.split(".");
+                                    library = $splitted[0];
+                                    var functionInLoop = $splitted[1].substring(0, $splitted[1].indexOf("("));
+                                    if (functionInLoop) {
+                                        libraryGlobalCollection.forEach(e => {
+                                            if (e["keyword"] == functionInLoop && e["name"] == library) {
+                                                returnName = e["returnName"]
+                                            }
+                                        });
+                                    }
                                 }
                             }
                             if (!variableMatched.includes(element["name"])) {
@@ -701,7 +714,7 @@ var GameCourseExpression = (function () {
                     return {};
                 } else {
                     if (matched) {
-                        return { "library": library, "variable": matched, "returnType": returnType };
+                        return { "library": library, "variable": matched, "returnType": returnType, "returnName": returnName };
                     } else {
                         errorMessage = "Finish the variable name.";
                         return { "toShow": variableMatched };
@@ -757,11 +770,10 @@ var GameCourseExpression = (function () {
                             libraryExists++;
                         }
                         if (element["name"] != null) {
-                            if (element["name"] == libraryChosen && element["refersTo"] == "library") {
+                            if (element["name"] == libraryChosen && element["refersToType"] == "library") {
                                 var args = JSON.parse(element["args"]);
                                 if (args == null) {
-                                    functionsAvailable[element["keyword"]] = element["returnType"];
-
+                                    functionsAvailable[element["keyword"]] = [element["returnType"], element["returnName"]];
                                 } else {
                                     var allArgs = [];
                                     var allArgsInfo = [];
@@ -773,7 +785,7 @@ var GameCourseExpression = (function () {
                                         }
                                         allArgsInfo.push(arg.type);
                                     });
-                                    functionsAvailable[element["keyword"]] = [element["returnType"], allArgs, allArgsInfo];
+                                    functionsAvailable[element["keyword"]] = [element["returnType"], element["returnName"], allArgs, allArgsInfo];
                                 }
                             }
                         }
@@ -793,12 +805,11 @@ var GameCourseExpression = (function () {
                         for (var key in functionsAvailable) {
                             var infoFunction = functionsAvailable[key];
                             if (key == inputNow_) {
-                                if (infoFunction.constructor === Array) {
-                                    returnType = infoFunction[0];
-                                    argList = infoFunction[1];
-                                    argInfo = infoFunction[2];
-                                } else {
-                                    returnType = infoFunction;
+                                returnType = infoFunction[0];
+                                returnName = infoFunction[1];
+                                if (infoFunction.length > 2) {
+                                    argList = infoFunction[2];
+                                    argInfo = infoFunction[3];
                                 }
                                 functionMatched = libraryChosen + "." + key;
                                 functionToShow = libraryChosen + "." + key + "(" + argList + ")";
@@ -829,7 +840,7 @@ var GameCourseExpression = (function () {
                                     }
 
                                 }
-                                return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType };
+                                return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType, "returnName": returnName };
                             } else {
                                 if (libraryExists) {
                                     errorMessage = "Correct the function name (check the suggestions).";
@@ -852,7 +863,6 @@ var GameCourseExpression = (function () {
                                         } else if (args.length < mandatory.length) {
                                             var missingArgs = mandatory.length - args.length + 1;
                                             if (missingArgs == 1) {
-                                                console.log("Aa");
                                                 errorMessage = "There is 1 mandatory arguments missing for the function " + functionMatched;
                                             } else {
                                                 errorMessage = "There are " + missingArgs + " mandatory arguments missing for the function " + functionMatched;
@@ -861,7 +871,6 @@ var GameCourseExpression = (function () {
                                         } else {
                                             if (inputArg[inputArg.length - 1] != ",") {
                                                 // inputArg = inputArg.substring(0, inputArg.indexOf(")"));
-                                                console.log(argList);
                                                 new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                             }
 
@@ -897,9 +906,9 @@ var GameCourseExpression = (function () {
                             }
                             if (functionsToShow.length == 0) {
                                 if (libraryExists) {
-                                    errorMessage = "Correct the library name (check the suggestions)."
+                                    errorMessage = "Correct the function name (check the suggestions).";
                                 } else {
-                                    errorMessage = "Correct the function name (check the suggestions)."
+                                    errorMessage = "Correct the library name (check the suggestions).";
                                 }
                                 return {};
                             } else {
@@ -979,7 +988,7 @@ var GameCourseExpression = (function () {
         }
 
     }
-    function checkFunctionsForLibrary(input, libraries, refersTo) {
+    function checkFunctionsForLibrary(input, libraries, refersTo, refersToName) {
         if (input) {
             if (input.match(new RegExp("[\.]"))) {
                 var functionsAvailable = new Array();
@@ -992,10 +1001,14 @@ var GameCourseExpression = (function () {
                     return {};
                 }
                 libraries.forEach(element => {
-                    if (element["refersTo"] == refersTo) {
+                    if (element["refersToType"] == refersTo &&
+                        (element["refersToName"] == refersToName || !element["refersToName"])) {
                         var args = JSON.parse(element["args"]);
+                        if (element["name"] == null) {
+                            element["returnName"] = refersToName;
+                        }
                         if (args == null) {
-                            functionsAvailable[element["keyword"]] = element["returnType"];
+                            functionsAvailable[element["keyword"]] = [element["returnType"], element["returnName"]];
 
                         } else {
                             var allArgs = [];
@@ -1008,7 +1021,7 @@ var GameCourseExpression = (function () {
                                 }
                                 allArgsInfo.push(arg.type);
                             });
-                            functionsAvailable[element["keyword"]] = [element["returnType"], allArgs, allArgsInfo];
+                            functionsAvailable[element["keyword"]] = [element["returnType"], element["returnName"], allArgs, allArgsInfo];
                         }
                     }
                 });
@@ -1017,6 +1030,7 @@ var GameCourseExpression = (function () {
                 var argInfo = [];
                 var mandatory = [];
                 var returnType = "";
+                var returnName = "";
                 var inputArg = input.substring(input.indexOf("(") + 1);
                 if (input !== undefined) {
                     if (input.match(new RegExp("[(]"))) {
@@ -1027,12 +1041,11 @@ var GameCourseExpression = (function () {
                             for (var key in functionsAvailable) {
                                 var infoFunction = functionsAvailable[key];
                                 if (key == inputNow_) {
-                                    if (infoFunction.constructor === Array) {
-                                        returnType = infoFunction[0];
-                                        argList = infoFunction[1];
-                                        argInfo = infoFunction[2];
-                                    } else {
-                                        returnType = infoFunction;
+                                    returnType = infoFunction[0];
+                                    returnName = infoFunction[1];
+                                    if (infoFunction.length > 2) {
+                                        argList = infoFunction[2];
+                                        argInfo = infoFunction[3];
                                     }
                                     functionMatched = key;
                                     functionToShow = key + "(" + argList + ")";
@@ -1059,7 +1072,7 @@ var GameCourseExpression = (function () {
                                             new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                         }
                                     }
-                                    return { "returnType": returnType, "index": input.length + 1 };
+                                    return { "returnType": returnType, "returnName": returnName, "index": input.length + 1 };
                                 }
                             }
                             errorMessage = "Correct the function name (check the suggestions)."
@@ -1069,10 +1082,10 @@ var GameCourseExpression = (function () {
                                 for (var key in functionsAvailable) {
                                     var infoFunction = functionsAvailable[key];
                                     if (key == inputNow_) {
-                                        if (infoFunction.constructor === Array) {
-                                            argList = infoFunction[1];
+                                        if (infoFunction.length > 2) {
+                                            argList = infoFunction[2];
                                         } else {
-                                            returnType = infoFunction;
+                                            returnType = infoFunction[0]
                                         }
                                         functionToShow = key + "(" + argList + ")";
                                         return { "toShow": functionToShow };
@@ -1083,11 +1096,11 @@ var GameCourseExpression = (function () {
                                     for (var key in functionsAvailable) {
                                         var infoFunction = functionsAvailable[key];
                                         if (key == inputNow_) {
-                                            if (infoFunction.constructor === Array) {
+                                            returnType = infoFunction[0];
+                                            returnName = infoFunction[1];
+                                            if (infoFunction.length > 2) {
                                                 argList = infoFunction[1];
                                                 argInfo = infoFunction[2];
-                                            } else {
-                                                returnType = infoFunction;
                                             }
                                             functionMatched = key;
                                             functionToShow = key + "(" + argList + ")";
@@ -1128,15 +1141,16 @@ var GameCourseExpression = (function () {
                             var functionMatched = "";
                             var functionsToShow = [];
                             var re = new RegExp(input, "g");
+
                             for (var key in functionsAvailable) {
                                 if (key.match(re)) {
                                     var argsTemp = functionsAvailable[key];
                                     var args = null;
-                                    if (functionsAvailable && argsTemp.constructor === Array) {
-                                        args = argsTemp[1];
+                                    if (functionsAvailable) {
                                         returnType = argsTemp[0];
-                                    } else {
-                                        returnType = argsTemp;
+                                        if (argsTemp.length > 2) {
+                                            args = argsTemp[2];
+                                        }
                                     }
                                     if (args == null) {
                                         functionsToShow.push(key);
@@ -1156,7 +1170,7 @@ var GameCourseExpression = (function () {
                                 return {};
                             } else {
                                 if (functionMatched != "") {
-                                    return { "returnType": returnType, "index": input.length + 1 };
+                                    return { "returnType": returnType, "returnName": returnName, "index": input.length + 1 };
                                 } else {
                                     errorMessage = "Finish the function name.";
                                     return { "toShow": functionsToShow };
@@ -1175,46 +1189,41 @@ var GameCourseExpression = (function () {
             }
         }
     }
-    function checkFunctions(input, refersTo, returnType = null) {
+    function checkFunctions(input, refersToType, refersToName, returnType = null, returnName = null) {
         var returnTypes = [];
         var libraries = [];
         var divisao = input.split(".");
         var now = 0;
         if (divisao.length > 2) {
-            refersTo = returnTypeGlobal;
+            refersToType = returnTypeGlobal;
+            refersToName = returnNameGlobal;
             now = divisao[divisao.length - 1].length + 1;
             var a = inputGlobal.length;
             input = inputGlobal.substr(a - now);
         }
         libraryGlobalCollection.forEach(element => {
+            if (element["refersToType"] == refersToType && (element["refersToName"] == refersToName || !element["refersToName"])) {
+                if (returnType) {
+                    if (element["returnType"] == returnType && (element["returnName"] == returnName || !element["returnName"])) {
+                        console.log(element);
+                        libraries.push(element);
+                    }
+                } else {
+                    libraries.push(element);
+                }
+                if (!returnTypes.includes([element["returnType"], element["returnName"]])) {
 
-            if (element["refersTo"] == refersTo) {
-                if (libraryChosen) {
-                    if (element["name"] == libraryChosen || element["name"] == null) {
-                        if (returnType) {
-                            if (element["returnType"] == returnType) {
-                                libraries.push(element);
-                            }
+                    if (returnType && (element["returnName"] == returnName || !element["returnName"])) {
+                        if (element["returnType"] == returnType) {
+                            returnTypes.push([element["returnType"], element["returnName"]]);
                         } else {
-                            libraries.push(element);
-                        }
-                        if (!returnTypes.includes(element["returnType"])) {
-
-                            if (returnType) {
-                                if (element["returnType"] == returnType) {
-                                    returnTypes.push(element["returnType"]);
-                                } else {
-                                    returnTypes.push(element["returnType"]);
-
-                                }
-                            }
+                            returnTypes.push([element["returnType"], element["returnName"]]);
                         }
                     }
                 }
             }
         });
-
-        var libraryShow = new checkFunctionsForLibrary(input, libraries, refersTo);
+        var libraryShow = new checkFunctionsForLibrary(input, libraries, refersToType, refersToName);
 
         if (libraryShow.hasOwnProperty("toShow")) {
             output = libraryShow.toShow;
@@ -1222,8 +1231,9 @@ var GameCourseExpression = (function () {
         if (libraryShow.hasOwnProperty("returnType")) {
             testeGlobal = libraryShow.index;
             returnTypeGlobal = libraryShow.returnType;
+            returnNameGlobal = libraryShow.returnName;
             input = input.substr(libraryShow.index);
-            new checkFunctions(input, libraryShow.returnType, libraryShow.index - 2);
+            new checkFunctions(input, libraryShow.returnType, libraryShow.returnName);
         }
     }
 

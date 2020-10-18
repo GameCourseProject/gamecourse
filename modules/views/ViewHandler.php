@@ -584,7 +584,7 @@ class ViewHandler
             Core::$systemDB->insert("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
-    public function registerVariable($name, $returnType, $libraryName = null, $description = null)
+    public function registerVariable($name, $returnType, $returnName, $libraryName = null, $description = null)
     {
         if (!Core::$systemDB->select("dictionary_variable", ["name" => $name])) {
             if ($libraryName) {
@@ -595,10 +595,10 @@ class ViewHandler
             } else {
                 $libraryId = null;
             }
-            Core::$systemDB->insert("dictionary_variable", ["name" => $name, "libraryId" => $libraryId, "returnType" => $returnType, "description" => $description]);
+            Core::$systemDB->insert("dictionary_variable", ["name" => $name, "libraryId" => $libraryId, "returnName" => $returnName, "returnType" => $returnType, "description" => $description]);
         }
     }
-    public function registerFunction($funcLib, $funcName, $processFunc,  $returnType,  $description = null, $refersTo = "object")
+    public function registerFunction($funcLib, $funcName, $processFunc, $description,  $returnType, $returnName = null,  $refersToType = "object", $refersToName = null)
     {
         if ($funcLib) {
             $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $funcLib], "id");
@@ -618,13 +618,20 @@ class ViewHandler
                 $i = -1;
                 foreach ($arguments as $argument) {
                     $i++;
-                    if ($i == 0 && ($refersTo == "object" || $funcLib == null)) {
+                    if ($i == 0 && ($refersToType == "object" || $funcLib == null)) {
                         continue;
                     }
                     $optional = $argument->isOptional() ? "1" : "0";
                     $tempArr = [];
                     $tempArr["name"] = $argument->getName();
-                    $tempArr["type"] = (string)$argument->getType();
+                    $type = (string)$argument->getType();
+                    if ($type == "int") {
+                        $tempArr["type"] = "integer";
+                    } elseif ($type == "bool") {
+                        $tempArr["type"] = "boolean";
+                    } else {
+                        $tempArr["type"] = $type;
+                    }
                     $tempArr["optional"] = $optional;
                     array_push($arg, $tempArr);
                 }
@@ -643,7 +650,9 @@ class ViewHandler
                     Core::$systemDB->insert("dictionary_function", [
                         "libraryId" => $libraryId,
                         "returnType" => $returnType,
-                        "refersTo" => $refersTo,
+                        "returnName" => $returnName,
+                        "refersToType" => $refersToType,
+                        "refersToName" => $refersToName,
                         "keyword" => $funcName,
                         "args" => $arg,
                         "description" => $description
@@ -654,7 +663,9 @@ class ViewHandler
                     Core::$systemDB->insert("dictionary_function", [
                         "libraryId" => $libraryId,
                         "returnType" => $returnType,
-                        "refersTo" => $refersTo,
+                        "returnName" => $returnName,
+                        "refersToType" => $refersToType,
+                        "refersToName" => $refersToName,
                         "keyword" => $funcName,
                         "args" => $arg,
                         "description" => $description
@@ -667,7 +678,9 @@ class ViewHandler
             Core::$systemDB->insert("dictionary_function", [
                 "libraryId" => $libraryId,
                 "returnType" => $returnType,
-                "refersTo" => $refersTo,
+                "returnName" => $returnName,
+                "refersToType" => $refersToType,
+                "refersToName" => $refersToName,
                 "keyword" => $funcName,
                 "args" => $arg,
                 "description" => $description

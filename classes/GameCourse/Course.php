@@ -557,7 +557,7 @@ class Course
         return Core::$systemDB->selectMultipleSegmented(
             "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
             $whereCondition,
-            "name, keyword, refersTo, returnType, args"
+            "name, keyword, refersToType, refersToName, returnType, returnName, args"
         );
     }
 
@@ -580,7 +580,38 @@ class Course
         return Core::$systemDB->selectMultipleSegmented(
             "dictionary_library right join dictionary_variable on libraryId = dictionary_library.id",
             $whereCondition,
-            "dictionary_library.name as library, dictionary_variable.name as name, returnType"
+            "dictionary_library.name as library, dictionary_variable.name as name, returnType, returnName"
+        );
+    }
+
+    public function getEnabledLibrariesInfo()
+    {
+        $modulesEnabled = $this->getEnabledModules();
+        $whereCondition = "";
+
+        foreach ($modulesEnabled as $module) {
+            $whereCondition .=  "moduleId=\"" . $module . "\" or ";
+        }
+        $whereCondition .= "moduleId is null";
+        return Core::$systemDB->selectMultipleSegmented(
+            "dictionary_library",
+            $whereCondition,
+            "id, name, description, moduleId"
+        );
+    }
+
+    public function getLibraryFunctions($library)
+    {
+        if ($library) {
+            $whereCondition =  "libraryId=\"" . $library . "\"";
+        } else {
+            $whereCondition = "libraryId is null";
+        }
+        return Core::$systemDB->selectMultipleSegmented(
+            "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
+            $whereCondition,
+            "name, keyword, refersToType, refersToName, returnType, dictionary_function.description as description, args",
+            "refersToType"
         );
     }
     public function getAvailablePages(){
