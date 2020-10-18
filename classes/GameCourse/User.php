@@ -243,6 +243,14 @@ class User
         file_put_contents("photos/". $userId . ".png", $img);
     }
 
+    public static function getImage($userId)
+    {
+        if(file_exists("photos/" . $userId . ".png")){
+            return file_get_contents("photos/" . $userId . ".png");
+        }else{
+            return null;
+        }
+    }
     public static function exportUsers()
     {
         $listOfUsers = User::getAllInfo();
