@@ -307,13 +307,14 @@ API::registerFunction('settings', 'courseModules', function() {
         }
     } else {
         $allModules = ModuleLoader::getModules();
-        $enabledModules = $course->getModules();
+        $enabledModules = $course->getEnabledModules();
        
         $modulesArr = [];
         foreach ($allModules as $module) {            
             
-            if (array_key_exists($module['id'], $enabledModules)){
-                $moduleObj = $enabledModules[$module['id']];
+            if (in_array($module['id'], $enabledModules)){
+                $moduleInfo = ModuleLoader::getModule($module['id']);
+                $moduleObj = $moduleInfo['factory']();
                 $module['hasConfiguration'] = $moduleObj->is_configurable();
                 $module['enabled'] = true;
             }
@@ -326,7 +327,7 @@ API::registerFunction('settings', 'courseModules', function() {
             $canBeEnabled = true;
             foreach($module['dependencies'] as $dependency){
                 if ($dependency['mode'] != 'optional'){
-                    if(array_key_exists($dependency['id'], $enabledModules)){
+                    if(in_array($dependency['id'], $enabledModules)){
                         $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
                     }
                     else{
