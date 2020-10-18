@@ -270,14 +270,14 @@ API::registerFunction('settings', 'courseModules', function() {
     $course = Course::getCourse(API::getValue('course'));
     if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
+        $modules = ModuleLoader::getModules();
         $module = ModuleLoader::getModule($moduleId);
         if ($module == null) {
             API::error('Unknown module!', 400);
             http_response_code(400);
         } else {
-            $moduleObject = $course->getModule($moduleId);
-            $moduleEnabled = ($moduleObject != null);
-            
+            $moduleObject = $module['factory']();
+            $moduleEnabled = (in_array($module["id"], $course->getEnabledModules()));
             if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
                 $modules = $course->getModules();
                 foreach ($modules as $mod) {
@@ -295,8 +295,9 @@ API::registerFunction('settings', 'courseModules', function() {
                     $moduleObject->deleteDataRows();
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
+                file_put_contents("aaaa.txt", "");
                 foreach ($module['dependencies'] as $dependency) {
-                    if ($dependency['mode'] != 'optional' && $course->getModule($dependency['id']) == null)
+                    if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
                         API::error('Must enable all dependencies first.');
                 }
             }
