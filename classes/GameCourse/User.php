@@ -76,7 +76,11 @@ class User
     }
     public function setUsername($username)
     {
-        Core::$systemDB->update("game_course_user", ["username" => $username], ["game_course_user_id" => $this->id]);
+        Core::$systemDB->update("auth", ["username" => $username], ["game_course_user_id" => $this->id]);
+    }
+    public function setAuthenticationService($authenticationService)
+    {
+        Core::$systemDB->update("auth", [ "authentication_service" => $authenticationService], ["game_course_user_id" => $this->id]);
     }
     public function getNickname()
     {

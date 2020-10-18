@@ -663,14 +663,17 @@ API::registerFunction('course', 'editUser', function() {
     $courseUser = new CourseUser(API::getValue('userId'), $course);
     $user = new User(API::getValue('userId'));
 
-    $courseUser->setCampus(API::getValue('userCampus'));
+    
     $user->setName(API::getValue('userName'));
     $user->setEmail(API::getValue('userEmail'));
     $user->setStudentNumber(API::getValue('userStudentNumber'));
-    //verifiy is nickname exists
     $user->setNickname(API::getValue('userNickname'));
+    $user->setUsername(API::getValue('userUsername'));
+    $user->setAuthenticationService(API::getValue('userAuthService'));
+
+    $courseUser->setCampus(API::getValue('userCampus'));
     $courseUser->setRoles(API::getValue('userRoles'));
-    //falta adiconar/substituir os roles
+
 });
 
 API::registerFunction('course', 'createUser', function(){
@@ -685,15 +688,16 @@ API::registerFunction('course', 'createUser', function(){
     $userNickname = API::getValue('userNickname');
     $userRoles = API::getValue('userRoles');
     $userCampus = API::getValue('userCampus');
-    $userUsername = null;
+    $userUsername = API::getValue('userUsername');
+    $userAuthService = API::getValue('userAuthService');
 
     //verifies if user exits on the system
     $user = User::getUserByStudentNumber($userStudentNumber);
     if ($user == null) {
-        User::addUserToDB($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+        User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1);
         $user = User::getUserByStudentNumber($userStudentNumber);
     } else {
-        $user->editUser($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
+        $user->editUser($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
     }
     //verifies if user exits on course
     $courseUser = new CourseUser($user->getId(),$course);
@@ -703,12 +707,11 @@ API::registerFunction('course', 'createUser', function(){
         $courseUser->setCampus($userCampus);
     }
     //adds list of roles to user
-    foreach($userRoles as $role){
-        $courseUser->addRole($role);
-    }
+    $courseUser->setRoles(API::getValue('userRoles'));
 
 
 });
+//add existing user to course
 API::registerFunction('course', 'addUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -735,6 +738,7 @@ API::registerFunction('course', 'addUser', function(){
     }
 });
 
+//get users not registered on the course
 API::registerFunction('course', 'notCourseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -766,7 +770,7 @@ API::registerFunction('course', 'notCourseUsers', function() {
     API::response(array('notCourseUsers'=> $notCourseUsers));
 });
 
-//update courseUsers from the Students or Teacher configuration pages
+//get courseUsers 
 API::registerFunction('course', 'courseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -812,7 +816,10 @@ API::registerFunction('course', 'courseUsers', function() {
                 'roles' => $user->getRolesNames(),
                 'campus' => $user->getCampus(),
                 'email' => $user->getEmail(),
-                'lastLogin' => $user->getLastLogin());
+                'lastLogin' => $user->getLastLogin(),
+                'username' => $user->getUsername(),
+                'authenticationService' => User::getUserAuthenticationService($user->getUsername())
+            );
         }
         
         $fileData = @file_get_contents($file);

@@ -225,6 +225,20 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         details.append(doubledetails);
         row_inputs.append(details);
         box.append(row_inputs);
+        // authentication information - service and username
+        row_auth = $('<div class= "row_inputs"></div>');
+        selectAuth = $('<div class="smaller">');
+        select = $('<select id="authService" class="form__input" name="authService" ng-model="newUser.userAuthService"></select>');
+        select.append($('<option value="" disabled selected>Auth Service</option>'));
+        optionsAuth = ["fenix", "google", "facebook", "linkedin"];
+        jQuery.each(optionsAuth, function( index ){
+            option = optionsAuth[index];
+            select.append($('<option value="'+option+'">'+option+'</option>'))
+        });
+        selectAuth.append(select);
+        row_auth.append(selectAuth);
+        row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="newUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
+        box.append(row_auth);
         content.append(box);
         content.append( $('<button class="save_btn" ng-click="submitUser()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newUser.append(content);
@@ -261,7 +275,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             //validate inputs
             if (isValid($scope.newUser.userName) &&
             isValid($scope.newUser.userStudentNumber) &&
-            isValid($scope.newUser.userEmail) && 
+            isValid($scope.newUser.userEmail) &&  
+            isValid($scope.newUser.userUsername) &&             
+            isValid($scope.newUser.userAuthService) &&
             isValid($scope.newUser.userCampus) && 
             $scope.newUser.userRoles.length != 0){
                 return true;
@@ -280,6 +296,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userEmail: $scope.newUser.userEmail,
                 userRoles: $scope.newUser.userRoles,
                 userCampus: $scope.newUser.userCampus,
+                userUsername: $scope.newUser.userUsername,
+                userAuthService: $scope.newUser.userAuthService
             };
             $smartboards.request('course', 'createUser', reqData, function(data, err) {
                 if (err) {
@@ -340,6 +358,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $scope.editUser.userNickname = user.nickname;
         $scope.editUser.userRoles = user.roles.slice();
         $scope.editUser.userCampus = user.campus;
+        $scope.editUser.userUsername = user.username;
+        $scope.editUser.userAuthService = user.authenticationService;
             
         updateRolesAddSection($scope,"#edit_box", $scope.courseRoles, user.roles);
 
@@ -366,6 +386,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             isValid($scope.editUser.userEmail) &&
             isValid($scope.editUser.userStudentNumber) &&
             isValid($scope.editUser.userCampus) &&
+            isValid($scope.editUser.userUsername) &&
+            isValid($scope.editUser.userAuthService) &&
             $scope.editUser.userRoles.length != 0){
                 return true;
             }
@@ -383,7 +405,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userNickname: $scope.editUser.userNickname,
                 userEmail: $scope.editUser.userEmail,
                 userCampus: $scope.editUser.userCampus,
-                userRoles: $scope.editUser.userRoles
+                userRoles: $scope.editUser.userRoles,
+                userUsername: $scope.editUser.userUsername,
+                userAuthService: $scope.editUser.userAuthService
             };
             $smartboards.request('course', 'editUser', reqData, function(data, err) {
                 if (err) {
@@ -621,6 +645,20 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     editdetails.append(editdoubledetails)
     editrow_inputs.append(editdetails);
     editbox.append(editrow_inputs);
+    // authentication information - service and username
+    row_auth = $('<div class= "row_inputs"></div>');
+    selectAuth = $('<div class="smaller">');
+    select = $('<select id="authService" class="form__input" name="authService" ng-model="editUser.userAuthService"></select>');
+    select.append($('<option value="" disabled selected>Auth Service</option>'));
+    optionsAuth = ["fenix", "google", "facebook", "linkedin"];
+    jQuery.each(optionsAuth, function( index ){
+        option = optionsAuth[index];
+        select.append($('<option value="'+option+'">'+option+'</option>'))
+    });
+    selectAuth.append(select);
+    row_auth.append(selectAuth);
+    row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="editUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
+    editbox.append(row_auth);
     editcontent.append(editbox);
     editcontent.append( $('<button class="save_btn" ng-click="submitEditUser()" ng-disabled="!isReadyToEdit()" > Save </button>'))
     editUser.append(editcontent);

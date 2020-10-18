@@ -58,7 +58,7 @@ class CourseUser extends User
     }
     public function getUsername()
     {
-        return parent::getData("username");
+        return parent::getUsername();
     }
     public function getEmail()
     {
