@@ -78,40 +78,61 @@ class Notifications extends Module
         }
 
         $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler(); //
-        $viewHandler->registerFunction('notifications', 'checkNotifications', function (int $userId) {
-            $pendingNotifications = $this->notificationList;
+        $viewHandler = $viewsModule->getViewHandler();
+        $viewHandler->registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
+        /*  $viewHandler->registerFunction(
+            'notifications',
+            'checkNotifications',
+            function (int $userId) {
+                $pendingNotifications = $this->notificationList;
 
-            //$courseId = $this->getParent()->getId();
-            //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
-            return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
-        }, 'integer', null, 'library');
+                //$courseId = $this->getParent()->getId();
+                //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
+                return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
+            },
+            '',
+            'integer',
+            null,
+            'library',
+            null
+        );
+       
+        $viewHandler->registerFunction(
+            'notifications',
+            'getNotifications',
+            'library',
+            function (int $userId) {
+                $pendingNotifications = $this->notificationList;
+                //$courseId = $this->getParent()->getId();
+                //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
+                //                                                    ["course"=>$courseId,"student"=>$userId]);
 
-        $viewHandler->registerFunction('notifications', 'getNotifications', 'library', function (int $userId) {
-            $pendingNotifications = $this->notificationList;
-            //$courseId = $this->getParent()->getId();
-            //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
-            //                                                    ["course"=>$courseId,"student"=>$userId]);
+                //$notifications = array();
+            //foreach($pendingNotifications as $id => $notification) {
+            //    $notifications[$id] = GameCourse\DataRetrieverContinuation::buildForArray($notification);
+            //}
 
-            /*$notifications = array();
-            foreach($pendingNotifications as $id => $notification) {
-                $notifications[$id] = GameCourse\DataRetrieverContinuation::buildForArray($notification);
-            }
+            return GameCourse\DataRetrieverContinuation::buildForArray($notifications);
+                return new \Modules\Views\Expression\ValueNode($pendingNotifications);
+            },
+            '',
+            'collection',
+            null,
+            'library',
+            null
+        );
+         */
 
-            return GameCourse\DataRetrieverContinuation::buildForArray($notifications);*/
-            return new \Modules\Views\Expression\ValueNode($pendingNotifications);
-        }, 'collection', null, 'library');
-
-        API::registerFunction('notifications', 'removeNotification', function () {
-            /*$id = API::getValue('notification');
-            $userId = Core::getLoggedUser()->getId();
-            $moduleData = $this->getData();
-            $notifications = $moduleData->getWrapped('list')->get($istID);
-            if (array_key_exists($id, $notifications)) {
-                unset($notifications[$id]);
-                $moduleData->getWrapped('list')->set($istID, $notifications);
-            }*/
-        });
+        // API::registerFunction('notifications', 'removeNotification', function () {
+        //     /*$id = API::getValue('notification');
+        //     $userId = Core::getLoggedUser()->getId();
+        //     $moduleData = $this->getData();
+        //     $notifications = $moduleData->getWrapped('list')->get($istID);
+        //     if (array_key_exists($id, $notifications)) {
+        //         unset($notifications[$id]);
+        //         $moduleData->getWrapped('list')->set($istID, $notifications);
+        //     }*/
+        // });
 
         if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
             $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'));
