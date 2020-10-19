@@ -668,7 +668,7 @@ API::registerFunction('course', 'removeUser', function(){
 });
 API::registerFunction('course', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
+    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
 
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
@@ -685,6 +685,12 @@ API::registerFunction('course', 'editUser', function() {
 
     $courseUser->setCampus(API::getValue('userCampus'));
     $courseUser->setRoles(API::getValue('userRoles'));
+
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, API::getValue('userId'));
+    }
 
 });
 
