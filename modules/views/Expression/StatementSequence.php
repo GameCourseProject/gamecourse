@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace Views\Expression;
 
 class StatementSequence extends Node {
     private $node;

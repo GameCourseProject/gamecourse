@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views;
+namespace Views;
 
 class ViewEditHandler {
     static function breakValue(&$value, &$savePart) {

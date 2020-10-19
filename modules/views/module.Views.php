@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Views;
+namespace Views;
 
-use Modules\Views\Expression\ValueNode;
-use Modules\Views\Expression\EvaluateVisitor;
+use Views\Expression\ValueNode;
+use Views\Expression\EvaluateVisitor;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;

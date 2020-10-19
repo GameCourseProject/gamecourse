@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace Views\Expression;
 
 class ParameterNode extends Node {
     private $param;

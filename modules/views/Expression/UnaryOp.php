@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace Views\Expression;
 
 abstract class UnaryOp extends Node {
     public function __construct($rhs) {
