@@ -567,10 +567,16 @@ API::registerFunction('core', 'createUser', function() {
 });
 API::registerFunction('core', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userId','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    API::requireValues('userHasImage','userId','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
 
     $user = new User(API::getValue('userId'));
     $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, API::getValue('userId'));
+    }
 });
 
 //------------------Users inside the course

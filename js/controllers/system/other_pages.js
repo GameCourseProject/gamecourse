@@ -796,7 +796,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 
 
         var imageInput = document.getElementById('profile_image');
-		var imageDisplayArea = document.getElementById('display_profile_image');
+        var imageDisplayArea = document.getElementById('display_profile_image');
+        imageDisplayArea.innerHTML = "";
 
 
 		imageInput.addEventListener('change', function(e) {
@@ -888,6 +889,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $scope.editUser.userNickname = user.nickname;
         $scope.editUser.userUsername = user.username;
         $scope.editUser.userAuthService = user.authenticationService;
+        $scope.editUser.userImage = null;
+        $scope.editUser.userHasImage = "false";
         
                 
         editbox = $("#edit_box");
@@ -922,6 +925,48 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $compile(editbox)($scope);
         
 
+        var imageInput = document.getElementById('edit_profile_image');
+        var imageDisplayArea = document.getElementById('edit_display_profile_image');
+        imageDisplayArea.innerHTML = "";
+
+        //set initial image
+        var profile_image = new Image();
+        profile_image.onload = function() {
+            imageDisplayArea.appendChild(profile_image);
+        }
+        profile_image.onerror = function() {
+            $('#edit_display_profile_image').append($('<span>Select a profile image</span>'));
+        }
+        profile_image.src = 'photos/'+ user.id +'.png';
+                
+        //set listener for input change
+        imageInput.addEventListener('change', function(e) {
+            var file = imageInput.files[0];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    imageDisplayArea.innerHTML = "";
+
+                    var img = new Image();
+                    img.src = reader.result;
+                    $scope.editUser.userImage = reader.result;
+                    $scope.editUser.userHasImage = "true";
+                    imageDisplayArea.appendChild(img);
+                }
+
+                reader.readAsDataURL(file);	
+                
+            } else {
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
+                $scope.editUser.userImage = null;
+                $scope.editUser.userHasImage = "false";
+            }
+        });
+
 
         $scope.isReadyToEdit = function() {
             isValid = function(text){
@@ -952,7 +997,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 userEmail: $scope.editUser.userEmail,
                 userIsActive: isActive,
                 userIsAdmin: isAdmin,
-                userAuthService: $scope.editUser.userAuthService
+                userAuthService: $scope.editUser.userAuthService,
+                userImage: $scope.editUser.userImage,
+                userHasImage: $scope.editUser.userHasImage
             };
             $smartboards.request('core', 'editUser', reqData, function(data, err) {
                 if (err) {
@@ -1234,7 +1281,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" /></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
