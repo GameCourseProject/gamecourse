@@ -490,6 +490,30 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         });
     }
 
+    $scope.importCourses = function(){
+        $scope.importedCourses = null;
+        var fileInput = document.getElementById('import_course');
+        var file = fileInput.files[0];
+
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            $scope.importedCourses = reader.result;
+            $smartboards.request('core', 'importCourses', { file: $scope.importedCourses }, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                nCourses = data.nCourses;
+                $("#import-course").hide();
+                $("#action_completed").empty();
+                $("#action_completed").append(nCourses + " Courses Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        }
+        reader.readAsText(file);	
+        
+    }
 
     mainContent = $("<div id='mainContent'></div>");
 
@@ -591,7 +615,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
-    action_buttons.append( $("<div class='icon import_icon'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' value='#import-course' onclick='openModal(this)'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
     $compile(action_buttons)($scope);
 
@@ -670,6 +694,17 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     editmodal.append(editCourse);
     allCourses.append(editmodal);
 
+
+    //the verification modals
+    importModal = $("<div class='modal' id='import-course'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#import-course" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+    verification.append( $('<div class="target">The seperator must be comma</div>'));
+    verification.append( $('<input class="config_input" type="file" id="import_course" accept=".csv, .txt">')); //input file
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importCourses()">Import Courses</button></div>'))
+    importModal.append(verification);
+    allCourses.append(importModal);
 
     //compile both version of the page for scope values
     $compile(allCourses)($scope);
@@ -1164,7 +1199,30 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $scope.lastOrder = order;
         $scope.lastArrow = arrow;
     }
+    $scope.importUsers = function(){
+        $scope.importedUsers = null;
+        var fileInput = document.getElementById('import_user');
+        var file = fileInput.files[0];
 
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            $scope.importedUsers = reader.result;
+            $smartboards.request('core', 'importUser', { file: $scope.importedUsers }, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                nUsers = data.nUsers;
+                $("#import-user").hide();
+                $("#action_completed").empty();
+                $("#action_completed").append(nUsers + " Users Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        }
+        reader.readAsText(file);	
+        
+    }
 
     mainContent = $("<div id='mainContent'></div>");
 
@@ -1237,7 +1295,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     box = $('<div class= "inputs">');
     row_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg/></div>'))
     //text inputs
     details = $('<div class="details bigger right"></div>')
     details.append($('<div class="container"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -1281,7 +1339,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" /></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg/></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -1321,11 +1379,21 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
-    action_buttons.append( $("<div class='icon import_icon'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
     action_buttons.append( $("<div class='icon export_icon'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
 
+    //the verification modals
+    importModal = $("<div class='modal' id='import-user'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+    verification.append( $('<div class="target">The seperator must be comma</div>'));
+    verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
+    importModal.append(verification);
+    mainContent.append(importModal);
     
     mainContent.append(allUsers);
     $compile(mainContent)($scope);

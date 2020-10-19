@@ -104,6 +104,15 @@ API::registerFunction('core', 'setCoursesActive', function(){
     $cOb = Course::getCourse($course_id, false);
     $cOb->setActiveState($active);
 });
+
+API::registerFunction('core', 'importCourses', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nCourses = 0; //delete later
+    //$nCourses = Course::importCourses(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nCourses' => $nCourses));
+});
 //-------------------
 
 
@@ -578,6 +587,14 @@ API::registerFunction('core', 'editUser', function() {
         User::saveImage($img, API::getValue('userId'));
     }
 });
+API::registerFunction('core', 'importUser', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nUsers = 0; //delete later
+    //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nUsers' => $nUsers));
+});
 
 //------------------Users inside the course
 
@@ -855,6 +872,14 @@ API::registerFunction('course', 'courseUsers', function() {
         }
         API::response(array('userList' => $usersInfo,"file"=>$fileData ));
     }
+});
+API::registerFunction('course', 'importUser', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nUsers = 0; //delete later
+    //$nUsers = CourseUser::importCourseUsers(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nUsers' => $nUsers));
 });
 
 //update list of course levels, from the levels configuration page

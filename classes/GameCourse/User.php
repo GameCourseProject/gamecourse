@@ -270,6 +270,8 @@ class User
 
     public static function importUsers($file)
     {
+        //$file is a string gotten from reading an .csv or .txt file
+        //return number of new courses added pls
         $file = fopen($file, "r");
         while (!feof($file)) {
             $user = fgetcsv($file);

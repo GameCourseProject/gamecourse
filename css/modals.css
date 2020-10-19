@@ -35,6 +35,11 @@ cursor: pointer;
     border-color: green;
 }
 
+.verification #import_course,
+.verification #import_user {
+    margin-bottom: 20px;
+    margin-top: 15px;
+}
 .modal{
     display: none;
     position: fixed; 

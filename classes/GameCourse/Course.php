@@ -494,6 +494,8 @@ class Course
     //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
     public static function importCourses($file)
     {
+        //$file is a string gotten from reading an .csv or .txt file
+        //return number of new courses added pls
         $file = fopen($file, "r");
         while (!feof($file)) {
             $course = fgetcsv($file);
