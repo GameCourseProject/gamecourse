@@ -427,7 +427,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         profile_image.onerror = function() {
             $('#edit_display_profile_image').append($('<span>Select a profile image</span>'));
         }
-        profile_image.src = 'photos/'+ user.id +'.png';
+        profile_image.src = 'photos/'+ user.id +'.png?'+ new Date().getTime();
                 
         //set listener for input change
         imageInput.addEventListener('change', function(e) {
