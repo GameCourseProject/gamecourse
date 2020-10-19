@@ -34,9 +34,6 @@ ModuleLoader::registerModule(array(
     'name' => 'Overview',
     'description' => 'Creates a view template with all the skills done.',
     'version' => '0.1',
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
     'factory' => function() {
         return new Overview();
     }
