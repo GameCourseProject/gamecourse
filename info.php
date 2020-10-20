@@ -295,7 +295,6 @@ API::registerFunction('settings', 'courseModules', function() {
                     $moduleObject->deleteDataRows();
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
-                file_put_contents("aaaa.txt", "");
                 foreach ($module['dependencies'] as $dependency) {
                     if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
                         API::error('Must enable all dependencies first.');
