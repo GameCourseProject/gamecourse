@@ -103,6 +103,10 @@
 }
 
 /*modules page*/
+#install_modules{
+    width: 80px;
+}
+
 #modules {
     margin-left: -35px;
     display: inline-grid;

@@ -83,13 +83,52 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
         }
         
     }
+    $scope.importModule = function (){
+        $scope.importedModule = null;
+        var fileInput = document.getElementById('import_module');
+        var file = fileInput.files[0];
+
+        //todo
+
+        // var reader = new FileReader();
+        // reader.onload = function(e) {
+        //     $scope.importedModule = reader.result;
+        //     $smartboards.request('course', 'importUser', { file: $scope.importedModule }, function(data, err) {
+        //         if (err) {
+        //             console.log(err.description);
+        //             return;
+        //         }
+        //         nUsers = data.nUsers;
+        //         $("#import-user").hide();
+        //         $("#action_completed").empty();
+        //         $("#action_completed").append(nUsers + " Users Imported");
+        //         $("#action_completed").show().delay(3000).fadeOut();
+        //     });
+        // }
+        // reader.readAsText(file);	
+    }
+    $scope.exportModules = function(){
+        //todo
+        // $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
+        //     if (err) {
+        //         console.log(err.description);
+        //         return;
+        //     }
+        //     download("courseUsers.csv", data.courseUsers);
+        // });
+        
+    }
 
 
     var tabContent = $($element);
     
 
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
-    install_btn = $("<button id='install_module' class='action-buttons'> Install New Module</button>");
+    //action buttons
+    action_buttons = $("<div class='action-buttons' id='install_modules'></div>");
+    action_buttons.append( $("<div class='icon import_icon' value='#import-module' onclick='openModal(this)'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' ng-click='exportModules()'></div>"));
+    $compile(action_buttons)($scope);
 
     modules = $('<div id="modules"></div>');
     module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
@@ -100,11 +139,21 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     //error section
     modules.append( $("<div class='error_box'><div id='empty_search' class='error_msg'></div></div>"));
     
+    //the import modal
+    importModal = $("<div class='modal' id='import-module'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#import-module" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Please select a .zip file to be imported</div>'));
+    verification.append( $('<div class="target">Be sure you followed the <a target="_blank" href="./docs/modules" >module gidelines</a></div>'));
+    verification.append( $('<input class="config_input" type="file" id="import_module" accept=".zip">')); //input file
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importModule()">Install New Module</button></div>'))
+    importModal.append(verification);
+    tabContent.append(importModal);
     
     $compile(modules)($scope);
     $compile(search)($scope);
     tabContent.append(search);
-    tabContent.append(install_btn);
+    tabContent.append(action_buttons);
     tabContent.append(modules);
     
 

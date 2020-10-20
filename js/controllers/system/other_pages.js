@@ -705,7 +705,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     allCourses.append(editmodal);
 
 
-    //the verification modals
+    //the import modal
     importModal = $("<div class='modal' id='import-course'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#import-course" onclick="closeModal(this)"></button>'));
@@ -1404,7 +1404,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     mainContent.append($compile(action_buttons)($scope));
 
 
-    //the verification modals
+    //the import modal
     importModal = $("<div class='modal' id='import-user'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));

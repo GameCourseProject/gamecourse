@@ -798,7 +798,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
-    //the verification modals
+    //the import modal
     importModal = $("<div class='modal' id='import-user'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));
