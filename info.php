@@ -25,6 +25,15 @@ if (!Core::checkAccess(false))
 ModuleLoader::scanModules();
 API::gatherRequestInfo();
 
+//------------------- self page
+
+API::registerFunction('core', 'getUserInfo', function() {
+    $user = Core::getLoggedUser();
+    $userInfo = $user->getData();
+    $userInfo['username'] = $user->getUsername();
+    $userInfo['authenticationService'] = User::getUserAuthenticationService($userInfo['username']);
+    API::response(array('userInfo' => $userInfo));
+});
 
 //-------------------Course List related
 
@@ -172,17 +181,6 @@ API::registerFunction('core', 'getCourseInfo', function() {
     ));
 });
 
-//set active/inactive state
-API::registerFunction('settings', 'setCourseState', function() {
-    API::requireCourseAdminPermission();
-    API::requireValues('course', 'state');
-
-    $courseId = API::getValue('course');
-    $state = API::getValue('state');
-    
-    $course = Course::getCourse($courseId);
-    $course->setActiveState($state);
-});
 
 //see and/or set landing page for a role
 API::registerFunction('settings', 'roleInfo', function() {

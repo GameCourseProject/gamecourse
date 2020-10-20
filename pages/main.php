@@ -19,6 +19,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/search_filter_sidebar.css" />
     <link rel="stylesheet" type="text/css" href="css/modals.css" />
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
+    <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
 
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -204,7 +205,8 @@ $user = Core::getLoggedUser();
         <div class="logo" ui-sref="home"></div>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
-            <div class="icon" id="user_icon"></div>
+            <div class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></div>
+            <div class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></div>
             <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
         </div>
         <ul class=" menu">

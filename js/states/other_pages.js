@@ -10,6 +10,13 @@ app.config(function ($locationProvider, $compileProvider, $stateProvider) {
                 controller: 'HomePage'
             }
         }
+    }).state('myInfo', {
+        url: '/myInfo',
+        views : {
+            'main-view': {
+                controller: 'MyInfo'
+            }
+        }
     }).state('users', {
         url: '/users',
         views : {
@@ -24,13 +31,6 @@ app.config(function ($locationProvider, $compileProvider, $stateProvider) {
                 controller: 'Courses'
             }
         }
-    }).state('courses.create', {
-        url: '/create',
-        views : {
-            'main-view@': {
-                controller: 'CourseCreate'
-            }
-        }
     }).state('course', {
         url: '/courses/{courseName:[A-Za-z0-9]+}-{course:[0-9]+}',
         views: {
@@ -43,6 +43,14 @@ app.config(function ($locationProvider, $compileProvider, $stateProvider) {
         views: {
             'main-view@': {
                 controller: 'CourseUsersss'
+            }
+        }
+    }).state('course.myInfo', { 
+        //double self page so it can be accessed both inside and outside course
+        url: '/myInfo',
+        views : {
+            'main-view@': {
+                controller: 'MyInfo'
             }
         }
     });
