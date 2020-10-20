@@ -104,6 +104,21 @@ API::registerFunction('core', 'setCoursesActive', function(){
     $cOb = Course::getCourse($course_id, false);
     $cOb->setActiveState($active);
 });
+
+API::registerFunction('core', 'importCourses', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nCourses = 0; //delete later
+    //$nCourses = Course::importCourses(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nCourses' => $nCourses));
+});
+
+API::registerFunction('core', 'exportCourses', function(){
+    API::requireAdminPermission();
+    $courses = Course::exportCourses();
+    API::response(array('courses' => $courses));
+});
 //-------------------
 
 
@@ -517,6 +532,8 @@ API::registerFunction('core', 'users', function() {
         $user['ncourses'] = sizeof($courses);
         $user['courses'] = $courses;
         $user['lastLogin'] = $lastLogins;
+        $user['username'] = $uOb->getUsername();
+        $user['authenticationService'] = User::getUserAuthenticationService($user['username']);
     }
         
     API::response(array('users' => $users));
@@ -554,15 +571,40 @@ API::registerFunction('core', 'deleteUser', function() {
 });
 API::registerFunction('core', 'createUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userName', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
-    User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    API::requireValues('userHasImage','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    $id = User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, $id);
+    }
 });
 API::registerFunction('core', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userId','userName', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
+    API::requireValues('userHasImage','userId','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
 
     $user = new User(API::getValue('userId'));
-    $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, API::getValue('userId'));
+    }
+});
+API::registerFunction('core', 'importUser', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nUsers = 0; //delete later
+    //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nUsers' => $nUsers));
+});
+API::registerFunction('core', 'exportUsers', function(){
+    API::requireAdminPermission();
+    $users = User::exportUsers();
+    API::response(array('users' => $users));
 });
 
 //------------------Users inside the course
@@ -654,21 +696,30 @@ API::registerFunction('course', 'removeUser', function(){
 });
 API::registerFunction('course', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
+    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
 
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     $courseUser = new CourseUser(API::getValue('userId'), $course);
     $user = new User(API::getValue('userId'));
 
-    $courseUser->setCampus(API::getValue('userCampus'));
+    
     $user->setName(API::getValue('userName'));
     $user->setEmail(API::getValue('userEmail'));
     $user->setStudentNumber(API::getValue('userStudentNumber'));
-    //verifiy is nickname exists
     $user->setNickname(API::getValue('userNickname'));
+    $user->setUsername(API::getValue('userUsername'));
+    $user->setAuthenticationService(API::getValue('userAuthService'));
+
+    $courseUser->setCampus(API::getValue('userCampus'));
     $courseUser->setRoles(API::getValue('userRoles'));
-    //falta adiconar/substituir os roles
+
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, API::getValue('userId'));
+    }
+
 });
 
 API::registerFunction('course', 'createUser', function(){
@@ -676,22 +727,23 @@ API::registerFunction('course', 'createUser', function(){
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
 
-    API::requireValues('userName', 'userStudentNumber', 'userEmail', 'userRoles');
+    API::requireValues('userHasImage','userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
     $userName = API::getValue('userName');
     $userEmail = API::getValue('userEmail');
     $userStudentNumber = API::getValue('userStudentNumber');
     $userNickname = API::getValue('userNickname');
     $userRoles = API::getValue('userRoles');
     $userCampus = API::getValue('userCampus');
-    $userUsername = null;
+    $userUsername = API::getValue('userUsername');
+    $userAuthService = API::getValue('userAuthService');
 
     //verifies if user exits on the system
     $user = User::getUserByStudentNumber($userStudentNumber);
     if ($user == null) {
-        User::addUserToDB($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+        User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1);
         $user = User::getUserByStudentNumber($userStudentNumber);
     } else {
-        $user->editUser($userName,$userUsername,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
+        $user->editUser($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
     }
     //verifies if user exits on course
     $courseUser = new CourseUser($user->getId(),$course);
@@ -701,12 +753,16 @@ API::registerFunction('course', 'createUser', function(){
         $courseUser->setCampus($userCampus);
     }
     //adds list of roles to user
-    foreach($userRoles as $role){
-        $courseUser->addRole($role);
+    $courseUser->setRoles(API::getValue('userRoles'));
+
+    if(API::getValue('userHasImage') == 'true'){
+        API::requireValues('userImage');
+        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+        User::saveImage($img, $user->getId());
     }
 
-
 });
+//add existing user to course
 API::registerFunction('course', 'addUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -733,6 +789,7 @@ API::registerFunction('course', 'addUser', function(){
     }
 });
 
+//get users not registered on the course
 API::registerFunction('course', 'notCourseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -764,7 +821,7 @@ API::registerFunction('course', 'notCourseUsers', function() {
     API::response(array('notCourseUsers'=> $notCourseUsers));
 });
 
-//update courseUsers from the Students or Teacher configuration pages
+//get courseUsers 
 API::registerFunction('course', 'courseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
@@ -810,7 +867,10 @@ API::registerFunction('course', 'courseUsers', function() {
                 'roles' => $user->getRolesNames(),
                 'campus' => $user->getCampus(),
                 'email' => $user->getEmail(),
-                'lastLogin' => $user->getLastLogin());
+                'lastLogin' => $user->getLastLogin(),
+                'username' => $user->getUsername(),
+                'authenticationService' => User::getUserAuthenticationService($user->getUsername())
+            );
         }
         
         $fileData = @file_get_contents($file);
@@ -823,6 +883,21 @@ API::registerFunction('course', 'courseUsers', function() {
         }
         API::response(array('userList' => $usersInfo,"file"=>$fileData ));
     }
+});
+API::registerFunction('course', 'importUser', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $nUsers = 0; //delete later
+    //$nUsers = CourseUser::importCourseUsers(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nUsers' => $nUsers));
+});
+API::registerFunction('course', 'exportUsers', function(){
+    API::requireAdminPermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    $courseUsers = CourseUser::exportCourseUsers($courseId);
+    API::response(array('courseUsers' => $courseUsers));
 });
 
 //update list of course levels, from the levels configuration page

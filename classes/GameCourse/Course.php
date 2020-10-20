@@ -480,6 +480,7 @@ class Course
         $file = "";
         $i = 0;
         $len = count($allCourses);
+        $file .= "color, name, short, year, isActive, isVisible\n";
         foreach ($allCourses as $course) {
             $file .= $course["color"] . "," . $course["name"] . "," . $course["short"] . "," . $course["year"] . "," . $course["isActive"] . "," .  $course["isVisible"];
             if ($i != $len - 1) {
@@ -494,6 +495,8 @@ class Course
     //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
     public static function importCourses($file)
     {
+        //$file is a string gotten from reading an .csv or .txt file
+        //return number of new courses added pls
         $file = fopen($file, "r");
         while (!feof($file)) {
             $course = fgetcsv($file);

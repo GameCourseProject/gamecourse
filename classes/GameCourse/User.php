@@ -30,6 +30,7 @@ class User
             "username" => $username,
             "authentication_service" => $authenticationService
         ]);
+        return $id;
     }
 
     public function exists()
@@ -76,7 +77,11 @@ class User
     }
     public function setUsername($username)
     {
-        Core::$systemDB->update("game_course_user", ["username" => $username], ["game_course_user_id" => $this->id]);
+        Core::$systemDB->update("auth", ["username" => $username], ["game_course_user_id" => $this->id]);
+    }
+    public function setAuthenticationService($authenticationService)
+    {
+        Core::$systemDB->update("auth", [ "authentication_service" => $authenticationService], ["game_course_user_id" => $this->id]);
     }
     public function getNickname()
     {
@@ -235,15 +240,24 @@ class User
 
     public static function saveImage($img, $userId)
     {
-        file_put_contents($userId . ".png", $img);
+        file_put_contents("photos/". $userId . ".png", $img);
     }
 
+    public static function getImage($userId)
+    {
+        if(file_exists("photos/" . $userId . ".png")){
+            return file_get_contents("photos/" . $userId . ".png");
+        }else{
+            return null;
+        }
+    }
     public static function exportUsers()
     {
         $listOfUsers = User::getAllInfo();
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
+        $file .= "name, email, nickname, studentNumber, isAdmin, isActive\n";
         foreach ($listOfUsers as $user) {
             $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," . $user["isActive"];
             if ($i != $len - 1) {
@@ -257,6 +271,8 @@ class User
 
     public static function importUsers($file)
     {
+        //$file is a string gotten from reading an .csv or .txt file
+        //return number of new courses added pls
         $file = fopen($file, "r");
         while (!feof($file)) {
             $user = fgetcsv($file);

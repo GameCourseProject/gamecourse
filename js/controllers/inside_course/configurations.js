@@ -208,7 +208,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         row.append('<input class="config_input" type="text"  ng-model="inputs.' + input.id + '"><br>');
                         break;
                     case 'select':
-                        select = $('<select class="config_input"></select>');
+                        select = $('<select class="config_input" ng-model="inputs.' + input.id + '"></select>');
                         jQuery.each(input.options, function( index ){
                             option = input.options[index];
                             select.append($('<option value="'+option+'">'+option+'</option>'))

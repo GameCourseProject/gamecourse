@@ -213,7 +213,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         box = $('<div id="new_box" class= "inputs">');
         row_inputs = $('<div class= "row_inputs"></div>');
         //image input
-        row_inputs.append($('<div class="image smaller"><div class="profile_image"><span>Select a profile image</span></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+        row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
         //text inputs
         details = $('<div class="details bigger right"></div>')
         details.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -225,6 +225,20 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         details.append(doubledetails);
         row_inputs.append(details);
         box.append(row_inputs);
+        // authentication information - service and username
+        row_auth = $('<div class= "row_inputs"></div>');
+        selectAuth = $('<div class="smaller">');
+        select = $('<select id="authService" class="form__input" name="authService" ng-model="newUser.userAuthService"></select>');
+        select.append($('<option value="" disabled selected>Auth Service</option>'));
+        optionsAuth = ["fenix", "google", "facebook", "linkedin"];
+        jQuery.each(optionsAuth, function( index ){
+            option = optionsAuth[index];
+            select.append($('<option value="'+option+'">'+option+'</option>'))
+        });
+        selectAuth.append(select);
+        row_auth.append(selectAuth);
+        row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="newUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
+        box.append(row_auth);
         content.append(box);
         content.append( $('<button class="save_btn" ng-click="submitUser()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newUser.append(content);
@@ -253,6 +267,40 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         }
         
 
+        $scope.newUser.userImage = null;
+        $scope.newUser.userHasImage = "false";
+        //image preview
+        var imageInput = document.getElementById('profile_image');
+		var imageDisplayArea = document.getElementById('display_profile_image');
+
+
+		imageInput.addEventListener('change', function(e) {
+			var file = imageInput.files[0];
+			var imageType = /image.*/;
+
+			if (file.type.match(imageType)) {
+				var reader = new FileReader();
+
+				reader.onload = function(e) {
+					imageDisplayArea.innerHTML = "";
+
+					var img = new Image();
+                    img.src = reader.result;
+                    $scope.newUser.userImage = reader.result;
+                    $scope.newUser.userHasImage = "true";
+                    imageDisplayArea.appendChild(img);
+				}
+
+                reader.readAsDataURL(file);	
+                
+			} else {
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
+                $scope.newUser.userImage = null;
+                $scope.newUser.userHasImage = "false";
+            }
+		});
+
         $scope.isReadyToSubmit = function() {
             isValid = function(text){
                 return  (text != "" && text != undefined && text != null)
@@ -261,7 +309,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             //validate inputs
             if (isValid($scope.newUser.userName) &&
             isValid($scope.newUser.userStudentNumber) &&
-            isValid($scope.newUser.userEmail) && 
+            isValid($scope.newUser.userEmail) &&  
+            isValid($scope.newUser.userUsername) &&             
+            isValid($scope.newUser.userAuthService) &&
             isValid($scope.newUser.userCampus) && 
             $scope.newUser.userRoles.length != 0){
                 return true;
@@ -280,6 +330,10 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userEmail: $scope.newUser.userEmail,
                 userRoles: $scope.newUser.userRoles,
                 userCampus: $scope.newUser.userCampus,
+                userUsername: $scope.newUser.userUsername,
+                userAuthService: $scope.newUser.userAuthService,
+                userImage: $scope.newUser.userImage,
+                userHasImage: $scope.newUser.userHasImage
             };
             $smartboards.request('course', 'createUser', reqData, function(data, err) {
                 if (err) {
@@ -340,6 +394,10 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $scope.editUser.userNickname = user.nickname;
         $scope.editUser.userRoles = user.roles.slice();
         $scope.editUser.userCampus = user.campus;
+        $scope.editUser.userUsername = user.username;
+        $scope.editUser.userAuthService = user.authenticationService;
+        $scope.editUser.userImage = null;
+        $scope.editUser.userHasImage = "false";
             
         updateRolesAddSection($scope,"#edit_box", $scope.courseRoles, user.roles);
 
@@ -357,6 +415,49 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             updateRolesAddSection($scope,"#edit_box", $scope.courseRoles, $scope.editUser.userRoles);
         }
 
+        var imageInput = document.getElementById('edit_profile_image');
+        var imageDisplayArea = document.getElementById('edit_display_profile_image');
+        imageDisplayArea.innerHTML = "";
+
+        //set initial image
+        var profile_image = new Image();
+        profile_image.onload = function() {
+            imageDisplayArea.appendChild(profile_image);
+        }
+        profile_image.onerror = function() {
+            $('#edit_display_profile_image').append($('<span>Select a profile image</span>'));
+        }
+        profile_image.src = 'photos/'+ user.id +'.png?'+ new Date().getTime();
+                
+        //set listener for input change
+        imageInput.addEventListener('change', function(e) {
+            var file = imageInput.files[0];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    imageDisplayArea.innerHTML = "";
+
+                    var img = new Image();
+                    img.src = reader.result;
+                    $scope.editUser.userImage = reader.result;
+                    $scope.editUser.userHasImage = "true";
+                    imageDisplayArea.appendChild(img);
+                }
+
+                reader.readAsDataURL(file);	
+                
+            } else {
+                $('#display_profile_image').empty();
+                $('#display_profile_image').append($("<span>Please choose a valid type of file (hint: image)</span>"));
+                $scope.editUser.userImage = null;
+                $scope.editUser.userHasImage = "false";
+            }
+        });
+
+
         $scope.isReadyToEdit = function() {
             isValid = function(text){
                 return  (text != "" && text != undefined && text != null)
@@ -366,6 +467,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             isValid($scope.editUser.userEmail) &&
             isValid($scope.editUser.userStudentNumber) &&
             isValid($scope.editUser.userCampus) &&
+            isValid($scope.editUser.userUsername) &&
+            isValid($scope.editUser.userAuthService) &&
             $scope.editUser.userRoles.length != 0){
                 return true;
             }
@@ -383,7 +486,11 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userNickname: $scope.editUser.userNickname,
                 userEmail: $scope.editUser.userEmail,
                 userCampus: $scope.editUser.userCampus,
-                userRoles: $scope.editUser.userRoles
+                userRoles: $scope.editUser.userRoles,
+                userUsername: $scope.editUser.userUsername,
+                userAuthService: $scope.editUser.userAuthService,
+                userImage: $scope.editUser.userImage,
+                userHasImage: $scope.editUser.userHasImage
             };
             $smartboards.request('course', 'editUser', reqData, function(data, err) {
                 if (err) {
@@ -517,6 +624,40 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $scope.lastOrder = order;
         $scope.lastArrow = arrow;
     }
+    $scope.importUsers = function(){
+        $scope.importedUsers = null;
+        var fileInput = document.getElementById('import_user');
+        var file = fileInput.files[0];
+
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            $scope.importedUsers = reader.result;
+            $smartboards.request('course', 'importUser', { file: $scope.importedUsers }, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                nUsers = data.nUsers;
+                $("#import-user").hide();
+                $("#action_completed").empty();
+                $("#action_completed").append(nUsers + " Users Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        }
+        reader.readAsText(file);	
+        
+    }
+    $scope.exportUsers = function(){
+        $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+            download("courseUsers.csv", data.courseUsers);
+        });
+        
+    }
 
 
     mainContent = $("<div id='mainContent'></div>");
@@ -609,7 +750,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"></div><input type="file" class="form__input" id="profile_image" required="" /></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -621,6 +762,20 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     editdetails.append(editdoubledetails)
     editrow_inputs.append(editdetails);
     editbox.append(editrow_inputs);
+    // authentication information - service and username
+    row_auth = $('<div class= "row_inputs"></div>');
+    selectAuth = $('<div class="smaller">');
+    select = $('<select id="authService" class="form__input" name="authService" ng-model="editUser.userAuthService"></select>');
+    select.append($('<option value="" disabled selected>Auth Service</option>'));
+    optionsAuth = ["fenix", "google", "facebook", "linkedin"];
+    jQuery.each(optionsAuth, function( index ){
+        option = optionsAuth[index];
+        select.append($('<option value="'+option+'">'+option+'</option>'))
+    });
+    selectAuth.append(select);
+    row_auth.append(selectAuth);
+    row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="editUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
+    editbox.append(row_auth);
     editcontent.append(editbox);
     editcontent.append( $('<button class="save_btn" ng-click="submitEditUser()" ng-disabled="!isReadyToEdit()" > Save </button>'))
     editUser.append(editcontent);
@@ -639,10 +794,20 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon import_icon'></div>"));
-    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
+    //the import modal
+    importModal = $("<div class='modal' id='import-user'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));
+    verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+    verification.append( $('<div class="target">The seperator must be comma</div>'));
+    verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
+    importModal.append(verification);
+    mainContent.append(importModal);
 
     mainContent.append(allUsers);
     $compile(mainContent)($scope);

@@ -58,7 +58,7 @@ class CourseUser extends User
     }
     public function getUsername()
     {
-        return parent::getData("username");
+        return parent::getUsername();
     }
     public function getEmail()
     {
@@ -203,6 +203,7 @@ class CourseUser extends User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
+        $file .= "course, name, nickname, email, campus, studentNumber, isAdmin, isActive, roleId\n";
         foreach ($listOfUsers as $courseUser) {
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
             $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["id"]]);
@@ -223,6 +224,8 @@ class CourseUser extends User
 
     public static function importCourseUsers($file)
     {
+        //$file is a string gotten from reading an .csv or .txt file
+        //return number of new courses added pls
         $file = fopen($file, "r");
         while (!feof($file)) {
             $courseUser = fgetcsv($file);

@@ -65,8 +65,6 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
 });
 
 app.controller('CourseSettingsModules', function($scope, $element, $smartboards, $compile) {
-    
-    //falta imagem e descricao de cada modulo
 
     $scope.reduceList = function(){
         $("#empty_search").empty();
