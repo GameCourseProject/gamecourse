@@ -113,6 +113,12 @@ API::registerFunction('core', 'importCourses', function(){
     //$nCourses = Course::importCourses(API::getValue('file')); //uncomment after import is finished
     API::response(array('nCourses' => $nCourses));
 });
+
+API::registerFunction('core', 'exportCourses', function(){
+    API::requireAdminPermission();
+    $courses = Course::exportCourses();
+    API::response(array('courses' => $courses));
+});
 //-------------------
 
 
@@ -595,6 +601,11 @@ API::registerFunction('core', 'importUser', function(){
     //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
     API::response(array('nUsers' => $nUsers));
 });
+API::registerFunction('core', 'exportUsers', function(){
+    API::requireAdminPermission();
+    $users = User::exportUsers();
+    API::response(array('users' => $users));
+});
 
 //------------------Users inside the course
 
@@ -880,6 +891,13 @@ API::registerFunction('course', 'importUser', function(){
     $nUsers = 0; //delete later
     //$nUsers = CourseUser::importCourseUsers(API::getValue('file')); //uncomment after import is finished
     API::response(array('nUsers' => $nUsers));
+});
+API::registerFunction('course', 'exportUsers', function(){
+    API::requireAdminPermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    $courseUsers = CourseUser::exportCourseUsers($courseId);
+    API::response(array('courseUsers' => $courseUsers));
 });
 
 //update list of course levels, from the levels configuration page

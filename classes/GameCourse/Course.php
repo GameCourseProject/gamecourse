@@ -480,6 +480,7 @@ class Course
         $file = "";
         $i = 0;
         $len = count($allCourses);
+        $file .= "color, name, short, year, isActive, isVisible\n";
         foreach ($allCourses as $course) {
             $file .= $course["color"] . "," . $course["name"] . "," . $course["short"] . "," . $course["year"] . "," . $course["isActive"] . "," .  $course["isVisible"];
             if ($i != $len - 1) {

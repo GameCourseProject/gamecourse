@@ -213,7 +213,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         box = $('<div id="new_box" class= "inputs">');
         row_inputs = $('<div class= "row_inputs"></div>');
         //image input
-        row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg/></div>'))
+        row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
         //text inputs
         details = $('<div class="details bigger right"></div>')
         details.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -648,6 +648,16 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         reader.readAsText(file);	
         
     }
+    $scope.exportUsers = function(){
+        $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+            download("courseUsers.csv", data.courseUsers);
+        });
+        
+    }
 
 
     mainContent = $("<div id='mainContent'></div>");
@@ -785,7 +795,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
     action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
     //the verification modals

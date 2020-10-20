@@ -257,6 +257,7 @@ class User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
+        $file .= "name, email, nickname, studentNumber, isAdmin, isActive\n";
         foreach ($listOfUsers as $user) {
             $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," . $user["isActive"];
             if ($i != $len - 1) {

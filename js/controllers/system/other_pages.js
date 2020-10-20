@@ -514,6 +514,16 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         reader.readAsText(file);	
         
     }
+    $scope.exportCourses = function(){
+        $smartboards.request('core', 'exportCourses', { }, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+            download("courses.csv", data.courses);
+        });
+        
+    }
 
     mainContent = $("<div id='mainContent'></div>");
 
@@ -616,7 +626,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
     action_buttons.append( $("<div class='icon import_icon' value='#import-course' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' ng-click='exportCourses()'></div>"));
     $compile(action_buttons)($scope);
 
     //new course modal
@@ -1223,6 +1233,16 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         reader.readAsText(file);	
         
     }
+    $scope.exportUsers = function(){
+        $smartboards.request('core', 'exportUsers', { }, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+            download("users.csv", data.users);
+        });
+        
+    }
 
     mainContent = $("<div id='mainContent'></div>");
 
@@ -1295,7 +1315,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     box = $('<div class= "inputs">');
     row_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg/></div>'))
+    row_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="display_profile_image"><span>Select a profile image</span></div></div><input type="file" class="form__input" id="profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
     //text inputs
     details = $('<div class="details bigger right"></div>')
     details.append($('<div class="container"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -1339,7 +1359,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     editbox = $('<div id="edit_box" class= "inputs">');
     editrow_inputs = $('<div class= "row_inputs"></div>');
     //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg/></div>'))
+    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
     //text inputs
     editdetails = $('<div class="details bigger right"></div>')
     editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
@@ -1380,7 +1400,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
     action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
 

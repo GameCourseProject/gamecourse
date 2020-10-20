@@ -203,6 +203,7 @@ class CourseUser extends User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
+        $file .= "course, name, nickname, email, campus, studentNumber, isAdmin, isActive, roleId\n";
         foreach ($listOfUsers as $courseUser) {
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
             $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["id"]]);
