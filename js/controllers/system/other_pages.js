@@ -841,9 +841,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 
 
         var imageInput = document.getElementById('profile_image');
-        var imageDisplayArea = document.getElementById('display_profile_image');
+        var imageDisplayArea = document.getElementById('display_profile_image'); //ver este limpar tem de ter o span
         imageDisplayArea.innerHTML = "";
-
+        $('#display_profile_image').append($('<span>Select a profile image</span>'));
 
 		imageInput.addEventListener('change', function(e) {
 			var file = imageInput.files[0];
