@@ -270,14 +270,14 @@ API::registerFunction('settings', 'courseModules', function() {
     $course = Course::getCourse(API::getValue('course'));
     if (API::hasKey('module') && API::hasKey('enabled')) {
         $moduleId = API::getValue('module');
+        $modules = ModuleLoader::getModules();
         $module = ModuleLoader::getModule($moduleId);
         if ($module == null) {
             API::error('Unknown module!', 400);
             http_response_code(400);
         } else {
-            $moduleObject = $course->getModule($moduleId);
-            $moduleEnabled = ($moduleObject != null);
-            
+            $moduleObject = $module['factory']();
+            $moduleEnabled = (in_array($module["id"], $course->getEnabledModules()));
             if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
                 $modules = $course->getModules();
                 foreach ($modules as $mod) {
@@ -296,7 +296,7 @@ API::registerFunction('settings', 'courseModules', function() {
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                 foreach ($module['dependencies'] as $dependency) {
-                    if ($dependency['mode'] != 'optional' && $course->getModule($dependency['id']) == null)
+                    if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
                         API::error('Must enable all dependencies first.');
                 }
             }
@@ -307,13 +307,14 @@ API::registerFunction('settings', 'courseModules', function() {
         }
     } else {
         $allModules = ModuleLoader::getModules();
-        $enabledModules = $course->getModules();
+        $enabledModules = $course->getEnabledModules();
        
         $modulesArr = [];
         foreach ($allModules as $module) {            
             
-            if (array_key_exists($module['id'], $enabledModules)){
-                $moduleObj = $enabledModules[$module['id']];
+            if (in_array($module['id'], $enabledModules)){
+                $moduleInfo = ModuleLoader::getModule($module['id']);
+                $moduleObj = $moduleInfo['factory']();
                 $module['hasConfiguration'] = $moduleObj->is_configurable();
                 $module['enabled'] = true;
             }
@@ -326,7 +327,7 @@ API::registerFunction('settings', 'courseModules', function() {
             $canBeEnabled = true;
             foreach($module['dependencies'] as $dependency){
                 if ($dependency['mode'] != 'optional'){
-                    if(array_key_exists($dependency['id'], $enabledModules)){
+                    if(in_array($dependency['id'], $enabledModules)){
                         $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
                     }
                     else{

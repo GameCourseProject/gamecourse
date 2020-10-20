@@ -264,4 +264,6 @@ class Core
     {
         return static::$settings;
     }
+
+
 }

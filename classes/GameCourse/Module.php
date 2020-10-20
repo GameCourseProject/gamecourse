@@ -114,6 +114,40 @@ abstract class Module
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
     }
+    public static function importModules($zipFile)
+    {
+        $zip = new \ZipArchive;
+        if ($zip->open($zipFile) === TRUE) {
+            //mudar depois pra modules
+            $zip->extractTo('testeModules');
+            $zip->close();
+            echo 'ok';
+        } else {
+            echo 'failed';
+        }
+    }
+
+    public static function exportModules()
+    {
+        //verificar se o utilizador dá path e extensão
+        $zip = new \ZipArchive();
+        if ($zip->open('modules.zip', \ZipArchive::CREATE) == TRUE) {
+            $rootPath = realpath("modules");
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($rootPath),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($files as $name => $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($rootPath) + 1);
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+            $zip->close();
+        }
+    }
     public function deleteDataRows()
     {
     }
