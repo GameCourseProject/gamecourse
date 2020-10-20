@@ -148,6 +148,9 @@ ModuleLoader::registerModule(array(
     'name' => 'Notifications',
     'description' => 'Allows email notifications when a badge or points are atributed to a student.',
     'version' => '0.1',
+    'dependencies' => array(
+        array('id' => 'views', 'mode' => 'hard')
+    ),
     'factory' => function () {
         return new Notifications();
     }

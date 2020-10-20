@@ -365,6 +365,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
     'version' => '0.1',
     'dependencies' => array(
+        array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'skills', 'mode' => 'optional'),
         array('id' => 'badges', 'mode' => 'optional'),
         array('id' => 'xp', 'mode' => 'optional')

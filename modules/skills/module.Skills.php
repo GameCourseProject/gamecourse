@@ -705,6 +705,9 @@ ModuleLoader::registerModule(array(
     'name' => 'Skills',
     'description' => 'Generates a skill tree where students have to complete several skills to achieve a higher layer',
     'version' => '0.1',
+    'dependencies' => array(
+        array('id' => 'views', 'mode' => 'hard')
+    ),
     'factory' => function () {
         return new Skills();
     }
