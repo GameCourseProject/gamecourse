@@ -23,9 +23,9 @@ drop table if exists award_participation;
 drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
-drop table if exists functions;
-drop table if exists variables;
-drop table if exists library;
+drop table if exists dictionary_function;
+drop table if exists dictionary_variable;
+drop table if exists dictionary_library;
 drop table if exists course_module;
 drop table if exists module;
 drop table if exists user_role;
@@ -112,31 +112,34 @@ create table course_module(
 	foreign key(course) references course(id) on delete cascade
 );
 
-create table library(
+create table dictionary_library(
 	id	int unsigned auto_increment primary key,
-	moduleId varchar(50) not null,
+	moduleId varchar(50),
 	name varchar(50) unique not null,
 	description varchar(255)
 );
 
-create table functions(
+create table dictionary_function(	
 	id	int unsigned auto_increment primary key,
 	libraryId int unsigned null,
 	returnType varchar(50),
-	refersTo varchar(50) not null,
+	returnName varchar(50),
+	refersToType varchar(50) not null,
+	refersToName varchar(50),
 	keyword varchar(50),
 	args varchar(1000),
 	description varchar(1000),
-	foreign key(libraryId) references library(id) on delete cascade
+	foreign key(libraryId) references dictionary_library(id) on delete cascade
 );
 
-create table variables(
+create table dictionary_variable(
 	id	int unsigned auto_increment primary key,
 	libraryId int unsigned null,
 	name varchar(50) unique,
 	returnType varchar(50) not null,
+	returnName varchar(50),
 	description varchar(1000),
-	foreign key(libraryId) references library(id) on delete cascade
+	foreign key(libraryId) references dictionary_library(id) on delete cascade
 );
 
 create table award(

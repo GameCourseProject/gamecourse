@@ -580,28 +580,28 @@ class ViewHandler
     }
     public function registerLibrary($moduleId, $libraryName, $description)
     {
-        if (!Core::$systemDB->select("library", ["moduleId" => $moduleId, "name" => $libraryName])) {
-            Core::$systemDB->insert("library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
+        if (!Core::$systemDB->select("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName])) {
+            Core::$systemDB->insert("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
         }
     }
-    public function registerVariable($name, $returnType, $libraryName = null, $description = null)
+    public function registerVariable($name, $returnType, $returnName, $libraryName = null, $description = null)
     {
-        if (!Core::$systemDB->select("variables", ["name" => $name])) {
+        if (!Core::$systemDB->select("dictionary_variable", ["name" => $name])) {
             if ($libraryName) {
-                $libraryId = Core::$systemDB->select("library", ["name" => $libraryName], "id");
+                $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $libraryName], "id");
                 if (!$libraryId) {
                     new \Exception('Library named ' . $libraryName . ' not found.');
                 }
             } else {
                 $libraryId = null;
             }
-            Core::$systemDB->insert("variables", ["name" => $name, "libraryId" => $libraryId, "returnType" => $returnType, "description" => $description]);
+            Core::$systemDB->insert("dictionary_variable", ["name" => $name, "libraryId" => $libraryId, "returnName" => $returnName, "returnType" => $returnType, "description" => $description]);
         }
     }
-    public function registerFunction($funcLib, $funcName, $processFunc,  $returnType,  $description = null, $refersTo = "object")
+    public function registerFunction($funcLib, $funcName, $processFunc, $description,  $returnType, $returnName = null,  $refersToType = "object", $refersToName = null)
     {
         if ($funcLib) {
-            $libraryId = Core::$systemDB->select("library", ["name" => $funcLib], "id");
+            $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $funcLib], "id");
             if (!$libraryId) {
                 new \Exception('Library named ' . $funcName . ' not found.');
             }
@@ -618,13 +618,20 @@ class ViewHandler
                 $i = -1;
                 foreach ($arguments as $argument) {
                     $i++;
-                    if ($i == 0 && ($refersTo == "object" || $funcLib == null)) {
+                    if ($i == 0 && ($refersToType == "object" || $funcLib == null)) {
                         continue;
                     }
                     $optional = $argument->isOptional() ? "1" : "0";
                     $tempArr = [];
                     $tempArr["name"] = $argument->getName();
-                    $tempArr["type"] = (string)$argument->getType();
+                    $type = (string)$argument->getType();
+                    if ($type == "int") {
+                        $tempArr["type"] = "integer";
+                    } elseif ($type == "bool") {
+                        $tempArr["type"] = "boolean";
+                    } else {
+                        $tempArr["type"] = $type;
+                    }
                     $tempArr["optional"] = $optional;
                     array_push($arg, $tempArr);
                 }
@@ -635,41 +642,57 @@ class ViewHandler
                 }
             }
         }
-        if (Core::$systemDB->select("functions", ["keyword" => $funcName])) {
+        if (Core::$systemDB->select("dictionary_function", ["keyword" => $funcName])) {
             if ($funcLib) {
-                if (Core::$systemDB->select("functions", ["libraryId" => $libraryId, "keyword" => $funcName])) {
+                if (Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName, "refersToType" => $refersToType, "refersToName" => $refersToName])) {
                     new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
                 } else { //caso queira registar uma função com a mesma keyword, mas numa library diferente
-
-                    Core::$systemDB->insert("functions", [
+                    Core::$systemDB->insert("dictionary_function", [
                         "libraryId" => $libraryId,
                         "returnType" => $returnType,
-                        "refersTo" => $refersTo,
+                        "returnName" => $returnName,
+                        "refersToType" => $refersToType,
+                        "refersToName" => $refersToName,
                         "keyword" => $funcName,
                         "args" => $arg,
                         "description" => $description
                     ]);
                 }
             } else {
-                new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
+                if (!Core::$systemDB->select("dictionary_function", ["keyword" => $funcName, "libraryId" => null, "refersToType" => $refersToType, "refersToName" => $refersToName] )) {
+                    Core::$systemDB->insert("dictionary_function", [
+                        "libraryId" => $libraryId,
+                        "returnType" => $returnType,
+                        "returnName" => $returnName,
+                        "refersToType" => $refersToType,
+                        "refersToName" => $refersToName,
+                        "keyword" => $funcName,
+                        "args" => $arg,
+                        "description" => $description
+                    ]);
+                } else {
+                    new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
+                }
             }
         } else {
-            Core::$systemDB->insert("functions", [
+            Core::$systemDB->insert("dictionary_function", [
                 "libraryId" => $libraryId,
                 "returnType" => $returnType,
-                "refersTo" => $refersTo,
+                "returnName" => $returnName,
+                "refersToType" => $refersToType,
+                "refersToName" => $refersToName,
                 "keyword" => $funcName,
                 "args" => $arg,
                 "description" => $description
             ]);
         }
-        $functionId = Core::$systemDB->select("functions", ["libraryId" => $libraryId, "keyword" => $funcName], "id");
+        $functionId = Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName], "id");
         $this->registeredFunctions[$functionId] = $processFunc;
     }
     public function callFunction($funcLib, $funcName, $args, $context = null)
     {
         if (!$funcLib) {
-            $function = Core::$systemDB->select("functions", ["libraryId" => null, "keyword" => $funcName]);
+            $function = Core::$systemDB->select("dictionary_function", ["libraryId" => null, "keyword" => $funcName]);
             if ($function) {
                 $fun = $this->registeredFunctions[$function["id"]];
             } else {
@@ -677,12 +700,12 @@ class ViewHandler
             }
         } else {
             //ver se esta associado
-            $library = Core::$systemDB->select("library", ["name" => $funcLib]);
+            $library = Core::$systemDB->select("dictionary_library", ["name" => $funcLib]);
             if (!$library) {
                 throw new \Exception('Called function ' . $funcName . ' on an unexistent library ' . $funcLib);
             } else {
-                $function = Core::$systemDB->select("functions", ["libraryId" => $library["id"], "keyword" => $funcName]);
-                $funcLibrary = Core::$systemDB->select("functions", ["keyword" => $funcName]);
+                $function = Core::$systemDB->select("dictionary_function", ["libraryId" => $library["id"], "keyword" => $funcName]);
+                $funcLibrary = Core::$systemDB->select("dictionary_function", ["keyword" => $funcName]);
                 if ($function) {
                     $fun = $this->registeredFunctions[$function["id"]];
                 } else if ($funcLibrary["libraryId"] == NULL) {

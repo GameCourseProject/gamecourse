@@ -32,8 +32,9 @@ class AwardList extends Module
         // ));
 
         $course = $this->getParent();
+   /*     $viewHandler->registerLibrary("awardlist", "awards", "This library provides information regarding Awards. It is provided by the award module.");
         $viewHandler->registerFunction(
-            'awardlist',
+            'awards',
             'getAllAwards',
             function () use ($course) {
                 $courseId = $course->getId();
@@ -49,10 +50,12 @@ class AwardList extends Module
                 }
                 return new \Modules\Views\Expression\ValueNode($allAwards);
             },
-            'collection',
             'Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
-            'library'
-        );
+            'collection',
+            'award',
+            'library',
+            null
+        );*/
 
         if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
             $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'));

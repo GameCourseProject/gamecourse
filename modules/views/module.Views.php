@@ -201,53 +201,64 @@ class Views extends Module
         $this->viewHandler = new ViewHandler($this);
         $course = $this->getParent();
         $courseId = $course->getId();
-        $this->viewHandler->registerVariable("%index", "integer", null, "Represents the current index while iterating a collection");
-        $this->viewHandler->registerVariable("%item", "object", null, "Represents the object that is currently being iterated in that view");
+        $this->viewHandler->registerVariable("%index", "integer", null, null, "Represents the current index while iterating a collection");
+        $this->viewHandler->registerVariable("%item", "object", null, null, "Represents the object that is currently being iterated in that view");
+
+
+        $this->viewHandler->registerLibrary(null, "Object And Collection Manipulation", "Functions that can be called over collections,objects or other values of any library");
         $this->viewHandler->registerLibrary("views", "system", "This library provides general functionalities that aren't related with getting info from the database");
         //functions of views' expression language
-        $this->viewHandler->registerFunction('system', 'if', function (&$cond, &$val1, &$val2) {
-            return new ValueNode($cond ? $val1 :  $val2);
-        }, 'mixed', null, 'library');
+        $this->viewHandler->registerFunction('system', 'if', function (&$condition, &$ifTrue, &$ifFalse) {
+            return new ValueNode($condition ? $ifTrue :  $ifFalse);
+        }, "Checks the condition and returns the second argument if true, or the third, if false.", 'mixed', null, 'library');
         $this->viewHandler->registerFunction('system', 'abs', function (int $val) {
             return new ValueNode(abs($val));
-        },  'integer', 'Returns the absolute value of an integer.', 'library');
+        },  'Returns the absolute value of an integer.', 'integer', null, 'library');
         $this->viewHandler->registerFunction('system', 'min', function (int $val1, int $val2) {
             return new ValueNode(min($val1, $val2));
-        }, 'integer', 'Returns the smallest number between two integers.', 'library');
+        }, 'Returns the smallest number between two integers.', 'integer', null, 'library');
         $this->viewHandler->registerFunction('system', 'max', function (int $val1, int $val2) {
             return new ValueNode(max($val1, $val2));
-        }, 'integer', 'Returns the greatest number between two integers.', 'library');
-        $this->viewHandler->registerFunction('system', 'time', function () {
-            return new ValueNode(time());
-        }, 'integer', 'Returns the time in seconds since the epoch as a floating point number. The specific date of the epoch and the handling of leap seconds is platform dependent. On Windows and most Unix systems, the epoch is January 1, 1970, 00:00:00 (UTC) and leap seconds are not counted towards the time in seconds since the epoch. This is commonly referred to as Unix time.', 'library');
+        },  'Returns the greatest number between two integers.', 'integer', null, 'library');
+        $this->viewHandler->registerFunction(
+            'system',
+            'time',
+            function () {
+                return new ValueNode(time());
+            },
+            'Returns the time in seconds since the epoch as a floating point number. The specific date of the epoch and the handling of leap seconds is platform dependent. On Windows and most Unix systems, the epoch is January 1, 1970, 00:00:00 (UTC) and leap seconds are not counted towards the time in seconds since the epoch. This is commonly referred to as Unix time.',
+            'integer',
+            null,
+            'library'
+        );
         //functions without library
         //%string.strip  -> removes spaces
         $this->viewHandler->registerFunction(null, 'strip', function (string $val) {
             if (!is_string($val))
                 throw new \Exception("'.strip' can only be called over an string.");
             return new ValueNode(str_replace(' ', '', $val));
-        }, 'string', 'Removes the string spaces', 'string');
+        },  'Removes the string spaces', 'string', null, 'string');
         //%integer.abs
         $this->viewHandler->registerFunction(null, 'abs', function (int $val) {
             if (!is_int($val))
                 throw new \Exception("'.abs' can only be called over an int.");
             return new ValueNode(abs($val));
-        }, 'integer', 'Returns the absolute value of an integer.', 'integer');
+        }, 'Returns the absolute value of an integer.', 'integer', null, 'integer');
         //%string.integer or %string.int   converts string to int
         $this->viewHandler->registerFunction(null, 'int', function (string $val) {
             return $this->toInt($val, "int");
-        }, 'integer', 'Returns an integer representation of the string.', 'string');
+        },  'Returns an integer representation of the string.', 'integer', null, 'string');
         $this->viewHandler->registerFunction(null, 'integer', function (string $val) {
             return $this->toInt($val, "integer");
-        }, 'integer', 'Returns an integer representation of the string.', 'string');
+        },  'Returns an integer representation of the string.', 'integer', null, 'string');
         //%object.id
         $this->viewHandler->registerFunction(null, 'id', function ($object) {
             return $this->basicGetterFunction($object, "id");
-        }, 'integer', 'Returns an integer that identifies the object.');
+        },  'Returns an integer that identifies the object.', 'integer', null, "object");
         //%item.parent returns the parent(aka the %item of the previous context)
         $this->viewHandler->registerFunction(null, 'parent', function ($object) {
             return $this->basicGetterFunction($object, "parent");
-        }, 'object', 'Returns an object in the next hierarchical level.');
+        },  'Returns an object in the next hierarchical level.', 'object', null, "object");
         //functions to be called on %collection
         //%collection.item(index) returns item w the given index
         $this->viewHandler->registerFunction(null, 'item', function ($collection, int $i) {
@@ -256,7 +267,7 @@ class Views extends Module
                 return $this->createNode($collection["value"][$i]);
             else
                 return new ValueNode($collection["value"][$i]);
-        }, 'object', 'Returns the element x such that i is the index of x in the collection.', 'collection');
+        },  'Returns the element x such that i is the index of x in the collection.', 'object', null, 'collection');
         //%collection.index(item)  returns the index of the item in the collection
         $this->viewHandler->registerFunction(null, 'index', function ($collection, $x) {
             $this->checkArray($collection, "collection", "index()");
@@ -265,18 +276,18 @@ class Views extends Module
                 throw new \Exception("In function .index(x): Coudn't find the x in the collection");
             }
             return new ValueNode($result);
-        }, 'integer', 'Returns the smallest i such that i is the index of the first occurrence of x in the collection.', 'collection');
+        },  'Returns the smallest i such that i is the index of the first occurrence of x in the collection.', 'integer', null, 'collection');
         //%collection.count  returns size of the collection
         $this->viewHandler->registerFunction(null, 'count', function ($collection) {
             $this->checkArray($collection, "collection", "count");
             return new ValueNode(sizeof($collection["value"]));
-        }, 'integer',  'Returns the number of elements in the collection.', 'collection');
+        },   'Returns the number of elements in the collection.', 'integer', null, 'collection');
         //%collection.crop(start,end) returns collection croped to start and end (inclusive)
         $this->viewHandler->registerFunction(null, 'crop', function ($collection, int $start, int $end) {
             $this->checkArray($collection, "collection", "crop()");
             $collection["value"] = array_slice($collection["value"], $start, $end - $start + 1);
             return new ValueNode($collection);
-        }, 'collection', null, 'collection');
+        },  "Returns the collection only with objects that have an index between start and end, inclusively.", 'collection', null, 'collection');
         //$collection.filter(key,val,op) returns collection w items that pass the condition of the filter
         $this->viewHandler->registerFunction(null, 'filter', function ($collection, string $key, string $value, string $operation) use ($courseId) {
             $this->checkArray($collection, "collection", "filter()");
@@ -290,62 +301,69 @@ class Views extends Module
             }
             $collection["value"] = $newCollectionVals;
             return new ValueNode($collection);
-        }, 'collection', 'Returns the collection only with objects that have an index between start and end, inclusively.', 'collection');
-        //%collectio.sort(order=(asc|des),keys) returns collection sorted by key
-        $this->viewHandler->registerFunction(null, 'sort', function ($collection = null, string $order = null, string $keys = null) use ($courseId) {
-            if (empty($collection["value"]))
-                return new ValueNode($collection);
+        },  'Returns the collection only with objects that have an index between start and end, inclusively.', 'collection', null, 'collection');
+        //%collection.sort(order=(asc|des),keys) returns collection sorted by key
+        $this->viewHandler->registerFunction(
+            null,
+            'sort',
+            function ($collection = null, string $order = null, string $keys = null) use ($courseId) {
+                if (empty($collection["value"]))
+                    return new ValueNode($collection);
 
-            $this->checkArray($collection, "collection", "sort()");
-            if ($order === null) throw new \Exception("On function .sort(order,keys), no order was given.");
-            if ($keys === null) throw new \Exception("On function .sort(order,keys), no keys were given.");
-            $keys = explode(";", $keys);
-            $i = 0;
-            foreach ($keys as &$key) {
-                if (!array_key_exists($key, $collection["value"][0])) {
-                    //key is not a parameter of objects in collection, it should be an expression of the language
-                    if (strpos($key, "{") !== 0)
-                        $key = "{" . $key . "}";
+                $this->checkArray($collection, "collection", "sort()");
+                if ($order === null) throw new \Exception("On function .sort(order,keys), no order was given.");
+                if ($keys === null) throw new \Exception("On function .sort(order,keys), no keys were given.");
+                $keys = explode(";", $keys);
+                $i = 0;
+                foreach ($keys as &$key) {
+                    if (!array_key_exists($key, $collection["value"][0])) {
+                        //key is not a parameter of objects in collection, it should be an expression of the language
+                        if (strpos($key, "{") !== 0)
+                            $key = "{" . $key . "}";
 
-                    $this->viewHandler->parseSelf($key);
-                    foreach ($collection["value"] as &$object) {
-                        $viewParams = array(
-                            'course' => (string)$courseId,
-                            'viewer' => (string)Core::getLoggedUser()->getId(),
-                            'item' => $this->createNode($object, $object["libraryOfVariable"])->getValue(),
-                            'index' => $i
-                        );
-                        $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
-                        $value = $key->accept($visitor)->getValue();
+                        $this->viewHandler->parseSelf($key);
+                        foreach ($collection["value"] as &$object) {
+                            $viewParams = array(
+                                'course' => (string)$courseId,
+                                'viewer' => (string)Core::getLoggedUser()->getId(),
+                                'item' => $this->createNode($object, $object["libraryOfVariable"])->getValue(),
+                                'index' => $i
+                            );
+                            $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
+                            $value = $key->accept($visitor)->getValue();
 
-                        $object["sortVariable" . $i] = $value;
+                            $object["sortVariable" . $i] = $value;
+                        }
+                        $key = "sortVariable" . $i;
                     }
-                    $key = "sortVariable" . $i;
+                    $i++;
                 }
-                $i++;
-            }
-            if ($order == "asc" || $order == "ascending") {
-                usort($collection["value"], function ($a, $b) use ($keys) {
-                    foreach ($keys as $key) {
-                        if ($a[$key] > $b[$key]) return 1;
-                        else if ($a[$key] < $b[$key]) return -1;
-                    }
-                    return 1;
-                });
-            } else if ($order == "des" || $order == "descending") {
-                usort($collection["value"], function ($a, $b)  use ($keys) {
-                    foreach ($keys as $key) {
-                        if ($a[$key] < $b[$key]) return 1;
-                        else if ($a[$key] > $b[$key]) return -1;
-                    }
-                    return 1;
-                });
-            } else {
-                throw new \Exception("On function .sort(order,keys), the order must be ascending or descending.");
-            }
-            return new ValueNode($collection);
-        }, 'collection', 'Returns the collection with objects sorted in a specific order by variables keys, from left to right
-separated by a ;. Any key may be an expression.', 'collection');
+                if ($order == "asc" || $order == "ascending") {
+                    usort($collection["value"], function ($a, $b) use ($keys) {
+                        foreach ($keys as $key) {
+                            if ($a[$key] > $b[$key]) return 1;
+                            else if ($a[$key] < $b[$key]) return -1;
+                        }
+                        return 1;
+                    });
+                } else if ($order == "des" || $order == "descending") {
+                    usort($collection["value"], function ($a, $b)  use ($keys) {
+                        foreach ($keys as $key) {
+                            if ($a[$key] < $b[$key]) return 1;
+                            else if ($a[$key] > $b[$key]) return -1;
+                        }
+                        return 1;
+                    });
+                } else {
+                    throw new \Exception("On function .sort(order,keys), the order must be ascending or descending.");
+                }
+                return new ValueNode($collection);
+            },
+            'Returns the collection with objects sorted in a specific order by variables keys, from left to right separated by a ;. Any key may be an expression.',
+            'collection',
+            null,
+            'collection'
+        );
         //functions of actions(events) library, 
         //they don't really do anything, they're just here so their arguments can be processed 
         $this->viewHandler->registerLibrary("views", "actions", "Library to be used only on EVENTS. These functions define the response to event triggers");
@@ -363,43 +381,51 @@ separated by a ;. Any key may be an expression.', 'collection');
                 $response .= ")";
             }
             return new ValueNode($response);
-        }, null, 'Changes the current page to the page referred by name.', 'library');
+        },  'Changes the current page to the page referred by name.', null, null, 'library');
 
         //fucntions to change the visibility of a view element with the specified label
         //the $visitor parameter is provided by the visitor itself
         $this->viewHandler->registerFunction("actions", 'hideView', function ($label, $visitor) {
             return new ValueNode("hideView('" . $label->accept($visitor)->getValue() . "')");
-        }, null, 'Changes the visibility of a view referred by label to make it invisible.', 'library');
+        },  'Changes the visibility of a view referred by label to make it invisible.', null, null, 'library');
         $this->viewHandler->registerFunction("actions", 'showView', function ($label, $visitor) {
             return new ValueNode("showView('" . $label->accept($visitor)->getValue() . "')");
-        }, null, 'Changes the visibility of a view referred by label to make it invisible.', 'library');
+        },  'Changes the visibility of a view referred by label to make it invisible.', null, null, 'library');
         $this->viewHandler->registerFunction("actions", 'toggleView', function ($label, $visitor) {
             $this->viewHandler->parseSelf($label);
             return new ValueNode("toggleView('" . $label->accept($visitor)->getValue() . "')");
-        }, null, 'Toggles the visibility of a view referred by label.', 'library');
+        },  'Toggles the visibility of a view referred by label.', null, null, 'library');
         //call view handle template (parse and process its view)
         //the $params argument is provided by the visitor
         $this->viewHandler->registerFunction("actions", 'showToolTip', function (string $templateName, $user, $params) use ($course) {
             return $this->popUpOrToolTip($templateName, $params, "showToolTip", $course, $user);
-        }, null,  'Creates a template view referred by name in a form of a tooltip.', 'library');
+        },   'Creates a template view referred by name in a form of a tooltip.', null, null, 'library');
         $this->viewHandler->registerFunction("actions", 'showPopUp', function (string $templateName, $user, $params) use ($course) {
             return $this->popUpOrToolTip($templateName, $params, "showPopUp", $course, $user);
-        }, null, 'Creates a template view referred by name in a form of a pop-up.', 'library');
+        }, 'Creates a template view referred by name in a form of a pop-up.', null, null, 'library');
 
         $this->viewHandler->registerLibrary("views", "users", "This library provides access to information regarding Users and their info.");
-        $this->viewHandler->registerVariable("%user", "object", "users", "Represents the user associated to the page which is being displayed");
-        $this->viewHandler->registerVariable("%viewer", "object", "users", "Represents the user that is currently logged in watching the page");
+        $this->viewHandler->registerVariable("%user", "object", "user", "users", "Represents the user associated to the page which is being displayed");
+        $this->viewHandler->registerVariable("%viewer", "object", "user", "users", "Represents the user that is currently logged in watching the page");
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
-        $this->viewHandler->registerFunction('users', 'getAllUsers', function (string $role = null, int $courseId = null) use ($course) {
-            if ($courseId !== null) {
-                $course = new Course($courseId);
-            }
-            if ($role == null)
-                return $this->createNode($course->getUsers(), 'users', "collection");
-            else
-                return $this->createNode($course->getUsersWithRole($role), 'users', "collection");
-        }, 'collection', null, 'library');
+        $this->viewHandler->registerFunction(
+            'users',
+            'getAllUsers',
+            function (string $role = null, int $courseId = null) use ($course) {
+                if ($courseId !== null) {
+                    $course = new Course($courseId);
+                }
+                if ($role == null)
+                    return $this->createNode($course->getUsers(), 'users', "collection");
+                else
+                    return $this->createNode($course->getUsersWithRole($role), 'users', "collection");
+            },
+            "Returns a collection with all users. The optional parameters can be used to find users that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.",
+            'collection',
+            'user',
+            'library'
+        );
         //users.getUser(id) returns user object
         $this->viewHandler->registerFunction(
             'users',
@@ -411,47 +437,120 @@ separated by a ;. Any key may be an expression.', 'collection');
                 }
                 return $this->createNode($user, 'users');
             },
+            "Returns a collection with all GameCourseUsers. The optional parameters can be used to find GameCourseUsers that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.",
             'object',
-            'Returns a collection with all GameCourseUsers. The optional parameters can be used to find GameCourseUsers that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.',
+            'user',
             'library'
         );
         //%user.campus
-        $this->viewHandler->registerFunction('users', 'campus', function ($user) {
-            return $this->basicGetterFunction($user, "campus");
-        }, 'string', 'Returns a string with the campus of the GameCourseUser.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'campus',
+            function ($user) {
+                return $this->basicGetterFunction($user, "campus");
+            },
+            'Returns a string with the campus of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.email
-        $this->viewHandler->registerFunction('users', 'email', function ($user) {
-            return $this->basicGetterFunction($user, "email");
-        }, 'string', 'Returns a string with the email of the GameCourseUser.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'email',
+            function ($user) {
+                return $this->basicGetterFunction($user, "email");
+            },
+            'Returns a string with the email of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.isAdmin
-        $this->viewHandler->registerFunction('users', 'isAdmin', function ($user) {
-            return $this->basicGetterFunction($user, "isAdmin");
-        }, 'boolean', 'Returns a boolean regarding whether the GameCourseUser has admin permissions.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'isAdmin',
+            function ($user) {
+                return $this->basicGetterFunction($user, "isAdmin");
+            },
+            'Returns a boolean regarding whether the GameCourseUser has admin permissions.',
+            'boolean',
+            null,
+            'object',
+            'user'
+        );
         //%user.lastActivity
-        $this->viewHandler->registerFunction('users', 'lastActivity', function ($user) {
-            return $this->basicGetterFunction($user, "lastActivity");
-        }, 'string', 'Returns a string with the timestamp with the last action of the GameCourseUser in the system.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'lastActivity',
+            function ($user) {
+                return $this->basicGetterFunction($user, "lastActivity");
+            },
+            'Returns a string with the timestamp with the last action of the GameCourseUser in the system.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.name 
-        $this->viewHandler->registerFunction('users', 'name', function ($user) {
-            return $this->basicGetterFunction($user, "name");
-        }, 'string', 'Returns a string with the name of the GameCourseUser.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'name',
+            function ($user) {
+                return $this->basicGetterFunction($user, "name");
+            },
+            'Returns a string with the name of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.roles returns collection of role names
-        $this->viewHandler->registerFunction('users', 'roles', function ($user) use ($course) {
-            $this->checkArray($user, "object", "roles", "id");
-            return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRoles(),
-                null,
-                "collection"
-            );
-        }, 'collection', 'Returns a collection with the roles of the GameCourseUser in the Course.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'roles',
+            function ($user) use ($course) {
+                $this->checkArray($user, "object", "roles", "id");
+                return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRoles(),
+                    null,
+                    "collection"
+                );
+            },
+            'Returns a collection with the roles of the GameCourseUser in the Course.',
+            'collection',
+            'integer',
+            'object',
+            'user'
+        );
         //%users.username
-        $this->viewHandler->registerFunction('users', 'username', function ($user) {
-            return $this->basicGetterFunction($user, "username");
-        }, 'string', 'Returns a string with the username of the GameCourseUser.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'username',
+            function ($user) {
+                return $this->basicGetterFunction($user, "username");
+            },
+            'Returns a string with the username of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%users.picture
-        $this->viewHandler->registerFunction('users', 'picture', function ($user) {
-            $this->checkArray($user, "object", "picture", "username");
-            return new ValueNode("photos/" . $user["value"]["username"] . ".png");
-        }, 'picture', 'Returns the picture of the profile of the GameCourseUser.');
+        $this->viewHandler->registerFunction(
+            'users',
+            'picture',
+            function ($user) {
+                $this->checkArray($user, "object", "picture", "username");
+                return new ValueNode("photos/" . $user["value"]["username"] . ".png");
+            },
+            'Returns the picture of the profile of the GameCourseUser.',
+            'picture',
+            null,
+            'object',
+            'user'
+        );
         //%user.getAllCourses(role)
         $this->viewHandler->registerFunction(
             'users',
@@ -474,12 +573,15 @@ separated by a ;. Any key may be an expression.', 'collection');
                 }
                 return $this->createNode($courses, "courses", "collection", $user);
             },
+            "Returns a collection of Courses to which the CourseUser is associated. Receives an optional specific role to search for Courses to which the CourseUser is associated with that role.",
             'collection',
-            'Returns a collection of Courses to which the CourseUser is associated. Receives an optional specific role to search for Courses to which the CourseUser is associated with that role.'
+            "course",
+            'object',
+            'user'
         );
 
         $this->viewHandler->registerLibrary("views", "courses", "This library provides access to information regarding Courses and their info.");
-        $this->viewHandler->registerVariable("%course", "object", "courses", "Represents the course that the user is manipulating");
+        $this->viewHandler->registerVariable("%course", "object","course", "courses", "Represents the course that the user is manipulating");
 
         //functions of course library
         //courses.getAllCourses(isActive,isVisible) returns collection of courses
@@ -494,35 +596,80 @@ separated by a ;. Any key may be an expression.', 'collection');
                     $where["isVisible"] = $isVisible;
                 return $this->createNode(Core::$systemDB->selectMultiple("course", $where), "courses", "collection");
             },
+            "Returns a collection with all the courses in the system. The optional parameters can be used to find courses that specify a given combination of conditions:\nisActive: active or inactive depending whether the course is active.\nisVisible: visible or invisible depending whether the course is visible.",
             'collection',
-            'Returns a collection with all the courses in the system. The optional parameters can be used to find courses that specify a given combination of conditions:\nisActive: active or inactive depending whether the course is active.\nisVisible: visible or invisible depending whether the course is visible.',
+            "course",
             'library'
         );
         //courses.getCourse(id) returns course object
-        $this->viewHandler->registerFunction('courses', 'getCourse', function (int $id) {
-            $course = Core::$systemDB->select("course", ["id" => $id]);
-            if (empty($course))
-                throw new \Exception("In function courses.getCourse(...): Coudn't find course with id=" . $id);
-            return $this->createNode($course, "courses", "object");
-        }, 'object', 'Returns the object course with the specific id.', 'library');
+        $this->viewHandler->registerFunction(
+            'courses',
+            'getCourse',
+            function (int $id) {
+                $course = Core::$systemDB->select("course", ["id" => $id]);
+                if (empty($course))
+                    throw new \Exception("In function courses.getCourse(...): Coudn't find course with id=" . $id);
+                return $this->createNode($course, "courses", "object");
+            },
+            'Returns the object course with the specific id.',
+            'object',
+            'course',
+            'library'
+        );
         //%course.isActive
-        $this->viewHandler->registerFunction('courses', 'isActive', function ($course) {
-            return $this->basicGetterFunction($course, "isActive");
-        }, 'boolean', 'Returns a boolean on whether the course is active.');
+        $this->viewHandler->registerFunction(
+            'courses',
+            'isActive',
+            function ($course) {
+                return $this->basicGetterFunction($course, "isActive");
+            },
+            'Returns a boolean on whether the course is active.',
+            'boolean',
+            null,
+            "object",
+            "course"
+        );
         //%course.isVisible
-        $this->viewHandler->registerFunction('courses', 'isVisible', function ($course) {
-            return $this->basicGetterFunction($course, "isVisible");
-        }, 'boolean', 'Returns a boolean on whether the course is visible.');
+        $this->viewHandler->registerFunction(
+            'courses',
+            'isVisible',
+            function ($course) {
+                return $this->basicGetterFunction($course, "isVisible");
+            },
+            'Returns a boolean on whether the course is visible.',
+            'boolean',
+            null,
+            "object",
+            "course"
+        );
         //%course.name
-        $this->viewHandler->registerFunction('courses', 'name', function ($course) {
-            return $this->basicGetterFunction($course, "name");
-        }, 'string', 'Returns a string with the name of the course.');
+        $this->viewHandler->registerFunction(
+            'courses',
+            'name',
+            function ($course) {
+                return $this->basicGetterFunction($course, "name");
+            },
+            'Returns a string with the name of the course.',
+            'string',
+            null,
+            "object",
+            "course"
+        );
         //%course.roles   returns collection of roles(which are just strings
-        $this->viewHandler->registerFunction('courses', 'roles', function ($course) {
-            $this->checkArray($course, "object", "roles");
-            $roles = array_column(Core::$systemDB->selectMultiple("role", ["course" => $course["value"]["id"]], "name"), "name");
-            return $this->createNode($roles, null, "collection");
-        }, 'collection', 'Returns a collection with all the roles in the course.');
+        $this->viewHandler->registerFunction(
+            'courses',
+            'roles',
+            function ($course) {
+                $this->checkArray($course, "object", "roles");
+                $roles = array_column(Core::$systemDB->selectMultiple("role", ["course" => $course["value"]["id"]], "name"), "name");
+                return $this->createNode($roles, null, "collection");
+            },
+            'Returns a collection with all the roles in the course.',
+            'collection',
+            'string',
+            "object",
+            "course"
+        );
 
         $this->viewHandler->registerLibrary("views", "awards", "This library provides access to information regarding Awards.");
 
@@ -534,69 +681,133 @@ separated by a ;. Any key may be an expression.', 'collection');
             function (int $user = null, string $type = null, string $moduleInstance = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
                 return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate);
             },
+            "Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
             'collection',
-            'Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
+            "award",
             'library'
         );
         //%award.renderPicture(item=(user|type)) returns the img or block ok the award (should be used on text views)
-        $this->viewHandler->registerFunction('awards', 'renderPicture', function ($award, string $item) {
-            $this->checkArray($award, "object", "renderPicture()");
-            if ($item == "user") {
-                $username = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "username");
-                if (empty($username))
-                    throw new \Exception("In function renderPicture('user'): couldn't find user.");
-                return new ValueNode("photos/" . $username . ".png");
-            } else if ($item == "type") {
-                switch ($award["value"]['type']) {
-                    case 'grade':
-                        return new ValueNode('<img src="images/quiz.svg">');
-                    case 'badge':
-                        $name = $this->getModuleNameOfAwardOrParticipation($award);
-                        if ($name === null)
-                            throw new \Exception("In function renderPicture('type'): couldn't find badge.");
-                        $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
-                        $imgName = str_replace(' ', '', $name . '-' . $level);
-                        return new ValueNode('<img src="badges/' . $imgName . '.png">');
-                    case 'skill':
-                        $color = '#fff';
-                        $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
-                        if ($skillColor)
-                            $color = $skillColor;
-                        //needs width and height , should have them if it has latest-awards class in a profile
-                        return new ValueNode('<div class="skill" style="background-color: ' . $color . '">');
-                    case 'bonus':
-                        return new ValueNode('<img src="images/awards.svg">');
-                    default:
-                        return new ValueNode('<img src="images/quiz.svg">');
-                }
-            } else
-                throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
-        }, 'picture');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'renderPicture',
+            function ($award, string $item) {
+                $this->checkArray($award, "object", "renderPicture()");
+                if ($item == "user") {
+                    $username = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "username");
+                    if (empty($username))
+                        throw new \Exception("In function renderPicture('user'): couldn't find user.");
+                    return new ValueNode("photos/" . $username . ".png");
+                } else if ($item == "type") {
+                    switch ($award["value"]['type']) {
+                        case 'grade':
+                            return new ValueNode('<img src="images/quiz.svg">');
+                        case 'badge':
+                            $name = $this->getModuleNameOfAwardOrParticipation($award);
+                            if ($name === null)
+                                throw new \Exception("In function renderPicture('type'): couldn't find badge.");
+                            $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
+                            $imgName = str_replace(' ', '', $name . '-' . $level);
+                            return new ValueNode('<img src="badges/' . $imgName . '.png">');
+                        case 'skill':
+                            $color = '#fff';
+                            $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
+                            if ($skillColor)
+                                $color = $skillColor;
+                            //needs width and height , should have them if it has latest-awards class in a profile
+                            return new ValueNode('<div class="skill" style="background-color: ' . $color . '">');
+                        case 'bonus':
+                            return new ValueNode('<img src="images/awards.svg">');
+                        default:
+                            return new ValueNode('<img src="images/quiz.svg">');
+                    }
+                } else
+                    throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
+            },
+            "Renders the award picture.",
+            'picture',
+            null,
+            "object",
+            "award"
+        );
         //%award.description
-        $this->viewHandler->registerFunction('awards', 'description', function ($award) {
-            return $this->basicGetterFunction($award, "description");
-        }, 'string', 'Returns a picture of the item associated to the award. item can refer to the GameCourseUser that won it ("user") and the type of the award ("type").');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'description',
+            function ($award) {
+                return $this->basicGetterFunction($award, "description");
+            },
+            'Returns a picture of the item associated to the award. item can refer to the GameCourseUser that won it ("user") and the type of the award ("type").',
+            'string',
+            null,
+            "object",
+            "award"
+        );
         //%award.moduleInstance
-        $this->viewHandler->registerFunction('awards', 'moduleInstance', function ($award) {
-            $this->checkArray($award, "object", "moduleInstance");
-            return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
-        }, 'string', 'Returns a string with the name of the Module instance that provided the award.');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'moduleInstance',
+            function ($award) {
+                $this->checkArray($award, "object", "moduleInstance");
+                return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
+            },
+            'Returns a string with the name of the Module instance that provided the award.',
+            'string',
+            null,
+            "object",
+            "award"
+        );
         //%award.reward
-        $this->viewHandler->registerFunction('awards', 'reward', function ($award) {
-            return $this->basicGetterFunction($award, "reward");
-        }, 'string', 'Returns a string with the reward provided by the award.');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'reward',
+            function ($award) {
+                return $this->basicGetterFunction($award, "reward");
+            },
+            'Returns a string with the reward provided by the award.',
+            'string',
+            null,
+            "object",
+            "award"
+        );
         //%award.type
-        $this->viewHandler->registerFunction('awards', 'type', function ($award) {
-            return $this->basicGetterFunction($award, "type");
-        }, 'string', 'Returns a string with the type of the event that provided the award.');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'type',
+            function ($award) {
+                return $this->basicGetterFunction($award, "type");
+            },
+            'Returns a string with the type of the event that provided the award.',
+            'string',
+            null,
+            "object",
+            "award"
+        );
         //%award.date
-        $this->viewHandler->registerFunction('awards', 'date', function ($award) {
-            return $this->getDate($award);
-        }, 'string', 'Returns a string in DD/MM/YYYY format of the date the award was created.');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'date',
+            function ($award) {
+                return $this->getDate($award);
+            },
+            'Returns a string in DD/MM/YYYY format of the date the award was created.',
+            'string',
+            null,
+            "object",
+            "award"
+        );
         //%award.user
-        $this->viewHandler->registerFunction('awards', 'user', function ($award) {
-            return $this->basicGetterFunction($award, "user");
-        }, 'string', 'Returns a string with the id of the GameCourseUser that received the award.');
+        $this->viewHandler->registerFunction(
+            'awards',
+            'user',
+            function ($award) {
+                return $this->basicGetterFunction($award, "user");
+            },
+            'Returns a string with the id of the GameCourseUser that received the award.',
+            'string',
+            null,
+            "object",
+            "award"
+        );
 
         $this->viewHandler->registerLibrary("views", "participations", "This library provides access to information regarding Participations.");
 
@@ -615,43 +826,116 @@ separated by a ;. Any key may be an expression.', 'collection');
                 }
                 return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation");
             },
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
             'collection',
-            'Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.',
+            'participation',
             'library'
         );
         //%participation.date
-        $this->viewHandler->registerFunction('participations', 'date', function ($participation) {
-            return $this->getDate($participation);
-        }, 'string', 'Returns a string in DD/MM/YYYY format of the date of the participation.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'date',
+            function ($participation) {
+                return $this->getDate($participation);
+            },
+            'Returns a string in DD/MM/YYYY format of the date of the participation.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.description
-        $this->viewHandler->registerFunction('participations', 'description', function ($participation) {
-            return $this->basicGetterFunction($participation, "description");
-        }, 'string', 'Returns a string with the information of the participation.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'description',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "description");
+            },
+            'Returns a string with the information of the participation.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
 
         //%participation.evaluator
-        $this->viewHandler->registerFunction('participations', 'evaluator', function ($participation) {
-            return $this->basicGetterFunction($participation, "evaluator");
-        }, 'string', 'Returns a string with the id of the user that rated the participation.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'evaluator',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "evaluator");
+            },
+            'Returns a string with the id of the user that rated the participation.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.moduleInstance
-        $this->viewHandler->registerFunction('participations', 'moduleInstance', function ($participation) {
-            return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation, false));
-        }, 'string', 'Returns a string with the name of the Module instance where the user participated.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'moduleInstance',
+            function ($participation) {
+                return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation, false));
+            },
+            'Returns a string with the name of the Module instance where the user participated.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.post
-        $this->viewHandler->registerFunction('participations', 'post', function ($participation) {
-            return $this->basicGetterFunction($participation, "post");
-        }, 'string', 'Returns a string with the link to the post where the user participated.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'post',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "post");
+            },
+            'Returns a string with the link to the post where the user participated.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.rating
-        $this->viewHandler->registerFunction('participations', 'rating', function ($participation) {
-            return $this->basicGetterFunction($participation, "rating");
-        }, 'string', 'Returns a string with the rating of the participation.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'rating',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "rating");
+            },
+            'Returns a string with the rating of the participation.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.type
-        $this->viewHandler->registerFunction('participations', 'type', function ($participation) {
-            return $this->basicGetterFunction($participation, "type");
-        }, 'string', 'Returns a string with the type of the participation.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'type',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "type");
+            },
+            'Returns a string with the type of the participation.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
         //%participation.user
-        $this->viewHandler->registerFunction('participations', 'user', function ($participation) {
-            return $this->basicGetterFunction($participation, "user");
-        }, 'string', 'Returns a string with the id of the user that participated.');
+        $this->viewHandler->registerFunction(
+            'participations',
+            'user',
+            function ($participation) {
+                return $this->basicGetterFunction($participation, "user");
+            },
+            'Returns a string with the id of the user that participated.',
+            'string',
+            null,
+            "object",
+            "participation"
+        );
 
         //parts
         $this->viewHandler->registerPartType(
