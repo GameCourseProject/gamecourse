@@ -1,6 +1,6 @@
 //Controllers for pages of the system, except for setting pages
 
-app.controller('HomePage', function($element, $scope, $timeout) {
+app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $compile) {
     $scope.setNavigation([], []);
     $timeout(function() {
         $scope.defaultNavigation();
@@ -10,20 +10,30 @@ app.controller('HomePage', function($element, $scope, $timeout) {
     });
     changeTitle('', 0, false);
 
-    $element.append(Builder.createPageBlock({
-        image: 'images/leaderboard.svg',
-        text: 'Main Page'
-    }, function(el, info) {
-        el.append(Builder.buildBlock({
-            image: 'images/awards.svg',
-            title: 'Welcome'
-        }, function(blockContent) {
-            var divText = $('<div style="padding: 4px">');
-            divText.append('<p>Welcome to the GameCourse system.</p>');
-            divText.append('<p>Hope you enjoy!</p>');
-            blockContent.append(divText);
-        }));
-    }));
+    //correr navbar cenas 
+
+    $smartboards.request('core', 'getUserActiveCourses', {}, function(data, err) {
+        if (err) {
+            alert(err.description);
+            return;
+        }
+        $scope.userActiveCourses = data.userActiveCourses;
+
+        //$("#user_icon").addClass("bold");
+        mainPage = $("<div id='mainPage'></div>");
+        
+        logo = $('<div class="logo"></div>')
+        title = $("<div class='title'>Welcome to the GameCourse system</div>");
+        informationbox = $("<div id='active_courses_list'></div>");
+        informationbox.append($('<span class="label">Your active courses</span>'))
+        informationbox.append('<span ng-repeat="(i, course) in userActiveCourses"  ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}</span>');
+        
+        mainPage.append(logo);
+        mainPage.append(title);
+        mainPage.append(informationbox);
+        $element.append(mainPage);
+        $compile(mainPage)($scope);
+    });
 });
 
 
@@ -59,7 +69,7 @@ app.controller('MyInfo', function($element, $scope, $smartboards, $compile, $sta
         atributes_column = $("<div class='info'></div>");
         values_column = $("<div class='info'></div>");
         jQuery.each(atributes, function(index){
-            atributes_column.append($('<span>'+atributes[index]+'</span>'));
+            atributes_column.append($('<span class="label">'+atributes[index]+'</span>'));
             if($scope.myInfo[values[index]] == null){
                 values_column.append($('<span class="not_set">Not set</span>'));
             }else{
@@ -72,8 +82,8 @@ app.controller('MyInfo', function($element, $scope, $smartboards, $compile, $sta
         informationbox.append(values_column);
 
         myInfo.append(title);
-        myInfo.append(subtitle);
         myInfo.append(informationbox);
+        myInfo.append(subtitle);
         $element.append(myInfo);
     });
     

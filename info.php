@@ -35,6 +35,24 @@ API::registerFunction('core', 'getUserInfo', function() {
     API::response(array('userInfo' => $userInfo));
 });
 
+//------------------- main page
+
+API::registerFunction('core', 'getUserActiveCourses', function() {
+    $user = Core::getLoggedUser();
+
+    $coursesId = $user->getCourses();
+    $courses=[];
+    foreach($coursesId as $cid){
+        $course = Core::getCourse($cid);
+        if ($course["isVisible"]){
+            $courses[]=$course;
+        }
+    }
+    array_combine(array_column($courses,'id'), $courses);
+
+    API::response(array('userActiveCourses' => $courses));
+});
+
 //-------------------Course List related
 
 //return a list of courses that the user is allowed to see
@@ -57,7 +75,7 @@ API::registerFunction('core', 'getCoursesList', function() {
         $courses=[];
         foreach($coursesId as $cid){
             $course = Core::getCourse($cid);
-            if ($course["isActive"]){
+            if ($course["isVisible"]){
                 $courses[]=$course;
             }
         }

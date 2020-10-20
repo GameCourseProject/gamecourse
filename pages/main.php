@@ -20,6 +20,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/modals.css" />
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
+    <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
 
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
