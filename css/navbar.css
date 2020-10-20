@@ -96,6 +96,9 @@
     width: 27px;
     margin-left: 13px;
   }
+  .navbar .user_info #user_icon.active{
+    background-image: url(/gamecourse/images/profile_icon_bold.svg);
+  }
   
   .navbar .user_info #user_exit {
     background-image: url(/gamecourse/images/log_out_icon.svg);

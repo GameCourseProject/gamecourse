@@ -172,9 +172,9 @@ $user = Core::getLoggedUser();
 
         var firstInitDone = false;
         app.run(function($rootScope, $urlRouter, $location) {
+            //only goes through here on reloads
             $urlRouterGlobal = $urlRouter;
             $locationGlobal = $location;
-
             $rootScope.$on('$locationChangeSuccess', function(e) {
                 e.preventDefault();
                 if (firstInitDone) {
@@ -205,8 +205,8 @@ $user = Core::getLoggedUser();
         <div class="logo" ui-sref="home"></div>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
-            <div class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></div>
-            <div class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></div>
+            <a class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></a>
+            <a class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></a>
             <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
         </div>
         <ul class=" menu">

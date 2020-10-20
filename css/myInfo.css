@@ -1,15 +1,14 @@
 #myInfo{
-    margin-top: 80px;
+    margin: 80px auto 0;
+    width: max-content;
 }
 #myInfo .title{
     font-size: 20px;
-    text-align: center;
     font-weight: bold;
 }
 #myInfo .warning{
     font-size: 12.5px;
     color: gray;
-    text-align: center;
     margin-top: 10px;
 }
 
@@ -20,6 +19,12 @@
     padding: 0 20px;
     font-size: 14px;
 }
+#myInfo .info .label{
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
 #myInfo .info .not_set{
     opacity: 0.5;
 }
@@ -27,31 +32,26 @@
 #myInfo .information_box {
     position: relative;
     margin: auto;
-    padding: 0 40px;
     font-size: 16px;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    background-color: white;
     margin-top: 30px;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 #myInfo .profile_image {
-    height: 230px;
+    height: 190px;
     background-color: lightgrey;
     margin-bottom: 10px;
     border-radius: 5px;
     border: 2px dashed gray;
     display: flex;
     position: relative;
-    max-width: 190px;
-    max-height: 230px;
+    max-width: 170px;
+    max-height: 190px;
     justify-content: center;
     align-items: center;
-    width: 190px;
+    width: 170px;
 }
 #myInfo .profile_image span {
     margin: auto;
