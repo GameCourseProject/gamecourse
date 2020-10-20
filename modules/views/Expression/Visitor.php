@@ -1,5 +1,5 @@
 <?php
-namespace Views\Expression;
+namespace Modules\Views\Expression;
 
 abstract class Visitor {
     public abstract function visitStatementSequence($node);

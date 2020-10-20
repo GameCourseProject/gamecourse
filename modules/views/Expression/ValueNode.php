@@ -1,5 +1,5 @@
 <?php
-namespace Views\Expression;
+namespace Modules\Views\Expression;
 
 class ValueNode extends Node {
     private $value;

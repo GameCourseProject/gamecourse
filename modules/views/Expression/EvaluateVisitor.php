@@ -1,5 +1,5 @@
 <?php
-namespace Views\Expression;
+namespace Modules\Views\Expression;
 
 use GameCourse\Core;
 

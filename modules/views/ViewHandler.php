@@ -1,11 +1,11 @@
 <?php
 
-namespace Views;
+namespace Modules\Views;
 
 use ArrayObject;
-use Views\Expression\EvaluateVisitor;
-use Views\Expression\ExpressionEvaluatorBase;
-use Views\Expression\ValueNode;
+use Modules\Views\Expression\EvaluateVisitor;
+use Modules\Views\Expression\ExpressionEvaluatorBase;
+use Modules\Views\Expression\ValueNode;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\API;

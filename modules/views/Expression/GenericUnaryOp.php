@@ -1,5 +1,5 @@
 <?php
-namespace Views\Expression;
+namespace Modules\Views\Expression;
 
 class GenericUnaryOp extends UnaryOp {
     private $op;

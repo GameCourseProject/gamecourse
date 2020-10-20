@@ -1,6 +1,6 @@
 <?php
 /* Jison generated parser */
-namespace Views\Expression
+namespace Modules\Views\Expression
 ;
 use Exception;
 

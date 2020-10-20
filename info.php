@@ -113,7 +113,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     //adding other pages to navigation
-    $pages = \Views\ViewHandler::getPagesOfCourse($courseId);
+    $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
     $OldNavPages = Core::getNavigation();
     $navNames= array_column($OldNavPages,"text");
     foreach ($pages as $pageId => $page){
@@ -295,6 +295,7 @@ API::registerFunction('settings', 'courseModules', function() {
                     $moduleObject->deleteDataRows();
                 }
             } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
+                file_put_contents("aaaa.txt", "");
                 foreach ($module['dependencies'] as $dependency) {
                     if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
                         API::error('Must enable all dependencies first.');
