@@ -67,7 +67,7 @@ $user = Core::getLoggedUser();
                 if ($rootScope.course != course) {
                     $rootScope.course = $scope.course = course;
                     $rootScope.courseName = courseName;
-                    removeActiveLinks();
+
                     if ($scope.course != undefined) {
                         changeTitle(courseName, 0, false);
                         //na funcao da API devolve o que vai aparecer na navbar
@@ -88,6 +88,7 @@ $user = Core::getLoggedUser();
 
                                 $timeout(function() {
                                     $scope.setNavigation(data.navigation, data.settings);
+                                    beginNavbarResize();
                                     if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                                         var landing = $scope.landingPage.replace(/^\//g, '');
                                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
@@ -212,7 +213,7 @@ $user = Core::getLoggedUser();
             <a class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></a>
             <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
         </div>
-        <ul class=" menu">
+        <ul class="menu">
             <li ng-repeat="link in mainNavigation track by $index" class="{{link.class}}">
                 <a ng-if="link.sref" ui-sref="{{link.sref}}">{{link.text}}</a>
                 <a ng-if="link.href" href="{{link.href}}">{{link.text}}</a>

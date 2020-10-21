@@ -6,6 +6,7 @@ app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $c
         $scope.defaultNavigation();
         $timeout(function() {
             addActiveLinks('home');
+            beginNavbarResize();
         });
     });
     changeTitle('', 0, false);

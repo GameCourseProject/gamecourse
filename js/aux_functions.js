@@ -1,11 +1,7 @@
 //All the aux functions used to create the views of the system
 
-function addPagesBackToNavBar(isHome){
-    if (isHome){
-        $("#other-pages").remove();
-        $(".reputed").remove();
-    }
-    else if($("#other-pages")[0]){
+function addPagesBackToNavBar(){
+    if($("#other-pages") && $("#other-pages")[0]){
         menu = $('.menu')[0];
         menu_div = $('.menu');
         menu_length = menu.children.length;
@@ -13,7 +9,7 @@ function addPagesBackToNavBar(isHome){
         other_pages = $("#other-pages")[0];
         other_content = other_pages.children[1];
 
-        //to restore orther remove last options (dropdowns)
+        //to restore order remove last options (dropdowns)
         settings = menu.children[menu_length - 1];
         settings.remove();
         other_pages.remove();
@@ -29,6 +25,11 @@ function addPagesBackToNavBar(isHome){
     }
     
 
+}
+function beginNavbarResize(){
+    $(".reputed").remove();
+    $("#other-pages").remove();
+    checkNavbarLength();
 }
 
 //so pode ser chamado até x size depois passa a versao mobile
@@ -88,7 +89,7 @@ function checkNavbarLength(){
 
 $(window).resize(function() {
     //resize just happened, pixels changed
-    addPagesBackToNavBar(false);
+    addPagesBackToNavBar();
     checkNavbarLength();
 });
 
@@ -106,6 +107,7 @@ function semestersYears(start, end){
     return semesters;
 }
 
+//triggers download of csv file
 function download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
