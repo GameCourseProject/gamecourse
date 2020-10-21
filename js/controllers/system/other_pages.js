@@ -11,8 +11,6 @@ app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $c
     });
     changeTitle('', 0, false);
 
-    //correr navbar cenas 
-
     $smartboards.request('core', 'getUserActiveCourses', {}, function(data, err) {
         if (err) {
             alert(err.description);

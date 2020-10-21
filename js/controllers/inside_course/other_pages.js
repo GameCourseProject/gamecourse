@@ -146,6 +146,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 }
                 $("#add-user").hide();
                 getUsers();
+                $("#action_completed").empty();
                 $("#action_completed").append("New User(s) added");
                 $("#action_completed").show().delay(3000).fadeOut();
                 resetAddUserModal();
@@ -675,7 +676,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         optionsFilter = $scope.courseRoles;
         optionsOrder = ["Name", "Nickname","Student Number","Last Login"];
         sidebarAll = createSidebar( optionsFilter, optionsOrder);
-        $compile(sidebarAll)($scope)
+        $compile(sidebarAll)($scope);
+        $element.append(sidebarAll);
     });
 
     allUsers=$("<div id='allUsers'></div>")
@@ -821,7 +823,6 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             $scope.users = data.userList.slice();
             $scope.allUsers = data.userList.slice();
 
-            $element.append(sidebarAll);
             $element.append(mainContent);
             $scope.lastOrder = "none";
             $scope.lastArrow = "none";
