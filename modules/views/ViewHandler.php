@@ -581,21 +581,65 @@ class ViewHandler
     public function registerLibrary($moduleId, $libraryName, $description)
     {
         if (!Core::$systemDB->select("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName])) {
-            Core::$systemDB->insert("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName, "description" => $description]);
+            Core::$systemDB->insert(
+                "dictionary_library",
+                array(
+                    "moduleId" => $moduleId,
+                    "name" => $libraryName,
+                    "description" => $description
+                )
+            );
+        } else {
+            Core::$systemDB->update(
+                "dictionary_library",
+                array(
+                    "moduleId" => $moduleId,
+                    "name" => $libraryName,
+                    "description" => $description
+                ),
+                array(
+                    "moduleId" => $moduleId,
+                    "name" => $libraryName
+                )
+            );
         }
     }
     public function registerVariable($name, $returnType, $returnName, $libraryName = null, $description = null)
     {
-        if (!Core::$systemDB->select("dictionary_variable", ["name" => $name])) {
-            if ($libraryName) {
-                $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $libraryName], "id");
-                if (!$libraryId) {
-                    new \Exception('Library named ' . $libraryName . ' not found.');
-                }
-            } else {
-                $libraryId = null;
+        if ($libraryName) {
+            $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $libraryName], "id");
+            if (!$libraryId) {
+                new \Exception('Library named ' . $libraryName . ' not found.');
             }
-            Core::$systemDB->insert("dictionary_variable", ["name" => $name, "libraryId" => $libraryId, "returnName" => $returnName, "returnType" => $returnType, "description" => $description]);
+        } else {
+            $libraryId = null;
+        }
+        if (!Core::$systemDB->select("dictionary_variable", ["name" => $name])) {
+            Core::$systemDB->insert(
+                "dictionary_variable",
+                array(
+                    "name" => $name,
+                    "libraryId" => $libraryId,
+                    "returnName" => $returnName,
+                    "returnType" => $returnType,
+                    "description" => $description
+                )
+            );
+        } else {
+            Core::$systemDB->update(
+                "dictionary_variable",
+                array(
+                    "name" => $name,
+                    "libraryId" => $libraryId,
+                    "returnName" => $returnName,
+                    "returnType" => $returnType,
+                    "description" => $description
+                ),
+                array(
+                    "name" => $name
+                )
+
+            );
         }
     }
     public function registerFunction($funcLib, $funcName, $processFunc, $description,  $returnType, $returnName = null,  $refersToType = "object", $refersToName = null)
@@ -642,36 +686,76 @@ class ViewHandler
                 }
             }
         }
-        if (Core::$systemDB->select("dictionary_function", ["keyword" => $funcName])) {
+        if (Core::$systemDB->select("dictionary_function", array("keyword" => $funcName))) {
             if ($funcLib) {
-                if (Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName, "refersToType" => $refersToType, "refersToName" => $refersToName])) {
-                    new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
+                if (Core::$systemDB->select("dictionary_function", array("libraryId" => $libraryId, "keyword" => $funcName, "refersToType" => $refersToType, "refersToName" => $refersToName))) {
+                    Core::$systemDB->update(
+                        "dictionary_function",
+                        array(
+                            "libraryId" => $libraryId,
+                            "returnType" => $returnType,
+                            "returnName" => $returnName,
+                            "refersToType" => $refersToType,
+                            "refersToName" => $refersToName,
+                            "keyword" => $funcName,
+                            "args" => $arg,
+                            "description" => $description
+                        ),
+                        array(
+                            "libraryId" => $libraryId,
+                            "keyword" => $funcName,
+
+                        )
+                    );
                 } else { //caso queira registar uma função com a mesma keyword, mas numa library diferente
-                    Core::$systemDB->insert("dictionary_function", [
-                        "libraryId" => $libraryId,
-                        "returnType" => $returnType,
-                        "returnName" => $returnName,
-                        "refersToType" => $refersToType,
-                        "refersToName" => $refersToName,
-                        "keyword" => $funcName,
-                        "args" => $arg,
-                        "description" => $description
-                    ]);
+                    Core::$systemDB->insert(
+                        "dictionary_function",
+                        array(
+                            "libraryId" => $libraryId,
+                            "returnType" => $returnType,
+                            "returnName" => $returnName,
+                            "refersToType" => $refersToType,
+                            "refersToName" => $refersToName,
+                            "keyword" => $funcName,
+                            "args" => $arg,
+                            "description" => $description
+                        )
+                    );
                 }
             } else {
-                if (!Core::$systemDB->select("dictionary_function", ["keyword" => $funcName, "libraryId" => null, "refersToType" => $refersToType, "refersToName" => $refersToName] )) {
-                    Core::$systemDB->insert("dictionary_function", [
-                        "libraryId" => $libraryId,
-                        "returnType" => $returnType,
-                        "returnName" => $returnName,
-                        "refersToType" => $refersToType,
-                        "refersToName" => $refersToName,
-                        "keyword" => $funcName,
-                        "args" => $arg,
-                        "description" => $description
-                    ]);
+                if (!Core::$systemDB->select("dictionary_function", array("keyword" => $funcName, "libraryId" => null, "refersToType" => $refersToType, "refersToName" => $refersToName))) {
+                    Core::$systemDB->insert(
+                        "dictionary_function",
+                        array(
+                            "libraryId" => $libraryId,
+                            "returnType" => $returnType,
+                            "returnName" => $returnName,
+                            "refersToType" => $refersToType,
+                            "refersToName" => $refersToName,
+                            "keyword" => $funcName,
+                            "args" => $arg,
+                            "description" => $description
+                        )
+                    );
                 } else {
-                    new \Exception('Function ' . $funcName . ' already exists in library ' . $funcLib);
+                    Core::$systemDB->update(
+                        "dictionary_function",
+                        array(
+                            "libraryId" => $libraryId,
+                            "returnType" => $returnType,
+                            "returnName" => $returnName,
+                            "refersToType" => $refersToType,
+                            "refersToName" => $refersToName,
+                            "keyword" => $funcName,
+                            "args" => $arg,
+                            "description" => $description
+                        ),
+                        array(
+                            "libraryId" => $libraryId,
+                            "keyword" => $funcName,
+
+                        )
+                    );
                 }
             }
         } else {
