@@ -78,6 +78,8 @@ $user = Core::getLoggedUser();
                             }
                             $rootScope.courseName = data.courseName;
 
+                            $("#course_name").text(data.courseName);
+
                             var path = 'courses/' + courseName + '-' + course;
                             changeTitle(data.courseName, 0, true, path);
                             $smartboards.loadDependencies(data.resources).then(function() {
@@ -221,6 +223,7 @@ $user = Core::getLoggedUser();
         </ul>
 
     </div>
+    <div ng-if="course" id="course_name"></div>
     <!-- <nav>
             <div class="nav-header">
                 <a ui-sref="home">GameCourse</a> 
