@@ -135,9 +135,18 @@ class Badges extends Module
 
         );
         //badges.getBadge(name)
-        $viewHandler->registerFunction('badges', 'getBadge', function (string $name = null) {
-            return $this->getBadge(false, ["name" => $name]);
-        }, 'object', "Returns the badge object with the specific name.", 'library');
+        $viewHandler->registerFunction(
+            'badges',
+            'getBadge',
+            function (string $name = null) {
+                return $this->getBadge(false, ["name" => $name]);
+            },
+            "Returns the badge object with the specific name.",
+            'object',
+            'badge',
+            'library',
+            null
+        );
         //badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction(
             'badges',

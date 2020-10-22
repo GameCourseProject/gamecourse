@@ -4,6 +4,8 @@ use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
+use GameCourse\API;
+use GameCourse\Course;
 
 class XPLevels extends Module
 {
