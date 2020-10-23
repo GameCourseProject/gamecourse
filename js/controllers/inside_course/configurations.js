@@ -1,9 +1,9 @@
 //This file contains configuration options that are inside the settings
 //(managing students and teachers, and configuring skill tree, badges and levels)
 
-function alertUpdateAndReload(data, err) {
+function alertUpdate(data, err) {
     if (err) {
-        alert(err.description);
+        giveError(err.description);
         return;
     }
     if (Object.keys(data.updatedData).length > 0) {
@@ -11,7 +11,7 @@ function alertUpdateAndReload(data, err) {
         for (var i in data.updatedData) {
             output += data.updatedData[i] + '\n';
         }
-        alert(output);
+        giveError(output);
     }
     //location.reload();
 }
@@ -76,7 +76,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     $scope.saveDataGeneralInputs = function(){
         $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, function (data, err) {
             if (err) {
-                alert(err.description);
+                giveError(err.description);
                 return;
             }
             location.reload();
@@ -123,7 +123,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.submitItem = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'new'}, function (data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();
@@ -151,7 +151,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.submitItem = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'edit'}, function (data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();
@@ -166,7 +166,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.confirmDelete = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, function (data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();
@@ -384,18 +384,18 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, skillsList: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseSkills', { course: $scope.course, skillsList: arg }, alertUpdate);
     };
     $scope.replaceTier = function (arg) {
         if (confirm("Are you sure you want to replace all the Tiers with the ones on the input box?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, tiersList: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseSkills', { course: $scope.course, tiersList: arg }, alertUpdate);
     };
     $scope.replaceNumber = function (arg) {
         if (confirm("Are you sure you want to change the Maximum Tree XP?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, maxReward: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseSkills', { course: $scope.course, maxReward: arg }, alertUpdate);
     };
     $scope.addData = function (arg) {//Currently not being used
-        $smartboards.request('settings', 'courseSkills', { course: $scope.course, newSkillsList: arg }, alertUpdateAndReload);
+        $smartboards.request('settings', 'courseSkills', { course: $scope.course, newSkillsList: arg }, alertUpdate);
     };
     $scope.clearData = function () {
         clearFillBox($scope);
@@ -485,14 +485,14 @@ app.controller('CourseBadgesSettingsController', function ($scope, $stateParams,
     
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Badges with the ones on the input box?"))
-            $smartboards.request('settings', 'courseBadges', { course: $scope.course, badgesList: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseBadges', { course: $scope.course, badgesList: arg }, alertUpdate);
     };
     $scope.clearData = function () {
         clearFillBox($scope);
     };
     $scope.replaceNumber = function (arg) {
         if (confirm("Are you sure you want to change the Maximum Bonus Badge Reward?"))
-            $smartboards.request('settings', 'courseBadges', { course: $scope.course, maxReward: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseBadges', { course: $scope.course, maxReward: arg }, alertUpdate);
     };
     $smartboards.request('settings', 'courseBadges', { course: $scope.course }, function (data, err) {
         if (err) {
@@ -555,7 +555,7 @@ app.controller('CourseBadgesSettingsController', function ($scope, $stateParams,
 app.controller('CourseLevelsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
-            $smartboards.request('settings', 'courseLevels', { course: $scope.course, levelList: arg }, alertUpdateAndReload);
+            $smartboards.request('settings', 'courseLevels', { course: $scope.course, levelList: arg }, alertUpdate);
     };
     $scope.clearData = function () {
         clearFillBox($scope);
@@ -603,7 +603,7 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
         console.log(lines);
     }
     $scope.saveFenix = function () {
-        $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdate);
 
 
     }
@@ -633,29 +633,29 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
     var authUrl;
     $scope.saveCredentials = function () {
         $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
-            alertUpdateAndReload(data, err);
+            alertUpdate(data, err);
             authUrl = data.authUrl;
         });
     }
     $scope.saveMoodle = function () {
         console.log("save moodle");
-        $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdate);
     };
     $scope.enableMoodle = function () {
         console.log($scope.moodleVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { moodlePeriodicity: $scope.moodleVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { moodlePeriodicity: $scope.moodleVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.enableClassCheck = function () {
         console.log($scope.classCheckVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.enableGoogleSheets = function () {
         console.log($scope.googleSheetsVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.saveClassCheck = function () {
         console.log("save class check");
-        $smartboards.request('settings', 'coursePlugin', { classCheck: $scope.classCheckVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { classCheck: $scope.classCheckVars, course: $scope.course }, alertUpdate);
     };
     $scope.saveGoogleSheets = function () {
         console.log("save google sheets");
@@ -667,7 +667,7 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
             $scope.googleSheetsVars.sheetName.push(sheetname);
             i++;
         }
-        $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdate);
     };
     $scope.addExtraField = function () {
         inputs = $("#sheet_names");

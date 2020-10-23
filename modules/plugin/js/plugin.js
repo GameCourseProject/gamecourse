@@ -32,7 +32,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         console.log(lines);
     }
     $scope.saveFenix = function () {
-        $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdate);
     }
 
     $scope.getAuthCode = function () {
@@ -60,29 +60,29 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     var authUrl;
     $scope.saveCredentials = function () {
         $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
-            alertUpdateAndReload(data, err);
+            alertUpdate(data, err);
             authUrl = data.authUrl;
         });
     }
     $scope.saveMoodle = function () {
         console.log("save moodle");
-        $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdate);
     };
     $scope.enableMoodle = function () {
         console.log($scope.moodleVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { moodlePeriodicity: $scope.moodleVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { moodlePeriodicity: $scope.moodleVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.enableClassCheck = function () {
         console.log($scope.classCheckVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.enableGoogleSheets = function () {
         console.log($scope.googleSheetsVarsPeriodicity);
-        $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
     $scope.saveClassCheck = function () {
         console.log("save class check");
-        $smartboards.request('settings', 'coursePlugin', { classCheck: $scope.classCheckVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { classCheck: $scope.classCheckVars, course: $scope.course }, alertUpdate);
     };
     $scope.saveGoogleSheets = function () {
         console.log("save google sheets");
@@ -94,7 +94,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
             $scope.googleSheetsVars.sheetName.push(sheetname);
             i++;
         }
-        $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdateAndReload);
+        $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdate);
     };
     $scope.addExtraField = function(){
         inputs = $("#sheet_names");

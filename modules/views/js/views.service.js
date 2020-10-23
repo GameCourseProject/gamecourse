@@ -496,7 +496,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             templates[id].role = $rootScope.role;
                             $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveError(err.description);
                                     return;
                                 }
                                 newPart = data.template;
@@ -545,7 +545,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveError(err.description);
                                     return;
                                 }
                                 execClose();
@@ -594,7 +594,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveError(err.description);
                                     return;
                                 }
                                 execClose();
@@ -604,7 +604,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveError(err.description);
                                     return;
                                 }
                                 newPart = data.template;

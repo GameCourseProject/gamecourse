@@ -113,7 +113,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
             $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, function(data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();

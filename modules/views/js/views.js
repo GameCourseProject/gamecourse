@@ -50,7 +50,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             if ($scope.viewType == "ROLE_SINGLE") {
                 $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
                     if (err) {
-                        alert(err.description);
+                        giveError(err.description);
                         return;
                     }
 
@@ -63,7 +63,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             } else if ($scope.viewType == "ROLE_INTERACTION") {
                 $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
                     if (err) {
-                        alert(err.description);
+                        giveError(err.description);
                         return;
                     }
 
@@ -80,7 +80,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         $scope.createViewTwo = function() {
             $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: $scope.selection.missingTwoToAdd.id}}, function(data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
 
@@ -103,7 +103,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
 
@@ -132,7 +132,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
 
             $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
 
@@ -195,14 +195,14 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
                 btnSave.prop('disabled', false);
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
 
                 if (data != undefined)
-                    alert(data);
+                    giveError(data);
                 else {
-                    alert('Saved!');
+                    giveError('Saved!');
                 }
                 initialViewContent = angular.copy(saveData.content);
                 location.reload();//reloading to prevent bug that kept adding new parts over again
@@ -219,7 +219,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             $smartboards.request('views', 'previewEdit', editData, function(data, err) {
                 btnPreview.prop('disabled', false);
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
 
@@ -288,7 +288,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state,$sbviews) {
     $smartboards.request('views', 'listViews', {course: $scope.course}, function(data, err) {
         if (err) {
-            alert(err.description);
+            giveError(err.description);
             return;
         }
 
@@ -406,7 +406,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             $scope.saveView = function () {
                 $smartboards.request('views','createView',$scope.newView,function(data,err){
                     if (err) {
-                        alert(err.description);
+                        giveError(err.description);
                         return;
                     }
                     location.reload();
@@ -444,7 +444,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $scope.globalize = function(template){
             $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal},function(data,err){
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();
@@ -454,7 +454,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             console.log(template);
             $smartboards.request('views','copyGlobalTemplate',{course: $scope.course, template: template},function(data,err){
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 location.reload();
@@ -463,7 +463,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $scope.exportTemplate = function(template){
             $smartboards.request('views', 'exportTemplate', {course:$scope.course, id: template.id,name:template.name}, function(data, err) {
                 if (err) {
-                    alert(err.description);
+                    giveError(err.description);
                     return;
                 }
                 $scope.response = data.filename;
@@ -482,7 +482,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             $scope.submitDelete = function (){
                 $smartboards.request('views', 'deleteView', $scope.view, function(data, err) {
                     if (err) {
-                        alert(err.description);
+                        giveError(err.description);
                         return;
                     }
                     location.reload();
