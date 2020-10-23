@@ -141,7 +141,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             };
             $smartboards.request('course', 'addUser', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#add-user").hide();
@@ -188,7 +188,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
         $smartboards.request('course', 'notCourseUsers', reqData, function(data, err) {
             if (err) {
-                console.log(err.description);
+                giveMessage(err.description);
                 return;
             }
     
@@ -338,7 +338,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             };
             $smartboards.request('course', 'createUser', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#add-user").hide();
@@ -495,7 +495,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             };
             $smartboards.request('course', 'editUser', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#edit-user").hide();
@@ -636,7 +636,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             $scope.importedUsers = reader.result;
             $smartboards.request('course', 'importUser', { file: $scope.importedUsers }, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 nUsers = data.nUsers;
@@ -652,7 +652,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     $scope.exportUsers = function(){
         $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
             if (err) {
-                console.log(err.description);
+                giveMessage(err.description);
                 return;
             }
             download("courseUsers.csv", data.courseUsers);
@@ -665,6 +665,10 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     
     //sidebar 
     $smartboards.request('course', 'courseRoles', {course : $scope.course}, function(data,err){
+        if (err) {
+            giveMessage(err.description);
+            return;
+        }
         $scope.courseRoles = [];
         jQuery.each(data.courseRoles, function(index){
             role = data.courseRoles[index];
@@ -817,7 +821,12 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
     //filter vai fazer este pedido com diferentes role definidos
     getUsers = function() {
-            $smartboards.request('course', 'courseUsers', {course : $scope.course, role: "allRoles"}, function(data,err){
+        $smartboards.request('course', 'courseUsers', {course : $scope.course, role: "allRoles"}, function(data,err){
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            
             role = "allRoles"
 
             $scope.users = data.userList.slice();

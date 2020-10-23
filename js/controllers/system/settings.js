@@ -20,7 +20,7 @@ app.controller('Settings', function($scope, $state, $compile, $smartboards) {
 app.controller('SettingsGlobal', function($scope, $element, $smartboards, $compile) {
     $smartboards.request('settings', 'global', {}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -159,7 +159,7 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
 
     $smartboards.request('settings', 'modules', {}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 

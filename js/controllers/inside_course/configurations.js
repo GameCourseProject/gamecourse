@@ -33,7 +33,7 @@ function constructTextArea($compile, $scope, name, text, width = 60, data = "new
 }
 function constructConfigPage(data, err, $scope, $element, $compile, name, text, tabContents, columns) {
     if (err) {
-        console.log(err);
+        giveMessage(err.description);
         return;
     }
     $scope.data = data;
@@ -136,7 +136,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     }
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
         
@@ -370,7 +370,7 @@ app.controller('CourseSkillsSettingsController', function ($scope, $stateParams,
 
     $smartboards.request('settings', 'courseSkills', { course: $scope.course }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
         var text = "Skills must be in the following format: tier;name;dep1A+dep1B|dep2A+dep2B;color;XP";
@@ -457,7 +457,7 @@ app.controller('CourseBadgesSettingsController', function ($scope, $stateParams,
     };
     $smartboards.request('settings', 'courseBadges', { course: $scope.course }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
 
@@ -524,7 +524,7 @@ app.controller('CourseLevelsSettingsController', function ($scope, $stateParams,
 
     $smartboards.request('settings', 'courseLevels', { course: $scope.course }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
 
@@ -639,7 +639,7 @@ app.controller('CoursePluginsSettingsController', function ($scope, $stateParams
 
     $smartboards.request('settings', 'coursePlugin', { course: $scope.course }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
 

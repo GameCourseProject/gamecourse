@@ -105,7 +105,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
 
     $smartboards.request('settings', 'coursePlugin', { course: $scope.course }, function (data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
 

@@ -413,7 +413,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             };
             $smartboards.request('core', 'createCourse', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#new-course").hide();
@@ -515,7 +515,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             };
             $smartboards.request('core', 'editCourse', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#edit-course").hide();
@@ -542,8 +542,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         };
         $smartboards.request('core', 'createCourse', reqData, function(data, err) {
             if (err) {
-                console.log(err.description);
-                //return;  //uncomennt after bug fixed on Course.php
+                giveMessage(err.description);
+                return;
             }
             $("#new-course").hide();
             getCourses();
@@ -563,7 +563,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
             $scope.importedCourses = reader.result;
             $smartboards.request('core', 'importCourses', { file: $scope.importedCourses }, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 nCourses = data.nCourses;
@@ -579,7 +579,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     $scope.exportCourses = function(){
         $smartboards.request('core', 'exportCourses', { }, function(data, err) {
             if (err) {
-                console.log(err.description);
+                giveMessage(err.description);
                 return;
             }
             download("courses.csv", data.courses);
@@ -969,8 +969,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
             };
             $smartboards.request('core', 'createUser', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
-                    //falta apanhar erro de student number ja existente
+                    giveMessage(err.description);
                     return;
                 }
                 $("#new-user").hide();
@@ -1110,7 +1109,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
             };
             $smartboards.request('core', 'editUser', reqData, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 $("#edit-user").hide();
@@ -1282,7 +1281,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
             $scope.importedUsers = reader.result;
             $smartboards.request('core', 'importUser', { file: $scope.importedUsers }, function(data, err) {
                 if (err) {
-                    console.log(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 nUsers = data.nUsers;
@@ -1298,7 +1297,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     $scope.exportUsers = function(){
         $smartboards.request('core', 'exportUsers', { }, function(data, err) {
             if (err) {
-                console.log(err.description);
+                giveMessage(err.description);
                 return;
             }
             download("users.csv", data.users);
@@ -1483,7 +1482,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     getUsers = function() {
         $smartboards.request('core', 'users', {}, function(data, err) {
             if (err) {
-                $($element).text(err.description);
+                giveMessage(err.description);
                 return;
             }
             console.log(data)

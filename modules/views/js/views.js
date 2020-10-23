@@ -3,7 +3,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
     $element.html('Loading...');
     $smartboards.request('views', 'getInfo', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp,course: $scope.course}, function(data, err) {
         if (err) {
-            $element.text(err.description);
+            giveMessage(err.description);
             return;
         }
         function subtractSpecializations(one, two) {

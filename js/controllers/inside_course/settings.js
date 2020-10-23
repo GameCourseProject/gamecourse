@@ -6,7 +6,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
         $smartboards.request('settings', 'courseTabs', {course: $scope.course}, function(data, err) {
             if (err) {
-                console.log(err);
+                giveMessage(err.description);
                 return;
             }
 
@@ -31,7 +31,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
 app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, $compile) {
     $smartboards.request('settings', 'courseGlobal', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -176,7 +176,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
     $smartboards.request('settings', 'courseModules', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -456,7 +456,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 
     $smartboards.request('settings', 'roles', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -574,7 +574,7 @@ app.controller('CourseRoleSettingsController', function($scope, $stateParams, $e
     //shortName: $stateParams.role,
     $smartboards.request('settings', 'roleInfo', {course : $scope.course,  id: $stateParams.id}, function(data, err) {
         if (err) {
-            console.log(err);
+            giveMessage(err.description);
             return;
         }
         $scope.data = data;
