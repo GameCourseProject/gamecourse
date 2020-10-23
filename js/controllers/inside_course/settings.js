@@ -111,13 +111,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
         $scope.saveModule = function(){
 
-            $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, function(data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, alertUpdate);
         }
     }
 

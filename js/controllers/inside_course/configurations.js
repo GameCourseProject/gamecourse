@@ -59,13 +59,7 @@ function constructConfigPage(data, err, $scope, $element, $compile, name, text, 
 app.controller('ConfigurationController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse){
 
     $scope.saveDataGeneralInputs = function(){
-        $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, function (data, err) {
-            if (err) {
-                giveMessage(err.description);
-                return;
-            }
-            location.reload();
-        });
+        $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, alertUpdate);
     }
     $scope.generalInputsChanged = function(){
         changed = false;
@@ -106,15 +100,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $("#open_item_action").text('New '+$scope.listingItems.itemName+': ');
 
         $scope.submitItem = function (){
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'new'}, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'new'}, alertUpdate);
         }
-    } 
+    }
     $scope.editItem = function(item){
         $scope.openItem = {};
         $scope.openItem.id = item.id;
@@ -134,13 +122,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         });
         
         $scope.submitItem = function (){
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'edit'}, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'edit'}, alertUpdate);
         }
     }
     $scope.deleteItem = function(item){
@@ -149,13 +131,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $('#delete_action_info').text( $scope.listingItems.itemName + ': ' + $scope.openItem.id);
 
         $scope.confirmDelete = function (){
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, alertUpdate);
         }
     }
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {

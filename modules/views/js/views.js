@@ -404,13 +404,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             $scope.newView = {name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, IsActive: false};
 
             $scope.saveView = function () {
-                $smartboards.request('views','createView',$scope.newView,function(data,err){
-                    if (err) {
-                        giveMessage(err.description);
-                        return;
-                    }
-                    location.reload();
-                });
+                $smartboards.request('views','createView',$scope.newView, alertUpdate);
             };
             //criar funcao de verificacao
             $scope.isReadyToSubmit = function() {
@@ -442,23 +436,11 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id});
         };
         $scope.globalize = function(template){
-            $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal},function(data,err){
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal}, alertUpdate);
         };
         $scope.useGlobal = function(template){
             console.log(template);
-            $smartboards.request('views','copyGlobalTemplate',{course: $scope.course, template: template},function(data,err){
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('views','copyGlobalTemplate',{course: $scope.course, template: template}, alertUpdate);
         };
         $scope.exportTemplate = function(template){
             $smartboards.request('views', 'exportTemplate', {course:$scope.course, id: template.id,name:template.name}, function(data, err) {
@@ -480,13 +462,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 $("#for_template_warning").hide();
             }
             $scope.submitDelete = function (){
-                $smartboards.request('views', 'deleteView', $scope.view, function(data, err) {
-                    if (err) {
-                        giveMessage(err.description);
-                        return;
-                    }
-                    location.reload();
-                });
+                $smartboards.request('views', 'deleteView', $scope.view, alertUpdate);
             }
             
         };
