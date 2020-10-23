@@ -167,7 +167,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         el.show();
                     };
                 } else {
-                    giveError('Filter mode ' + part.filterBox.mode + ' not implemented.');
+                    giveMessage('Filter mode ' + part.filterBox.mode + ' not implemented.');
                 }
 
                 var values = [];

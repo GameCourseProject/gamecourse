@@ -1,21 +1,6 @@
 //This file contains configuration options that are inside the settings
 //(managing students and teachers, and configuring skill tree, badges and levels)
 
-function alertUpdate(data, err) {
-    if (err) {
-        giveError(err.description);
-        return;
-    }
-    if (Object.keys(data.updatedData).length > 0) {
-        var output = "";
-        for (var i in data.updatedData) {
-            output += data.updatedData[i] + '\n';
-        }
-        giveError(output);
-    }
-    //location.reload();
-}
-
 function clearFillBox($scope) {
     if ($scope.newList !== "")
         $scope.newList = "";
@@ -76,7 +61,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     $scope.saveDataGeneralInputs = function(){
         $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, function (data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             location.reload();
@@ -123,7 +108,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.submitItem = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'new'}, function (data, err) {
                 if (err) {
-                    giveError(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 location.reload();
@@ -151,7 +136,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.submitItem = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'edit'}, function (data, err) {
                 if (err) {
-                    giveError(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 location.reload();
@@ -166,7 +151,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.confirmDelete = function (){
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, function (data, err) {
                 if (err) {
-                    giveError(err.description);
+                    giveMessage(err.description);
                     return;
                 }
                 location.reload();

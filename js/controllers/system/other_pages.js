@@ -13,7 +13,7 @@ app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $c
 
     $smartboards.request('core', 'getUserActiveCourses', {}, function(data, err) {
         if (err) {
-            giveError(err.description);
+            giveMessage(err.description);
             return;
         }
         $scope.userActiveCourses = data.userActiveCourses;
@@ -41,7 +41,7 @@ app.controller('MyInfo', function($element, $scope, $smartboards, $compile, $sta
 
     $smartboards.request('core', 'getUserInfo', {}, function(data, err) {
         if (err) {
-            giveError(err.description);
+            giveMessage(err.description);
             return;
         }
         $scope.myInfo = data.userInfo;
@@ -101,7 +101,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         $("#action_completed").empty();
         $smartboards.request('core', 'deleteCourse', {course: course.id}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             getCourses(); //closes the modal
@@ -120,7 +120,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         }
         $smartboards.request('core', 'setCoursesvisibility', {course_id: course_id, visibility: $visible}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             $scope.courses.find(x => x.id === course_id).isVisible = $visible;
@@ -138,7 +138,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         }
         $smartboards.request('core', 'setCoursesActive', {course_id: course_id, active: $active}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             $scope.courses.find(x => x.id === course_id).isActive = $active;
@@ -788,7 +788,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         //request to get all courses info
         $smartboards.request('core', 'getCoursesList', {}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             $scope.courses = data.courses;
@@ -848,7 +848,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $("#action_completed").empty();
         $smartboards.request('core', 'deleteUser', {user_id: user.id}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             getUsers();
@@ -867,7 +867,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         }
         $smartboards.request('core', 'setUserAdmin', {user_id: user_id, isAdmin: $admin}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             $scope.users.find(x => x.id === user_id).isAdmin = $admin;
@@ -885,7 +885,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         }
         $smartboards.request('core', 'setUserActive', {user_id: user_id, isActive: $active}, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             $scope.users.find(x => x.id === user_id).isActive = $active;

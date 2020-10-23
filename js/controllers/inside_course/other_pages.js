@@ -14,7 +14,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $("#action_completed").empty();
         $smartboards.request('course', 'removeUser', {user_id: user.id, course: $scope.course }, function(data, err) {
             if (err) {
-                giveError(err.description);
+                giveMessage(err.description);
                 return;
             }
             getUsers();

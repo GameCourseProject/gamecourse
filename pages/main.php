@@ -73,7 +73,7 @@ $user = Core::getLoggedUser();
                         //na funcao da API devolve o que vai aparecer na navbar
                         $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function(data, err) {
                             if (err) {
-                                alert(err.description);
+                                giveMessage(err.description);
                                 return;
                             }
                             $rootScope.courseName = data.courseName;
