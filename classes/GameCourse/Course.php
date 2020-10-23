@@ -557,11 +557,13 @@ class Course
             $i++;
         }
 
-        return Core::$systemDB->selectMultipleSegmented(
+        $functions =  Core::$systemDB->selectMultipleSegmented(
             "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
             $whereCondition,
             "name, keyword, refersToType, refersToName, returnType, returnName, args"
         );
+        $arrMerged = $this->checkFunctionReturnLoop($functions);
+        return $arrMerged;
     }
 
     //enabled porque no futuro podem haver variáveis dependentes de modules
@@ -616,6 +618,28 @@ class Course
             "name, keyword, refersToType, refersToName, returnType, dictionary_function.description as description, args",
             "refersToType"
         );
+    }
+    public function checkFunctionReturnLoop($functions){
+        $f = $functions;
+        for ($i = 0; $i < count($functions); $i++) { 
+            if($functions[$i]["returnType"] == "collection"){
+                $f[$i]["returnsLoop"] =  true;
+            }else{
+                $returnLoopResult = $this->returnLoop($functions[$i]["returnName"], $functions[$i]["returnType"], $functions);
+                $f[$i]["returnsLoop"] = $returnLoopResult;
+            }
+        }
+        return $f;
+    }
+
+    public function returnLoop($returnName, $returnType, $functions){
+        $hasLoop = false;
+        foreach ($functions as $func) {
+            if($func["refersToType"] == $returnType && $func["refersToName"] == $returnName && $func["returnType"] == "collection"){
+                $hasLoop=true;
+            }
+        }
+        return $hasLoop;
     }
     public function getAvailablePages(){
         return Core::$systemDB->selectMultiple("page",["course"=>$this->cid], 'name');

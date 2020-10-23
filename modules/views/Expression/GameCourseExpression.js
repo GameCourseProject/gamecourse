@@ -81,6 +81,7 @@ var GameCourseExpression = (function () {
     var errorMessage = "";
     var variablesTemp = [];
     var inputGlobal = "";
+    var isLoop = false;
 
     var parser = {
         trace: function trace() { },
@@ -466,7 +467,7 @@ var GameCourseExpression = (function () {
                                 libraries.push(element);
                             }
                         } else {
-                            if (element["returnType"] == "collection" && (element["refersToType"] == "collection" || element["refersToType"] == "library")) {
+                            if (element["returnsLoop"] && (element["returnsLoop"] || element["refersToType"] == "library")) {
                                 libraries.push(element);
                             }
                         }
@@ -476,7 +477,7 @@ var GameCourseExpression = (function () {
                     if (input[0] == "{" && input[input.length - 1] == "}") {
                         input = input.replace("{", "");
                         input = input.replace("}", "");
-                        var libraryShow = new checkLibrary(input, libraries);
+                        var libraryShow = new checkLibrary(input, libraries, true);
                         if (!libraryShow.hasOwnProperty("returnType")) {
 
                             if (libraryShow.hasOwnProperty("toShow")) {
@@ -491,9 +492,9 @@ var GameCourseExpression = (function () {
                             //enters here if library+function matched   
                             libraryGlobalCollection = library;
                             libraryChosen = libraryShow.libraryChosen;
-
+                            isLoop = true;
                             var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                            new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, "collection", libraryShow.returnName);
+                            new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, null, libraryShow.returnName);
                         }
                     } else {
                         errorMessage = "Please write inside {}.";
@@ -906,6 +907,8 @@ var GameCourseExpression = (function () {
                                     }
 
                                 }
+
+                                
                                 return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType, "returnName": returnName };
                             } else {
                                 if (libraryExists) {
@@ -1107,7 +1110,7 @@ var GameCourseExpression = (function () {
                 var returnType = "";
                 var returnName = "";
                 var inputArg = input.substring(input.indexOf("(") + 1);
-                if (input !== undefined) {
+                if (input != undefined) {
                     if (input.match(new RegExp("[(]"))) {
                         inputNow_ = input.substring(0, input.indexOf("("));
                         var functionMatched = "";
@@ -1153,7 +1156,9 @@ var GameCourseExpression = (function () {
                                             new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                         }
                                     }
-
+                                    if (isLoop && returnType != "collection") {
+                                        errorMessage = "It should return a collection.";
+                                    }
                                     return { "returnType": returnType, "returnName": returnName, "index": input.length + 1 };
                                 }
                             }
@@ -1292,7 +1297,13 @@ var GameCourseExpression = (function () {
                         libraries.push(element);
                     }
                 } else {
-                    libraries.push(element);
+                    if (isLoop) {
+                        if (element["returnsLoop"]) {
+                            libraries.push(element);
+                        }
+                    } else {
+                        libraries.push(element);
+                    }
                 }
                 if (!returnTypes.includes([element["returnType"], element["returnName"]])) {
 
