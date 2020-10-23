@@ -57,7 +57,7 @@
     display: none;
     margin-top: 8px;
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     background-color: gray;
     width: 100%;
   }
@@ -116,6 +116,6 @@
   font-weight: bold;
   position: absolute;
   font-size: 14px;
-  z-index: 1;
+  z-index: 2;
 }
   
