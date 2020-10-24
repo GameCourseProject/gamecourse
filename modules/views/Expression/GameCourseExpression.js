@@ -503,6 +503,7 @@ var GameCourseExpression = (function () {
                 }
 
             } else if (option == "variables" || option == "if" || option == "content") {
+                isLoop = false;
                 if (input) {
                     var libraries = [];
                     if (library) {
@@ -721,19 +722,25 @@ var GameCourseExpression = (function () {
                                     var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
                                     txtContent = txtContent.replace("{", "");
                                     txtContent = txtContent.replace("}", "");
-                                    $splitted = txtContent.split(".");
-                                    if ($splitted.length >= 2 && txtContent != undefined) {
-                                        library = $splitted[0];
-                                        var functionInLoop = $splitted[1].substring(0, $splitted[1].indexOf("("));
-                                        if (functionInLoop) {
-                                            libraryGlobalCollection.forEach(e => {
-                                                if (e["keyword"] == functionInLoop && e["name"] == library) {
-                                                    returnName = e["returnName"]
+                                    var splitted = txtContent.split(".");
+                                    if (splitted.length >= 2 && txtContent != undefined) {
+                                        for (let index = splitted.length-1; index > 0; index--) {
+                                            var possibleFunction = splitted[index].substring(0, splitted[index].indexOf("("));
+                                            var found = false;
+                                            for (let i = 0; i < libraryGlobalCollection.length; i++) {
+                                                if (libraryGlobalCollection[i]["keyword"] == possibleFunction && libraryGlobalCollection[i]["refersToType"] == "library") {
+                                                    returnName = libraryGlobalCollection[i]["returnName"];
+                                                    library = libraryGlobalCollection[i]["name"];
+                                                    found = true;
+                                                    break;
                                                 }
-                                            });
+                                            }
+                                            if (found) {
+                                                break;
+                                            }
                                         }
+                                       
                                     } else {
-                                        console.log(element["name"]);
                                         toShow = false;
                                     }
                                 }
@@ -748,19 +755,34 @@ var GameCourseExpression = (function () {
                                 var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
                                 txtContent = txtContent.replace("{", "");
                                 txtContent = txtContent.replace("}", "");
-                                $splitted = txtContent.split(".");
-                                if ($splitted.length >= 2 && txtContent != undefined) {
-                                    library = $splitted[0];
-                                    var functionInLoop = $splitted[1].substring(0, $splitted[1].indexOf("("));
-                                    var hasLoopFunction = false;
-                                    if (functionInLoop) {
-                                        libraryGlobalCollection.forEach(e => {
-                                            if (e["keyword"] == functionInLoop && e["name"] == library) {
-                                                hasLoopFunction = true;
+                                var splitted = txtContent.split(".");
+                                if (splitted.length >= 2 && txtContent != undefined) {
+                                    for (let index = splitted.length - 1; index > 0; index--) {
+                                        var possibleFunction = splitted[index].substring(0, splitted[index].indexOf("("));
+                                        var found = false;
+                                        for (let i = 0; i < libraryGlobalCollection.length; i++) {
+                                            if (libraryGlobalCollection[i]["keyword"] == possibleFunction && libraryGlobalCollection[i]["refersToType"] == "library") {
+                                                returnName = libraryGlobalCollection[i]["returnName"];
+                                                library = libraryGlobalCollection[i]["name"];
+
+                                                found = true;
+                                                break;
                                             }
-                                        });
+                                        }
+                                        if (found) {
+                                            break;
+                                        }
                                     }
-                                    if (!variableMatched.includes(element["name"]) && hasLoopFunction) {
+                                   
+                                    // var hasLoopFunction = false;
+                                    // if (functionInLoop) {
+                                    //     libraryGlobalCollection.forEach(e => {
+                                    //         if (e["keyword"] == functionInLoop && e["name"] == library) {
+                                    //             hasLoopFunction = true;
+                                    //         }
+                                    //     });
+                                    // }
+                                    if (!variableMatched.includes(element["name"])){// && hasLoopFunction) {
                                         variableMatched.push(element["name"]);
                                     }
                                 }
