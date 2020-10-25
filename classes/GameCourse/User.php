@@ -156,7 +156,16 @@ class User
             return new User($userId);
         }
     }
-
+    public static function getUserByEmail($email)
+    {
+        $userId = Core::$systemDB->select("game_course_user", ["email" => $email], "id");
+        // $userId = Core::$systemDB->select("game_course_user", ["username" => $username], "id");
+        if ($userId == null) {
+            return null;
+        } else {
+            return new User($userId);
+        }
+    }
     public static function getUserIdByUsername($username)
     {
         return Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
@@ -257,7 +266,7 @@ class User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
-        $file .= "name, email, nickname, studentNumber, isAdmin, isActive\n";
+        $file .= "name,email,nickname,studentNumber,isAdmin,isActive\n";
         foreach ($listOfUsers as $user) {
             $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," . $user["isActive"];
             if ($i != $len - 1) {
@@ -269,26 +278,149 @@ class User
     }
 
 
-    public static function importUsers($fileData)
+    public static function importUsers($fileData, $replace = false)
     {
         $newUsersNr = 0;
         $lines = explode("\n", $fileData);
+
+        $has1stLine = false;
+        $nameIndex = "";
+        $emailIndex = "";
+        $nicknameIndex = "";
+        $studentNumberIndex = "";
+        $isAdminIndex = "";
+        $isActiveIndex = "";
+        //se tiver 1ª linha com nomes
+        if($lines[0]){
+            $firstLine = explode(",",$lines[0]);
+            if(in_array("name", $firstLine) && in_array("email", $firstLine) 
+                && in_array("nickname", $firstLine) && in_array("studentNumber", $firstLine) 
+                && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine))
+            {
+                $has1stLine = true;
+                $nameIndex = array_search("name", $firstLine);
+                $emailIndex = array_search("email", $firstLine);
+                $nicknameIndex = array_search("nickname", $firstLine);
+                $studentNumberIndex = array_search("studentNumber", $firstLine);
+                $isAdminIndex = array_search("isAdmin", $firstLine);
+                $isActiveIndex = array_search("isActive", $firstLine);
+            }
+        }
+
+        $i = 0;
         foreach ($lines as $line) {
             $user = explode(",", $line);
-            if (!User::getUserByStudentNumber($user[3])) {
-                $newUsersNr++;
-                Core::$systemDB->insert(
-                    "game_course_user",
-                    [
-                        "name" => $user[0],
-                        "email" => $user[1],
-                        "nickname" => $user[2],
-                        "studentNumber" => $user[3],
-                        "isAdmin" => $user[4],
-                        "isActive" => $user[5]
-                    ]
-                );
+            if (count($user) > 1){
+                if (!$has1stLine){
+                    $nameIndex = 0;
+                    $emailIndex = 1;
+                    $nicknameIndex = 2;
+                    $studentNumberIndex = 3;
+                    $isAdminIndex = 4;
+                    $isActiveIndex = 5;
+                }
+                if(!$has1stLine || ($i != 0 && $has1stLine)){
+                    if ($user[$studentNumberIndex] == "" && $user[$emailIndex] == "") {
+                        $user[$studentNumberIndex] = null;
+                        $user[$emailIndex] = null;
+                        Core::$systemDB->insert(
+                            "game_course_user",
+                            [
+                                "name" => $user[$nameIndex],
+                                "email" => $user[$emailIndex],
+                                "nickname" => $user[$nicknameIndex],
+                                "studentNumber" => $user[$studentNumberIndex],
+                                "isAdmin" => $user[$isAdminIndex],
+                                "isActive" => $user[$isActiveIndex]
+                                ]
+                            );
+                        $newUsersNr++;
+                    } else if ($user[$studentNumberIndex] != ""){
+                        if(!User::getUserByStudentNumber($user[$studentNumberIndex])){
+                            if (!User::getUserByEmail($user[$emailIndex]) && $user[$emailIndex] != "") {
+                                $newUsersNr++;
+                                Core::$systemDB->insert(
+                                    "game_course_user",
+                                    [   
+                                        "name" => $user[$nameIndex],
+                                        "email" => $user[$emailIndex],
+                                        "nickname" => $user[$nicknameIndex],
+                                        "studentNumber" => $user[$studentNumberIndex],
+                                        "isAdmin" => $user[$isAdminIndex],
+                                        "isActive" => $user[$isActiveIndex]
+                                    ]
+                                );
+                            } else {
+                                if ($replace) {
+                                    Core::$systemDB->update(
+                                        "game_course_user",
+                                        [
+                                            "name" => $user[$nameIndex],
+                                            "nickname" => $user[$nicknameIndex],
+                                            "studentNumber" => $user[$studentNumberIndex],
+                                            "isAdmin" => $user[$isAdminIndex],
+                                            "isActive" => $user[$isActiveIndex]
+                                        ],
+                                        [
+                                            "email" => $user[$emailIndex]
+                                        ]
+                                    );
+                                }
+                            }
+                        
+                        }else{
+                            if($replace){
+                                Core::$systemDB->update(
+                                    "game_course_user",
+                                    [
+                                        "name" => $user[$nameIndex],
+                                        "email" => $user[$emailIndex],
+                                        "nickname" => $user[$nicknameIndex],
+                                        "isAdmin" => $user[$isAdminIndex],
+                                        "isActive" => $user[$isActiveIndex]
+                                    ],
+                                    [
+                                        "studentNumber" => $user[$studentNumberIndex]
+                                    ]
+                                );               
+                            }
+                        }
+                    } else {
+                        $user[$studentNumberIndex] = null;
+                        if (!User::getUserByEmail($user[$emailIndex])) {
+                            Core::$systemDB->insert(
+                                "game_course_user",
+                                [
+                                    "name" => $user[$nameIndex],
+                                    "email" => $user[$emailIndex],
+                                    "nickname" => $user[$nicknameIndex],
+                                    "studentNumber" => $user[$studentNumberIndex],
+                                    "isAdmin" => $user[$isAdminIndex],
+                                    "isActive" => $user[$isActiveIndex]
+                                    ]
+                                );
+                                $newUsersNr++;
+                        }else{
+                            if ($replace) {
+                                Core::$systemDB->update(
+                                    "game_course_user",
+                                    [
+                                        "name" => $user[$nameIndex],
+                                        "nickname" => $user[$nicknameIndex],
+                                        "studentNumber" => $user[$studentNumberIndex],
+                                        "isAdmin" => $user[$isAdminIndex],
+                                        "isActive" => $user[$isActiveIndex]
+                                    ],
+                                    [
+                                        "email" => $user[$emailIndex]
+                                    ]
+                                );
+                            }
+                        }
+                    }
+                }
             }
+            $i++;
         }
         return $newUsersNr;
     }
