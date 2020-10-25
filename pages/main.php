@@ -40,6 +40,9 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/controllers/inside_course/configurations.js"></script>
     <script type="text/javascript" src="js/controllers/system/settings.js"></script>
     <script type="text/javascript" src="js/controllers/system/other_pages.js"></script>
+    <script type="text/javascript" src="js/controllers/system/home_page.js"></script>
+    <script type="text/javascript" src="js/controllers/system/courses_page.js"></script>
+    <script type="text/javascript" src="js/controllers/system/users_page.js"></script>
     <script type="text/javascript" src="js/d3.min.js"></script>
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
