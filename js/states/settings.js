@@ -90,13 +90,5 @@ app.config(function($stateProvider){
                 controller: 'CourseRolesSettingsController'
             }
         }
-        //to remove - no longer used
-    }).state('course.settings.roles.role', {
-        url: '/{role:[A-Za-z.]+}-{id:[0-9]+}',
-        views : {
-            'tabContent@course.settings': {
-                controller: 'CourseRoleSettingsController'
-            }
-        }
     });
 });

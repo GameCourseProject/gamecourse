@@ -569,17 +569,3 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
     });
 
 });
-
-app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    //shortName: $stateParams.role,
-    $smartboards.request('settings', 'roleInfo', {course : $scope.course,  id: $stateParams.id}, function(data, err) {
-        if (err) {
-            giveMessage(err.description);
-            return;
-        }
-        $scope.data = data;
-
-        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, id: $stateParams.id}, 'New landing page is set!');
-        $element.append(input);
-    });
-});
