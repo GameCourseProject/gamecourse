@@ -94,21 +94,34 @@ API::registerFunction('core', 'createCourse', function() {
     Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
 });
 API::registerFunction('core', 'editCourse', function() {
-    API::requireAdminPermission();
-    API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
-    $course = Course::getCourse(API::getValue('courseId'), false);
-    $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
+    //may be used inside course settingd on 'this course' page
+    //so users with teacher role can edit information about the course if needed
+    API::requireCourseAdminPermission();
+    API::requireValues('course','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
+    $course = Course::getCourse(API::getValue('course'), false);
+    if($course != null){
+        $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
 });
 API::registerFunction('core', 'deleteCourse', function() {
     API::requireAdminPermission();
     API::requireValues('course');
 
-    $course = API::getValue('course');
-
-    Course::deleteCourse($course);
+    $course_id = API::getValue('course');
+    $course = Course::getCourse($course_id , false);
+    if($course != null){
+        Course::deleteCourse($course_id);
+    }
+    else{
+        API::error("There is no course with that id: ". $course_id);
+    }
 });
 //set course Visibility
 API::registerFunction('core', 'setCoursesvisibility', function(){
+    API::requireAdminPermission();
     API::requireValues('course_id');
     API::requireValues('visibility');
 
@@ -117,10 +130,16 @@ API::registerFunction('core', 'setCoursesvisibility', function(){
     $visibility = API::getValue('visibility');
     
     $cOb = Course::getCourse($course_id, false);
-    $cOb->setVisibleState($visibility);
+    if($cOb != null){
+        $cOb->setVisibleState($visibility);
+    }
+    else{
+        API::error("There is no course with that id: ". $course_id);
+    }
 });
 //set course ative
 API::registerFunction('core', 'setCoursesActive', function(){
+    API::requireAdminPermission();
     API::requireValues('course_id');
     API::requireValues('active');
 
@@ -129,7 +148,12 @@ API::registerFunction('core', 'setCoursesActive', function(){
     $active = API::getValue('active');
     
     $cOb = Course::getCourse($course_id, false);
-    $cOb->setActiveState($active);
+    if($cOb != null){
+        $cOb->setActiveState($active);
+    }
+    else{
+        API::error("There is no course with that id: ". $course_id);
+    }
 });
 
 API::registerFunction('core', 'importCourses', function(){
@@ -154,53 +178,59 @@ API::registerFunction('core', 'getCourseInfo', function() {
     API::requireValues('course');
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    //adding other pages to navigation
-    $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
-    $OldNavPages = Core::getNavigation();
-    $navNames= array_column($OldNavPages,"text");
-    foreach ($pages as $pageId => $page){
-        
-        if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
-            continue;
-        //pages added by modules already have navigation, the otheres need to be added
-        if(!in_array($page["name"], $navNames)){
-            $simpleName=str_replace(' ', '', $page["name"]);
-            Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+    if($course != null){
+        //adding other pages to navigation
+        $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
+        $OldNavPages = Core::getNavigation();
+        $navNames= array_column($OldNavPages,"text");
+        foreach ($pages as $pageId => $page){
+            
+            if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
+                continue;
+            //pages added by modules already have navigation, the otheres need to be added
+            if(!in_array($page["name"], $navNames)){
+                $simpleName=str_replace(' ', '', $page["name"]);
+                Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+            }
         }
-    }
-   
-    $user = Core::getLoggedUser();
-    $courseUser = $course->getLoggedUser();
-    $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
     
-    if ($isAdmin)
-        Core::addNavigation( "Users", 'course.users', true); 
-        Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
-        Core::addSettings('This Course', 'course.settings.global', true);
-        Core::addSettings('Roles', 'course.settings.roles', true);
-        Core::addSettings('Modules', 'course.settings.modules', true);
-        Core::addSettings('Views', 'course.settings.views', true);
+        $user = Core::getLoggedUser();
+        $courseUser = $course->getLoggedUser();
+        $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
+        
+        if ($isAdmin)
+            Core::addNavigation( "Users", 'course.users', true); 
+            Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
+            Core::addSettings('This Course', 'course.settings.global', true);
+            Core::addSettings('Roles', 'course.settings.roles', true);
+            Core::addSettings('Modules', 'course.settings.modules', true);
+            //se views tiver active
+            Core::addSettings('Views', 'course.settings.views', true);
 
-    $navPages = Core::getNavigation();
-    $navSettings = Core::getSettings();
-    //print_r($navPages);
-    foreach ($navPages as $nav){
-        if ($nav["restrictAcess"]===true && !$isAdmin){
-            unset($navPages[array_search($nav, $navPages)]);
+        $navPages = Core::getNavigation();
+        $navSettings = Core::getSettings();
+        //print_r($navPages);
+        foreach ($navPages as $nav){
+            if ($nav["restrictAcess"]===true && !$isAdmin){
+                unset($navPages[array_search($nav, $navPages)]);
+            }
         }
+        API::response(array(
+            'navigation' => $navPages,
+            'settings' => $navSettings,
+            'landingPage' => $courseUser->getLandingPage(),
+            'courseName' => $course->getName(),
+            'resources' => $course->getModulesResources(),
+            'user' => $user
+        ));
     }
-    API::response(array(
-        'navigation' => $navPages,
-        'settings' => $navSettings,
-        'landingPage' => $courseUser->getLandingPage(),
-        'courseName' => $course->getName(),
-        'resources' => $course->getModulesResources(),
-        'user' => $user
-    ));
+    else{
+        API::error("There is no course with that id: ". $courseId);
+    }
 });
 
 
-//see and/or set landing page for a role
+//see and/or set landing page for a role //not used anymore
 API::registerFunction('settings', 'roleInfo', function() {
     API::requireCourseAdminPermission();
     API::requireValues('id');
@@ -222,6 +252,7 @@ API::registerFunction('settings', 'roleInfo', function() {
     }
 });
 
+//not used anymore
 API::registerFunction('settings', 'landingPages', function() {
     API::requireCourseAdminPermission();
 
@@ -260,186 +291,221 @@ API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'));
+    if($course != null){
+        if (API::hasKey('updateRoleHierarchy')) {
+            
+            API::requireValues('hierarchy');
+            API::requireValues('roles');
+            
+            $hierarchy = API::getValue('hierarchy');
+            $newRoles = API::getValue('roles');
+            
+            $course->setRoles($newRoles);
+            $course->setRolesHierarchy($hierarchy);
+            http_response_code(201);
 
-    if (API::hasKey('updateRoleHierarchy')) {
-        
-        API::requireValues('hierarchy');
-        API::requireValues('roles');
-        
-        $hierarchy = API::getValue('hierarchy');
-        $newRoles = API::getValue('roles');
-        
-        $course->setRoles($newRoles);
-        $course->setRolesHierarchy($hierarchy);
-        http_response_code(201);
-
-    } else {
-        $globalInfo = array(
-            'pages' => $course->getAvailablePages(),
-            'roles' => array_column($course->getRoles("name"),"name"),
-            'roles_obj' => $course->getRoles('id, name, landingPage'), //
-            'rolesHierarchy' => $course->getRolesHierarchy(),
-        );
-        API::response($globalInfo);
+        } else {
+            $globalInfo = array(
+                'pages' => $course->getAvailablePages(),
+                'roles' => array_column($course->getRoles("name"),"name"),
+                'roles_obj' => $course->getRoles('id, name, landingPage'), //
+                'rolesHierarchy' => $course->getRolesHierarchy(),
+            );
+            API::response($globalInfo);
+        }
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 });
 
-//main course settings page
+//course main settings page
+//not used -> must be integrated on the this course page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-    
-    $globalInfo = array(
-        'name' => $course->getName(),
-        'theme' => $GLOBALS['theme'],
-    );
-    API::response($globalInfo);
+    if($course != null){
+        $globalInfo = array(
+            'name' => $course->getName(),
+            'theme' => $GLOBALS['theme'],
+        );
+        API::response($globalInfo); 
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
 });
 
 API::registerFunction('settings', 'courseModules', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-    if (API::hasKey('module') && API::hasKey('enabled')) {
-        $moduleId = API::getValue('module');
-        $modules = ModuleLoader::getModules();
-        $module = ModuleLoader::getModule($moduleId);
-        if ($module == null) {
-            API::error('Unknown module!', 400);
-            http_response_code(400);
+    if($course != null){
+        if (API::hasKey('module') && API::hasKey('enabled')) {
+            $moduleId = API::getValue('module');
+            $modules = ModuleLoader::getModules();
+            $module = ModuleLoader::getModule($moduleId);
+            if ($module == null) {
+                API::error('Unknown module!', 400);
+                http_response_code(400);
+            } else {
+                $moduleObject = $module['factory']();
+                $moduleEnabled = (in_array($module["id"], $course->getEnabledModules()));
+                if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
+                    $modules = $course->getModules();
+                    foreach ($modules as $mod) {
+                        $dependencies = $mod->getDependencies();
+                        foreach ($dependencies as $dependency) {
+                            if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
+                                API::error('Must disable all modules that depend on this one first.');
+                        }
+                    }
+                    //ToDo: check if is working correctly with multiple courses
+                    if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
+                        //only drop the tables of the module data if this is the last course where it is enabled
+                        $moduleObject->dropTables($moduleId);//deletes tables associated with the module
+                    }else{
+                        $moduleObject->deleteDataRows();
+                    }
+                } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
+                    foreach ($module['dependencies'] as $dependency) {
+                        if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
+                            API::error('Must enable all dependencies first.');
+                    }
+                }
+                if ($moduleEnabled != API::getValue('enabled')) {
+                    $course->setModuleEnabled($moduleId, !$moduleEnabled);
+                }
+                http_response_code(201);
+            }
         } else {
-            $moduleObject = $module['factory']();
-            $moduleEnabled = (in_array($module["id"], $course->getEnabledModules()));
-            if ($moduleEnabled && !API::getValue('enabled')) {//disabling module
-                $modules = $course->getModules();
-                foreach ($modules as $mod) {
-                    $dependencies = $mod->getDependencies();
-                    foreach ($dependencies as $dependency) {
-                        if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
-                            API::error('Must disable all modules that depend on this one first.');
+            $allModules = ModuleLoader::getModules();
+            $enabledModules = $course->getEnabledModules();
+        
+            $modulesArr = [];
+            foreach ($allModules as $module) {            
+                
+                if (in_array($module['id'], $enabledModules)){
+                    $moduleInfo = ModuleLoader::getModule($module['id']);
+                    $moduleObj = $moduleInfo['factory']();
+                    $module['hasConfiguration'] = $moduleObj->is_configurable();
+                    $module['enabled'] = true;
+                }
+                else{
+                    $module['hasConfiguration'] = false;
+                    $module['enabled'] = false;
+                }
+
+                $dependencies = [];
+                $canBeEnabled = true;
+                foreach($module['dependencies'] as $dependency){
+                    if ($dependency['mode'] != 'optional'){
+                        if(in_array($dependency['id'], $enabledModules)){
+                            $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
+                        }
+                        else{
+                            $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
+                            $canBeEnabled = false;
+                        } 
                     }
                 }
-                //ToDo: check if is working correctly with multiple courses
-                if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
-                    //only drop the tables of the module data if this is the last course where it is enabled
-                    $moduleObject->dropTables($moduleId);//deletes tables associated with the module
-                }else{
-                    $moduleObject->deleteDataRows();
-                }
-            } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
-                foreach ($module['dependencies'] as $dependency) {
-                    if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
-                        API::error('Must enable all dependencies first.');
-                }
-            }
-            if ($moduleEnabled != API::getValue('enabled')) {
-                $course->setModuleEnabled($moduleId, !$moduleEnabled);
-            }
-            http_response_code(201);
-        }
-    } else {
-        $allModules = ModuleLoader::getModules();
-        $enabledModules = $course->getEnabledModules();
-       
-        $modulesArr = [];
-        foreach ($allModules as $module) {            
-            
-            if (in_array($module['id'], $enabledModules)){
-                $moduleInfo = ModuleLoader::getModule($module['id']);
-                $moduleObj = $moduleInfo['factory']();
-                $module['hasConfiguration'] = $moduleObj->is_configurable();
-                $module['enabled'] = true;
-            }
-            else{
-                $module['hasConfiguration'] = false;
-                $module['enabled'] = false;
-            }
 
-            $dependencies = [];
-            $canBeEnabled = true;
-            foreach($module['dependencies'] as $dependency){
-                if ($dependency['mode'] != 'optional'){
-                    if(in_array($dependency['id'], $enabledModules)){
-                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
-                    }
-                    else{
-                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
-                        $canBeEnabled = false;
-                    } 
-                }
+                $mod = array(
+                    'id' => $module['id'],
+                    'name' => $module['name'],
+                    'dir' => $module['dir'],
+                    'version' => $module['version'],
+                    'enabled' => $module['enabled'],
+                    'canBeEnabled' => $canBeEnabled,
+                    'dependencies' => $dependencies,
+                    'description' => $module['description'],
+                    'hasConfiguration' => $module['hasConfiguration']
+                );
+                $modulesArr[] = $mod;
             }
-
-            $mod = array(
-                'id' => $module['id'],
-                'name' => $module['name'],
-                'dir' => $module['dir'],
-                'version' => $module['version'],
-                'enabled' => $module['enabled'],
-                'canBeEnabled' => $canBeEnabled,
-                'dependencies' => $dependencies,
-                'description' => $module['description'],
-                'hasConfiguration' => $module['hasConfiguration']
-            );
-            $modulesArr[] = $mod;
+            API::response($modulesArr);
         }
-        API::response($modulesArr);
     }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+    
 });
 
 
 API::registerFunction('settings', 'getModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-    $module = $course->getModule(API::getValue('module'));
+    if($course != null){
+        $module = $course->getModule(API::getValue('module'));
 
-    $moduleInfo = array(
-        'id' => $module->getId(),
-        'name' => $module->getName(),
-        'description' => $module->getDescription()
-    );
+        if($module != null){
+            $moduleInfo = array(
+                'id' => $module->getId(),
+                'name' => $module->getName(),
+                'description' => $module->getDescription()
+            );
 
-    $generalInputs=[];
-    if($module->has_general_inputs()){
-        $generalInputs = $module->get_general_inputs($course->getId());
+            $generalInputs=[];
+            if($module->has_general_inputs()){
+                $generalInputs = $module->get_general_inputs($course->getId());
+            }
+
+            $personalizedConfig=[];
+            if($module->has_personalized_config()){
+                $personalizedConfig = $module->get_personalized_function();
+            }
+
+            $listingItems=[];
+            if($module->has_listing_items()){
+                $listingItems = $module->get_listing_items($course->getId());
+            }
+
+            $info = array(
+                'generalInputs' => $generalInputs,
+                'listingItems' => $listingItems,
+                'personalizedConfig' => $personalizedConfig,
+                'module' => $moduleInfo
+            );
+
+            API::response($info);
+        }
+        else{
+            API::error("There is no module with that id: ". API::getValue('module'));
+        }
     }
-
-    $personalizedConfig=[];
-    if($module->has_personalized_config()){
-        $personalizedConfig = $module->get_personalized_function();
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
-
-    $listingItems=[];
-    if($module->has_listing_items()){
-        $listingItems = $module->get_listing_items($course->getId());
-    }
-
-    $info = array(
-        'generalInputs' => $generalInputs,
-        'listingItems' => $listingItems,
-        'personalizedConfig' => $personalizedConfig,
-        'module' => $moduleInfo
-    );
-
-    API::response($info);
 
 });
 
 API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
-    $module = $course->getModule(API::getValue('module'));
+    if($course != null){
+        $module = $course->getModule(API::getValue('module'));
 
-    if(API::hasKey('generalInputs')){
-        $generalInputs = API::getValue('generalInputs');
-        $module->save_general_inputs($generalInputs, $course->getId());
+        if($module != null){
+            if(API::hasKey('generalInputs')){
+                $generalInputs = API::getValue('generalInputs');
+                $module->save_general_inputs($generalInputs, $course->getId());
+            }
+            
+            //personalized configuration should create its own API request
+            //inside the currespondent module 
+
+            if(API::hasKey('listingItems')){
+                $listingItems = API::getValue('listingItems');
+                $action_type = API::getValue('action_type'); //new, edit, delete
+                $module->save_listing_item($action_type, $listingItems, $course->getId());
+            }
+        }
+        else{
+            API::error("There is no module with that id: ". API::getValue('module'));
+        }
     }
-    
-    //personalized configuration should create its own API request
-    //inside the currespondent module 
-
-    if(API::hasKey('listingItems')){
-        $listingItems = API::getValue('listingItems');
-        $action_type = API::getValue('action_type'); //new, edit, delete
-        $module->save_listing_item($action_type, $listingItems, $course->getId());
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 
 });
@@ -556,6 +622,7 @@ API::registerFunction('core', 'users', function() {
 });
 
 API::registerFunction('core', 'setUserAdmin', function(){
+    API::requireAdminPermission();
     API::requireValues('user_id');
     API::requireValues('isAdmin');
 
@@ -563,10 +630,16 @@ API::registerFunction('core', 'setUserAdmin', function(){
     $isAdmin = API::getValue('isAdmin');
     
     $uOb = User::getUser($user_id);
-    $uOb->setAdmin($isAdmin);
+    if($uOb != null){
+        $uOb->setAdmin($isAdmin);
+    }
+    else{
+        API::error("There is no user with that id: ". API::getValue('user_id'));
+    }
 });
 
 API::registerFunction('core', 'setUserActive', function(){
+    API::requireAdminPermission();
     API::requireValues('user_id');
     API::requireValues('isActive');
 
@@ -574,7 +647,12 @@ API::registerFunction('core', 'setUserActive', function(){
     $active = API::getValue('isActive');
     
     $uOb = User::getUser($user_id);
-    $uOb->setActive($active);
+    if($uOb != null){
+        $uOb->setActive($active);
+    }
+    else{
+        API::error("There is no user with that id: ". API::getValue('user_id'));
+    }
 });
 
 API::registerFunction('core', 'deleteUser', function() {
@@ -582,18 +660,28 @@ API::registerFunction('core', 'deleteUser', function() {
     API::requireValues('user_id');
 
     $user = API::getValue('user_id');
-
-    User::deleteUser($user);
+    $ubj = User::getUser($user); 
+    if($ubj->exists()){
+        User::deleteUser($user);
+    }
+    else{
+        API::error("There is no user with that id: ". $user);
+    }
+    
 });
 API::registerFunction('core', 'createUser', function() {
     API::requireAdminPermission();
     API::requireValues('userHasImage','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
-    $id = User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
-    
-    if(API::getValue('userHasImage') == 'true'){
-        API::requireValues('userImage');
-        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-        User::saveImage($img, $id);
+    $user = User::getUserByStudentNumber(API::getValue('userStudentNumber'));
+    if ($user == null) {
+        $id = User::addUserToDB(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+        if(API::getValue('userHasImage') == 'true'){
+            API::requireValues('userImage');
+            $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+            User::saveImage($img, $id);
+        }
+    } else {
+        API::error("There is already a student registered with the student number: ". API::getValue('userStudentNumber'));
     }
 });
 API::registerFunction('core', 'editUser', function() {
@@ -601,13 +689,19 @@ API::registerFunction('core', 'editUser', function() {
     API::requireValues('userHasImage','userId','userName', 'userAuthService', 'userStudentNumber', 'userEmail','userUsername', 'userIsActive', 'userIsAdmin');
 
     $user = new User(API::getValue('userId'));
-    $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
+    if($user->exists()){
+        $user->editUser(API::getValue('userName'),API::getValue('userUsername'),API::getValue('userAuthService'),API::getValue('userEmail'),API::getValue('userStudentNumber'), API::getValue('userNickname'), API::getValue('userIsAdmin'), API::getValue('userIsActive'));
 
-    if(API::getValue('userHasImage') == 'true'){
-        API::requireValues('userImage');
-        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-        User::saveImage($img, API::getValue('userId'));
+        if(API::getValue('userHasImage') == 'true'){
+            API::requireValues('userImage');
+            $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+            User::saveImage($img, API::getValue('userId'));
+        }
     }
+    else{
+        API::error("There is no user with that id: ". API::getValue('userId'));
+    }
+    
 });
 API::registerFunction('core', 'importUser', function(){
     API::requireAdminPermission();
@@ -696,19 +790,33 @@ API::registerFunction('course', 'courseRoles', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    $roles = $course->getRoles("name");
-    API::response(["courseRoles"=> $roles ]);
+    if($course != null){
+        $roles = $course->getRoles("name");
+        API::response(["courseRoles"=> $roles ]);
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+    
 });
 API::registerFunction('course', 'removeUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $user_id = API::getValue('user_id');
     $course = Course::getCourse($courseId);
-    $courseUser = new CourseUser($user_id,$course);
-    if ($courseUser->exists()) 
-        Core::$systemDB->delete("course_user",["id"=>$user_id, "course"=>$courseId]);
-    API::response(["updatedData"=>"" ]);
-    return;
+    if($course != null){
+        $courseUser = new CourseUser($user_id,$course);
+        if ($courseUser->exists()) {
+            Core::$systemDB->delete("course_user",["id"=>$user_id, "course"=>$courseId]);
+        }
+        else{
+            API::error("There is no user with that id: ". API::getValue('user_id'));
+        }
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+   
 });
 API::registerFunction('course', 'editUser', function() {
     API::requireAdminPermission();
@@ -716,24 +824,32 @@ API::registerFunction('course', 'editUser', function() {
 
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    $courseUser = new CourseUser(API::getValue('userId'), $course);
-    $user = new User(API::getValue('userId'));
+    if($course != null){
+        $courseUser = new CourseUser(API::getValue('userId'), $course);
+        $user = new User(API::getValue('userId'));
+        if ($courseUser->exists()) {
+            $user->setName(API::getValue('userName'));
+            $user->setEmail(API::getValue('userEmail'));
+            $user->setStudentNumber(API::getValue('userStudentNumber'));
+            $user->setNickname(API::getValue('userNickname'));
+            $user->setUsername(API::getValue('userUsername'));
+            $user->setAuthenticationService(API::getValue('userAuthService'));
 
-    
-    $user->setName(API::getValue('userName'));
-    $user->setEmail(API::getValue('userEmail'));
-    $user->setStudentNumber(API::getValue('userStudentNumber'));
-    $user->setNickname(API::getValue('userNickname'));
-    $user->setUsername(API::getValue('userUsername'));
-    $user->setAuthenticationService(API::getValue('userAuthService'));
+            $courseUser->setCampus(API::getValue('userCampus'));
+            $courseUser->setRoles(API::getValue('userRoles'));
 
-    $courseUser->setCampus(API::getValue('userCampus'));
-    $courseUser->setRoles(API::getValue('userRoles'));
-
-    if(API::getValue('userHasImage') == 'true'){
-        API::requireValues('userImage');
-        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-        User::saveImage($img, API::getValue('userId'));
+            if(API::getValue('userHasImage') == 'true'){
+                API::requireValues('userImage');
+                $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+                User::saveImage($img, API::getValue('userId'));
+            }
+        }
+        else{
+            API::error("There is no user with that id: ". API::getValue('user_id') . "on the course:" . API::getValue('course'));
+        }
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 
 });
@@ -742,66 +858,65 @@ API::registerFunction('course', 'createUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
+    if($course != null){
+        API::requireValues('userHasImage','userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
+        $userName = API::getValue('userName');
+        $userEmail = API::getValue('userEmail');
+        $userStudentNumber = API::getValue('userStudentNumber');
+        $userNickname = API::getValue('userNickname');
+        $userRoles = API::getValue('userRoles');
+        $userCampus = API::getValue('userCampus');
+        $userUsername = API::getValue('userUsername');
+        $userAuthService = API::getValue('userAuthService');
 
-    API::requireValues('userHasImage','userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
-    $userName = API::getValue('userName');
-    $userEmail = API::getValue('userEmail');
-    $userStudentNumber = API::getValue('userStudentNumber');
-    $userNickname = API::getValue('userNickname');
-    $userRoles = API::getValue('userRoles');
-    $userCampus = API::getValue('userCampus');
-    $userUsername = API::getValue('userUsername');
-    $userAuthService = API::getValue('userAuthService');
-
-    //verifies if user exits on the system
-    $user = User::getUserByStudentNumber($userStudentNumber);
-    if ($user == null) {
-        User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+        //verifies if user exits on the system
         $user = User::getUserByStudentNumber($userStudentNumber);
-    } else {
-        $user->editUser($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1); 
-    }
-    //verifies if user exits on course
-    $courseUser = new CourseUser($user->getId(),$course);
-    if (!$courseUser->exists()) {
-        $courseUser->addCourseUserToDB(null, $userCampus);
-    } else {
-        $courseUser->setCampus($userCampus);
-    }
-    //adds list of roles to user
-    $courseUser->setRoles(API::getValue('userRoles'));
+        if ($user == null) {
+            User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+            $user = User::getUserByStudentNumber($userStudentNumber);
+            $courseUser = new CourseUser($user->getId(),$course);
+            $courseUser->addCourseUserToDB(null, $userCampus);
+            $courseUser->setRoles(API::getValue('userRoles'));
+            if(API::getValue('userHasImage') == 'true'){
+                API::requireValues('userImage');
+                $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
+                User::saveImage($img, $user->getId());
+            }
 
-    if(API::getValue('userHasImage') == 'true'){
-        API::requireValues('userImage');
-        $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-        User::saveImage($img, $user->getId());
+        } else {
+            API::error("There is already a student registered with the student number: ". $userStudentNumber);
+        }
     }
-
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
 });
 //add existing user to course
 API::registerFunction('course', 'addUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-
-    API::requireValues('users', 'role');
-    $users = API::getValue('users');
-    $role = API::getValue('role');
-
-    foreach ($users as $userData) {
-        //is user valid?
-        $user = User::getUserByStudentNumber($userData['studentNumber']);
-        if($user->getId() == $userData['id']){
-            $courseUser = new CourseUser($userData['id'],$course);
-            if (!$courseUser->exists()) {
-                $courseUser->addCourseUserToDB();
-                $courseUser->addRole($role);
+    if($course != null){
+        API::requireValues('users', 'role');
+        $users = API::getValue('users');
+        $role = API::getValue('role');
+        foreach ($users as $userData) {
+            //is user valid?
+            $user = User::getUserByStudentNumber($userData['studentNumber']);
+            if($user->getId() == $userData['id']){
+                $courseUser = new CourseUser($userData['id'],$course);
+                if (!$courseUser->exists()) {
+                    $courseUser->addCourseUserToDB();
+                    $courseUser->addRole($role);
+                }
+            }
+            else{
+                echo("not a valid user");
             }
         }
-        else{
-            echo("not a valid user");
-        }
-        
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 });
 
@@ -810,31 +925,38 @@ API::registerFunction('course', 'notCourseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
-    
-    $courseUsers = $course->getUsers();
-    $systemUsers = User::getAllInfo();
+    if($course != null){
+        $courseUsers = $course->getUsers();
+        $systemUsers = User::getAllInfo();
 
-    $courseUsersInfo = [];
-    foreach ($courseUsers as $userData) {
-        $courseUsersInfo[] = array(
-            'id' => $userData['id'], 
-            'name' => $userData['name'], 
-            'studentNumber' => $userData['studentNumber']);
+        $courseUsersInfo = [];
+        foreach ($courseUsers as $userData) {
+            $courseUsersInfo[] = array(
+                'id' => $userData['id'], 
+                'name' => $userData['name'], 
+                'studentNumber' => $userData['studentNumber']);
+        }
+        $systemUsersInfo = [];
+        foreach ($systemUsers as $userData) {
+            $systemUsersInfo[] = array(
+                'id' => $userData['id'], 
+                'name' => $userData['name'], 
+                'studentNumber' => $userData['studentNumber']);
+        }
+        
+        function udiffCompare($a, $b){
+            return $a['id'] - $b['id'];
+        }
+        $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, 'udiffCompare');
+        
+        API::response(array('notCourseUsers'=> $notCourseUsers)); 
     }
-    $systemUsersInfo = [];
-    foreach ($systemUsers as $userData) {
-        $systemUsersInfo[] = array(
-            'id' => $userData['id'], 
-            'name' => $userData['name'], 
-            'studentNumber' => $userData['studentNumber']);
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
     
-    function udiffCompare($a, $b){
-        return $a['id'] - $b['id'];
-    }
-    $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, 'udiffCompare');
     
-    API::response(array('notCourseUsers'=> $notCourseUsers));
+    
 });
 
 //get courseUsers 
@@ -843,65 +965,72 @@ API::registerFunction('course', 'courseUsers', function() {
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     $role=API::getValue('role');
-    // $folder = Course::getCourseLegacyFolder($courseId);
-    // $file ="";
-    
-    // if (API::hasKey('role')){
-    //     if ($role=="Student")
-    //         $file = $folder. '/students.txt';
-    //     else if ($role=="Teacher")
-    //         $file = $folder . '/teachers.txt';
-    // }
-    
-    // if (API::hasKey('fullUserList') && API::hasKey('role')) {
-    //     $studentList = API::getValue('fullUserList');
-    //     $updatedUsers=updateUsers($studentList,$role,$course,$courseId,true);
-    //     file_put_contents($file, $studentList);
-    //     if ($updatedUsers!==null)
-    //         API::response(["updatedData"=>$updatedUsers ]);
-    //     return;
-    // }//adding new users and deleting is not available while txt files are still used to store user info
-    
-    if (API::hasKey('role')){
-        if ($role == "allRoles") {
-            $users = $course->getUsers();
-        }
-        else{
-            $users = $course->getUsersWithRole($role);
-        }
+    if($course != null){
+        // $folder = Course::getCourseLegacyFolder($courseId);
+        // $file ="";
         
-        $usersInfo = [];
-        //for security measures we send only what is needed
-        foreach ($users as $userData) {
-            $id = $userData['id'];
-            $user = new \GameCourse\CourseUser($id,$course);
-            $usersInfo[] = array(
-                'id' => $id, 
-                'name' => $user->getName(), 
-                'nickname' => $user->getNickname(),
-                'studentNumber' => $user->getStudentNumber(),
-                'roles' => $user->getRolesNames(),
-                'campus' => $user->getCampus(),
-                'email' => $user->getEmail(),
-                'lastLogin' => $user->getLastLogin(),
-                'username' => $user->getUsername(),
-                'authenticationService' => User::getUserAuthenticationService($user->getUsername())
-            );
-        }
+        // if (API::hasKey('role')){
+        //     if ($role=="Student")
+        //         $file = $folder. '/students.txt';
+        //     else if ($role=="Teacher")
+        //         $file = $folder . '/teachers.txt';
+        // }
         
-        $fileData = @file_get_contents($file);
-        if ($fileData===FALSE){$fileData="";}
-        else {
-            //this fixes cases where special chars appear as question marks
-            if(mb_detect_encoding($fileData, "UTF-8", true) === false) {
-                $fileData = utf8_encode($fileData);
+        // if (API::hasKey('fullUserList') && API::hasKey('role')) {
+        //     $studentList = API::getValue('fullUserList');
+        //     $updatedUsers=updateUsers($studentList,$role,$course,$courseId,true);
+        //     file_put_contents($file, $studentList);
+        //     if ($updatedUsers!==null)
+        //         API::response(["updatedData"=>$updatedUsers ]);
+        //     return;
+        // }//adding new users and deleting is not available while txt files are still used to store user info
+    
+        if (API::hasKey('role')){
+            if ($role == "allRoles") {
+                $users = $course->getUsers();
             }
+            else{
+                $users = $course->getUsersWithRole($role);
+            }
+            
+            $usersInfo = [];
+            //for security measures we send only what is needed
+            foreach ($users as $userData) {
+                $id = $userData['id'];
+                $user = new \GameCourse\CourseUser($id,$course);
+                $usersInfo[] = array(
+                    'id' => $id, 
+                    'name' => $user->getName(), 
+                    'nickname' => $user->getNickname(),
+                    'studentNumber' => $user->getStudentNumber(),
+                    'roles' => $user->getRolesNames(),
+                    'campus' => $user->getCampus(),
+                    'email' => $user->getEmail(),
+                    'lastLogin' => $user->getLastLogin(),
+                    'username' => $user->getUsername(),
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername())
+                );
+            }
+            
+            // $fileData = @file_get_contents($file);
+            // if ($fileData===FALSE){$fileData="";}
+            // else {
+            //     //this fixes cases where special chars appear as question marks
+            //     if(mb_detect_encoding($fileData, "UTF-8", true) === false) {
+            //         $fileData = utf8_encode($fileData);
+            //     }
+            // }
+            API::response(array('userList' => $usersInfo));
         }
-        API::response(array('userList' => $usersInfo,"file"=>$fileData ));
     }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+    
+    
 });
 API::registerFunction('course', 'importUser', function(){
-    API::requireAdminPermission();
+    API::requireCourseAdminPermission();
     API::requireValues('file');
 
     $nUsers = 0; //delete later
@@ -909,12 +1038,16 @@ API::registerFunction('course', 'importUser', function(){
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('course', 'exportUsers', function(){
-    API::requireAdminPermission();
+    API::requireCourseAdminPermission();
     API::requireValues('course');
     $courseId = API::getValue('course');
     $courseUsers = CourseUser::exportCourseUsers($courseId);
     API::response(array('courseUsers' => $courseUsers));
 });
+
+
+
+//-------------------this functions have to be passed into the xp and levels module--------
 
 //update list of course levels, from the levels configuration page
 API::registerFunction('settings', 'courseLevels', function() {

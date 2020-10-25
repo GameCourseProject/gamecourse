@@ -634,7 +634,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
         reader.onload = function(e) {
             $scope.importedUsers = reader.result;
-            $smartboards.request('course', 'importUser', { file: $scope.importedUsers }, function(data, err) {
+            $smartboards.request('course', 'importUser', { file: $scope.importedUsers, course: $scope.course }, function(data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;

@@ -511,7 +511,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 courseColor: courseColor,
                 courseIsVisible: isVisible,
                 courseIsActive: isActive,
-                courseId: $scope.editCourse.courseId
+                course: $scope.editCourse.courseId
             };
             $smartboards.request('core', 'editCourse', reqData, function(data, err) {
                 if (err) {
