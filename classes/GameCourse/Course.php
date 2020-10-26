@@ -488,7 +488,203 @@ class Course
 
             //modules
             $tempModulesEnabled = Core::$systemDB->selectMultiple("course_module", ["course" => $course["id"], "isEnabled" => 1], "moduleId");
+            $modulesArr = array();
+            foreach ($tempModulesEnabled as $mod) {
+                if($mod["moduleId"] == "badges"){
+                    $badgesArr = array();
+                    
+                    $badgesVarDB_ = Core::$systemDB->selectMultiple("badges_config", ["course"=>$course["id"]], "*");
+                    if($badgesVarDB_){
+                        $badgesArray = array();
+                        foreach ($badgesVarDB_ as $badgesVarDB) {
+                            array_push($badgesArray, array(
+                                "maxBonusReward" => $badgesVarDB["maxBonusReward"]
+                            ));
+                        }
+                        $badgesArr["badges_config"] = $badgesArray;
+                        
+                        if (array_key_exists("badges",$modulesArr)){
+                            array_push($modulesArr["badges"], $badgesArr);
+                        } else {
+                            $modulesArr["badges"] = $badgesArr;
+                        }
+                    }
 
+                }else if($mod["moduleId"] == "plugin"){
+                    $pluginArr = array();
+
+                    $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $course["id"]], "*");
+                    if($moodleVarsDB_){
+                        $moodleArray = array();
+                        foreach ($moodleVarsDB_ as $moodleVarsDB) {
+                            array_push($moodleArray, array(
+                                "dbserver" => $moodleVarsDB["dbServer"],
+                                "dbuser" => $moodleVarsDB["dbUser"],
+                                "dbpass" => $moodleVarsDB["dbPass"],
+                                "db" => $moodleVarsDB["dbName"],
+                                "dbport" => $moodleVarsDB["dbPort"],
+                                "prefix" => $moodleVarsDB["tablesPrefix"],
+                                "time" => $moodleVarsDB["moodleTime"],
+                                "course" => $moodleVarsDB["moodleCourse"],
+                                "user" => $moodleVarsDB["moodleUser"]
+                            ));
+                        }
+                          $pluginArr["config_moodle"] = $moodleArray;
+                    }
+
+                    $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $course["id"]], "*");
+                    if ($classCheckDB_) {
+                        $ccArray = array();
+                        foreach ($classCheckDB_ as $classCheckDB) {
+                            array_push($ccArray, array("tsvCode" => $classCheckDB["tsvCode"]));
+                        }
+                        $pluginArr["config_class_check"] = $ccArray;
+                    }
+
+                    $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $course["id"]], "*");
+                    if ($googleSheetsDB_) {
+                        $gcArray = array();
+                        foreach ($googleSheetsDB_ as $googleSheetsDB) {
+
+                        array_push($gcArray, array(
+                            "authCode" => $googleSheetsDB["authCode"],
+                            "key_" => $googleSheetsDB["key_"],
+                            "clientId" => $googleSheetsDB["clientId"],
+                            "projectId" => $googleSheetsDB["projectId"],
+                            "authUri" => $googleSheetsDB["authUri"],
+                            "tokenUri" => $googleSheetsDB["tokenUri"],
+                            "authProvider" => $googleSheetsDB["authProvider"],
+                            "clientSecret" => $googleSheetsDB["clientSecret"],
+                            "redirectUris" => $googleSheetsDB["redirectUris"],
+                            "authUrl" => $googleSheetsDB["authUrl"],
+                            "accessToken" => $googleSheetsDB["accessToken"],
+                            "expiresIn" => $googleSheetsDB["expiresIn"],
+                            "scope" => $googleSheetsDB["scope"],
+                            "tokenType" => $googleSheetsDB["tokenType"],
+                            "created" => $googleSheetsDB["created"],
+                            "refreshToken" => $googleSheetsDB["refreshToken"],
+                            "authCode" => $googleSheetsDB["authCode"],
+                            "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
+                            "sheetName" => $googleSheetsDB["sheetName"]
+                        ));
+                        }
+                        $pluginArr["config_google_sheets"] = $gcArray;
+
+                    }
+
+                    if($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_){
+                        if (array_key_exists("plugin", $modulesArr)) {
+                            array_push($modulesArr["plugin"] ,$pluginArr);
+                        } else {
+                            $modulesArr["plugin"] = $pluginArr;
+                        }
+                    }
+
+                }else if($mod["moduleId"] == "skills"){
+                    $skillsArr = array();
+
+                    $skillTreeVarDB_ = Core::$systemDB->selectMultiple("skill_tree", ["course" => $course["id"]], "*");
+                    if ($skillTreeVarDB_) {
+                        $skillTreeArray = array();
+                        $skillTierArray = array();
+                        $skillArray = array();
+                        $dependencyArray = array();
+                        $skillDependencyArray = array();
+                        foreach ($skillTreeVarDB_ as $skillTreeVarDB) {
+                            
+                            array_push($skillTreeArray, array(
+                                "maxReward" => $skillTreeVarDB["maxReward"]
+                            ));
+                            
+                            $skillTierVarDB_ = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $skillTreeVarDB["id"]], "*");
+                            if ($skillTierVarDB_) {
+                                foreach ($skillTierVarDB_ as $skillTierVarDB) {
+                                    array_push($skillTierArray, array(
+                                        "tier" => $skillTierVarDB["tier"],
+                                        "reward" => $skillTierVarDB["reward"],
+                                        "treeId" => $skillTierVarDB["treeId"]
+                                    ));
+
+                                    $skillVarDB_ = Core::$systemDB->selectMultiple("skill", ["treeId" => $skillTreeVarDB["id"], "tier" =>  $skillTierVarDB["tier"]], "*");
+                                    if($skillVarDB_){
+                                        foreach ($skillVarDB_ as $skillVarDB) {
+                                            array_push($skillArray, array(
+                                                "name" => $skillVarDB["name"],
+                                                "color" => $skillVarDB["color"],
+                                                "page" => $skillVarDB["page"],
+                                                "tier" => $skillVarDB["tier"],
+                                                "treeId" => $skillVarDB["treeId"]
+                                            ));
+
+                                            $dependencyDB_ = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillVarDB["id"]], "*");
+                                            if ($dependencyDB_) {
+                                                foreach ($dependencyDB_ as $dependencyDB) {
+                                                    array_push($dependencyArray, array(
+                                                        "superSkillId" => $dependencyDB["superSkillId"]
+                                                    ));
+                                                    $skillDependencyDB_ = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $dependencyDB["id"], "normalSkillId" => $skillVarDB["id"]], "*");
+                                                    if ($skillDependencyDB_) {
+                                                        foreach ($skillDependencyDB_ as $skillDependencyDB) {
+                                                            array_push($skillDependencyArray, array(
+                                                                "dependencyId" => $skillDependencyDB["dependencyId"],
+                                                                "normalSkillId" => $skillDependencyDB["normalSkillId"]
+                                                            ));
+
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        $skillsArr["skill_tree"] = $skillTreeArray;
+                        if($skillTierArray){
+                            $skillsArr["skill_tier"] = $skillTierArray;
+                        }
+                        if ($skillArray) {
+                            $skillsArr["skill"] = $skillArray;
+                        }
+                        if ($dependencyArray) {
+                            $skillsArr["dependency"] = $skillArray;
+                        }
+                        if ($skillDependencyArray) {
+                            $skillsArr["skill_dependency"] = $skillDependencyArray;
+                        }
+                        
+                        
+                        if (array_key_exists("skills", $modulesArr)) {
+                            array_push($modulesArr["skills"], $skillsArr);
+                        } else {
+                            $modulesArr["skills"] = $skillsArr;
+                        }
+                    }
+
+                }
+                else if($mod["moduleId"] == "xp"){
+                    $xpArr = array();
+
+                    $xpVarDB = Core::$systemDB->select("level", ["course" => $course["id"]], "*");
+                    if($xpVarDB){
+
+                        $xpArr["level"] = array(
+                            "number" => $xpVarDB["number"],
+                            "goal" => $xpVarDB["goal"],
+                            "description" => $xpVarDB["description"]
+                        );
+
+                        if (array_key_exists("xp", $modulesArr)) {
+                            array_push($modulesArr["xp"], $xpArr);
+                        } else {
+                            $modulesArr["xp"] = $xpArr;
+                        }
+                    }
+                }
+                
+            }    
+            
             //pages
             $pages = Core::$systemDB->selectMultiple("page", ["course" => $course["id"]]);
             $tempPages = array();
@@ -522,7 +718,7 @@ class Course
             
             $tempArr["page"] = $tempPages;
             $tempArr["template"] = $tempTemplates;
-            $tempArr["modulesEnabled"] = $tempModulesEnabled;
+            $tempArr["modulesEnabled"] = $modulesArr;
             array_push($jsonArr, $tempArr);
         }
         return json_encode($jsonArr);
@@ -544,7 +740,7 @@ class Course
 
                 //modules
 
-                
+
                 Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => "views"]);
                 ModuleLoader::initModules($courseObj->cid);
                 
