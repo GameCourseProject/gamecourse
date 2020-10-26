@@ -1,7 +1,7 @@
 <?php
 
 namespace GameCourse;
-
+use Modules\Views\ViewHandler;
 class Course
 {
     private $loadedModules = array();
@@ -477,18 +477,55 @@ class Course
     public static function exportCourses()
     {
         $allCourses = Core::$systemDB->selectMultiple("course");
-        $file = "";
-        $i = 0;
-        $len = count($allCourses);
-        $file .= "color, name, short, year, isActive, isVisible\n";
+        $jsonArr = array();
+
         foreach ($allCourses as $course) {
-            $file .= $course["color"] . "," . $course["name"] . "," . $course["short"] . "," . $course["year"] . "," . $course["isActive"] . "," .  $course["isVisible"];
-            if ($i != $len - 1) {
-                $file .= "\n";
+            $tempArr = array("color"=> $course["color"], "name"=> $course["name"], "short" =>  $course["short"], "year" => $course["year"], "isActive" => $course["isActive"], "isVisible"=> $course["isVisible"]);
+            
+            $viewModule = ModuleLoader::getModule("views");
+            $handler = $viewModule["factory"]();
+            $viewHandler = new ViewHandler($handler);
+
+            //modules
+            $tempModulesEnabled = Core::$systemDB->selectMultiple("course_module", ["course" => $course["id"], "isEnabled" => 1], "moduleId");
+
+            //pages
+            $pages = Core::$systemDB->selectMultiple("page", ["course" => $course["id"]]);
+            $tempPages = array();
+            foreach ($pages as $p) {
+                $p['course'] = $course;
+                unset($p['id']);
+                $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
+                $views = $viewHandler->getViewWithParts($view["id"]);
+               
+                $arrPage = array("roleType"=> $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "views" => $views);
+                array_push($tempPages, $arrPage);
             }
-            $i++;
+
+            //templates
+            $templates = Core::$systemDB->selectMultiple("template",["course"=>$course["id"], "isGlobal"=>0]);
+            $tempTemplates = array();
+            foreach ($templates as $t) {
+                $t['course'] = $course;
+                //will get all the aspects (and contents) of the template
+                // $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
+                // var_dump($view["id"]);
+                $aspect = Core::$systemDB->select(
+                    "view_template join view on viewId=id",
+                    ["partType" => "block", "parent" => null, "templateId" => $t["id"]]
+                );
+                $views = $viewHandler->getViewWithParts($aspect["id"]);
+
+                $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
+                array_push($tempTemplates, $arrTemplate);
+            }
+            
+            $tempArr["page"] = $tempPages;
+            $tempArr["template"] = $tempTemplates;
+            $tempArr["modulesEnabled"] = $tempModulesEnabled;
+            array_push($jsonArr, $tempArr);
         }
-        return $file;
+        return json_encode($jsonArr);
     }
 
     //nao importa curso com o mesmo nome no mesmo ano
