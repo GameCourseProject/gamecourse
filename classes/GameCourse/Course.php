@@ -530,45 +530,122 @@ class Course
 
     //nao importa curso com o mesmo nome no mesmo ano
     //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
-    public static function importCourses($fileData)
+    public static function importCourses($fileData, $replace=false)
     {
-        $newCoursesNr = 0;
-        $lines = explode("\n", $fileData);
-         foreach ($lines as $line) {
-            $course = explode(",", $line);
-            if (!$course[3]) {
-                if (!Core::$systemDB->select("course", ["name" => $course[1]])) {
-                    $newCoursesNr++;
-                    Core::$systemDB->insert(
-                        "course",
-                        [
-                            "color" => $course[0],
-                            "name" => $course[1],
-                            "short" => $course[2],
-                            "year" => $course[3],
-                            "isActive" => $course[4],
-                            "isVisible" => $course[5]
-                        ]
-                    );
+        $fileData = json_decode($fileData);
+
+        foreach ($fileData as $course) {
+            if(!Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year])){
+                $courseObj = Course::newCourse($course->name, $course->short,$course->year, $course->color, $course->isVisible, $course->isActive);
+                
+                $viewModule = ModuleLoader::getModule("views");
+                $handler = $viewModule["factory"]();
+                $viewHandler = new ViewHandler($handler);
+
+                //modules
+
+                
+                Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => "views"]);
+                ModuleLoader::initModules($courseObj->cid);
+                
+                // return static::$courses[$cid];
+                // foreach ($course->modulesEnabled as $module) {
+
+                // }
+
+                //pages
+                foreach ($course->page as $page) {
+                    $aspects = json_decode(json_encode($page->views), true);
+                    $aspectClass = null;
+                    if (sizeof($aspects) > 1) {
+                        Core::$systemDB->insert("aspect_class");
+                        $aspectClass = Core::$systemDB->getLastId();
+                    }
+                    $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
+                    $content = null;
+
+                    foreach ($aspects as &$aspect) {
+                        $aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                        $aspect["id"] = Core::$systemDB->getLastId();
+                        //print_r($aspect);
+                        if ($content) {
+                            $aspect["children"][] = $content;
+                        }
+                        $viewHandler->updateViewAndChildren($aspect, false, true);
+                    }
+                    Core::$systemDB->insert("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId"=>$aspects[0]["id"]]);
                 }
-            } else {
-                if (!Core::$systemDB->select("course", ["name" => $course[1], "year" => $course[3]])) {
-                    $newCoursesNr++;
-                    Core::$systemDB->insert(
-                        "course",
-                        [
-                            "color" => $course[0],
-                            "name" => $course[1],
-                            "short" => $course[2],
-                            "year" => $course[3],
-                            "isActive" => $course[4],
-                            "isVisible" => $course[5]
-                        ]
-                    );
+
+                //templates
+                foreach ($course->template as $template) {
+                    $aspects = json_decode(json_encode($template->views), true);
+                    $aspectClass = null;
+                    if (sizeof($aspects) > 1) {
+                        Core::$systemDB->insert("aspect_class");
+                        $aspectClass = Core::$systemDB->getLastId();
+                    }
+                    $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
+                    $content = null;
+
+                    foreach ($aspects as &$aspect) {
+                        $aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                        $aspect["id"] = Core::$systemDB->getLastId();
+                        //print_r($aspect);
+                        if ($content) {
+                            $aspect["children"][] = $content;
+                        }
+                        $viewHandler->updateViewAndChildren($aspect, false, true);
+                    }
+                    Core::$systemDB->insert("template", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
+                    $templateId = Core::$systemDB->getLastId();
+                    Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["id"], "templateId" => $templateId]);
+                }
+
+            }else{
+                if ($replace){
+                    
                 }
             }
         }
-        return $newCoursesNr;
+        // $newCoursesNr = 0;
+        // $lines = explode("\n", $fileData);
+        //  foreach ($lines as $line) {
+        //     $course = explode(",", $line);
+        //     if (!$course[3]) {
+        //         if (!Core::$systemDB->select("course", ["name" => $course[1]])) {
+        //             $newCoursesNr++;
+        //             Core::$systemDB->insert(
+        //                 "course",
+        //                 [
+        //                     "color" => $course[0],
+        //                     "name" => $course[1],
+        //                     "short" => $course[2],
+        //                     "year" => $course[3],
+        //                     "isActive" => $course[4],
+        //                     "isVisible" => $course[5]
+        //                 ]
+        //             );
+        //         }
+        //     } else {
+        //         if (!Core::$systemDB->select("course", ["name" => $course[1], "year" => $course[3]])) {
+        //             $newCoursesNr++;
+        //             Core::$systemDB->insert(
+        //                 "course",
+        //                 [
+        //                     "color" => $course[0],
+        //                     "name" => $course[1],
+        //                     "short" => $course[2],
+        //                     "year" => $course[3],
+        //                     "isActive" => $course[4],
+        //                     "isVisible" => $course[5]
+        //                 ]
+        //             );
+        //         }
+        //     }
+        // }
+        // return $newCoursesNr;
     }
     // public function getDictionary()
     // {
