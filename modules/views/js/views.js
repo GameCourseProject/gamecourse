@@ -168,16 +168,25 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     var loadedView;
     var initialViewContent;
 
-    //colocar links para tras breadcrumb
-
     var viewEditorWindow = $('<div id="viewEditor"></div>')
     $element.append(viewEditorWindow);
 
+    var breadcrum = $("<div id='page_history'></div>");
+    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'> Views </span>"));
+    breadcrum.append($("<div class='go_back icon' ui-sref='course.settings.views'></div>"));
+    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'>"+ $stateParams.pageOrTemp +"s</span>"));
+    breadcrum.append($("<div class='go_back icon'></div>"));
+    breadcrum.append($("<span>"+ $stateParams.name +"</span>")); 
+
     var reqData = {course: $scope.course};
-    if ($state.current.name == 'course.settings.views.view.edit-role-single')
+    if ($state.current.name == 'course.settings.views.view.edit-role-single'){
         reqData.info = {role: $stateParams.role};
-    if ($state.current.name == 'course.settings.views.view.edit-role-interaction')
+        breadcrum.append($("<span class='role_type'>"+ $stateParams.role +"</span>")); 
+    }
+    if ($state.current.name == 'course.settings.views.view.edit-role-interaction'){
         reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
+        breadcrum.append($("<span class='role_type'>"+ $stateParams.roleOne +" - "+ $stateParams.roleTwo + "</span>")); 
+    }
 
     $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function(view, err) {
         if (err) {
@@ -283,6 +292,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
         viewEditorWindow.html(view.element);
         viewEditorWindow.prepend(controlsDiv);
+        $compile(breadcrum)($scope);
+        viewEditorWindow.prepend(breadcrum);
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function($event, toState, toParams) {
@@ -328,8 +339,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var viewsArea = createSection($($element),"Pages");
         viewsArea.attr("id","pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(id,\'page\')"></span></div></div>'));
-        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\')"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\',page.name)"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
         box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
@@ -341,9 +352,9 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var TemplateArea = createSection($($element),"View Templates");
         TemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in templates" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(template.id,\'template\')"></span></div></div>'));
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">'+
-                '<span class="config_icon icon" ng-click="editView(template.id,\'template\')"></span>'+
+                '<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
                 '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>'+
                 '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>'+
                 '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">'+
@@ -450,8 +461,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 
             $("#new-view").show();
         };
-        $scope.editView = function(id,pageOrTemp){
-            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id});
+        $scope.editView = function(id,pageOrTemp, name){
+            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id, name: removeSpacefromName(name)});
         };
         $scope.globalize = function(template){
             $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal}, alertUpdate);
@@ -580,7 +591,7 @@ angular.module('module.views').config(function($stateProvider) {
             }
         }
     }).state('course.settings.views.view', {
-        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}',
+        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
         views: {
             'tabContent@course.settings': {
                 template: 'abc',
@@ -606,7 +617,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-role-interaction', {
         url: '/edit/{roleOne:[A-Za-z0-9.]+}/{roleTwo:[A-Za-z0-9.]+}',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }

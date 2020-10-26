@@ -46,7 +46,7 @@
   border-radius: 5px;
 }
 .view.editing {
-  margin-top: 20px;
+  padding: 10px;
   margin-bottom: 200px;
 }
 .view .block,
@@ -58,13 +58,6 @@
   display: inline-block;
 }
 
-#viewEditor .view .block,
-#viewEditor .view .image,
-#viewEditor .view .value,
-#viewEditor .view .table {
-  border: 2px solid lightgray;
-  border-radius: 5px;
-}
 #viewEditor .view .table {
   width: auto;
 }
@@ -82,7 +75,36 @@
   z-index: 5;
   justify-content: center;
 }
+#page_history {
+  position: absolute;
+  top: 0;
+  top: 30px;
+  left: 55px;
+  line-height: 35px;
+  display: flex;
+  align-items: center;
+}
+#page_history span {
+  font-size: 16px;
+  text-transform: capitalize;
+}
 
+#page_history span.role_type {
+  font-size: 12px;
+  position: relative;
+  font-weight: bold;
+  color: lightgray;
+  align-self: end;
+  margin-left: 10px;
+  line-height: 32px;
+}
+#page_history .go_back{
+  height: 18px;
+  background-image: url(/gamecourse/images/arrow_back.svg);
+  width: 18px;
+  cursor: auto;
+  margin: 0 5px;
+}
 
 .view .edit-toolbar > img {
   width: 50px !important;

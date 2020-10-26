@@ -93,6 +93,9 @@ $(window).resize(function() {
     checkNavbarLength();
 });
 
+
+
+
 function range(start, end) {
     return Array(end - start + 1).fill().map((_, idx) => start + idx)
 }
@@ -118,6 +121,12 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
  
+function removeSpacefromName(name){
+    name = name.replace(/\s/g,'');
+    name = name.replace('-','');
+    return name;
+}
+
 
 //from settings.js
 function buildTabs(info, parent, $smartboards, $scope) {
@@ -276,7 +285,8 @@ function setSettingsTitle(title) {
 
 //from the app.js
 
-//muda o titulo no breadcrumb
+//muda o titulo no breadcrumb - titulo pagina geral
+
 function changeTitle(newTitle, depth, keepOthers, url) {
     var title = $('title');
     var baseTitle = title.attr('data-base');
