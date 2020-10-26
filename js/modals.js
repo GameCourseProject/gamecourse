@@ -34,7 +34,7 @@ function alertUpdate(data, err) {
         giveMessage(err.description);
         return;
     }
-    if (Object.keys(data.updatedData).length > 0) {
+    if (data && Object.keys(data.updatedData).length > 0) {
         var output = "";
         for (var i in data.updatedData) {
             output += data.updatedData[i] + '\n';
