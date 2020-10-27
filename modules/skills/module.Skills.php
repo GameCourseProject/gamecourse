@@ -25,6 +25,77 @@ class Skills extends Module
         parent::addResources('js/');
         parent::addResources('css/skills.css');
     }
+
+    public function moduleConfigJson($courseId){
+        $skillModuleArr = array();
+        $skillTreeArray = array();
+        $skillTierArray = array();
+        $skillArray = array();
+        $dependencyArray = array();
+        $skillDependencyArray = array();
+
+        $skillTreeVarDB_ = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId], "*");
+        if ($skillTreeVarDB_) {
+            //values da skill_tree
+            foreach ($skillTreeVarDB_ as $skillTreeVarDB) {
+                array_push($skillTreeArray, $skillTreeVarDB);
+
+                $skillTierVarDB_ = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $skillTreeVarDB["id"]], "*");
+                if ($skillTierVarDB_) {
+                    //values da skill_tier
+                    foreach ($skillTierVarDB_ as $skillTierVarDB) {
+                        array_push($skillTierArray, $skillTierVarDB);
+
+                        $skillVarDB_ = Core::$systemDB->selectMultiple("skill", ["treeId" => $skillTreeVarDB["id"], "tier" =>  $skillTierVarDB["tier"]], "*");
+                        if ($skillVarDB_) {
+                            //values da skill
+                            foreach ($skillVarDB_ as $skillVarDB) {
+                                array_push($skillArray, $skillVarDB);
+
+                                $dependencyDB_ = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillVarDB["id"]], "*");
+                                if ($dependencyDB_) {
+                                    //values da dependency
+                                    foreach ($dependencyDB_ as $dependencyDB) {
+                                        array_push($dependencyArray, $dependencyDB);
+
+                                        $skillDependencyDB_ = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $dependencyDB["id"], "normalSkillId" => $skillVarDB["id"]], "*");
+                                        if ($skillDependencyDB_) {
+                                            // values da skill_dependency
+                                            foreach ($skillDependencyDB_ as $skillDependencyDB) {
+                                                array_push($skillDependencyArray, $skillDependencyDB);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($skillTreeArray) {
+            $skillModuleArr["skill_tree"] = $skillTreeArray;
+        }
+        if ($skillTierArray) {
+            $skillModuleArr["skill_tier"] = $skillTierArray;
+        }
+        if ($skillArray) {
+            $skillModuleArr["skill"] = $skillArray;
+        }
+        if ($dependencyArray) {
+            $skillModuleArr["dependency"] = $dependencyArray;
+        }
+        if ($skillDependencyArray) {
+            $skillModuleArr["skill_dependency"] = $skillDependencyArray;
+        }
+
+        if($skillModuleArr){
+            return $skillModuleArr;
+        }else{
+            return false;
+        }
+    }
     //gets skills that depend on a skill and are required by another skill
     public function getSkillsDependantAndRequired($normalSkill, $superSkill, $restrictions = [], $parent = null)
     {

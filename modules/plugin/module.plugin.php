@@ -17,24 +17,24 @@ class Plugin extends Module
     private $classCheck;
     private $googleSheets;
 
-    //Fenix variables
-    private $fenixCourseId = "1971935449711106";
-    //Moodle variables
-    private $dbserver = "localhost"; //"db.rnl.tecnico.ulisboa.pt";
-    private $dbuser = "root"; //"pcm_moodle";
-    private $dbpass = ""; //"Dkr1iRwEekJiPSHX9CeNznHlks";
-    private $db = "moodle"; //"pcm_moodle";
-    private $dbport = "3306";
-    private $prefix = "mdl_";
-    private $time = "1590790100";
-    private $course = null; //courseId no moodle
-    private $user = null;
-    //ClassCheck variables
-    private $tsvCode = "f8c691b7fc14a0455386d4cb599958d3";
-    //Google sheets variables
-    private $spreadsheetId = "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U"; //'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
-    private $sheetName = 'Daniel';
-    private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
+    // //Fenix variables
+    // private $fenixCourseId = "1971935449711106";
+    // //Moodle variables
+    // private $dbserver = "localhost"; //"db.rnl.tecnico.ulisboa.pt";
+    // private $dbuser = "root"; //"pcm_moodle";
+    // private $dbpass = ""; //"Dkr1iRwEekJiPSHX9CeNznHlks";
+    // private $db = "moodle"; //"pcm_moodle";
+    // private $dbport = "3306";
+    // private $prefix = "mdl_";
+    // private $time = "1590790100";
+    // private $course = null; //courseId no moodle
+    // private $user = null;
+    // //ClassCheck variables
+    // private $tsvCode = "f8c691b7fc14a0455386d4cb599958d3";
+    // //Google sheets variables
+    // private $spreadsheetId = "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U"; //'1gznueqlXB9EK-tesPINJ4g2dxFkZsQoXWZvPsCaG7_U';
+    // private $sheetName = 'Daniel';
+    // private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
 
     private function getMoodleVars($courseId)
@@ -286,16 +286,84 @@ class Plugin extends Module
         parent::addResources('js/');
         parent::addResources('css/');
     }
+
+    public function moduleConfigJson($courseId){
+        $pluginArr = array();
+
+        $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $courseId], "*");
+        if ($moodleVarsDB_) {
+            $moodleArray = array();
+            foreach ($moodleVarsDB_ as $moodleVarsDB) {
+                array_push($moodleArray, array(
+                    "dbserver" => $moodleVarsDB["dbServer"],
+                    "dbuser" => $moodleVarsDB["dbUser"],
+                    "dbpass" => $moodleVarsDB["dbPass"],
+                    "dbName" => $moodleVarsDB["dbName"],
+                    "dbPort" => $moodleVarsDB["dbPort"],
+                    "tablesPrefix" => $moodleVarsDB["tablesPrefix"],
+                    "moodleTime" => $moodleVarsDB["moodleTime"],
+                    "moodleCourse" => $moodleVarsDB["moodleCourse"],
+                    "moodleUser" => $moodleVarsDB["moodleUser"]
+                ));
+            }
+            $pluginArr["config_moodle"] = $moodleArray;
+        }
+
+        $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $courseId], "*");
+        if ($classCheckDB_) {
+            $ccArray = array();
+            foreach ($classCheckDB_ as $classCheckDB) {
+                array_push($ccArray, array("tsvCode" => $classCheckDB["tsvCode"]));
+            }
+            $pluginArr["config_class_check"] = $ccArray;
+        }
+
+        $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $courseId], "*");
+        if ($googleSheetsDB_) {
+            $gcArray = array();
+            foreach ($googleSheetsDB_ as $googleSheetsDB) {
+
+                array_push($gcArray, array(
+                    "authCode" => $googleSheetsDB["authCode"],
+                    "key_" => $googleSheetsDB["key_"],
+                    "clientId" => $googleSheetsDB["clientId"],
+                    "projectId" => $googleSheetsDB["projectId"],
+                    "authUri" => $googleSheetsDB["authUri"],
+                    "tokenUri" => $googleSheetsDB["tokenUri"],
+                    "authProvider" => $googleSheetsDB["authProvider"],
+                    "clientSecret" => $googleSheetsDB["clientSecret"],
+                    "redirectUris" => $googleSheetsDB["redirectUris"],
+                    "authUrl" => $googleSheetsDB["authUrl"],
+                    "accessToken" => $googleSheetsDB["accessToken"],
+                    "expiresIn" => $googleSheetsDB["expiresIn"],
+                    "scope" => $googleSheetsDB["scope"],
+                    "tokenType" => $googleSheetsDB["tokenType"],
+                    "created" => $googleSheetsDB["created"],
+                    "refreshToken" => $googleSheetsDB["refreshToken"],
+                    "authCode" => $googleSheetsDB["authCode"],
+                    "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
+                    "sheetName" => $googleSheetsDB["sheetName"]
+                ));
+            }
+            $pluginArr["config_google_sheets"] = $gcArray;
+        }
+        if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
+            return $pluginArr;
+        } else {
+            return false;
+        }    
+    }
+
     public function init()
     {
         //if classcheck is enabled
         $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
         $this->classCheck = new ClassCheck(API::getValue('course'));
-
+        
         //if googleSheets is enabled
         $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
         $this->googleSheets = new GoogleSheets(API::getValue('course'));
-
+        
         //if moodle is enabled
         $this->addTables("plugin", "config_moodle", "ConfigMoodle");
         $this->moodle = new Moodle(API::getValue('course'));

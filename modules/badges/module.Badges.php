@@ -105,6 +105,20 @@ class Badges extends Module
         $id = $this->getUserId($user);
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
     }
+    public function moduleConfigJson($courseId){
+        $badgesArray = array();
+
+        $badgesVarDB_ = Core::$systemDB->selectMultiple("badges_config", ["course" => $courseId], "*");
+        foreach ($badgesVarDB_ as $badgesVarDB) {
+            array_push($badgesArray, $badgesVarDB);
+        }
+
+        if ($badgesArray) {
+            return $badgesArray;
+        } else {
+            return false;
+        }
+    }
     public function init()
     {
         if ($this->addTables("badges", "badge")) {

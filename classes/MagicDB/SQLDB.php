@@ -198,4 +198,10 @@ class SQLDB
         $result = $this->executeQuery("SELECT LAST_INSERT_ID();");
         return $result->fetch()[0];
     }
+
+    public function columnExists($table, $column)
+    {
+        $result = $this->executeQuery("show columns from " . $table . " like '". $column. "';");
+        return $result->fetch()[0];
+    }
 }

@@ -14,6 +14,7 @@ abstract class Module
     private $dir;
     private $parent;
     private $resources = array();
+    private $configJson;
 
     public function __construct()
     {
@@ -75,6 +76,16 @@ abstract class Module
     {
         return $this->resources;
     }
+
+    public function getConfigJson(){
+        return $this->configJson;
+    }
+
+    public function setConfigJson($config)
+    {
+        $this->configJson = $config;
+    }
+
     public function addTables($moduleName, $tableName, $children = null)
     {
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
