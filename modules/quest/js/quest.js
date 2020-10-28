@@ -34,7 +34,7 @@ angular.module('module.quest').controller('Quest', function($scope, $http, $stat
                     var data = e.target.result;
                     $smartboards.sendFile('quest', 'questSolution&course=' + $scope.course + '&level=' + $stateParams.level, data, function(data, err) {
                         if (data.error) {
-                            alert(data.error);
+                            giveMessage(data.error);
                         } else if (data.control) {
                             $('#quest-container').html($('<p>', {text: data.control}));
                         } else {
@@ -74,7 +74,7 @@ angular.module('module.quest').controller('Quests', function($rootScope, $elemen
             return;
         $smartboards.request('quest', 'settings', {course: $scope.course, deleteQuest: quest}, function(data, err) {
             if (err) {
-                alert(err.description);
+                giveMessage(err.description);
                 return;
             }
 
@@ -88,7 +88,7 @@ angular.module('module.quest').controller('Quests', function($rootScope, $elemen
     $scope.createQuest = function() {
         $smartboards.request('quest', 'settings&createQuest', {course: $scope.course}, function(data, err) {
             if (err) {
-                alert(err.description);
+                giveMessage(err.description);
                 return;
             }
 
@@ -133,7 +133,7 @@ angular.module('module.quest').controller('Quests', function($rootScope, $elemen
 
     $smartboards.request('quest', 'settings', {course: $scope.course}, function(data, err) {
         if (err) {
-            alert(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -244,7 +244,7 @@ angular.module('module.quest').controller('QuestInfo', function($rootScope, $sco
 
         $smartboards.request('quest', 'saveLevels', {course: $scope.course, quest: $scope.quest, levels: levels}, function(data, err) {
             if (err) {
-                alert(err.description);
+                giveMessage(err.description);
                 return;
             }
             console.log('ok!');
@@ -383,7 +383,7 @@ angular.module('module.quest').controller('QuestInfo', function($rootScope, $sco
     $scope.resetStats = function() {
         $smartboards.request('quest', 'resetStats', {course: $scope.course, quest: $scope.quest}, function(data, err) {
             if (err) {
-                alert(err.description);
+                giveMessage(err.description);
                 return;
             }
             console.log('ok!');
@@ -426,7 +426,7 @@ angular.module('module.quest').controller('QuestInfo', function($rootScope, $sco
             $smartboards.request('quest', 'deleteResource', {course: $scope.course, quest: $scope.quest, resource: file}, function(data, err) {
                 if (err) {
                     console.log(err);
-                    alert('Unexpected error! Please consult the developer console to know what happened.');
+                    giveMessage('Unexpected error! Please consult the developer console to know what happened.');
                     return;
                 }
 
@@ -447,7 +447,7 @@ angular.module('module.quest').controller('QuestInfo', function($rootScope, $sco
                 $smartboards.sendFile('quest', 'uploadResource&course=' + $scope.course + '&quest=' + $scope.quest + '&resource=' + encodeURI(f.name), data, function(data, err) {
                     if (err) {
                         console.log(err);
-                        alert('Unexpected error! Please consult the developer console to know what happened.');
+                        giveMessage('Unexpected error! Please consult the developer console to know what happened.');
                         return;
                     }
 
@@ -459,7 +459,7 @@ angular.module('module.quest').controller('QuestInfo', function($rootScope, $sco
             if (f.size <= 5000000)
                 r.readAsArrayBuffer(f);
             else
-                alert('file too big!');
+                giveMessage('file too big!');
         }
     };
 

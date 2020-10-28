@@ -6,7 +6,7 @@ angular.module('module.notifications').directive('notificationDirective', functi
             $element.find('.close').click(function() {
                 $smartboards.request('notifications', 'removeNotification', {course: $scope.part.data.course.value, notification: $scope.part.data.notificationId.value}, function(data, err) {
                     if (err) {
-                        console.log('Failed to remove notification!');
+                        giveMessage('Failed to remove notification!');
                         console.log(err.description);
                         return;
                     }

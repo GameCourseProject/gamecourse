@@ -4,10 +4,6 @@ app.run(['$rootScope', '$state', function($rootScope, $state) {
     $rootScope.$on('$stateChangeSuccess', function(e, toState, toParams, fromState, fromParams) {
         removeActiveLinks();
         addActiveLinks(toState.name);
-        if(toState.name == "home"){
-            addPagesBackToNavBar(true);
-            console.log("repor navbar")
-        }
         checkNavbarLength();
         
     });

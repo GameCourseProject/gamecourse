@@ -19,6 +19,8 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/search_filter_sidebar.css" />
     <link rel="stylesheet" type="text/css" href="css/modals.css" />
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
+    <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
+    <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
 
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -38,6 +40,9 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/controllers/inside_course/configurations.js"></script>
     <script type="text/javascript" src="js/controllers/system/settings.js"></script>
     <script type="text/javascript" src="js/controllers/system/other_pages.js"></script>
+    <script type="text/javascript" src="js/controllers/system/home_page.js"></script>
+    <script type="text/javascript" src="js/controllers/system/courses_page.js"></script>
+    <script type="text/javascript" src="js/controllers/system/users_page.js"></script>
     <script type="text/javascript" src="js/d3.min.js"></script>
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
@@ -65,16 +70,18 @@ $user = Core::getLoggedUser();
                 if ($rootScope.course != course) {
                     $rootScope.course = $scope.course = course;
                     $rootScope.courseName = courseName;
-                    removeActiveLinks();
+
                     if ($scope.course != undefined) {
                         changeTitle(courseName, 0, false);
                         //na funcao da API devolve o que vai aparecer na navbar
                         $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function(data, err) {
                             if (err) {
-                                alert(err.description);
+                                giveMessage(err.description);
                                 return;
                             }
                             $rootScope.courseName = data.courseName;
+
+                            $("#course_name").text(data.courseName);
 
                             var path = 'courses/' + courseName + '-' + course;
                             changeTitle(data.courseName, 0, true, path);
@@ -84,6 +91,7 @@ $user = Core::getLoggedUser();
 
                                 $timeout(function() {
                                     $scope.setNavigation(data.navigation, data.settings);
+                                    beginNavbarResize();
                                     if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                                         var landing = $scope.landingPage.replace(/^\//g, '');
                                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
@@ -171,9 +179,9 @@ $user = Core::getLoggedUser();
 
         var firstInitDone = false;
         app.run(function($rootScope, $urlRouter, $location) {
+            //only goes through here on reloads
             $urlRouterGlobal = $urlRouter;
             $locationGlobal = $location;
-
             $rootScope.$on('$locationChangeSuccess', function(e) {
                 e.preventDefault();
                 if (firstInitDone) {
@@ -204,10 +212,11 @@ $user = Core::getLoggedUser();
         <div class="logo" ui-sref="home"></div>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
-            <div class="icon" id="user_icon"></div>
+            <a class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></a>
+            <a class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></a>
             <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
         </div>
-        <ul class=" menu">
+        <ul class="menu">
             <li ng-repeat="link in mainNavigation track by $index" class="{{link.class}}">
                 <a ng-if="link.sref" ui-sref="{{link.sref}}">{{link.text}}</a>
                 <a ng-if="link.href" href="{{link.href}}">{{link.text}}</a>
@@ -218,6 +227,7 @@ $user = Core::getLoggedUser();
         </ul>
 
     </div>
+    <div ng-if="course" id="course_name"></div>
     <!-- <nav>
             <div class="nav-header">
                 <a ui-sref="home">GameCourse</a> 

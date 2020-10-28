@@ -496,7 +496,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             templates[id].role = $rootScope.role;
                             $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveMessage(err.description);
                                     return;
                                 }
                                 newPart = data.template;
@@ -545,11 +545,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveMessage(err.description);
                                     return;
                                 }
                                 execClose();
-                                alert('Template saved!');
+                                giveMessage('Template saved!');
                                 optionsScope.editData.templates[optionsScope.template.name] = templatePart;
                             });
                         };
@@ -594,17 +594,17 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             optionsScope.template.part.role = $rootScope.role;
                             $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveMessage(err.description);
                                     return;
                                 }
                                 execClose();
-                                alert('Template saved!');
+                                giveMessage('Template saved!');
                                 optionsScope.editData.templates[templateIndex] = optionsScope.template;
                             });
 
                             $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
                                 if (err) {
-                                    alert(err.description);
+                                    giveMessage(err.description);
                                     return;
                                 }
                                 newPart = data.template;

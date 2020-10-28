@@ -302,7 +302,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     templates[index].role=scope.$root.role;
                                     $smartboards.request('views', 'getTemplateContent', templates[index], function (data, err) {
                                         if (err) {
-                                            alert(err.description);
+                                            giveMessage(err.description);
                                             return;
                                         }
                                         
@@ -331,7 +331,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     templates[id].role=scope.$root.role;
                                     $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
                                         if (err) {
-                                            alert(err.description);
+                                            giveMessage(err.description);
                                             return;
                                         }
                                         delete data.template.id;

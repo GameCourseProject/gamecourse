@@ -6,7 +6,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
     var refreshTabsBind = $scope.$on('refreshTabs', function() {
         $smartboards.request('settings', 'courseTabs', {course: $scope.course}, function(data, err) {
             if (err) {
-                console.log(err);
+                giveMessage(err.description);
                 return;
             }
 
@@ -31,7 +31,7 @@ app.controller('CourseSettings', function($scope, $state, $compile, $smartboards
 app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, $compile) {
     $smartboards.request('settings', 'courseGlobal', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -111,13 +111,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
         $scope.saveModule = function(){
 
-            $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, function(data, err) {
-                if (err) {
-                    alert(err.description);
-                    return;
-                }
-                location.reload();
-            });
+            $smartboards.request('settings', 'courseModules', {course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled}, alertUpdate);
         }
     }
 
@@ -182,7 +176,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
 
     $smartboards.request('settings', 'courseModules', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -462,7 +456,7 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
 
     $smartboards.request('settings', 'roles', {course: $scope.course}, function(data, err) {
         if (err) {
-            $($element).text(err.description);
+            giveMessage(err.description);
             return;
         }
 
@@ -574,18 +568,4 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         };
     });
 
-});
-
-app.controller('CourseRoleSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    //shortName: $stateParams.role,
-    $smartboards.request('settings', 'roleInfo', {course : $scope.course,  id: $stateParams.id}, function(data, err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        $scope.data = data;
-
-        var input = createInputWithChange('landing-page', 'Landing Page', '(ex: /myprofile)', $compile, $smartboards, $parse, $scope, 'data.landingPage', 'settings', 'roleInfo', 'landingPage', {course: $scope.course, id: $stateParams.id}, 'New landing page is set!');
-        $element.append(input);
-    });
 });
