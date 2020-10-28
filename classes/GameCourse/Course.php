@@ -501,6 +501,8 @@ class Course
                             $modulesArr[$mod["moduleId"]] = $moduleArray;
                         }
                     }
+                }else{
+                    $modulesArr[$mod["moduleId"]] = false;
                 }
             }    
             
@@ -544,8 +546,7 @@ class Course
     }
 
     //nao importa curso com o mesmo nome no mesmo ano
-    //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
-    public static function importCourses($fileData, $replace=false)
+    public static function importCourses($fileData, $replace=true)
     {
         $newCourse = 0;
         $fileData = json_decode($fileData);
@@ -553,15 +554,11 @@ class Course
             if(!Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year])){
                 $courseObj = Course::newCourse($course->name, $course->short,$course->year, $course->color, $course->isVisible, $course->isActive);
                 $newCourse++;
-                $viewModule = ModuleLoader::getModule("views");
-                $handler = $viewModule["factory"]();
-                $viewHandler = new ViewHandler($handler);
 
                 //modules
                 $modulesArray = json_decode(json_encode($course->modulesEnabled), true);
                 $moduleNames = array_keys($modulesArray);
                 
-                Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => "views"]);
                 foreach ($moduleNames as $module) {
                     Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => $module]);
                 }
@@ -570,19 +567,23 @@ class Course
                 for ($i = 0; $i < count($modulesArray); $i++) {
                     $moduleName = array_keys($modulesArray)[$i];
                     $module = ModuleLoader::getModule($moduleName);
-                    $handler = $module["factory"]();
-                    if($moduleName == "badges"){
-                        $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName], $levelIds);
-                    }else{
-                        $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName]);
-                    }
-                    if($result){
-                        $levelIds = $result;
+                    if($modulesArray[$moduleName]){
+                        $handler = $module["factory"]();
+                        if($moduleName == "badges"){
+                            $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName], $levelIds);
+                        }else{
+                            $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName]);
+                        }
+                        if($result){
+                            $levelIds = $result;
+                        }
                     }
                 }
 
                 ModuleLoader::initModules($courseObj);
-                
+                $viewModule = ModuleLoader::getModule("views");
+                $handler = $viewModule["factory"]();
+                $viewHandler = new ViewHandler($handler);
                 //pages
                 foreach ($course->page as $page) {
                     $aspects = json_decode(json_encode($page->views), true);
@@ -598,13 +599,16 @@ class Course
                         $aspect["aspectClass"] = $aspectClass;
                         Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
                         $aspect["id"] = Core::$systemDB->getLastId();
-                        //print_r($aspect);
                         if ($content) {
                             $aspect["children"][] = $content;
                         }
-                        $viewHandler->updateViewAndChildren($aspect, false, true);
+                        $viewHandler->updateViewAndChildren($aspect);
+                        $existingPage = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType]);
+                        if($existingPage){
+                            Core::$systemDB->delete("page", ["id" => $existingPage["id"]]);
+                        }
+                        Core::$systemDB->insert("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId"=>$aspect["id"]]);
                     }
-                    Core::$systemDB->insert("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId"=>$aspects[0]["id"]]);
                 }
 
                 //templates
@@ -628,6 +632,11 @@ class Course
                         }
                         $viewHandler->updateViewAndChildren($aspect, false, true);
                     }
+                    $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
+                    if ($existingTemplate) {
+                        $id = $existingTemplate["id"];
+                        Core::$systemDB->delete("template", ["id" => $id]);
+                    }
                     Core::$systemDB->insert("template", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
                     $templateId = Core::$systemDB->getLastId();
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["id"], "templateId" => $templateId]);
@@ -638,6 +647,7 @@ class Course
                     $id = Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year], "id");
                     $courseEdit = new Course($id);
                     $courseEdit->editCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
+                    
                 }
             }
         }

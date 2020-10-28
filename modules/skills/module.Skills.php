@@ -241,7 +241,7 @@ class Skills extends Module
 
     public function deleteDataRows($courseId)
     {
-        Core::$systemDB->delete("skill_tree", ["course" => $this->getCourseId()]);
+        Core::$systemDB->delete("skill_tree", ["course" => $courseId]);
     }
 
     public function init()
