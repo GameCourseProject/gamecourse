@@ -376,23 +376,23 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             noSettings: true
                         },
                         editData: options.editData
-                    });
+                    }, true);
 
-                    toolbar.prepend($sbviews.createTool('Insert Right', 'images/insert-down.svg', function () {
+                    toolbar.prepend($sbviews.createTool('Insert Right', 'images/add_right_icon.svg', function () {
                         insertColumn(columnEl.index() + 1);
-                    }).attr('style', 'transform: rotate(-90deg)'));
-                    toolbar.prepend($sbviews.createTool('Insert Left', 'images/insert-up.svg', function () {
+                    }));
+                    toolbar.prepend($sbviews.createTool('Insert Left', 'images/add_left_icon.svg', function () {
                         insertColumn(columnEl.index());
-                    }).attr('style', 'transform: rotate(-90deg)'));
+                    }));
 
-                    toolbar.prepend($sbviews.createTool('Move Right', 'images/move-down.svg', function () {
+                    toolbar.prepend($sbviews.createTool('Move Right', 'images/arrow_right_icon.svg', function () {
                         moveColumn(columnEl.index(), columnEl.index() + 1);
-                    }).attr('style', 'transform: rotate(-90deg)'));
-                    toolbar.prepend($sbviews.createTool('Move Left', 'images/move-up.svg', function () {
+                    }));
+                    toolbar.prepend($sbviews.createTool('Move Left', 'images/arrow_left_icon.svg', function () {
                         moveColumn(columnEl.index(), columnEl.index() - 1);
-                    }).attr('style', 'transform: rotate(-90deg)'));
+                    }));
 
-                    toolbar.append($sbviews.createTool('Delete Column', 'images/trashcan.svg', function () {
+                    toolbar.append($sbviews.createTool('Delete Column', 'images/delete_icon.svg', function () {
                         removeColumn(columnEl.index());
                     }));
                     columnEl.append(toolbar);
@@ -412,22 +412,22 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             allowIf: true
                         }, tools: {},
                         editData: options.editData
-                    });
-                    toolbar.prepend($sbviews.createTool('Insert Down', 'images/insert-down.svg', function () {
+                    }, true);
+                    toolbar.prepend($sbviews.createTool('Insert Down', 'images/add_bottom_icon.svg', function () {
                         insertRow(container, rowEl.parent().index() + 1, header);
                     }));
-                    toolbar.prepend($sbviews.createTool('Insert Up', 'images/insert-up.svg', function () {
+                    toolbar.prepend($sbviews.createTool('Insert Up', 'images/add_top_icon.svg', function () {
                         insertRow(container, rowEl.parent().index(), header);
                     }));
 
-                    toolbar.prepend($sbviews.createTool('Move Down', 'images/move-down.svg', function () {
+                    toolbar.prepend($sbviews.createTool('Move Down', 'images/arrow_bottom_icon.svg', function () {
                         moveRow(container, rowEl.parent().index(), rowEl.parent().index() + 1, header);
                     }));
-                    toolbar.prepend($sbviews.createTool('Move Up', 'images/move-up.svg', function () {
+                    toolbar.prepend($sbviews.createTool('Move Up', 'images/arrow_top_icon.svg', function () {
                         moveRow(container, rowEl.parent().index(), rowEl.parent().index() - 1, header);
                     }));
 
-                    toolbar.append($sbviews.createTool('Delete Row', 'images/trashcan.svg', function () {
+                    toolbar.append($sbviews.createTool('Delete Row', 'images/delete_icon.svg', function () {
                         removeRow(container, rowEl.parent().index(), header);
                     }));
                     rowEl.append(toolbar);

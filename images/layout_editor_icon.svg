@@ -1,0 +1,22 @@
+<svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <path fill="#484848" id="svg_3" d="m35,15l14,0l0,-14l-14,0l0,14zm2,-12l10,0l0,10l-10,0l0,-10z"/>
+  <path fill="#484848" id="svg_4" d="m15,18l-14,0l0,14l14,0l0,-14zm-2,12l-10,0l0,-10l10,0l0,10z"/>
+  <path fill="#484848" id="svg_5" d="m18,32l14,0l0,-14l-14,0l0,14zm2,-12l10,0l0,10l-10,0l0,-10z"/>
+  <path fill="#484848" id="svg_6" d="m35,32l14,0l0,-14l-14,0l0,14zm2,-12l10,0l0,10l-10,0l0,-10z"/>
+  <path fill="#484848" id="svg_7" d="m15,35l-14,0l0,14l14,0l0,-14zm-2,12l-10,0l0,-10l10,0l0,10z"/>
+  <rect id="svg_10" height="11.186604" width="11.073608" y="19.512162" x="2.570296" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_11" height="11.186604" width="11.073608" y="19.399166" x="19.632693" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_12" height="11.186604" width="11.073608" y="19.625158" x="36.582095" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_13" height="14.011504" width="30.948616" y="0.990098" x="0.997313" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_14" height="11.186604" width="11.073608" y="2.145267" x="36.686142" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_15" height="14.011504" width="30.948616" y="35.013456" x="17.852922" stroke-width="1.5" fill="#484848"/>
+  <rect id="svg_16" height="11.186604" width="11.073608" y="36.358821" x="2.360896" stroke-width="1.5" fill="#484848"/>
+ </g>
+</svg>

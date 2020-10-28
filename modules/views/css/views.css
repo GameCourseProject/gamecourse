@@ -47,7 +47,7 @@
 }
 .view.editing {
   padding: 10px;
-  margin-bottom: 200px;
+  margin-bottom: 50px;
 }
 .view .block,
 .view .image,
@@ -106,26 +106,42 @@
   margin: 0 5px;
 }
 
-.view .edit-toolbar > img {
-  width: 50px !important;
-  height: 45px !important;
-  padding: 5px !important;
-  border: 1px solid #868686 !important;
-  border-right: none !important;
-  background-color:white;
+.view .edit-toolbar .tool.btn {
+  width: 50px;
+  height: 45px;
+  border: 1px solid #868686;
+  border-right: none;
+  background-color: white;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
 }
-.view .edit-toolbar > img:last-child {
-  border-right: 1px solid #868686 !important;
+.view .edit-toolbar .tool.btn img {
+  height: 100%;
 }
-.view .edit-toolbar > img:hover {
-  background-color: #cbcbcb !important;
+.view .edit-toolbar .tool.btn:last-child {
+  border-right: 1px solid #868686 
 }
-.view .edit-toolbar > img:hover.red {
-  background-color: rgba(128, 0, 0, 0.28) !important;
+.view .edit-toolbar .tool.btn:hover {
+  background-color: #cbcbcb ;
 }
-.view .edit-toolbar > img.red {
-  background-color: rgba(255, 0, 0, 0.2) !important;
+.view .edit-toolbar .tool.btn:hover.red {
+  background-color: rgba(128, 0, 0, 0.28) ;
 }
+.view .edit-toolbar .tool.btn.red {
+  background-color: rgba(255, 0, 0, 0.2) ;
+}
+
+.view .edit-toolbar.table-toolbar {
+  position: inherit;
+  width: auto;
+}
+.view .table-toolbar.edit-toolbar .tool.btn {
+  width: 20px;
+  height: 20px;
+  padding: 3px;
+}
+
 .view .red {
   color: red !important;
   font-weight: bold !important;

@@ -281,18 +281,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     this.createTool = function (title, img, click) {
-        return $(document.createElement('img')).addClass('btn').attr('title', title).attr('src', img).on('click', function () {
+        div = $("<div class='tool'></div>").addClass('btn').attr('title', title).on('click', function () {
             var thisArg = this;
             var args = arguments;
             $timeout(function () { click.apply(thisArg, args); });
         });
+        div.append($(document.createElement('img')).attr('src', img));
+        return div;
     };
 
-    this.createToolbar = function (scope, part, toolbarOptions) {
+    this.createToolbar = function (scope, part, toolbarOptions, isTableTool) {
         var toolbar = $(document.createElement('div')).addClass('edit-toolbar');
+        if(isTableTool){
+            toolbar.addClass('table-toolbar');
+        }
 
         if (!toolbarOptions.tools.noSettings) {
-            toolbar.append($sbviews.createTool('Edit Settings', 'images/gear.svg', function () {
+            toolbar.append($sbviews.createTool('Edit Settings', 'images/edit_icon.svg', function () {
                 var optionsScope = scope.$new();
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = angular.copy(part);
@@ -431,7 +436,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         if (toolbarOptions.layoutEditor) {
-            var tool = $sbviews.createTool('Edit Layout', 'images/layout-edit.svg', function () {
+            var tool = $sbviews.createTool('Edit Layout', 'images/layout_editor_icon.svg', function () {
                 if (toolbarOptions.toolFunctions.layoutEdit)
                     toolbarOptions.toolFunctions.layoutEdit(tool);
             });
@@ -439,14 +444,14 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         if (toolbarOptions.tools.canDelete) {
-            toolbar.append($sbviews.createTool('Remove', 'images/trashcan.svg', function () {
+            toolbar.append($sbviews.createTool('Remove', 'images/delete_icon.svg', function () {
 
                 toolbarOptions.toolFunctions.remove(part);
             }));
         }
 
         if (toolbarOptions.tools.canSwitch) {
-            toolbar.append($sbviews.createTool('Switch part', 'images/switch.svg', function () {
+            toolbar.append($sbviews.createTool('Switch part', 'images/switch_part_icon.svg', function () {
                 var optionsScope = scope.$new();
                 $sbviews.openOverlay(function (el, execClose) {
                     optionsScope.closeOverlay = function () {
@@ -517,13 +522,13 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         if (toolbarOptions.tools.canDuplicate) {
-            toolbar.append($sbviews.createTool('Duplicate', 'images/duplicate.svg', function () {
+            toolbar.append($sbviews.createTool('Duplicate', 'images/duplicate_icon.svg', function () {
                 toolbarOptions.toolFunctions.duplicate(part);
             }));
         }
 
         if (toolbarOptions.tools.canSaveTemplate) {
-            toolbar.append($sbviews.createTool('Save template', 'images/save.svg', function () {
+            toolbar.append($sbviews.createTool('Save template', 'images/save_icon.svg', function () {
                 var optionsScope = scope.$new();
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = part;
@@ -567,7 +572,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         if (toolbarOptions.tools.canSaveTemplateRef) {
-            toolbar.append($sbviews.createTool('Save template by reference', 'images/save2.svg', function () {
+            toolbar.append($sbviews.createTool('Save template by reference', 'images/save_icon.svg', function () {
                 var optionsScope = scope.$new();
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = part;
@@ -734,7 +739,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
                 toolbarOptions.editData = editData;
                 
-                myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions);
+                myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions, false);
     
                 
                 // myToolbar.css({
