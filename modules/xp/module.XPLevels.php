@@ -409,6 +409,45 @@ class XPLevels extends Module
             API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText, "maxReward"=>$tree["maxReward"]));
         });
     }
+
+    public function moduleConfigJson($courseId)
+    {
+        $xpArray = array();
+        $xpArr = array();
+
+        $xpVarDB_ = Core::$systemDB->selectMultiple("level", ["course" => $courseId], "*");
+        foreach ($xpVarDB_ as $xpVarDB) {
+            unset($xpVarDB["course"]);
+            array_push($xpArray, $xpVarDB);
+        }
+
+        $xpArr["level"] = $xpArray;
+
+        if ($xpArray) {
+            return $xpArr;
+        } else {
+            return false;
+        }
+    }
+
+    public function readConfigJson($courseId, $tables)
+    {
+        $tableName = array_keys($tables);
+        $levelIds = array();
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                $entry["course"] = $courseId;
+                $idImported = $entry["id"];
+                unset($entry["id"]);
+                $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                $levelIds[$idImported] = $newId;
+            }
+            $i++;
+        }
+        return $levelIds;
+    }
+    
     public function is_configurable(){
         return true;
     }

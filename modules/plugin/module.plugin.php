@@ -294,17 +294,9 @@ class Plugin extends Module
         if ($moodleVarsDB_) {
             $moodleArray = array();
             foreach ($moodleVarsDB_ as $moodleVarsDB) {
-                array_push($moodleArray, array(
-                    "dbserver" => $moodleVarsDB["dbServer"],
-                    "dbuser" => $moodleVarsDB["dbUser"],
-                    "dbpass" => $moodleVarsDB["dbPass"],
-                    "dbName" => $moodleVarsDB["dbName"],
-                    "dbPort" => $moodleVarsDB["dbPort"],
-                    "tablesPrefix" => $moodleVarsDB["tablesPrefix"],
-                    "moodleTime" => $moodleVarsDB["moodleTime"],
-                    "moodleCourse" => $moodleVarsDB["moodleCourse"],
-                    "moodleUser" => $moodleVarsDB["moodleUser"]
-                ));
+                unset($moodleVarsDB["course"]);
+                unset($moodleVarsDB["id"]);
+                array_push($moodleArray, $moodleVarsDB);
             }
             $pluginArr["config_moodle"] = $moodleArray;
         }
@@ -313,7 +305,9 @@ class Plugin extends Module
         if ($classCheckDB_) {
             $ccArray = array();
             foreach ($classCheckDB_ as $classCheckDB) {
-                array_push($ccArray, array("tsvCode" => $classCheckDB["tsvCode"]));
+                unset($classCheckDB["course"]);
+                unset($classCheckDB["id"]);
+                array_push($ccArray, $classCheckDB);
             }
             $pluginArr["config_class_check"] = $ccArray;
         }
@@ -322,28 +316,9 @@ class Plugin extends Module
         if ($googleSheetsDB_) {
             $gcArray = array();
             foreach ($googleSheetsDB_ as $googleSheetsDB) {
-
-                array_push($gcArray, array(
-                    "authCode" => $googleSheetsDB["authCode"],
-                    "key_" => $googleSheetsDB["key_"],
-                    "clientId" => $googleSheetsDB["clientId"],
-                    "projectId" => $googleSheetsDB["projectId"],
-                    "authUri" => $googleSheetsDB["authUri"],
-                    "tokenUri" => $googleSheetsDB["tokenUri"],
-                    "authProvider" => $googleSheetsDB["authProvider"],
-                    "clientSecret" => $googleSheetsDB["clientSecret"],
-                    "redirectUris" => $googleSheetsDB["redirectUris"],
-                    "authUrl" => $googleSheetsDB["authUrl"],
-                    "accessToken" => $googleSheetsDB["accessToken"],
-                    "expiresIn" => $googleSheetsDB["expiresIn"],
-                    "scope" => $googleSheetsDB["scope"],
-                    "tokenType" => $googleSheetsDB["tokenType"],
-                    "created" => $googleSheetsDB["created"],
-                    "refreshToken" => $googleSheetsDB["refreshToken"],
-                    "authCode" => $googleSheetsDB["authCode"],
-                    "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
-                    "sheetName" => $googleSheetsDB["sheetName"]
-                ));
+                unset($googleSheetsDB["course"]);
+                unset($googleSheetsDB["id"]);
+                array_push($gcArray, $googleSheetsDB);
             }
             $pluginArr["config_google_sheets"] = $gcArray;
         }
@@ -352,6 +327,19 @@ class Plugin extends Module
         } else {
             return false;
         }    
+    }
+
+    public function readConfigJson($courseId, $tables){
+        $tableName = array_keys($tables);
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                $entry["course"] = $courseId;
+                Core::$systemDB->insert($tableName[$i], $entry);
+            }
+        $i++;
+        }
+        return false;
     }
 
     public function init()

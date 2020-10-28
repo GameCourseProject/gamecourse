@@ -487,63 +487,18 @@ class Course
             $viewHandler = new ViewHandler($handler);
 
             //modules
-            $tempModulesEnabled = Core::$systemDB->selectMultiple("course_module", ["course" => $course["id"], "isEnabled" => 1], "moduleId");
+            $tempModulesEnabled = Core::$systemDB->selectMultiple("course_module", ["course" => $course["id"], "isEnabled" => 1], "moduleId", "moduleId desc");
             $modulesArr = array();
             foreach ($tempModulesEnabled as $mod) {
-                
-
-                if($mod["moduleId"] == "badges"){
-                    $badgesModule = ModuleLoader::getModule("badges");
-                    $badgesHandler = $badgesModule["factory"]();
-                    $badgesArr = $badgesHandler->moduleConfigJson($course["id"]);
-                    if ($badgesArr) {
-                        if (array_key_exists("badges", $modulesArr)) {
-                            array_push($modulesArr["badges"], $badgesArr);
+                $module = ModuleLoader::getModule($mod["moduleId"]);
+                $handler = $module["factory"]();
+                if($handler->is_configurable() && $mod["moduleId"] != "awards"){
+                    $moduleArray = $handler->moduleConfigJson($course["id"]);
+                    if($moduleArray){
+                        if (array_key_exists($mod["moduleId"], $modulesArr)) {
+                            array_push($modulesArr[$mod["moduleId"]], $moduleArray);
                         } else {
-                            $modulesArr["badges"] = $badgesArr;
-                        }
-                    }
-
-                }else if($mod["moduleId"] == "plugin"){
-
-                    $pluginModule = ModuleLoader::getModule("plugin");
-                    $pluginHandler = $pluginModule["factory"]();
-                    $pluginArr = $pluginHandler->moduleConfigJson($course["id"]);
-                    if($pluginArr){
-                        if (array_key_exists("plugin", $modulesArr)) {
-                            array_push($modulesArr["plugin"] ,$pluginArr);
-                        } else {
-                            $modulesArr["plugin"] = $pluginArr;
-                        }
-                    }
-                }else if($mod["moduleId"] == "skills"){
-                    $skillModule = ModuleLoader::getModule("skills");
-                    $skillHandler = $skillModule["factory"]();
-                    $skillArr = $skillHandler->moduleConfigJson($course["id"]);
-                    if ($skillArr) {
-                        if (array_key_exists("skills", $modulesArr)) {
-                            array_push($modulesArr["skills"], $skillArr);
-                        } else {
-                            $modulesArr["skills"] = $skillArr;
-                        }
-                    }
-                }
-                else if($mod["moduleId"] == "xp"){
-                    $xpArr = array();
-
-                    $xpVarDB = Core::$systemDB->select("level", ["course" => $course["id"]], "*");
-                    if($xpVarDB){
-
-                        $xpArr["level"] = array(
-                            "number" => $xpVarDB["number"],
-                            "goal" => $xpVarDB["goal"],
-                            "description" => $xpVarDB["description"]
-                        );
-
-                        if (array_key_exists("xp", $modulesArr)) {
-                            array_push($modulesArr["xp"], $xpArr);
-                        } else {
-                            $modulesArr["xp"] = $xpArr;
+                            $modulesArr[$mod["moduleId"]] = $moduleArray;
                         }
                     }
                 }
@@ -585,7 +540,6 @@ class Course
             $tempArr["modulesEnabled"] = $modulesArr;
             array_push($jsonArr, $tempArr);
         }
-        file_put_contents("a.json",json_encode($jsonArr));
         return json_encode($jsonArr);
     }
 
@@ -593,12 +547,12 @@ class Course
     //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
     public static function importCourses($fileData, $replace=false)
     {
+        $newCourse = 0;
         $fileData = json_decode($fileData);
-
         foreach ($fileData as $course) {
             if(!Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year])){
                 $courseObj = Course::newCourse($course->name, $course->short,$course->year, $course->color, $course->isVisible, $course->isActive);
-                
+                $newCourse++;
                 $viewModule = ModuleLoader::getModule("views");
                 $handler = $viewModule["factory"]();
                 $viewHandler = new ViewHandler($handler);
@@ -611,21 +565,24 @@ class Course
                 foreach ($moduleNames as $module) {
                     Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => $module]);
                 }
-                foreach ($modulesArray as $module) {
-                    $tables = array_keys($module);
-                    foreach ($tables as $table) {
-                        $result = Core::$systemDB->columnExists($table, "course");
-                        foreach ($module[$table] as $entry) {
-                            if($result){
-                                $entry["course"] = $courseObj->cid;
-                            }
-                            Core::$systemDB->insert($table, $entry);
-                        }
+
+                $levelIds = array();
+                for ($i = 0; $i < count($modulesArray); $i++) {
+                    $moduleName = array_keys($modulesArray)[$i];
+                    $module = ModuleLoader::getModule($moduleName);
+                    $handler = $module["factory"]();
+                    if($moduleName == "badges"){
+                        $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName], $levelIds);
+                    }else{
+                        $result = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName]);
+                    }
+                    if($result){
+                        $levelIds = $result;
                     }
                 }
+
                 ModuleLoader::initModules($courseObj);
                 
-
                 //pages
                 foreach ($course->page as $page) {
                     $aspects = json_decode(json_encode($page->views), true);
@@ -678,57 +635,15 @@ class Course
 
             }else{
                 if ($replace){
-                    
+                    $id = Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year], "id");
+                    $courseEdit = new Course($id);
+                    $courseEdit->editCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
                 }
             }
         }
-        // $newCoursesNr = 0;
-        // $lines = explode("\n", $fileData);
-        //  foreach ($lines as $line) {
-        //     $course = explode(",", $line);
-        //     if (!$course[3]) {
-        //         if (!Core::$systemDB->select("course", ["name" => $course[1]])) {
-        //             $newCoursesNr++;
-        //             Core::$systemDB->insert(
-        //                 "course",
-        //                 [
-        //                     "color" => $course[0],
-        //                     "name" => $course[1],
-        //                     "short" => $course[2],
-        //                     "year" => $course[3],
-        //                     "isActive" => $course[4],
-        //                     "isVisible" => $course[5]
-        //                 ]
-        //             );
-        //         }
-        //     } else {
-        //         if (!Core::$systemDB->select("course", ["name" => $course[1], "year" => $course[3]])) {
-        //             $newCoursesNr++;
-        //             Core::$systemDB->insert(
-        //                 "course",
-        //                 [
-        //                     "color" => $course[0],
-        //                     "name" => $course[1],
-        //                     "short" => $course[2],
-        //                     "year" => $course[3],
-        //                     "isActive" => $course[4],
-        //                     "isVisible" => $course[5]
-        //                 ]
-        //             );
-        //         }
-        //     }
-        // }
-        // return $newCoursesNr;
+        return $newCourse;
     }
-    // public function getDictionary()
-    // {
-    //     return Core::$systemDB->select("dictionary", ["course" => $this->cid]);
-    // }
-
-    // public function getLibraries($moduleId)
-    // {
-    //     return Core::$systemDB->selectMultiple("dictionary", ["moduleId" => $moduleId, "course" => $this->cid], "library");
-    // }
+  
 
     public function getEnabledLibraries()
     {

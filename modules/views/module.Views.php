@@ -1613,6 +1613,9 @@ class Views extends Module
     public static function saveScreensoot($img, $viewId, $pageOrTemplate){
         file_put_contents("screenshoots/". $pageOrTemplate . "/". $viewId . ".png", $img);
     }
+    public function is_configurable(){
+        return false;
+    }
 }
 
 ModuleLoader::registerModule(array(

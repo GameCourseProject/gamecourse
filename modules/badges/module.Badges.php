@@ -106,19 +106,66 @@ class Badges extends Module
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
     }
     public function moduleConfigJson($courseId){
+        $badgesConfigArray = array();
         $badgesArray = array();
+        $badgesLevelArray = array();
 
-        $badgesVarDB_ = Core::$systemDB->selectMultiple("badges_config", ["course" => $courseId], "*");
-        foreach ($badgesVarDB_ as $badgesVarDB) {
-            array_push($badgesArray, $badgesVarDB);
+        $badgesArr = array();
+
+        $badgesConfigVarDB_ = Core::$systemDB->selectMultiple("badges_config", ["course" => $courseId], "*");
+        foreach ($badgesConfigVarDB_ as $badgesConfigVarDB) {
+            unset($badgesConfigVarDB["course"]);
+            array_push($badgesConfigArray, $badgesConfigVarDB);
         }
 
-        if ($badgesArray) {
-            return $badgesArray;
+        $badgesVarDB_ = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*");
+        foreach ($badgesVarDB_ as $badgesVarDB) {
+            unset($badgesVarDB["course"]);
+            array_push($badgesArray, $badgesVarDB);
+            
+            $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_has_level", ["badgeId" => $badgesVarDB["id"]], "*");
+            foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
+                array_push($badgesLevelArray, $badgesLevelVarDB);
+            }
+        }
+
+        $badgesArr["badges_config"] = $badgesConfigArray;
+        $badgesArr["badge"] = $badgesArray;
+        $badgesArr["badge_has_level"] = $badgesLevelArray; 
+
+        if ( $badgesConfigArray || $badgesArray || $badgesLevelArray) {
+            return $badgesArr;
         } else {
             return false;
         }
     }
+
+    public function readConfigJson($courseId, $tables, $levelIds){
+        $tableName = array_keys($tables);
+        $i = 0;
+        $badgeIds = array();
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                if($tableName[$i] == "badges_config"){
+                    $entry["course"] = $courseId;
+                    Core::$systemDB->insert($tableName[$i], $entry);
+                } else  if ($tableName[$i] == "badge") {
+                    $importId = $entry["id"];
+                    unset($entry["id"]);
+                    $entry["course"] = $courseId;
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    $badgeIds[$importId] = $newId;
+                } else  if ($tableName[$i] == "badge_has_level") {
+                    $entry["levelId"] = $levelIds[$entry["levelId"]];
+                    $entry["badgeId"] = $badgeIds[$entry["badgeId"]];
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                }
+            }
+            $i++;
+        }
+        return false;
+    }
+
     public function init()
     {
         if ($this->addTables("badges", "badge")) {

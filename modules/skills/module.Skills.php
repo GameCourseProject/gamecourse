@@ -96,6 +96,56 @@ class Skills extends Module
             return false;
         }
     }
+
+    public function readConfigJson($courseId, $tables)
+    {
+        $tableName = array_keys($tables);
+        $skillTreeIds = array();
+        $skillIds = array();
+        $dependencyIds = array();
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                if($tableName[$i] == "skill_tree"){
+                    $idImport = $entry["id"];
+                    unset($entry["id"]);
+                    $entry["course"] = $courseId;
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    $skillTreeIds[$idImport] = $newId;
+                }else if($tableName[$i] == "skill_tier"){
+                    $treeIdImport = $entry["treeId"];
+                    $entry["treeId"] = $skillTreeIds[$treeIdImport];
+                    Core::$systemDB->insert($tableName[$i], $entry);
+                }else if($tableName[$i] == "skill"){
+                    $idImport = $entry["id"];
+                    unset($entry["id"]);
+                    $treeIdImport = $entry["treeId"];
+                    $entry["treeId"] = $skillTreeIds[$treeIdImport];
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    $skillIds[$idImport] = $newId;
+                }else if($tableName[$i] == "dependency"){
+                    $idImport = $entry["id"];
+                    unset($entry["id"]);
+
+                    $skillIdImport = $entry["superSkillId"];
+                    $entry["superSkillId"] = $skillIds[$skillIdImport];
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+
+                    $dependencyIds[$idImport] = $newId;
+                }else if($tableName[$i] == "skill_dependency"){
+                    $dependencyIdImport = $entry["dependencyId"];
+                    $normalSkillIdImport = $entry["normalSkillId"];
+                    unset($entry["dependencyId"]);
+                    unset($entry["normalSkillId"]);
+                    $entry["dependencyId"] = $dependencyIds[$dependencyIdImport];
+                    $entry["normalSkillId"] = $skillIds[$normalSkillIdImport];
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                }
+            }
+            $i++;
+        }
+        return false;
+    }
     //gets skills that depend on a skill and are required by another skill
     public function getSkillsDependantAndRequired($normalSkill, $superSkill, $restrictions = [], $parent = null)
     {
