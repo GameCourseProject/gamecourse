@@ -125,27 +125,55 @@ abstract class Module
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
     }
-    public static function importModules($fileContents)
+
+    static function rrmdir($dir)
     {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+
+            foreach ($objects as $object) {
+                if ($object != '.' && $object != '..') {
+                    if (filetype($dir . '/' . $object) == 'dir') {
+                        Module::rrmdir($dir . '/' . $object);
+                    } else {
+                        unlink($dir . '/' . $object);
+                    }
+                }
+            }
+
+            reset($objects);
+            rmdir($dir);
+        }
+    }
+
+    public static function importModules($fileContents, $fileName)
+    {
+        $name = substr($fileName, 0, strlen($fileName) - 4);
         $path = time() . ".zip";
         file_put_contents($path, $fileContents);
+
+        $toPath = "modules";
+        if($name != "modules"){
+            $toPath = "modules/".$name;
+            if(is_dir($toPath)){
+                Module::rrmdir($toPath);
+            }
+            mkdir($toPath, 0777, true);
+        }
 
         $zip = new \ZipArchive;
         if ($zip->open($path) === TRUE) {
             //mudar depois pra modules
-            $zip->extractTo('testeModules');
+            $zip->extractTo($toPath. "/");
             $zip->close();
-            echo 'ok';
-        } else {
-            echo 'failed';
         }
 
         unlink($path); 
     }
 
-    public static function exportModules($all = true)
+    public static function exportModules($all = false)
     {
-        $name = "awardlist";
+        $name = "leaderboard";
         $zip = new \ZipArchive();
 
         $rootPath = realpath("modules");
@@ -162,7 +190,7 @@ abstract class Module
                     new \RecursiveDirectoryIterator($rootPath),
                     \RecursiveIteratorIterator::LEAVES_ONLY
                 );
-                
+
                 foreach ($files as $name => $file) {
                     if (!$file->isDir()) {
                         $filePath = $file->getRealPath();

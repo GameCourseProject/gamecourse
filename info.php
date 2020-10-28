@@ -485,13 +485,11 @@ API::registerFunction('core', 'exportUsers', function(){
 API::registerFunction('core', 'importModule', function () {
     API::requireAdminPermission();
     API::requireValues('file');
+    API::requireValues('fileName');
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
-    Module::importModules($fileContents);
-
-    $nUsers = 0; //delete later
-    //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
-    API::response(array('nUsers' => $nUsers));
+    Module::importModules($fileContents, API::getValue("fileName"));
+    API::response(array());
 });
 
 API::registerFunction('core', 'exportModule', function () {

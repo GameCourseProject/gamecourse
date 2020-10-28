@@ -90,7 +90,7 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
         var reader = new FileReader();
         reader.onload = function(e) {
             $scope.importedModule = reader.result;
-            $smartboards.request('core', 'importModule', { file: $scope.importedModule }, function(data, err) {
+            $smartboards.request('core', 'importModule', { file: $scope.importedModule, fileName: file.name }, function(data, err) {
                 if (err) {
                     console.log(err.description);
                     return;
@@ -98,7 +98,7 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
                 nUsers = data.nUsers;
                 $("#import-module").hide();
                 $("#action_completed").empty();
-                // $("#action_completed").append(nUsers + " Users Imported");
+                // $("#action_completed").append(nUsers + " Modules Imported");
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         }
@@ -112,8 +112,6 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
                 return;
             }
 
-            // console.log(atob(data.file));
-            // download("aa.zip", data.file);
         });
         
     }
@@ -144,7 +142,9 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     verification.append( $('<button class="close_btn icon" value="#import-module" onclick="closeModal(this)"></button>'));
     verification.append( $('<div class="warning">Please select a .zip file to be imported</div>'));
     verification.append( $('<div class="target">Be sure you followed the <a target="_blank" href="./docs/modules" >module gidelines</a></div>'));
-    verification.append( $('<input class="config_input" type="file" id="import_module" accept=".zip">')); //input file
+    verification.append($('<div class="target">If importing a module with an existing name, it will be replaced.</div>'));
+
+    verification.append($('<input class="config_input" type="file" id="import_module" accept=".zip">')); //input file
     verification.append( $('<div class="confirmation_btns"><button ng-click="importModule()">Install New Module</button></div>'))
     importModal.append(verification);
     tabContent.append(importModal);
