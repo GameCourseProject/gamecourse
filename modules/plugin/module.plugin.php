@@ -329,13 +329,17 @@ class Plugin extends Module
         }    
     }
 
-    public function readConfigJson($courseId, $tables){
+    public function readConfigJson($courseId, $tables, $update=false){
         $tableName = array_keys($tables);
         $i = 0;
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                $entry["course"] = $courseId;
-                Core::$systemDB->insert($tableName[$i], $entry);
+                if($update){
+                    Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                }else{
+                    $entry["course"] = $courseId;
+                    Core::$systemDB->insert($tableName[$i], $entry);
+                }
             }
         $i++;
         }

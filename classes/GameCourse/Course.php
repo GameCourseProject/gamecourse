@@ -546,7 +546,7 @@ class Course
     }
 
     //nao importa curso com o mesmo nome no mesmo ano
-    public static function importCourses($fileData, $replace=true)
+    public static function importCourses($fileData, $replace = true)
     {
         $newCourse = 0;
         $fileData = json_decode($fileData);
@@ -647,7 +647,31 @@ class Course
                     $id = Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year], "id");
                     $courseEdit = new Course($id);
                     $courseEdit->editCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
-                    
+
+                    //modules
+                    $modulesArray = json_decode(json_encode($course->modulesEnabled), true);
+                    $moduleNames = array_keys($modulesArray);
+
+                    foreach ($moduleNames as $module) {
+                        Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseEdit->cid, "moduleId" => $module]);
+                    }
+
+                    $levelIds = array();
+                    for ($i = 0; $i < count($modulesArray); $i++) {
+                        $moduleName = array_keys($modulesArray)[$i];
+                        $module = ModuleLoader::getModule($moduleName);
+                        if ($modulesArray[$moduleName]) {
+                            $handler = $module["factory"]();
+                            if ($moduleName == "badges") {
+                                $result = $handler->readConfigJson($courseEdit->cid, $modulesArray[$moduleName], $levelIds, true);
+                            } else {
+                                $result = $handler->readConfigJson($courseEdit->cid, $modulesArray[$moduleName], true);
+                            }
+                            if ($result) {
+                                $levelIds = $result;
+                            }
+                        }
+                    }
                 }
             }
         }
