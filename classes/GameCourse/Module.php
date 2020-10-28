@@ -149,9 +149,11 @@ abstract class Module
         $zip = new \ZipArchive();
 
         $rootPath = realpath("modules");
-        $zipName = time() . ".zip";
+        $zipName = "modules.zip";
+
         if(!$all){
             $rootPath = realpath("modules/".$name);
+            $zipName = $name.".zip";
         }
         
         if ($zip->open($zipName, \ZipArchive::CREATE) == TRUE) {
@@ -170,9 +172,7 @@ abstract class Module
                 }
             $zip->close();
         }
-        $zipFile = file_get_contents($zipName);
-        unlink($zipName);
-        return $zipFile;
+        return $zipName;
     }
     public function deleteDataRows($courseId)
     {

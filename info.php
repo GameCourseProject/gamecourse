@@ -494,6 +494,12 @@ API::registerFunction('core', 'importModule', function () {
     API::response(array('nUsers' => $nUsers));
 });
 
+API::registerFunction('core', 'exportModule', function () {
+    API::requireAdminPermission();
+    $zipFile = Module::exportModules();
+    API::response(array("file"=> $zipFile));
+});
+
 
 //------------------Users inside the course
 

@@ -106,13 +106,15 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     }
     $scope.exportModules = function(){
         //todo
-        // $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
-        //     if (err) {
-        //         console.log(err.description);
-        //         return;
-        //     }
-        //     download("courseUsers.csv", data.courseUsers);
-        // });
+        $smartboards.request('core', 'exportModule', {}, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+
+            // console.log(atob(data.file));
+            // download("aa.zip", data.file);
+        });
         
     }
 
