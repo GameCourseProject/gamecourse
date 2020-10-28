@@ -104,14 +104,15 @@ class Skills extends Module
         $skillIds = array();
         $dependencyIds = array();
 
-        $updatedTreeId = 0;
         $i = 0;
         foreach ($tables as $table) {
             foreach ($table as $entry) {
                 if($tableName[$i] == "skill_tree"){
-                    if($update){
-                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
-                        $updatedTreeId = $entry["id"];
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if($update && $existingCourse){
+                        Core::$systemDB->update($tableName[$i], ["maxReward" => $entry["maxReward"]], ["course" => $existingCourse]);
+                        $updatedTreeId = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "id");
+                        $skillTreeIds[$entry["id"]] = $updatedTreeId;
                     }else{
                         $idImport = $entry["id"];
                         unset($entry["id"]);
@@ -120,16 +121,23 @@ class Skills extends Module
                         $skillTreeIds[$idImport] = $newId;
                     }
                 }else if($tableName[$i] == "skill_tier"){
-                    if ($update && Core::$systemDB->select("skill_tier", ["treeId" => $updatedTreeId, "tier" => $entry["tier"]])) {
-                        Core::$systemDB->update($tableName[$i], ["reward"=>$entry["reward"]], ["treeId" => $updatedTreeId, "tier" => $entry["tier"]]);
+                    $existingCourse = Core::$systemDB->select("skill_tier", ["treeId" => $skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], ["reward"=>$entry["reward"]], ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
                     } else {
                         $treeIdImport = $entry["treeId"];
                         $entry["treeId"] = $skillTreeIds[$treeIdImport];
                         Core::$systemDB->insert($tableName[$i], $entry);
                     }
                 }else if($tableName[$i] == "skill"){
-                    if ($update && Core::$systemDB->select("skill", ["treeId" => $updatedTreeId, "tier" => $entry["tier"]])) {
-                        Core::$systemDB->update($tableName[$i], $entry, ["treeId" => $updatedTreeId, "tier" => $entry["tier"]]);
+                    $existingSkill = Core::$systemDB->select("skill", ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                    if ($update && $existingSkill) {
+                        $newTreeId = $skillTreeIds[$entry["treeId"]];
+                        $newTierId = $entry["tier"];
+                        unset($entry["treeId"]);
+                        unset($entry["tier"]);
+                        unset($entry["id"]);
+                        Core::$systemDB->update($tableName[$i], $entry, ["treeId" => $newTreeId, "tier" => $newTierId]);
                     } else {
                         $idImport = $entry["id"];
                         unset($entry["id"]);

@@ -147,7 +147,8 @@ class Badges extends Module
         foreach ($tables as $table) {
             foreach ($table as $entry) {
                 if($tableName[$i] == "badges_config"){
-                    if($update){
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if($update && $existingCourse){
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     }else{
                         $entry["course"] = $courseId;
@@ -156,7 +157,8 @@ class Badges extends Module
                 } else  if ($tableName[$i] == "badge") {
                     $importId = $entry["id"];
                     unset($entry["id"]);
-                    if ($update) {
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
                         $entry["course"] = $courseId;
