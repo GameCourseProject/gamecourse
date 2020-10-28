@@ -143,26 +143,36 @@ abstract class Module
         unlink($path); 
     }
 
-    public static function exportModules()
+    public static function exportModules($all = true)
     {
-        //verificar se o utilizador dá path e extensão
+        $name = "awardlist";
         $zip = new \ZipArchive();
-        if ($zip->open('modules.zip', \ZipArchive::CREATE) == TRUE) {
-            $rootPath = realpath("modules");
-            $files = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($rootPath),
-                \RecursiveIteratorIterator::LEAVES_ONLY
-            );
 
-            foreach ($files as $name => $file) {
-                if (!$file->isDir()) {
-                    $filePath = $file->getRealPath();
-                    $relativePath = substr($filePath, strlen($rootPath) + 1);
-                    $zip->addFile($filePath, $relativePath);
+        $rootPath = realpath("modules");
+        $zipName = time() . ".zip";
+        if(!$all){
+            $rootPath = realpath("modules/".$name);
+        }
+        
+        if ($zip->open($zipName, \ZipArchive::CREATE) == TRUE) {
+            
+                $files = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($rootPath),
+                    \RecursiveIteratorIterator::LEAVES_ONLY
+                );
+                
+                foreach ($files as $name => $file) {
+                    if (!$file->isDir()) {
+                        $filePath = $file->getRealPath();
+                        $relativePath = substr($filePath, strlen($rootPath) + 1);
+                        $zip->addFile($filePath, $relativePath);
+                    }
                 }
-            }
             $zip->close();
         }
+        $zipFile = file_get_contents($zipName);
+        unlink($zipName);
+        return $zipFile;
     }
     public function deleteDataRows($courseId)
     {
