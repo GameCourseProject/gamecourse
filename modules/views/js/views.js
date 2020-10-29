@@ -283,8 +283,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                     controlsDiv.show();
                 });
                 acion_buttons.append(btnClosePreview);
-                $element.append(viewBlock);
-                $element.prepend(acion_buttons);
+                viewEditorWindow.append(viewBlock);
+                viewEditorWindow.prepend(acion_buttons);
             });
         });
         controlsDiv.append(btnPreview);
