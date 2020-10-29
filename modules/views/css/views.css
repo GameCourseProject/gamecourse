@@ -272,6 +272,7 @@
 }
 .block > .header .image {
   width: 32px;
+  height: 60px;
 }
 .block > .header .img {
   width: 100%;

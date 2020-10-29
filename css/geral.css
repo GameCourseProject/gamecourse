@@ -293,6 +293,10 @@ input:focus, select:focus {
     width: 32px;
 }
 
+.action-buttons :only-child {
+    width: 100%;
+}
+
 /* all buttons using images*/
 .icon{
     cursor: pointer;
