@@ -172,8 +172,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             tempRefOptions.toolOptions.canSaveTemplate = false;
             tempRefOptions.toolOptions.canSaveTemplateRef = false;
             var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
-            element.prepend($('<span style="color: #8f0707;display: table; margin: auto;">Warning: Any changes made to this block will affect the original template</span>'));
-            element.attr("style", "padding: 10px; background-color: #ddedeb; border: 1px solid rgba(255, 0, 0, 0.2);");//#881111
+            element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the original template</span>'));
+            element.attr("style", "padding: 10px; background-color: #ddedeb; ");//#881111
         }
         else {
             if (this.registeredPartType[part.partType] == undefined) {

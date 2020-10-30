@@ -1,0 +1,19 @@
+<svg width="17" height="17" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="19" width="19" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <rect fill="#484848" x="0.489296" y="0.526935" id="svg_1" width="4" height="4"/>
+  <rect fill="#484848" y="0.526935" id="svg_2" x="6.489296" width="4" height="4"/>
+  <rect fill="#484848" y="0.526935" id="svg_3" x="12.489296" width="4" height="4"/>
+  <rect fill="#484848" x="0.489296" id="svg_4" y="6.526935" width="4" height="4"/>
+  <rect fill="#484848" id="svg_5" y="6.526935" x="6.489296" width="4" height="4"/>
+  <rect fill="#484848" id="svg_6" y="6.526935" x="12.489296" width="4" height="4"/>
+  <rect fill="#484848" x="0.489296" id="svg_7" y="12.526935" width="4" height="4"/>
+  <rect fill="#484848" id="svg_8" y="12.526935" x="6.489296" width="4" height="4"/>
+  <rect fill="#484848" id="svg_9" y="12.526935" x="12.489296" width="4" height="4"/>
+ </g>
+</svg>
