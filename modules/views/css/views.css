@@ -67,10 +67,10 @@
 }
 
 .view .table {
-  width: auto;
   border-radius: 5px;
   position: relative;
   overflow: auto;
+  width: calc(100% - 24px); /*24px = margin and borders size*/
 }
 
 .view .table table{
@@ -96,6 +96,9 @@
 }
 .view .table table .block .value{
   display: unset;
+}
+.view .table table .table {
+  width: calc(100% - 4px);
 }
 
 .view .table:only-of-type .filter-box {
@@ -147,11 +150,14 @@
   margin-left: 8px;
 }
 .view .content .block .content {
-  display: block;
   margin: -10px;
   padding: 0;
   min-width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .view .content > * {
