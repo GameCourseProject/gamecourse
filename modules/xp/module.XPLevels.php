@@ -17,7 +17,7 @@ class XPLevels extends Module
         parent::addResources('css/awards.css');
     }
 
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
         $lvls = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id", ["course" => $this->getCourseId(), "badgeId" => null]);
         foreach ($lvls as $lvl) {
@@ -171,8 +171,7 @@ class XPLevels extends Module
                     throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
                 return $this->createNode($level, 'xp');
             },
-            'object',
-            'Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.',
+            "Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.",
             'object',
             'level',
             'library',

@@ -148,7 +148,7 @@ abstract class Module
             $zip->close();
         }
     }
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
     }
     public function init()

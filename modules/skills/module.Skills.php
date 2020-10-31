@@ -118,7 +118,7 @@ class Skills extends Module
         }
     }
 
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
         Core::$systemDB->delete("skill_tree", ["course" => $this->getCourseId()]);
     }
