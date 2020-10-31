@@ -255,6 +255,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             var addPartModal = $("<div class='modal' id='add_part'></div>");
                             addPartModalContent = $("<div class='modal_content'></div>");
                             addPartModalContent.append( $('<button class="close_btn icon" value="#add_part" onclick="closeModal(this)"></button>'));
+                            //addPartModalContent.append($('<div class="title">Add New Part: </div>'));
                             parts_selection = $('<div id="parts_selection"></div>');
                             template_selection = $('<div id="template_selection"></div>');
                             addPartContent = $("<div class='content'></div>");

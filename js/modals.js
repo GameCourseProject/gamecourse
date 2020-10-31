@@ -4,6 +4,11 @@ function openModal(element) {
     modal = $(id);
     modal.show();
     $( id + " input:text,"+ id +" textarea").first().focus();
+
+    modal.mousedown(function (event) {
+        if (event.target == this)
+            $( id + " .close_btn ").click()
+    });
 }
 
 function closeModal(element){

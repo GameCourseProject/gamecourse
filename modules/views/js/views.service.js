@@ -240,8 +240,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     this.openOverlay = function (callbackFunc, closeFunc) {
-        var overlay = $('<div class="settings-overlay">');
-        var overlayCenter = $('<div class="settings-overlay-center"></div>');
+        
+        var overlay = $("<div class='modal' id='switch_part'></div>");
+        var overlayCenter = $("<div class='modal_content'></div>");
         overlay.append(overlayCenter);
 
         var scroll = $(window).scrollTop();
@@ -274,7 +275,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 execClose();
         });
 
-        $('#wrapper').hide();
+        //$('#wrapper').hide();
         if (callbackFunc != undefined)
             callbackFunc(overlayCenter, execClose);
         $(document.body).append(overlay);
@@ -453,19 +454,26 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         if (toolbarOptions.tools.canSwitch) {
             toolbar.append($sbviews.createTool('Switch part', 'images/switch_part_icon.svg', function () {
                 var optionsScope = scope.$new();
-                $sbviews.openOverlay(function (el, execClose) {
+                $sbviews.openOverlay(function (modal, execClose) {
                     optionsScope.closeOverlay = function () {
                         execClose();
                     };
-                    var wrapper = $('<div>');
 
-                    wrapper.append('<div class="title"><span>Switch part</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
-                    $compile(wrapper)(optionsScope);
+                    modal.append( $('<button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"</button>'));
+                    modal.append($('<div class="title">Switch Part Into: </div>'));
+                    modalContent = $("<div class='content'></div>");
+                    parts_selection = $('<div id="parts_selection"></div>');
+                    template_selection = $('<div id="template_selection"></div>');
+                    modalContent.append(parts_selection);
+                    modalContent.append(template_selection);
+                    modal.append(modalContent);
+
+                    $compile(modal)(optionsScope);
 
                     var addPartsDiv = $(document.createElement('div')).addClass('add-parts');
-                    addPartsDiv.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
+
                     var partsList = $(document.createElement('select')).attr('id', 'partList');
-                    partsList.append('<option disabled>-- Part --</option>');
+                    partsList.append($('<option value="" disabled selected >Part Type</option>'))
                     for (var type in $sbviews.registeredPartType) {
                         var partDef = $sbviews.registeredPartType[type];
                         if (partDef.name != undefined && partDef.defaultPart != undefined) {
@@ -473,21 +481,65 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             option.text(partDef.name);
                             option.val('part:' + type);
                             partsList.append(option);
+
+                            partIconName = "images/" + type + "_part_icon.svg";
+                            part_option = $('<div value="'+type+'" class="part_option"></div>')
+                            part_option.append($(document.createElement('img')).attr('src', partIconName));
+                            part_option.append($('<div class="part_label">'+type+'</div>'));
+                            parts_selection.append(part_option);
+                            part_option.click(function(){ 
+                                $(".part_option").removeClass("focus");
+                                $(this).addClass("focus");
+                                type = this.getAttribute('value');
+                                $("#partList").val("part:"+ type);
+                                template_selection.hide();
+                                turnButton.prop('disabled', false);
+                            });
+                            if( type == part.partType){
+                                part_option.append($('<div class="current_label">(current)</div>'));
+                                part_option.addClass("current");
+                            }
                         }
                     }
+                    //create only one option for templates on invisible select
+                    var temp_option = $(document.createElement('option'));
+                    temp_option.text('Template');
+                    temp_option.val('temp:');
+                    partsList.append(temp_option);
+                    // add template icon option
+                    part_option = $('<div value="'+type+'" class="part_option"></div>')
+                    part_option.append($(document.createElement('img')).attr('src', "images/template_part_icon.svg"));
+                    part_option.append($('<div class="part_label"> template</div>'));
+                    parts_selection.append(part_option);
+                    part_option.click(function(){ 
+                        $(".part_option").removeClass("focus");
+                        $(this).addClass("focus");
+                        type = this.getAttribute('value');
+                        $("#partList").val("temp:");
+                        template_selection.show();
+                        turnButton.prop('disabled', false);
+                    });
+                    addPartsDiv.append(partsList);
+                    partsList.hide();
 
-                    partsList.append('<option disabled>-- Template --</option>');
 
+                    var templateList = $(document.createElement('select')).attr('id', 'templateList').addClass("form__input");
+                    templateList.append('<option disabled>Select a template</option>');
                     var templates = toolbarOptions.editData.templates;
                     for (var t in templates) {
                         var template = templates[t];
                         var option = $(document.createElement('option'));
                         option.text(template["name"] + " (" + template['id'] + ")");
                         option.val('temp:' + t);
-                        partsList.append(option);
+                        templateList.append(option);
                     }
+                    template_selection.append(templateList);
+                    template_selection.hide();
+                    addPartsDiv.append(template_selection);
 
-                    var turnButton = $(document.createElement('button')).text('Turn');
+                    var turnButton = $(document.createElement('button')).text('Switch Part');
+                    turnButton.prop('disabled', true);
+                    turnButton.addClass("save_btn");
                     turnButton.click(function () {
                         var value = partsList.val();
                         var id = value.substr(5);
@@ -498,6 +550,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             execClose();
                         }
                         else if (value.indexOf('temp:') === 0) {
+                            var value = templateList.val();
+                            var id = value.substr(5);
                             templates[id].role = $rootScope.role;
                             $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                 if (err) {
@@ -509,12 +563,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 execClose();
                             });
                         }
+                        addPartModal.hide(); 
                     });
 
-                    wrapper.append('<label for="partList">Turn Part into:</label>');
-                    wrapper.append(partsList);
-                    wrapper.append(turnButton);
-                    el.append(wrapper);
+                    modalContent.append(addPartsDiv);
+                    modalContent.append(turnButton);
                 }, function () {
                     optionsScope.$destroy();
                 });

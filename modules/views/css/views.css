@@ -213,18 +213,21 @@
 .view .edit-toolbar .tool.btn {
   width: 50px;
   height: 45px;
-  border: 1px solid #868686;
-  border-right: none;
+  border: 2px solid #868686;
+  /*border-right: none;*/
   background-color: white;
   padding: 10px;
   display: flex;
   justify-content: center;
+  /*other style without it*/
+  border-radius: 5px;
+  margin: 5px;
 }
 .view .edit-toolbar .tool.btn img {
   height: 100%;
 }
 .view .edit-toolbar .tool.btn:last-child {
-  border-right: 1px solid #868686 
+  border-right: 2px solid #868686 
 }
 .view .edit-toolbar .tool.btn:hover {
   background-color: #cbcbcb ;
@@ -279,6 +282,10 @@
   background-position: center;
 }
 
+#switch_part{
+  display: block;
+}
+
 
 .block-edit-overlay{
   width: 100%; 
@@ -290,10 +297,10 @@
   z-index: 2;
   cursor: move;
 }
-#add_part .content > * {
+.modal_content .content > * {
   margin: unset;
 }
-#add_part #parts_selection {
+.modal_content #parts_selection {
   display: flex;
   justify-content: space-between;
   font-size: 20px;
@@ -301,21 +308,32 @@
   align-items: baseline;
   margin-bottom: 25px;
 }
-#add_part .part_option {
+.modal_content #template_selection {
+  min-height: 90px;
+}
+.modal_content .part_option {
   display: flex;
   flex-direction: column;
   align-items: center;
   opacity: 0.5;
   cursor: pointer;
 }
-#add_part .part_option.focus {
+.modal_content .part_option.focus {
   opacity: 1;
 }
-#add_part .part_option img {
+.modal_content .part_option.current {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.modal_content .part_option .current_label {
+  font-size: 14px;
+  margin-top: 5px;
+}
+.modal_content .part_option img {
   height: 50px;
   margin-bottom: 10px;
 }
-#add_part .add-parts {
+.modal_content .add-parts {
   min-height: 33px;
   padding-bottom: 7px;
 }
