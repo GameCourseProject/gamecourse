@@ -468,6 +468,13 @@ class Plugin extends Module
 
     public function update_module($module)
     {
+        //obter o ficheiro de configuração do module para depois o apagar
+        $configFile = "modules/plugin/config.json";
+        $contents = array();
+        if (file_exists($configFile)) {
+            $contents = json_decode(file_get_contents($configFile));
+            unlink($configFile);
+        }
         //verificar compatibilidade
     }
     

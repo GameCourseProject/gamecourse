@@ -379,7 +379,7 @@ class Course
                 $levelIds = array();
                 $module = ModuleLoader::getModule($moduleName);
                 $handler = $module["factory"]();
-                if ($handler->is_configurable() && $moduleName != "awards") {
+                if ($handler->is_configurable() && $moduleName != "awardList") {
                     $moduleArray = $handler->moduleConfigJson($copyFrom);
                     if ($moduleName == "badges") {
                         $result = $handler->readConfigJson($courseId, $moduleArray, $levelIds, false);
@@ -520,7 +520,7 @@ class Course
             foreach ($tempModulesEnabled as $mod) {
                 $module = ModuleLoader::getModule($mod["moduleId"]);
                 $handler = $module["factory"]();
-                if($handler->is_configurable() && $mod["moduleId"] != "awards"){
+                if($handler->is_configurable() && $mod["moduleId"] != "awardlist"){
                     $moduleArray = $handler->moduleConfigJson($course["id"]);
                     if($moduleArray){
                         if (array_key_exists($mod["moduleId"], $modulesArr)) {

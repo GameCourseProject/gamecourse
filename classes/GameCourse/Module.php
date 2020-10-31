@@ -173,38 +173,72 @@ abstract class Module
             $zip->extractTo($toPath. "/");
             $zip->close();
         }
-
         unlink($path); 
+    }
+    public static function exportModuleConfig($name, $courses){
+        $moduleArr = array();
+        $module = ModuleLoader::getModule($name);
+        $handler = $module["factory"]();
+        foreach ($courses as $course) {
+            if ($handler->is_configurable() && ($name != "awardlist")) {
+                $moduleArray = $handler->moduleConfigJson($course["id"]);
+                if ($moduleArray) {
+                    if (array_key_exists($name, $moduleArr)) {
+                        array_push($moduleArr[$course["id"]], $moduleArray);
+                    } else {
+                        $moduleArr[$course["id"]] = $moduleArray;
+                    }
+                }
+            } 
+        }
+        if($moduleArr){
+            file_put_contents("modules/" . $name . "/config.json", json_encode($moduleArr));
+        }
     }
 
     public static function exportModules($all = false)
     {
-        $name = "leaderboard";
+        $name = "badges";
         $zip = new \ZipArchive();
 
         $rootPath = realpath("modules");
         $zipName = "modules.zip";
 
+        $courses = Core::$systemDB->selectMultiple("course");
+        $modules = Core::$systemDB->selectMultiple("module");
         if(!$all){
             $rootPath = realpath("modules/".$name);
             $zipName = $name.".zip";
+            Module::exportModuleConfig($name, $courses);
+        }else{
+            foreach ($modules as $module) {
+                Module::exportModuleConfig($module["moduleId"], $courses);
+            }
         }
-        
+
         if ($zip->open($zipName, \ZipArchive::CREATE) == TRUE) {
             
-                $files = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($rootPath),
-                    \RecursiveIteratorIterator::LEAVES_ONLY
-                );
-
-                foreach ($files as $name => $file) {
-                    if (!$file->isDir()) {
-                        $filePath = $file->getRealPath();
-                        $relativePath = substr($filePath, strlen($rootPath) + 1);
-                        $zip->addFile($filePath, $relativePath);
-                    }
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($rootPath),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+            
+            foreach ($files as $name => $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($rootPath) + 1);
+                    $zip->addFile($filePath, $relativePath);
                 }
+            }
             $zip->close();
+        }
+
+        //remove config files
+        foreach ($modules as $module) {
+            $file = "modules/" . $module["moduleId"] . "/config.json";
+            if(file_exists($file)){
+                unlink($file);
+            }
         }
         return $zipName;
     }
