@@ -849,6 +849,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Skills',
     'description' => 'Generates a skill tree where students have to complete several skills to achieve a higher layer',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

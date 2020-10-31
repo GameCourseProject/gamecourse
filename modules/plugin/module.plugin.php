@@ -482,6 +482,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Plugin',
     'description' => 'Allows multiple sources of information to be automaticaly included on gamcourse.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

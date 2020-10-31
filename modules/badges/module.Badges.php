@@ -848,6 +848,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Badges',
     'description' => 'Enables Badges with 3 levels and xp points that ca be atributed to a student in certain conditions.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

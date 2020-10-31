@@ -30,6 +30,7 @@ ModuleLoader::registerModule(array(
     'name' => 'QR',
     'description' => 'Generates a QR code to be used for student participation in class.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

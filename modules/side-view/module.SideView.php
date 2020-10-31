@@ -39,6 +39,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Side View',
     'description' => 'Creates a view template with a side view with information of the userlogged in.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

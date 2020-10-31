@@ -22,6 +22,7 @@ class ModuleLoader {
         static::requireProp($module, 'name');
         static::requireProp($module, 'description');
         static::requireProp($module, 'version');
+        static::requireProp($module, 'compatibleVersions');
         if (!array_key_exists('dependencies', $module))
             $module['dependencies'] = array();
         static::requireProp($module, 'factory');
@@ -33,14 +34,14 @@ class ModuleLoader {
         static::$loadingModuleDir = null;
         
         if (empty(Core::$systemDB->select("module",['moduleId' => $module['id']]))) {
-            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name'], 'description' => $module['description']]);
+            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name'], 'description' => $module['description'], "version" => $module["version"], "compatibleVersions" => json_encode($module["compatibleVersions"])]);
             $courses= array_column(Core::$systemDB->selectMultiple("course",null,"id"),"id");
             foreach ($courses as $course) {
                 Core::$systemDB->insert("course_module",["course"=>$course,"moduleId"=>$module['id']]);
             }
         }
         else{
-            Core::$systemDB->update("module", [ 'name' => $module['name'], 'description' => $module['description']], ['moduleId' => $module['id']]);
+            Core::$systemDB->update("module", [ 'name' => $module['name'], 'description' => $module['description'], "compatibleVersions" => json_encode($module["compatibleVersions"])], ['moduleId' => $module['id']]);
         }
     }
 
@@ -152,6 +153,7 @@ class ModuleLoader {
             $module->name = $moduleInfo['name'];
             $module->description = $moduleInfo['description'];
             $module->version = $moduleInfo['version'];
+            $module->compatibleVersions = $moduleInfo['compatibleVersion'];
             $module->dependencies = $moduleInfo['dependencies'];
 
             $module->init($course->getId());

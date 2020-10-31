@@ -39,6 +39,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Leaderboard',
     'description' => 'Creates a vew template with a leaderboard of the students progress on the course.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

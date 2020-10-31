@@ -1623,6 +1623,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Views',
     'description' => 'Enables views and the view editor to create pages with expression language.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'factory' => function () {
         return new Views();
     }

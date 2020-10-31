@@ -10,6 +10,7 @@ abstract class Module
     private $name;
     private $description;
     private $version;
+    private $compatibleVersions;
     private $dependencies;
     private $dir;
     private $parent;
@@ -41,6 +42,11 @@ abstract class Module
     public function getVersion()
     {
         return $this->version;
+    }
+
+    public function getCompatibleVersions()
+    {
+        return $this->compatibleVersions;
     }
 
     public function getDependencies()

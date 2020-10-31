@@ -34,6 +34,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Overview',
     'description' => 'Creates a view template with all the skills done.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

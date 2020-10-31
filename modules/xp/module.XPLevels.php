@@ -463,6 +463,7 @@ ModuleLoader::registerModule(array(
     'name' => 'XP and Levels',
     'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

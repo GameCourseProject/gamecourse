@@ -74,6 +74,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Award List',
     'description' => 'Enables Awards and creates a view template with list of awards per student.',
     'version' => '0.1',
+    'compatibleVersions' => array("1.1","1.2"),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

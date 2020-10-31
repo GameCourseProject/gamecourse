@@ -318,6 +318,7 @@ API::registerFunction('settings', 'courseModules', function() {
                 'name' => $module['name'],
                 'dir' => $module['dir'],
                 'version' => $module['version'],
+                'compatibleVersions' => json_encode($module['compatibleVersions']),
                 'enabled' => $module['enabled'],
                 'canBeEnabled' => $canBeEnabled,
                 'dependencies' => $dependencies,
@@ -435,6 +436,7 @@ API::registerFunction('settings', 'modules', function() {
             'name' => $module['name'],
             'dir' => $module['dir'],
             'version' => $module['version'],
+            'compatibleVersions' => json_encode($module['compatibleVersions']),
             'dependencies' => $module['dependencies'],
             'description' => $module['description']
         );
