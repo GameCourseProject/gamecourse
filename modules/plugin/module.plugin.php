@@ -289,44 +289,46 @@ class Plugin extends Module
 
     public function moduleConfigJson($courseId){
         $pluginArr = array();
-
-        $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $courseId], "*");
-        if ($moodleVarsDB_) {
-            $moodleArray = array();
-            foreach ($moodleVarsDB_ as $moodleVarsDB) {
-                unset($moodleVarsDB["course"]);
-                unset($moodleVarsDB["id"]);
-                array_push($moodleArray, $moodleVarsDB);
+        
+        if (Core::$systemDB->tableExists("config_moodle")) {
+            $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $courseId], "*");
+            if ($moodleVarsDB_) {
+                $moodleArray = array();
+                foreach ($moodleVarsDB_ as $moodleVarsDB) {
+                    unset($moodleVarsDB["course"]);
+                    unset($moodleVarsDB["id"]);
+                    array_push($moodleArray, $moodleVarsDB);
+                }
+                $pluginArr["config_moodle"] = $moodleArray;
             }
-            $pluginArr["config_moodle"] = $moodleArray;
         }
-
-        $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $courseId], "*");
-        if ($classCheckDB_) {
-            $ccArray = array();
-            foreach ($classCheckDB_ as $classCheckDB) {
-                unset($classCheckDB["course"]);
-                unset($classCheckDB["id"]);
-                array_push($ccArray, $classCheckDB);
+        if (Core::$systemDB->tableExists("config_class_check")) {
+            $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $courseId], "*");
+            if ($classCheckDB_) {
+                $ccArray = array();
+                foreach ($classCheckDB_ as $classCheckDB) {
+                    unset($classCheckDB["id"]);
+                    array_push($ccArray, $classCheckDB);
+                }
+                $pluginArr["config_class_check"] = $ccArray;
             }
-            $pluginArr["config_class_check"] = $ccArray;
         }
-
-        $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $courseId], "*");
-        if ($googleSheetsDB_) {
-            $gcArray = array();
-            foreach ($googleSheetsDB_ as $googleSheetsDB) {
-                unset($googleSheetsDB["course"]);
-                unset($googleSheetsDB["id"]);
-                array_push($gcArray, $googleSheetsDB);
+        if (Core::$systemDB->tableExists("config_google_sheets")) {
+            $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $courseId], "*");
+            if ($googleSheetsDB_) {
+                $gcArray = array();
+                foreach ($googleSheetsDB_ as $googleSheetsDB) {
+                    unset($googleSheetsDB["id"]);
+                    array_push($gcArray, $googleSheetsDB);
+                }
+                $pluginArr["config_google_sheets"] = $gcArray;
             }
-            $pluginArr["config_google_sheets"] = $gcArray;
+            if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
+                return $pluginArr;
+            } else {
+                return false;
+            }    
         }
-        if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
-            return $pluginArr;
-        } else {
-            return false;
-        }    
     }
 
     public function readConfigJson($courseId, $tables, $update=false){
@@ -467,7 +469,6 @@ class Plugin extends Module
     public function update_module($module)
     {
         //verificar compatibilidade
-        //minha função 
     }
     
     public function is_configurable(){

@@ -33,36 +33,44 @@ class Skills extends Module
         $skillArray = array();
         $dependencyArray = array();
         $skillDependencyArray = array();
-
-        $skillTreeVarDB_ = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId], "*");
-        if ($skillTreeVarDB_) {
-            //values da skill_tree
-            foreach ($skillTreeVarDB_ as $skillTreeVarDB) {
-                array_push($skillTreeArray, $skillTreeVarDB);
-
-                $skillTierVarDB_ = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $skillTreeVarDB["id"]], "*");
-                if ($skillTierVarDB_) {
-                    //values da skill_tier
-                    foreach ($skillTierVarDB_ as $skillTierVarDB) {
-                        array_push($skillTierArray, $skillTierVarDB);
-
-                        $skillVarDB_ = Core::$systemDB->selectMultiple("skill", ["treeId" => $skillTreeVarDB["id"], "tier" =>  $skillTierVarDB["tier"]], "*");
-                        if ($skillVarDB_) {
-                            //values da skill
-                            foreach ($skillVarDB_ as $skillVarDB) {
-                                array_push($skillArray, $skillVarDB);
-
-                                $dependencyDB_ = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillVarDB["id"]], "*");
-                                if ($dependencyDB_) {
-                                    //values da dependency
-                                    foreach ($dependencyDB_ as $dependencyDB) {
-                                        array_push($dependencyArray, $dependencyDB);
-
-                                        $skillDependencyDB_ = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $dependencyDB["id"], "normalSkillId" => $skillVarDB["id"]], "*");
-                                        if ($skillDependencyDB_) {
-                                            // values da skill_dependency
-                                            foreach ($skillDependencyDB_ as $skillDependencyDB) {
-                                                array_push($skillDependencyArray, $skillDependencyDB);
+        
+        if (Core::$systemDB->tableExists("skill_tree")) {
+            $skillTreeVarDB_ = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId], "*");
+            if ($skillTreeVarDB_) {
+                //values da skill_tree
+                foreach ($skillTreeVarDB_ as $skillTreeVarDB) {
+                    array_push($skillTreeArray, $skillTreeVarDB);
+                    
+                    if (Core::$systemDB->tableExists("skill_tier")) {
+                        $skillTierVarDB_ = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $skillTreeVarDB["id"]], "*");
+                        if ($skillTierVarDB_) {
+                            //values da skill_tier
+                            foreach ($skillTierVarDB_ as $skillTierVarDB) {
+                                array_push($skillTierArray, $skillTierVarDB);
+                                
+                                if (Core::$systemDB->tableExists("skill_tree")) {
+                                    $skillVarDB_ = Core::$systemDB->selectMultiple("skill", ["treeId" => $skillTreeVarDB["id"], "tier" =>  $skillTierVarDB["tier"]], "*");
+                                    if ($skillVarDB_) {
+                                        //values da skill
+                                        foreach ($skillVarDB_ as $skillVarDB) {
+                                            array_push($skillArray, $skillVarDB);
+                                            if (Core::$systemDB->tableExists("skill_tree")) {
+                                                $dependencyDB_ = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillVarDB["id"]], "*");
+                                                if ($dependencyDB_) {
+                                                    //values da dependency
+                                                    foreach ($dependencyDB_ as $dependencyDB) {
+                                                        array_push($dependencyArray, $dependencyDB);
+                                                        if (Core::$systemDB->tableExists("skill_tree")) {
+                                                            $skillDependencyDB_ = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $dependencyDB["id"], "normalSkillId" => $skillVarDB["id"]], "*");
+                                                            if ($skillDependencyDB_) {
+                                                                // values da skill_dependency
+                                                                foreach ($skillDependencyDB_ as $skillDependencyDB) {
+                                                                    array_push($skillDependencyArray, $skillDependencyDB);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -73,7 +81,6 @@ class Skills extends Module
                 }
             }
         }
-
         if ($skillTreeArray) {
             $skillModuleArr["skill_tree"] = $skillTreeArray;
         }
@@ -841,10 +848,9 @@ class Skills extends Module
         return true;
     }
 
-    public function update_module($module)
+    public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
-        //minha função 
     }
 
 }

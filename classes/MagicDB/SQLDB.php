@@ -204,4 +204,7 @@ class SQLDB
         $result = $this->executeQuery("show columns from " . $table . " like '". $column. "';");
         return $result->fetch()[0];
     }
+    public function tableExists($table){
+        return $this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

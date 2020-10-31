@@ -111,21 +111,23 @@ class Badges extends Module
         $badgesLevelArray = array();
 
         $badgesArr = array();
-
-        $badgesConfigVarDB_ = Core::$systemDB->selectMultiple("badges_config", ["course" => $courseId], "*");
-        foreach ($badgesConfigVarDB_ as $badgesConfigVarDB) {
-            unset($badgesConfigVarDB["course"]);
-            array_push($badgesConfigArray, $badgesConfigVarDB);
+        if(Core::$systemDB->tableExists("badges_config")){
+            $badgesConfigVarDB = Core::$systemDB->select("badges_config", ["course" => $courseId], "*");
+            if($badgesConfigVarDB){
+                unset($badgesConfigVarDB["course"]);
+                array_push($badgesConfigArray, $badgesConfigVarDB);
+            }
         }
-
-        $badgesVarDB_ = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*");
-        foreach ($badgesVarDB_ as $badgesVarDB) {
-            unset($badgesVarDB["course"]);
-            array_push($badgesArray, $badgesVarDB);
-            
-            $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_has_level", ["badgeId" => $badgesVarDB["id"]], "*");
-            foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
-                array_push($badgesLevelArray, $badgesLevelVarDB);
+        if (Core::$systemDB->tableExists("badge")) {
+            $badgesVarDB = Core::$systemDB->select("badge", ["course" => $courseId], "*");
+            if ($badgesVarDB) {
+                unset($badgesConfigVarDB["course"]);
+                array_push($badgesArray, $badgesVarDB);
+                
+                $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_has_level", ["badgeId" => $badgesVarDB["id"]], "*");
+                foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
+                    array_push($badgesLevelArray, $badgesLevelVarDB);
+                }
             }
         }
 
@@ -842,10 +844,10 @@ class Badges extends Module
         }
     }
 
-    public function update_module($module)
+    public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
-        //minha função 
+        
     }
 }
 
