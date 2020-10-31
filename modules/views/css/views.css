@@ -282,7 +282,7 @@
   background-position: center;
 }
 
-#switch_part{
+#switch_part, #save_as_template{
   display: block;
 }
 

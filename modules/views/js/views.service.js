@@ -170,7 +170,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             tempRefOptions.toolOptions.noSettings = true;
             tempRefOptions.toolOptions.canDuplicate = false;
             tempRefOptions.toolOptions.canSaveTemplate = false;
-            tempRefOptions.toolOptions.canSaveTemplateRef = false;
             var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
             element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the original template</span>'));
             element.attr("style", "padding: 10px; background-color: #ddedeb; ");//#881111
@@ -241,7 +240,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.openOverlay = function (callbackFunc, closeFunc) {
         
-        var overlay = $("<div class='modal' id='switch_part'></div>");
+        var overlay = $("<div class='modal'></div>");
         var overlayCenter = $("<div class='modal_content'></div>");
         overlay.append(overlayCenter);
 
@@ -458,7 +457,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     optionsScope.closeOverlay = function () {
                         execClose();
                     };
-
+                    modal.parent().attr("id", "switch_part");
                     modal.append( $('<button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"</button>'));
                     modal.append($('<div class="title">Switch Part Into: </div>'));
                     modalContent = $("<div class='content'></div>");
@@ -563,7 +562,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 execClose();
                             });
                         }
-                        addPartModal.hide(); 
                     });
 
                     modalContent.append(addPartsDiv);
@@ -586,7 +584,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = part;
                 $timeout(function () {
-                    $sbviews.openOverlay(function (el, execClose) {
+                    $sbviews.openOverlay(function (modal, execClose) {
                         optionsScope.closeOverlay = function () {
                             execClose();
                         };
@@ -601,84 +599,56 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                         optionsScope.saveTemplate = function () {
                             optionsScope.template.part.role = $rootScope.role;
-                            $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
-                                if (err) {
-                                    giveMessage(err.description);
-                                    return;
-                                }
-                                execClose();
-                                giveMessage('Template saved!');
-                                optionsScope.editData.templates[optionsScope.template.name] = templatePart;
-                            });
+                            var isbyRef = $('#isRef').is(':checked');
+                            if(isbyRef){
+                                var templateIndex = optionsScope.editData.templates.length;
+                                optionsScope.template.roleType= "ROLE_SINGLE";
+                                optionsScope.template.role= "Role.Default";
+                                $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
+                                    if (err) {
+                                        giveMessage(err.description);
+                                        return;
+                                    }
+                                    execClose();
+                                    giveMessage('Template saved as reference!');
+                                    optionsScope.template.id = data.templateId;
+                                    optionsScope.editData.templates[templateIndex] = optionsScope.template;
+                                    $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
+                                        if (err) {
+                                            giveMessage(err.description);
+                                            return;
+                                        }
+                                        newPart = data.template;
+                                        delete data.template.id;
+                                        console.log(newPart);
+                                        toolbarOptions.toolFunctions.switch(part, newPart);
+                                        execClose();
+                                    });
+                                });
+                            }
+                            else{
+                                $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
+                                    if (err) {
+                                        giveMessage(err.description);
+                                        return;
+                                    }
+                                    execClose();
+                                    giveMessage('Template saved!');
+                                    optionsScope.editData.templates[optionsScope.template.name] = templatePart;
+                                });
+                            }
+                            
                         };
 
-                        var wrapper = $('<div>');
-                        wrapper.append('<div class="title"><span>Save Template</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
-                        var input = $('<sb-input sb-input="template.name" sb-input-label="Template Name"><button ng-click="saveTemplate()">Save</button></sb-input>');
-                        wrapper.append(input);
-                        $compile(wrapper)(optionsScope)
-                        el.append(wrapper);
-                    }, function () {
-                    });
-                });
-            }));
-        }
-
-        if (toolbarOptions.tools.canSaveTemplateRef) {
-            toolbar.append($sbviews.createTool('Save template by reference', 'images/save_icon.svg', function () {
-                var optionsScope = scope.$new();
-                optionsScope.editData = toolbarOptions.editData;
-                optionsScope.part = part;
-
-
-                var templatePart = angular.copy(part);
-
-                optionsScope.template = {
-                    name: '',
-                    part: templatePart,
-                    course: $rootScope.course,
-                    role: "Role.Default",
-                    roleType: "ROLE_SINGLE",
-                };
-                $timeout(function () {
-                    $sbviews.openOverlay(function (el, execClose) {
-                        optionsScope.closeOverlay = function () {
-                            execClose();
-                        };
-
-                        var templateIndex = optionsScope.editData.templates.length - 1;
-
-                        optionsScope.saveTemplateRef = function () {
-                            optionsScope.template.part.role = $rootScope.role;
-                            $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
-                                if (err) {
-                                    giveMessage(err.description);
-                                    return;
-                                }
-                                execClose();
-                                giveMessage('Template saved!');
-                                optionsScope.editData.templates[templateIndex] = optionsScope.template;
-                            });
-
-                            $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
-                                if (err) {
-                                    giveMessage(err.description);
-                                    return;
-                                }
-                                newPart = data.template;
-                                delete data.template.id;
-                                console.log(newPart);
-                                toolbarOptions.toolFunctions.switch(part, newPart);
-                                execClose();
-                            });
-                        };
-
-                        var wrapper = $('<div>');
-                        wrapper.append('<div class="title"><span>Save Template Reference</span><img src="images/close.svg" ng-click="closeOverlay()"></div>');
-                        var input = $('<sb-input sb-input="template.name" sb-input-label="Template Name"><button id="saveTemplateByReference" ng-click="saveTemplateRef()">Save</button></sb-input>');
-                        wrapper.append(input);
-                        $compile(wrapper)(optionsScope)
-                        el.append(wrapper);
+                        modal.parent().attr("id", "save_as_template");
+                        modal.append( $('<button class="close_btn icon" value="#save_as_template" ng-click="closeOverlay()"</button>'));
+                        modal.append($('<div class="title">Save Part as Template: </div>'));
+                        modalContent = $("<div class='content'></div>");
+                        modalContent.append( $('<div class="full"><input type="text" class="form__input" id="templateName" placeholder="Template Name *" ng-model="template.name"/> <label for="templateName" class="form__label">Template Name</label></div>'))
+                        modalContent.append( $('<div class= "on_off"><span>Save as reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
+                        modalContent.append($('<button class="save_btn" ng-click="saveTemplate()">Save</button>'));
+                        modal.append(modalContent);
+                        $compile(modal)(optionsScope)
                     }, function () {
                     });
                 });
@@ -767,8 +737,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         canSwitch: false,
                         canDelete: false,
                         canDuplicate: false,
-                        canSaveTemplate: false,
-                        canSaveTemplateRef: false
+                        canSaveTemplate: false
                     },
                     view: partOptions.view
                 };

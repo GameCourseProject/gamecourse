@@ -146,8 +146,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         canDelete: true,
                         canSwitch: true,
                         canDuplicate: true,
-                        canSaveTemplate: true,
-                        canSaveTemplateRef: true
+                        canSaveTemplate: true
                     },
                     toolFunctions: {
                         remove: function (obj) {
@@ -324,7 +323,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 templateList.append(option);
                             }
                             template_selection.append(templateList);
-                            template_selection.append( $('<div class= "on_off"><span>Use Templare by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
+                            template_selection.append( $('<div class= "on_off"><span>Use Template by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
                             template_selection.hide();
                             addPartsDiv.append(template_selection);
                             
@@ -390,7 +389,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             
                             addPartContent.append(addPartsDiv);   
                             addPartContent.append(addButton);
-                            block.append(addPartModal);
+                            $(document.body).append(addPartModal);
                             block.append(addDiv);
                             block.click();
                         },

@@ -108,6 +108,7 @@ cursor: pointer;
     width: 100%;
     position: relative;
     margin-bottom: 0;
+    padding-bottom: 7px;
 }
 .modal_content .content .inputs {
     display: flex;
@@ -200,7 +201,7 @@ cursor: pointer;
     top: 0;
     right: 0;
 }
-.modal_content .content .inputs .form__label {
+.modal_content .content .form__label {
     font-family: 'Roboto', sans-serif;
     font-size: 16px;
     margin: 2px 0 10px 10px;
@@ -216,7 +217,8 @@ cursor: pointer;
 #add-user .modal_content  .form__input,
 #new-user .modal_content  .form__input,
 #edit-user .modal_content  .form__input,
-#add_part .modal_content  .form__input
+#add_part .modal_content  .form__input,
+#save_as_template .modal_content  .form__input
 {
     margin-bottom: 22px;
 }

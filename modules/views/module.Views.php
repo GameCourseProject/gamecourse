@@ -1255,7 +1255,8 @@ class Views extends Module
             $aspects[] = ["role" => $content["role"], "partType" => "block", "parent" => null];
             Core::$systemDB->insert("aspect_class");
             $aspectClass = Core::$systemDB->getLastId();
-            $this->setTemplateHelper($aspects, $aspectClass, $courseId, $templateName, $roleType, $content);
+            $templateId = $this->setTemplateHelper($aspects, $aspectClass, $courseId, $templateName, $roleType, $content);
+            API::response(array('templateId' => $templateId));
         });
         //toggle isGlobal parameter of a template
         API::registerFunction('views', "globalizeTemplate", function () {
@@ -1574,6 +1575,7 @@ class Views extends Module
         Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
         Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["id"], "templateId" => $templateId]);
+        return $templateId;
     }
     //get settings of page/template 
     function getViewSettings()
