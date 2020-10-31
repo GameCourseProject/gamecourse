@@ -83,29 +83,26 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
         }
         
     }
-    $scope.importModule = function (){
+    $scope.importModule = function () {
         $scope.importedModule = null;
         var fileInput = document.getElementById('import_module');
         var file = fileInput.files[0];
-
-        //todo
-
-        // var reader = new FileReader();
-        // reader.onload = function(e) {
-        //     $scope.importedModule = reader.result;
-        //     $smartboards.request('course', 'importUser', { file: $scope.importedModule }, function(data, err) {
-        //         if (err) {
-        //             console.log(err.description);
-        //             return;
-        //         }
-        //         nUsers = data.nUsers;
-        //         $("#import-user").hide();
-        //         $("#action_completed").empty();
-        //         $("#action_completed").append(nUsers + " Users Imported");
-        //         $("#action_completed").show().delay(3000).fadeOut();
-        //     });
-        // }
-        // reader.readAsText(file);	
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $scope.importedModule = reader.result;
+            $smartboards.request('core', 'importModule', { file: $scope.importedModule }, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                nUsers = data.nUsers;
+                $("#import-module").hide();
+                $("#action_completed").empty();
+                // $("#action_completed").append(nUsers + " Users Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        }
+        reader.readAsDataURL(file);	
     }
     $scope.exportModules = function(){
         //todo
@@ -152,6 +149,7 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     
     $compile(modules)($scope);
     $compile(search)($scope);
+    $compile(importModal)($scope);
     tabContent.append(search);
     tabContent.append(action_buttons);
     tabContent.append(modules);

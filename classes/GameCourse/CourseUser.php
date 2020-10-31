@@ -222,13 +222,12 @@ class CourseUser extends User
         return $file;
     }
 
-    public static function importCourseUsers($file)
+    public static function importCourseUsers($fileData)
     {
-        //$file is a string gotten from reading an .csv or .txt file
-        //return number of new courses added pls
-        $file = fopen($file, "r");
-        while (!feof($file)) {
-            $courseUser = fgetcsv($file);
+        $newCourseUsersNr = 0;
+        $lines = explode("\n", $fileData);
+        foreach ($lines as $line) {
+            $courseUser = explode(",", $line);
             if (!User::getUserByStudentNumber($courseUser[5])) {
                 Core::$systemDB->insert(
                     "game_course_user",
@@ -239,12 +238,12 @@ class CourseUser extends User
                         "studentNumber" => $courseUser[5],
                         "isAdmin" => $courseUser[6],
                         "isActive" => $courseUser[7]
-                    ]
-                );
-            }
+                        ]
+                    );
+                }
             $newUser = User::getUserByStudentNumber($courseUser[5]);
             if (!Core::$systemDB->select("course_user", ["id" => $newUser->getId(), "course" => $courseUser[0]])) {
-
+                $newCourseUsersNr++;
                 Core::$systemDB->insert(
                     "course_user",
                     [

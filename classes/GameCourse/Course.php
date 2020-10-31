@@ -493,15 +493,15 @@ class Course
 
     //nao importa curso com o mesmo nome no mesmo ano
     //verificar o isActive e isVisible tb? se sim, tem não se pode dar enable a esses botoes caso haja um curso com esse nome ativo
-    public static function importCourses($file)
+    public static function importCourses($fileData)
     {
-        //$file is a string gotten from reading an .csv or .txt file
-        //return number of new courses added pls
-        $file = fopen($file, "r");
-        while (!feof($file)) {
-            $course = fgetcsv($file);
+        $newCoursesNr = 0;
+        $lines = explode("\n", $fileData);
+         foreach ($lines as $line) {
+            $course = explode(",", $line);
             if (!$course[3]) {
                 if (!Core::$systemDB->select("course", ["name" => $course[1]])) {
+                    $newCoursesNr++;
                     Core::$systemDB->insert(
                         "course",
                         [
@@ -516,6 +516,7 @@ class Course
                 }
             } else {
                 if (!Core::$systemDB->select("course", ["name" => $course[1], "year" => $course[3]])) {
+                    $newCoursesNr++;
                     Core::$systemDB->insert(
                         "course",
                         [
@@ -530,7 +531,7 @@ class Course
                 }
             }
         }
-        fclose($file);
+        return $newCoursesNr;
     }
     // public function getDictionary()
     // {

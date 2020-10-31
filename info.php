@@ -14,6 +14,7 @@ use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\ModuleLoader;
+use GameCourse\Module;
 use GameCourse\Settings;
 use GameCourse\User;
 use GameCourse\CourseUser;
@@ -67,9 +68,10 @@ API::registerFunction('core', 'getUserActiveCourses', function() {
 API::registerFunction('core', 'importCourses', function(){
     API::requireAdminPermission();
     API::requireValues('file');
-
-    $nCourses = 0; //delete later
-    //$nCourses = Course::importCourses(API::getValue('file')); //uncomment after import is finished
+    $file = explode(",", API::getValue('file'));
+    $fileType = explode(";", $file[0]);
+    $fileContents = base64_decode($file[1]);
+    $nCourses = Course::importCourses($fileContents);
     API::response(array('nCourses' => $nCourses));
 });
 
@@ -469,9 +471,9 @@ API::registerFunction('core', 'users', function() {
 API::registerFunction('core', 'importUser', function(){
     API::requireAdminPermission();
     API::requireValues('file');
-
-    $nUsers = 0; //delete later
-    //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $nUsers = User::importUsers($fileContents);
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('core', 'exportUsers', function(){
@@ -479,6 +481,19 @@ API::registerFunction('core', 'exportUsers', function(){
     $users = User::exportUsers();
     API::response(array('users' => $users));
 });
+
+API::registerFunction('core', 'importModule', function () {
+    API::requireAdminPermission();
+    API::requireValues('file');
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    Module::importModules($fileContents);
+
+    $nUsers = 0; //delete later
+    //$nUsers = User::importUsers(API::getValue('file')); //uncomment after import is finished
+    API::response(array('nUsers' => $nUsers));
+});
+
 
 //------------------Users inside the course
 
@@ -490,9 +505,9 @@ function udiffCompare($a, $b){
 API::registerFunction('course', 'importUser', function(){
     API::requireCourseAdminPermission();
     API::requireValues('file');
-
-    $nUsers = 0; //delete later
-    //$nUsers = CourseUser::importCourseUsers(API::getValue('file')); //uncomment after import is finished
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $nUsers = CourseUser::importCourseUsers($fileContents);
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('course', 'exportUsers', function(){

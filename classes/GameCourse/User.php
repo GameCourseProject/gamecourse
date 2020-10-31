@@ -269,14 +269,14 @@ class User
     }
 
 
-    public static function importUsers($file)
+    public static function importUsers($fileData)
     {
-        //$file is a string gotten from reading an .csv or .txt file
-        //return number of new courses added pls
-        $file = fopen($file, "r");
-        while (!feof($file)) {
-            $user = fgetcsv($file);
+        $newUsersNr = 0;
+        $lines = explode("\n", $fileData);
+        foreach ($lines as $line) {
+            $user = explode(",", $line);
             if (!User::getUserByStudentNumber($user[3])) {
+                $newUsersNr++;
                 Core::$systemDB->insert(
                     "game_course_user",
                     [
@@ -290,6 +290,6 @@ class User
                 );
             }
         }
-        fclose($file);
+        return $newUsersNr;
     }
 }

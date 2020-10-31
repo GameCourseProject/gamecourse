@@ -114,10 +114,13 @@ abstract class Module
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
     }
-    public static function importModules($zipFile)
+    public static function importModules($fileContents)
     {
+        $path = time() . ".zip";
+        file_put_contents($path, $fileContents);
+
         $zip = new \ZipArchive;
-        if ($zip->open($zipFile) === TRUE) {
+        if ($zip->open($path) === TRUE) {
             //mudar depois pra modules
             $zip->extractTo('testeModules');
             $zip->close();
@@ -125,6 +128,8 @@ abstract class Module
         } else {
             echo 'failed';
         }
+
+        unlink($path); 
     }
 
     public static function exportModules()
