@@ -32,7 +32,7 @@ class AwardList extends Module
         // ));
 
         $course = $this->getParent();
-   /*     $viewHandler->registerLibrary("awardlist", "awards", "This library provides information regarding Awards. It is provided by the award module.");
+        /*$viewHandler->registerLibrary("awardlist", "awards", "This library provides information regarding Awards. It is provided by the award module.");
         $viewHandler->registerFunction(
             'awards',
             'getAllAwards',
@@ -64,10 +64,14 @@ class AwardList extends Module
             $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));  
     }
 
-
     public function is_configurable(){
         return true;
     }
+
+    public function update_module($compatibleVersions){
+        //verificar compatibilidade
+        //minha função 
+    }   
 }
 ModuleLoader::registerModule(array(
     'id' => 'awardlist',

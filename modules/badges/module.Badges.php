@@ -841,6 +841,12 @@ class Badges extends Module
             $this->deleteBadge($listingItem, $courseId);
         }
     }
+
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+        //minha função 
+    }
 }
 
 ModuleLoader::registerModule(array(

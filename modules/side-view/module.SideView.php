@@ -32,6 +32,12 @@ class SideView extends Module {
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+        //minha função 
+    }
 }
 
 ModuleLoader::registerModule(array(

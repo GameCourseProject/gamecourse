@@ -464,6 +464,11 @@ class Plugin extends Module
         });
     }
 
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+        //minha função 
+    }
     
     public function is_configurable(){
         return true;

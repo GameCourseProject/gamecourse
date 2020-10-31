@@ -456,6 +456,12 @@ class XPLevels extends Module
     public function is_configurable(){
         return true;
     }
+
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+        //minha função 
+    }
 }
 
 ModuleLoader::registerModule(array(

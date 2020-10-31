@@ -841,6 +841,11 @@ class Skills extends Module
         return true;
     }
 
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+        //minha função 
+    }
 
 }
 
