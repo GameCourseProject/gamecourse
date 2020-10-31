@@ -1617,10 +1617,9 @@ class Views extends Module
         return false;
     }
 
-    public function update_module($module)
+    public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
-        //minha função 
     }
 }
 

@@ -33,10 +33,9 @@ class Leaderboard extends Module {
         return false;
     }
 
-    public function update_module($version)
+    public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
-        //minha função 
     }
 }
 

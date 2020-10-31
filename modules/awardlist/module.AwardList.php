@@ -70,7 +70,6 @@ class AwardList extends Module
 
     public function update_module($compatibleVersions){
         //verificar compatibilidade
-        //minha função 
     }   
 }
 ModuleLoader::registerModule(array(

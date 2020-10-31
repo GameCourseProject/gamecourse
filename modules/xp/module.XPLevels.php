@@ -457,10 +457,9 @@ class XPLevels extends Module
         return true;
     }
 
-    public function update_module($module)
+    public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
-        //minha função 
     }
 }
 
