@@ -917,8 +917,6 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         profile_image.src = 'photos/'+ $scope.myInfo.id +'.png?'+ new Date().getTime();
 
 
-<<<<<<< HEAD
-=======
         var reader = new FileReader();
 
         reader.onload = function(e) {
@@ -935,8 +933,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         }
-        reader.readAsDataURL(file);	
->>>>>>> a665a19c...  - Returns the file content as base64, which is handled in backend
+        reader.readAsDataURL(file);
         
         atributes = ['Name', 'Nickname', 'Student Number', 'Email', 'Authentication', 'Username']
         values = ['name', 'nickname', 'studentNumber', 'email', 'authenticationService', 'username']
@@ -959,6 +956,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         myInfo.append(informationbox);
         myInfo.append(subtitle);
         $element.append(myInfo);
+    }
     });
     
 });

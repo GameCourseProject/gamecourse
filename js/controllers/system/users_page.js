@@ -448,7 +448,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         }
-        reader.readAsText(file);	
+        reader.readAsDataURL(file);	
         
     }
     $scope.exportUsers = function(){

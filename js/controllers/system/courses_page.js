@@ -477,7 +477,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         }
-        reader.readAsText(file);	
+        reader.readAsDataURL(file);	
         
     }
     $scope.exportCourses = function(){
@@ -486,7 +486,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
                 giveMessage(err.description);
                 return;
             }
-            download("courses.csv", data.courses);
+            download("courses.json", data.courses);
         });
         
     }
@@ -682,9 +682,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     importModal = $("<div class='modal' id='import-course'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#import-course" onclick="closeModal(this)"></button>'));
-    verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+    verification.append( $('<div class="warning">Please select a .json file to be imported</div>'));
     verification.append( $('<div class="target">The seperator must be comma</div>'));
-    verification.append( $('<input class="config_input" type="file" id="import_course" accept=".csv, .txt">')); //input file
+    verification.append( $('<input class="config_input" type="file" id="import_course" accept=".json">')); //input file
     verification.append( $('<div class="confirmation_btns"><button ng-click="importCourses()">Import Courses</button></div>'))
     importModal.append(verification);
     allCourses.append(importModal);

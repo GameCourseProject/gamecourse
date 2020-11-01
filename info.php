@@ -81,6 +81,7 @@ API::registerFunction('core', 'exportCourses', function(){
     API::response(array('courses' => $courses));
 });
 //-------------------
+/*
 
 
 API::registerFunction('core', 'getCourseInfo', function() {
@@ -468,6 +469,7 @@ API::registerFunction('core', 'users', function() {
     API::requireAdminPermission();
 
 
+*/  
 // ------------------- Users List
 
 API::registerFunction('core', 'importUser', function(){
