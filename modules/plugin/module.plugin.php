@@ -134,14 +134,26 @@ class Plugin extends Module
                     }
                 }
             }
-            if (!User::getUserByStudentNumber($studentNumber)) {
-                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
-                $user = User::getUserByStudentNumber($studentNumber);
-                $courseUser = new CourseUser($user->getId(), $course);
-                $courseUser->addCourseUserToDB(2, $campus);
-            } else {
-                $existentUser = User::getUserByStudentNumber($studentNumber);
-                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+            if($studentNumber){
+                if (!User::getUserByStudentNumber($studentNumber)) {
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    $user = User::getUserByStudentNumber($studentNumber);
+                    $courseUser = new CourseUser($user->getId(), $course);
+                    $courseUser->addCourseUserToDB(2, $campus);
+                } else {
+                    $existentUser = User::getUserByStudentNumber($studentNumber);
+                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                }
+            }else{
+                if (!User::getUserByEmail($email)) {
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    $user = User::getUserByEmail($email);
+                    $courseUser = new CourseUser($user->getId(), $course);
+                    $courseUser->addCourseUserToDB(2, $campus);
+                } else {
+                    $existentUser = User::getUserByEmail($email);
+                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                }
             }
         }
         return true;
