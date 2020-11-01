@@ -45,6 +45,13 @@ function alertUpdate(data, err) {
             output += data.updatedData[i] + '\n';
         }
         giveMessage(output);
+    }
+    if (data != undefined) {
+        if (!data.error) {
+            location.reload();
+        }
+    } else {
         location.reload();
+
     }
 }
