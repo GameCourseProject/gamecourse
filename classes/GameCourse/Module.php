@@ -242,6 +242,20 @@ abstract class Module
         }
         return $zipName;
     }
+
+    public static function deleteModule($moduleId){
+        $module = ModuleLoader::getModule($moduleId);
+        $moduleObj = $module["factory"]();
+        //disable desse módulo em todos os cursos
+        Core::$systemDB->update("course_module", ["isEnabled" => 0], ["moduleId" => $moduleId]);
+        //drop das tables relativas a esse module
+        $moduleObj->dropTables($moduleId);
+        //apagar o module da BD
+        Core::$systemDB->delete("module", ["moduleId" => $moduleId]);
+        //apagar a pasta do module
+        Module::rrmdir("modules/".$moduleId);
+    }
+    
     public function deleteDataRows($courseId)
     {
     }

@@ -75,15 +75,17 @@ class Badges extends Module
     }
     public function deleteLevels($courseId)
     {
-        $levels = Core::$systemDB->selectMultiple(
-            "level left join badge_has_level on levelId=id",
-            ["course" => $courseId],
-            'id',
-            null,
-            [["levelId", null]]
-        );
-        foreach ($levels as $lvl) {
-            Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
+        if(Core::$systemDB->tableExists("badge_has_level")){
+            $levels = Core::$systemDB->selectMultiple(
+                "level left join badge_has_level on levelId=id",
+                ["course" => $courseId],
+                'id',
+                null,
+                [["levelId", null]]
+            );
+            foreach ($levels as $lvl) {
+                Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
+            }
         }
     }
     public function dropTables($moduleName)
