@@ -111,15 +111,20 @@ class GoogleSheets
         // $tableName = $service->spreadsheets->get($this->spreadsheetId)->properties->title;
         $names = explode(";", $this->sheetName);
 
+        $insertedOrUpdated = false;
         foreach ($names as $name) {
             $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
             $name = substr($name, 0, -1);
-            $this->writeToDB($name, $responseRows->getValues());
+            if($this->writeToDB($name, $responseRows->getValues())){
+                $insertedOrUpdated = true;
+            }
         }
+        return $insertedOrUpdated;
     }
 
     public function writeToDB($name, $valuesRows)
     {
+        $insertedOrUpdated = false;
         $profId = User::getUserByUsername($name)->getId();
         for ($row = 1; $row < sizeof($valuesRows); $row++) {
             $user = User::getUserByStudentNumber($valuesRows[$row][0]);
@@ -133,6 +138,7 @@ class GoogleSheets
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
 
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -146,6 +152,7 @@ class GoogleSheets
                         );
                     } else {
                         if ($result["description"] != $info) {
+                            $insertedOrUpdated = true;
                             Core::$systemDB->update(
                                 "participation",
                                 array(
@@ -169,6 +176,7 @@ class GoogleSheets
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
 
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -182,6 +190,7 @@ class GoogleSheets
                         );
                     } else {
                         if ($result["rating"] != $xp) {
+                            $insertedOrUpdated = true;
                             Core::$systemDB->update(
                                 "participation",
                                 array(
@@ -204,6 +213,7 @@ class GoogleSheets
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
 
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -221,6 +231,7 @@ class GoogleSheets
                     $xp = $valuesRows[$row][4];
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -234,6 +245,7 @@ class GoogleSheets
                         );
                     } else {
                         if ($result["rating"] != $xp || $result["description"] != $info) {
+                            $insertedOrUpdated = true;
                             Core::$systemDB->update(
                                 "participation",
                                 array(
@@ -256,6 +268,7 @@ class GoogleSheets
                     $info  = $valuesRows[$row][5];
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -269,6 +282,7 @@ class GoogleSheets
                         );
                     } else {
                         if ($result["description"] != $info) {
+                            $insertedOrUpdated = true;
                             Core::$systemDB->update(
                                 "participation",
                                 array(
@@ -291,6 +305,7 @@ class GoogleSheets
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
 
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -307,6 +322,7 @@ class GoogleSheets
                     $info  = $valuesRows[$row][5];
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -320,6 +336,7 @@ class GoogleSheets
                             )
                         );
                     } else {
+                        $insertedOrUpdated = true;
                         if ($result["description"] != $info) {
                             Core::$systemDB->update(
                                 "participation",
@@ -343,6 +360,7 @@ class GoogleSheets
                 } else if ($action == "course emperor") {
                     $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId]);
                     if (!$result) {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             array(
@@ -358,5 +376,6 @@ class GoogleSheets
                 }
             }
         }
+        return $insertedOrUpdated;
     }
 }

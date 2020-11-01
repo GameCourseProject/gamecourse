@@ -44,8 +44,9 @@ class CronJob
                 $periodStr = "*/" . $number . " * * * *";
             } else if ($time == "Hours") {
                 $periodStr = "0 */" . $number . " * * *";
-            } else if ($time == "Months") {
-                $periodStr = "* * */" . $number . " * *";
+            } else if ($time == "Day") {
+                //à meia noite de cada dia
+                $periodStr = "0 0 * * */1";
             }
 
             $file .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
