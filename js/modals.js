@@ -45,6 +45,6 @@ function alertUpdate(data, err) {
             output += data.updatedData[i] + '\n';
         }
         giveMessage(output);
+        location.reload();
     }
-    location.reload();
 }

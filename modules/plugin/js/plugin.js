@@ -91,7 +91,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     var authUrl;
     $scope.saveCredentials = function () {
         $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
-            alertUpdate(data, err);
+            // alertUpdate(data, err);  
             authUrl = data.authUrl;
         });
     }
