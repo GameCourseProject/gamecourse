@@ -2,6 +2,7 @@
 
 namespace Modules\Plugin;
 
+use Exception;
 use GameCourse\Core;
 use GameCourse\API;
 use GameCourse\User;
@@ -30,6 +31,10 @@ class Moodle
         $this->courseGameCourse = new Course($this->courseId);
     }
 
+    public static function checkConnection($dbServer, $dbUser, $dbPass, $dbName, $dbPort){
+        $db = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
+        return $db;
+    }
     public function getDBConfigValues()
     {
         $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $this->courseId], "*");

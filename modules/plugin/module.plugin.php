@@ -273,10 +273,53 @@ class Plugin extends Module
     private function setCronJob($script, $courseId, $vars)
     {
         if (empty($vars['number']) || empty($vars['time'])) {
-            return false;
+            return array("result" => false, "errorMessage" => "Select a periodicity");
         } else {
-            new CronJob($script, $courseId, $vars['number'], $vars['time']);
-            return true;
+            if ($script == "Moodle"){
+                //verificar table config
+                $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
+                if ($moodleVars){
+                    //verificar ligaçao à bd
+                    $result = Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
+                    if($result){
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        return array("result"=> true);
+                    }else{
+                        return array("result" => false, "errorMessage" =>"Connection failed");
+                    }
+                } else{ 
+                    return array("result"=> false, "errorMessage" => "Please set the moodle variables");
+                }
+
+            } else if ($script == "ClassCheck"){
+                $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
+                if ($classCheckVars){
+                    $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
+                    if ($result){
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        return array("result" => true);
+                    } else {
+                        return array("result" => false, "errorMessage" => "Connection failed");
+                    }
+                } else {
+                    return array("result" => false, "errorMessage" => "Please set the class check variables");
+                }
+            } else if ($script == "GoogleSheets"){
+                $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+                if ($googleSheetsVars){
+                    $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
+                    if ($result) {
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        return array("result" => true);
+                    } else {
+                        return array("result" => false, "errorMessage" => "Connection failed");
+                    }
+                } else {
+                    return array("result" => false, "errorMessage" => "Please set the class check variables");
+                }
+            }
+
+           
         }
     }
 
@@ -394,20 +437,22 @@ class Plugin extends Module
             if (API::hasKey('moodlePeriodicity')) {
                 $moodle = API::getValue('moodlePeriodicity');
                 //place to verify input values
-                if ($this->setCronJob("Moodle", $courseId, $moodle)) {
+                $response = $this->setCronJob("Moodle", $courseId, $moodle);
+                if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Moodle enabled"]]);
                 } else {
-                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                    API::response(["updatedData" => [$response["errorMessage"]]]);
                 }
                 return;
             }
             if (API::hasKey('classCheckPeriodicity')) {
                 $classCheck = API::getValue('classCheckPeriodicity');
                 //place to verify input values
-                if ($this->setCronJob("ClassCheck", $courseId, $classCheck)) {
+                $response = $this->setCronJob("ClassCheck", $courseId, $classCheck);
+                if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Class Check enabled"]]);
                 } else {
-                    API::response(["updatedData" => ["Please select a periodicity"]]);
+                    API::response(["updatedData" => [$response["errorMessage"]]]);
                 }
                 return;
             }

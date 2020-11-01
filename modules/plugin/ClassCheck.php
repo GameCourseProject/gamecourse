@@ -27,6 +27,14 @@ class ClassCheck
         }
     }
 
+    public static function checkConnection($code){
+        $url = "https://classcheck.tk/tsv/course?s=" . $code;
+        try {
+            fopen($url, 'r');
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
     public function readAttendance($code)
     {
         $inserted = false;

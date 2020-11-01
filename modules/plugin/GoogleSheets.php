@@ -18,6 +18,20 @@ class GoogleSheets
         $this->courseId = $courseId;
     }
 
+    public static function checkConnection($courseId){
+        $gs = new GoogleSheets($courseId);
+        $credentials = $gs->getCredentialsFromDB();
+        $token = $gs->getTokenFromDB();
+        $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $gs->courseId], "authCode");
+        $service = GoogleHandler::getGoogleSheets($credentials, $token, $authCode);
+        $gs->getDBConfigValues();
+        $names = explode(";", $gs->sheetName);
+
+        foreach ($names as $name) {
+              $service->spreadsheets_values->get($gs->spreadsheetId, $name);
+        }
+    }
+
     public function getCredentialsFromDB()
     {
         $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $this->courseId], "*");
