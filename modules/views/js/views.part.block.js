@@ -217,13 +217,11 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     delete optionsScope.part.header;
                             };
 
-                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
+                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Content"></sb-menu>');
 
                             var header = $('<div class="sb-checkbox">');
                             header.append('<input id="block-header" type="checkbox" ng-checked="part.header != undefined" ng-click="toggleHeader()">');
-                            header.append('<label for="block-header">Enable Header</label>');
-                            header.append('<a href="./docs/#PartBlockHeader" target="_blank"><img title="Enables the block header, containing the image and title of the block" class="info" src="images/info.svg"></a>');
-                            header.append('<div class="content"></div>');
+                            header.append('<label for="block-header"> Enable Header</label>');
                             watch('part.header');
 
                             /*var pageAnchor = $('<sb-checkbox ng-if="part.header != undefined" sb-checkbox="part.header.anchor" sb-checkbox-label="Enable Page Anchor" sb-checkbox-default="" sb-checkbox-info="Adds a anchor reference to the block. This is used by links to jump directly to this element." sb-checkbox-link="./docs/#PartBlockHeaderPageAnchor"></sb-checkbox>');
@@ -395,9 +393,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         },
                         layoutEditEnd: function() {
                             block.children('.content').find('.block-edit-overlay').remove();
-                            block.children('.add-parts').remove();
                             block.children('.add_new_part').remove();
-                            block.children('#add_part').remove();
+                            $("#add_part").remove();
                             
                         }
                     }

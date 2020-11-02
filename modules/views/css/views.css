@@ -281,11 +281,23 @@
   background-size: 25px;
   background-position: center;
 }
-
-#switch_part, #save_as_template{
-  display: block;
+#viewEditor .block .add_new_part {
+  margin: 0px;
+  margin-top: 40px;
 }
 
+#switch_part, #save_as_template, #edit_part{
+  display: block;
+}
+#edit_part .modal_content {
+  margin-top: 50px;
+}
+#edit_part .icon{
+  height: 23px;
+  width: 23px;
+  opacity: 0.8;
+  margin-left: 10px;
+}
 
 .block-edit-overlay{
   width: 100%; 
@@ -338,6 +350,9 @@
   padding-bottom: 7px;
 }
 
+/*---------------------------------*/
+
+
 .specializations-selection > div {
   display: inline-block;
   vertical-align: top;
@@ -356,53 +371,7 @@
 .specializations-selection > div ul li:last-child {
   border: none;
 }
-.settings-overlay {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.settings-overlay .settings-overlay-center {
-  background-color: #b6b6b6;
-  margin: 0px 12px;
-  max-width: 600px;
-  min-height: 400px;
-}
-@media all and (min-width: 700px) {
-  .settings-overlay .settings-overlay-center {
-    margin: 0 auto;
-  }
-}
-.settings-overlay .settings-overlay-center > div > .part-sysinfo {
-  padding: 6px;
-  font-size: 12px;
-}
-.settings-overlay .settings-overlay-center > div > .part-sysinfo:before {
-  content: 'Part System Info:';
-  display: block;
-  margin-bottom: 2px;
-  font-weight: bold;
-}
-.settings-overlay .settings-overlay-center > div > .title {
-  height: 32px;
-  line-height: 32px;
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0.2);
-}
-.settings-overlay .settings-overlay-center > div > .title > span {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: bold;
-  font-size: 120%;
-}
-.settings-overlay .settings-overlay-center > div > .title > a {
-  float: right;
-}
-.settings-overlay .settings-overlay-center > div > .title img {
-  float: right;
-  width: 28px;
-  height: 28px;
-  margin-top: 2px;
-  margin-right: 2px;
-  cursor: pointer;
-}
+
 select:disabled {
   cursor: no-drop;
 }
@@ -414,30 +383,65 @@ select:disabled {
 .templates-list li {
   margin-left: 16px;
 }
-.sb-menu > .header {
-  background-color: rgba(0, 0, 0, 0.1);
-  padding: 4px;
+/*---------------------------------*/
+
+
+.sb-menu .title {
+  font-size: 16px;
+  margin-bottom: 10px;
 }
-.sb-menu > .header > img {
-  width: 18px;
-  height: 18px;
-  vertical-align: middle;
+.sb-input, .sb-expression, .sb-component {
+  margin-top: 4px;
+  width: calc( 100% - 40px);
+  display: flex;
+  justify-content: start;
+  align-items: baseline;
 }
-.sb-menu > .header > span {
-  margin-left: 4px;
-  vertical-align: middle;
-  color: rgba(0, 0, 0, 0.87);
+.sb-menu .form__input {
+  margin: 0 0 10px;
+  line-height: 20px;
+  height: 35px;
+  padding: 5px 10px;
 }
+.sb-menu .add_button {
+  top: -40px;
+  right: 40px;
+  border: none;
+  width: 52px;
+}
+
 .sb-menu > .content {
-  padding: 4px;
+  padding: 0 20px;
 }
+.sb-menu .visibility-options{
+  display: flex;
+  justify-content: flex-start;
+  width: calc(100% - 40px);
+  margin: 15px 0;
+}
+.sb-menu .condition{
+  min-height: 1px;
+}
+.sb-menu .visibility-options .option {
+  margin-right: 30px;
+}
+.sb-menu .visibility-options .option input {
+  margin: 0 5px 0 0;
+}
+
 .sb-component {
   margin-top: 4px;
+}
+.sb-component select.form__input {
+  width: 40%;
+  margin: 0 20px 0 4px;
+  padding: 5px 10px;
 }
 .sb-input,
 .sb-checkbox,
 .sb-expression {
   margin-top: 4px;
+  width: calc( 100% - 40px);
 }
 .sb-input input,
 .sb-checkbox input,
@@ -459,15 +463,30 @@ select:disabled {
 }
 .sb-input label,
 .sb-checkbox label,
-.sb-expression label {
-  min-width: 80px;
+.sb-expression label,
+.sb-component label {
+  min-width: 100px;
   display: inline-block;
 }
+.sb-checkbox {
+  padding-bottom: 10px;
+}
 .sb-checkbox > .content {
-  margin-left: 14px;
+  margin-top: 15px;
+  padding: 0;
+}
+.sb-checkbox > input {
+  margin: 0;
+  margin-right: 5px;
 }
 .sb-checkbox > label {
   min-width: inherit;
+}
+.sb-checkbox .sb-expression {
+  width: 100%;
+}
+.sb-checkbox .sb-expression textarea{
+  margin: 0;
 }
 .sb-checkbox > a > .info,
 .sb-checkbox > .info {
@@ -485,38 +504,37 @@ select:disabled {
   transition: opacity 1s;
   opacity: 0.8;
 }
-.sb-input > input[type='text'] {
-  height: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-}
+
 .sb-input > .content {
   display: inline-block;
+  width: auto;
+  padding: 0;
 }
+.sb-input > .form__input{
+  margin-right: 20px;
+  width: 40%
+}
+.sb-input > .content button{
+  margin-bottom: 2px;
+}
+.sb-expression > .content button{
+  margin-left: 20px;
+  margin-bottom: 2px;
+}
+
 .sb-expression {
   position: relative;
 }
 .sb-expression > textarea {
-  max-width: 250px;
-  height: 20px;
-  line-height: 20px;
-  resize: none;
-  overflow: hidden;
-  font-size: 13px;
-  font-family: monospace;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  padding-right: 18px;
-  background-position: right top;
+  background-position: right;
   background-repeat: no-repeat;
+  background-size: 25px;
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAABlBMVEUA/wD///9vvVhRAAAAFklEQVQY02NgxAAMjAxoYFQIvxAGAAAuwgBFVY3c5wAAAABJRU5ErkJggg==);
 }
 .sb-expression > textarea.err {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAABlBMVEX/AAD///9BHTQRAAAAFklEQVQY02NgxAAMjAxoYFQIvxAGAAAuwgBFVY3c5wAAAABJRU5ErkJggg==);
 }
-@media all and (min-width: 700px) {
-  .sb-expression > textarea {
-    min-width: 300px;
-  }
-}
+
 .sb-expression > .expression-field-search {
   background: rgba(0, 0, 0, 0.05);
   margin: 4px;
@@ -563,4 +581,7 @@ select:disabled {
 }
 .sb-expression > .content {
   display: inline-block;
+  width: auto;
+  padding: 0 0 15px 0;
+  align-self: center;
 }

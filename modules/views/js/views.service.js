@@ -297,7 +297,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         if (!toolbarOptions.tools.noSettings) {
-            toolbar.append($sbviews.createTool('Edit Settings', 'images/edit_icon.svg', function () {
+            toolbar.append($sbviews.createTool('Edit Part Settings', 'images/edit_icon.svg', function () {
                 var optionsScope = scope.$new();
                 optionsScope.editData = toolbarOptions.editData;
                 optionsScope.part = angular.copy(part);
@@ -331,9 +331,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     if (optionsScope.part.visibilityType === "visible" || optionsScope.part.visibilityType === "invisible") {
                         //disable condition input if visibility is visible or invisible
                         sbExp.prop('disabled', true);
+                        $("#visCondition").hide();
                     }
                     else {//enable condition input if visibility is by condition
                         sbExp.prop('disabled', false);
+                        $("#visCondition").show();
                     }
                 };
 
@@ -357,18 +359,19 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             }
                         }, true);
                     }
-                    $sbviews.openOverlay(function (el, execClose) {
+                    $sbviews.openOverlay(function (modal, execClose) {
                         optionsScope.closeOverlay = function () {
                             execClose();
                         };
+                        modal.parent().attr("id", "edit_part");
                         var scopeToConfig = optionsScope;
                         $smartboards.request('views', 'getDictionary', { course: $rootScope.course }, function (data, err) {
                             scopeToConfig.dictionary = data;
                         });
                         var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
                         $compile(container)(optionsScope);
-                        el.append(container);
-                        el.on('mouseenter', function () {
+                        modal.append(container);
+                        modal.on('mouseenter', function () {
                             //this ensures that when visibility is not conditional, the field will be disabled
                             optionsScope.toggleVisCondition();
                         });
