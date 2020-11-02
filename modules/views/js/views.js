@@ -23,6 +23,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         }
         angular.extend($scope, data);
 
+        $scope.name = $stateParams.name;
         $scope.viewType = $scope.viewSettings.roleType;
         $scope.pageOrTemp = data.pageOrTemp;
         $scope.selection = {};
@@ -158,10 +159,12 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             if ($scope.missingOne.length > 0)
                 $scope.selection.missingOneToAdd = $scope.missingOne[0];
         }
-        
-        var el = $compile($('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">'))($scope);
+        var el = $('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">');
         $element.html(el);
+        $compile(el)($scope);
+                
     });
+    
 });
 
 angular.module('module.views').controller('ViewEditController', function($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {

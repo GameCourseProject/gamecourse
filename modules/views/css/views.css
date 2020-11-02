@@ -358,7 +358,10 @@
 }
 
 /*---------------------------------*/
-
+.specializations-selection {
+  display: flex;
+  justify-content: flex-start;
+}
 
 .specializations-selection > div {
   display: inline-block;
@@ -369,11 +372,25 @@
   padding: 0px;
   background-color: white;
   list-style-type: none;
+  border: 2px solid lightgray;
+  margin-bottom: 10px;
+  border-radius: 5px;
 }
 .specializations-selection > div ul li {
   cursor: pointer;
-  padding: 2px;
+  padding: 2px 10px;
   border-bottom: 1px solid #f2f2f2;
+  height: 30px;
+  line-height: 30px;
+  position: relative;
+}
+.specializations-selection > div ul li .delete_icon {
+  height: 18px;
+  width: 18px;
+  position: absolute;
+  right: 10px;
+  top: 7px;
+  opacity: 0.8;
 }
 .specializations-selection > div ul li:last-child {
   border: none;
@@ -389,6 +406,45 @@ select:disabled {
 }
 .templates-list li {
   margin-left: 16px;
+}
+#viewInfo {
+  font-size: 14px;
+}
+#viewInfo .details {
+  margin: 20px 0;
+  font-size: 14px;
+}
+#viewInfo #viewName {
+  border: none;
+  background-color: white;
+  font-size: 14px;
+  color: black;
+}
+#viewInfo .topic {
+  font-weight: bold;
+  min-width: 120px;
+  display: inline-block;
+}
+#viewInfo .role_selection {
+  margin: 10px 40px 0 0;
+}
+#viewInfo .role_selection .topic {
+  margin-bottom: 10px;
+}
+#viewInfo select {
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  font-size: 12px;
+  padding: 5px;
+  background-color: white;
+  display: inline-block;
+  transition: all 0.3s;
+  border-radius: 5px;
+  width: 100%;
+  margin-right: 10px;
+}
+#viewInfo .add_section {
+  display: flex;
 }
 /*---------------------------------*/
 
