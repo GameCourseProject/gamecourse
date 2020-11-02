@@ -450,7 +450,7 @@ var GameCourseExpression = (function () {
             }
             return true;
         },
-        autocomplete: function autocomplete(input, library, variables, option, caret) {
+        autocomplete: function autocomplete(targerInput, input, library, variables, option, caret) {
             errorMessage = "";
             var caret = 0;
             if (document.activeElement.tagName == "TEXTAREA") {
@@ -613,8 +613,30 @@ var GameCourseExpression = (function () {
                 }
             }
 
+            autocomplete_box = targerInput.parent().find(".autocomplete_box");
             if (output != "") {
-                console.log(output);
+                autocomplete_box.css("display", "flex");
+                autocomplete_box.empty();
+                jQuery.each(output, function( index ){
+                    option_ex = output[index];
+                    option_span = $('<span value="'+option_ex+'">'+ option_ex +'</span>');
+                    autocomplete_box.append(option_span);
+                    function replace_string(textarea, to_replace, new_value){
+                        current_val = textarea.val();
+                        position_end = textarea.prop("selectionStart");
+                        position_start = position_end - to_replace.length;
+                        new_val = current_val.substring(0, position_start) + new_value + current_val.substring(position_end);
+                        textarea.val(new_val);
+                    }
+                    option_span.click(function(){
+                        replace_string(targerInput, input, this.getAttribute('value'));
+                        autocomplete_box.css("display", "none");
+                    });
+                });
+            }
+            else{
+                autocomplete_box.empty();
+                autocomplete_box.css("display", "none");
             }
             return errorMessage;
         }

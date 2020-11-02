@@ -655,3 +655,21 @@ select:disabled {
   0%{ left: 0; }
   100% { left: -200px; }
 }
+
+
+.autocomplete_box {
+  position: absolute;
+  border: 2px solid grey;
+  display: none;
+  flex-direction: column;
+  background-color: lightgray;
+  padding: 5px 0px;
+  top: 40px;
+  z-index: 3;
+  border-radius: 5px;
+  width: calc(100% - 4px);
+}
+.autocomplete_box span{
+  padding: 5px 10px;
+  cursor: pointer;
+}
