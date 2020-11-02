@@ -178,6 +178,28 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     breadcrum.append($("<div class='go_back icon'></div>"));
     breadcrum.append($("<span>"+ $stateParams.name +"</span>")); 
 
+    var helper = $('<div class="side_helper">');
+    var open_helper = $('<div id="open_helper">');
+    open_helper.append($('<span class="help icon"></span><span id="arrow" class="open icon"></span>'));
+    var helper_content = $('<div id="helper_content">');
+    helper_content.append($('<span><a target="_blank" href="./docs">Documentation</a></span>'));
+    helper.append(open_helper);
+    helper.append(helper_content);
+    open_helper.click( function () {
+        arrow = $("#arrow");
+        if (helper_content.hasClass("visible")){
+          helper_content.removeClass("visible");
+          helper_content.addClass("invisible");
+          arrow.removeClass("closed");
+        }
+        else{
+          helper_content.removeClass("invisible");
+          helper_content.addClass("visible");
+          arrow.addClass("closed");
+        }
+    })
+    
+
     var reqData = {course: $scope.course};
     if ($state.current.name == 'course.settings.views.view.edit-role-single'){
         reqData.info = {role: $stateParams.role};
@@ -294,6 +316,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         viewEditorWindow.prepend(controlsDiv);
         $compile(breadcrum)($scope);
         viewEditorWindow.prepend(breadcrum);
+        viewEditorWindow.prepend(helper);
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function($event, toState, toParams) {

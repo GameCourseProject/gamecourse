@@ -585,3 +585,73 @@ select:disabled {
   padding: 0 0 15px 0;
   align-self: center;
 }
+
+.side_helper{
+  color: black;
+  width: auto;
+  position: fixed;
+  top: 200px;
+  left: 0;
+  z-index: 3;
+  font-size: 14px;
+}
+.side_helper #open_helper{
+  background-color: lightgrey;
+  width: 53px;
+  display: flex;
+  font-weight: bold;
+  border: 2px solid grey;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.side_helper #helper_content{
+  position: absolute;
+  left: -200px;
+  display: flex;
+  flex-direction: column;
+}
+.side_helper .help{
+  height: 35px;
+  width: 25px;
+  background-image: url(/gamecourse/images/help_icon.svg);
+  background-position: center;
+}
+.side_helper .open{
+  height: 20px;
+  width: 20px;
+  background-image: url(/gamecourse/images/arrow_foward.svg);
+  background-position: center;
+  transform: rotate(0deg);
+  transition: transform 1s;
+}
+.side_helper .open.closed{
+  transform: rotate(180deg);
+}
+.side_helper #helper_content.visible{
+  display: flex;
+  flex-direction: column;
+  animation: slide 1s forwards;
+}
+.side_helper #helper_content.invisible{
+  animation: slide_inv 1s forwards;
+}
+.side_helper #helper_content span{
+  background-color: lightgrey;
+  border: 2px solid grey;
+  text-align: center;
+  margin-top: -2px;
+}
+.side_helper #helper_content span a {
+  text-decoration: none;
+  padding: 10px;
+  color: inherit;
+  display: block;
+}
+@keyframes slide {
+  0%{ left: -200px;}
+  100% { left: 0; }
+}
+@keyframes slide_inv {
+  0%{ left: 0; }
+  100% { left: -200px; }
+}
