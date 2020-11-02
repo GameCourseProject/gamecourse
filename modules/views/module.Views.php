@@ -1433,6 +1433,12 @@ class Views extends Module
             }
         }
         if ($saving) {
+            API::requireValues('sreenshoot', 'pageOrTemp', 'view');
+            $pageOrTemplate = API::getValue('pageOrTemp');
+            $viewId = API::getValue('view');
+            $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('sreenshoot')));
+            $this->saveScreensoot($img, $viewId, $pageOrTemplate);
+
             //print_R($viewContent);
             $this->viewHandler->updateViewAndChildren($viewContent);
             $errorMsg = "Saved, but skipping test (no users in role to test or special role";
@@ -1601,6 +1607,9 @@ class Views extends Module
             "courseId" => $courseId, "course" => $course, "viewId" => $id,
             "pageOrTemp" => $pgOrTemp, "viewSettings" => $viewSettings
         ];
+    }
+    public static function saveScreensoot($img, $viewId, $pageOrTemplate){
+        file_put_contents("screenshoots/". $pageOrTemplate . "/". $viewId . ".png", $img);
     }
 }
 

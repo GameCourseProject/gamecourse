@@ -298,6 +298,13 @@
   opacity: 0.8;
   margin-left: 10px;
 }
+#edit_part .warning {
+  font-size: 14px;
+  color: gray;
+  opacity: 0.5;
+  font-weight: normal;
+  margin-top: 5px;
+}
 
 .block-edit-overlay{
   width: 100%; 

@@ -248,21 +248,28 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             saveData.pageOrTemp = $stateParams.pageOrTemp;
             saveData.content = view.get();
             console.log("saveEdit",saveData.content);
-            $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
-                btnSave.prop('disabled', false);
-                if (err) {
-                    giveMessage(err.description);
-                    return;
+            html2canvas($("#viewEditor .view.editing"), {
+                onrendered: function(canvas) {
+                  var img = canvas.toDataURL();
+                  saveData.sreenshoot = img;
+                  $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
+                    btnSave.prop('disabled', true);
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+    
+                    if (data != undefined)
+                        giveMessage(data);
+                    else {
+                        giveMessage('Saved!');
+                    }
+                    initialViewContent = angular.copy(saveData.content);
+                    //location.reload();//reloading to prevent bug that kept adding new parts over again
+                });
                 }
-
-                if (data != undefined)
-                    giveMessage(data);
-                else {
-                    giveMessage('Saved!');
-                }
-                initialViewContent = angular.copy(saveData.content);
-                //location.reload();//reloading to prevent bug that kept adding new parts over again
             });
+            
         });
         controlsDiv.append(btnSave);
         var btnPreview = $('<button>Preview</button>');
@@ -358,13 +365,19 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $compile(search)($scope);
         $element.append(search);
 
+        var time = new Date().getTime(); //for image reload purpose
+
         //pages section
         var viewsArea = createSection($($element),"Pages");
         viewsArea.attr("id","pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
-        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\',page.name)"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
-        box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append( $('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+
+        //for the configure/edit info of the page
+        // for the enable/disable feature of pages
+        //box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\',page.name)"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
         viewsArea.append($compile('<div class="add_button icon" ng-click="createView(\'page\')"></div>')($scope));
@@ -375,9 +388,10 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var TemplateArea = createSection($($element),"View Templates");
         TemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in templates" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">'+
-                '<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
+                //for the configure/edit info of the template
+                //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
                 '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>'+
                 '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>'+
                 '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">'+
@@ -414,9 +428,10 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         roleType = ( $('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
-        row = $('<div id="active_page" class= "row"></div>');
-        row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
-        box.append(row);
+        // for the enable/disable feature of pages
+        // row = $('<div id="active_page" class= "row"></div>');
+        // row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
+        // box.append(row);
         content.append(box);
         content.append( $('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newView.append(content);

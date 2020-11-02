@@ -1,8 +1,7 @@
 <button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"></button>
-<div class="title">Edit Part Settings: </div>
-  
-<!-- <div class="title"><a target="_blank" href="./docs/#ViewsPartSettings"><img title="Help" src="images/help.svg"></a></div> -->
+<div class="title">Edit Part Settings: <div class="warning">All information here will be automatically added to your selected part</div></div>
 
+  
 
 <sb-menu ng-if="options.allowDataLoop" sb-menu-title="Loop Data" >
     <sb-expression id="visLoop" sb-expression="part.loopData"  sb-expression-link="./docs/#ViewsLoop" sb-expression-info="Data allows to repeat the element, for example to make lists."></sb-expression>

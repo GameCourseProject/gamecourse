@@ -417,7 +417,9 @@
     width: calc(100% - 2px);
     height: calc(100% - 1px);
     text-align: center;
-    border: 1px solid grey
+    border: 1px solid grey;
+    background-size: 240px;
+    background-repeat: no-repeat;
  }
 
 .content .card .color_box .frame-page span {
