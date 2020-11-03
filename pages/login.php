@@ -23,6 +23,7 @@ if (array_key_exists("Linkedin", $_POST)) {
     <base href="<?php echo Utils::createBase(); ?>" target="_blank">
     <title>GameCourse</title>
     <link rel="stylesheet" type="text/css" href="css/login.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
 </head>
 
 <body>

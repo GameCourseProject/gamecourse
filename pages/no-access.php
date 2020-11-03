@@ -12,6 +12,7 @@ if (array_key_exists("goBack", $_POST)) {
     <base href="<?php echo Utils::createBase(); ?>" target="_blank">
     <title>GameCourse</title>
     <link rel="stylesheet" type="text/css" href="css/login.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
 </head>
 
 <body>
@@ -27,7 +28,7 @@ if (array_key_exists("goBack", $_POST)) {
         </div>
     </div>
     <div id="go_back">
-        <form action="?login" method="post" target="_self">
+        <form action="?login" method="post" target="_self" id="back_form">
             <div class="icon arrow_back"></div>
             <input name="goBack" id="goBack" type="submit" class="button" value="back">
         </form>

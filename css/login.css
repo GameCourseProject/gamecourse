@@ -2,7 +2,7 @@ body{
     display: flex;
     justify-content: center;
     overflow: hidden;
-    font-family: "Jost", Verdana, sans-serif;
+    font-family: "Montserrat";
 }
 .background{
     background-image: url(/gamecourse/images/ist2.jpg);
@@ -42,7 +42,7 @@ body{
     transition: background 0.2s, color 0.2s;
 }
 .hovicon.effect-1:after {
-    top: 5px;
+    top: 3px;
     left: -7px;
     padding: 7px;
     box-shadow: 0 0 0 2px #484848;
@@ -149,10 +149,13 @@ input#goBack{
     margin-top: -20px;
 }
 
-.block{
-    margin: auto;
-}
+
 form{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+form#back_form{
     display: flex;
     justify-content: center;
     background-color: white;
