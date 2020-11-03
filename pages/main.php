@@ -21,8 +21,8 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
-
-
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
+    
     <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/angular.min.js"></script>

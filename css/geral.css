@@ -1,22 +1,26 @@
 body{
-    font-family: "Jost", Verdana, sans-serif;
+    font-family: "Montserrat";
     margin: 0px;
     height: auto;
+    font-size: 14px;
+    color: #484848;
+    margin: 0;
 }
 button {
     cursor: pointer;
-    padding: 7px 10px;
-    font-size: 14px;
+    padding: 10px 15px;
+    font-size: 11px;
     border-radius: 5px;
-    background-color: white;
-    border: 2px solid lightgrey;
+    background-color: gray;
+    border: none;
     box-shadow: none;
-    color: grey;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 button:disabled {
-    color: lightgray;
-    background-color: white;
-    border: 1px solid;
+    opacity: 0.3;
     cursor: not-allowed;
 }
 input:focus, select:focus {
@@ -115,13 +119,15 @@ input:focus, select:focus {
     font-size: 14px;
 }
 .data-table table th {
-    font-size: 14px;
+    font-size: 11px;
     position: sticky;
     top: 0;
     z-index: 1;
     background-color: white;
     border-bottom: 2px solid gray;
     padding-bottom: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
 
 }
 .data-table table th.name-column {
@@ -385,13 +391,14 @@ input:checked + .slider:before {
 
 /*Text Dividers*/
 .section{
-    margin-bottom: 15px;
+    margin-bottom: 40px;
     background-color: white !important;
     position: relative;
 }
 .divider {
     font-size: 16px;
     margin-bottom: 15px;
+    font-weight: 500;
 }
 .divider .title {
     position: relative;

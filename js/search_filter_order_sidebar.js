@@ -22,7 +22,7 @@ function createSidebar( optionsFilter, optionsOrder){
           oderby.append( $("<label class='container'>" + optionsOrder[index] + " <input type='radio' name='radio' id='" + transformNameToId(optionsOrder[index]) + "' ng-click='orderList()'><span class='checkmark'></span>   </label>"));
         }
       });
-    oderby.append( $( '<div class="sort"><div class="triangle checked" id="triangle-up" ng-click="sortUp(); orderList();"></div><div class="triangle" id="triangle-down" ng-click="sortDown(); orderList();"></div></div>' ));
+    oderby.append( $( '<div class="sort"><div class="triangle icon checked" id="triangle-up" ng-click="sortUp(); orderList();"></div><div class="triangle icon" id="triangle-down" ng-click="sortDown(); orderList();"></div></div>' ));
     sidebar.append(oderby);
   }
 
