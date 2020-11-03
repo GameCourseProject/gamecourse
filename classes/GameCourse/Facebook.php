@@ -70,25 +70,42 @@ class Facebook
         $response = Facebook::curlRequests($url);
         $infoPerson = json_decode($response);
 
-        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => "https://graph.facebook.com/v7.0/" . $personId . "/picture?type=normal");
+        $headers = [
+            'Authorization: Bearer ' . $this->accessToken,
+        ];
 
+        $pic = Facebook::curlRequests("https://graph.facebook.com/v7.0/" . $personId . "/picture?type=normal", $headers);
+        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => $pic);
         return $info;
     }
 
-    public function downloadPhoto($pictureUrl, $userId)
+    public function downloadPhoto($pic, $userId)
     {
-        $pic = file_get_contents($pictureUrl);
         $path = 'photos/' . $userId . '.png';
         file_put_contents($path, $pic);
     }
 
-    public static function curlRequests($url)
-    {
+    public static function curlRequests($url, $headers = null)
+    {   
         $ch = curl_init($url);
+        if ($headers) {
+            curl_setopt_array($ch, array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTPHEADER => array(
+                    "Authorization: Bearer EAAhue1T99zoBAK1kajoCi8SYYi3rAdDZAtn6u8ampX1FmpeNlBmAxLa6SR24L7WX9krVAfZC2vJ48DqLFxKFJnQN5WufOHHpnaylrhxZAcTuRU3LZAlCXCKng1otZBSDk9FWVB3iNFF5T1gGXH8Phl8EHbrxZCDDgwgswzNSVZBSEgAUf7icQxO"
+                ),
+            ));
+        }
+            
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_COOKIESESSION, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        return curl_exec($ch);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return  $response;
     }
 }
