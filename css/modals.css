@@ -105,7 +105,7 @@ cursor: pointer;
     width: 100%;
     position: relative;
     margin-bottom: 0;
-    padding-bottom: 7px;
+    padding-bottom: 3px;
 }
 .modal_content .content .inputs {
     display: flex;
@@ -376,15 +376,9 @@ cursor: pointer;
 }
 
 .modal_content .config_btn {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 5px;
     position: absolute;
-    background-color: lightgrey;
     bottom: 0px;
     right: 80px;
-    border: 1px solid white;
-    box-shadow: none;
 }
 
 .on_off {

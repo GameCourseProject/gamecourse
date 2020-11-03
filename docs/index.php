@@ -12,11 +12,13 @@
     <script src="/gamecourse/js/jquery.min.js"></script>
     <script type="text/javascript" src="documentation.js"></script>
     <script type="text/javascript" src="documentation-views.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
+
 
 </head>
 <body>
     <div class="navbar">  
-        <div class="logo"></div>
+        <a class="logo" href="/gamecourse/"></a>
         <ul class="menu documentation">
             <li id="menu-views"><a href="javascript:void(0);" class="focused">Views</a></li>
             <li id="menu-functions"><a href="/gamecourse/docs/functions">Functions</a></li>

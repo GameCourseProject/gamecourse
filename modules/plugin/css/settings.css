@@ -5,13 +5,14 @@
 
 #configPage .plugin_row input {
     width: 334px;
+    margin-right: 20px;
 }
 #configPage .plugin_row span {
     width: 105px;
     display: inline-block;
 }
 #configPage .plugin_row .button {
-    margin-left: 20px;
+    margin-top: 10px;
 }
 
 #configPage .column{
@@ -24,9 +25,18 @@
 
 #configPage #sheet_names{
     width: calc(100% - 105px);
+    margin-left: 15px;
 }
+#configPage #sheet_names input {
+    margin-bottom: 5px;
+    margin-left: 5px;
+}
+
 #configPage .input_with_button{
     width: calc(100% - 155px);
+}
+#configPage .input_with_button .button {
+    margin-left: 20px;
 }
 
 #configPage .periodicity input {
@@ -34,6 +44,8 @@
 }
 #configPage .periodicity select {
     width: 165px;
+    margin-right: 20px;
+    margin-left: 0;
 }
 #configPage input[type="file"].config_input {
     border: none;

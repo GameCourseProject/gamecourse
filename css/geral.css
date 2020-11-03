@@ -297,6 +297,7 @@ input:focus, select:focus {
 .action-buttons .icon{
     height: 32px;
     width: 32px;
+    opacity: 0.8;
 }
 
 .action-buttons :only-child {

@@ -156,14 +156,14 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     box = $('<div class="inputs">');
     box.append( $('<div class="full" id="description">{{module_open.description}}</div>'))
     dependencies_row = $('<div class= "row"></div>');
-    dependencies = $('<div ><span>Dependencies: </span></div>');
+    dependencies = $('<div ><span class="label">Dependencies: </span></div>');
     dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled == true" ><span style="color: green">{{dependency.id}}</span> | </span>'))
     dependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled != true" ><span style="color: red">{{dependency.id}}</span> | </span>'))
 
     dependencies_row.append(dependencies);
     box.append(dependencies_row);
-    box.append( $('<div class= "row"><div ><span>Version: </span><span class="details">{{module_open.version}}</span></div></div>'))
-    box.append( $('<div class= "row"><div ><span>Path: </span><span class="details">{{module_open.dir}}</span></div></div>'))
+    box.append( $('<div class= "row"><div ><span class="label">Version: </span><span class="details">{{module_open.version}}</span></div></div>'))
+    box.append( $('<div class= "row"><div ><span class="label">Path: </span><span class="details">{{module_open.dir}}</span></div></div>'))
     content.append(box);
     content.append( $('<button class="save_btn" ng-click="saveModule()" ng-disabled="!needsToBeSaved()" > Save </button>'))
     content.append($('<button ng-if="module_open.hasConfiguration == true" class="config_btn" ui-sref="course.settings.{{module_open.id}}"> Configurate </button>'));

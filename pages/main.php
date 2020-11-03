@@ -22,7 +22,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
-    
+
     <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/angular.min.js"></script>
@@ -210,7 +210,7 @@ $user = Core::getLoggedUser();
 
 <body ng-controller="SmartBoard">
     <div class="navbar">
-        <div class="logo" ui-sref="home"></div>
+        <a class="logo" ui-sref="home"></a>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
             <a class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></a>
