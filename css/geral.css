@@ -287,7 +287,7 @@ input:focus, select:focus {
 /* add, import and export buttons*/
 .action-buttons {
     display: flex;
-    width: 120px;
+    width: 115px;
     align-content: end;
     justify-content: space-between;
     position: absolute;
@@ -295,8 +295,8 @@ input:focus, select:focus {
     right: 55px;
 }
 .action-buttons .icon{
-    height: 32px;
-    width: 32px;
+    height: 30px;
+    width: 30px;
     opacity: 0.8;
 }
 

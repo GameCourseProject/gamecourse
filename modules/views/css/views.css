@@ -182,7 +182,7 @@
 #page_history {
   position: absolute;
   top: 0;
-  top: 30px;
+  top: 20px;
   left: 55px;
   line-height: 35px;
   display: flex;
@@ -305,6 +305,9 @@
   font-weight: normal;
   margin-top: 5px;
 }
+#edit_part .section {
+  margin-bottom: 20px;
+}
 
 .block-edit-overlay{
   width: 100%; 
@@ -326,6 +329,7 @@
   text-transform: capitalize;
   align-items: baseline;
   margin-bottom: 25px;
+  margin-top: 20px;
 }
 .modal_content #template_selection {
   min-height: 90px;
@@ -354,7 +358,6 @@
 }
 .modal_content .add-parts {
   min-height: 33px;
-  padding-bottom: 7px;
 }
 
 /*---------------------------------*/
@@ -418,10 +421,9 @@ select:disabled {
   border: none;
   background-color: white;
   font-size: 14px;
-  color: black;
 }
 #viewInfo .topic {
-  font-weight: bold;
+  font-weight: 500;
   min-width: 120px;
   display: inline-block;
 }
@@ -473,9 +475,7 @@ select:disabled {
   width: 52px;
 }
 
-.sb-menu > .content {
-  padding: 0 20px;
-}
+
 .sb-menu .visibility-options{
   display: flex;
   justify-content: flex-start;
@@ -504,7 +504,7 @@ select:disabled {
 .sb-checkbox,
 .sb-expression {
   margin-top: 4px;
-  width: calc( 100% - 40px);
+  width: 100%;
 }
 .sb-input input,
 .sb-checkbox input,

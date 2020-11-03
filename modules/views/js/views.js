@@ -307,6 +307,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 controlsDiv.hide();
 
                 acion_buttons = $('<div class="action-buttons" >');
+                acion_buttons.css("width", "130px");
                 var btnClosePreview = $('<button>Close Preview</button>');
                 btnClosePreview.click(function() {
                     viewBlock.remove();
@@ -493,7 +494,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 
             if (pageOrTemp == "page"){
                 $("#active_page").show();
-                $("#inputs_view_box").attr("style", "padding-bottom: 0px");
+                $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
             else{
                 $("#active_page").hide();

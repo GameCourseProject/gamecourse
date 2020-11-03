@@ -21,6 +21,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
+    <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
@@ -244,7 +245,16 @@ $user = Core::getLoggedUser();
             </div>
         </nav> -->
 
-    <div id="wrapper">
+    <div ng-if="!course" id="wrapper">
+        <!-- conteudo da página -->
+        <div id="content-wrapper">
+            <div ui-view="main-view"></div>
+        </div>
+        <div ng-hide="loaded" id="page-loading">
+            <img src="images/loader.gif">
+        </div>
+    </div>
+    <div ng-if="course" id="wrapper" class="smaller_window">
         <!-- conteudo da página -->
         <div id="content-wrapper">
             <div ui-view="main-view"></div>
