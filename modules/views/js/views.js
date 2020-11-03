@@ -23,6 +23,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
         }
         angular.extend($scope, data);
 
+        $scope.name = $stateParams.name;
         $scope.viewType = $scope.viewSettings.roleType;
         $scope.pageOrTemp = data.pageOrTemp;
         $scope.selection = {};
@@ -158,33 +159,91 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             if ($scope.missingOne.length > 0)
                 $scope.selection.missingOneToAdd = $scope.missingOne[0];
         }
-        
-        var el = $compile($('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">'))($scope);
+        var el = $('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">');
         $element.html(el);
+        $compile(el)($scope);
+                
     });
+    
 });
 
 angular.module('module.views').controller('ViewEditController', function($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {
     var loadedView;
     var initialViewContent;
 
+    var viewEditorWindow = $('<div id="viewEditor"></div>')
+    $element.append(viewEditorWindow);
+
+    var breadcrum = $("<div id='page_history'></div>");
+    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'> Views </span>"));
+    breadcrum.append($("<div class='go_back icon' ui-sref='course.settings.views'></div>"));
+    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'>"+ $stateParams.pageOrTemp +"s</span>"));
+    breadcrum.append($("<div class='go_back icon'></div>"));
+    breadcrum.append($("<span>"+ $stateParams.name +"</span>")); 
+
+    var helper = $('<div class="side_helper">');
+    var open_helper = $('<div id="open_helper">');
+    open_helper.append($('<span class="help icon"></span><span id="arrow" class="open icon"></span>'));
+    var helper_content = $('<div id="helper_content">');
+    helper_content.append($('<span><a target="_blank" href="./docs">Documentation</a></span>'));
+    helper.append(open_helper);
+    helper.append(helper_content);
+    open_helper.click( function () {
+        arrow = $("#arrow");
+        if (helper_content.hasClass("visible")){
+          helper_content.removeClass("visible");
+          helper_content.addClass("invisible");
+          arrow.removeClass("closed");
+        }
+        else{
+          helper_content.removeClass("invisible");
+          helper_content.addClass("visible");
+          arrow.addClass("closed");
+        }
+    })
+    
+
     var reqData = {course: $scope.course};
-    if ($state.current.name == 'course.settings.views.view.edit-role-single')
+    if ($state.current.name == 'course.settings.views.view.edit-role-single'){
         reqData.info = {role: $stateParams.role};
-    if ($state.current.name == 'course.settings.views.view.edit-role-interaction')
+        breadcrum.append($("<span class='role_type'>"+ $stateParams.role +"</span>")); 
+    }
+    if ($state.current.name == 'course.settings.views.view.edit-role-interaction'){
         reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
+        breadcrum.append($("<span class='role_type'>"+ $stateParams.roleOne +" - "+ $stateParams.roleTwo + "</span>")); 
+    }
 
     $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function(view, err) {
         if (err) {
-            $element.html(err);
+            viewEditorWindow.html(err);
             console.log(err);
             return;
         }
         loadedView = view;
         initialViewContent = angular.copy(view.get());
 
-        var controlsDiv = $('<div>');
-        var btnSave = $('<button>Save</button>');
+        var controlsDiv = $('<div class="action-buttons" id="view_editor_actions">');
+        
+        $scope.canUndo = view.canUndo;
+        $scope.undo = view.undo;
+        var btnUndoActive = $('<div ng-if="canUndo()" id="undo_icon" class="icon undo_icon" ng-click="undo()"></div>');
+        var btnUndoDisabled = $('<div ng-if="!canUndo()" id="undo_icon" class="icon undo_icon disabled" ></div>');
+        $compile(btnUndoActive)($scope);
+        $compile(btnUndoDisabled)($scope);
+        controlsDiv.append(btnUndoActive);
+        controlsDiv.append(btnUndoDisabled);
+
+        $scope.canRedo = view.canRedo;
+        $scope.redo = view.redo;
+        var btnRedoActive = $('<div ng-if="canRedo()" id="redo_icon" class="icon redo_icon" ng-click="redo()"></div>');
+        var btnRedoDisabled = $('<div ng-if="!canRedo()" id="redo_icon" class="icon redo_icon disabled" ></div>');
+        $compile(btnRedoActive)($scope);
+        $compile(btnRedoDisabled)($scope);
+        controlsDiv.append(btnRedoActive);
+        controlsDiv.append(btnRedoDisabled);
+
+        //meter so save quando e preciso
+        var btnSave = $('<button>Save Changes</button>');
         btnSave.click(function() {
             btnSave.prop('disabled', true);
             var saveData = $.extend({}, reqData);
@@ -192,21 +251,28 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             saveData.pageOrTemp = $stateParams.pageOrTemp;
             saveData.content = view.get();
             console.log("saveEdit",saveData.content);
-            $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
-                btnSave.prop('disabled', false);
-                if (err) {
-                    giveMessage(err.description);
-                    return;
+            html2canvas($("#viewEditor .view.editing"), {
+                onrendered: function(canvas) {
+                  var img = canvas.toDataURL();
+                  saveData.sreenshoot = img;
+                  $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
+                    btnSave.prop('disabled', true);
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+    
+                    if (data != undefined)
+                        giveMessage(data);
+                    else {
+                        giveMessage('Saved!');
+                    }
+                    initialViewContent = angular.copy(saveData.content);
+                    //location.reload();//reloading to prevent bug that kept adding new parts over again
+                });
                 }
-
-                if (data != undefined)
-                    giveMessage(data);
-                else {
-                    giveMessage('Saved!');
-                }
-                initialViewContent = angular.copy(saveData.content);
-                location.reload();//reloading to prevent bug that kept adding new parts over again
             });
+            
         });
         controlsDiv.append(btnSave);
         var btnPreview = $('<button>Preview</button>');
@@ -240,33 +306,27 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 view.element.hide();
                 controlsDiv.hide();
 
+                acion_buttons = $('<div class="action-buttons" >');
                 var btnClosePreview = $('<button>Close Preview</button>');
                 btnClosePreview.click(function() {
                     viewBlock.remove();
-                    btnClosePreview.remove();
+                    acion_buttons.remove();
                     view.element.show();
                     controlsDiv.show();
                 });
-                $element.append(viewBlock);
-                $element.prepend(btnClosePreview);
+                acion_buttons.append(btnClosePreview);
+                viewEditorWindow.append(viewBlock);
+                viewEditorWindow.prepend(acion_buttons);
             });
         });
         controlsDiv.append(btnPreview);
 
-        $scope.canUndo = view.canUndo;
-        $scope.undo = view.undo;
-        var btnUndo = $('<button ng-if="canUndo()" ng-click="undo()">Undo</button>');
-        $compile(btnUndo)($scope);
-        controlsDiv.append(btnUndo);
 
-        $scope.canRedo = view.canRedo;
-        $scope.redo = view.redo;
-        var btnRedo = $('<button ng-if="canRedo()" ng-click="redo()">Redo</button>');
-        $compile(btnRedo)($scope);
-        controlsDiv.append(btnRedo);
-
-        $element.html(view.element);
-        $element.prepend(controlsDiv);
+        viewEditorWindow.html(view.element);
+        viewEditorWindow.prepend(controlsDiv);
+        $compile(breadcrum)($scope);
+        viewEditorWindow.prepend(breadcrum);
+        viewEditorWindow.prepend(helper);
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function($event, toState, toParams) {
@@ -283,6 +343,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         } else
             watcherDestroy();
     });
+
+    
 });
 
 angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state,$sbviews) {
@@ -306,13 +368,19 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $compile(search)($scope);
         $element.append(search);
 
+        var time = new Date().getTime(); //for image reload purpose
+
         //pages section
         var viewsArea = createSection($($element),"Pages");
         viewsArea.attr("id","pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(id,\'page\')"></span></div></div>'));
-        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\')"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
-        box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append( $('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+
+        //for the configure/edit info of the page
+        // for the enable/disable feature of pages
+        //box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\',page.name)"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
         viewsArea.append($compile('<div class="add_button icon" ng-click="createView(\'page\')"></div>')($scope));
@@ -323,9 +391,10 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var TemplateArea = createSection($($element),"View Templates");
         TemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in templates" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="edit_icon" ng-click="editView(template.id,\'template\')"></span></div></div>'));
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">'+
-                '<span class="config_icon icon" ng-click="editView(template.id,\'template\')"></span>'+
+                //for the configure/edit info of the template
+                //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
                 '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>'+
                 '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>'+
                 '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">'+
@@ -362,9 +431,10 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         roleType = ( $('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
-        row = $('<div id="active_page" class= "row"></div>');
-        row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
-        box.append(row);
+        // for the enable/disable feature of pages
+        // row = $('<div id="active_page" class= "row"></div>');
+        // row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
+        // box.append(row);
         content.append(box);
         content.append( $('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newView.append(content);
@@ -432,8 +502,8 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 
             $("#new-view").show();
         };
-        $scope.editView = function(id,pageOrTemp){
-            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id});
+        $scope.editView = function(id,pageOrTemp, name){
+            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id, name: removeSpacefromName(name)});
         };
         $scope.globalize = function(template){
             $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal}, alertUpdate);
@@ -562,7 +632,7 @@ angular.module('module.views').config(function($stateProvider) {
             }
         }
     }).state('course.settings.views.view', {
-        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}',
+        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
         views: {
             'tabContent@course.settings': {
                 template: 'abc',
@@ -572,7 +642,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-single', {
         url: '/edit',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }
@@ -580,7 +650,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-role-single', {
         url: '/edit/{role:[A-Za-z0-9.]+}',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }
@@ -588,7 +658,7 @@ angular.module('module.views').config(function($stateProvider) {
     }).state('course.settings.views.view.edit-role-interaction', {
         url: '/edit/{roleOne:[A-Za-z0-9.]+}/{roleTwo:[A-Za-z0-9.]+}',
         views: {
-            'tabContent@course.settings': {
+            'main-view@': {
                 template: '',
                 controller: 'ViewEditController'
             }

@@ -57,7 +57,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
             if (options.edit) {
                 function addOverlay(child) {
                     var replaceDiv = $('<div>');
-                    var overlay = $('<div class="block-edit-overlay" style="width: 100%; height: 100%; position: absolute; top: 0px; left: 0px; background-color: rgba(255, 0, 0, 0.1); z-index: 10000; cursor: move"></div>');
+                    var overlay = $('<div class="block-edit-overlay"></div>');
                     overlay.on('mouseover', function (event) {
                         event.stopPropagation();
                     });
@@ -146,8 +146,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         canDelete: true,
                         canSwitch: true,
                         canDuplicate: true,
-                        canSaveTemplate: true,
-                        canSaveTemplateRef: true
+                        canSaveTemplate: true
                     },
                     toolFunctions: {
                         remove: function (obj) {
@@ -218,13 +217,11 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     delete optionsScope.part.header;
                             };
 
-                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Content" sb-menu-icon="images/gear.svg"></sb-menu>');
+                            var partSpecificMenu = $('<sb-menu ng-if="part.noHeader != true" sb-menu-title="Content"></sb-menu>');
 
                             var header = $('<div class="sb-checkbox">');
                             header.append('<input id="block-header" type="checkbox" ng-checked="part.header != undefined" ng-click="toggleHeader()">');
-                            header.append('<label for="block-header">Enable Header</label>');
-                            header.append('<a href="./docs/#PartBlockHeader" target="_blank"><img title="Enables the block header, containing the image and title of the block" class="info" src="images/info.svg"></a>');
-                            header.append('<div class="content"></div>');
+                            header.append('<label for="block-header"> Enable Header</label>');
                             watch('part.header');
 
                             /*var pageAnchor = $('<sb-checkbox ng-if="part.header != undefined" sb-checkbox="part.header.anchor" sb-checkbox-label="Enable Page Anchor" sb-checkbox-default="" sb-checkbox-info="Adds a anchor reference to the block. This is used by links to jump directly to this element." sb-checkbox-link="./docs/#PartBlockHeaderPageAnchor"></sb-checkbox>');
@@ -247,23 +244,28 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 addOverlay(el);
                             });
                             
+                        
                             
-                            function addTemplatelist(listElement){
-                                listElement.append('<option disabled>-- Template --</option>');
-                                var templates = options.editData.templates;
-                                for (var t in templates) {
-                                    var template = templates[t];
-                                    var option = $(document.createElement('option'));
-                                    option.text(template["name"]+" ("+template['id']+")");
-                                    option.val('temp:' + t);
-                                    listElement.append(option);
-                                }
-                            }
-                            
+                            var addDiv = $("<div class='add_new_part icon' value='#add_part' onclick='openModal(this)'></div>");
+
+                            //select part done on a modal
+                            var addPartModal = $("<div class='modal' id='add_part'></div>");
+                            addPartModalContent = $("<div class='modal_content'></div>");
+                            addPartModalContent.append( $('<button class="close_btn icon" value="#add_part" onclick="closeModal(this)"></button>'));
+                            //addPartModalContent.append($('<div class="title">Add New Part: </div>'));
+                            parts_selection = $('<div id="parts_selection"></div>');
+                            template_selection = $('<div id="template_selection"></div>');
+                            addPartContent = $("<div class='content'></div>");
+                            addPartContent.append(parts_selection);
+                            addPartContent.append(template_selection);
+                            addPartModalContent.append(addPartContent);
+                            addPartModal.append(addPartModalContent);
+
                             var addPartsDiv = $(document.createElement('div')).addClass('add-parts');
-                            addPartsDiv.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
+                            
+                            //creates options for the different parts
                             var partsList = $(document.createElement('select')).attr('id', 'partList');
-                            partsList.append('<option disabled>-- Part --</option>');
+                            partsList.append($('<option value="" disabled selected >Part Type</option>'))
                             for(var type in $sbviews.registeredPartType) {
                                 var partDef = $sbviews.registeredPartType[type];
                                 if (partDef.name != undefined && partDef.defaultPart != undefined) {
@@ -271,13 +273,61 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     option.text(partDef.name);
                                     option.val('part:' + type);
                                     partsList.append(option);
+    
+                                    partIconName = "images/" + type + "_part_icon.svg";
+                                    part_option = $('<div value="'+type+'" class="part_option"></div>')
+                                    part_option.append($(document.createElement('img')).attr('src', partIconName));
+                                    part_option.append($('<div class="part_label">'+type+'</div>'));
+                                    parts_selection.append(part_option);
+                                    part_option.click(function(){ 
+                                        $(".part_option").removeClass("focus");
+                                        $(this).addClass("focus");
+                                        type = this.getAttribute('value');
+                                        $("#partList").val("part:"+ type);
+                                        template_selection.hide();
+                                        addButton.prop('disabled', false);
+                                    });
                                 }
                             }
+                            //create only one option for templates on invisible select
+                            var temp_option = $(document.createElement('option'));
+                            temp_option.text('Template');
+                            temp_option.val('temp:');
+                            partsList.append(temp_option);
+                            // add template icon option
+                            part_option = $('<div value="'+type+'" class="part_option"></div>')
+                            part_option.append($(document.createElement('img')).attr('src', "images/template_part_icon.svg"));
+                            part_option.append($('<div class="part_label"> template</div>'));
+                            parts_selection.append(part_option);
+                            part_option.click(function(){ 
+                                $(".part_option").removeClass("focus");
+                                $(this).addClass("focus");
+                                type = this.getAttribute('value');
+                                $("#partList").val("temp:");
+                                template_selection.show();
+                                addButton.prop('disabled', false);
+                            });
+                            addPartsDiv.append(partsList);
+                            partsList.hide();
+                            
+                            var templateList = $(document.createElement('select')).attr('id', 'templateList').addClass("form__input");
+                            templateList.append('<option disabled>Select a template</option>');
                             var templates = options.editData.templates;
-                            addTemplatelist(partsList);
+                            for (var t in templates) {
+                                var template = templates[t];
+                                var option = $(document.createElement('option'));
+                                option.text(template["name"]+" ("+template['id']+")");
+                                option.val('temp:' + t);
+                                templateList.append(option);
+                            }
+                            template_selection.append(templateList);
+                            template_selection.append( $('<div class= "on_off"><span>Use Template by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
+                            template_selection.hide();
+                            addPartsDiv.append(template_selection);
                             
                             function addPart(newPart,$isTemplateRef=false){
                                 console.log("newPart", newPart);
+                                console.log("template by ref?", $isTemplateRef);
                                 if ($isTemplateRef===false)
                                     deleteIds(newPart);
                                 //$sbviews.changePids(newPart);
@@ -289,7 +339,9 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 addOverlay(newChild);
                             }
                             
-                            var addButton = $(document.createElement('button')).text('Add');
+                            var addButton = $(document.createElement('button')).text('Add Item');
+                            addButton.prop('disabled', true);
+                            addButton.addClass("save_btn");
                             addButton.click(function() {                                
                                 var value = partsList.val();
                                 var index = value.substr(5);
@@ -299,62 +351,55 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                     addPart(newPart);
                                 }
                                 else if (value.indexOf('temp:') == 0){   
-                                    templates[index].role=scope.$root.role;
-                                    $smartboards.request('views', 'getTemplateContent', templates[index], function (data, err) {
-                                        if (err) {
-                                            giveMessage(err.description);
-                                            return;
-                                        }
-                                        
-                                        console.log("getTemp", data.template);
-                                        addPart(data.template);
-                                    });                                    
-                                }                                
-                            });
-
-                            addPartsDiv.append('<label for="partList">Add New Part:</label><br>');
-                            addPartsDiv.append(partsList);
-                            addPartsDiv.append(addButton);
-                            
-                            var addTemplateRef = $(document.createElement('div')).addClass('add-parts');
-                            addTemplateRef.attr('style', 'display: block; margin: 0 auto; padding: 6px; width: 230px');
-                            var templateList = $(document.createElement('select')).attr('id', 'partList');
-                            addTemplatelist(templateList);
-                            var addTemplateButton = $(document.createElement('button')).text('Add');
-                            addTemplateButton.click(function() {
-                                var value = templateList.val();
-                                var id = value.substr(5);
-                                
-                                    //newPart = angular.copy(templates[id]['content']);
-                                    console.log("newTemplateRef",templates[id]);
-                                    //get template contents
+                                    var isRef = $('#isRef').is(':checked');
+                                    var value = templateList.val();
+                                    var id = value.substr(5);
                                     templates[id].role=scope.$root.role;
-                                    $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
-                                        if (err) {
-                                            giveMessage(err.description);
-                                            return;
-                                        }
-                                        delete data.template.id;
-                                        console.log("getTemplateReference", data);
-                                        addPart(data.template,true);
-                                    }); 
-                                
+                                    if(isRef){
+                                        // with reference
+                                        console.log("newTemplateRef",templates[id]);
+                                        $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
+                                            if (err) {
+                                                giveMessage(err.description);
+                                                return;
+                                            }
+                                            delete data.template.id;
+                                            console.log("getTemplateReference", data);
+                                            addPart(data.template,true);
+                                        });
+                                    }
+                                    else{
+                                        //without ref
+                                        $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
+                                            if (err) {
+                                                giveMessage(err.description);
+                                                return;
+                                            }
+                                            console.log("getTemp", data.template);
+                                            addPart(data.template);
+                                        });   
+                                    }                                  
+                                    
+                                }
+                                addPartModal.hide();                                
                             });
-                            addTemplateRef.append('<label for="partList">Add Template Reference:</label><br>');
-                            addTemplateRef.append(templateList);
-                            addTemplateRef.append(addTemplateButton);
 
-                            block.append(addPartsDiv);
-                            block.append(addTemplateRef);                            
-                            block.append('');
+                            
+                            addPartContent.append(addPartsDiv);   
+                            addPartContent.append(addButton);
+                            $(document.body).append(addPartModal);
+                            block.append(addDiv);
+                            block.click();
                         },
                         layoutEditEnd: function() {
                             block.children('.content').find('.block-edit-overlay').remove();
-                            block.children('.add-parts').remove();
+                            block.children('.add_new_part').remove();
+                            $("#add_part").remove();
+                            
                         }
                     }
                 });
-                block.css('padding-top', 10);
+                //block.css('padding-top', 10);
             }
             return block;
         },

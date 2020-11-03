@@ -23,6 +23,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
 
 
+    <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/angular.min.js"></script>
     <script type="text/javascript" src="js/angular-ui-router.min.js"></script>

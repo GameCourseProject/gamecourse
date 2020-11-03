@@ -15,6 +15,10 @@ app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $c
             return;
         }
         $scope.userActiveCourses = data.userActiveCourses;
+        for (var i in $scope.userActiveCourses) {
+            var course = $scope.userActiveCourses[i];
+            course.nameUrl = course.name.replace(/\W+/g, '');
+        }
 
         //$("#user_icon").addClass("bold");
         mainPage = $("<div id='mainPage'></div>");

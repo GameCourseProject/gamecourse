@@ -8,7 +8,7 @@ angular.module('module.views').directive('sbMenu', function () {
             $scope.title = attrs.sbMenuTitle;
             $scope.icon = attrs.sbMenuIcon;
         },
-        template: '<div class="sb-menu"><div class="header"><img class="icon" ng-src="{{icon}}"><span>{{title}}</span></div><div class="content" ng-transclude></div></div>'
+        template: '<div class="sb-menu section"><div class="divider"><div class="title"><span>{{title}}</span></div></div><div class="content" ng-transclude></div></div>'
     };
 }).directive('sbCheckbox', function ($parse) {
     var uid = 0;
@@ -59,7 +59,7 @@ angular.module('module.views').directive('sbMenu', function () {
             $scope.label = attrs.sbInputLabel;
             $scope.elid = 'ip-' + (++uid);
         },
-        template: '<div class="sb-input"><label for="{{elid}}">{{label}}</label><input id="{{elid}}" type="text" ng-model="value()" ng-model-options="{ getterSetter: true }"><div class="content" ng-transclude></div></div>'
+        template: '<div class="sb-input"><label for="{{elid}}">{{label}}</label><input id="{{elid}}"  class="form__input" type="text" ng-model="value()" ng-model-options="{ getterSetter: true }"><div class="content" ng-transclude></div></div>'
     };
 }).directive('sbExpression', function ($parse, $timeout) {
     CodeAssistant = {};
@@ -229,7 +229,6 @@ angular.module('module.views').directive('sbMenu', function () {
                     'font-family': 'monospace'
                 });
                 $(document.body).append(sizerDiv);
-                target.css('height', sizerDiv.height());
                 sizerDiv.remove();
             };
 
@@ -263,25 +262,26 @@ angular.module('module.views').directive('sbMenu', function () {
                 });
 
                 var errorMessage = ""
+                var targerInput = $("#"+$scope.elid);
                 if (dictionary) {
                     if (allows.length != 0) {
                         if (allows.length == 1) {
                             //verificar o scope e o options
                             if (allows[0] == "options.allowDataLoop") {
-                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "loop");
+                                errorMessage = GameCourseExpression.autocomplete(targerInput, newValue, dictionary[0], dictionary[1], "loop");
                             } else if (allows[0] == "missingEvents.length > 0") {
-                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "events");
+                                errorMessage = GameCourseExpression.autocomplete(targerInput, newValue, dictionary[0], dictionary[1], "events");
                             } else if (allows[0] == "options.allowVariables") {
-                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "variables");
+                                errorMessage = GameCourseExpression.autocomplete(targerInput, newValue, dictionary[0], dictionary[1], "variables");
                             }
                         } else {
                             if (allows[0] == "options.allowIf") {
-                                errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "if");
+                                errorMessage = GameCourseExpression.autocomplete(targerInput, newValue, dictionary[0], dictionary[1], "if");
                             }
 
                         }
                     } else if ($scope.elid = "ex-6") { //content n tem watchers
-                        errorMessage = GameCourseExpression.autocomplete(newValue, dictionary[0], dictionary[1], "content");
+                        errorMessage = GameCourseExpression.autocomplete(targerInput, newValue, dictionary[0], dictionary[1], "content");
                     }
                 }
                 if (errorMessage != "") {
@@ -369,8 +369,8 @@ angular.module('module.views').directive('sbMenu', function () {
             });
         },
         template: '<div class="sb-expression">' +
-            '<label for="{{elid}}">{{label}}</label>' +
-            '<textarea id="{{elid}}" ng-blur="updateVisibility(false)" ng-focus="updateVisibility(true)" ng-model="value()" ng-model-options="{ getterSetter: true }" class="expression" placeholder="Expression" ng-keydown="tryAutoComplete($event)" ng-keyup="applyResize()"></textarea>' +
+            '<label ng-if="label != undefined" for="{{elid}}">{{label}}</label>' +
+            '<textarea id="{{elid}}" title="{{info}}" ng-blur="updateVisibility(false)" ng-focus="updateVisibility(true)" ng-model="value()" ng-model-options="{ getterSetter: true }" class="expression form__input" placeholder="Expression" ng-keydown="tryAutoComplete($event)" ng-keyup="applyResize()"></textarea>' +
             //'<a ng-style="needField" ng-mousedown="searchFieldContext.showFieldSearch = true">Need a field?</a>' +
             //'<div class="expression-field-search" ng-if="searchFieldContext.showFieldSearch == true">' +
             //'<div><label for="label-search-{{elid}}">Search Field</label><input id="label-search-{{elid}}" type="text" ng-model="searchFieldContext.searchVariable">' +
@@ -382,10 +382,9 @@ angular.module('module.views').directive('sbMenu', function () {
             //'</div>' +
             //'</div>' +
             //'<div class="suggestions" ng-style="suggestionsStyle" style="display: none"><div ng-repeat="suggestion in ca.suggestions" ng-style="ca.suggestionSelected == $index ? selectedStyle : undefined" ng-click="performAutoComplete($index)"><div class="field">{{suggestion.field}} - {{typeName(suggestion.type)}}</div><div class="description">{{suggestion.desc}}</div><div class="example">{{suggestion.example}}</div></div></div>' +
-            '<a ng-href="{{link}}" target="_blank">' +
-            '<img ng-if="info != undefined" title="{{info}}" class="info" src="images/info.svg"></a>' +
 
             '<div class="content" ng-transclude></div>' +
+            '<div class="autocomplete_box"></div>'+
             '</div>'
     };
 }).directive('events', function ($state, $compile, $rootScope, $sbviews) {

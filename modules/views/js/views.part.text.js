@@ -23,7 +23,7 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                 var optionsDivEl;
                 function buildOptions(optionsScope, watch) {
 
-                    var optionsDiv = $('<sb-menu sb-menu-title="Content" sb-menu-icon="images/gear.svg"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
+                    var optionsDiv = $('<sb-menu sb-menu-title="Content"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
                     $compile(optionsDiv)(optionsScope);
 
                     watch('part.valueType');
@@ -48,13 +48,13 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
                         element.replaceWith(newEl);
                         element = newEl;
                         element.data(data);
-                        element.css('padding-top', 18);
+                        //element.css('padding-top', 18);
                         bindToolbar();
                         optionsDivEl = undefined;
                     }}});
                 }
                 bindToolbar();
-                element.css('padding-top', 18);
+                //element.css('padding-top', 18);
             }
             return element;
         },

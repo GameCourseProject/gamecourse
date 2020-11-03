@@ -31,3 +31,10 @@
     margin-top: -20px;
     margin-bottom: 40px;
 }
+
+#mainPage span:not(.label):hover {
+    font-weight: bold;
+}
+#mainPage span:not(.label) {
+    cursor: pointer;
+}

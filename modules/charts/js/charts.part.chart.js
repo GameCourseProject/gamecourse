@@ -203,7 +203,7 @@ angular.module('module.charts', []).run(function($sbviews, $compile) {
                 text.css({fill: '#ffffff', fontSize: '20px'}).attr('x', 100).attr('y', 75).attr('text-anchor', 'middle').attr('alignment-baseline', 'middle');
                 chart.append(text);
                 $sbviews.bindToolbar(chartWrapper, scope, part, options, { overlayOptions: {callbackFunc: function(el, execClose, optionsScope, watch) {
-                    var root = $('<sb-menu sb-menu-title="Part Specific" sb-menu-icon="images/gear.svg"></sb-menu>');
+                    var root = $('<sb-menu sb-menu-title="Part Specific" ></sb-menu>');
 
                     // Chart Type
                     var chartTypeWrapper = $('<div class="sb-component"></div>');
