@@ -16,12 +16,6 @@ if (array_key_exists("goBack", $_POST)) {
 
 <body>
     <div class="background"></div>
-    <div class="block">
-        <form action="?login" method="post" target="_self">
-            <input name="goBack" id="goBack" type="submit" class="button" value="goBack">
-        </form>
-    </div>
-
     <div class="login_box">
         <div id="logo"></div>
         <div class="middle-box">
@@ -31,6 +25,12 @@ if (array_key_exists("goBack", $_POST)) {
                 Please ask to the teacher of your course to add you to the user's list.
             </div>
         </div>
+    </div>
+    <div id="go_back">
+        <form action="?login" method="post" target="_self">
+            <div class="icon arrow_back"></div>
+            <input name="goBack" id="goBack" type="submit" class="button" value="back">
+        </form>
     </div>
 
 </body>
