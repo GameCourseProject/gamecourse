@@ -589,6 +589,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     }
 
     $scope.orderList = function(){
+        if($('input[type=radio]:checked', ".order-by")[0] == undefined){
+            return
+        }
         order_by_id = $('input[type=radio]:checked', ".order-by")[0].id;
         order = getNameFromId(order_by_id);
         up = $("#triangle-up").hasClass("checked");
