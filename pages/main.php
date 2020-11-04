@@ -84,6 +84,8 @@ $user = Core::getLoggedUser();
                             $rootScope.courseName = data.courseName;
 
                             $("#course_name").text(data.courseName);
+                            changeElColor("#course_name", data.courseColor);
+                            $scope.courseColor = data.courseColor;
 
                             var path = 'courses/' + courseName + '-' + course;
                             changeTitle(data.courseName, 0, true, path);

@@ -57,6 +57,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
             'settings' => $navSettings,
             'landingPage' => $courseUser->getLandingPage(),
             'courseName' => $course->getName(),
+            'courseColor' => $course->getData("color"),
             'resources' => $course->getModulesResources(),
             'user' => $user
         ));
