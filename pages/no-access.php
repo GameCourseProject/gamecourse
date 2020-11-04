@@ -12,16 +12,11 @@ if (array_key_exists("goBack", $_POST)) {
     <base href="<?php echo Utils::createBase(); ?>" target="_blank">
     <title>GameCourse</title>
     <link rel="stylesheet" type="text/css" href="css/login.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
 </head>
 
 <body>
     <div class="background"></div>
-    <div class="block">
-        <form action="?login" method="post" target="_self">
-            <input name="goBack" id="goBack" type="submit" class="button" value="goBack">
-        </form>
-    </div>
-
     <div class="login_box">
         <div id="logo"></div>
         <div class="middle-box">
@@ -31,6 +26,12 @@ if (array_key_exists("goBack", $_POST)) {
                 Please ask to the teacher of your course to add you to the user's list.
             </div>
         </div>
+    </div>
+    <div id="go_back">
+        <form action="?login" method="post" target="_self" id="back_form">
+            <div class="icon arrow_back"></div>
+            <input name="goBack" id="goBack" type="submit" class="button" value="back">
+        </form>
     </div>
 
 </body>

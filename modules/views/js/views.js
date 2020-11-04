@@ -256,7 +256,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                   var img = canvas.toDataURL();
                   saveData.sreenshoot = img;
                   $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
-                    btnSave.prop('disabled', true);
+                    btnSave.prop('disabled', false);
                     if (err) {
                         giveMessage(err.description);
                         return;
@@ -307,6 +307,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 controlsDiv.hide();
 
                 acion_buttons = $('<div class="action-buttons" >');
+                acion_buttons.css("width", "130px");
                 var btnClosePreview = $('<button>Close Preview</button>');
                 btnClosePreview.click(function() {
                     viewBlock.remove();
@@ -410,7 +411,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var globalTemplateArea = createSection($($element),"Global Templates");
         globalTemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in globals"></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" ><span class="add_icon_no_outline" ng-if="template.course!=course" ng-click="useGlobal(template)"></span></div></div>'));
+        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?'+time+');"><span class="add_icon_no_outline" ng-if="template.course!=course" ng-click="useGlobal(template)"></span></div></div>'));
         box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div></div>'))
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
@@ -493,7 +494,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 
             if (pageOrTemp == "page"){
                 $("#active_page").show();
-                $("#inputs_view_box").attr("style", "padding-bottom: 0px");
+                $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
             else{
                 $("#active_page").hide();

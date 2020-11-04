@@ -21,7 +21,8 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/settings.css" />
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
-
+    <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -83,6 +84,8 @@ $user = Core::getLoggedUser();
                             $rootScope.courseName = data.courseName;
 
                             $("#course_name").text(data.courseName);
+                            changeElColor("#course_name", data.courseColor);
+                            $scope.courseColor = data.courseColor;
 
                             var path = 'courses/' + courseName + '-' + course;
                             changeTitle(data.courseName, 0, true, path);
@@ -210,7 +213,7 @@ $user = Core::getLoggedUser();
 
 <body ng-controller="SmartBoard">
     <div class="navbar">
-        <div class="logo" ui-sref="home"></div>
+        <a class="logo" ui-sref="home"></a>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
             <a class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></a>
@@ -244,7 +247,16 @@ $user = Core::getLoggedUser();
             </div>
         </nav> -->
 
-    <div id="wrapper">
+    <div ng-if="!course" id="wrapper">
+        <!-- conteudo da página -->
+        <div id="content-wrapper">
+            <div ui-view="main-view"></div>
+        </div>
+        <div ng-hide="loaded" id="page-loading">
+            <img src="images/loader.gif">
+        </div>
+    </div>
+    <div ng-if="course" id="wrapper" class="smaller_window">
         <!-- conteudo da página -->
         <div id="content-wrapper">
             <div ui-view="main-view"></div>

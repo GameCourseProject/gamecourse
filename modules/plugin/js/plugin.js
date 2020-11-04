@@ -184,7 +184,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
 
         //google sheets
         var googleSheetsconfigurationSection = createSection(configurationSection, 'Google Sheets Variables');
-        googleSheetsconfigurationSection.attr("class","column");
+        googleSheetsconfigurationSection.attr("class","column content");
         googleSheetsVars = ["credentials", "authCode", "spreadsheetId", "sheetName"];
         googleSheetsTitles = ["Credentials:", "Auth Code: ", "Spread Sheet Id: ", "Sheet Name: "];
         jQuery.each(googleSheetsVars, function (index) {

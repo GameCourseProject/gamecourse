@@ -5,7 +5,7 @@
   float: left;
 }
 .sidebar .search {
-  margin-bottom: 25px;
+  margin-bottom: 22px;
 }
 
 .sidebar .filter {
@@ -42,53 +42,29 @@
   top: 0;
   right: 0;
   display: flex;
-  width: 48px;
+  width: 44px;
   justify-content: space-between;
 }
 .sidebar .order-by .sort .triangle {
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  cursor: pointer;
-  position: relative;
+  width: 20px;
+  height: 20px;
 }
-.sidebar .order-by .sort .triangle::after {
-  content: "";
-  position: absolute;
-  height: 10px;
-  width: 8px;
-  background-color: lightgrey;
-  display: block;
-}
+
 .sidebar .order-by .sort #triangle-up {
-  border-bottom: 13px solid lightgrey;
+  background-image: url(/gamecourse/images/arrow_top_icon.svg);
+  opacity: 0.5;
 }
-.sidebar .order-by .sort #triangle-up.checked {
-  border-bottom: 13px solid black;
-}
-.sidebar .order-by .sort #triangle-up.checked::after {
-  background-color: black;
-}
-.sidebar .order-by .sort #triangle-up::after {
-  top: 11px;
-  left: -4px;
-}
-.sidebar .order-by .sort #triangle-down {
-  margin-top: 9px;
-  border-top: 12px solid lightgrey;
-  margin-left: 5px;
-}
+.sidebar .order-by .sort #triangle-up.checked,
 .sidebar .order-by .sort #triangle-down.checked {
-  border-top: 12px solid black;
+  opacity: 1;
 }
-.sidebar .order-by .sort #triangle-down.checked::after {
-  background-color: black;
+
+.sidebar .order-by .sort #triangle-down {
+  background-image: url(/gamecourse/images/arrow_bottom_icon.svg);
+  opacity: 0.5;
 }
-.sidebar .order-by .sort #triangle-down::after {
-  top: -21px;
-  left: -4px;
-}
+
+
 .sidebar .container {
   display: block;
   position: relative;

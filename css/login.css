@@ -2,6 +2,7 @@ body{
     display: flex;
     justify-content: center;
     overflow: hidden;
+    font-family: "Montserrat";
 }
 .background{
     background-image: url(/gamecourse/images/ist2.jpg);
@@ -27,8 +28,8 @@ body{
 .login_box{
     text-align: center;
     background: white;
-    height: 60vh;
-    margin: 20vh auto;
+    height: 350px;
+    margin: 25vh auto 20px;
     width: 460px;
     border-radius: 5px;
     opacity: 0.8;
@@ -41,7 +42,7 @@ body{
     transition: background 0.2s, color 0.2s;
 }
 .hovicon.effect-1:after {
-    top: 5px;
+    top: 3px;
     left: -7px;
     padding: 7px;
     box-shadow: 0 0 0 2px #484848;
@@ -132,11 +133,37 @@ body{
 #Linkedin{
     background-image:  url(/gamecourse/images/linkedin_icon.png);
 }
+.icon.arrow_back{
+    background-image: url(/gamecourse/images/arrow_back.svg);
+    height: 12px;
+    width: 12px;
+}
+input#goBack{
+    padding: 0;
+    border: none;
+    background: none;
+    margin-left: 3px;
+}
+.middle-box{
+    line-height: 20px;
+    margin-top: -20px;
+}
+
 
 form{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+}
+form#back_form{
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    opacity: 0.8;
+    width: 70px;
+    border-radius: 5px;
+    padding: 6px 5px 6px 2px;
+    align-items: center;
 }
 
 #logo{
@@ -144,17 +171,18 @@ form{
     background-size: contain;
     background-position: top;
     background-repeat: no-repeat;
-    height: 85px;
-    margin-top: 9vh;
-    margin-bottom: 13vh;
+    height: 65px;
+    margin-top: 50px;
+    margin-bottom: 70px;
 }
 h3{
     margin: 0;
-    color: #484848;
+    color: black;
     font-size: 14px;
+    font-weight: normal;
 }
 .content {
-    margin: 20px 80px;
+    margin: 20px 40px;
     font-size: 14px;
 }
 p {

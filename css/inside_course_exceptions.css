@@ -1,0 +1,12 @@
+.smaller_window #mainContent {
+    padding: 70px 55px 25px 70px;
+}
+.smaller_window .action-buttons {
+    top: 20px;
+}
+.smaller_window .sidebar {
+    margin-top: 20px;
+}
+.smaller_window .page {
+    height: calc(100vh - 67px - 25px);
+  }

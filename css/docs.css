@@ -9,7 +9,7 @@
   width: 200px;
   height: 100%;
   background-color: lightgrey;
-  font-size: 12px;
+  font-size: 14px;
   border-right: 2px solid grey;
   float: left;
 }
@@ -196,7 +196,7 @@ img {
 
 .page .content .section .description{
   margin-bottom: 20px;
-  font-size: 12px;
+  font-size: 14px;
   color: gray;
 }
 .page .content .section .title{

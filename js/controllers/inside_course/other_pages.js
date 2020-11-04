@@ -6,10 +6,15 @@ app.controller('SpecificCourse', function($scope, $element, $stateParams, $compi
         text: '{{courseName}}'
     }, function(el, info) {
     }))($scope));
+
+    $element.one("mousemove",function(){
+        checkNavbarLength();
+    });
 });
 
 app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    
+    $scope.courseRoles = [];
+
     $scope.deleteUser = function(user) {
         $("#action_completed").empty();
         $smartboards.request('course', 'removeUser', {user_id: user.id, course: $scope.course }, function(data, err) {
@@ -109,6 +114,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
+            $('body').one("mousemove", function(){
+                changeElColor(".user_tag", $scope.courseColor);
+            });
         }
         $scope.removeUser = function(user_id){
             user = $scope.selectedUser.users.find(el => el.id == user_id);
@@ -120,6 +128,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
+            $('body').one("mousemove", function(){
+                changeElColor(".user_tag", $scope.courseColor);
+            });
         }
         $scope.isReadyToSubmit = function() {
             
@@ -517,6 +528,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             $("#users-table").hide();
             $("#empty_table").append($scope.error_msg);
         }
+        $('body').one("mousemove", function(){
+            changeElColor(".role_tag", $scope.courseColor);
+        });
     }
 
     $scope.searchList = function(){
@@ -576,6 +590,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
     }
 
     $scope.orderList = function(){
+        if($('input[type=radio]:checked', ".order-by")[0] == undefined){
+            return
+        }
         order_by_id = $('input[type=radio]:checked', ".order-by")[0].id;
         order = getNameFromId(order_by_id);
         up = $("#triangle-up").hasClass("checked");
@@ -682,163 +699,170 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         sidebarAll = createSidebar( optionsFilter, optionsOrder);
         $compile(sidebarAll)($scope);
         $element.append(sidebarAll);
-    });
-
-    allUsers=$("<div id='allUsers'></div>")
-    allUsersSection = $('<div class="data-table" ></div>');
-    table = $('<table id="users-table"></table>');
-    rowHeader = $("<tr></tr>");
-    header = [{class: "name-column", content: "Name"},
-              {class: "", content: "Nickname"},
-              {class: "", content: "Campus"},
-              {class: "", content: "Student nº"},
-              {class: "", content: "Last Login"},
-              {class: "action-column", content: ""},
-              {class: "action-column", content: ""},
-            ];
-    jQuery.each(header, function(index){
-        rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
-    });
-  
-    rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
-    nameRoleColumn = $('<td class="name-column"><span>{{user.name}}</span></td>')
-    nameRoleColumn.append('<div ng-repeat="(i, role) in user.roles" class="role_tag">{{role}}</div>');
-
-    rowContent.append(nameRoleColumn);
-    rowContent.append('<td>{{user.nickname}}</td>');
-    rowContent.append('<td>{{user.campus}}</td>');
-    rowContent.append('<td>{{user.studentNumber}}</td>');
-    rowContent.append('<td>{{user.lastLogin}}</td>');
-    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
-
-    //the verification modals
-    modal = $("<div class='modal' id='delete-verification-{{user.id}}'></div>");
-    verification = $("<div class='verification modal_content'></div>");
-    verification.append( $('<button class="close_btn icon" value="#delete-verification-{{user.id}}" onclick="closeModal(this)"></button>'));
-    verification.append( $('<div class="warning">Are you sure you want to remove this User from this course?</div>'));
-    verification.append( $('<div class="target">{{user.name}} - {{user.studentNumber}}</div>'));
-    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{user.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteUser(user)"> Remove</button></div>'))
-    modal.append(verification);
-    rowContent.append(modal);
-
-    //append table
-    table.append(rowHeader);
-    table.append(rowContent);
-    allUsersSection.append(table);
-    allUsers.append(allUsersSection);
 
 
-    //add user modal
-    modal = $("<div class='modal' id='add-user'></div>");
-    modal_content = $("<div class='modal_content'></div>");
-    modal_content.append( $('<button class="close_btn icon" value="#add-user" onclick="closeModal(this)"></button>'));
-    modal_content.append( $('<div class="title centered" >How do you want to add a new user? </div>'));
-    content = $('<div class="content options">');
-    opt1 = $('<div class="option" ng-click="createUser()"></div>');
-    opt1.append($('<div class="icon" id="choose_create_new_user"> </div> '));
-    opt1.append($('<div class="description">Create a new user</div>'));
-    opt2 = $('<div class="option" ng-click="selectUsers()"></div>');
-    opt2.append($('<div class="icon" id="choose_select_user"> </div> '));
-    opt2.append($('<div class="description">Select existing user</div>'));
-    content.append(opt1);
-    content.append(opt2);
-    modal_content.append(content);
-    modal.append(modal_content);
-    allUsers.append(modal);
-
-    //edit user modal
-    editmodal = $("<div class='modal' id='edit-user'></div>");
-    editUser = $("<div class='modal_content'></div>");
-    editUser.append( $('<button class="close_btn icon" value="#edit-user" onclick="closeModal(this)"></button>'));
-    editUser.append( $('<div class="title">Edit User: </div>'));
-    editcontent = $('<div class="content">');
-    editbox = $('<div id="edit_box" class= "inputs">');
-    editrow_inputs = $('<div class= "row_inputs"></div>');
-    //image input
-    editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
-    //text inputs
-    editdetails = $('<div class="details bigger right"></div>')
-    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
-    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="editUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
-    editdetails.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="editUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
-    editdoubledetails = $('<div class="container" >')
-    editdoubledetails.append( $('<div class="details bigger"><div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="editUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div></div>'))
-    editdoubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="campus" placeholder="Campus *" ng-model="editUser.userCampus"/><label for="campus" class="form__label">Campus</label></div></div>'))
-    editdetails.append(editdoubledetails)
-    editrow_inputs.append(editdetails);
-    editbox.append(editrow_inputs);
-    // authentication information - service and username
-    row_auth = $('<div class= "row_inputs"></div>');
-    selectAuth = $('<div class="smaller">');
-    select = $('<select id="authService" class="form__input" name="authService" ng-model="editUser.userAuthService"></select>');
-    select.append($('<option value="" disabled selected>Auth Service</option>'));
-    optionsAuth = ["fenix", "google", "facebook", "linkedin"];
-    jQuery.each(optionsAuth, function( index ){
-        option = optionsAuth[index];
-        select.append($('<option value="'+option+'">'+option+'</option>'))
-    });
-    selectAuth.append(select);
-    row_auth.append(selectAuth);
-    row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="editUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
-    editbox.append(row_auth);
-    editcontent.append(editbox);
-    editcontent.append( $('<button class="save_btn" ng-click="submitEditUser()" ng-disabled="!isReadyToEdit()" > Save </button>'))
-    editUser.append(editcontent);
-    editmodal.append(editUser);
-    allUsers.append(editmodal);
-
-    //choose how to add user modal
-    
-
-
-    //error section
-    allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
-    //success section
-    mainContent.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
-
-    //action buttons
-    action_buttons = $("<div class='action-buttons'></div>");
-    action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
-    mainContent.append($compile(action_buttons)($scope));
-
-    //the import modal
-    importModal = $("<div class='modal' id='import-user'></div>");
-    verification = $("<div class='verification modal_content'></div>");
-    verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));
-    verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
-    verification.append( $('<div class="target">The seperator must be comma</div>'));
-    verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
-    verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
-    importModal.append(verification);
-    mainContent.append(importModal);
-
-    mainContent.append(allUsers);
-    $compile(mainContent)($scope);
-
-
-    //filter vai fazer este pedido com diferentes role definidos
-    getUsers = function() {
-        $smartboards.request('course', 'courseUsers', {course : $scope.course, role: "allRoles"}, function(data,err){
-            if (err) {
-                giveMessage(err.description);
-                return;
-            }
-            
-            role = "allRoles"
-
-            $scope.users = data.userList.slice();
-            $scope.allUsers = data.userList.slice();
-
-            $element.append(mainContent);
-            $scope.lastOrder = "none";
-            $scope.lastArrow = "none";
-            $scope.orderList();
-            $scope.reduceList();
+        allUsers=$("<div id='allUsers'></div>")
+        allUsersSection = $('<div class="data-table" ></div>');
+        table = $('<table id="users-table"></table>');
+        rowHeader = $("<tr></tr>");
+        header = [{class: "name-column", content: "Name"},
+                {class: "", content: "Nickname"},
+                {class: "", content: "Campus"},
+                {class: "", content: "Student nº"},
+                {class: "", content: "Last Login"},
+                {class: "action-column", content: ""},
+                {class: "action-column", content: ""},
+                ];
+        jQuery.each(header, function(index){
+            rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
         });
-    };
-    getUsers();
+    
+        rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
+        nameRoleColumn = $('<td class="name-column"><span>{{user.name}}</span></td>')
+        nameRoleColumn.append('<div ng-repeat="(i, role) in user.roles" class="role_tag">{{role}}</div>');
 
+        rowContent.append(nameRoleColumn);
+        rowContent.append('<td>{{user.nickname}}</td>');
+        rowContent.append('<td>{{user.campus}}</td>');
+        rowContent.append('<td>{{user.studentNumber}}</td>');
+        rowContent.append('<td>{{user.lastLogin}}</td>');
+        rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
+        rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
+
+        //the verification modals
+        modal = $("<div class='modal' id='delete-verification-{{user.id}}'></div>");
+        verification = $("<div class='verification modal_content'></div>");
+        verification.append( $('<button class="close_btn icon" value="#delete-verification-{{user.id}}" onclick="closeModal(this)"></button>'));
+        verification.append( $('<div class="warning">Are you sure you want to remove this User from this course?</div>'));
+        verification.append( $('<div class="target">{{user.name}} - {{user.studentNumber}}</div>'));
+        verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{user.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteUser(user)"> Remove</button></div>'))
+        modal.append(verification);
+        rowContent.append(modal);
+
+        //append table
+        table.append(rowHeader);
+        table.append(rowContent);
+        allUsersSection.append(table);
+        allUsers.append(allUsersSection);
+
+
+        //add user modal
+        modal = $("<div class='modal' id='add-user'></div>");
+        modal_content = $("<div class='modal_content'></div>");
+        modal_content.append( $('<button class="close_btn icon" value="#add-user" onclick="closeModal(this)"></button>'));
+        modal_content.append( $('<div class="title centered" >How do you want to add a new user? </div>'));
+        content = $('<div class="content options">');
+        opt1 = $('<div class="option" ng-click="createUser()"></div>');
+        opt1.append($('<div class="icon" id="choose_create_new_user"> </div> '));
+        opt1.append($('<div class="description">Create a new user</div>'));
+        opt2 = $('<div class="option" ng-click="selectUsers()"></div>');
+        opt2.append($('<div class="icon" id="choose_select_user"> </div> '));
+        opt2.append($('<div class="description">Select existing user</div>'));
+        content.append(opt1);
+        content.append(opt2);
+        modal_content.append(content);
+        modal.append(modal_content);
+        allUsers.append(modal);
+
+        //edit user modal
+        editmodal = $("<div class='modal' id='edit-user'></div>");
+        editUser = $("<div class='modal_content'></div>");
+        editUser.append( $('<button class="close_btn icon" value="#edit-user" onclick="closeModal(this)"></button>'));
+        editUser.append( $('<div class="title">Edit User: </div>'));
+        editcontent = $('<div class="content">');
+        editbox = $('<div id="edit_box" class= "inputs">');
+        editrow_inputs = $('<div class= "row_inputs"></div>');
+        //image input
+        editrow_inputs.append($('<div class="image smaller"><div class="profile_image"><div id="edit_display_profile_image"></div></div><input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg"/></div>'))
+        //text inputs
+        editdetails = $('<div class="details bigger right"></div>')
+        editdetails.append($('<div class="container" ><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="editUser.userName"/> <label for="name" class="form__label">Name</label></div>'))
+        editdetails.append($('<div class="container" ><input type="text" class="form__input" id="nickname" placeholder="Nickname" ng-model="editUser.userNickname"/><label for="nickname" class="form__label">Nickname</label></div>'))
+        editdetails.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="editUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
+        editdoubledetails = $('<div class="container" >')
+        editdoubledetails.append( $('<div class="details bigger"><div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="editUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div></div>'))
+        editdoubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="campus" placeholder="Campus *" ng-model="editUser.userCampus"/><label for="campus" class="form__label">Campus</label></div></div>'))
+        editdetails.append(editdoubledetails)
+        editrow_inputs.append(editdetails);
+        editbox.append(editrow_inputs);
+        // authentication information - service and username
+        row_auth = $('<div class= "row_inputs"></div>');
+        selectAuth = $('<div class="smaller">');
+        select = $('<select id="authService" class="form__input" name="authService" ng-model="editUser.userAuthService"></select>');
+        select.append($('<option value="" disabled selected>Auth Service</option>'));
+        optionsAuth = ["fenix", "google", "facebook", "linkedin"];
+        jQuery.each(optionsAuth, function( index ){
+            option = optionsAuth[index];
+            select.append($('<option value="'+option+'">'+option+'</option>'))
+        });
+        selectAuth.append(select);
+        row_auth.append(selectAuth);
+        row_auth.append($('<div class="details bigger right"><div class="container"><input type="text" class="form__input" id="username" placeholder="Username *" ng-model="editUser.userUsername"/> <label for="username" class="form__label">Username</label></div></div>'))
+        editbox.append(row_auth);
+        editcontent.append(editbox);
+        editcontent.append( $('<button class="save_btn" ng-click="submitEditUser()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+        editUser.append(editcontent);
+        editmodal.append(editUser);
+        allUsers.append(editmodal);
+
+        //choose how to add user modal
+        
+
+
+        //error section
+        allUsers.append( $("<div class='error_box'><div id='empty_table' class='error_msg'></div></div>"));
+        //success section
+        mainContent.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+
+        //action buttons
+        action_buttons = $("<div class='action-buttons'></div>");
+        action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
+        action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
+        action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
+        mainContent.append($compile(action_buttons)($scope));
+
+        //the import modal
+        importModal = $("<div class='modal' id='import-user'></div>");
+        verification = $("<div class='verification modal_content'></div>");
+        verification.append( $('<button class="close_btn icon" value="#import-user" onclick="closeModal(this)"></button>'));
+        verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+        verification.append( $('<div class="target">The seperator must be comma</div>'));
+        verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
+        verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
+        importModal.append(verification);
+        mainContent.append(importModal);
+
+        mainContent.append(allUsers);
+        $compile(mainContent)($scope);
+
+
+        //filter vai fazer este pedido com diferentes role definidos
+        getUsers = function() {
+            $smartboards.request('course', 'courseUsers', {course : $scope.course, role: "allRoles"}, function(data,err){
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                
+                role = "allRoles"
+
+                $scope.users = data.userList.slice();
+                $scope.allUsers = data.userList.slice();
+
+                $element.append(mainContent);
+                $scope.lastOrder = "none";
+                $scope.lastArrow = "none";
+                $scope.orderList();
+                $scope.reduceList();
+                $('body').one("mousemove", function(){
+                    changeElColor(".role_tag", $scope.courseColor);
+                });
+            });
+        };
+        getUsers();
+        $element.one("mousemove",function(){
+            checkNavbarLength();
+        });
+
+    });
 });
