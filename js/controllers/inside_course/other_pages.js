@@ -113,6 +113,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
+            $('body').one("mousemove", function(){
+                changeElColor(".user_tag", $scope.courseColor);
+            });
         }
         $scope.removeUser = function(user_id){
             user = $scope.selectedUser.users.find(el => el.id == user_id);
@@ -124,6 +127,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
+            $('body').one("mousemove", function(){
+                changeElColor(".user_tag", $scope.courseColor);
+            });
         }
         $scope.isReadyToSubmit = function() {
             
@@ -521,6 +527,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             $("#users-table").hide();
             $("#empty_table").append($scope.error_msg);
         }
+        $('body').one("mousemove", function(){
+            changeElColor(".role_tag", $scope.courseColor);
+        });
     }
 
     $scope.searchList = function(){
@@ -841,6 +850,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             $scope.lastArrow = "none";
             $scope.orderList();
             $scope.reduceList();
+            $('body').one("mousemove", function(){
+                changeElColor(".role_tag", $scope.courseColor);
+            });
         });
     };
     getUsers();
