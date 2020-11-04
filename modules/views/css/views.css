@@ -709,6 +709,7 @@ select:disabled {
   padding: 10px;
   color: inherit;
   display: block;
+  white-space: nowrap;
 }
 @keyframes slide {
   0%{ left: -200px;}

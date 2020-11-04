@@ -185,7 +185,9 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     var open_helper = $('<div id="open_helper">');
     open_helper.append($('<span class="help icon"></span><span id="arrow" class="open icon"></span>'));
     var helper_content = $('<div id="helper_content">');
-    helper_content.append($('<span><a target="_blank" href="./docs">Documentation</a></span>'));
+    helper_content.append($('<span><a target="_blank" href="./docs">About Views</a></span>'));
+    helper_content.append($('<span><a target="_blank" href="./docs/functions">Available Functions</a></span>'));
+
     helper.append(open_helper);
     helper.append(helper_content);
     open_helper.click( function () {
