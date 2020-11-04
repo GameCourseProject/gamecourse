@@ -6,6 +6,10 @@ app.controller('SpecificCourse', function($scope, $element, $stateParams, $compi
         text: '{{courseName}}'
     }, function(el, info) {
     }))($scope));
+
+    $element.one("mousemove",function(){
+        checkNavbarLength();
+    });
 });
 
 app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
@@ -840,5 +844,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         });
     };
     getUsers();
+    $element.one("mousemove",function(){
+        checkNavbarLength();
+    });
 
 });
