@@ -71,7 +71,7 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
             jQuery.each($scope.modules , function( index ){
                 module_obj = $scope.modules[index];
                 if (module_obj.name.toLowerCase().includes(text.toLowerCase())
-                || module_obj.discription.toLowerCase().includes(text.toLowerCase())){
+                || module_obj.description.toLowerCase().includes(text.toLowerCase())){
                     filteredModules.push(module_obj);
                 }
             });
