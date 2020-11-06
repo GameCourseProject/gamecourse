@@ -365,8 +365,14 @@ function changeElColor(el, color){
         $(el).css("color", "white");
     }
     else {
-        $(el).css("backgroundColor", color);
-        $(el).css("color", "#484848");
+        if(color = "#FFFFFF"){
+            $(el).css("backgroundColor", "#e6e6e6");
+            $(el).css("color", "#484848");
+        }
+        else{
+            $(el).css("backgroundColor", color);
+            $(el).css("color", "#484848");
+        }
     }
 }
 

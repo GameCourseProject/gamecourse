@@ -113,8 +113,9 @@
   text-align: center;
   line-height: 25px;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
   z-index: 2;
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
   
