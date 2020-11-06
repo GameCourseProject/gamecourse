@@ -3,6 +3,7 @@ body{
     justify-content: center;
     overflow: hidden;
     font-family: "Montserrat";
+    flex-direction: column;
 }
 .background{
     background-image: url(/gamecourse/images/ist2.jpg);
@@ -187,4 +188,7 @@ h3{
 }
 p {
     margin: 5px;
+}
+#go_back {
+    margin: auto;
 }
