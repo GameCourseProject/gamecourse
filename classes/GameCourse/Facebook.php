@@ -42,13 +42,13 @@ class Facebook
 
     public function getAuthUrl()
     {
-        return "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey .
+        return "https://www.facebook.com/v8.0/dialog/oauth?client_id=" . $this->accessKey .
             "&redirect_uri=" . $this->callbackUrl . "&scope=email";
     }
 
     public function getAccessTokenFromCode($code)
     {
-        $url = "https://graph.facebook.com/v7.0/oauth/access_token?client_id=" . $this->accessKey .
+        $url = "https://graph.facebook.com/v8.0/oauth/access_token?client_id=" . $this->accessKey .
             "&redirect_uri=" . $this->callbackUrl . "&client_secret=" . $this->secretKey . "&code=" . $code;
 
         $response = Facebook::curlRequests($url);
@@ -66,7 +66,7 @@ class Facebook
         $infoPersonId = json_decode($response);
         $personId = $infoPersonId->id;
 
-        $url = "https://graph.facebook.com/v7.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
+        $url = "https://graph.facebook.com/v8.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
         $response = Facebook::curlRequests($url);
         $infoPerson = json_decode($response);
 
@@ -74,7 +74,7 @@ class Facebook
             'Authorization: Bearer ' . $this->accessToken,
         ];
 
-        $pic = Facebook::curlRequests("https://graph.facebook.com/v7.0/" . $personId . "/picture?type=normal", $headers);
+        $pic = Facebook::curlRequests("https://graph.facebook.com/v8.0/" . $personId . "/picture?type=normal", $headers);
         $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => $pic);
         return $info;
     }
@@ -92,9 +92,7 @@ class Facebook
             curl_setopt_array($ch, array(
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTPHEADER => array(
-                    "Authorization: Bearer EAAhue1T99zoBAK1kajoCi8SYYi3rAdDZAtn6u8ampX1FmpeNlBmAxLa6SR24L7WX9krVAfZC2vJ48DqLFxKFJnQN5WufOHHpnaylrhxZAcTuRU3LZAlCXCKng1otZBSDk9FWVB3iNFF5T1gGXH8Phl8EHbrxZCDDgwgswzNSVZBSEgAUf7icQxO"
-                ),
+                CURLOPT_HTTPHEADER => $headers
             ));
         }
             
