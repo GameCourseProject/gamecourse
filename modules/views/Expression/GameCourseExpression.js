@@ -458,6 +458,7 @@ var GameCourseExpression = (function () {
                 caret = document.activeElement.selectionStart;
             }
             if (option == "loop" || option == "events") {
+                isLoop = true;
                 var libraries = [];
                 if (library) {
 
@@ -492,7 +493,6 @@ var GameCourseExpression = (function () {
                             //enters here if library+function matched   
                             libraryGlobalCollection = library;
                             libraryChosen = libraryShow.libraryChosen;
-                            isLoop = true;
                             var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
                             new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, null, libraryShow.returnName);
                         }
@@ -971,8 +971,11 @@ var GameCourseExpression = (function () {
                                     }
 
                                 }
-
-                                
+                                if (inputNow.split(".").length <= 1) {
+                                    if (isLoop && returnType != "collection") {
+                                            errorMessage = "It should return a collection.";
+                                        }
+                                    }
                                 return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType, "returnName": returnName };
                             } else {
                                 if (libraryExists) {

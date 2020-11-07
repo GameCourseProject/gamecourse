@@ -257,7 +257,9 @@ angular.module('module.views').directive('sbMenu', function () {
                     if (temp != undefined && typeof (temp) !== 'function') {
                         if (temp.startsWith("options.") || temp.startsWith("missingEvents.")) {
                             allows.push(element["exp"]);
-                        }
+                        } 
+                    } else if (element["last"] == "Loop Data") {
+                        allows.push("options.allowDataLoop");
                     }
                 });
 
