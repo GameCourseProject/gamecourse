@@ -688,7 +688,7 @@ class ViewHandler
         }
         if (Core::$systemDB->select("dictionary_function", array("keyword" => $funcName))) {
             if ($funcLib) {
-                if (Core::$systemDB->select("dictionary_function", array("libraryId" => $libraryId, "keyword" => $funcName))) {
+                if (Core::$systemDB->select("dictionary_function", array("libraryId" => $libraryId, "keyword" => $funcName, "refersToType" => $refersToType, "refersToName" => $refersToName))) {
                     Core::$systemDB->update(
                         "dictionary_function",
                         array(
