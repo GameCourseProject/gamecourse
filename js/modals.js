@@ -47,4 +47,5 @@ function alertUpdate(data, err) {
         giveMessage(output);
     }
     location.reload();
+
 }

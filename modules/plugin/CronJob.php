@@ -10,9 +10,9 @@ use GameCourse\User;
 class CronJob
 {
     //tratar depois da periodicidade com base no que o user escolheu
-    public function __construct($script, $course, $number, $time)
+    public function __construct($script, $course, $number, $time, $remove = false)
     {
-        $cronFile = "/var/spool/cron/crontabs/root";
+        $cronFile = "/tmp/crontab.txt";
         $path = null;
         // tem de estar na mesma diretoria
         if ($script == "Moodle") {
@@ -22,34 +22,32 @@ class CronJob
         } else if ($script == "GoogleSheets") {
             $path = getcwd() . "/GoogleSheetsScript.php";
         }
-
-        if ($path && file_exists($cronFile)) {
-            $file = file_get_contents($cronFile);
+        $output = shell_exec('crontab -l');
+        if ($path && $output) {
+            $file = $output;
             $lines = explode("\n", $file);
             $exclude = array();
             $found = false;
+            $toWrite = "";
             foreach ($lines as $line) {
-                if (strpos($line, $script) !== FALSE) {
-                    $found = true;
-                    continue;
+                if (strpos($line, $script) === false) {
+                    $toWrite .= $line . "\n";
                 }
-                $exclude[] = $line;
             }
-            if ($found) {
-                $file = implode("\n", $exclude);
+            
+            if(!$remove){
+                $periodStr = "";
+                if ($time == "Minutes") {
+                    $periodStr = "*/" . $number . " * * * *";
+                } else if ($time == "Hours") {
+                    $periodStr = "0 */" . $number . " * * *";
+                } else if ($time == "Months") {
+                    $periodStr = "* * */" . $number . " * *";
+                }
+                $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-
-            $periodStr = "";
-            if ($time == "Minutes") {
-                $periodStr = "*/" . $number . " * * * *";
-            } else if ($time == "Hours") {
-                $periodStr = "0 */" . $number . " * * *";
-            } else if ($time == "Months") {
-                $periodStr = "* * */" . $number . " * *";
-            }
-
-            $file .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
-            file_put_contents($cronFile, $file);
+            file_put_contents($cronFile, $toWrite);
+            echo exec('crontab /tmp/crontab.txt');
         }
     }
 }

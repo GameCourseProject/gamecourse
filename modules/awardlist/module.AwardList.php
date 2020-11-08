@@ -32,7 +32,7 @@ class AwardList extends Module
         // ));
 
         $course = $this->getParent();
-   /*     $viewHandler->registerLibrary("awardlist", "awards", "This library provides information regarding Awards. It is provided by the award module.");
+        /*$viewHandler->registerLibrary("awardlist", "awards", "This library provides information regarding Awards. It is provided by the award module.");
         $viewHandler->registerFunction(
             'awards',
             'getAllAwards',
@@ -64,16 +64,20 @@ class AwardList extends Module
             $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'));  
     }
 
-
     public function is_configurable(){
-        return true;
+        return false;
     }
+
+    public function update_module($compatibleVersions){
+        //verificar compatibilidade
+    }   
 }
 ModuleLoader::registerModule(array(
     'id' => 'awardlist',
     'name' => 'Award List',
     'description' => 'Enables Awards and creates a view template with list of awards per student.',
     'version' => '0.1',
+    'compatibleVersions' => array("1.1","1.2"),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

@@ -27,8 +27,17 @@ class ClassCheck
         }
     }
 
+    public static function checkConnection($code){
+        $url = "https://classcheck.tk/tsv/course?s=" . $code;
+        try {
+            fopen($url, 'r');
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
     public function readAttendance($code)
     {
+        $inserted = false;
         $this->getDBConfigValues();
         $url = "https://classcheck.tk/tsv/course?s=" . $code;
         $fp = fopen($url, 'r');
@@ -58,6 +67,7 @@ class ClassCheck
             if ($courseUserStudent && $courseUserProf) {
                 $count = Core::$systemDB->select("participation", ["user" => $courseUserStudent->getData("id"), "description" => $classNumber]);
                 if (!$count) {
+                    $inserted  = true;
                     Core::$systemDB->insert(
                         "participation",
                         [
@@ -72,5 +82,6 @@ class ClassCheck
                 }
             }
         }
+        return $inserted;
     }
 }

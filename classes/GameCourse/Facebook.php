@@ -42,13 +42,13 @@ class Facebook
 
     public function getAuthUrl()
     {
-        return "https://www.facebook.com/v7.0/dialog/oauth?client_id=" . $this->accessKey .
+        return "https://www.facebook.com/v8.0/dialog/oauth?client_id=" . $this->accessKey .
             "&redirect_uri=" . $this->callbackUrl . "&scope=email";
     }
 
     public function getAccessTokenFromCode($code)
     {
-        $url = "https://graph.facebook.com/v7.0/oauth/access_token?client_id=" . $this->accessKey .
+        $url = "https://graph.facebook.com/v8.0/oauth/access_token?client_id=" . $this->accessKey .
             "&redirect_uri=" . $this->callbackUrl . "&client_secret=" . $this->secretKey . "&code=" . $code;
 
         $response = Facebook::curlRequests($url);
@@ -66,29 +66,44 @@ class Facebook
         $infoPersonId = json_decode($response);
         $personId = $infoPersonId->id;
 
-        $url = "https://graph.facebook.com/v7.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
+        $url = "https://graph.facebook.com/v8.0/" . $personId . "?fields=id,name,email&access_token=" . $this->accessToken;
         $response = Facebook::curlRequests($url);
         $infoPerson = json_decode($response);
 
-        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => "https://graph.facebook.com/v7.0/" . $personId . "/picture?type=normal");
+        $headers = [
+            'Authorization: Bearer ' . $this->accessToken,
+        ];
 
+        $pic = Facebook::curlRequests("https://graph.facebook.com/v8.0/" . $personId . "/picture?type=normal", $headers);
+        $info = (object) array("username" => $infoPerson->email, "name" => $infoPerson->name, "email" => $infoPerson->email, "pictureUrl" => $pic);
         return $info;
     }
 
-    public function downloadPhoto($pictureUrl, $userId)
+    public function downloadPhoto($pic, $userId)
     {
-        $pic = file_get_contents($pictureUrl);
         $path = 'photos/' . $userId . '.png';
         file_put_contents($path, $pic);
     }
 
-    public static function curlRequests($url)
-    {
+    public static function curlRequests($url, $headers = null)
+    {   
         $ch = curl_init($url);
+        if ($headers) {
+            curl_setopt_array($ch, array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTPHEADER => $headers
+            ));
+        }
+            
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_COOKIESESSION, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        return curl_exec($ch);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return  $response;
     }
 }

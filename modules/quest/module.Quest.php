@@ -547,6 +547,11 @@ class Quest extends Module {
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -554,6 +559,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Quest',
     'description' => 'Generates a sequence of pages that create a treasure hunt game.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'soft')
     ),

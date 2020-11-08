@@ -28,12 +28,18 @@ class Overview extends Module {
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'overview',
     'name' => 'Overview',
     'description' => 'Creates a view template with all the skills done.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

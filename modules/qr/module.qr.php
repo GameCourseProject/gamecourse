@@ -24,12 +24,18 @@ class QR extends Module {
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 ModuleLoader::registerModule(array(
     'id' => 'qr',
     'name' => 'QR',
     'description' => 'Generates a QR code to be used for student participation in class.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

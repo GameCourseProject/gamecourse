@@ -94,7 +94,7 @@ API::registerFunction('settings', 'courseModules', function() {
                         //only drop the tables of the module data if this is the last course where it is enabled
                         $moduleObject->dropTables($moduleId);//deletes tables associated with the module
                     }else{
-                        $moduleObject->deleteDataRows();
+                        $moduleObject->deleteDataRows($course->id);
                     }
                 } else if(!$moduleEnabled && API::getValue('enabled')) {//enabling module
                     foreach ($module['dependencies'] as $dependency) {

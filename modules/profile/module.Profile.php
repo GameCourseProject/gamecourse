@@ -36,6 +36,11 @@ class Profile extends Module {
     public function is_configurable(){
         return false;
     }
+    
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -43,6 +48,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Profile',
     'description' => 'Creates a view template for a profile page where all the stats of the user are shown.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

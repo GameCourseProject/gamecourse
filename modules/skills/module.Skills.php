@@ -25,6 +25,157 @@ class Skills extends Module
         parent::addResources('js/');
         parent::addResources('css/skills.css');
     }
+
+    public function moduleConfigJson($courseId){
+        $skillModuleArr = array();
+        $skillTreeArray = array();
+        $skillTierArray = array();
+        $skillArray = array();
+        $dependencyArray = array();
+        $skillDependencyArray = array();
+        
+        if (Core::$systemDB->tableExists("skill_tree")) {
+            $skillTreeVarDB_ = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId], "*");
+            if ($skillTreeVarDB_) {
+                //values da skill_tree
+                foreach ($skillTreeVarDB_ as $skillTreeVarDB) {
+                    array_push($skillTreeArray, $skillTreeVarDB);
+                    
+                    if (Core::$systemDB->tableExists("skill_tier")) {
+                        $skillTierVarDB_ = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $skillTreeVarDB["id"]], "*");
+                        if ($skillTierVarDB_) {
+                            //values da skill_tier
+                            foreach ($skillTierVarDB_ as $skillTierVarDB) {
+                                array_push($skillTierArray, $skillTierVarDB);
+                                
+                                if (Core::$systemDB->tableExists("skill_tree")) {
+                                    $skillVarDB_ = Core::$systemDB->selectMultiple("skill", ["treeId" => $skillTreeVarDB["id"], "tier" =>  $skillTierVarDB["tier"]], "*");
+                                    if ($skillVarDB_) {
+                                        //values da skill
+                                        foreach ($skillVarDB_ as $skillVarDB) {
+                                            array_push($skillArray, $skillVarDB);
+                                            if (Core::$systemDB->tableExists("skill_tree")) {
+                                                $dependencyDB_ = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillVarDB["id"]], "*");
+                                                if ($dependencyDB_) {
+                                                    //values da dependency
+                                                    foreach ($dependencyDB_ as $dependencyDB) {
+                                                        array_push($dependencyArray, $dependencyDB);
+                                                        if (Core::$systemDB->tableExists("skill_tree")) {
+                                                            $skillDependencyDB_ = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $dependencyDB["id"], "normalSkillId" => $skillVarDB["id"]], "*");
+                                                            if ($skillDependencyDB_) {
+                                                                // values da skill_dependency
+                                                                foreach ($skillDependencyDB_ as $skillDependencyDB) {
+                                                                    array_push($skillDependencyArray, $skillDependencyDB);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if ($skillTreeArray) {
+            $skillModuleArr["skill_tree"] = $skillTreeArray;
+        }
+        if ($skillTierArray) {
+            $skillModuleArr["skill_tier"] = $skillTierArray;
+        }
+        if ($skillArray) {
+            $skillModuleArr["skill"] = $skillArray;
+        }
+        if ($dependencyArray) {
+            $skillModuleArr["dependency"] = $dependencyArray;
+        }
+        if ($skillDependencyArray) {
+            $skillModuleArr["skill_dependency"] = $skillDependencyArray;
+        }
+
+        if($skillModuleArr){
+            return $skillModuleArr;
+        }else{
+            return false;
+        }
+    }
+
+    public function readConfigJson($courseId, $tables, $update)
+    {
+        $tableName = array_keys($tables);
+        $skillTreeIds = array();
+        $skillIds = array();
+        $dependencyIds = array();
+
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                if($tableName[$i] == "skill_tree"){
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if($update && $existingCourse){
+                        Core::$systemDB->update($tableName[$i], ["maxReward" => $entry["maxReward"]], ["course" => $existingCourse]);
+                        $updatedTreeId = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "id");
+                        $skillTreeIds[$entry["id"]] = $updatedTreeId;
+                    }else{
+                        $idImport = $entry["id"];
+                        unset($entry["id"]);
+                        $entry["course"] = $courseId;
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                        $skillTreeIds[$idImport] = $newId;
+                    }
+                }else if($tableName[$i] == "skill_tier"){
+                    $existingCourse = Core::$systemDB->select("skill_tier", ["treeId" => $skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], ["reward"=>$entry["reward"]], ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                    } else {
+                        $treeIdImport = $entry["treeId"];
+                        $entry["treeId"] = $skillTreeIds[$treeIdImport];
+                        Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                }else if($tableName[$i] == "skill"){
+                    $existingSkill = Core::$systemDB->select("skill", ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                    if ($update && $existingSkill) {
+                        $newTreeId = $skillTreeIds[$entry["treeId"]];
+                        $newTierId = $entry["tier"];
+                        unset($entry["treeId"]);
+                        unset($entry["tier"]);
+                        unset($entry["id"]);
+                        Core::$systemDB->update($tableName[$i], $entry, ["treeId" => $newTreeId, "tier" => $newTierId]);
+                    } else {
+                        $idImport = $entry["id"];
+                        unset($entry["id"]);
+                        $treeIdImport = $entry["treeId"];
+                        $entry["treeId"] = $skillTreeIds[$treeIdImport];
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                        $skillIds[$idImport] = $newId;
+                    }
+                }else if($tableName[$i] == "dependency"){
+                    if (!$update) {
+                        $idImport = $entry["id"];
+                        unset($entry["id"]);
+
+                        $skillIdImport = $entry["superSkillId"];
+                        $entry["superSkillId"] = $skillIds[$skillIdImport];
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+
+                        $dependencyIds[$idImport] = $newId;
+                    }
+                }else if($tableName[$i] == "skill_dependency"){
+                    if(!$update){
+                        $entry["dependencyId"] = $dependencyIds[$entry["dependencyId"]];
+                        $entry["normalSkillId"] = $skillIds[$entry["normalSkillId"]];
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                }
+            }
+            $i++;
+        }
+        return false;
+    }
     //gets skills that depend on a skill and are required by another skill
     public function getSkillsDependantAndRequired($normalSkill, $superSkill, $restrictions = [], $parent = null)
     {
@@ -118,9 +269,9 @@ class Skills extends Module
         }
     }
 
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
-        Core::$systemDB->delete("skill_tree", ["course" => $this->getCourseId()]);
+        Core::$systemDB->delete("skill_tree", ["course" => $courseId]);
     }
 
     public function init()
@@ -697,6 +848,17 @@ class Skills extends Module
         return true;
     }
 
+    public function update_module($compatibleVersions)
+    {
+        //obter o ficheiro de configuração do module para depois o apagar
+        $configFile = "modules/skills/config.json";
+        $contents = array();
+        if (file_exists($configFile)) {
+            $contents = json_decode(file_get_contents($configFile));
+            unlink($configFile);
+        }
+        //verificar compatibilidade
+    }
 
 }
 
@@ -705,6 +867,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Skills',
     'description' => 'Generates a skill tree where students have to complete several skills to achieve a higher layer',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

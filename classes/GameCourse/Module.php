@@ -10,10 +10,12 @@ abstract class Module
     private $name;
     private $description;
     private $version;
+    private $compatibleVersions;
     private $dependencies;
     private $dir;
     private $parent;
     private $resources = array();
+    private $configJson;
 
     public function __construct()
     {
@@ -40,6 +42,11 @@ abstract class Module
     public function getVersion()
     {
         return $this->version;
+    }
+
+    public function getCompatibleVersions()
+    {
+        return $this->compatibleVersions;
     }
 
     public function getDependencies()
@@ -75,6 +82,16 @@ abstract class Module
     {
         return $this->resources;
     }
+
+    public function getConfigJson(){
+        return $this->configJson;
+    }
+
+    public function setConfigJson($config)
+    {
+        $this->configJson = $config;
+    }
+
     public function addTables($moduleName, $tableName, $children = null)
     {
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
@@ -114,30 +131,98 @@ abstract class Module
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
     }
-    public static function importModules($zipFile)
+
+    static function rrmdir($dir)
     {
-        $zip = new \ZipArchive;
-        if ($zip->open($zipFile) === TRUE) {
-            //mudar depois pra modules
-            $zip->extractTo('testeModules');
-            $zip->close();
-            echo 'ok';
-        } else {
-            echo 'failed';
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+
+            foreach ($objects as $object) {
+                if ($object != '.' && $object != '..') {
+                    if (filetype($dir . '/' . $object) == 'dir') {
+                        Module::rrmdir($dir . '/' . $object);
+                    } else {
+                        unlink($dir . '/' . $object);
+                    }
+                }
+            }
+
+            reset($objects);
+            rmdir($dir);
         }
     }
 
-    public static function exportModules()
+    public static function importModules($fileContents, $fileName)
     {
-        //verificar se o utilizador dá path e extensão
+        $name = substr($fileName, 0, strlen($fileName) - 4);
+        $path = time() . ".zip";
+        file_put_contents($path, $fileContents);
+
+        $toPath = "modules";
+        if($name != "modules"){
+            $toPath = "modules/".$name;
+            if(is_dir($toPath)){
+                Module::rrmdir($toPath);
+            }
+            mkdir($toPath, 0777, true);
+        }
+
+        $zip = new \ZipArchive;
+        if ($zip->open($path) === TRUE) {
+            //mudar depois pra modules
+            $zip->extractTo($toPath. "/");
+            $zip->close();
+        }
+        unlink($path); 
+    }
+    public static function exportModuleConfig($name, $courses){
+        $moduleArr = array();
+        $module = ModuleLoader::getModule($name);
+        $handler = $module["factory"]();
+        foreach ($courses as $course) {
+            if ($handler->is_configurable() && ($name != "awardlist")) {
+                $moduleArray = $handler->moduleConfigJson($course["id"]);
+                if ($moduleArray) {
+                    if (array_key_exists($name, $moduleArr)) {
+                        array_push($moduleArr[$course["id"]], $moduleArray);
+                    } else {
+                        $moduleArr[$course["id"]] = $moduleArray;
+                    }
+                }
+            } 
+        }
+        if($moduleArr){
+            file_put_contents("modules/" . $name . "/config.json", json_encode($moduleArr));
+        }
+    }
+
+    public static function exportModules($all = false)
+    {
+        $name = "badges";
         $zip = new \ZipArchive();
-        if ($zip->open('modules.zip', \ZipArchive::CREATE) == TRUE) {
-            $rootPath = realpath("modules");
+
+        $rootPath = realpath("modules");
+        $zipName = "modules.zip";
+
+        $courses = Core::$systemDB->selectMultiple("course");
+        $modules = Core::$systemDB->selectMultiple("module");
+        if(!$all){
+            $rootPath = realpath("modules/".$name);
+            $zipName = $name.".zip";
+            Module::exportModuleConfig($name, $courses);
+        }else{
+            foreach ($modules as $module) {
+                Module::exportModuleConfig($module["moduleId"], $courses);
+            }
+        }
+
+        if ($zip->open($zipName, \ZipArchive::CREATE) == TRUE) {
+            
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($rootPath),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-
+            
             foreach ($files as $name => $file) {
                 if (!$file->isDir()) {
                     $filePath = $file->getRealPath();
@@ -147,8 +232,31 @@ abstract class Module
             }
             $zip->close();
         }
+
+        //remove config files
+        foreach ($modules as $module) {
+            $file = "modules/" . $module["moduleId"] . "/config.json";
+            if(file_exists($file)){
+                unlink($file);
+            }
+        }
+        return $zipName;
     }
-    public function deleteDataRows()
+
+    public static function deleteModule($moduleId){
+        $module = ModuleLoader::getModule($moduleId);
+        $moduleObj = $module["factory"]();
+        //disable desse módulo em todos os cursos
+        Core::$systemDB->update("course_module", ["isEnabled" => 0], ["moduleId" => $moduleId]);
+        //drop das tables relativas a esse module
+        $moduleObj->dropTables($moduleId);
+        //apagar o module da BD
+        Core::$systemDB->delete("module", ["moduleId" => $moduleId]);
+        //apagar a pasta do module
+        Module::rrmdir("modules/".$moduleId);
+    }
+    
+    public function deleteDataRows($courseId)
     {
     }
     public function init()

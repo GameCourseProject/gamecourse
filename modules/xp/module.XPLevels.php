@@ -4,6 +4,8 @@ use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
+use GameCourse\API;
+use GameCourse\Course;
 
 class XPLevels extends Module
 {
@@ -15,7 +17,7 @@ class XPLevels extends Module
         parent::addResources('css/awards.css');
     }
 
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
         $lvls = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id", ["course" => $this->getCourseId(), "badgeId" => null]);
         foreach ($lvls as $lvl) {
@@ -169,8 +171,7 @@ class XPLevels extends Module
                     throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
                 return $this->createNode($level, 'xp');
             },
-            'object',
-            'Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.',
+            "Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.",
             'object',
             'level',
             'library',
@@ -408,8 +409,57 @@ class XPLevels extends Module
             API::response(array('skillsList' => $tiersAndSkills, "file"=>$file, "file2"=>$tierText, "maxReward"=>$tree["maxReward"]));
         });
     }
+
+    public function moduleConfigJson($courseId)
+    {
+        $xpArray = array();
+        $xpArr = array();
+
+        $xpVarDB_ = Core::$systemDB->selectMultiple("level", ["course" => $courseId], "*");
+        foreach ($xpVarDB_ as $xpVarDB) {
+            unset($xpVarDB["course"]);
+            array_push($xpArray, $xpVarDB);
+        }
+
+        $xpArr["level"] = $xpArray;
+
+        if ($xpArray) {
+            return $xpArr;
+        } else {
+            return false;
+        }
+    }
+
+    public function readConfigJson($courseId, $tables, $update)
+    {
+        $tableName = array_keys($tables);
+        $levelIds = array();
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                if($update && $existingCourse){
+                    Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                }else{
+                    $entry["course"] = $courseId;
+                    $idImported = $entry["id"];
+                    unset($entry["id"]);
+                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    $levelIds[$idImported] = $newId;
+                }
+            }
+            $i++;
+        }
+        return $levelIds;
+    }
+    
     public function is_configurable(){
         return true;
+    }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
     }
 }
 
@@ -418,6 +468,7 @@ ModuleLoader::registerModule(array(
     'name' => 'XP and Levels',
     'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

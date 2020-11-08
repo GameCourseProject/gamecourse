@@ -34,14 +34,14 @@ class Views extends Module
         //     $childTabs[] = Settings::buildTabItem($page['name'], 'course.settings.views.view({pageOrTemp:\'page\',view:\'' . $pageId . '\'})', true);
         // }
         // $viewTabs[] = Settings::buildTabItem('Pages', 'course.settings.views', true, $childTabs);
-        
+
         // $templates = $this->getTemplates();
         // $childTempTabs=[];
         // foreach ($templates as $template) {
         //     $childTempTabs[] = Settings::buildTabItem($template['name'], 'course.settings.views.view({pageOrTemp:\'template\',view:\'' . $template["id"] . '\'})', true);
         // }
         // $viewTabs[] = Settings::buildTabItem('Templates', 'course.settings.views', true, $childTempTabs);
-        
+
         Settings::addTab(Settings::buildTabItem('Views', 'course.settings.views', true, $viewTabs));
     }
 
@@ -405,8 +405,8 @@ class Views extends Module
         }, 'Creates a template view referred by name in a form of a pop-up.', null, null, 'library');
 
         $this->viewHandler->registerLibrary("views", "users", "This library provides access to information regarding Users and their info.");
-        $this->viewHandler->registerVariable("%user", "object", "user", "users", "Represents the user associated to the page which is being displayed");
-        $this->viewHandler->registerVariable("%viewer", "object", "user", "users", "Represents the user that is currently logged in watching the page");
+        $this->viewHandler->registerVariable("%user", "integer", null, "users", "Represents the user associated to the page which is being displayed");
+        $this->viewHandler->registerVariable("%viewer", "integer", null, "users", "Represents the user that is currently logged in watching the page");
         //functions of users library
         //users.getAllUsers(role,course) returns collection of users
         $this->viewHandler->registerFunction(
@@ -513,7 +513,7 @@ class Views extends Module
             'roles',
             function ($user) use ($course) {
                 $this->checkArray($user, "object", "roles", "id");
-                return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRoles(),
+                return $this->createNode((new \GameCourse\CourseUser($user["value"]["id"], $course))->getRolesNames(),
                     null,
                     "collection"
                 );
@@ -542,8 +542,8 @@ class Views extends Module
             'users',
             'picture',
             function ($user) {
-                $this->checkArray($user, "object", "picture", "username");
-                return new ValueNode("photos/" . $user["value"]["username"] . ".png");
+                $this->checkArray($user, "object", "picture", "id");
+                return new ValueNode("photos/" . $user["value"]["id"] . ".png");
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
@@ -581,7 +581,7 @@ class Views extends Module
         );
 
         $this->viewHandler->registerLibrary("views", "courses", "This library provides access to information regarding Courses and their info.");
-        $this->viewHandler->registerVariable("%course", "object","course", "courses", "Represents the course that the user is manipulating");
+        $this->viewHandler->registerVariable("%course", "integer", null, "courses", "Represents the course that the user is manipulating");
 
         //functions of course library
         //courses.getAllCourses(isActive,isVisible) returns collection of courses
@@ -693,10 +693,10 @@ class Views extends Module
             function ($award, string $item) {
                 $this->checkArray($award, "object", "renderPicture()");
                 if ($item == "user") {
-                    $username = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "username");
-                    if (empty($username))
+                    $gameCourseId = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "id");
+                    if (empty($gameCourseId))
                         throw new \Exception("In function renderPicture('user'): couldn't find user.");
-                    return new ValueNode("photos/" . $username . ".png");
+                    return new ValueNode("photos/" . $gameCourseId . ".png");
                 } else if ($item == "type") {
                     switch ($award["value"]['type']) {
                         case 'grade':
@@ -723,7 +723,7 @@ class Views extends Module
                 } else
                     throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
             },
-            "Renders the award picture.",
+            "Renders the award picture. The item can only have these 2 values: 'user' or 'type'. If 'user', returns the user picture, if 'type', it is shown the picture related to the type of award.",
             'picture',
             null,
             "object",
@@ -983,8 +983,10 @@ class Views extends Module
                 $this->breakTableRows($table['rows'], $savePart);
             },
             function (&$table, &$getPart) {
-                $this->putTogetherTableRows($table['headerRows'], $getPart);
-                $this->putTogetherTableRows($table['rows'], $getPart);
+                // $this->putTogetherTableRows($table['headerRows'], $getPart);
+                // $this->putTogetherTableRows($table['rows'], $getPart);
+                $this->putTogetherRows($table['headerRows'], $getPart);
+                $this->putTogetherRows($table['rows'], $getPart);
             },
             function (&$table) { //parse function
                 $this->parseTableRows($table['headerRows']);
@@ -1611,6 +1613,14 @@ class Views extends Module
     public static function saveScreensoot($img, $viewId, $pageOrTemplate){
         file_put_contents("screenshoots/". $pageOrTemplate . "/". $viewId . ".png", $img);
     }
+    public function is_configurable(){
+        return false;
+    }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -1618,6 +1628,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Views',
     'description' => 'Enables views and the view editor to create pages with expression language.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'factory' => function () {
         return new Views();
     }

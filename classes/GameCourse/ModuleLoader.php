@@ -22,25 +22,32 @@ class ModuleLoader {
         static::requireProp($module, 'name');
         static::requireProp($module, 'description');
         static::requireProp($module, 'version');
+        static::requireProp($module, 'compatibleVersions');
         if (!array_key_exists('dependencies', $module))
             $module['dependencies'] = array();
         static::requireProp($module, 'factory');
         $module['dir'] = static::$loadingModuleDir;
-
+        
         if (array_key_exists($module['id'], static::$modules))
             die('Module conflict, two modules with same id: ' . $module['id'] . ' at ' . $module['dir'] . ' and ' . static::$modules[$module['id']]['dir']);
         static::$modules[$module['id']] = $module;
         static::$loadingModuleDir = null;
+
+        //update do module
+        if(Core::$systemDB->select("module", ["moduleId"=>$module["id"]])){
+            $moduleObj = $module["factory"](); 
+            $moduleObj->update_module($module["compatibleVersions"]);
+        }
         
         if (empty(Core::$systemDB->select("module",['moduleId' => $module['id']]))) {
-            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name'], 'description' => $module['description']]);
+            Core::$systemDB->insert("module", ['moduleId' => $module['id'], 'name' => $module['name'], 'description' => $module['description'], "version" => $module["version"], "compatibleVersions" => json_encode($module["compatibleVersions"])]);
             $courses= array_column(Core::$systemDB->selectMultiple("course",null,"id"),"id");
             foreach ($courses as $course) {
                 Core::$systemDB->insert("course_module",["course"=>$course,"moduleId"=>$module['id']]);
             }
         }
         else{
-            Core::$systemDB->update("module", [ 'name' => $module['name'], 'description' => $module['description']], ['moduleId' => $module['id']]);
+            Core::$systemDB->update("module", [ 'name' => $module['name'], 'description' => $module['description'], "compatibleVersions" => json_encode($module["compatibleVersions"])], ['moduleId' => $module['id']]);
         }
     }
 
@@ -122,7 +129,7 @@ class ModuleLoader {
 
                 if ($canLoad) {
                     $loadedModules[$moduleId] = $module;
-                    //array_splice($modulesToLoad, $m, 1);
+                    array_splice($modulesToLoad, $m, 1);
 
                     foreach($module['dependencies'] as $dependency) {
                         if ($dependency['mode'] == 'soft')
@@ -152,6 +159,7 @@ class ModuleLoader {
             $module->name = $moduleInfo['name'];
             $module->description = $moduleInfo['description'];
             $module->version = $moduleInfo['version'];
+            $module->compatibleVersions = $moduleInfo['compatibleVersions'];
             $module->dependencies = $moduleInfo['dependencies'];
 
             $module->init($course->getId());
@@ -170,4 +178,3 @@ class ModuleLoader {
         return static::$modules;
     }
 }
-?>

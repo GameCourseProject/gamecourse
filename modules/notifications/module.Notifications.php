@@ -141,6 +141,11 @@ class Notifications extends Module
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -148,6 +153,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Notifications',
     'description' => 'Allows email notifications when a badge or points are atributed to a student.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

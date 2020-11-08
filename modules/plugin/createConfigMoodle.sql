@@ -10,5 +10,8 @@ create table config_moodle(
 	moodleTime int null,
 	moodleCourse varchar(200) null,
 	moodleUser varchar(200) null,
+	isEnabled boolean,
+	periodicityNumber int,
+	periodicityTime varchar(25),
 	foreign key(course) references course(id) on delete cascade
 );

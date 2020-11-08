@@ -357,6 +357,11 @@ class Charts extends Module {
     public function is_configurable(){
         return false;
     }
+
+    public function update_module($module)
+    {
+        //verificar compatibilidade
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -364,6 +369,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Charts',
     'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'skills', 'mode' => 'optional'),

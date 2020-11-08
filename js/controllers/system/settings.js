@@ -83,39 +83,36 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
         }
         
     }
-    $scope.importModule = function (){
+    $scope.importModule = function () {
         $scope.importedModule = null;
         var fileInput = document.getElementById('import_module');
         var file = fileInput.files[0];
-
-        //todo
-
-        // var reader = new FileReader();
-        // reader.onload = function(e) {
-        //     $scope.importedModule = reader.result;
-        //     $smartboards.request('course', 'importUser', { file: $scope.importedModule }, function(data, err) {
-        //         if (err) {
-        //             console.log(err.description);
-        //             return;
-        //         }
-        //         nUsers = data.nUsers;
-        //         $("#import-user").hide();
-        //         $("#action_completed").empty();
-        //         $("#action_completed").append(nUsers + " Users Imported");
-        //         $("#action_completed").show().delay(3000).fadeOut();
-        //     });
-        // }
-        // reader.readAsText(file);	
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $scope.importedModule = reader.result;
+            $smartboards.request('core', 'importModule', { file: $scope.importedModule, fileName: file.name }, function(data, err) {
+                if (err) {
+                    console.log(err.description);
+                    return;
+                }
+                nUsers = data.nUsers;
+                $("#import-module").hide();
+                $("#action_completed").empty();
+                // $("#action_completed").append(nUsers + " Modules Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+        }
+        reader.readAsDataURL(file);	
     }
     $scope.exportModules = function(){
         //todo
-        // $smartboards.request('course', 'exportUsers', { course: $scope.course }, function(data, err) {
-        //     if (err) {
-        //         console.log(err.description);
-        //         return;
-        //     }
-        //     download("courseUsers.csv", data.courseUsers);
-        // });
+        $smartboards.request('core', 'exportModule', {}, function(data, err) {
+            if (err) {
+                console.log(err.description);
+                return;
+            }
+
+        });
         
     }
 
@@ -145,13 +142,16 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     verification.append( $('<button class="close_btn icon" value="#import-module" onclick="closeModal(this)"></button>'));
     verification.append( $('<div class="warning">Please select a .zip file to be imported</div>'));
     verification.append( $('<div class="target">Be sure you followed the <a target="_blank" href="./docs/modules" >module gidelines</a></div>'));
-    verification.append( $('<input class="config_input" type="file" id="import_module" accept=".zip">')); //input file
+    verification.append($('<div class="target">If importing a module with an existing name, it will be replaced.</div>'));
+
+    verification.append($('<input class="config_input" type="file" id="import_module" accept=".zip">')); //input file
     verification.append( $('<div class="confirmation_btns"><button ng-click="importModule()">Install New Module</button></div>'))
     importModal.append(verification);
     tabContent.append(importModal);
     
     $compile(modules)($scope);
     $compile(search)($scope);
+    $compile(importModal)($scope);
     tabContent.append(search);
     tabContent.append(action_buttons);
     tabContent.append(modules);

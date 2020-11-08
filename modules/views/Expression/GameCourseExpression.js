@@ -81,6 +81,7 @@ var GameCourseExpression = (function () {
     var errorMessage = "";
     var variablesTemp = [];
     var inputGlobal = "";
+    var isLoop = false;
 
     var parser = {
         trace: function trace() { },
@@ -457,6 +458,7 @@ var GameCourseExpression = (function () {
                 caret = document.activeElement.selectionStart;
             }
             if (option == "loop" || option == "events") {
+                isLoop = true;
                 var libraries = [];
                 if (library) {
 
@@ -466,7 +468,7 @@ var GameCourseExpression = (function () {
                                 libraries.push(element);
                             }
                         } else {
-                            if (element["returnType"] == "collection" && (element["refersToType"] == "collection" || element["refersToType"] == "library")) {
+                            if (element["returnsLoop"] && (element["returnsLoop"] || element["refersToType"] == "library")) {
                                 libraries.push(element);
                             }
                         }
@@ -476,7 +478,7 @@ var GameCourseExpression = (function () {
                     if (input[0] == "{" && input[input.length - 1] == "}") {
                         input = input.replace("{", "");
                         input = input.replace("}", "");
-                        var libraryShow = new checkLibrary(input, libraries);
+                        var libraryShow = new checkLibrary(input, libraries, true);
                         if (!libraryShow.hasOwnProperty("returnType")) {
 
                             if (libraryShow.hasOwnProperty("toShow")) {
@@ -491,15 +493,17 @@ var GameCourseExpression = (function () {
                             //enters here if library+function matched   
                             libraryGlobalCollection = library;
                             libraryChosen = libraryShow.libraryChosen;
-
                             var inputAfterLibrary = input.substr(input.indexOf(")") + 1);
-                            new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, "collection", libraryShow.returnName);
+                            new checkFunctions(inputAfterLibrary, libraryShow.returnType, libraryShow.returnName, null, libraryShow.returnName);
                         }
+                    } else {
+                        errorMessage = "Please write inside {}.";
                     }
 
                 }
 
             } else if (option == "variables" || option == "if" || option == "content") {
+                isLoop = false;
                 if (input) {
                     var libraries = [];
                     if (library) {
@@ -542,22 +546,27 @@ var GameCourseExpression = (function () {
                         input = input.replace("}", "");
                         caret = caret - 1;
                         if (caret < endInput) {
-                            if (input.match(new RegExp("%([a-zA-Z]{0,})"))) {
-                                var variableShow = new checkVariable(input, variables);
-                                if (!variableShow.hasOwnProperty("library")) {
-                                    if (variableShow.hasOwnProperty("toShow")) {
-                                        output = variableShow.toShow;
+                            if (input.match(new RegExp("%([a-zA-Z]{0,})", "g"))) {
+                                var variable = input.split(".")[0];
+                                if (variable.match(new RegExp("^%([a-zA-Z]{0,})$", "g"))) {
+                                    var variableShow = new checkVariable(input, variables);
+                                    if (!variableShow.hasOwnProperty("library")) {
+                                        if (variableShow.hasOwnProperty("toShow")) {
+                                            output = variableShow.toShow;
+                                        } else {
+                                            output = "";
+                                        }
                                     } else {
                                         output = "";
+                                        //enters here if variable was completely matched
+                                        inputGlobal = input;
+                                        libraryGlobalCollection = library;
+                                        libraryChosen = variableShow.library;
+                                        varChosenGlobal = variableShow.variable;
+                                        new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType, variableShow.returnName, null, null);
                                     }
                                 } else {
-                                    output = "";
-                                    //enters here if variable was completely matched
-                                    inputGlobal = input;
-                                    libraryGlobalCollection = library;
-                                    libraryChosen = variableShow.library;
-                                    varChosenGlobal = variableShow.variable;
-                                    new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType, variableShow.returnName, null, null);
+                                    errorMessage = "Correct the variable name (check the suggestions).";
                                 }
                                 //new checkFunctions(input, libraryShow.returnType);
                             } else {
@@ -607,8 +616,8 @@ var GameCourseExpression = (function () {
                             output = "";
                         }
 
-                    } else {
-                        output = "";
+                    } else if (option != "content") {
+                        errorMessage = "Please write inside {}.";
                     }
                 }
             }
@@ -629,7 +638,9 @@ var GameCourseExpression = (function () {
                         textarea.val(new_val);
                     }
                     option_span.click(function(){
-                        replace_string(targerInput, input, this.getAttribute('value'));
+                        tec = input.split(".");
+                        to_replace = tec[tec.length - 1];
+                        replace_string(targerInput, to_replace, this.getAttribute('value'));
                         autocomplete_box.css("display", "none");
                     });
                 });
@@ -702,8 +713,8 @@ var GameCourseExpression = (function () {
                 merge.forEach(element => {
                     if (element["name"] != null) {
                         if (element["name"].match(re)) {
+                            var toShow = true;
                             if (input == element["name"]) {
-                                console.log(element);
                                 matched = element["name"];
                                 returnType = element["returnType"];
                                 if (element["library"]) {
@@ -713,21 +724,115 @@ var GameCourseExpression = (function () {
                                     var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
                                     txtContent = txtContent.replace("{", "");
                                     txtContent = txtContent.replace("}", "");
-                                    $splitted = txtContent.split(".");
-                                    library = $splitted[0];
-                                    var functionInLoop = $splitted[1].substring(0, $splitted[1].indexOf("("));
-                                    if (functionInLoop) {
-                                        libraryGlobalCollection.forEach(e => {
-                                            if (e["keyword"] == functionInLoop && e["name"] == library) {
-                                                returnName = e["returnName"]
+                                    var splitted = txtContent.split(".");
+                                    if (splitted.length >= 2 && txtContent != undefined) {
+                                        for (let index = splitted.length-1; index > 0; index--) {
+                                            var possibleFunction = splitted[index].substring(0, splitted[index].indexOf("("));
+                                            var found = false;
+                                            for (let i = 0; i < libraryGlobalCollection.length; i++) {
+                                                if (libraryGlobalCollection[i]["keyword"] == possibleFunction && libraryGlobalCollection[i]["refersToType"] == "library") {
+                                                    returnName = libraryGlobalCollection[i]["returnName"];
+                                                    library = libraryGlobalCollection[i]["name"];
+                                                    found = true;
+                                                    break;
+                                                }
                                             }
-                                        });
+                                            if (found) {
+                                                break;
+                                            }
+                                        }
+                                       
+                                    } else {
+                                        toShow = false;
                                     }
                                 }
                             }
-                            if (!variableMatched.includes(element["name"])) {
-                                variableMatched.push(element["name"]);
+                            if (element["library"]) {
+
+                                if (!variableMatched.includes(element["name"]) && toShow) {
+                                    variableMatched.push(element["name"]);
+                                }
+                            } else {
+
+                                var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
+                                txtContent = txtContent.replace("{", "");
+                                txtContent = txtContent.replace("}", "");
+                                var splitted = txtContent.split(".");
+                                if (splitted.length >= 2 && txtContent != undefined) {
+                                    for (let index = splitted.length - 1; index > 0; index--) {
+                                        var possibleFunction = splitted[index].substring(0, splitted[index].indexOf("("));
+                                        var found = false;
+                                        for (let i = 0; i < libraryGlobalCollection.length; i++) {
+                                            if (libraryGlobalCollection[i]["keyword"] == possibleFunction && libraryGlobalCollection[i]["refersToType"] == "library") {
+                                                returnName = libraryGlobalCollection[i]["returnName"];
+                                                library = libraryGlobalCollection[i]["name"];
+
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (found) {
+                                            break;
+                                        }
+                                    }
+                                   
+                                    // var hasLoopFunction = false;
+                                    // if (functionInLoop) {
+                                    //     libraryGlobalCollection.forEach(e => {
+                                    //         if (e["keyword"] == functionInLoop && e["name"] == library) {
+                                    //             hasLoopFunction = true;
+                                    //         }
+                                    //     });
+                                    // }
+                                    if (!variableMatched.includes(element["name"])){// && hasLoopFunction) {
+                                        variableMatched.push(element["name"]);
+                                    }
+                                }
                             }
+                            if (element["library"]) {
+
+                                if (!variableMatched.includes(element["name"]) && toShow) {
+                                    variableMatched.push(element["name"]);
+                                }
+                            } else {
+
+                                var txtContent = document.getElementById("visLoop").getElementsByTagName("TEXTAREA")[0].value;
+                                txtContent = txtContent.replace("{", "");
+                                txtContent = txtContent.replace("}", "");
+                                var splitted = txtContent.split(".");
+                                if (splitted.length >= 2 && txtContent != undefined) {
+                                    for (let index = splitted.length - 1; index > 0; index--) {
+                                        var possibleFunction = splitted[index].substring(0, splitted[index].indexOf("("));
+                                        var found = false;
+                                        for (let i = 0; i < libraryGlobalCollection.length; i++) {
+                                            if (libraryGlobalCollection[i]["keyword"] == possibleFunction && libraryGlobalCollection[i]["refersToType"] == "library") {
+                                                returnName = libraryGlobalCollection[i]["returnName"];
+                                                library = libraryGlobalCollection[i]["name"];
+
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (found) {
+                                            break;
+                                        }
+                                    }
+                                   
+                                    // var hasLoopFunction = false;
+                                    // if (functionInLoop) {
+                                    //     libraryGlobalCollection.forEach(e => {
+                                    //         if (e["keyword"] == functionInLoop && e["name"] == library) {
+                                    //             hasLoopFunction = true;
+                                    //         }
+                                    //     });
+                                    // }
+                                    if (!variableMatched.includes(element["name"])){// && hasLoopFunction) {
+                                        variableMatched.push(element["name"]);
+                                    }
+                                }
+                            }
+
+
                         }
                     }
                 });
@@ -833,8 +938,8 @@ var GameCourseExpression = (function () {
                                     argList = infoFunction[2];
                                     argInfo = infoFunction[3];
                                 }
-                                functionMatched = libraryChosen + "." + key;
-                                functionToShow = libraryChosen + "." + key + "(" + argList + ")";
+                                functionMatched = key;
+                                functionToShow = key + "(" + argList + ")";
                             }
                         }
                         for (let i = 0; i < argList.length; i++) {
@@ -851,7 +956,9 @@ var GameCourseExpression = (function () {
                                     subtract = -1;
                                 }
                                 if (args.length > argList.length) {
-                                    errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                    if (subtract == 0) {
+                                        errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                    }
                                 } else if (args.length + subtract < mandatory.length) {
                                     var missingArgs = mandatory.length - args.length - subtract;
                                     if (missingArgs == 1) {
@@ -866,6 +973,11 @@ var GameCourseExpression = (function () {
                                     }
 
                                 }
+                                if (inputNow.split(".").length <= 1) {
+                                    if (isLoop && returnType != "collection") {
+                                            errorMessage = "It should return a collection.";
+                                        }
+                                    }
                                 return { "functionMatched": functionMatched, "libraryChosen": libraryChosen, "returnType": returnType, "returnName": returnName };
                             } else {
                                 if (libraryExists) {
@@ -885,7 +997,9 @@ var GameCourseExpression = (function () {
                                         //todo: verificar virgula dentro de strings
                                         var args = inputArg.split(new RegExp(",", "g"));
                                         if (args.length > argList.length) {
-                                            errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                            if (subtract == 0) {
+                                                errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                            }
                                         } else if (args.length < mandatory.length) {
                                             var missingArgs = mandatory.length - args.length + 1;
                                             if (missingArgs == 1) {
@@ -909,22 +1023,23 @@ var GameCourseExpression = (function () {
                         }
                     } else {
                         if (!inputNow.match(new RegExp("[)]"))) {
-                            var functionsMatched = [];
+                            var functionMatched = "";
                             var functionsToShow = [];
+                            var args = null;
                             var re = new RegExp(inputNow, "g");
                             for (var key in functionsAvailable) {
                                 if (key.match(re)) {
                                     var argsTemp = functionsAvailable[key];
-                                    var args = null;
-                                    if (functionsAvailable && argsTemp.constructor === Array) {
-                                        args = argsTemp[1];
+                                    if (functionsAvailable) {
+                                        args = argsTemp[2];
+                                        if (key == inputNow) {
+                                            functionMatched = key;
+                                        }
                                     }
-
-                                    functionsMatched.push(key);
                                     if (args == null) {
-                                        functionsToShow.push(libraryChosen + "." + key);
+                                        functionsToShow.push(key);
                                     } else {
-                                        functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
+                                        functionsToShow.push(key + "(" + args + ")");
                                     }
 
                                 }
@@ -937,8 +1052,15 @@ var GameCourseExpression = (function () {
                                 }
                                 return {};
                             } else {
-                                errorMessage = "Finish the function name."
-                                return { "toShow": functionsToShow };
+                                if (functionMatched == "") {
+                                    errorMessage = "Finish the function name."
+                                    return { "toShow": functionsToShow };
+                                } else {
+                                    if (args != undefined) {
+                                        errorMessage = "Finish the function name."
+                                        return { "toShow": functionsToShow };
+                                    }
+                                }
                             }
                         } else {
                             errorMessage = "Closing parentheses without an opening one."
@@ -982,7 +1104,7 @@ var GameCourseExpression = (function () {
 
                 if (argInfo[i] == "integer") {
                     inputArgNow = inputArgNow.trim();
-                    if (!inputArgNow.match(new RegExp("^[0-9]+$", "g"))) {
+                    if (!inputArgNow.match(new RegExp("^[-]{0,1}[0-9]+$", "g"))) {
                         if (argList[i][0] == "[") {
                             argList[i] = argList[i].substring(1, argList[i].length - 1);
                         }
@@ -998,7 +1120,7 @@ var GameCourseExpression = (function () {
                         errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
                         break;
                     }
-                } else if (argInfo[i] == "boolen") {
+                } else if (argInfo[i] == "boolean") {
                     inputArgNow = inputArgNow.trim();
                     if (!inputArgNow.match(new RegExp("^[ ]{0,}(true|false|1|0)[ ]{0,}$"), "g")
                         && !inputArgNow.match(new RegExp("^[ ]{0,}[\"]{1}[ ]{0,}(true|false|1|0){1}[ ]{0,}[\"]{1}[ ]{0,}$"), "i")) {
@@ -1057,7 +1179,7 @@ var GameCourseExpression = (function () {
                 var returnType = "";
                 var returnName = "";
                 var inputArg = input.substring(input.indexOf("(") + 1);
-                if (input !== undefined) {
+                if (input != undefined) {
                     if (input.match(new RegExp("[(]"))) {
                         inputNow_ = input.substring(0, input.indexOf("("));
                         var functionMatched = "";
@@ -1087,7 +1209,9 @@ var GameCourseExpression = (function () {
                                         subtract = -1;
                                     }
                                     if (args.length > argList.length) {
-                                        errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                        if (subtract == 0) {
+                                            errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
+                                        }
                                     } else if (args.length + subtract < mandatory.length) {
                                         var missingArgs = mandatory.length - args.length - subtract;
                                         if (missingArgs == 1) {
@@ -1097,16 +1221,17 @@ var GameCourseExpression = (function () {
 
                                         }
                                     } else {
-                                        console.log(argList);
                                         if (inputArg[inputArg.length - 1] != ",") {
                                             new checkArgs(args, argList, argInfo, inputArg, functionMatched);
                                         }
                                     }
-
+                                    if (isLoop && returnType != "collection") {
+                                        errorMessage = "It should return a collection.";
+                                    }
                                     return { "returnType": returnType, "returnName": returnName, "index": input.length + 1 };
                                 }
                             }
-                            errorMessage = "Correct the function name (check the suggestions)."
+                            // errorMessage = "Correct the function name (check the suggestions)."
                         } else {
                             if (inputArg.length == 0) {
                                 errorMessage = "Close the parentheses.";
@@ -1130,20 +1255,20 @@ var GameCourseExpression = (function () {
                                             returnType = infoFunction[0];
                                             returnName = infoFunction[1];
                                             if (infoFunction.length > 2) {
-                                                argList = infoFunction[1];
-                                                argInfo = infoFunction[2];
+                                                argList = infoFunction[2];
+                                                argInfo = infoFunction[3];
                                             }
                                             functionMatched = key;
                                             functionToShow = key + "(" + argList + ")";
                                         }
                                     }
                                     if (functionMatched != "") {
-
                                         for (let i = 0; i < argList.length; i++) {
                                             if (argList[i][0] != "[" && argList[i][argList[i].length - 1] != "]") {
-                                                mandatory.push(argList[i]);
+                                                mandatory.push(argList);
                                             }
                                         }
+                                        console.log(argList);
                                         var args = inputArg.split(new RegExp(",", "g"));
                                         if (args.length > argList.length) {
                                             errorMessage = "The maximum number of arguments for the function " + functionMatched + " is " + argList.length + ".";
@@ -1241,7 +1366,13 @@ var GameCourseExpression = (function () {
                         libraries.push(element);
                     }
                 } else {
-                    libraries.push(element);
+                    if (isLoop) {
+                        if (element["returnsLoop"]) {
+                            libraries.push(element);
+                        }
+                    } else {
+                        libraries.push(element);
+                    }
                 }
                 if (!returnTypes.includes([element["returnType"], element["returnName"]])) {
 

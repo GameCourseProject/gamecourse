@@ -349,9 +349,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
     
 });
-
-angular.module('module.views').controller('ViewsList', function($smartboards, $element, $compile, $scope,$state,$sbviews) {
-    $smartboards.request('views', 'listViews', {course: $scope.course}, function(data, err) {
+angular.module('module.views').controller('ViewsList', function ($smartboards, $element, $compile, $scope, $state, $sbviews) {
+    $smartboards.request('views', 'listViews', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -361,7 +360,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         $scope.pages = Object.values(data.pages);
         $scope.templates = Object.values(data.templates);
         $scope.globals = Object.values(data.globals);
-        
+
         //all the information is saved so we can filter it
         $scope.allPages = Object.values(data.pages);
         $scope.allTemplates = Object.values(data.templates);
@@ -374,11 +373,11 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         var time = new Date().getTime(); //for image reload purpose
 
         //pages section
-        var viewsArea = createSection($($element),"Pages");
-        viewsArea.attr("id","pages");
+        var viewsArea = createSection($($element), "Pages");
+        viewsArea.attr("id", "pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
-        box.append( $('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
 
         //for the configure/edit info of the page
         // for the enable/disable feature of pages
@@ -388,50 +387,50 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         viewsArea.append(box);
         viewsArea.append($compile('<div class="add_button icon" ng-click="createView(\'page\')"></div>')($scope));
         //error section
-        viewsArea.append( $("<div class='error_box'><div id='empty_pages' class='error_msg'></div></div>"));
-    
+        viewsArea.append($("<div class='error_box'><div id='empty_pages' class='error_msg'></div></div>"));
+
         //templates section
-        var TemplateArea = createSection($($element),"View Templates");
+        var TemplateArea = createSection($($element), "View Templates");
         TemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in templates" ></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?'+time+');"><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
-        box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">'+
-                //for the configure/edit info of the template
-                //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
-                '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>'+
-                '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>'+
-                '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">'+
-                '</span><span class="delete_icon icon" ng-click="deleteView(template,\'template\')"></span></div></div>'))
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?' + time + ');"><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
+        box.append($('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">' +
+            //for the configure/edit info of the template
+            //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
+            '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>' +
+            '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>' +
+            '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">' +
+            '</span><span class="delete_icon icon" ng-click="deleteView(template,\'template\')"></span></div></div>'))
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         TemplateArea.append(box);
         TemplateArea.append($compile('<div class="add_button icon" ng-click="createView(\'template\')"></div>')($scope));
         //error section
-        TemplateArea.append( $("<div class='error_box'><div id='empty_templates' class='error_msg'></div></div>"));
-    
+        TemplateArea.append($("<div class='error_box'><div id='empty_templates' class='error_msg'></div></div>"));
+
         // global templates section
-        var globalTemplateArea = createSection($($element),"Global Templates");
+        var globalTemplateArea = createSection($($element), "Global Templates");
         globalTemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in globals"></div>');
-        box.append( $('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?'+time+');"><span class="add_icon_no_outline" ng-if="template.course!=course" ng-click="useGlobal(template)"></span></div></div>'));
-        box.append( $('<div class="footer"><div class="page_name">{{template.name}}</div></div>'))
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="add_icon_no_outline" ng-if="template.course!=course" ng-click="useGlobal(template)"></span></div></div>'));
+        box.append($('<div class="footer"><div class="page_name">{{template.name}}</div></div>'))
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         globalTemplateArea.append(box);
         //error section
-        globalTemplateArea.append( $("<div class='error_box'><div id='empty_globals' class='error_msg'></div></div>"));
-    
-     
+        globalTemplateArea.append($("<div class='error_box'><div id='empty_globals' class='error_msg'></div></div>"));
+
+
 
         //new view modal
         modal = $("<div class='modal' style='' id='new-view'></div>");
         newView = $("<div class='modal_content'></div>");
-        newView.append( $('<button class="close_btn icon" value="#new-view" onclick="closeModal(this)"></button>'));
-        newView.append( $('<div class="title">New {{newView.pageOrTemp}}: </div>'));
+        newView.append($('<button class="close_btn icon" value="#new-view" onclick="closeModal(this)"></button>'));
+        newView.append($('<div class="title">New {{newView.pageOrTemp}}: </div>'));
         content = $('<div class="content">');
         box = $('<div class="inputs" id="inputs_view_box">');
-        box.append( $('<div class="name full"><input type="text" class="form__input " id="name" placeholder="Name *" ng-model="newView.name"/> <label for="name" class="form__label">Name</label></div>'))
-        roleType = ( $('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
+        box.append($('<div class="name full"><input type="text" class="form__input " id="name" placeholder="Name *" ng-model="newView.name"/> <label for="name" class="form__label">Name</label></div>'))
+        roleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
         // for the enable/disable feature of pages
@@ -439,7 +438,7 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         // row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
         // box.append(row);
         content.append(box);
-        content.append( $('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+        content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newView.append(content);
         modal.append(newView);
         $compile(modal)($scope);
@@ -449,11 +448,11 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         // delete verification modal
         delete_modal = $("<div class='modal' id='delete-view'></div>");
         verification = $("<div class='verification modal_content'></div>");
-        verification.append( $('<button class="close_btn icon" value="#delete-view" onclick="closeModal(this)"></button>'));
-        verification.append( $('<div class="warning">Are you sure you want to delete this View?</div>'));
-        verification.append( $('<div id="for_template_warning" class="warning">Any template references that use it will also be deleted</div>'));
-        verification.append( $('<div class="target">{{view.pageOrTemp}}: {{view.name}} (id: {{view.id}})</div>'));
-        verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-view" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="submitDelete()"> Delete</button></div>'))
+        verification.append($('<button class="close_btn icon" value="#delete-view" onclick="closeModal(this)"></button>'));
+        verification.append($('<div class="warning">Are you sure you want to delete this View?</div>'));
+        verification.append($('<div id="for_template_warning" class="warning">Any template references that use it will also be deleted</div>'));
+        verification.append($('<div class="target">{{view.pageOrTemp}}: {{view.name}} (id: {{view.id}})</div>'));
+        verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-view" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="submitDelete()"> Delete</button></div>'))
         delete_modal.append(verification);
         $compile(delete_modal)($scope);
         $element.append(delete_modal);
@@ -461,10 +460,10 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
         // alert modal
         delete_modal = $("<div class='modal' id='alert-view'></div>");
         verification = $("<div class='verification modal_content'></div>");
-        verification.append( $('<button class="close_btn icon" value="#alert-view" onclick="closeModal(this)"></button>'));
-        verification.append( $('<div class="warning">File created. To use it move to a module folder and edit the module file.</div>'));
-        verification.append( $('<div class="target">{{response}}</div>'));
-        verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#alert-view" onclick="closeModal(this)">Continue</button></div>'))
+        verification.append($('<button class="close_btn icon" value="#alert-view" onclick="closeModal(this)"></button>'));
+        verification.append($('<div class="warning">File created. To use it move to a module folder and edit the module file.</div>'));
+        verification.append($('<div class="target">{{response}}</div>'));
+        verification.append($('<div class="confirmation_btns"><button class="cancel" value="#alert-view" onclick="closeModal(this)">Continue</button></div>'))
 
         delete_modal.append(verification);
         $compile(delete_modal)($scope);
@@ -472,51 +471,51 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
 
 
         angular.extend($scope, data);
-        
-        $scope.createView = function(pageOrTemp){
-            $scope.newView = {name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, IsActive: false};
+
+        $scope.createView = function (pageOrTemp) {
+            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, IsActive: false };
 
             $scope.saveView = function () {
-                $smartboards.request('views','createView',$scope.newView, alertUpdate);
+                $smartboards.request('views', 'createView', $scope.newView, alertUpdate);
             };
             //criar funcao de verificacao
-            $scope.isReadyToSubmit = function() {
-                isValid = function(text){
-                    return  (text != "" && text != undefined && text != null)
+            $scope.isReadyToSubmit = function () {
+                isValid = function (text) {
+                    return (text != "" && text != undefined && text != null)
                 }
                 //validate inputs
                 if (isValid($scope.newView.name) &&
-                isValid($scope.newView.roleType) ){
+                    isValid($scope.newView.roleType)) {
                     return true;
                 }
-                else{
+                else {
                     return false;
                 }
             }
 
-            if (pageOrTemp == "page"){
+            if (pageOrTemp == "page") {
                 $("#active_page").show();
                 $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
-            else{
+            else {
                 $("#active_page").hide();
                 $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
 
             $("#new-view").show();
         };
-        $scope.editView = function(id,pageOrTemp, name){
-            $state.go("course.settings.views.view",{pageOrTemp: pageOrTemp,view:id, name: removeSpacefromName(name)});
+        $scope.editView = function (id, pageOrTemp, name) {
+            $state.go("course.settings.views.view", { pageOrTemp: pageOrTemp, view: id, name: removeSpacefromName(name) });
         };
-        $scope.globalize = function(template){
-            $smartboards.request('views','globalizeTemplate',{course: $scope.course, id: template.id,isGlobal: template.isGlobal}, alertUpdate);
+        $scope.globalize = function (template) {
+            $smartboards.request('views', 'globalizeTemplate', { course: $scope.course, id: template.id, isGlobal: template.isGlobal }, alertUpdate);
         };
-        $scope.useGlobal = function(template){
+        $scope.useGlobal = function (template) {
             console.log(template);
-            $smartboards.request('views','copyGlobalTemplate',{course: $scope.course, template: template}, alertUpdate);
+            $smartboards.request('views', 'copyGlobalTemplate', { course: $scope.course, template: template }, alertUpdate);
         };
-        $scope.exportTemplate = function(template){
-            $smartboards.request('views', 'exportTemplate', {course:$scope.course, id: template.id,name:template.name}, function(data, err) {
+        $scope.exportTemplate = function (template) {
+            $smartboards.request('views', 'exportTemplate', { course: $scope.course, id: template.id, name: template.name }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -525,21 +524,21 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
                 $("#alert-view").show();
             });
         };
-        $scope.deleteView = function(view,templateOrPage) {
-            $scope.view = {name: view.name, pageOrTemp: templateOrPage, course: $scope.course, id: view.id}
+        $scope.deleteView = function (view, templateOrPage) {
+            $scope.view = { name: view.name, pageOrTemp: templateOrPage, course: $scope.course, id: view.id }
             $("#delete-view").show();
 
-            if (templateOrPage=="template"){
+            if (templateOrPage == "template") {
                 $("#for_template_warning").show();
-            }else{
+            } else {
                 $("#for_template_warning").hide();
             }
-            $scope.submitDelete = function (){
+            $scope.submitDelete = function () {
                 $smartboards.request('views', 'deleteView', $scope.view, alertUpdate);
             }
-            
+
         };
-        $scope.reduceList = function(){
+        $scope.reduceList = function () {
             $("#empty_pages").empty();
             $("#empty_templates").empty();
             $("#empty_globals").empty();
@@ -551,41 +550,41 @@ angular.module('module.views').controller('ViewsList', function($smartboards, $e
             filteredTemplates = [];
             filteredGlobals = [];
             text = $scope.search;
-            if (validateSearch(text)){
+            if (validateSearch(text)) {
                 //match por name e short
-                jQuery.each($scope.pages , function( index ){
+                jQuery.each($scope.pages, function (index) {
                     view_obj = $scope.pages[index];
-                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())) {
                         filteredPages.push(view_obj);
                     }
                 });
-                jQuery.each($scope.templates , function( index ){
+                jQuery.each($scope.templates, function (index) {
                     view_obj = $scope.templates[index];
-                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())) {
                         filteredTemplates.push(view_obj);
                     }
                 });
-                jQuery.each($scope.globals , function( index ){
+                jQuery.each($scope.globals, function (index) {
                     view_obj = $scope.globals[index];
-                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())){
+                    if (view_obj.name.toLowerCase().includes(text.toLowerCase())) {
                         filteredGlobals.push(view_obj);
                     }
                 });
-                
-                if(filteredPages.length == 0){
+
+                if (filteredPages.length == 0) {
                     $("#empty_pages").append("No matches found");
                 }
-                if(filteredTemplates.length == 0){
+                if (filteredTemplates.length == 0) {
                     $("#empty_templates").append("No matches found");
                 }
-                if(filteredGlobals.length == 0){
+                if (filteredGlobals.length == 0) {
                     $("#empty_globals").append("No matches found");
                 }
                 $scope.pages = filteredPages;
                 $scope.templates = filteredTemplates;
                 $scope.globals = filteredGlobals;
             }
-            
+
         }
     });
 });

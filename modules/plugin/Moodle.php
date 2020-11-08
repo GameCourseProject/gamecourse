@@ -2,6 +2,7 @@
 
 namespace Modules\Plugin;
 
+use Exception;
 use GameCourse\Core;
 use GameCourse\API;
 use GameCourse\User;
@@ -30,6 +31,10 @@ class Moodle
         $this->courseGameCourse = new Course($this->courseId);
     }
 
+    public static function checkConnection($dbServer, $dbUser, $dbPass, $dbName, $dbPort){
+        $db = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName, $dbPort);
+        return $db;
+    }
     public function getDBConfigValues()
     {
         $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $this->courseId], "*");
@@ -75,6 +80,7 @@ class Moodle
         while ($line = mysqli_fetch_assoc($result)) {
             array_push($row_, $line);
         }
+        $insertedOrUpdated = false;
         foreach ($row_ as $row) {
             $user = User::getUserIdByUsername($row["username"]);
             if ($user) {
@@ -82,7 +88,7 @@ class Moodle
                 if ($courseUser->getId()) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
                     if (!$result) {
-
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             [
@@ -96,6 +102,7 @@ class Moodle
                             ]
                         );
                     } else {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->update(
                             "participation",
                             array(
@@ -123,6 +130,7 @@ class Moodle
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timemodified"];
         }
+        return $insertedOrUpdated;
     }
 
     public function getVotes()
@@ -209,6 +217,7 @@ class Moodle
         while ($line = mysqli_fetch_assoc($result)) {
             array_push($row_, $line);
         }
+        $insertedOrUpdated = false;
         foreach ($row_ as $row) {
             $votesField = $this->parseVotesToDB($row, $db);
 
@@ -219,7 +228,7 @@ class Moodle
                 if ($courseUser->getId()) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
                     if (!$result) {
-
+                        $insertedOrUpdated = true;
                         Core::$systemDB->insert(
                             "participation",
                             [
@@ -234,6 +243,7 @@ class Moodle
                             ]
                         );
                     } else {
+                        $insertedOrUpdated = true;
                         Core::$systemDB->update(
                             "participation",
                             [
@@ -263,6 +273,7 @@ class Moodle
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timemodified"];
         }
+        return $insertedOrUpdated;
     }
 
     public function getLogs()
@@ -585,6 +596,7 @@ class Moodle
         while ($line = mysqli_fetch_assoc($result)) {
             array_push($row_, $line);
         }
+        $inserted = false;
         foreach ($row_ as $row) {
             $moodleField = $this->parseLogsToDB($row, $db);
             if ($moodleField["module"]) {
@@ -595,6 +607,7 @@ class Moodle
                     if (!$result) {
 
                         if ($courseUser->getId()) {
+                            $inserted = true;
                             Core::$systemDB->insert(
                                 "participation",
                                 [
@@ -615,6 +628,7 @@ class Moodle
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timecreated"];
         }
+        return $inserted;
     }
 
     public function updateMoodleConfigTime()

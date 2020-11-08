@@ -101,7 +101,9 @@ create table user_role(
 create table module(
 	moduleId varchar(50) not null primary key,
 	name varchar(50),
-	description varchar(100)
+	description varchar(100),
+	version varchar(10),
+	compatibleVersions varchar(100)
 );
 create table course_module(
 	moduleId varchar(50) not null,

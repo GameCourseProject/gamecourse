@@ -73,28 +73,30 @@ class Badges extends Module
         $levelNum = Core::$systemDB->select("award", ["user" => $id, "type" => "badge", "moduleInstance" => $badgeId], "count(*)");
         return (int)$levelNum;
     }
-    public function deleteLevels()
+    public function deleteLevels($courseId)
     {
-        $levels = Core::$systemDB->selectMultiple(
-            "level left join badge_has_level on levelId=id",
-            ["course" => $this->getCourseId()],
-            'id',
-            null,
-            [["levelId", null]]
-        );
-        foreach ($levels as $lvl) {
-            Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
+        if(Core::$systemDB->tableExists("badge_has_level")){
+            $levels = Core::$systemDB->selectMultiple(
+                "level left join badge_has_level on levelId=id",
+                ["course" => $courseId],
+                'id',
+                null,
+                [["levelId", null]]
+            );
+            foreach ($levels as $lvl) {
+                Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
+            }
         }
     }
     public function dropTables($moduleName)
     {
-        $this->deleteLevels();
+        $this->deleteLevels("");
         parent::dropTables($moduleName);
     }
-    public function deleteDataRows()
+    public function deleteDataRows($courseId)
     {
-        $this->deleteLevels();
-        Core::$systemDB->delete("badge", ["course" => $this->getCourseId()]);
+        $this->deleteLevels($courseId);
+        Core::$systemDB->delete("badge", ["course" => $courseId]);
     }
     public function getBadgeCount($user = null)
     {
@@ -105,6 +107,85 @@ class Badges extends Module
         $id = $this->getUserId($user);
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
     }
+    public function moduleConfigJson($courseId){
+        $badgesConfigArray = array();
+        $badgesArray = array();
+        $badgesLevelArray = array();
+
+        $badgesArr = array();
+        if(Core::$systemDB->tableExists("badges_config")){
+            $badgesConfigVarDB = Core::$systemDB->select("badges_config", ["course" => $courseId], "*");
+            if($badgesConfigVarDB){
+                unset($badgesConfigVarDB["course"]);
+                array_push($badgesConfigArray, $badgesConfigVarDB);
+            }
+        }
+        if (Core::$systemDB->tableExists("badge")) {
+            $badgesVarDB = Core::$systemDB->select("badge", ["course" => $courseId], "*");
+            if ($badgesVarDB) {
+                unset($badgesConfigVarDB["course"]);
+                array_push($badgesArray, $badgesVarDB);
+                
+                $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_has_level", ["badgeId" => $badgesVarDB["id"]], "*");
+                foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
+                    array_push($badgesLevelArray, $badgesLevelVarDB);
+                }
+            }
+        }
+
+        $badgesArr["badges_config"] = $badgesConfigArray;
+        $badgesArr["badge"] = $badgesArray;
+        $badgesArr["badge_has_level"] = $badgesLevelArray; 
+
+        if ( $badgesConfigArray || $badgesArray || $badgesLevelArray) {
+            return $badgesArr;
+        } else {
+            return false;
+        }
+    }
+
+    public function readConfigJson($courseId, $tables, $levelIds, $update = false){
+        $tableName = array_keys($tables);
+        $i = 0;
+        $badgeIds = array();
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                if($tableName[$i] == "badges_config"){
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if($update && $existingCourse){
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                    }else{
+                        $entry["course"] = $courseId;
+                        Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                } else  if ($tableName[$i] == "badge") {
+                    $importId = $entry["id"];
+                    unset($entry["id"]);
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                    } else {
+                        $entry["course"] = $courseId;
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                    $badgeIds[$importId] = $newId;
+                } else  if ($tableName[$i] == "badge_has_level") {
+                    $oldLevelId = $levelIds[$entry["levelId"]];
+                    $oldBadgeId = $badgeIds[$entry["badgeId"]];
+                    $entry["levelId"] = $oldLevelId;
+                    $entry["badgeId"] = $oldBadgeId;
+                    if ($update) {
+                        Core::$systemDB->update($tableName[$i], $entry ,["levelId" => $oldLevelId, "badgeId" => $oldBadgeId]);
+                    } else {
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                    }
+                }
+            }
+            $i++;
+        }
+        return false;
+    }
+
     public function init()
     {
         if ($this->addTables("badges", "badge")) {
@@ -135,9 +216,18 @@ class Badges extends Module
 
         );
         //badges.getBadge(name)
-        $viewHandler->registerFunction('badges', 'getBadge', function (string $name = null) {
-            return $this->getBadge(false, ["name" => $name]);
-        }, 'object', "Returns the badge object with the specific name.", 'library');
+        $viewHandler->registerFunction(
+            'badges',
+            'getBadge',
+            function (string $name = null) {
+                return $this->getBadge(false, ["name" => $name]);
+            },
+            "Returns the badge object with the specific name.",
+            'object',
+            'badge',
+            'library',
+            null
+        );
         //badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction(
             'badges',
@@ -755,6 +845,19 @@ class Badges extends Module
             $this->deleteBadge($listingItem, $courseId);
         }
     }
+
+    public function update_module($compatibleVersions)
+    {
+        //obter o ficheiro de configuração do module para depois o apagar
+        $configFile = "modules/badges/config.json";
+        $contents = array();
+        if(file_exists($configFile)){
+            $contents = json_decode(file_get_contents($configFile));
+            unlink($configFile);
+        }
+        //verificar compatibilidade
+        
+    }
 }
 
 ModuleLoader::registerModule(array(
@@ -762,6 +865,7 @@ ModuleLoader::registerModule(array(
     'name' => 'Badges',
     'description' => 'Enables Badges with 3 levels and xp points that ca be atributed to a student in certain conditions.',
     'version' => '0.1',
+    'compatibleVersions' => array(),
     'dependencies' => array(
         array('id' => 'views', 'mode' => 'hard')
     ),

@@ -663,7 +663,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 $("#action_completed").show().delay(3000).fadeOut();
             });
         }
-        reader.readAsText(file);	
+        reader.readAsDataURL(file);	
         
     }
     $scope.exportUsers = function(){
