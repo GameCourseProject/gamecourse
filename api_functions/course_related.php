@@ -42,7 +42,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
             Core::addSettings('Roles', 'course.settings.roles', true);
             Core::addSettings('Modules', 'course.settings.modules', true);
             //se views tiver active
-            Core::addSettings('Views', 'course.settings.views', true);
+            if (in_array("views", $course->getEnabledModules()))
+                Core::addSettings('Views', 'course.settings.views', true);
 
         $navPages = Core::getNavigation();
         $navSettings = Core::getSettings();
