@@ -349,6 +349,7 @@ class Plugin extends Module
         }
         if($tableName){
             Core::$systemDB->update($tableName, ["isEnabled" => 0], ["course" => $courseId]);
+            new CronJob($script, $courseId, null, null, true);
             return array("result" => true);
         }else{
             return array("result" => false, "errorMessage" => "Could not find a table in DB for that ".$script. " plugin");

@@ -10,7 +10,7 @@ use GameCourse\User;
 class CronJob
 {
     //tratar depois da periodicidade com base no que o user escolheu
-    public function __construct($script, $course, $number, $time)
+    public function __construct($script, $course, $number, $time, $remove = false)
     {
         $cronFile = "/tmp/crontab.txt";
         $path = null;
@@ -34,16 +34,18 @@ class CronJob
                     $toWrite .= $line . "\n";
                 }
             }
-
-            $periodStr = "";
-            if ($time == "Minutes") {
-                $periodStr = "*/" . $number . " * * * *";
-            } else if ($time == "Hours") {
-                $periodStr = "0 */" . $number . " * * *";
-            } else if ($time == "Months") {
-                $periodStr = "* * */" . $number . " * *";
+            
+            if(!$remove){
+                $periodStr = "";
+                if ($time == "Minutes") {
+                    $periodStr = "*/" . $number . " * * * *";
+                } else if ($time == "Hours") {
+                    $periodStr = "0 */" . $number . " * * *";
+                } else if ($time == "Months") {
+                    $periodStr = "* * */" . $number . " * *";
+                }
+                $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             file_put_contents($cronFile, $toWrite);
             echo exec('crontab /tmp/crontab.txt');
         }
