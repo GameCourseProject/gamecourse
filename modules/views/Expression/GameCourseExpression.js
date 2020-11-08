@@ -638,7 +638,9 @@ var GameCourseExpression = (function () {
                         textarea.val(new_val);
                     }
                     option_span.click(function(){
-                        replace_string(targerInput, input, this.getAttribute('value'));
+                        tec = input.split(".");
+                        to_replace = tec[tec.length - 1];
+                        replace_string(targerInput, to_replace, this.getAttribute('value'));
                         autocomplete_box.css("display", "none");
                     });
                 });
