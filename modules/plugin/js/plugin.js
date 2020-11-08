@@ -111,6 +111,15 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         console.log($scope.googleSheetsVarsPeriodicity);
         $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
+    $scope.disableMoodle = function () {
+        $smartboards.request('settings', 'coursePlugin', { disableMoodlePeriodicity: true, course: $scope.course }, alertUpdate);
+    };
+    $scope.disableClassCheck = function () {
+        $smartboards.request('settings', 'coursePlugin', { disableClassCheckPeriodicity: true, course: $scope.course }, alertUpdate);
+    };
+    $scope.disableGoogleSheets = function () {
+        $smartboards.request('settings', 'coursePlugin', { disableGoogleSheetsPeriodicity: true, course: $scope.course }, alertUpdate);
+    };
     $scope.saveClassCheck = function () {
         console.log("save class check");
         $smartboards.request('settings', 'coursePlugin', { classCheck: $scope.classCheckVars, course: $scope.course }, alertUpdate);
@@ -195,7 +204,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="moodleVarsPeriodicity.number=5" ng-model="moodleVarsPeriodicity.number" type="number" id="moodlePeriodicidade1"  min="1" max="59">');
         row2.append('<select class="form-control config_input" ng-model="moodleVarsPeriodicity.time" id="moodlePeriodicidade2" ng-options="option.name for option in moodleVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(moodleVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button class="button small" ng-click="enableMoodle()">Enable Moodle</button><br>');
+        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableMoodle()">Enable Moodle</button>');
+        row2.append('<button class="button small" ng-click="disableMoodle()">Disable Moodle</button><br>');
         moodleconfigSectionPeriodicity.append(row2);
         moodleconfigurationSection.append(moodleconfigSectionPeriodicity);
         
@@ -224,7 +234,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="classCheckVarsPeriodicity.number=5" ng-model="classCheckVarsPeriodicity.number" type="number" id="classCheckPeriodicidade1" min="1" max="59">');
         row2.append('<select class="form-control config_input" ng-model="classCheckVarsPeriodicity.time" id="classCheckPeriodicidade2" ng-options="option.name for option in classCheckVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(classCheckVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button class="button small" ng-click="enableClassCheck()">Enable Class Check</button><br>');
+        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableClassCheck()">Enable Class Check</button>');
+        row2.append('<button class="button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
         classCheckconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");
@@ -286,7 +297,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="googleSheetsVarsPeriodicity.number=5" ng-model="googleSheetsVarsPeriodicity.number" type="number" id="googleSheetsPeriodicidade1" min="1" max="59">');
         row2.append('<select class="form-control config_input" ng-model="googleSheetsVarsPeriodicity.time" id="googleSheetsPeriodicidade2" ng-options="option.name for option in googleSheetsVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(googleSheetsVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button class="button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button><br>');
+        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button>');
+        row2.append('<button class="button small" ng-click="disableGoogleSheets()">Disable Google Sheets</button><br>');
         googleSheetsconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");

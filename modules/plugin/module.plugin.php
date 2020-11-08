@@ -338,6 +338,22 @@ class Plugin extends Module
         }
     }
 
+    private function removeCronJob($script, $courseId){
+        $tableName = "";
+        if ($script == "Moodle") {
+            $tableName = "config_moodle";
+        } else if ($script == "ClassCheck") {
+            $tableName = "config_class_check";
+        } else if ($script == "GoogleSheets") {
+            $tableName == "config_google_sheets";
+        }
+        if($tableName){
+            Core::$systemDB->update($tableName, ["isEnabled" => 0], ["course" => $courseId]);
+            return array("result" => true);
+        }else{
+            return array("result" => false, "errorMessage" => "Could not find a table in DB for that ".$script. " plugin");
+        }
+    }
 
     public function setupResources()
     {
@@ -476,6 +492,37 @@ class Plugin extends Module
                 //place to verify input values
                 if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
                     API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                } else {
+                    API::error("Please select a periodicity");
+                }
+                return;
+            }
+             if (API::hasKey('disableMoodlePeriodicity')) {
+                $moodle = API::getValue('moodlePeriodicity');
+                //place to verify input values
+                $response = $this->removeCronJob("Moodle", $courseId);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Moodle disabled"]]);
+                } else {
+                    API::error($response["errorMessage"]);
+                }
+                return;
+            }
+            if (API::hasKey('disableClassCheckPeriodicity')) {
+                //place to verify input values
+                $response = $this->removeCronJob("ClassCheck", $courseId);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Class Check disabled"]]);
+                } else {
+                    API::error([$response["errorMessage"]]);
+                }
+                return;
+            }
+            if (API::hasKey('disableGoogleSheetsPeriodicity')) {
+                $googleSheets = API::getValue('googleSheetsPeriodicity');
+                //place to verify input values
+                if ($this->removeCronJob("GoogleSheets", $courseId)) {
+                    API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
                 } else {
                     API::error("Please select a periodicity");
                 }
