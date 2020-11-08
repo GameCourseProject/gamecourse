@@ -431,7 +431,7 @@ class Plugin extends Module
                 if ($this->setFenixVars($courseId, $fenix[$lastFileUploaded])) {
                     API::response(["updatedData" => ["Variables for fenix saved"]]);
                 } else {
-                    API::response(["updatedData" => ["Please fill the mandatory fields"], "error" => true]);
+                    API::error("Please fill the mandatory fields");
                 }
 
                 return;
@@ -442,7 +442,7 @@ class Plugin extends Module
                 if ($this->setMoodleVars($courseId, $moodle)) {
                     API::response(["updatedData" => ["Variables for moodle saved"]]);
                 } else {
-                    API::response(["updatedData" => ["Please fill the mandatory fields"], "error" => true]);
+                    API::error("Please fill the mandatory fields");
                 }
                 return;
             }
@@ -453,7 +453,7 @@ class Plugin extends Module
                 if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Moodle enabled"]]);
                 } else {
-                    API::response(["updatedData" => [$response["errorMessage"]], "error" => true]);
+                    API::error($response["errorMessage"]);
                 }
                 return;
             }
@@ -464,7 +464,7 @@ class Plugin extends Module
                 if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Class Check enabled"]]);
                 } else {
-                    API::response(["updatedData" => [$response["errorMessage"]], "error" => true]);
+                    API::error([$response["errorMessage"]]);
                 }
                 return;
             }
@@ -474,7 +474,7 @@ class Plugin extends Module
                 if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
                     API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
                 } else {
-                    API::response(["updatedData" => ["Please select a periodicity"], "error" => true]);
+                    API::error("Please select a periodicity");
                 }
                 return;
             }
@@ -484,7 +484,7 @@ class Plugin extends Module
                 if ($this->setClassCheckVars($courseId, $classCheck)) {
                     API::response(["updatedData" => ["Variables for Class check saved"]]);
                 } else {
-                    API::response(["updatedData" => ["Please fill the mandatory fields"], "error" => true]);
+                    API::error("Please fill the mandatory fields");
                 }
 
                 return;
@@ -494,7 +494,7 @@ class Plugin extends Module
                 if ($this->setGSCredentials($courseId, $credentials)) {
                     API::response(["updatedData" => ["Credentials saved"], "authUrl" => $this->getAuthUrl($courseId)]);
                 } else {
-                    API::response(["updatedData" => ["Please select a JSON file"], "error" => true]);
+                    API::error("Please select a JSON file");
                 }
                 return;
             }
@@ -508,8 +508,7 @@ class Plugin extends Module
                 if ($this->setGoogleSheetsVars($courseId, $googleSheets)) {
                     API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
                 } else {
-                    echo "false";
-                    API::response(["updatedData" => ["Please fill the mandatory fields"]]);
+                    API::error("Please fill the mandatory fields");
                 }
 
                 return;

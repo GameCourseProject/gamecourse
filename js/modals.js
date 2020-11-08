@@ -46,12 +46,6 @@ function alertUpdate(data, err) {
         }
         giveMessage(output);
     }
-    if (data != undefined) {
-        if (!data.error) {
-            location.reload();
-        }
-    } else {
-        location.reload();
+    location.reload();
 
-    }
 }
