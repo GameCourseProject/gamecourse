@@ -936,8 +936,8 @@ var GameCourseExpression = (function () {
                                     argList = infoFunction[2];
                                     argInfo = infoFunction[3];
                                 }
-                                functionMatched = libraryChosen + "." + key;
-                                functionToShow = libraryChosen + "." + key + "(" + argList + ")";
+                                functionMatched = key;
+                                functionToShow = key + "(" + argList + ")";
                             }
                         }
                         for (let i = 0; i < argList.length; i++) {
@@ -1035,9 +1035,9 @@ var GameCourseExpression = (function () {
                                         }
                                     }
                                     if (args == null) {
-                                        functionsToShow.push(libraryChosen + "." + key);
+                                        functionsToShow.push(key);
                                     } else {
-                                        functionsToShow.push(libraryChosen + "." + key + "(" + args + ")");
+                                        functionsToShow.push(key + "(" + args + ")");
                                     }
 
                                 }
