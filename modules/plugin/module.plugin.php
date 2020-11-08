@@ -295,6 +295,7 @@ class Plugin extends Module
                     $result = Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
                     if($result){
                         new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        Core::$systemDB->update("config_moodle", ["isEnabled" => 1], ["course" => $courseId]);
                         return array("result"=> true);
                     }else{
                         return array("result" => false, "errorMessage" =>"Connection failed");
@@ -309,6 +310,7 @@ class Plugin extends Module
                     $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
                     if ($result){
                         new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        Core::$systemDB->update("config_class_check", ["isEnabled" => 1], ["course" => $courseId]);
                         return array("result" => true);
                     } else {
                         return array("result" => false, "errorMessage" => "Connection failed");
@@ -322,6 +324,7 @@ class Plugin extends Module
                     $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
                     if ($result) {
                         new CronJob($script, $courseId, $vars['number'], $vars['time']);
+                        Core::$systemDB->update("config_google_sheets", ["isEnabled" => 1], ["course" => $courseId]);
                         return array("result" => true);
                     } else {
                         return array("result" => false, "errorMessage" => "Connection failed");
