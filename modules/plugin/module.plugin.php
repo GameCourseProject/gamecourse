@@ -51,9 +51,17 @@ class Plugin extends Module
                 "prefix" => "mdl_",
                 "time" => "",
                 "course" => "",
-                "user" => ""
+                "user" => "",
+                "periodicityNumber" => 0,
+                "periodicityTime" => 'Minutes'
             ];
         } else {
+            if (!$moodleVarsDB["periodicityNumber"]) {
+                $moodleVarsDB["periodicityNumber"] = 0;
+            }
+            if (!$moodleVarsDB["periodicityTime"]) {
+                $moodleVarsDB["periodicityTime"] = 'Minutes';
+            }
             $moodleVars = [
                 "dbserver" => $moodleVarsDB["dbServer"],
                 "dbuser" => $moodleVarsDB["dbUser"],
@@ -63,7 +71,9 @@ class Plugin extends Module
                 "prefix" => $moodleVarsDB["tablesPrefix"],
                 "time" => $moodleVarsDB["moodleTime"],
                 "course" => $moodleVarsDB["moodleCourse"],
-                "user" => $moodleVarsDB["moodleUser"]
+                "user" => $moodleVarsDB["moodleUser"],
+                "periodicityNumber" => intval($moodleVarsDB["periodicityNumber"]),
+                "periodicityTime" => $moodleVarsDB["periodicityTime"]
             ];
         }
 
@@ -74,9 +84,23 @@ class Plugin extends Module
         $classCheckDB = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
 
         if (empty($classCheckDB)) {
-            $classCheckVars = ["tsvCode" => ""];
+            $classCheckVars = [
+                "tsvCode" => "",
+                "periodicityNumber" => 0,
+                "periodicityTime" => 'Minutes'
+            ];
         } else {
-            $classCheckVars = ["tsvCode" => $classCheckDB["tsvCode"]];
+            if (!$classCheckDB["periodicityNumber"]) {
+                $classCheckDB["periodicityNumber"] = 0;
+            }
+            if (!$classCheckDB["periodicityTime"]) {
+                $classCheckDB["periodicityTime"] = 'Minutes';
+            }
+            $classCheckVars = [
+                "tsvCode" => $classCheckDB["tsvCode"],
+                "periodicityNumber" => intval($classCheckDB["periodicityNumber"]),
+                "periodicityTime" => $classCheckDB["periodicityTime"]
+            ];
         }
 
         return  $classCheckVars;
@@ -90,10 +114,27 @@ class Plugin extends Module
         $googleSheetsDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
 
         if (empty($googleSheetsDB)) {
-            $googleSheetsVars = ["token" => "", "spreadsheetId" => "", "sheetName" => ""];
+            $googleSheetsVars = [
+                "token" => "", 
+                "spreadsheetId" => "", 
+                "sheetName" => "",
+                "periodicityNumber" => 0,
+                "periodicityTime" => 'Minutes'];
         } else {
+            if (!$googleSheetsDB["periodicityNumber"]) {
+                $googleSheetsDB["periodicityNumber"] = 0;
+            }
+            if (!$googleSheetsDB["periodicityTime"]) {
+                $googleSheetsDB["periodicityTime"] = 'Minutes';
+            }
             $names = explode(";", $googleSheetsDB["sheetName"]);
-            $googleSheetsVars = ["authCode" => $googleSheetsDB["authCode"], "spreadsheetId" => $googleSheetsDB["spreadsheetId"], "sheetName" => $names];
+            $googleSheetsVars = [
+                "authCode" => $googleSheetsDB["authCode"],
+                "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
+                "sheetName" => $names,
+                "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
+                "periodicityTime" => $googleSheetsDB["periodicityTime"]
+            ];
         }
 
         return  $googleSheetsVars;
@@ -294,8 +335,8 @@ class Plugin extends Module
                     //verificar ligaçao à bd
                     $result = Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
                     if($result){
-                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
-                        Core::$systemDB->update("config_moodle", ["isEnabled" => 1], ["course" => $courseId]);
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']['name']);
+                        Core::$systemDB->update("config_moodle", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
                         return array("result"=> true);
                     }else{
                         return array("result" => false, "errorMessage" =>"Connection failed");
@@ -309,8 +350,8 @@ class Plugin extends Module
                 if ($classCheckVars){
                     $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
                     if ($result){
-                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
-                        Core::$systemDB->update("config_class_check", ["isEnabled" => 1], ["course" => $courseId]);
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']['name']);
+                        Core::$systemDB->update("config_class_check", ["isEnabled" => 1, "periodicityNumber" =>$vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
                         return array("result" => true);
                     } else {
                         return array("result" => false, "errorMessage" => "Connection failed");
@@ -323,8 +364,8 @@ class Plugin extends Module
                 if ($googleSheetsVars){
                     $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
                     if ($result) {
-                        new CronJob($script, $courseId, $vars['number'], $vars['time']);
-                        Core::$systemDB->update("config_google_sheets", ["isEnabled" => 1], ["course" => $courseId]);
+                        new CronJob($script, $courseId, $vars['number'], $vars['time']['name']);
+                        Core::$systemDB->update("config_google_sheets", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
                         return array("result" => true);
                     } else {
                         return array("result" => false, "errorMessage" => "Connection failed");
@@ -348,7 +389,7 @@ class Plugin extends Module
             $tableName == "config_google_sheets";
         }
         if($tableName){
-            Core::$systemDB->update($tableName, ["isEnabled" => 0], ["course" => $courseId]);
+            Core::$systemDB->update($tableName, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
             new CronJob($script, $courseId, null, null, true);
             return array("result" => true);
         }else{

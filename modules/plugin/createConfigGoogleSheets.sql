@@ -19,6 +19,8 @@ create table config_google_sheets(
 	authCode varchar(200) null,
 	spreadsheetId varchar(200) null,
 	sheetName varchar(200) null,
-	isEnabled boolean,
+	isEnabled boolean,	
+	periodicityNumber int,
+	periodicityTime varchar(25),
 	foreign key(course) references course(id) on delete cascade
 );
