@@ -65,7 +65,7 @@ class AwardList extends Module
     }
 
     public function is_configurable(){
-        return true;
+        return false;
     }
 
     public function update_module($compatibleVersions){
