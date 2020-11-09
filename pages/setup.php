@@ -7,6 +7,7 @@ use GameCourse\Core;
 
 if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_POST)) {
     $courseName = $_POST['course-name'];
+    $courseColor = $_POST['course-color'];
     $teacherId = $_POST['teacher-id'];
     $teacherUsername = $_POST['teacher-username'];
 
@@ -14,7 +15,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $sql = file_get_contents("gamecourse.sql");
     $db->executeQuery($sql);
     $courseId = 1;
-    $db->insert("course", ["name" => $courseName, "id" => $courseId]);
+    $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
     \GameCourse\Course::createCourseLegacyFolder($courseId, $courseName);
     $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
 
@@ -56,6 +57,8 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
             <h2>Create a course!</h2>
             <label for="course-name" class="label">Course Name</label>
             <input type="text" id="course-name" class="input-text" name="course-name" placeholder="(ex: PCM 2015/2016)" required><br>
+            <label for="course-color" class="label">Course Color</label>
+            <input type="text" id="course-color" class="input-text" name="course-color" placeholder="(ex: #ffffff)" required><br>
             <label for="teacher-id" class="label">Teacher IST ID</label>
             <input type="number" id="teacher-id" class="input-number" name="teacher-id" placeholder="(ex: 12345)" min="0" max="999999" required><br>
             <label for="teacher-username" class="label">Teacher Username</label>
