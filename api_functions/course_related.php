@@ -35,7 +35,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
         $courseUser = $course->getLoggedUser();
         $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
         
-        if ($isAdmin)
+        if ($isAdmin){
             Core::addNavigation( "Users", 'course.users', true); 
             Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
             Core::addSettings('This Course', 'course.settings.global', true);
@@ -44,6 +44,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
             //se views tiver active
             if (in_array("views", $course->getEnabledModules()))
                 Core::addSettings('Views', 'course.settings.views', true);
+        }
 
         $navPages = Core::getNavigation();
         $navSettings = Core::getSettings();

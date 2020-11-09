@@ -132,12 +132,12 @@ $user = Core::getLoggedUser();
                         text: 'Courses',
                         class: ''
                     },
-                    {
-                        sref: 'users',
+                    <?php if ($user->isAdmin()) echo "
+                        {sref: 'users',
                         image: 'images/leaderboard.svg',
                         text: 'Users',
-                        class: ''
-                    },
+                        class: '' }
+                    " ?>,
                     <?php if ($user->isAdmin()) echo "{sref: 'settings', image: 'images/gear.svg', text: 'Settings', class:'dropdown', children:'true'}," ?>
                 ];
 
