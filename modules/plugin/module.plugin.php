@@ -144,8 +144,12 @@ class Plugin extends Module
     private function setFenixVars($courseId, $fenix)
     {
         $course = new Course($courseId);
+        $year = $course->getData("year");
         for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
             $fields = explode(";", $fenix[$line]);
+            if(count($fields) < 10){
+                return "The number of columns is incorrect, please check the template";
+            }
 
             $username = $fields[0];
             $studentNumber = $fields[1];
@@ -159,17 +163,23 @@ class Plugin extends Module
             } else if (strpos($courseName, 'Taguspark')) {
                 $campus = "T";
             } else {
-                $endpoint = "degrees?academicTerm=2019/2020";
+                $endpoint = "degrees";
+                if($year){
+                    $year = str_replace("-", "/", $year);
+                    $endpoint = "degrees?academicTerm=".$year;
+                }
                 $listOfCourses = Core::getFenixInfo($endpoint);
                 $courseFound = false;
-                foreach ($listOfCourses as $courseFenix) {
-                    if ($courseFound) {
-                        break;
-                    } else {
-                        if (strpos($courseName, $courseFenix->name)) {
-                            $courseFound = true;
-                            foreach ($courseFenix->campus as $campusfenix) {
-                                $campus = $campusfenix->name[0];
+                if($listOfCourses){
+                    foreach ($listOfCourses as $courseFenix) {
+                        if ($courseFound) {
+                            break;
+                        } else {
+                            if (strpos($courseName, $courseFenix->name)) {
+                                $courseFound = true;
+                                foreach ($courseFenix->campus as $campusfenix) {
+                                    $campus = $campusfenix->name[0];
+                                }
                             }
                         }
                     }
@@ -197,7 +207,7 @@ class Plugin extends Module
                 }
             }
         }
-        return true;
+        return "";
     }
     private function setMoodleVars($courseId, $moodleVar)
     {
@@ -488,11 +498,15 @@ class Plugin extends Module
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
                 $lastFileUploaded = count($fenix) - 1;
+                if(count($fenix) == 0){
+                    API::error("Please fill the mandatory fields");
+                }
                 //place to verify input values
-                if ($this->setFenixVars($courseId, $fenix[$lastFileUploaded])) {
+                $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
+                if (!$resultFenix) {
                     API::response(["updatedData" => ["Variables for fenix saved"]]);
                 } else {
-                    API::error("Please fill the mandatory fields");
+                    API::error($resultFenix);
                 }
 
                 return;
@@ -584,7 +598,7 @@ class Plugin extends Module
             if (API::hasKey('credentials')) {
                 $credentials = API::getValue('credentials');
                 if ($this->setGSCredentials($courseId, $credentials)) {
-                    API::response(["updatedData" => ["Credentials saved"], "authUrl" => $this->getAuthUrl($courseId)]);
+                    API::response(["authUrl" => $this->getAuthUrl($courseId)]);
                 } else {
                     API::error("Please select a JSON file");
                 }
