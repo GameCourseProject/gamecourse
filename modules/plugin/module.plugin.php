@@ -234,18 +234,6 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_moodle", $arrayToDb);
             }
-
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            // $logs = $this->moodle->getLogs();
-            // $this->moodle->writeLogsToDB($logs);
-
-            // $quizGrades = $this->moodle->getQuizGrades();
-            // $this->moodle->writeQuizGradesToDb($quizGrades);
-
-            // $votes = $this->moodle->getVotes();
-            // $this->moodle->writeVotesToDb($votes);
-
-            // $this->moodle->updateMoodleConfigTime();
             return true;
         }
     }
@@ -264,9 +252,6 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_class_check", $arrayToDb);
             }
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO CLASSCHECK:
-            // $this->classCheck->readAttendance();
-
             return true;
         }
     }
@@ -299,7 +284,6 @@ class Plugin extends Module
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
             $this->googleSheets->setCredentials();
-            $this->googleSheets->setAuthCode();
             return true;
         }
     }
@@ -326,9 +310,6 @@ class Plugin extends Module
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
             $this->googleSheets->saveTokenToDB();
-
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            // $this->googleSheets->readGoogleSheets();
             return true;
         }
     }

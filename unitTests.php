@@ -5,9 +5,11 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
+use GameCourse\GoogleHandler;
 
 $username = $argv[1];
 $course = $argv[2];
+$authCode = $argv[3];
 Core::init();
 
 echo "\n-----LOGIN PICTURE-----";
@@ -68,6 +70,106 @@ if ($usersInfo[0] == 0 && $usersInfo[1] == 2) {
     }
 } else {
     echo "\nFailed: The users where not updated correctly";
+}
+echo "\n";
+echo "\n-----MOODLE PLUGIN-----";
+$moodleVar = [
+    "dbserver" => "localhost",
+    "dbuser" => "root",
+    "dbpass" => null,
+    "db" => "moodle",
+    "dbport" => "3306",
+    "prefix" => "mdl_",
+    "time" => null,
+    "course" => null,
+    "user" => null
+];
+$resultMoodle = setMoodleVars($course, $moodleVar);
+if ($resultMoodle) {
+    if (Core::$systemDB->select("config_moodle", [
+        "dbServer" => "localhost",
+        "dbUser" => "root",
+        "dbPass" => null,
+        "dbName" => "moodle",
+        "dbPort" => "3306",
+        "tablesPrefix" => "mdl_",
+        "moodleTime" => null,
+        "moodleCourse" => null,
+        "moodleUser" => null
+    ])) {
+        echo "\nSuccess: Moodle variables were set";
+    } else {
+        echo "\n Moodle Variables were not inserted in the database";
+    }
+} else {
+    echo "\nFailed: It was not possible to set moodle variables.";
+}
+
+echo "\n";
+echo "\n-----CLASSCHECK PLUGIN-----";
+$ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
+$resultCC = setClassCheckVars($course, $ccVar);
+if ($resultCC) {
+    if (Core::$systemDB->select("config_class_check", $ccVar)) {
+        echo "\nSuccess: ClassCheck variables were set";
+    } else {
+        echo "\n ClassCheck Variables were not inserted in the database";
+    }
+} else {
+    echo "\nFailed: It was not possible to set classChc variables.";
+}
+
+echo "\n";
+echo "\n-----GOOGLE SHEETS PLUGIN-----";
+$configGS = array(
+    "client_id" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
+    "project_id" => "pcm-script",
+    "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
+    "token_uri" => "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret" => "hC4zsuwH1fVIWi5k0C4zjOub",
+    "redirect_uris" => array("urn:ietf:wg:oauth:2.0:oob", "http://localhost")
+);
+$gsVars = array(array("installed" => $configGS));
+$resultGS = setGSCredentials($course, $gsVars);
+if ($resultGS) {
+    $checkDB_GS = array(
+        "clientId" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
+        "projectId" => "pcm-script",
+        "authUri" => "https://accounts.google.com/o/oauth2/auth",
+        "tokenUri" => "https://oauth2.googleapis.com/token",
+        "authProvider" => "https://www.googleapis.com/oauth2/v1/certs",
+        "clientSecret" => "hC4zsuwH1fVIWi5k0C4zjOub",
+        "redirectUris" => "urn:ietf:wg:oauth:2.0:oob;http://localhost"
+    );
+    if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+        echo "\nSuccess: Google Sheets credentials were set";
+    } else {
+        echo "\n Google Sheets credentials were not inserted in the database";
+    }
+} else {
+    echo "\nFailed: It was not possible to set Google Sheets credentials.";
+}
+
+$varsGS = array(
+    "authCode" => $authCode,
+    "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
+    "sheetName" => array("ist13898_")
+);
+$resultGSVars = setGoogleSheetsVars($course, $varsGS);
+if ($resultGSVars) {
+    $checkDB_GS = array(
+        "authCode" => $authCode,
+        "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
+        "sheetName" => "ist13898_"
+    );
+    if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+        echo "\nSuccess: Google Sheets variables were set";
+    } else {
+        echo "\n Google Sheets variables were not inserted in the database";
+    }
+} else {
+    echo "\nFailed: It was not possible to set Google Sheets variables.";
 }
 
 
@@ -154,4 +256,187 @@ function checkFenix($fenix, $course)
     }
 
     return [$newUsers, $updatedUsers];
+}
+//moodle plugin
+function setMoodleVars($courseId, $moodleVar)
+{
+    $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
+
+    $arrayToDb = [
+        "course" => $courseId,
+        "dbServer" => $moodleVar['dbserver'],
+        "dbUser" => $moodleVar['dbuser'],
+        "dbPass" => $moodleVar['dbpass'],
+        "dbName" => $moodleVar['db'],
+        "dbPort" => $moodleVar["dbport"],
+        "tablesPrefix" => $moodleVar["prefix"],
+        "moodleTime" => $moodleVar["time"],
+        "moodleCourse" => $moodleVar["course"],
+        "moodleUser" => $moodleVar["user"]
+    ];
+    if (empty($moodleVar['dbserver']) || empty($moodleVar['dbuser']) || empty($moodleVar['db'])) {
+        return false;
+    } else {
+        if (empty($moodleVars)) {
+            Core::$systemDB->insert("config_moodle", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_moodle", $arrayToDb);
+        }
+        return true;
+    }
+}
+
+//classcheck plugin
+function setClassCheckVars($courseId, $classCheck)
+{
+    $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
+
+    $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
+
+    if (empty($classCheck["tsvCode"])) {
+        return false;
+    } else {
+        if (empty($classCheckVars)) {
+            Core::$systemDB->insert("config_class_check", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_class_check", $arrayToDb);
+        }
+        return true;
+    }
+}
+
+//google sheets plugin - credentials
+function setGSCredentials($courseId, $gsCredentials)
+{
+    $credentialKey = key($gsCredentials[0]);
+    $credentials = $gsCredentials[0][$credentialKey];
+    $googleSheetCredentialsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+    $uris = "";
+    for ($uri = 0; $uri < sizeof($credentials["redirect_uris"]); $uri++) {
+        $uris .= $credentials["redirect_uris"][$uri];
+        if ($uri != sizeof($credentials["redirect_uris"]) - 1) {
+            $uris .= ";";
+        }
+    }
+
+    $arrayToDb = [
+        "course" => $courseId, "key_" => $credentialKey, "clientId" => $credentials["client_id"], "projectId" => $credentials["project_id"],
+        "authUri" => $credentials["auth_uri"], "tokenUri" => $credentials["token_uri"], "authProvider" => $credentials["auth_provider_x509_cert_url"],
+        "clientSecret" => $credentials["client_secret"], "redirectUris" => $uris
+    ];
+
+    if (empty($credentials)) {
+        return false;
+    } else {
+        if (empty($googleSheetCredentialsVars)) {
+            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+        }
+        setCredentials($courseId);
+        return true;
+    }
+}
+function setCredentials($courseId)
+{
+    $credentials = getCredentialsFromDB($courseId);
+    GoogleHandler::setCredentials(json_encode($credentials));
+}
+
+function getCredentialsFromDB($courseId)
+{
+    $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+    $uris = explode(";", $credentialDB["redirectUris"]);
+
+    $arrayKey[$credentialDB['key_']] = array(
+        'client_id' => $credentialDB['clientId'], "project_id" => $credentialDB["projectId"],
+        'auth_uri' => $credentialDB['authUri'], "token_uri" => $credentialDB["tokenUri"], "auth_provider_x509_cert_url" => $credentialDB["authProvider"],
+        'client_secret' => $credentialDB["clientSecret"], "redirect_uris" => $uris
+    );
+    return $arrayKey;
+}
+
+function setAuthCode($courseId)
+{
+    $response = handleToken($courseId);
+    if ($response["auth_url"]) {
+        Core::$systemDB->update(
+            "config_google_sheets",
+            ["authUrl" => $response["auth_url"]]
+        );
+    }
+}
+
+function handleToken($courseId)
+{
+    $credentials = getCredentialsFromDB($courseId);
+    $token = getTokenFromDB($courseId);
+    $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "authCode");
+    return GoogleHandler::checkToken($credentials, $token, $authCode);
+}
+
+function getTokenFromDB($courseId)
+{
+    $accessExists = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "accessToken");
+    if ($accessExists) {
+        $credentialDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+
+        $arrayToken = array(
+            'access_token' => $credentialDB['accessToken'], "expires_in" => $credentialDB["expiresIn"],
+            'scope' => $credentialDB['scope'], "token_type" => $credentialDB["tokenType"],
+            "created" => $credentialDB["created"], 'refresh_token' => $credentialDB["refreshToken"]
+        );
+        return json_encode($arrayToken);
+    } else {
+        return null;
+    }
+}
+
+//google sheets plugin - vars
+function setGoogleSheetsVars($courseId, $googleSheets)
+{
+    $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
+    $names = "";
+    foreach ($googleSheets["sheetName"] as $name) {
+        if (strlen($name) != 0) {
+            $names .= $name . ";";
+        }
+    }
+
+    if ($names != "" && substr($names, -1) == ";") {
+        $names = substr($names, 0, -1);
+    }
+    $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names, "authCode" => $googleSheets["authCode"]];
+    if (empty($googleSheets["spreadsheetId"])) {
+        return false;
+    } else {
+        if (empty($googleSheetsVars)) {
+            Core::$systemDB->insert("config_google_sheets", $arrayToDb);
+        } else {
+            Core::$systemDB->update("config_google_sheets", $arrayToDb);
+        }
+        saveTokenToDB($courseId);
+        return true;
+    }
+}
+
+function saveTokenToDB($courseId)
+{
+    $response = handleToken($courseId);
+    $token = $response["access_token"];
+    if ($token) {
+
+        $arrayToDB = array(
+            "course" => $courseId,
+            "accessToken" => $token["access_token"],
+            "expiresIn" => $token["expires_in"],
+            "scope" => $token["scope"],
+            "tokenType" => $token["token_type"],
+            "created" => $token["created"],
+            "refreshToken" => $token["refresh_token"]
+        );
+        Core::$systemDB->update("config_google_sheets", $arrayToDB);
+    }
 }

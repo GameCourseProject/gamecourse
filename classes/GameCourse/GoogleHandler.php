@@ -99,15 +99,15 @@ class GoogleHandler
         file_put_contents($path, $pic);
     }
 
-    public function getClient()
-    {
-        $client = new \Google_Client();
-        $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
-        $client->setClientSecret("hC4zsuwH1fVIWi5k0C4zjOub");
-        $client->setRedirectUri("http://localhost/gamecourse/auth");
-        $client->addScope("email");
-        $client->addScope("profile");
-    }
+    // public function getClient()
+    // {
+    //     $client = new \Google_Client();
+    //     $client->setClientId("370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com");
+    //     $client->setClientSecret("AIzaSyBvdCmVee2h07fGzocTQWQCoLgmy-mWM5g");
+    //     $client->setRedirectUri("http://localhost/gamecourse/auth");
+    //     $client->addScope("email");
+    //     $client->addScope("profile");
+    // }
 
     public static function setCredentials($credentials)
     {
@@ -140,7 +140,6 @@ class GoogleHandler
             if ($client->getRefreshToken()) {
                 $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
                 return array("access_token" => $client->getAccessToken(), "auth_url" => null, "client" => $client);
-                //VER MELHOR!!!!!
             } else {
                 // Request authorization from the user.
                 $authUrl = $client->createAuthUrl();
