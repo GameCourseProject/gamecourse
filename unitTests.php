@@ -6,6 +6,8 @@ use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
 use GameCourse\GoogleHandler;
+use GameCourse\ModuleLoader;
+use Modules\Views\ViewHandler;
 
 $username = $argv[1];
 $course = $argv[2];
@@ -170,6 +172,126 @@ if ($resultGSVars) {
     }
 } else {
     echo "\nFailed: It was not possible to set Google Sheets variables.";
+}
+
+echo "\n";
+echo "\n-----DICTIONARY-----";
+$courseObj = new Course($course);
+$init = ModuleLoader::initModules($courseObj);
+$viewModule = $courseObj->getModule('views');
+$viewHandler = $viewModule->getViewHandler();
+
+//insert variable
+$viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns the role of the user that is viewing the page");
+$id = Core::$systemDB->select("dictionary_library", ["name" => "users"], "id");
+if ($id) {
+    if (Core::$systemDB->select("dictionary_variable", [
+        "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+        "description" =>  "Returns the role of the user that is viewing the page"
+    ])) {
+        echo "\nSucess: Variable created";
+    } else {
+        echo "\nFailed: Variable was not created";
+    }
+} else {
+    echo "\nFailed: It was not possible to register the variable";
+}
+
+//update variable
+$viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns roles");
+if ($id) {
+    if (Core::$systemDB->select("dictionary_variable", [
+        "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+        "description" =>  "Returns roles"
+    ])) {
+        echo "\nSucess: Variable updated";
+    } else {
+        echo "\nFailed: Variable was not updated";
+    }
+} else {
+    echo "\nFailed: It was not possible to register the variable";
+}
+
+//insert library
+$viewHandler->registerLibrary("views", "games", "This library contains information about the course games");
+if (Core::$systemDB->select("dictionary_library", [
+    "moduleId" => "views", "name" => "games", "description" =>  "This library contains information about the course games"
+])) {
+    echo "\nSucess: Library created";
+} else {
+    echo "\nFailed: Library was not created";
+}
+
+//update library
+$viewHandler->registerLibrary("views", "games", "This is a game's library");
+if (Core::$systemDB->select("dictionary_library", [
+    "moduleId" => "views", "name" => "games", "description" =>  "This is a game's library"
+])) {
+    echo "\nSucess: Library updated";
+} else {
+    echo "\nFailed: Library was not updated";
+}
+
+//insert function
+$viewHandler->registerFunction(
+    "courses",
+    "color",
+    function ($course) {
+        return $this->basicGetterFunction($course, "color");
+    },
+    "Returns the course color.",
+    "string",
+    null,
+    "object",
+    "course"
+);
+
+$id = Core::$systemDB->select("dictionary_library", ["name" => "courses"], "id");
+if ($id) {
+    if (Core::$systemDB->select("dictionary_function", [
+        "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
+        "refersToName" => "course", "keyword" => "color", "args" => null,
+        "description" =>  "Returns the course color."
+    ])) {
+        echo "\nSucess: Function created";
+    } else {
+        echo "\nFailed: Function was not created";
+    }
+} else {
+    echo "\nFailed: It was not possible to register the function";
+}
+
+//update function
+$func = function ($course, bool $toRGB = false) {
+    $color = $this->basicGetterFunction($course, "color");
+    if ($toRGB) {
+        $color = "(255,255,255)";
+    }
+};
+
+$viewHandler->registerFunction(
+    "courses",
+    "color",
+    $func,
+    "Color RGB or HEX.",
+    "string",
+    null,
+    "object",
+    "course"
+);
+$args = argsToJSON($func, "object", "course");
+if ($id) {
+    if (Core::$systemDB->select("dictionary_function", [
+        "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
+        "refersToName" => "course", "keyword" => "color", "args" => $args,
+        "description" =>  "Color RGB or HEX."
+    ])) {
+        echo "\nSucess: Function updated";
+    } else {
+        echo "\nFailed: Function was not updated";
+    }
+} else {
+    echo "\nFailed: It was not possible to register the function";
 }
 
 
@@ -439,4 +561,41 @@ function saveTokenToDB($courseId)
         );
         Core::$systemDB->update("config_google_sheets", $arrayToDB);
     }
+}
+
+
+//dictionary
+function argsToJSON($func, $refersToType, $funcLib){
+    $reflection = new \ReflectionFunction($func);
+    $arg = null;
+    $arguments  = $reflection->getParameters();
+    if ($arguments) {
+        $arg = [];
+        $i = -1;
+        foreach ($arguments as $argument) {
+            $i++;
+            if ($i == 0 && ($refersToType == "object" || $funcLib == null)) {
+                continue;
+            }
+            $optional = $argument->isOptional() ? "1" : "0";
+            $tempArr = [];
+            $tempArr["name"] = $argument->getName();
+            $type = (string)$argument->getType();
+            if ($type == "int") {
+                $tempArr["type"] = "integer";
+            } elseif ($type == "bool") {
+                $tempArr["type"] = "boolean";
+            } else {
+                $tempArr["type"] = $type;
+            }
+            $tempArr["optional"] = $optional;
+            array_push($arg, $tempArr);
+        }
+        if (empty($arg)) {
+            $arg = null;
+        } else {
+            $arg = json_encode($arg);
+        }
+    }
+    return $arg;
 }
