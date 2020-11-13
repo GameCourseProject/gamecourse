@@ -30,6 +30,7 @@ testDictionaryManagement($course);
 
 testUserImport();
 testCourseImport();
+testCourseUserImport($course);
 
 function testPhotoDownload($username)
 {
@@ -501,6 +502,108 @@ function testCourseImport()
         echo "\n - Create a template containing an image (role single)";
         echo "\n - Enable badges and set maxReward to 2000";
     }
+}
+function testCourseUserImport($course)
+{
+    echo "\n";
+    echo "\n-----COURSE USERS IMPORT-----";
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
+    $id = User::addUserToDB("Hugo Sousa", null, null, "hugo@mail.com", "77777",  null, 0, 1);
+    $courseUser = new CourseUser($id, new Course($course));
+    $roleId = Core::$systemDB->select("role", ["course" => $course, "name" => "student"], "id");
+    $courseUser->addCourseUserToDB($roleId, "");
+    $csvCourseUsers = CourseUser::exportCourseUsers($course);
+    file_put_contents("courseUsersCSVTesteUnit.csv", $csvCourseUsers);
+    $usersCSV = file_get_contents("courseUsersCSVTesteUnit.csv");
+
+    //adds users
+    $usersCSV = "course,name,nickname,email,campus,studentNumber,isAdmin,isActive,roles,username,auth\n";
+    $usersCSV .= $course . ", Hugo Sousa Silva,,hugo@mail.com,,77777,0,1,Student,12,fenix\n";
+    $usersCSV .= $course . ", Joaquim Duarte,,,A,98765,0,1,,jb@gmail.pt,linkedin\n";
+    $usersCSV .= $course . ", Mónica Trindade,,,T,55555,0,1,,,\n";
+    file_put_contents("courseUsersCSVTesteUnit.csv", $usersCSV);
+
+    CourseUser::importCourseUsers($usersCSV, false);
+
+    $user1Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Joaquim Duarte",
+        "studentNumber" => "98765",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    $courseUser1Id = Core::$systemDB->select("course_user", [
+        "id" => $user1Id,
+        "course" => $course
+    ]);
+    $user2Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Hugo Sousa",
+        "email" => "hugo@mail.com",
+        "studentNumber" => "77777",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    $courseUser2Id = Core::$systemDB->select("course_user", [
+        "id" => $user2Id,
+        "course" => $course
+    ]);
+    $user3Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Mónica Trindade",
+        "studentNumber" => "55555",
+        "isAdmin" => "0",
+        "isActive" => "1"   
+    ], "id");
+    $courseUser3Id = Core::$systemDB->select("course_user", [
+        "id" => $user3Id,
+        "course" => $course
+    ]);
+    if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
+        echo "\nSuccess: CourseUsers imported - created and updated without replace";
+    }
+
+    CourseUser::importCourseUsers($usersCSV, true);
+
+    $user1Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Joaquim Duarte",
+        "studentNumber" => "98765",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    $courseUser1Id = Core::$systemDB->select("course_user", [
+        "id" => $user1Id,
+        "course" => $course
+    ]);
+    $auth1 = Core::$systemDB->select("auth", ["game_course_user_id" => $user1Id, "username" => "jb@gmail.pt", "authentication_service" => "linkedin"]);
+    $user2Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Hugo Sousa Silva",
+        "email" => "hugo@mail.com",
+        "studentNumber" => "77777",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    $courseUser2Id = Core::$systemDB->select("course_user", [
+        "id" => $user2Id,
+        "course" => $course
+        ]);
+    $user3Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Mónica Trindade",
+        "studentNumber" => "55555",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    $courseUser3Id = Core::$systemDB->select("course_user", [
+        "id" => $user3Id,
+        "course" => $course
+    ]);
+
+    if ($courseUser1Id && $courseUser2Id && $courseUser3Id && $auth1) {
+        echo "\nSuccess: CourseUsers imported - updated with replace";
+    }
+
+    Core::$systemDB->delete("course_user", ["id" => $user1Id]);
+    Core::$systemDB->update("auth", ["game_course_user_id" => $user1Id, "username" => "jb@gmail.pt", "authentication_service" => "facebook"]);
+    Core::$systemDB->delete("game_course_user", ["name" => "Hugo Sousa Silva"]);
+    Core::$systemDB->delete("game_course_user", ["name" => "Mónica Trindade"]);
+    unlink("courseUsersCSVTesteUnit.csv");
 }
 
 function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId)

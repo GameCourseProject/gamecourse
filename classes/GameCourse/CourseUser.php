@@ -460,6 +460,22 @@ class CourseUser extends User
                                     }
                                     CourseUser::editCourseUser($userToUpdate->getId(), $user[$courseIndex], $user[$campusIndex], null); 
                                 }
+                            }else{                                
+                                $userToUpdate = User::getUserByStudentNumber($user[$studentNumberIndex]);
+                                 //se nao tiver course user
+                                if (!Core::$systemDB->select("course_user", ["id" => $userToUpdate->getId()])) {
+                                    CourseUser::addCourseUser($user[$courseIndex], $userToUpdate->getId(), null, $user[$campusIndex]);
+                                    $courseUserObj = new CourseUser($userToUpdate->getId(), new Course($user[$courseIndex]));
+                                    
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
+                                    }
+                                    $newUsersNr++;
+                                }
                             }
                         }
                     } else {
