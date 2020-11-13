@@ -23,10 +23,11 @@ class CourseUser extends User
 
     public static function addCourseUser($courseId, $id, $roleId = null, $campus = "")
     {
-        Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id, "campus" => $campus]);
+        $id = Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id, "campus" => $campus]);
         if ($roleId) {
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $id, "role" => $roleId]);
         }
+        return $id;
     }
 
     public static function editCourseUser($id, $course, $campus, $role){
@@ -248,15 +249,23 @@ class CourseUser extends User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
-        $file .= "course,name,nickname,email,campus,studentNumber,isAdmin,isActive,roleId,username,auth\n";
+        $file .= "course,name,nickname,email,campus,studentNumber,isAdmin,isActive,roles,username,auth\n";
         foreach ($listOfUsers as $courseUser) {
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
             $auth = Core::$systemDB->select("auth", ["game_course_user_id" => $user["id"]]);
-            $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["id"]]);
-            if (!$role) {
-                $roleId = "";
-            } else {
-                $roleId = $role["id"];
+            $roles = Core::$systemDB->selectMultiple("user_role", ["id" => $user["id"], "course" => $courseUser["course"]]);
+            $roleId = "";
+            if ($roles) {
+                $lenRoles = count($roles);
+                $j = 0;
+                foreach ($roles as $value) {
+                    $roleName = Core::$systemDB->select("role", ["id" => $value["role"]]);
+                    $roleId .= $roleName["name"]; 
+                    if ($j != $lenRoles - 1) {
+                        $roleId .= "-";
+                    }
+                    $j++;
+                }
             }
             $file .= $courseUser["course"] . "," .  $user["name"] . "," . $user["nickname"] . "," . $user["email"] . "," .
                 $courseUser["campus"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," . 
@@ -283,18 +292,19 @@ class CourseUser extends User
         $studentNumberIndex = "";
         $isAdminIndex = "";
         $isActiveIndex = "";
-        $roleIdIndex = "";
+        $rolesIndex = "";
         $usernameIndex = "";
         $authIndex = "";
         //se tiver 1ª linha com nomes
         if ($lines[0]) {
             $lines[0] = trim($lines[0]);
             $firstLine = explode(",", $lines[0]);
+            $firstLine = array_map('trim', $firstLine);
                 if (in_array("course", $firstLine) && in_array("name", $firstLine) 
                 && in_array("email", $firstLine) && in_array("nickname", $firstLine) 
                 && in_array("campus", $firstLine) && in_array("studentNumber", $firstLine)
                 && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine) 
-                && in_array("roleId", $firstLine) && in_array("username", $firstLine) && in_array("auth", $firstLine) 
+                && in_array("roles", $firstLine) && in_array("username", $firstLine) && in_array("auth", $firstLine) 
             ) {
                 $has1stLine = true;
                 $courseIndex = array_search("course", $firstLine);
@@ -305,7 +315,7 @@ class CourseUser extends User
                 $studentNumberIndex = array_search("studentNumber", $firstLine);
                 $isAdminIndex = array_search("isAdmin", $firstLine);
                 $isActiveIndex = array_search("isActive", $firstLine);
-                $roleIdIndex = array_search("roleId", $firstLine);
+                $rolesIndex = array_search("roles", $firstLine);
                 $usernameIndex = array_search("username", $firstLine);
                 $authIndex = array_search("auth", $firstLine);
             }
@@ -314,7 +324,8 @@ class CourseUser extends User
         foreach ($lines as $line) {
             $line = trim($line);
             $user = explode(",", $line);
-            if (count($user) > 1) {
+            $user = array_map('trim', $user);
+            if (count($user) == 11) {
                 if (!$has1stLine) {
                     $courseIndex = 0;
                     $nameIndex = 1;
@@ -324,74 +335,130 @@ class CourseUser extends User
                     $studentNumberIndex = 5;
                     $isAdminIndex = 6;
                     $isActiveIndex = 7;
-                    $roleIdIndex = 8;
+                    $rolesIndex = 8;
                     $usernameIndex = 9;
                     $authIndex = 10;
                 }
+
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
+                    //.csv tem studentNumber e email a branco
                     if ($user[$studentNumberIndex] == "" && $user[$emailIndex] == "") {
                         $user[$studentNumberIndex] = null;
                         $user[$emailIndex] = null;
-                        
                         $id = User::addUserToDB($user[$nameIndex],$user[$usernameIndex],$user[$authIndex],$user[$emailIndex],$user[$studentNumberIndex],$user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                        if($user[$roleIdIndex] == ""){
-                            $user[$roleIdIndex] = null;
+                        CourseUser::addCourseUser($user[$courseIndex], $id, null, $user[$campusIndex]);
+                        $courseUserObj = new CourseUser($id, new Course($user[$courseIndex]));
+                        if (!$user[$rolesIndex] == "") {
+                            $userRolesArr =  explode("-", $user[$rolesIndex]);
+                            $userRolesArr = array_map('trim', $userRolesArr);
+                            foreach ($userRolesArr as $valueRole) {
+                                $courseUserObj->addRole($valueRole);
+                            }
                         }
-                        CourseUser::addCourseUser($user[$courseIndex], $id, $user[$roleIdIndex], $user[$campusIndex]);
                         $newUsersNr++;
+                    //.csv tem studentNumber 
                     } else if ($user[$studentNumberIndex] != "") {
+                        //esse studentNumber não existe
                         if (!User::getUserByStudentNumber($user[$studentNumberIndex])) {
+                            //email não existe
                             if (!User::getUserByEmail($user[$emailIndex]) && $user[$emailIndex] != "") {
                                 $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-
-                                if ($user[$roleIdIndex] == "") {
-                                    $user[$roleIdIndex] = null;
+                                CourseUser::addCourseUser($user[$courseIndex], $id, null, $user[$campusIndex]);
+                                $courseUserObj = new CourseUser($id, new Course($user[$courseIndex]));
+                                if (!$user[$rolesIndex] == "") {
+                                    $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                    $userRolesArr = array_map('trim', $userRolesArr);
+                                    foreach ($userRolesArr as $valueRole) {
+                                        $courseUserObj->addRole($valueRole);
+                                    }
                                 }
-                                CourseUser::addCourseUser($user[$courseIndex], $id, $user[$roleIdIndex], $user[$campusIndex]);
                                 $newUsersNr++;
                             } else {
-                                
+                                //email existe
                                 if($user[$emailIndex] && User::getUserByEmail($user[$emailIndex])){
                                     $userUpdated = User::getUserByEmail($user[$emailIndex]);
                                     if ($replace) {
                                         $userToUpdate = User::getUserByEmail($user[$emailIndex]);
-                                        $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
-                              
-                                        //se tem course user
+                                        $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                                        
+                                        //se nao tem course user
                                         if (!Core::$systemDB->select("course_user", ["id" => $userUpdated->getId()])) {
-                                            if ($user[$roleIdIndex] == "") {
-                                                $user[$roleIdIndex] = null;
+                                            if ($user[$rolesIndex] == "") {
+                                                $user[$rolesIndex] = null;
                                             }
-                                            CourseUser::addCourseUser($user[$courseIndex], $userUpdated->getId(), $user[$roleIdIndex], $user[$campusIndex]);
+                                            CourseUser::addCourseUser($user[$courseIndex], $userUpdated->getId(), null, $user[$campusIndex]);
+                                            $courseUserObj = new CourseUser($userUpdated->getId(), new Course($user[$courseIndex]));
+                                            if (!$user[$rolesIndex] == "") {
+                                                $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                                $userRolesArr = array_map('trim', $userRolesArr);
+                                                foreach ($userRolesArr as $valueRole) {
+                                                    $courseUserObj->addRole($valueRole);
+                                                }
+                                            }
                                             $newUsersNr++;
                                         }else{
-                                            CourseUser::editCourseUser($userUpdated->getId(), $user[$courseIndex], $user[$campusIndex], $user[$roleIdIndex]);
+                                            Core::$systemDB->delete("user_role", ["course" => $user[$courseIndex], "id" => $userToUpdate->getId()]);
+                                            $courseUserObj = new CourseUser(
+                                                $userToUpdate->getId(),
+                                                new Course($user[$courseIndex])
+                                            );
+                                            if (!$user[$rolesIndex] == "") {
+                                                $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                                $userRolesArr = array_map('trim', $userRolesArr);
+                                                foreach ($userRolesArr as $valueRole) {
+                                                    $courseUserObj->addRole($valueRole);
+                                                }
+                                            }
+                                            CourseUser::editCourseUser($userToUpdate->getId(), $user[$courseIndex], $user[$campusIndex], null); 
                                         }
                                     }
                                 }else{
                                     $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-
-                                    if ($user[$roleIdIndex] == "") {
-                                        $user[$roleIdIndex] = null;
+                                    CourseUser::addCourseUser($user[$courseIndex], $id, null, $user[$campusIndex]);
+                                    $courseUserObj = new CourseUser($id, new Course($user[$courseIndex]));
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
                                     }
-                                    CourseUser::addCourseUser($user[$courseIndex], $id, $user[$roleIdIndex], $user[$campusIndex]);
                                     $newUsersNr++;
                                 }
                             }
                         } else {
+                            //esse studentNumber existe
                             if ($replace) {
                                 $userToUpdate = User::getUserByStudentNumber($user[$studentNumberIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
+                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                               
                                 //se tem course user
                                 if (!Core::$systemDB->select("course_user", ["id" => $userToUpdate->getId()])) {
-                                    if ($user[$roleIdIndex] == "") {
-                                        $user[$roleIdIndex] = null;
+                                    CourseUser::addCourseUser($user[$courseIndex], $userToUpdate->getId(), null, $user[$campusIndex]);
+                                    $courseUserObj = new CourseUser($userToUpdate->getId(), new Course($user[$courseIndex]));
+                                    
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
                                     }
-                                    CourseUser::addCourseUser($user[$courseIndex], $userToUpdate->getId(), $user[$roleIdIndex], $user[$campusIndex]);
                                     $newUsersNr++;
                                 } else {
-                                    CourseUser::editCourseUser($userToUpdate->getId(),$user[$courseIndex],$user[$campusIndex],$user[$roleIdIndex]);
+                                    Core::$systemDB->delete("user_role", ["course" => $user[$courseIndex], "id" => $userToUpdate->getId()]);
+                                    $courseUserObj = new CourseUser(
+                                        $userToUpdate->getId(),
+                                        new Course($user[$courseIndex])
+                                    );
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
+                                    }
+                                    CourseUser::editCourseUser($userToUpdate->getId(), $user[$courseIndex], $user[$campusIndex], null); 
                                 }
                             }
                         }
@@ -400,26 +467,52 @@ class CourseUser extends User
                         if (!User::getUserByEmail($user[$emailIndex])) {
                             $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
 
-                            if ($user[$roleIdIndex] == "") {
-                                $user[$roleIdIndex] = null;
+                            CourseUser::addCourseUser($user[$courseIndex], $id, null, $user[$campusIndex]);
+                            $courseUserObj = new CourseUser($id, new Course($user[$courseIndex]));
+                            if (!$user[$rolesIndex] == "") {
+                                $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                $userRolesArr = array_map('trim', $userRolesArr);
+                                foreach ($userRolesArr as $valueRole) {
+                                    $courseUserObj->addRole($valueRole);
+                                }
                             }
-                            CourseUser::addCourseUser($user[$courseIndex], $id, $user[$roleIdIndex], $user[$campusIndex]);
                             $newUsersNr++;
                         } else {
                             if ($replace) {
                                 $userToUpdate = User::getUserByEmail($user[$emailIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
+                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                               
                                 //se tem course user
                                 if (!Core::$systemDB->select("course_user", ["id" => $userToUpdate->getId()])) {
-                                    if ($user[$roleIdIndex] == "") {
-                                        $user[$roleIdIndex] = null;
+
+                                    CourseUser::addCourseUser($user[$courseIndex], $userToUpdate->getId(), null, $user[$campusIndex]);
+                                    $courseUserObj = new CourseUser(
+                                        $userToUpdate->getId(),
+                                        new Course($user[$courseIndex])
+                                    );
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
                                     }
-                                    CourseUser::addCourseUser($user[$courseIndex], $userToUpdate->getId(), $user[$roleIdIndex], $user[$campusIndex]);
                                     $newUsersNr++;
                                 
                                 } else {
-                                    CourseUser::editCourseUser($userToUpdate->getId(), $user[$courseIndex], $user[$campusIndex], $user[$roleIdIndex]);
+                                    Core::$systemDB->delete("user_role", ["course" => $user[$courseIndex], "id" => $userToUpdate->getId()]);
+                                    $courseUserObj = new CourseUser(
+                                        $userToUpdate->getId(),
+                                        new Course($user[$courseIndex])
+                                    );
+                                    if (!$user[$rolesIndex] == "") {
+                                        $userRolesArr =  explode("-", $user[$rolesIndex]);
+                                        $userRolesArr = array_map('trim', $userRolesArr);
+                                        foreach ($userRolesArr as $valueRole) {
+                                            $courseUserObj->addRole($valueRole);
+                                        }
+                                    }
+                                    CourseUser::editCourseUser($userToUpdate->getId(), $user[$courseIndex], $user[$campusIndex], null);
                                 }
                             }
                         }
