@@ -14,286 +14,542 @@ $course = $argv[2];
 $authCode = $argv[3];
 Core::init();
 
-echo "\n-----LOGIN PICTURE-----";
-checkPhoto($username);
+testPhotoDownload($username);
 
-echo "\n";
-echo "\n-----FENIX PLUGIN-----";
-$fenix = array();
-array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
-array_push($fenix, "ist112345;12345;João Silva;js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
-array_push($fenix, "ist199999;99999;Ana Alves;ft@tecnico.ulisboa.pt; 34 - PCM264L06; PCM264T01; ;1; Normal; Matriculado; Mestrado Bolonha em Engenharia Informática e de Computadores - Taguspark - MEIC-T 2015");
+$courseObj = Course::getCourse($course);
+if ($courseObj->getModule("plugin")) {
+    testFenixPlugin($course);
+    testMoodlePlugin($course);
+    testClassCheckPlugin($course);
+    //testGoogleSheetsPlugin($course, $authCode);
+} else {
+    echo "\n-----PLUGIN-----";
+    echo "\nTo test the plugin, please enable the plugin module.";
+}
+testDictionaryManagement($course);
 
-$usersInfo = checkFenix($fenix, $course);
+testUserImport();
+testCourseImport();
 
-if ($usersInfo[0] == 2 && $usersInfo[1] == 0) {
-    $gcu1 = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
-    $gcu2 = Core::$systemDB->select("game_course_user", ["studentNumber" => "99999"]);
-    if ($gcu1 && $gcu2) {
-        echo "\nSuccess: Users uploaded";
+function testPhotoDownload($username)
+{
+    echo "\n-----LOGIN PICTURE-----";
+    checkPhoto($username);
+}
 
-        $courseUser1 = Core::$systemDB->select("course_user", ["id" => $gcu1["id"]]);
-        $courseUser2 = Core::$systemDB->select("course_user", ["id" => $gcu2["id"]]);
-        if ($courseUser1 && $courseUser2) {
-            echo "\nSuccess: CourseUsers uploaded";
+function testFenixPlugin($course)
+{
+    echo "\n";
+    echo "\n-----FENIX PLUGIN-----";
+    $fenix = array();
+    array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
+    array_push($fenix, "ist112345;12345;João Silva;js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
+    array_push($fenix, "ist199999;99999;Ana Alves;ft@tecnico.ulisboa.pt; 34 - PCM264L06; PCM264T01; ;1; Normal; Matriculado; Mestrado Bolonha em Engenharia Informática e de Computadores - Taguspark - MEIC-T 2015");
+
+    $usersInfo = checkFenix($fenix, $course);
+
+    if ($usersInfo[0] == 2 && $usersInfo[1] == 0) {
+        $gcu1 = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
+        $gcu2 = Core::$systemDB->select("game_course_user", ["studentNumber" => "99999"]);
+        if ($gcu1 && $gcu2) {
+            echo "\nSuccess: Users uploaded";
+
+            $courseUser1 = Core::$systemDB->select("course_user", ["id" => $gcu1["id"]]);
+            $courseUser2 = Core::$systemDB->select("course_user", ["id" => $gcu2["id"]]);
+            if ($courseUser1 && $courseUser2) {
+                echo "\nSuccess: CourseUsers uploaded";
+            } else {
+                echo "\nFailed: CourseUsers failed to upload";
+            }
         } else {
-            echo "\nFailed: CourseUsers failed to upload";
+            echo "\nFailed: Users failed to upload";
+        }
+
+        $auth1 = Core::$systemDB->select("auth", ["username" => "ist112345"]);
+        $auth2 = Core::$systemDB->select("auth", ["username" => "ist199999"]);
+        if ($auth1 && $auth2) {
+            echo "\nSuccess: Users' authentication uploaded";
+        } else {
+            echo "\nFailed: Users' authentication failed to upload";
         }
     } else {
-        echo "\nFailed: Users failed to upload";
+        echo "\nFailed: The users where not created correctly";
     }
 
-    $auth1 = Core::$systemDB->select("auth", ["username" => "ist112345"]);
-    $auth2 = Core::$systemDB->select("auth", ["username" => "ist199999"]);
-    if ($auth1 && $auth2) {
-        echo "\nSuccess: Users' authentication uploaded";
-    } else {
-        echo "\nFailed: Users' authentication failed to upload";
-    }
-} else {
-    echo "\nFailed: The users where not created correctly";
-}
+    $fenix = array();
+    $updatedName = "João Silvestre";
+    array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
+    array_push($fenix, "ist112345;12345;" . $updatedName . ";js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
+    array_push($fenix, "ist199999;99999;Ana Alves;ft@tecnico.ulisboa.pt; 34 - PCM264L06; PCM264T01; ;1; Normal; Matriculado; Mestrado Bolonha em Engenharia Informática e de Computadores - Taguspark - MEIC-T 2015");
 
-$fenix = array();
-$updatedName = "João Silvestre";
-array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
-array_push($fenix, "ist112345;12345;" . $updatedName . ";js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
-array_push($fenix, "ist199999;99999;Ana Alves;ft@tecnico.ulisboa.pt; 34 - PCM264L06; PCM264T01; ;1; Normal; Matriculado; Mestrado Bolonha em Engenharia Informática e de Computadores - Taguspark - MEIC-T 2015");
-
-$usersInfo = checkFenix($fenix, $course);
-if ($usersInfo[0] == 0 && $usersInfo[1] == 2) {
-    $gcu = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
-    if ($gcu) {
-        if ($gcu["name"] == $updatedName) {
-            echo "\nSuccess: User updated";
-        } else {
-            echo "\nFailed: User failed to update";
+    $usersInfo = checkFenix($fenix, $course);
+    if ($usersInfo[0] == 0 && $usersInfo[1] == 2) {
+        $gcu = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
+        if ($gcu) {
+            if ($gcu["name"] == $updatedName) {
+                echo "\nSuccess: User updated";
+            } else {
+                echo "\nFailed: User failed to update";
+            }
         }
-    }
-} else {
-    echo "\nFailed: The users where not updated correctly";
-}
-echo "\n";
-echo "\n-----MOODLE PLUGIN-----";
-$moodleVar = [
-    "dbserver" => "localhost",
-    "dbuser" => "root",
-    "dbpass" => null,
-    "db" => "moodle",
-    "dbport" => "3306",
-    "prefix" => "mdl_",
-    "time" => null,
-    "course" => null,
-    "user" => null
-];
-$resultMoodle = setMoodleVars($course, $moodleVar);
-if ($resultMoodle) {
-    if (Core::$systemDB->select("config_moodle", [
-        "dbServer" => "localhost",
-        "dbUser" => "root",
-        "dbPass" => null,
-        "dbName" => "moodle",
-        "dbPort" => "3306",
-        "tablesPrefix" => "mdl_",
-        "moodleTime" => null,
-        "moodleCourse" => null,
-        "moodleUser" => null
-    ])) {
-        echo "\nSuccess: Moodle variables were set";
     } else {
-        echo "\n Moodle Variables were not inserted in the database";
+        echo "\nFailed: The users where not updated correctly";
     }
-} else {
-    echo "\nFailed: It was not possible to set moodle variables.";
 }
 
-echo "\n";
-echo "\n-----CLASSCHECK PLUGIN-----";
-$ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
-$resultCC = setClassCheckVars($course, $ccVar);
-if ($resultCC) {
-    if (Core::$systemDB->select("config_class_check", $ccVar)) {
-        echo "\nSuccess: ClassCheck variables were set";
+function testMoodlePlugin($course)
+{
+    echo "\n";
+    echo "\n-----MOODLE PLUGIN-----";
+    $moodleVar = [
+        "dbserver" => "localhost",
+        "dbuser" => "root",
+        "dbpass" => null,
+        "db" => "moodle",
+        "dbport" => "3306",
+        "prefix" => "mdl_",
+        "time" => null,
+        "course" => null,
+        "user" => null
+    ];
+    $resultMoodle = setMoodleVars($course, $moodleVar);
+    if ($resultMoodle) {
+        if (Core::$systemDB->select("config_moodle", [
+            "dbServer" => "localhost",
+            "dbUser" => "root",
+            "dbPass" => null,
+            "dbName" => "moodle",
+            "dbPort" => "3306",
+            "tablesPrefix" => "mdl_",
+            "moodleTime" => null,
+            "moodleCourse" => null,
+            "moodleUser" => null
+        ])) {
+            echo "\nSuccess: Moodle variables were set";
+        } else {
+            echo "\n Moodle Variables were not inserted in the database";
+        }
     } else {
-        echo "\n ClassCheck Variables were not inserted in the database";
+        echo "\nFailed: It was not possible to set moodle variables.";
     }
-} else {
-    echo "\nFailed: It was not possible to set classChc variables.";
 }
 
-echo "\n";
-echo "\n-----GOOGLE SHEETS PLUGIN-----";
-$configGS = array(
-    "client_id" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
-    "project_id" => "pcm-script",
-    "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
-    "token_uri" => "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
-    "client_secret" => "hC4zsuwH1fVIWi5k0C4zjOub",
-    "redirect_uris" => array("urn:ietf:wg:oauth:2.0:oob", "http://localhost")
-);
-$gsVars = array(array("installed" => $configGS));
-$resultGS = setGSCredentials($course, $gsVars);
-if ($resultGS) {
-    $checkDB_GS = array(
-        "clientId" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
-        "projectId" => "pcm-script",
-        "authUri" => "https://accounts.google.com/o/oauth2/auth",
-        "tokenUri" => "https://oauth2.googleapis.com/token",
-        "authProvider" => "https://www.googleapis.com/oauth2/v1/certs",
-        "clientSecret" => "hC4zsuwH1fVIWi5k0C4zjOub",
-        "redirectUris" => "urn:ietf:wg:oauth:2.0:oob;http://localhost"
+function testClassCheckPlugin($course)
+{
+
+    echo "\n";
+    echo "\n-----CLASSCHECK PLUGIN-----";
+    $ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
+    $resultCC = setClassCheckVars($course, $ccVar);
+    if ($resultCC) {
+        if (Core::$systemDB->select("config_class_check", $ccVar)) {
+            echo "\nSuccess: ClassCheck variables were set";
+        } else {
+            echo "\n ClassCheck Variables were not inserted in the database";
+        }
+    } else {
+        echo "\nFailed: It was not possible to set classChc variables.";
+    }
+}
+
+function testGoogleSheetsPlugin($course, $authCode)
+{
+
+    echo "\n";
+    echo "\n-----GOOGLE SHEETS PLUGIN-----";
+
+    $configGS = array(
+        "client_id" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
+        "project_id" => "pcm-script",
+        "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
+        "token_uri" => "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret" => "hC4zsuwH1fVIWi5k0C4zjOub",
+        "redirect_uris" => array("urn:ietf:wg:oauth:2.0:oob", "http://localhost")
     );
-    if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
-        echo "\nSuccess: Google Sheets credentials were set";
+    $gsVars = array(array("installed" => $configGS));
+    $resultGS = setGSCredentials($course, $gsVars);
+    if ($resultGS) {
+        $checkDB_GS = array(
+            "clientId" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
+            "projectId" => "pcm-script",
+            "authUri" => "https://accounts.google.com/o/oauth2/auth",
+            "tokenUri" => "https://oauth2.googleapis.com/token",
+            "authProvider" => "https://www.googleapis.com/oauth2/v1/certs",
+            "clientSecret" => "hC4zsuwH1fVIWi5k0C4zjOub",
+            "redirectUris" => "urn:ietf:wg:oauth:2.0:oob;http://localhost"
+        );
+        if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+            echo "\nSuccess: Google Sheets credentials were set";
+        } else {
+            echo "\n Google Sheets credentials were not inserted in the database";
+        }
     } else {
-        echo "\n Google Sheets credentials were not inserted in the database";
+        echo "\nFailed: It was not possible to set Google Sheets credentials.";
     }
-} else {
-    echo "\nFailed: It was not possible to set Google Sheets credentials.";
-}
 
-$varsGS = array(
-    "authCode" => $authCode,
-    "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
-    "sheetName" => array("ist13898_")
-);
-$resultGSVars = setGoogleSheetsVars($course, $varsGS);
-if ($resultGSVars) {
-    $checkDB_GS = array(
+    $varsGS = array(
         "authCode" => $authCode,
         "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
-        "sheetName" => "ist13898_"
+        "sheetName" => array("ist13898_")
     );
-    if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
-        echo "\nSuccess: Google Sheets variables were set";
+    $resultGSVars = setGoogleSheetsVars($course, $varsGS);
+    if ($resultGSVars) {
+        $checkDB_GS = array(
+            "authCode" => $authCode,
+            "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
+            "sheetName" => "ist13898_"
+        );
+        if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+            echo "\nSuccess: Google Sheets variables were set";
+        } else {
+            echo "\n Google Sheets variables were not inserted in the database";
+        }
     } else {
-        echo "\n Google Sheets variables were not inserted in the database";
+        echo "\nFailed: It was not possible to set Google Sheets variables.";
     }
-} else {
-    echo "\nFailed: It was not possible to set Google Sheets variables.";
 }
 
-echo "\n";
-echo "\n-----DICTIONARY-----";
-$courseObj = new Course($course);
-$init = ModuleLoader::initModules($courseObj);
-$viewModule = $courseObj->getModule('views');
-$viewHandler = $viewModule->getViewHandler();
+function testDictionaryManagement($course)
+{
 
-//insert variable
-$viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns the role of the user that is viewing the page");
-$id = Core::$systemDB->select("dictionary_library", ["name" => "users"], "id");
-if ($id) {
-    if (Core::$systemDB->select("dictionary_variable", [
-        "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
-        "description" =>  "Returns the role of the user that is viewing the page"
-    ])) {
-        echo "\nSucess: Variable created";
+    echo "\n";
+    echo "\n-----DICTIONARY-----";
+    $courseObj = Course::getCourse($course);
+    $viewModule = $courseObj->getModule('views');
+    if ($viewModule) {
+
+        $viewHandler = $viewModule->getViewHandler();
+
+        //insert variable
+        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns the role of the user that is viewing the page");
+        $id = Core::$systemDB->select("dictionary_library", ["name" => "users"], "id");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_variable", [
+                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+                "description" =>  "Returns the role of the user that is viewing the page"
+            ])) {
+                echo "\nSucess: Variable created";
+            } else {
+                echo "\nFailed: Variable was not created";
+            }
+        } else {
+            echo "\nFailed: It was not possible to register the variable";
+        }
+
+        //update variable
+        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns roles");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_variable", [
+                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+                "description" =>  "Returns roles"
+            ])) {
+                echo "\nSucess: Variable updated";
+            } else {
+                echo "\nFailed: Variable was not updated";
+            }
+        } else {
+            echo "\nFailed: It was not possible to register the variable";
+        }
+
+        //insert library
+        $viewHandler->registerLibrary("views", "games", "This library contains information about the course games");
+        if (Core::$systemDB->select("dictionary_library", [
+            "moduleId" => "views", "name" => "games", "description" =>  "This library contains information about the course games"
+        ])) {
+            echo "\nSucess: Library created";
+        } else {
+            echo "\nFailed: Library was not created";
+        }
+
+        //update library
+        $viewHandler->registerLibrary("views", "games", "This is a game's library");
+        if (Core::$systemDB->select("dictionary_library", [
+            "moduleId" => "views", "name" => "games", "description" =>  "This is a game's library"
+        ])) {
+            echo "\nSucess: Library updated";
+        } else {
+            echo "\nFailed: Library was not updated";
+        }
+
+        //insert function
+        $viewHandler->registerFunction(
+            "courses",
+            "color",
+            function ($course) {
+                return $this->basicGetterFunction($course, "color");
+            },
+            "Returns the course color.",
+            "string",
+            null,
+            "object",
+            "course"
+        );
+
+        $id = Core::$systemDB->select("dictionary_library", ["name" => "courses"], "id");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_function", [
+                "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
+                "refersToName" => "course", "keyword" => "color", "args" => null,
+                "description" =>  "Returns the course color."
+            ])) {
+                echo "\nSucess: Function created";
+            } else {
+                echo "\nFailed: Function was not created";
+            }
+        } else {
+            echo "\nFailed: It was not possible to register the function";
+        }
+
+        //update function
+        $func = function ($course, bool $toRGB = false) {
+            $color = $this->basicGetterFunction($course, "color");
+            if ($toRGB) {
+                $color = "(255,255,255)";
+            }
+        };
+
+        $viewHandler->registerFunction(
+            "courses",
+            "color",
+            $func,
+            "Color RGB or HEX.",
+            "string",
+            null,
+            "object",
+            "course"
+        );
+        $args = argsToJSON($func, "object", "course");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_function", [
+                "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
+                "refersToName" => "course", "keyword" => "color", "args" => $args,
+                "description" =>  "Color RGB or HEX."
+            ])) {
+                echo "\nSucess: Function updated";
+            } else {
+                echo "\nFailed: Function was not updated";
+            }
+        } else {
+            echo "\nFailed: It was not possible to register the function";
+        }
     } else {
-        echo "\nFailed: Variable was not created";
+        echo "\nTo test the dictionary, please enable the views module.";
     }
-} else {
-    echo "\nFailed: It was not possible to register the variable";
 }
 
-//update variable
-$viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns roles");
-if ($id) {
-    if (Core::$systemDB->select("dictionary_variable", [
-        "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
-        "description" =>  "Returns roles"
-    ])) {
-        echo "\nSucess: Variable updated";
+function testUserImport()
+{
+    echo "\n";
+    echo "\n-----USERS IMPORT-----";
+    //adds users
+    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
+    $usersCSV .= "João Bernardo,,,98765,0,1,jb@gmail.pt,google\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,,\n";
+
+    User::importUsers($usersCSV, true);
+
+    $user1Id = Core::$systemDB->select("game_course_user", [
+        "name" => "João Bernardo",
+        "email" => "",
+        "nickname" => "",
+        "studentNumber" => "98765",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+
+    $user2Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Olivia Nogueira",
+        "email" => "olivia.nogueira@mail.pt",
+        "nickname" => "",
+        "studentNumber" => "56789",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    if ($user1Id && $user2Id) {
+        $user1Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user1Id,
+            "username" => "jb@gmail.pt",
+            "authentication_service" => "google"
+        ]);
+        $user2Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user2Id,
+            "username" => "",
+            "authentication_service" => ""
+        ]);
+        if ($user1Auth && $user2Auth) {
+            echo "\nSuccess: Users imported - created";
+        } else {
+            echo "\nFailed: Users were not correctly imported - not created";
+        }
     } else {
-        echo "\nFailed: Variable was not updated";
+        echo "\nFailed: Users were not correctly imported - not created";
     }
-} else {
-    echo "\nFailed: It was not possible to register the variable";
-}
+    //does not update users
+    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
+    $usersCSV .= "Joaquim Duarte,,,98765,0,1,jb@gmail.pt,google\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,ist156789,fenix\n";
 
-//insert library
-$viewHandler->registerLibrary("views", "games", "This library contains information about the course games");
-if (Core::$systemDB->select("dictionary_library", [
-    "moduleId" => "views", "name" => "games", "description" =>  "This library contains information about the course games"
-])) {
-    echo "\nSucess: Library created";
-} else {
-    echo "\nFailed: Library was not created";
-}
+    User::importUsers($usersCSV, false);
 
-//update library
-$viewHandler->registerLibrary("views", "games", "This is a game's library");
-if (Core::$systemDB->select("dictionary_library", [
-    "moduleId" => "views", "name" => "games", "description" =>  "This is a game's library"
-])) {
-    echo "\nSucess: Library updated";
-} else {
-    echo "\nFailed: Library was not updated";
-}
-
-//insert function
-$viewHandler->registerFunction(
-    "courses",
-    "color",
-    function ($course) {
-        return $this->basicGetterFunction($course, "color");
-    },
-    "Returns the course color.",
-    "string",
-    null,
-    "object",
-    "course"
-);
-
-$id = Core::$systemDB->select("dictionary_library", ["name" => "courses"], "id");
-if ($id) {
-    if (Core::$systemDB->select("dictionary_function", [
-        "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
-        "refersToName" => "course", "keyword" => "color", "args" => null,
-        "description" =>  "Returns the course color."
-    ])) {
-        echo "\nSucess: Function created";
+    if ($user1Id && $user2Id) {
+        $user1Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user1Id,
+            "username" => "jb@gmail.pt",
+            "authentication_service" => "google"
+        ]);
+        $user2Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user2Id,
+            "username" => "",
+            "authentication_service" => ""
+        ]);
+        if ($user1Auth && $user2Auth) {
+            echo "\nSuccess: Users imported - updated (not replaced)";
+        } else {
+            echo "\nFailed: Users were not correctly imported - not updated without replace";
+        }
     } else {
-        echo "\nFailed: Function was not created";
+        echo "\nFailed: Users were not correctly imported - not updated without replace";
     }
-} else {
-    echo "\nFailed: It was not possible to register the function";
-}
+    //update users
+    User::importUsers($usersCSV, true);
 
-//update function
-$func = function ($course, bool $toRGB = false) {
-    $color = $this->basicGetterFunction($course, "color");
-    if ($toRGB) {
-        $color = "(255,255,255)";
-    }
-};
+    $user3Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Joaquim Duarte",
+        "email" => "",
+        "nickname" => "",
+        "studentNumber" => "98765",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
 
-$viewHandler->registerFunction(
-    "courses",
-    "color",
-    $func,
-    "Color RGB or HEX.",
-    "string",
-    null,
-    "object",
-    "course"
-);
-$args = argsToJSON($func, "object", "course");
-if ($id) {
-    if (Core::$systemDB->select("dictionary_function", [
-        "libraryId" => $id, "returnType" => "string", "returnName" => null, "refersToType" => "object",
-        "refersToName" => "course", "keyword" => "color", "args" => $args,
-        "description" =>  "Color RGB or HEX."
-    ])) {
-        echo "\nSucess: Function updated";
+    $user4Id = Core::$systemDB->select("game_course_user", [
+        "name" => "Olivia Nogueira",
+        "email" => "olivia.nogueira@mail.pt",
+        "nickname" => "",
+        "studentNumber" => "56789",
+        "isAdmin" => "0",
+        "isActive" => "1"
+    ], "id");
+    if ($user3Id && $user4Id) {
+        $user3Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user3Id,
+            "username" => "jb@gmail.pt",
+            "authentication_service" => "google"
+        ]);
+        $user4Auth =  Core::$systemDB->select("auth", [
+            "game_course_user_id" => $user4Id,
+            "username" => "ist156789",
+            "authentication_service" => "fenix"
+        ]);
+        if ($user3Auth && $user4Auth) {
+            echo "\nSuccess: Users imported - updated (and replaced)";
+        } else {
+            echo "\nFailed: Users were not correctly imported - not updated with replace";
+        }
     } else {
-        echo "\nFailed: Function was not updated";
+        echo "\nFailed: Users were not correctly imported - not updated with replace";
     }
-} else {
-    echo "\nFailed: It was not possible to register the function";
+}
+function testCourseImport()
+{
+    echo "\n";
+    echo "\n-----COURSES IMPORT-----";
+    $courseID = Core::$systemDB->select("course", ["name" => "Course X", "year" => "2017-2018"], "id");
+    $courseObj = null;
+    if ($courseID) {
+        $courseObj = Course::getCourse($courseID);
+        if ($courseObj->getModule("views") && $courseObj->getModule("badges")) {
+            $viewPage = Core::$systemDB->select("page", ["course" => $courseID], "viewId");
+            $templateId = Core::$systemDB->select("template", ["course" => $courseID, "roleType" => "ROLE_SINGLE"], "id");
+            if ($viewPage) {
+                if (Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])) {
+                    if ($templateId) {
+                        $viewIdTemplate =  Core::$systemDB->select("view_template", ["templateId" => $templateId], "viewId");
+                        if ($viewIdTemplate) {
+                            if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
+                                if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
+                                    $json = Course::exportCourses();
+                                    echo "\nSuccess: courses exported";
+                                    importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId);
+                                    unlink("coursesJSONTesteUnit.json");
+                                } else {
+                                    echo "\nEnable badges and set maxReward to 2000";
+                                }
+                            } else {
+                                echo "\nYou created a template (role single), but it does not contain a image in 'Course X'";
+                            }
+                        } else {
+                            echo "\nCreate a template (role single) containing an image";
+                        }
+                    } else {
+                        echo "\nCreate a template (role single) containing an image";
+                    }
+                } else {
+                    echo "\nYou created a page (role single), but it does not contain a text in 'Course X'";
+                }
+            } else {
+                echo "\nCreate a page (role single) contaning a text in 'Course X'";
+            }
+        } else {
+            echo "\nEnable module views and badges";
+        }
+    } else {
+        echo "\nTo test the course import and export, do the following:";
+        echo "\n - Create a course named 'Course X' and year '2017/2018'";
+        echo "\n - Inside that course, enable views and create a page contaning a text (role single)";
+        echo "\n - Create a template containing an image (role single)";
+        echo "\n - Enable badges and set maxReward to 2000";
+    }
 }
 
+function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId)
+{
+    file_put_contents("coursesJSONTesteUnit.json", $json);
+    if (file_exists("coursesJSONTesteUnit.json")) {
+        $jsonContent = file_get_contents("coursesJSONTesteUnit.json");
+        Course::importCourses($jsonContent, false);
+        if (Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])) {
+            if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
+                if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
+
+                    echo "\nSuccess: Courses imported without replace";
+                    //mudar o maxReward
+                    Core::$systemDB->update("badges_config", ["maxBonusReward" => "1000"], ["maxBonusReward" => "2000", "course" => $courseID]);
+                    //mudar de text para image (dentro da page)
+                    Core::$systemDB->update("view", ["partType" => "image"], ["partType" => "text", "parent" => $viewPage]);
+                    //mudar de image para text (dentro template)
+                    Core::$systemDB->update("view", ["partType" => "text"], ["partType" => "image", "parent" => $viewIdTemplate]);
+                    Course::importCourses($jsonContent, true);
+                    if (
+                        Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])
+                        // && Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])
+                        // && Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])
+                    ) {
+                        echo "\nSuccess: Courses imported with replace.";
+                    } else {
+                        echo "\nFailed: Courses could not be imported with replace.";
+                    }
+                } else {
+                    echo "\nFailed: Courses could not be imported without replace.";
+                }
+            } else {
+                echo "\nFailed:Courses could not be imported without replace.";
+            }
+        } else {
+            echo "\nFailed: import courses without replace.";
+        }
+    } else {
+        echo "\nFailed: no file to import found.";
+    }
+}
+function testCourseUsersImport()
+{
+    // CourseUser::importUsers()
+}
+
+
+/*************************** Auxiliar functions ***************************/
 
 //Check if a photo is created when logging in (by username)
 function checkPhoto($username)
@@ -563,9 +819,9 @@ function saveTokenToDB($courseId)
     }
 }
 
-
 //dictionary
-function argsToJSON($func, $refersToType, $funcLib){
+function argsToJSON($func, $refersToType, $funcLib)
+{
     $reflection = new \ReflectionFunction($func);
     $arg = null;
     $arguments  = $reflection->getParameters();

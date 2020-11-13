@@ -349,8 +349,11 @@ class Course
         $legacyFolder = Course::createCourseLegacyFolder($courseId, $courseName);
 
         //course_user table (add current user)
-        $currentUserId = Core::getLoggedUser()->getId();
-        Core::$systemDB->insert("course_user", ["id" => $currentUserId, "course" => $courseId]);
+        $currentUserId = null;
+        if(Core::getLoggedUser()){
+            $currentUserId = Core::getLoggedUser()->getId();
+            Core::$systemDB->insert("course_user", ["id" => $currentUserId, "course" => $courseId]);
+        }
 
         if ($copyFrom !== null) { 
             $copyFromCourse = Course::getCourse($copyFrom);
@@ -493,7 +496,9 @@ class Course
            
         } else {
             $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
-            Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $teacherRoleId]);
+            if($currentUserId){
+                Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $teacherRoleId]);
+            }
             $modules = Core::$systemDB->selectMultiple("module");
             foreach ($modules as $mod) {
                 Core::$systemDB->insert("course_module", ["course" => $courseId, "moduleId" => $mod["moduleId"]]);
@@ -607,8 +612,9 @@ class Course
                         }
                     }
                 }
-
-                ModuleLoader::initModules($courseObj);
+                if(!$courseObj->getModule("views")){
+                    ModuleLoader::initModules($courseObj);
+                }
                 $viewModule = ModuleLoader::getModule("views");
                 $handler = $viewModule["factory"]();
                 $viewHandler = new ViewHandler($handler);
@@ -700,8 +706,11 @@ class Course
                             }
                         }
                     }
-
-                    ModuleLoader::initModules($courseEdit);
+                    $courseObjEdit = Course::getCourse($courseEdit->cid, false);
+                    // if (!$courseObjEdit->getModule("views")) {
+                    //     ModuleLoader::initModules($courseEdit);
+                    // }
+                    
                     $viewModule = ModuleLoader::getModule("views");
                     $handler = $viewModule["factory"]();
                     $viewHandler = new ViewHandler($handler);
@@ -754,7 +763,7 @@ class Course
                             }
                             $viewHandler->updateViewAndChildren($aspect, false, true);
                         }
-                        $existingTemplate = Core::$systemDB->select("page", ["course" => $courseEdit->cid, "name" => $template->name, "roleType" => $template->roleType]);
+                        $existingTemplate = Core::$systemDB->select("template", ["course" => $courseEdit->cid, "name" => $template->name, "roleType" => $template->roleType]);
                         if ($existingTemplate) {
                             $id = $existingTemplate["id"];
                             Core::$systemDB->delete("template", ["id" => $id]);
