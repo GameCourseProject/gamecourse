@@ -2,6 +2,7 @@
 
 namespace GameCourse;
 use Modules\Views\ViewHandler;
+use Modules\Plugin\CronJob;
 class Course
 {
     private $loadedModules = array();
@@ -251,6 +252,11 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
+        if($enabled){
+            $enabled = 1;
+        }else{
+            $enabled = 0;
+        }
         Core::$systemDB->update("course_module", ["isEnabled" => $enabled], ["course" => $this->cid, "moduleId" => $moduleId]);
         if (!$enabled) {
             //ToDo:do something about views that use this module?
@@ -277,6 +283,9 @@ class Course
     public static function deleteCourse($courseId)
     {
         unset(static::$courses[$courseId]);
+        new CronJob("Moodle", API::getValue('course'), null, null, true);
+        new CronJob("ClassCheck", API::getValue('course'), null, null, true);
+        new CronJob("GoogleSheets", API::getValue('course'), null, null, true);
         Core::$systemDB->delete("course", ["id" => $courseId]);
     }
 
