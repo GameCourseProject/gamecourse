@@ -377,7 +377,7 @@ class Plugin extends Module
         } else if ($script == "ClassCheck") {
             $tableName = "config_class_check";
         } else if ($script == "GoogleSheets") {
-            $tableName == "config_google_sheets";
+            $tableName = "config_google_sheets";
         }
         if($tableName){
             Core::$systemDB->update($tableName, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
@@ -520,7 +520,7 @@ class Plugin extends Module
                 if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Class Check enabled"]]);
                 } else {
-                    API::error([$response["errorMessage"]]);
+                    API::error($response["errorMessage"]);
                 }
                 return;
             }

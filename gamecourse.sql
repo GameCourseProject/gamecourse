@@ -167,7 +167,7 @@ create table participation(#for now this is just used for badges
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
-	description varchar(50) not null,
+	description varchar(500) not null,
 	type 	varchar(50) not null, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
 	moduleInstance VARCHAR(200) ,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
