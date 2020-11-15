@@ -605,8 +605,7 @@ class Moodle
                     $courseUser = new CourseUser($user, $this->courseGameCourse);
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
                     if (!$result) {
-
-                        if ($courseUser->getId()) {
+                        if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
                             $inserted = true;
                             Core::$systemDB->insert(
                                 "participation",
