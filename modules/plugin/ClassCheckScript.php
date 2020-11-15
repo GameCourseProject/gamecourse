@@ -2,9 +2,11 @@
 
 namespace Modules\Plugin;
 
-chdir('../..');
+chdir('/var/www/html/gamecourse');
 include 'classes/ClassLoader.class.php';
+include 'classes/GameCourse/Core.php';
 include 'modules/plugin/ClassCheck.php';
+include 'GameRules.php';
 
 use GameCourse\Core;
 use GameRules;
