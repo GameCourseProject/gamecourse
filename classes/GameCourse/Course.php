@@ -1,8 +1,13 @@
 <?php
 
 namespace GameCourse;
+
+include 'GameRules.php';
+
+use GameRules;
 use Modules\Views\ViewHandler;
 use Modules\Plugin\CronJob;
+
 class Course
 {
     private $loadedModules = array();
@@ -890,5 +895,9 @@ class Course
     }
     public function getAvailablePages(){
         return Core::$systemDB->selectMultiple("page",["course"=>$this->cid], 'name');
+    }
+
+    public static function newExternalData(){
+        new GameRules();
     }
 }
