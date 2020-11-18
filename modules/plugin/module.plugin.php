@@ -185,12 +185,13 @@ class Plugin extends Module
                     }
                 }
             }
+            $roleId = Core::$systemDB->select("role", ["name"=>"Student", "course"=>$course]);
             if($studentNumber){
                 if (!User::getUserByStudentNumber($studentNumber)) {
                     User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                     $user = User::getUserByStudentNumber($studentNumber);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB(2, $campus);
+                    $courseUser->addCourseUserToDB($roleId, $campus);
                 } else {
                     $existentUser = User::getUserByStudentNumber($studentNumber);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
@@ -200,7 +201,7 @@ class Plugin extends Module
                     User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                     $user = User::getUserByEmail($email);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB(2, $campus);
+                    $courseUser->addCourseUserToDB($roleId, $campus);
                 } else {
                     $existentUser = User::getUserByEmail($email);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
