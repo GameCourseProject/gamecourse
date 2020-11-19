@@ -17,18 +17,24 @@ $course = $argv[1];
 $inserted = 0;
 $qr_codes = Core::$systemDB->selectMultiple("qr_code", ["course" => $course]);
 foreach ($qr_codes as $row) {
-    if ($row["studentNumber"]) {
+    $type = "";
+    if ($row["classType"] == "Lecture") {
+        $type = "participated in lecture";
+    } else if ($row["classType"] == "Invited Lecture") {
+        $type = "participated in lecture (invited)";
+    }
+    if ($row["studentNumber"] && $type) {
         if (!Core::$systemDB->select("participation", [
             "user" => $row["studentNumber"],
             "course" => $course,
             "description" => $row["classNumber"],
-            "type" => $row["classType"]
+            "type" => $type
         ])) {
             Core::$systemDB->insert("participation", [
                 "user" => $row["studentNumber"],
                 "course" => $course,
                 "description" => $row["classNumber"],
-                "type" => $row["classType"]
+                "type" => $type
             ]);
             $inserted++;
         } else {
@@ -36,21 +42,21 @@ foreach ($qr_codes as $row) {
                 "studentNumber" => $row["studentNumber"],
                 "course" => $course,
                 "classNumber" => $row["classNumber"],
-                "classType" => $row["classType"]
+                "classType" => $type
             ]);
 
             $qr_repetidos_participation = Core::$systemDB->selectMultiple("participation", [
                 "user" => $row["studentNumber"],
                 "course" => $course,
                 "description" => $row["classNumber"],
-                "type" => $row["classType"]
+                "type" => $type
             ]);
             if (count($qr_repetidos_participation) < count($qr_repetidos_qr_code)) {
                 Core::$systemDB->insert("participation", [
                     "user" => $row["studentNumber"],
                     "course" => $course,
                     "description" => $row["classNumber"],
-                    "type" => $row["classType"]
+                    "type" => $type
                 ]);
                 $inserted++;
             }
