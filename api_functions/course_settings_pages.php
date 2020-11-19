@@ -6,7 +6,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\ModuleLoader;
 use GameCourse\Settings;
-use Modules\Plugin\CronJob;
+use GameCourse\CronJob;
 
 
 //get tabs for course settings

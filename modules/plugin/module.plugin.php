@@ -10,6 +10,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
+use GameCourse\CronJob;
 
 class Plugin extends Module
 {

@@ -91,11 +91,11 @@ $used = TRUE;
 
     $user = User::getUserByStudentNumber($_REQUEST["aluno"]);
     try {
-      Core::$systemDB->update("qr_code", ["studentNumber" => $user->getId()], ["qrkey" => $_REQUEST["key"]]);
-      Core::$systemDB->insert("participation", [
-        "user" => $user->getId(),
-        "course" => $_REQUEST["course"], "description" => $_REQUEST['aula'], "type" => $_REQUEST['classtype']
-      ]);
+      Core::$systemDB->update("qr_code", ["studentNumber" => $user->getId(), "classNumber" =>  $_REQUEST['aula'], "classType" => $_REQUEST['classtype'] ], ["qrkey" => $_REQUEST["key"]]);
+      // Core::$systemDB->insert("participation", [
+      //   "user" => $user->getId(),
+      //   "course" => $_REQUEST["course"], "description" => $_REQUEST['aula'], "type" => $_REQUEST['classtype']
+      // ]);
       echo "<span class='success'>Your active participation was registered.<br />Congratulations! Keep participating. ;)</span>";
     } catch (PDOException $e) {
       echo "<br/><span class='error'>Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.</span>\n";

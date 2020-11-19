@@ -1,26 +1,22 @@
 <?php
 
-namespace Modules\Plugin;
-
-use GameCourse\GoogleHandler;
-use GameCourse\Core;
-use GameCourse\Module;
-use GameCourse\User;
+namespace GameCourse;
 
 class CronJob
 {
-    //tratar depois da periodicidade com base no que o user escolheu
     public function __construct($script, $course, $number, $time, $remove = false)
     {
         $cronFile = "/tmp/crontab.txt";
         $path = null;
-        // tem de estar na mesma diretoria
         if ($script == "Moodle") {
-            $path = getcwd() . "/MoodleScript.php";
+            $path = "modules/plugin/MoodleScript.php";
         } else if ($script == "ClassCheck") {
-            $path = getcwd() . "/ClassCheckScript.php";
+            $path = "modules/plugin/ClassCheckScript.php";
         } else if ($script == "GoogleSheets") {
-            $path = getcwd() . "/GoogleSheetsScript.php";
+            $path = "modules/plugin/GoogleSheetsScript.php";
+        }else if ($script == "QR"){
+            $path = "modules/qr/QRScript.php";
+
         }
         $output = shell_exec('crontab -l');
         if ($path && $output) {

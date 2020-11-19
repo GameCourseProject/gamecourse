@@ -20,6 +20,9 @@ class QR extends Module {
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $viewHandler->createPageOrTemplateIfNew('QR',"page");
         //ToDo add QR tables to database
+        $this->addTables("qr", "qr_code");
+        $this->addTables("qr", "qr_error");
+        $this->addTables("qr", "config_qr");
     }
     public function is_configurable(){
         return false;
