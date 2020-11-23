@@ -151,7 +151,7 @@ class GoogleSheets
                             || $action == "replied to questionnaires"
                         ) {
                             $info  = $valuesRows[$row][5];
-                            $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
+                            $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description" => $info]);
                             if (!$result) {
                                 $insertedOrUpdated = true;
                                 Core::$systemDB->insert(
@@ -244,7 +244,7 @@ class GoogleSheets
                         } else if ($action == "quiz grade" || $action == "lab grade") {
                             $info  = $valuesRows[$row][5];
                             $xp = $valuesRows[$row][4];
-                            $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
+                            $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description"=> $info]);
                             if (!$result) {
                                 $insertedOrUpdated = true;
                                 Core::$systemDB->insert(
@@ -266,12 +266,12 @@ class GoogleSheets
                                         array(
                                             "user" => $user->getId(),
                                             "course" => $this->courseId,
-                                            "description" => $info,
                                             "type" =>  $action,
                                             "rating" =>  $xp,
                                             "evaluator" => $profId
                                         ),
                                         array(
+                                            "description" => $info,
                                             "user" => $user->getId(),
                                             "course" => $this->courseId,
                                             "type" =>  $action
