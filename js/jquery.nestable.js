@@ -274,7 +274,7 @@
             if(item.find("img.dd-add.icon").length != 0)
                 return;
 
-            var img = $('<img>', {'class': list.options.addClass, src: 'images/add_icon_no_outline.svg'});
+            var img = $('<img>', {'class': list.options.addClass, src: 'images/add_icon_no_outline.svg', 'title' : 'New'});
             item.append(img);
             img.click(function(e) {
                 //funcao callback para criar linhas filhas 
@@ -295,7 +295,7 @@
         createRemove: function(item) {
             var list = this;
 
-            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/delete_icon.svg'});
+            var imgRemove = $('<img>', {'class': list.options.removeClass, src: 'images/delete_icon.svg', 'title' : 'Remove'});
             var imgRemoveBlocker = $('<div>', {'class': "dd-delete-blocker"});
             item.append(imgRemove);
             item.append(imgRemoveBlocker);
