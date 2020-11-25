@@ -114,6 +114,7 @@ API::registerFunction('core', 'exportModule', function () {
     API::requireAdminPermission();
     $zipFile = Module::exportModules();
     API::response(array("file"=> $zipFile));
+    unlink($zipFile);
 });
 
 
