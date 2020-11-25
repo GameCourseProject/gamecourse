@@ -97,7 +97,7 @@ class Moodle
                                 "description" => $row['quiz'],
                                 "type" => "quiz grade",
                                 "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                                //"date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                                "date" => date('Y-m-d, H:i:s', $row['timemodified']),
                                 "rating" => $row['grade']
                             ]
                         );
@@ -111,7 +111,7 @@ class Moodle
                                 "description" => $row['quiz'],
                                 "type" => "quiz grade",
                                 "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                                // "date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                                "date" => date('Y-m-d, H:i:s', $row['timemodified']),
                                 "rating" => $row['grade']
                             ),
                             array(
@@ -237,7 +237,7 @@ class Moodle
                                 "description" => $votesField["description"],
                                 "type" => "graded post",
                                 "post" => $votesField["post"],
-                                // "date" => $votesField["date"],
+                                "date" => $votesField["date"],
                                 "rating" => $row['rating'],
                                 "evaluator" => $prof
                             ]
@@ -252,7 +252,7 @@ class Moodle
                                 "description" => $votesField["description"],
                                 "type" => "graded post",
                                 "post" => $votesField["post"],
-                                // "date" => $votesField["date"],
+                                "date" => $votesField["date"],
                                 "rating" => $row['rating'],
                                 "evaluator" => $prof
                             ],
@@ -604,7 +604,7 @@ class Moodle
                 if ($user) {
                     $courseUser = new CourseUser($user, $this->courseGameCourse);
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
-                    if (!$result) {
+                    if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
                         if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
                             $inserted = true;
                             Core::$systemDB->insert(
@@ -614,12 +614,12 @@ class Moodle
                                     "course" => $this->courseId,
                                     "description" => $moodleField["module"],
                                     "type" => $moodleField["action"],
-                                    "post" => $moodleField["url"]
-                                    // "date" => $moodleField["timecreated"]
+                                    "post" => $moodleField["url"],
+                                    "date" => $moodleField["timecreated"]
                                 ]
                             );
                         }
-                    }
+                    } 
                 }
             }
         }
