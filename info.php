@@ -128,17 +128,18 @@ function udiffCompare($a, $b){
 API::registerFunction('course', 'importUser', function(){
     API::requireCourseAdminPermission();
     API::requireValues('file');
+    API::requireValues('course');
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
-    $nUsers = CourseUser::importCourseUsers($fileContents);
+    $nUsers = CourseUser::importCourseUsers($fileContents, API::getValue('course'));
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('course', 'exportUsers', function(){
     API::requireCourseAdminPermission();
     API::requireValues('course');
     $courseId = API::getValue('course');
-    $courseUsers = CourseUser::exportCourseUsers($courseId);
-    API::response(array('courseUsers' => $courseUsers));
+    [$fileName, $courseUsers] = CourseUser::exportCourseUsers($courseId);
+    API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
 });
 
 

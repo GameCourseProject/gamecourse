@@ -672,7 +672,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 giveMessage(err.description);
                 return;
             }
-            download("courseUsers.csv", data.courseUsers);
+            download(data.fileName+".csv", data.courseUsers);
         });
         
     }
