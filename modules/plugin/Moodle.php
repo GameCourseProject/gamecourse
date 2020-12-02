@@ -369,8 +369,8 @@ class Moodle
                 $temp_action = "questionnaire " . $row['action'];
                 if ($row["action"] == "submitted") {
                     $temp_info = $other_->questionnaireid;
-                } else {
-                    $temp_info = $row['objectid'];
+                // } else {
+                //     $temp_info = $row['objectid'];
                 }
 
                 $sqlQuestionnaire = "SELECT name FROM " . $this->prefix . "questionnaire where id=" . $temp_info . ";";
@@ -383,34 +383,34 @@ class Moodle
                 }
             }
 
-            if ($row['component'] == 'mod_page') {
-                $temp_url = "view.php?id=" . $row['cmid'];
-                $temp_action = "page " . $row['action'];
-                $temp_info = $row['objectid'];
-                $sqlPage = "SELECT name FROM " . $this->prefix . "page where id=" . $temp_info . ";";
-                $resultPage = mysqli_query($db, $sqlPage);
-                $rowPage = mysqli_fetch_assoc($resultPage);
-                $temp_module = $rowPage['name'];
-            }
+            // if ($row['component'] == 'mod_page') {
+            //     $temp_url = "view.php?id=" . $row['cmid'];
+            //     $temp_action = "page " . $row['action'];
+            //     $temp_info = $row['objectid'];
+            //     $sqlPage = "SELECT name FROM " . $this->prefix . "page where id=" . $temp_info . ";";
+            //     $resultPage = mysqli_query($db, $sqlPage);
+            //     $rowPage = mysqli_fetch_assoc($resultPage);
+            //     $temp_module = $rowPage['name'];
+            // }
 
-            if ($row["component"] == "mod_assign") {
-                $temp_url = "view.php?id=" . $row['cmid'];
-                $temp_action = "assignment " . $row['action'];
-                if ($row["target"] == "course_module") {
-                    $sqlAssign = "SELECT name FROM " . $this->prefix . "assign inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
-                    $resultAssign = mysqli_query($db, $sqlAssign);
-                    $rowAssign = mysqli_fetch_assoc($resultAssign);
-                    $temp_module = $rowAssign['name'];
-                } else if (
-                    $row["target"] == "submission_form" || $row["target"] == "grading_table" || $row["target"] == "grading_form"
-                    || $row["target"] == "remove_submission_form" || $row["target"] == "submission_confirmation_form"
-                ) {
-                    $sqlAssign = "SELECT name FROM " . $this->prefix . "assign where id=" . $other_->assignid . ";";
-                    $resultAssign = mysqli_query($db, $sqlAssign);
-                    $rowAssign = mysqli_fetch_assoc($resultAssign);
-                    $temp_module = $rowAssign['name'];
-                }
-            }
+            // if ($row["component"] == "mod_assign") {
+            //     $temp_url = "view.php?id=" . $row['cmid'];
+            //     $temp_action = "assignment " . $row['action'];
+            //     if ($row["target"] == "course_module") {
+            //         $sqlAssign = "SELECT name FROM " . $this->prefix . "assign inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "assign.id =objectid where component='mod_assign' and objectid =" . $row["objectid"] . ";";
+            //         $resultAssign = mysqli_query($db, $sqlAssign);
+            //         $rowAssign = mysqli_fetch_assoc($resultAssign);
+            //         $temp_module = $rowAssign['name'];
+            //     } else if (
+            //         $row["target"] == "submission_form" || $row["target"] == "grading_table" || $row["target"] == "grading_form"
+            //         || $row["target"] == "remove_submission_form" || $row["target"] == "submission_confirmation_form"
+            //     ) {
+            //         $sqlAssign = "SELECT name FROM " . $this->prefix . "assign where id=" . $other_->assignid . ";";
+            //         $resultAssign = mysqli_query($db, $sqlAssign);
+            //         $rowAssign = mysqli_fetch_assoc($resultAssign);
+            //         $temp_module = $rowAssign['name'];
+            //     }
+            // }
 
             if ($row['component'] == 'mod_resource') {
                 $temp_action = "resource view";
@@ -433,21 +433,21 @@ class Moodle
 
                 if (array_key_exists("objecttable", $row)) {
 
-                    if ($row['objecttable'] == "forum_subscriptions" || $row['objecttable'] == "forum_discussion_subs") {
-                        if ($row['action'] == "created") {
-                            $temp_action = "subscribe forum";
-                            $temp_url = "view.php?id=" . $other_->forumid;
-                            $temp_info = $other_->forumid;
-                        } else if ($row['action'] == "deleted") {
-                            $temp_action = "unsubscribe forum";
-                            $temp_url = "view.php?id=" . $other_->forumid;
-                            $temp_info = $other_->forumid;
-                        }
-                        $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $temp_info . ";";
-                        $resultForum = mysqli_query($db, $sqlForum);
-                        $rowForum = mysqli_fetch_assoc($resultForum);
-                        $temp_module = $rowForum['name'];
-                    }
+                    // if ($row['objecttable'] == "forum_subscriptions" || $row['objecttable'] == "forum_discussion_subs") {
+                    //     if ($row['action'] == "created") {
+                    //         $temp_action = "subscribe forum";
+                    //         $temp_url = "view.php?id=" . $other_->forumid;
+                    //         $temp_info = $other_->forumid;
+                    //     } else if ($row['action'] == "deleted") {
+                    //         $temp_action = "unsubscribe forum";
+                    //         $temp_url = "view.php?id=" . $other_->forumid;
+                    //         $temp_info = $other_->forumid;
+                    //     }
+                    //     $sqlForum = "SELECT name FROM " . $this->prefix . "forum where id=" . $temp_info . ";";
+                    //     $resultForum = mysqli_query($db, $sqlForum);
+                    //     $rowForum = mysqli_fetch_assoc($resultForum);
+                    //     $temp_module = $rowForum['name'];
+                    // }
 
                     if ($row['objecttable'] == 'forum_discussions') {
                         if ($row['action'] == 'created') {
@@ -475,19 +475,21 @@ class Moodle
                     }
 
                     if ($row['objecttable'] == 'forum_posts') {
-                        if ($row['action'] == 'created') {
-                            $temp_action = "forum add post";
-                            $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
-                        } else if ($row['action'] == 'uploaded') {
+                        // if ($row['action'] == 'created') {
+                        //     $temp_action = "forum add post";
+                        //     $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        // } 
+                         if ($row['action'] == 'uploaded') {
                             $temp_action = "forum upload post";
                             $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
                         } else if ($row['action'] == 'deleted') {
                             $temp_action = "forum delete post";
                             $temp_url = "discuss.php?d=" . $other_->discussionid;
-                        } else if ($row['action'] == 'updated') {
-                            $temp_action = "forum update post";
-                            $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
                         }
+                        //  else if ($row['action'] == 'updated') {
+                        //     $temp_action = "forum update post";
+                        //     $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
+                        // }
 
                         $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
                         $resultForum = mysqli_query($db, $sqlForum);
@@ -550,33 +552,33 @@ class Moodle
 
         if (array_key_exists("target", $row)) {
 
-            if ($row['target'] == 'role') {
-                $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
-                $result3 = mysqli_query($db, $sql3);
-                $row3 = mysqli_fetch_assoc($result3);
-                $temp_module = $row3['shortname'];
-                $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
-            }
+            // if ($row['target'] == 'role') {
+            //     $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
+            //     $result3 = mysqli_query($db, $sql3);
+            //     $row3 = mysqli_fetch_assoc($result3);
+            //     $temp_module = $row3['shortname'];
+            //     $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
+            // }
 
-            if ($row['target'] == 'course_section') {
-                $temp_module = $other_->sectionnum;
-                $temp_action = "course section " . $row["action"];
-            }
+            // if ($row['target'] == 'course_section') {
+            //     $temp_module = $other_->sectionnum;
+            //     $temp_action = "course section " . $row["action"];
+            // }
 
-            if ($row['target'] == 'enrol_instance') {
-                $temp_module =  $other_->enrol;
-                $temp_action = "enrol instance " . $row["action"];
-            }
+            // if ($row['target'] == 'enrol_instance') {
+            //     $temp_module =  $other_->enrol;
+            //     $temp_action = "enrol instance " . $row["action"];
+            // }
 
-            if ($row['target'] == 'user_enrolment') {
-                $temp_module = $row["target"];
-                $temp_url = "../enrol/users.php?id=" . $row['courseid'];
-                if ($row['action'] == 'created') {
-                    $temp_action = "enrol user";
-                } else if ($row['action'] == 'deleted') {
-                    $temp_action = "unenrol user";
-                }
-            }
+            // if ($row['target'] == 'user_enrolment') {
+            //     $temp_module = $row["target"];
+            //     $temp_url = "../enrol/users.php?id=" . $row['courseid'];
+            //     if ($row['action'] == 'created') {
+            //         $temp_action = "enrol user";
+            //     } else if ($row['action'] == 'deleted') {
+            //         $temp_action = "unenrol user";
+            //     }
+            // }
         }
 
         $moodleFields = array(
