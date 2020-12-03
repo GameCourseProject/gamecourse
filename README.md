@@ -61,7 +61,7 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
      - Fill remaining mandatory fields and create the app.
   3. Go to the **Auth** tab: 
      - Save the **Client ID** and the **Client Secret**, because they will be used after.
-     -  In **OAuth 2.0 settings**, add the redirect URL, which is the website with "/auth?linkedin" appended at the end. For example: \url{http://localhost/gamecourse/auth?linkedin}.
+     -  In **OAuth 2.0 settings**, add the redirect URL, which is the website with "/auth?linkedin" appended at the end. For example: http://localhost/gamecourse/auth?linkedin.
   4. Go to the **Products** tab:     
      - Add the products: **Share on LinkedIn** and **Sign In with LinkedIn** (it takes a few minutes to be accepted).
   5. Go to *config.php*:
