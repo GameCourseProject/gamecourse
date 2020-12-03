@@ -198,13 +198,13 @@ class Plugin extends Module
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                 }
             }else{
-                if (!User::getUserByEmail($email)) {
+                if (!User::getUserByUsername($username)) {
                     User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
-                    $user = User::getUserByEmail($email);
+                    $user = User::getUserByUsername($username);
                     $courseUser = new CourseUser($user->getId(), $course);
                     $courseUser->addCourseUserToDB($roleId, $campus);
                 } else {
-                    $existentUser = User::getUserByEmail($email);
+                    $existentUser = User::getUserByUsername($username);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                 }
             }
