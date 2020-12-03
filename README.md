@@ -73,8 +73,10 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
 Setup GameCourse
 ---
 1. If there is a file called **setup.done**, delete it.
-2. Go to the GameCourse page, and then go to the **Courses** tab:
-   - Create a course, enter the details, and choose between a blank course or copy it from an existing one.
+2. Go to the GameCourse page, and then go to the **Courses** tab to create a course. Here are the multiple options:
+   - Create a course manually, entering its details.
+   - Copy an already existing course.
+   - Import a zip with course(s) configurations (this needs to be in the correct format, which can be checked when exporting).
 4. Go to the course that was created, and then to its **Settings** page:
    - Now, one may enable modules, such as Views, XP and Levels, Skills, Profile, Leaderboard, and Badges.
 5. There are many ways available to insert or update users:
