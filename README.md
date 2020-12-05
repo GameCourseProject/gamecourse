@@ -41,7 +41,7 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
   3. Go to the **Dashboard** tab:
      - Add the product **Facebook Login**.
      - Write the website URL in the input shown, for example: http://localhost/gamecourse.
-  4. Go to the **Settings gt; Basic**} tab:
+  4. Go to the **Settings &gt; Basic** tab:
      - Add the following domains to the field \textbf{App Domains}:  
        - The server that runs GameCourse, for example localhost
        - The website URL, for example localhost/gamecourse
