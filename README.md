@@ -42,7 +42,7 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
      - Add the product **Facebook Login**.
      - Write the website URL in the input shown, for example: http://localhost/gamecourse.
   4. Go to the **Settings &gt; Basic** tab:
-     - Add the following domains to the field \textbf{App Domains}:  
+     - Add the following domains to the field **App Domains**:  
        - The server that runs GameCourse, for example localhost
        - The website URL, for example localhost/gamecourse
        - The redirect URL, for example localhost/gamecourse/auth?facebook
@@ -61,7 +61,7 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
      - Fill remaining mandatory fields and create the app.
   3. Go to the **Auth** tab: 
      - Save the **Client ID** and the **Client Secret**, because they will be used after.
-     -  In **OAuth 2.0 settings**, add the redirect URL, which is the website with "/auth?linkedin" appended at the end. For example: http://localhost/gamecourse/auth?linkedin.
+     - In **OAuth 2.0 settings**, add the redirect URL, which is the website with "/auth?linkedin" appended at the end. For example: http://localhost/gamecourse/auth?linkedin.
   4. Go to the **Products** tab:     
      - Add the products: **Share on LinkedIn** and **Sign In with LinkedIn** (it takes a few minutes to be accepted).
   5. Go to *config.php*:
@@ -72,18 +72,17 @@ Users can log in with Fenix, Google, Facebook, or LinkedIn. To implement that me
 
 Setup GameCourse
 ---
-1. If there is a file called **setup.done**, delete it.
+1. If there is a file called *setup.done*, delete it.
 2. Go to the GameCourse page, and then go to the **Courses** tab to create a course. Here are the multiple options:
    - Create a course manually, entering its details.
    - Copy an already existing course.
    - Import a zip with course(s) configurations (this needs to be in the correct format, which can be checked when exporting).
-4. Go to the course that was created, and then to its **Settings** page:
-   - Now, one may enable modules, such as Views, XP and Levels, Skills, Profile, Leaderboard, and Badges.
+4. Go to the course that was created, and then to its **Settings** page to enable the desired modules, such as Views, XP and Levels, Skills, Profile, Leaderboard, and Badges.
 5. There are many ways available to insert or update users:
    - To get students' information from Fenix, enable the **plugin** module, and in its configuration page, upload the .csv file get from Fenix with student's data from a specific course.
    - Users can be set in the **Users** tab, inside or outside a course, as desired.
-   - GameCourse Users can be uploaded from a .csv with the following format: "name,email,nickname,studentNumber,isAdmin,isActive,username,authentication_service".
-   - Course Users can be uploaded from a .csv with the following format: "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,authentication_service", where "roles" are separated by "-". 
+   - GameCourse Users can be uploaded from a .csv with the following format: "name,email,nickname,studentNumber,isAdmin,isActive,username,auth".
+   - Course Users can be uploaded from a .csv with the following format: "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,auth", where "roles" are separated by "-". 
 6. Badges, Skills, and XP and Levels can be setup on their respective configuration page (those modules need to be enabled first). 
 7. To update GameCourse, it is needed to set the configurations to access the external data sources: Moodle, Class Check, Google Sheets, and the QR source data.
    - In the plugin configuration page and QR page, respectively, set those configurations and set the periodicity desired to collect data from a source and insert students participation in the database. This can be changed or disabled at any time.  
