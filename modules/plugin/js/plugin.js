@@ -88,7 +88,15 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     $scope.saveCredentials = function () {
         $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
             // alertUpdate(data, err);  
-            window.open(data.authUrl, 'Authenticate');
+            if (err) {
+                giveMessage(err.description);
+            } else {
+                w = 550;
+                h = 650;
+                var left = (screen.width - w) / 2;
+                var top = (screen.height - h) / 4;
+                window.open(data.authUrl, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+            }
         });
     }
     $scope.saveMoodle = function () {
@@ -269,7 +277,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
             row.append('<span >' + title + '</span>');
             if (model == "credentials") {
                 row.append('<input class="config_input" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
-                row.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
+                row.append('<button class="button small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
             } else if (model == "sheetName"){
                 row.attr('id','sheet_names_row');
                 $scope.numberGoogleSheets = 0;

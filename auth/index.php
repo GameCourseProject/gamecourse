@@ -20,7 +20,7 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
         $gs = new GoogleSheets($receivedCourse);
         $gs->saveTokenToDB($code);
     }
-    echo "<script>window.close();</script>";
+    echo "<script>window.close();window.opener.location.reload(false);</script>";
 } else {
 
     if (array_key_exists("google", $_GET)) {

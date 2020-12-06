@@ -258,6 +258,9 @@ class Plugin extends Module
     }
     private function setGSCredentials($courseId, $gsCredentials)
     {
+        if(!$gsCredentials){
+            return false;
+        }
         $credentialKey = key($gsCredentials[0]);
         $credentials = $gsCredentials[0][$credentialKey];
         $googleSheetCredentialsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
