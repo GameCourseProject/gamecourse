@@ -17,9 +17,8 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
     $code = $_GET["code"];
     if ($receivedCourse && $code) {
         Core::init();
-        Core::$systemDB->update("config_google_sheets", ["authCode" => $code], ["course" => $receivedCourse]);
         $gs = new GoogleSheets($receivedCourse);
-        $gs->saveTokenToDB();
+        $gs->saveTokenToDB($code);
     }
     echo "<script>window.close();</script>";
 } else {

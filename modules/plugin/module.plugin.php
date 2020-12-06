@@ -130,7 +130,6 @@ class Plugin extends Module
             }
             $names = explode(";", $googleSheetsDB["sheetName"]);
             $googleSheetsVars = [
-                "authCode" => $googleSheetsDB["authCode"],
                 "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
                 "sheetName" => $names,
                 "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
@@ -302,7 +301,7 @@ class Plugin extends Module
         if ($names != "" && substr($names, -1) == ";") {
             $names = substr($names, 0, -1);
         }
-        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names, "authCode" => $googleSheets["authCode"]];
+        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names];
         if (empty($googleSheets["spreadsheetId"])) {
             return false;
         } else {
