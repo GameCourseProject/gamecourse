@@ -6,18 +6,32 @@ chdir('..');
 include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
+use Modules\Plugin\GoogleSheets;
 
 Core::denyCLI();
 if (!Core::requireSetup(false))
     header('Location: ..');
 
-if (array_key_exists("google", $_GET)) {
-    Core::performLogin("google");
-} else if (array_key_exists("facebook", $_GET)) {
-    Core::performLogin("facebook");
-} else if (array_key_exists("linkedin", $_GET)) {
-    Core::performLogin("linkedin");
+if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_GET)) {
+    $receivedCourse = $_GET["state"];
+    $code = $_GET["code"];
+    if ($receivedCourse && $code) {
+        Core::init();
+        Core::$systemDB->update("config_google_sheets", ["authCode" => $code], ["course" => $receivedCourse]);
+        $gs = new GoogleSheets($receivedCourse);
+        $gs->saveTokenToDB();
+    }
+    echo "<script>window.close();</script>";
 } else {
-    Core::performLogin("fenix");
+
+    if (array_key_exists("google", $_GET)) {
+        Core::performLogin("google");
+    } else if (array_key_exists("facebook", $_GET)) {
+        Core::performLogin("facebook");
+    } else if (array_key_exists("linkedin", $_GET)) {
+        Core::performLogin("linkedin");
+    } else {
+        Core::performLogin("fenix");
+    }
+    header('Location: ..');
 }
-header('Location: ..');

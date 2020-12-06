@@ -66,10 +66,6 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdate);
     }
 
-    $scope.getAuthCode = function () {
-        var win = window.open(authUrl, '_blank');
-        win.focus();
-    }
 
     var fileCredentialsUploaded;
     var googleSheetsCredentials = [];
@@ -92,7 +88,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     $scope.saveCredentials = function () {
         $smartboards.request('settings', 'coursePlugin', { credentials: googleSheetsCredentials, course: $scope.course }, function (data, err) {
             // alertUpdate(data, err);  
-            authUrl = data.authUrl;
+            window.open(data.authUrl, 'Authenticate');
         });
     }
     $scope.saveMoodle = function () {
@@ -162,7 +158,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         var configurationSection = $($element);
 
         //Fenix
-        var fenixconfigurationSection = createSection(configurationSection, 'Fenix Variables');~
+        var fenixconfigurationSection = createSection(configurationSection, 'Fenix Variables');
         fenixconfigurationSection.attr("class","multiple_inputs content");
         fenixInputs = $('<div class="row" ></div>');
         fenixInputs.append('<span">Fenix Course Id: </span>');
@@ -264,17 +260,14 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         //google sheets
         var googleSheetsconfigurationSection = createSection(configurationSection, 'Google Sheets Variables');
         googleSheetsconfigurationSection.attr("class","column content");
-        googleSheetsVars = ["credentials", "authCode", "spreadsheetId", "sheetName"];
-        googleSheetsTitles = ["Credentials:", "Auth Code: ", "Spread Sheet Id: ", "Sheet Name: "];
+        googleSheetsVars = ["credentials", "spreadsheetId", "sheetName"];
+        googleSheetsTitles = ["Credentials:", "Spread Sheet Id: ", "Sheet Name: "];
         jQuery.each(googleSheetsVars, function (index) {
             model = googleSheetsVars[index];
             title = googleSheetsTitles[index];
             row = $("<div class='plugin_row'></div>");
             row.append('<span >' + title + '</span>');
-            if (model == "authCode") {
-                row.append('<input class="config_input" type:"text" id="newList" ng-model="googleSheetsVars.' + model + '">');
-                row.append('<button class="button small" ng-click="getAuthCode()">Get AuthCode</button><br>');
-            } else if (model == "credentials") {
+            if (model == "credentials") {
                 row.append('<input class="config_input" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
                 row.append('<button class="button small" ng-click="saveCredentials()">Upload</button><br>');
             } else if (model == "sheetName"){

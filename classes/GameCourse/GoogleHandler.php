@@ -109,20 +109,21 @@ class GoogleHandler
     //     $client->addScope("profile");
     // }
 
-    public static function setCredentials($credentials)
+    public static function setCredentials($credentials, $course = 0)
     {
         $client = new \Google_Client();
         $client->setApplicationName('spreadsheets');
         $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
         $client->setAuthConfig($credentials, false);
+        $client->setState($course);
         $client->setAccessType('offline');
         $client->setPrompt('select_account consent');
         return $client;
     }
 
-    public static function checkToken($credentials, $token, $authCode)
+    public static function checkToken($credentials, $token, $authCode, $course)
     {
-        $client = GoogleHandler::setCredentials($credentials);
+        $client = GoogleHandler::setCredentials($credentials, $course);
         if ($token) {
             $accessToken = $token;
             $client->setAccessToken($accessToken);
@@ -148,9 +149,9 @@ class GoogleHandler
         }
     }
 
-    public static function getGoogleSheets($credentials, $token, $authCode)
+    public static function getGoogleSheets($credentials, $token, $authCode, $course)
     {
-        $result = GoogleHandler::checkToken($credentials, $token, $authCode);
+        $result = GoogleHandler::checkToken($credentials, $token, $authCode, $course);
         return new \Google_Service_Sheets($result["client"]);
     }
 }
