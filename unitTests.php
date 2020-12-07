@@ -9,39 +9,90 @@ use GameCourse\GoogleHandler;
 use GameCourse\ModuleLoader;
 use Modules\Views\ViewHandler;
 
-$username = $argv[1];
-$course = $argv[2];
-$authCode = $argv[3];
 Core::init();
 
-testPhotoDownload($username);
+echo "<h1>Automated Test Script</h1>";
 
-$courseObj = Course::getCourse($course);
-if ($courseObj->getModule("plugin")) {
-    testFenixPlugin($course);
-    testMoodlePlugin($course);
-    testClassCheckPlugin($course);
-    //testGoogleSheetsPlugin($course, $authCode);
+//course
+if (array_key_exists("course", $_GET)) {
+    $course = $_GET["course"];
+    if (Core::$systemDB->select("game_course_user", ["id" => $course])) {
+
+        if (array_key_exists("username", $_GET)) {
+            echo "<h2>Login Picture</h2>";
+            $username = $_GET["username"];
+            if ($username) {
+                testPhotoDownload($username);
+            }
+        } else {
+            echo "<h3 style='font-weight: normal'>
+            <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
+            </h3>";
+        }
+
+        $courseObj = Course::getCourse($course);
+        if ($courseObj->getModule("plugin")) {
+            testFenixPlugin($course);
+            testMoodlePlugin($course);
+            testClassCheckPlugin($course);
+            testGoogleSheetsPlugin($course);
+        } else {
+            echo "<h2>Plugins</h2>";
+            echo "<h3 style='font-weight: normal'>
+            <strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.
+            </h3>";
+        }
+        testDictionaryManagement($course);
+
+        testUserImport();
+        testCourseUserImport($course);
+        testCourseImport();
+    } else {
+        echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $course . ".
+        </h3>";
+
+        if (array_key_exists("username", $_GET)) {
+            echo "<h2>Login Picture</h2>";
+            $username = $_GET["username"];
+            if ($username) {
+                testPhotoDownload($username);
+            }
+        } else {
+            echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture, please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
+        </h3>";
+        }
+        testUserImport();
+    }
 } else {
-    echo "\n-----PLUGIN-----";
-    echo "\nTo test the plugin, please enable the plugin module.";
+    echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.
+        </h3>";
+    if (array_key_exists("username", $_GET)) {
+        echo "<h2>Login Picture</h2>";
+        $username = $_GET["username"];
+        if ($username) {
+            testPhotoDownload($username);
+        }
+    } else {
+        echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture, please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
+        </h3>";
+    }
+    testUserImport();
 }
-testDictionaryManagement($course);
 
-testUserImport();
-testCourseImport();
-testCourseUserImport($course);
+
 
 function testPhotoDownload($username)
 {
-    echo "\n-----LOGIN PICTURE-----";
     checkPhoto($username);
 }
 
 function testFenixPlugin($course)
 {
-    echo "\n";
-    echo "\n-----FENIX PLUGIN-----";
+    echo "<h2>Fenix Plugin</h2>";
     $fenix = array();
     array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
     array_push($fenix, "ist112345;12345;João Silva;js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
@@ -53,28 +104,27 @@ function testFenixPlugin($course)
         $gcu1 = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
         $gcu2 = Core::$systemDB->select("game_course_user", ["studentNumber" => "99999"]);
         if ($gcu1 && $gcu2) {
-            echo "\nSuccess: Users uploaded";
-
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users uploaded</h3>";
             $courseUser1 = Core::$systemDB->select("course_user", ["id" => $gcu1["id"]]);
             $courseUser2 = Core::$systemDB->select("course_user", ["id" => $gcu2["id"]]);
             if ($courseUser1 && $courseUser2) {
-                echo "\nSuccess: CourseUsers uploaded";
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users uploaded</h3>";
             } else {
-                echo "\nFailed: CourseUsers failed to upload";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users failed to upload</h3>";
             }
         } else {
-            echo "\nFailed: Users failed to upload";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users failed to upload</h3>";
         }
 
         $auth1 = Core::$systemDB->select("auth", ["username" => "ist112345"]);
         $auth2 = Core::$systemDB->select("auth", ["username" => "ist199999"]);
         if ($auth1 && $auth2) {
-            echo "\nSuccess: Users' authentication uploaded";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users' authentication uploaded</h3>";
         } else {
-            echo "\nFailed: Users' authentication failed to upload";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users' authentication failed to upload</h3>";
         }
     } else {
-        echo "\nFailed: The users where not created correctly";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users where not created correctly</h3>";
     }
 
     $fenix = array();
@@ -88,20 +138,20 @@ function testFenixPlugin($course)
         $gcu = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
         if ($gcu) {
             if ($gcu["name"] == $updatedName) {
-                echo "\nSuccess: User updated";
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong>  User updated</h3>";
             } else {
-                echo "\nFailed: User failed to update";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> User failed to update</h3>";
             }
         }
     } else {
-        echo "\nFailed: The users where not updated correctly";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users where not updated correctly</h3>";
     }
 }
 
 function testMoodlePlugin($course)
 {
     echo "\n";
-    echo "\n-----MOODLE PLUGIN-----";
+    echo "<h2>Moodle Plugin</h2>";
     $moodleVar = [
         "dbserver" => "localhost",
         "dbuser" => "root",
@@ -126,141 +176,80 @@ function testMoodlePlugin($course)
             "moodleCourse" => null,
             "moodleUser" => null
         ])) {
-            echo "\nSuccess: Moodle variables were set";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Moodle variables were set</h3>";
         } else {
-            echo "\n Moodle Variables were not inserted in the database";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Moodle Variables were not inserted in the database</h3>";
         }
     } else {
-        echo "\nFailed: It was not possible to set moodle variables.";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set moodle variables.</h3>";
     }
 }
 
 function testClassCheckPlugin($course)
 {
+    echo "<h2>Class Check Plugin</h2>";
 
-    echo "\n";
-    echo "\n-----CLASSCHECK PLUGIN-----";
     $ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
     $resultCC = setClassCheckVars($course, $ccVar);
     if ($resultCC) {
         if (Core::$systemDB->select("config_class_check", $ccVar)) {
-            echo "\nSuccess: ClassCheck variables were set";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Class Check variables were set</h3>";
         } else {
-            echo "\n ClassCheck Variables were not inserted in the database";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> ClassCheck Variables were not inserted in the database</h3>";
         }
     } else {
-        echo "\nFailed: It was not possible to set classChc variables.";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set classChc variables.</h3>";
     }
 }
 
-function testGoogleSheetsPlugin($course, $authCode)
+function testGoogleSheetsPlugin($course)
 {
+    echo "<h2>Google Sheets Plugin</h1>";
 
-    echo "\n";
-    echo "\n-----GOOGLE SHEETS PLUGIN-----";
+    if (Core::$systemDB->select("config_google_sheets", ["course" => $course])) {
 
-    $configGS = array(
-        "client_id" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
-        "project_id" => "pcm-script",
-        "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
-        "token_uri" => "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
-        "client_secret" => "hC4zsuwH1fVIWi5k0C4zjOub",
-        "redirect_uris" => array("urn:ietf:wg:oauth:2.0:oob", "http://localhost")
-    );
-    $gsVars = array(array("installed" => $configGS));
-    $resultGS = setGSCredentials($course, $gsVars);
-    if ($resultGS) {
-        $checkDB_GS = array(
-            "clientId" => "370984617561-lf04il2ejv9e92d86b62lrts65oae80r.apps.googleusercontent.com",
-            "projectId" => "pcm-script",
-            "authUri" => "https://accounts.google.com/o/oauth2/auth",
-            "tokenUri" => "https://oauth2.googleapis.com/token",
-            "authProvider" => "https://www.googleapis.com/oauth2/v1/certs",
-            "clientSecret" => "hC4zsuwH1fVIWi5k0C4zjOub",
-            "redirectUris" => "urn:ietf:wg:oauth:2.0:oob;http://localhost"
-        );
-        if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
-            echo "\nSuccess: Google Sheets credentials were set";
-        } else {
-            echo "\n Google Sheets credentials were not inserted in the database";
-        }
-    } else {
-        echo "\nFailed: It was not possible to set Google Sheets credentials.";
-    }
 
-    $varsGS = array(
-        "authCode" => $authCode,
-        "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
-        "sheetName" => array("ist13898_")
-    );
-    $resultGSVars = setGoogleSheetsVars($course, $varsGS);
-    if ($resultGSVars) {
-        $checkDB_GS = array(
-            "authCode" => $authCode,
+        $resultGSVars = setGoogleSheetsVars($course, array(
             "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
-            "sheetName" => "ist13898_"
-        );
-        if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
-            echo "\nSuccess: Google Sheets variables were set";
+            "sheetName" => array("ist13898_")
+        ));
+        if ($resultGSVars) {
+            $checkDB_GS = array(
+                "spreadsheetId" => "19nAT-76e-YViXk-l-BOig9Wm0knVtwaH2_pxm4mrd7U",
+                "sheetName" => "ist13898_"
+            );
+            if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Google Sheets variables were set</h3>";
+            } else {
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Google Sheets variables were not inserted in the database.</h3>";
+            }
         } else {
-            echo "\n Google Sheets variables were not inserted in the database";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set Google Sheets variables.</h3>";
         }
     } else {
-        echo "\nFailed: It was not possible to set Google Sheets variables.";
+        echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> Make sure you authenticate to access to Google Sheets for course " . $course . "."
+            . "</h3>";
     }
 }
 
 function testDictionaryManagement($course)
 {
-
-    echo "\n";
-    echo "\n-----DICTIONARY-----";
+    echo "<h2>Dictionary</h2>";
     $courseObj = Course::getCourse($course);
     $viewModule = $courseObj->getModule('views');
     if ($viewModule) {
 
         $viewHandler = $viewModule->getViewHandler();
 
-        //insert variable
-        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns the role of the user that is viewing the page");
-        $id = Core::$systemDB->select("dictionary_library", ["name" => "users"], "id");
-        if ($id) {
-            if (Core::$systemDB->select("dictionary_variable", [
-                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
-                "description" =>  "Returns the role of the user that is viewing the page"
-            ])) {
-                echo "\nSucess: Variable created";
-            } else {
-                echo "\nFailed: Variable was not created";
-            }
-        } else {
-            echo "\nFailed: It was not possible to register the variable";
-        }
-
-        //update variable
-        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns roles");
-        if ($id) {
-            if (Core::$systemDB->select("dictionary_variable", [
-                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
-                "description" =>  "Returns roles"
-            ])) {
-                echo "\nSucess: Variable updated";
-            } else {
-                echo "\nFailed: Variable was not updated";
-            }
-        } else {
-            echo "\nFailed: It was not possible to register the variable";
-        }
-
         //insert library
         $viewHandler->registerLibrary("views", "games", "This library contains information about the course games");
         if (Core::$systemDB->select("dictionary_library", [
             "moduleId" => "views", "name" => "games", "description" =>  "This library contains information about the course games"
         ])) {
-            echo "\nSucess: Library created";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library updated.</h3>";
         } else {
-            echo "\nFailed: Library was not created";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not created.</h3>";
         }
 
         //update library
@@ -268,9 +257,17 @@ function testDictionaryManagement($course)
         if (Core::$systemDB->select("dictionary_library", [
             "moduleId" => "views", "name" => "games", "description" =>  "This is a game's library"
         ])) {
-            echo "\nSucess: Library updated";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library updated.</h3>";
         } else {
-            echo "\nFailed: Library was not updated";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not updated.</h3>";
+        }
+
+        //delete library
+        $viewHandler->unregisterLibrary("views", "games");
+        if (!Core::$systemDB->select("dictionary_library", ["name" => "games", "moduleId" => "views"])) {
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library deleted.</h3>";
+        } else {
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not deleted.</h3>";
         }
 
         //insert function
@@ -294,12 +291,12 @@ function testDictionaryManagement($course)
                 "refersToName" => "course", "keyword" => "color", "args" => null,
                 "description" =>  "Returns the course color."
             ])) {
-                echo "\nSucess: Function created";
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function created.</h3>";
             } else {
-                echo "\nFailed: Function was not created";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not created.</h3>";
             }
         } else {
-            echo "\nFailed: It was not possible to register the function";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the function.</h3>";
         }
 
         //update function
@@ -327,28 +324,81 @@ function testDictionaryManagement($course)
                 "refersToName" => "course", "keyword" => "color", "args" => $args,
                 "description" =>  "Color RGB or HEX."
             ])) {
-                echo "\nSucess: Function updated";
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function updated.</h3>";
             } else {
-                echo "\nFailed: Function was not updated";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not updated.</h3>";
             }
         } else {
-            echo "\nFailed: It was not possible to register the function";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the function</h3>";
+        }
+        //delete function
+        $viewHandler->unregisterFunction("color", "views");
+        if (!Core::$systemDB->select("dictionary_function", ["keyword" => "games", "libraryId" => $id])) {
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function deleted.</h3>";
+        } else {
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not deleted.</h3>";
+        }
+
+        //insert variable
+        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns the role of the user that is viewing the page");
+        $id = Core::$systemDB->select("dictionary_library", ["name" => "users"], "id");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_variable", [
+                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+                "description" =>  "Returns the role of the user that is viewing the page"
+            ])) {
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable created.</h3>";
+            } else {
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not created.</h3>";
+            }
+        } else {
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the variable.</h3>";
+        }
+
+        //update variable
+        $viewHandler->registerVariable("%roles", "collection", "string", "users", "Returns roles");
+        if ($id) {
+            if (Core::$systemDB->select("dictionary_variable", [
+                "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
+                "description" =>  "Returns roles"
+            ])) {
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable updated.</h3>";
+            } else {
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not updated.</h3>";
+            }
+        } else {
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the variable.</h3>";
+        }
+        //delete variable
+        $viewHandler->unregisterVariable("%roles");
+        if (!Core::$systemDB->select("dictionary_variable", ["name" => "%roles"])) {
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable deleted.</h3>";
+        } else {
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not deleted.</h3>";
         }
     } else {
-        echo "\nTo test the dictionary, please enable the views module.";
+        echo "<h3 style='font-weight: normal'>
+        <strong style='color:#F7941D;'>Warning:</strong> To test the dictionary, please enable the views module.
+        </h3>";
     }
 }
 
 function testUserImport()
 {
-    echo "\n";
-    echo "\n-----USERS IMPORT-----";
+    echo "<h2>Import/Export Users</h2>";
     //adds users
-    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
-    $usersCSV .= "João Bernardo,,,98765,0,1,jb@gmail.pt,google\n";
-    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,,\n";
+    $csvUsers = CourseUser::exportUsers();
+    file_put_contents("UsersCSVTesteUnit.csv", $csvUsers);
+    $usersCSV = file_get_contents("UsersCSVTesteUnit.csv");
 
-    User::importUsers($usersCSV, true);
+    if ($usersCSV) {
+        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users exported.</h3>";
+    } else {
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users not exported.</h3>";
+    }
+    $usersCSV .= "\nJoão Bernardo,,,98765,0,1,jb@gmail.pt,google\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,olivia.nog@gmail.com,google\n";
+    User::importUsers($usersCSV, false);
 
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "João Bernardo",
@@ -375,21 +425,21 @@ function testUserImport()
         ]);
         $user2Auth =  Core::$systemDB->select("auth", [
             "game_course_user_id" => $user2Id,
-            "username" => "",
-            "authentication_service" => ""
+            "username" => "olivia.nog@gmail.com",
+            "authentication_service" => "google"
         ]);
-        if ($user1Auth && $user2Auth) {
-            echo "\nSuccess: Users imported - created";
-        } else {
-            echo "\nFailed: Users were not correctly imported - not created";
-        }
+        // if ($user1Auth && $user2Auth) {
+        //     echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - created.</h3>";
+        // } else {
+        //     echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not created.</h3>";
+        // }
     } else {
-        echo "\nFailed: Users were not correctly imported - not created";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not created.</h3>";
     }
     //does not update users
     $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
     $usersCSV .= "Joaquim Duarte,,,98765,0,1,jb@gmail.pt,google\n";
-    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,ist156789,fenix\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,1,1,olivia.nog@gmail.com,google\n";
 
     User::importUsers($usersCSV, false);
 
@@ -399,68 +449,60 @@ function testUserImport()
             "username" => "jb@gmail.pt",
             "authentication_service" => "google"
         ]);
-        $user2Auth =  Core::$systemDB->select("auth", [
-            "game_course_user_id" => $user2Id,
-            "username" => "",
-            "authentication_service" => ""
+        $user2Auth =  Core::$systemDB->select("game_course_user", [
+            "id" => $user2Id,
+            "isAdmin" => "0"
         ]);
         if ($user1Auth && $user2Auth) {
-            echo "\nSuccess: Users imported - updated (not replaced)";
+            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - created and updated (not replaced).</h3>";
         } else {
-            echo "\nFailed: Users were not correctly imported - not updated without replace";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated without replace.</h3>";
         }
     } else {
-        echo "\nFailed: Users were not correctly imported - not updated without replace";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated without replace.</h3>";
     }
     //update users
     User::importUsers($usersCSV, true);
 
-    $user3Id = Core::$systemDB->select("game_course_user", [
+    $user3Id =  Core::$systemDB->select("auth", [
+        "username" => "jb@gmail.pt",
+        "authentication_service" => "google"
+    ], "game_course_user_id");
+
+    $user3 = Core::$systemDB->select("game_course_user", [
+        "id" => $user3Id,
         "name" => "Joaquim Duarte",
-        "email" => "",
-        "nickname" => "",
         "studentNumber" => "98765",
         "isAdmin" => "0",
         "isActive" => "1"
-    ], "id");
+    ]);
 
     $user4Id = Core::$systemDB->select("game_course_user", [
         "name" => "Olivia Nogueira",
         "email" => "olivia.nogueira@mail.pt",
-        "nickname" => "",
         "studentNumber" => "56789",
-        "isAdmin" => "0",
-        "isActive" => "1"
+        "isAdmin" => "1",
     ], "id");
-    if ($user3Id && $user4Id) {
-        $user3Auth =  Core::$systemDB->select("auth", [
-            "game_course_user_id" => $user3Id,
-            "username" => "jb@gmail.pt",
-            "authentication_service" => "google"
-        ]);
-        $user4Auth =  Core::$systemDB->select("auth", [
-            "game_course_user_id" => $user4Id,
-            "username" => "ist156789",
-            "authentication_service" => "fenix"
-        ]);
-        if ($user3Auth && $user4Auth) {
-            echo "\nSuccess: Users imported - updated (and replaced)";
-        } else {
-            echo "\nFailed: Users were not correctly imported - not updated with replace";
-        }
+    if ($user3 && $user4Id) {
+        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - updated (and replaced).</h3>";
     } else {
-        echo "\nFailed: Users were not correctly imported - not updated with replace";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated with replace.</h3>";
     }
+    Core::$systemDB->delete("game_course_user", ["id" => $user1Id]);
+    Core::$systemDB->delete("game_course_user", ["id" => $user2Id]);
+    Core::$systemDB->delete("game_course_user", ["id" => $user3Id]);
+    Core::$systemDB->delete("game_course_user", ["id" => $user4Id]);
+    unlink("UsersCSVTesteUnit.csv");
 }
 function testCourseImport()
 {
-    echo "\n";
-    echo "\n-----COURSES IMPORT-----";
+    echo "<h2>Import/Export Courses</h2>";
+
     $courseID = Core::$systemDB->select("course", ["name" => "Course X", "year" => "2017-2018"], "id");
     $courseObj = null;
     if ($courseID) {
-        $courseObj = Course::getCourse($courseID);
-        if ($courseObj->getModule("views") && $courseObj->getModule("badges")) {
+        $courseObj = Course::getCourse($courseID, false);
+        if (in_array("views", $courseObj->getEnabledModules()) && in_array("badges", $courseObj->getEnabledModules())) {
             $viewPage = Core::$systemDB->select("page", ["course" => $courseID], "viewId");
             $templateId = Core::$systemDB->select("template", ["course" => $courseID, "roleType" => "ROLE_SINGLE"], "id");
             if ($viewPage) {
@@ -471,59 +513,64 @@ function testCourseImport()
                             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
                                 if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
                                     $json = Course::exportCourses();
-                                    echo "\nSuccess: courses exported";
+                                    echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses exported.</h3>";
                                     importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId);
                                     unlink("coursesJSONTesteUnit.json");
                                 } else {
-                                    echo "\nEnable badges and set maxReward to 2000";
+                                    echo "<h3 style='font-weight: normal'><strong style='color:#F7941D;'>Warning:</strong>Enable badges and set maxReward to 2000</h3>";
                                 }
                             } else {
-                                echo "\nYou created a template (role single), but it does not contain a image in 'Course X'";
+                                echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>You created a template (role single), but it does not contain a image in 'Course X'</h3>";
                             }
                         } else {
-                            echo "\nCreate a template (role single) containing an image";
+                            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a template (role single) containing an image</h3>";
                         }
                     } else {
-                        echo "\nCreate a template (role single) containing an image";
+                        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a template (role single) containing an image</h3>";
                     }
                 } else {
-                    echo "\nYou created a page (role single), but it does not contain a text in 'Course X'";
+                    echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>You created a page (role single), but it does not contain a text in 'Course X'</h3>";
                 }
             } else {
-                echo "\nCreate a page (role single) contaning a text in 'Course X'";
+                echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a page (role single) contaning a text in 'Course X'</h3>";
             }
         } else {
-            echo "\nEnable module views and badges";
+            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Enable module views and badges</h3>";
         }
     } else {
-        echo "\nTo test the course import and export, do the following:";
-        echo "\n - Create a course named 'Course X' and year '2017/2018'";
-        echo "\n - Inside that course, enable views and create a page contaning a text (role single)";
-        echo "\n - Create a template containing an image (role single)";
-        echo "\n - Enable badges and set maxReward to 2000";
+        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> To test the course's import and export, do the following:</h3>";
+        echo "<ul>";
+        echo "<li><h3 style='padding:0px;font-weight:normal'>Create a course named 'Course X' and year '2017/2018'.</h3></li>";
+        echo "<li><h3 style='padding:0px;font-weight:normal'>Inside that course, enable views and create a page contaning a text (role single).</h3></li>";
+        echo "<li><h3 style='padding:0px;font-weight:normal'>Create a template containing an image (role single).</h3></li>";
+        echo "<li><h3 style='padding:0px;font-weight:normal'>Enable badges and set maxReward to 2000.</h3></li>";
+        echo "</ul>";
     }
 }
 function testCourseUserImport($course)
 {
-    echo "\n";
-    echo "\n-----COURSE USERS IMPORT-----";
+    echo "<h2>Import/Export Course Users</h2>";
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
-    $id = User::addUserToDB("Hugo Sousa", null, null, "hugo@mail.com", "77777",  null, 0, 1);
+    $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, 0, 1);
     $courseUser = new CourseUser($id, new Course($course));
     $roleId = Core::$systemDB->select("role", ["course" => $course, "name" => "student"], "id");
     $courseUser->addCourseUserToDB($roleId, "");
     $csvCourseUsers = CourseUser::exportCourseUsers($course);
     file_put_contents("courseUsersCSVTesteUnit.csv", $csvCourseUsers);
     $usersCSV = file_get_contents("courseUsersCSVTesteUnit.csv");
-
+    if ($usersCSV) {
+        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users exported.</h3>";
+    } else {
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not exported.</h3>";
+    }
     //adds users
-    $usersCSV = "course,name,nickname,email,campus,studentNumber,isAdmin,isActive,roles,username,auth\n";
-    $usersCSV .= $course . ", Hugo Sousa Silva,,hugo@mail.com,,77777,0,1,Student,12,fenix\n";
-    $usersCSV .= $course . ", Joaquim Duarte,,,A,98765,0,1,,jb@gmail.pt,linkedin\n";
-    $usersCSV .= $course . ", Mónica Trindade,,,T,55555,0,1,,,\n";
+    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,auth\n";
+    $usersCSV .= "Hugo Sousa Silva,hugo@mail.com,,77777,0,1,A,Student,ist11111,fenix\n";
+    $usersCSV .= "Joaquim Duarte,,,98765,0,1,A,Student,jb@gmail.pt,linkedin\n";
+    $usersCSV .= "Mónica Trindade,,,55555,0,1,T,Student,m.trindade@mail.com,google\n";
     file_put_contents("courseUsersCSVTesteUnit.csv", $usersCSV);
 
-    CourseUser::importCourseUsers($usersCSV, false);
+    CourseUser::importCourseUsers($usersCSV, $course, false);
 
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
@@ -550,17 +597,19 @@ function testCourseUserImport($course)
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
         "isAdmin" => "0",
-        "isActive" => "1"   
+        "isActive" => "1"
     ], "id");
     $courseUser3Id = Core::$systemDB->select("course_user", [
         "id" => $user3Id,
         "course" => $course
     ]);
     if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
-        echo "\nSuccess: CourseUsers imported - created and updated without replace";
+        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
+    } else {
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not imported - created and updated (not replaced).</h3>";
     }
 
-    CourseUser::importCourseUsers($usersCSV, true);
+    CourseUser::importCourseUsers($usersCSV, $course, true);
 
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
@@ -572,7 +621,6 @@ function testCourseUserImport($course)
         "id" => $user1Id,
         "course" => $course
     ]);
-    $auth1 = Core::$systemDB->select("auth", ["game_course_user_id" => $user1Id, "username" => "jb@gmail.pt", "authentication_service" => "linkedin"]);
     $user2Id = Core::$systemDB->select("game_course_user", [
         "name" => "Hugo Sousa Silva",
         "email" => "hugo@mail.com",
@@ -583,7 +631,7 @@ function testCourseUserImport($course)
     $courseUser2Id = Core::$systemDB->select("course_user", [
         "id" => $user2Id,
         "course" => $course
-        ]);
+    ]);
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
@@ -595,14 +643,16 @@ function testCourseUserImport($course)
         "course" => $course
     ]);
 
-    if ($courseUser1Id && $courseUser2Id && $courseUser3Id && $auth1) {
-        echo "\nSuccess: CourseUsers imported - updated with replace";
+    if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
+        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - updated (and replaced).</h3>";
+    } else {
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not imported.</h3>";
     }
-
-    Core::$systemDB->delete("course_user", ["id" => $user1Id]);
-    Core::$systemDB->update("auth", ["game_course_user_id" => $user1Id, "username" => "jb@gmail.pt", "authentication_service" => "facebook"]);
-    Core::$systemDB->delete("game_course_user", ["name" => "Hugo Sousa Silva"]);
-    Core::$systemDB->delete("game_course_user", ["name" => "Mónica Trindade"]);
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "12345"]);
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "99999"]);
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "98765"]);
+    Core::$systemDB->delete("game_course_user", ["studentNumber" => "55555"]);
     unlink("courseUsersCSVTesteUnit.csv");
 }
 
@@ -615,8 +665,7 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
         if (Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])) {
             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
                 if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
-
-                    echo "\nSuccess: Courses imported without replace";
+                    echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (not replaced).</h3>";
                     //mudar o maxReward
                     Core::$systemDB->update("badges_config", ["maxBonusReward" => "1000"], ["maxBonusReward" => "2000", "course" => $courseID]);
                     //mudar de text para image (dentro da page)
@@ -629,27 +678,24 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
                         // && Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])
                         // && Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])
                     ) {
-                        echo "\nSuccess: Courses imported with replace.";
+                        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (and replaced).</h3>";
                     } else {
-                        echo "\nFailed: Courses could not be imported with replace.";
+                        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported with replace.</h3>";
                     }
                 } else {
-                    echo "\nFailed: Courses could not be imported without replace.";
+                    echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported without replace.</h3>";
                 }
             } else {
-                echo "\nFailed:Courses could not be imported without replace.";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported without replace.</h3>";
             }
         } else {
-            echo "\nFailed: import courses without replace.";
+            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Import courses without replace.</h3>";
         }
     } else {
-        echo "\nFailed: no file to import found.";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> No file to import found.</h3>";
     }
 }
-function testCourseUsersImport()
-{
-    // CourseUser::importUsers()
-}
+
 
 
 /*************************** Auxiliar functions ***************************/
@@ -660,17 +706,18 @@ function checkPhoto($username)
     if ($username) {
         $id = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
         if (!$id) {
-            echo "\nFailed: " . $username . " does not exist";
+            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
         } else {
 
             if (file_exists("photos/" . $id . ".png")) {
-                echo "\nSuccess: Photo created";
+
+                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Photo was created</h3>";
             } else {
-                echo "\nFailed: Photo was not created";
+                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Photo was not created</h3>";
             }
         }
     } else {
-        echo "\nFailed: " . $username . " does not exist";
+        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
     }
 }
 
@@ -839,23 +886,12 @@ function getCredentialsFromDB($courseId)
     return $arrayKey;
 }
 
-function setAuthCode($courseId)
-{
-    $response = handleToken($courseId);
-    if ($response["auth_url"]) {
-        Core::$systemDB->update(
-            "config_google_sheets",
-            ["authUrl" => $response["auth_url"]]
-        );
-    }
-}
 
 function handleToken($courseId)
 {
     $credentials = getCredentialsFromDB($courseId);
     $token = getTokenFromDB($courseId);
-    $authCode = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "authCode");
-    return GoogleHandler::checkToken($credentials, $token, $authCode);
+    // return GoogleHandler::checkToken($credentials, $token, null, $courseId);
 }
 
 function getTokenFromDB($courseId)
@@ -889,7 +925,7 @@ function setGoogleSheetsVars($courseId, $googleSheets)
     if ($names != "" && substr($names, -1) == ";") {
         $names = substr($names, 0, -1);
     }
-    $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names, "authCode" => $googleSheets["authCode"]];
+    $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names];
     if (empty($googleSheets["spreadsheetId"])) {
         return false;
     } else {
