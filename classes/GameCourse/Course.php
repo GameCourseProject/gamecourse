@@ -6,7 +6,7 @@ include 'GameRules.php';
 
 use GameRules;
 use Modules\Views\ViewHandler;
-use Modules\Plugin\CronJob;
+use GameCourse\CronJob;
 
 class Course
 {
