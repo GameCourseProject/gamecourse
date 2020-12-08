@@ -11,88 +11,176 @@ use Modules\Views\ViewHandler;
 
 Core::init();
 
-echo "<h1>Automated Test Script</h1>";
+echo "<h2>Automated Test Script</h2>";
 
-//course
-if (array_key_exists("course", $_GET)) {
-    $course = $_GET["course"];
-    if (Core::$systemDB->select("game_course_user", ["id" => $course])) {
+global $success;
+global $fail;
+$GLOBALS['success'] = 0;
+$GLOBALS['fail'] = 0;
+global $courseInfo;
+$GLOBALS['courseInfo'] = null;
 
-        if (array_key_exists("username", $_GET)) {
-            echo "<h2>Login Picture</h2>";
-            $username = $_GET["username"];
-            if ($username) {
-                testPhotoDownload($username);
-            }
-        } else {
-            echo "<h3 style='font-weight: normal'>
-            <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
-            </h3>";
-        }
+global $pluginInfo;
+$GLOBALS['pluginInfo'] = null;
 
-        $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("plugin")) {
-            testFenixPlugin($course);
-            testMoodlePlugin($course);
-            testClassCheckPlugin($course);
-            testGoogleSheetsPlugin($course);
-        } else {
-            echo "<h2>Plugins</h2>";
-            echo "<h3 style='font-weight: normal'>
-            <strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.
-            </h3>";
-        }
-        testDictionaryManagement($course);
+global $lg_1;
+$GLOBALS['lg_1'] = [];
 
-        testUserImport();
-        testCourseUserImport($course);
-        testCourseImport();
-    } else {
-        echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $course . ".
-        </h3>";
+global $fi_1;
+$GLOBALS['fi_1'] = [];
+global $fi_2;
+$GLOBALS['fi_2'] = [];
+global $fi_3;
+$GLOBALS['fi_3'] = [];
+global $fi_4;
+$GLOBALS['fi_4'] = [];
 
-        if (array_key_exists("username", $_GET)) {
-            echo "<h2>Login Picture</h2>";
-            $username = $_GET["username"];
-            if ($username) {
-                testPhotoDownload($username);
-            }
-        } else {
-            echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture, please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
-        </h3>";
-        }
-        testUserImport();
-    }
-} else {
-    echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.
-        </h3>";
-    if (array_key_exists("username", $_GET)) {
-        echo "<h2>Login Picture</h2>";
-        $username = $_GET["username"];
-        if ($username) {
-            testPhotoDownload($username);
-        }
-    } else {
-        echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> If you desire to test the download of the login picture, please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx
-        </h3>";
-    }
-    testUserImport();
-}
+global $p_1;
+$GLOBALS['p_1'] = [];
+global $p_2;
+$GLOBALS['p_2'] = [];
+global $p_3;
+$GLOBALS['p_3'] = [];
 
+global $dl_1;
+$GLOBALS['dl_1'] = [];
+global $dl_2;
+$GLOBALS['dl_2'] = [];
+global $dl_3;
+$GLOBALS['dl_3'] = [];
 
+global $df_1;
+$GLOBALS['df_1'] = [];
+global $df_2;
+$GLOBALS['df_2'] = [];
+global $df_3;
+$GLOBALS['df_3'] = [];
 
-function testPhotoDownload($username)
+global $dv_1;
+$GLOBALS['dv_1'] = [];
+global $dv_2;
+$GLOBALS['dv_2'] = [];
+global $dv_3;
+$GLOBALS['dv_3'] = [];
+
+global $u_1;
+$GLOBALS['u_1'] = [];
+global $u_2;
+$GLOBALS['u_2'] = [];
+global $u_3;
+$GLOBALS['u_3'] = [];
+
+global $cou_1;
+$GLOBALS['cou_1'] = [];
+global $cou_2;
+$GLOBALS['cou_2'] = [];
+global $cou_3;
+$GLOBALS['cou_3'] = [];
+
+global $c_1;
+$GLOBALS['c_1'] = [];
+global $c_2;
+$GLOBALS['c_2'] = [];
+global $c_3;
+$GLOBALS['c_3'] = [];
+
+$GLOBALS['courseInfo'] = testCourse();
+$GLOBALS['pluginInfo'] = testPlugin();
+$GLOBALS['dictionaryInfo'] = testDictionary();
+
+function testCourse()
 {
-    checkPhoto($username);
+    if (array_key_exists("course", $_GET)) {
+        if ($_GET["course"] != "") {
+            $course = $_GET["course"];
+            if (Core::$systemDB->select("course", ["id" => $course])) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+function testPlugin()
+{
+    $course = $_GET["course"];
+    $courseObj = Course::getCourse($course);
+    if ($courseObj->getModule("plugin")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+function testDictionary()
+{
+    $course = $_GET["course"];
+    $courseObj = Course::getCourse($course);
+    if ($courseObj->getModule("views")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+testPhotoDownload();
+if ($GLOBALS['courseInfo'] == 0) {
+    testUserImport();
+    // return "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
+} else if ($GLOBALS['courseInfo'] == -1) {
+    testUserImport();
+    // return "<strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $_GET["course"];
+} else if ($GLOBALS['courseInfo'] == 1) {
+    $course = $_GET["course"];
+    $courseObj = Course::getCourse($course);
+    if ($courseObj->getModule("plugin")) {
+        testFenixPlugin($course);
+        testMoodlePlugin($course);
+        testClassCheckPlugin($course);
+        testGoogleSheetsPlugin($course);
+    }
+    testDictionaryManagement($course);
+    testUserImport();
+    testCourseUserImport($course);
+    testCourseImport();
 }
 
+function testPhotoDownload()
+{
+    if (array_key_exists("username", $_GET)) {
+        $username = $_GET["username"];
+
+        if ($username) {
+            $id = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
+            if (!$id) {
+                // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
+                $GLOBALS['lg_1'] = ["warning", "<strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist."];
+            } else {
+
+                if (file_exists("photos/" . $id . ".png")) {
+
+                    // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Photo was created.</h3>";
+                    $GLOBALS['lg_1'] =  ["success", "<strong style='color:green'>Success:</strong> Photo was created."];
+                    $GLOBALS['success']++;
+                } else {
+                    // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Photo was not created.</h3>";
+                    $GLOBALS['lg_1'] =  ["fail", "<strong style='color:red'>Fail:</strong> Photo was not created."];
+                    $GLOBALS['fail']++;
+                }
+            }
+        } else {
+            // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
+            $GLOBALS['lg_1'] =  ["warning", "<strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist."];
+        }
+    } else {
+        // " If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx"
+        $GLOBALS['lg_1'] =  ["warning", "<strong style='color:#F7941D; '>Warning:</strong> If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx"];
+    }
+}
 function testFenixPlugin($course)
 {
-    echo "<h2>Fenix Plugin</h2>";
     $fenix = array();
     array_push($fenix, "Username;Número;Nome;Email;Agrupamento PCM Labs;Turno Teórica;Turno Laboratorial;Total de Inscrições;Tipo de Inscrição;Estado Matrícula;Curso");
     array_push($fenix, "ist112345;12345;João Silva;js@tecnico.ulisboa.pt; 33 - PCM264L05; PCM264T02; ;1; Normal; Matriculado; Licenciatura Bolonha em Engenharia Informática e de Computadores - Alameda - LEIC-A 2006");
@@ -104,27 +192,45 @@ function testFenixPlugin($course)
         $gcu1 = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
         $gcu2 = Core::$systemDB->select("game_course_user", ["studentNumber" => "99999"]);
         if ($gcu1 && $gcu2) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users uploaded</h3>";
+            $GLOBALS['success']++;
+            $GLOBALS['fi_1'] =  ["success", "<strong style='color:green; '>Success:</strong> Users uploaded."];
+
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users uploaded.</h3>";
             $courseUser1 = Core::$systemDB->select("course_user", ["id" => $gcu1["id"]]);
             $courseUser2 = Core::$systemDB->select("course_user", ["id" => $gcu2["id"]]);
             if ($courseUser1 && $courseUser2) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users uploaded</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users uploaded.</h3>";
+                $GLOBALS['fi_2'] =  ["success", "<strong style='color:green; '>Success:</strong> Course Users uploaded."];
+
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users failed to upload</h3>";
+                $GLOBALS['fi_2'] =  ["fail", "<strong style='color:red; '>Fail:</strong> Course Users failed to upload."];
+
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users Fail to upload.</h3>";
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users failed to upload</h3>";
+            $GLOBALS['fi_1'] =  ["fail", "<strong style='color:red; '>Fail:</strong> Users failed to upload."];
+
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users Fail to upload.</h3>";
+            $GLOBALS['fail']++;
         }
 
         $auth1 = Core::$systemDB->select("auth", ["username" => "ist112345"]);
         $auth2 = Core::$systemDB->select("auth", ["username" => "ist199999"]);
         if ($auth1 && $auth2) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users' authentication uploaded</h3>";
+            $GLOBALS['fi_3'] =  ["success", "<strong style='color:green; '>Success:</strong> Users' authentication uploaded."];
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users' authentication uploaded.</h3>";
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users' authentication failed to upload</h3>";
+            $GLOBALS['fi_3'] =  ["fail", "<strong style='color:red; '>Fail:</strong> Users' authentication failed to upload."];
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users' authentication Fail to upload.</h3>";
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users where not created correctly</h3>";
+        $GLOBALS['fi_1'] =  ["fail", "<strong style='color:red;'>Fail:</strong> Users were not created correctly."];
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not created correctly.</h3>";
+        $GLOBALS['fail']++;
     }
 
     $fenix = array();
@@ -138,20 +244,24 @@ function testFenixPlugin($course)
         $gcu = Core::$systemDB->select("game_course_user", ["studentNumber" => "12345"]);
         if ($gcu) {
             if ($gcu["name"] == $updatedName) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong>  User updated</h3>";
+                $GLOBALS['fi_4'] =  ["success", "<strong style='color:green;'>Success:</strong> Users updated."];
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong>  User updated.</h3>";
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> User failed to update</h3>";
+                $GLOBALS['fi_4'] =  ["fail", "<strong style='color:red;'>Fail:</strong> Users failed to update."];
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> User Fail to update</h3>";
+                $GLOBALS['fail']++;
             }
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users where not updated correctly</h3>";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users where not updated correctly</h3>";
+        $GLOBALS['fail']++;
     }
 }
 
 function testMoodlePlugin($course)
 {
     echo "\n";
-    echo "<h2>Moodle Plugin</h2>";
     $moodleVar = [
         "dbserver" => "localhost",
         "dbuser" => "root",
@@ -176,36 +286,45 @@ function testMoodlePlugin($course)
             "moodleCourse" => null,
             "moodleUser" => null
         ])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Moodle variables were set</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Moodle variables were set.</h3>";
+            $GLOBALS['p_1'] =  ["success", "<strong style='color:green; '>Success:</strong> Moodle variables were set."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Moodle Variables were not inserted in the database</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Moodle Variables were not inserted in the database</h3>";
+            $GLOBALS['p_1'] =  ["fail", "<strong style='color:red; '>Fail:</strong> Moodle variables were not inserted in the database."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set moodle variables.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to set moodle variables.</h3>";
+        $GLOBALS['p_1'] =  ["fail", "<strong style='color:red; '>Fail:</strong> It was not possible to set the Moodle variables."];
+        $GLOBALS['fail']++;
     }
 }
 
 function testClassCheckPlugin($course)
 {
-    echo "<h2>Class Check Plugin</h2>";
 
     $ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
     $resultCC = setClassCheckVars($course, $ccVar);
     if ($resultCC) {
         if (Core::$systemDB->select("config_class_check", $ccVar)) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Class Check variables were set</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Class Check variables were set.</h3>";
+            $GLOBALS['p_2'] =  ["success", "<strong style='color:green; '>Success:</strong> Class Check variables were set."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> ClassCheck Variables were not inserted in the database</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Class Check Variables were not inserted in the database</h3>";
+            $GLOBALS['p_2'] =  ["fail", "<strong style='color:red;'>Fail:</strong> Class Check variables were not inserted in the database."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set classChc variables.</h3>";
+        echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to set classChc variables.</h3>";
+        $GLOBALS['p_2'] =  ["fail", "<strong style='color:red;'>Fail:</strong> It was not possible to set the Class Check variables."];
+        $GLOBALS['fail']++;
     }
 }
 
 function testGoogleSheetsPlugin($course)
 {
-    echo "<h2>Google Sheets Plugin</h1>";
-
     if (Core::$systemDB->select("config_google_sheets", ["course" => $course])) {
 
 
@@ -219,23 +338,30 @@ function testGoogleSheetsPlugin($course)
                 "sheetName" => "ist13898_"
             );
             if (Core::$systemDB->select("config_google_sheets", $checkDB_GS)) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Google Sheets variables were set</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Google Sheets variables were set.</h3>";
+                $GLOBALS['p_3'] =  ["success", "<strong style='color:green; '>Success:</strong> Google Sheets variables were set."];
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Google Sheets variables were not inserted in the database.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Google Sheets variables were not inserted in the database.</h3>";
+                $GLOBALS['p_3'] =  ["fail", "<strong style='color:red; '>Fail:</strong> Google Sheets variables were not inserted in the database."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to set Google Sheets variables.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to set Google Sheets variables.</h3>";
+            $GLOBALS['p_3'] =  ["fail", "<strong style='color:red; '>Fail:</strong> It was not possible to set the Google Sheets variables."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> Make sure you authenticate to access to Google Sheets for course " . $course . "."
-            . "</h3>";
+        // echo "<h3 style='font-weight: normal'>
+        // <strong style='color:#F7941D;'>Warning:</strong> Make sure you authenticate to access to Google Sheets for course " . $course . "."
+        //     . "</h3>";
+        $GLOBALS['p_3'] =  ["warning", "<strong style='color:#F7941D; '>Warning:</strong>Make sure you authenticate to access to Google Sheets for course " . $course . "."];
     }
 }
 
 function testDictionaryManagement($course)
 {
-    echo "<h2>Dictionary</h2>";
+    // echo "<h2>Dictionary</h2>";
     $courseObj = Course::getCourse($course);
     $viewModule = $courseObj->getModule('views');
     if ($viewModule) {
@@ -247,9 +373,13 @@ function testDictionaryManagement($course)
         if (Core::$systemDB->select("dictionary_library", [
             "moduleId" => "views", "name" => "games", "description" =>  "This library contains information about the course games"
         ])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library updated.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library created.</h3>";
+            $GLOBALS['dl_1'] = ["success", "<strong style='color:green'>Success:</strong> Library created."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not created.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Library was not created.</h3>";
+            $GLOBALS['dl_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Library was not created."];
+            $GLOBALS['fail']++;
         }
 
         //update library
@@ -257,17 +387,25 @@ function testDictionaryManagement($course)
         if (Core::$systemDB->select("dictionary_library", [
             "moduleId" => "views", "name" => "games", "description" =>  "This is a game's library"
         ])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library updated.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library updated.</h3>";
+            $GLOBALS['dl_2'] = ["success", "<strong style='color:green'>Success:</strong> Library updated."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not updated.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Library was not updated.</h3>";
+            $GLOBALS['dl_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Library was not updated."];
+            $GLOBALS['fail']++;
         }
 
         //delete library
         $viewHandler->unregisterLibrary("views", "games");
         if (!Core::$systemDB->select("dictionary_library", ["name" => "games", "moduleId" => "views"])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Library deleted.</h3>";
+            $GLOBALS['dl_3'] = ["success", "<strong style='color:green'>Success:</strong> Library deleted."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Library was not deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Library was not deleted.</h3>";
+            $GLOBALS['dl_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Library was not deleted."];
+            $GLOBALS['fail']++;
         }
 
         //insert function
@@ -291,12 +429,18 @@ function testDictionaryManagement($course)
                 "refersToName" => "course", "keyword" => "color", "args" => null,
                 "description" =>  "Returns the course color."
             ])) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function created.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function created.</h3>";
+                $GLOBALS['df_1'] = ["success", "<strong style='color:green'>Success:</strong> Function created."];
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not created.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Function was not created.</h3>";
+                $GLOBALS['df_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Function was not created."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the function.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to register the function.</h3>";
+            $GLOBALS['df_1'] = ["fail", "<strong style='color:red'>Fail:</strong> It was not possible to register the function."];
+            $GLOBALS['fail']++;
         }
 
         //update function
@@ -324,19 +468,29 @@ function testDictionaryManagement($course)
                 "refersToName" => "course", "keyword" => "color", "args" => $args,
                 "description" =>  "Color RGB or HEX."
             ])) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function updated.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function updated.</h3>";
+                $GLOBALS['df_2'] = ["success", "<strong style='color:green'>Success:</strong> Function updated."];
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not updated.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Function was not updated.</h3>";
+                $GLOBALS['df_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Function was not updated."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the function</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to register the function</h3>";
+            $GLOBALS['df_2'] = ["fail", "<strong style='color:red'>Fail:</strong> It was not possible to register the function."];
+            $GLOBALS['fail']++;
         }
         //delete function
         $viewHandler->unregisterFunction("color", "views");
         if (!Core::$systemDB->select("dictionary_function", ["keyword" => "games", "libraryId" => $id])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Function deleted.</h3>";
+            $GLOBALS['df_3'] = ["success", "<strong style='color:green'>Success:</strong> Function deleted."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Function was not deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Function was not deleted.</h3>";
+            $GLOBALS['df_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Function was not deleted."];
+            $GLOBALS['fail']++;
         }
 
         //insert variable
@@ -347,12 +501,18 @@ function testDictionaryManagement($course)
                 "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
                 "description" =>  "Returns the role of the user that is viewing the page"
             ])) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable created.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable created.</h3>";
+                $GLOBALS['dv_1'] = ["success", "<strong style='color:green'>Success:</strong> Variable created."];
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not created.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Variable was not created.</h3>";
+                $GLOBALS['dv_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Variable was not created."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the variable.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to register the variable.</h3>";
+            $GLOBALS['dv_1'] = ["fail", "<strong style='color:red'>Fail:</strong>It was not possible to register the variable."];
+            $GLOBALS['fail']++;
         }
 
         //update variable
@@ -362,39 +522,54 @@ function testDictionaryManagement($course)
                 "libraryId" => $id, "name" => "%roles", "returnType" => "collection", "returnName" => "string",
                 "description" =>  "Returns roles"
             ])) {
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable updated.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable updated.</h3>";
+                $GLOBALS['dv_2'] = ["success", "<strong style='color:green'>Success:</strong> Variable updated."];
+                $GLOBALS['success']++;
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not updated.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Variable was not updated.</h3>";
+                $GLOBALS['dv_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Variable was not updated."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> It was not possible to register the variable.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> It was not possible to register the variable.</h3>";
+            $GLOBALS['dv_2'] = ["fail", "<strong style='color:red'>Fail:</strong>It was not possible to register the variable."];
+            $GLOBALS['fail']++;
         }
         //delete variable
         $viewHandler->unregisterVariable("%roles");
         if (!Core::$systemDB->select("dictionary_variable", ["name" => "%roles"])) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Variable deleted.</h3>";
+            $GLOBALS['dv_3'] = ["success", "<strong style='color:green'>Success:</strong> Variable deleted."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Variable was not deleted.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Variable was not deleted.</h3>";
+            $GLOBALS['dv_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Variable was not deleted."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'>
-        <strong style='color:#F7941D;'>Warning:</strong> To test the dictionary, please enable the views module.
-        </h3>";
+        // echo "<h3 style='font-weight: normal'>
+        // <strong style='color:#F7941D;'>Warning:</strong> To test the dictionary, please enable the views module.
+        // </h3>";
+
     }
 }
 
 function testUserImport()
 {
-    echo "<h2>Import/Export Users</h2>";
+    // echo "<h2>Import/Export Users</h2>";
     //adds users
     $csvUsers = CourseUser::exportUsers();
     file_put_contents("UsersCSVTesteUnit.csv", $csvUsers);
     $usersCSV = file_get_contents("UsersCSVTesteUnit.csv");
 
     if ($usersCSV) {
-        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users exported.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users exported.</h3>";
+        $GLOBALS['u_1'] = ["success", "<strong style='color:green'>Success:</strong> Users exported."];
+        $GLOBALS['success']++;
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users not exported.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users not exported.</h3>";
+        $GLOBALS['u_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Users not exported."];
+        $GLOBALS['fail']++;
     }
     $usersCSV .= "\nJoão Bernardo,,,98765,0,1,jb@gmail.pt,google\n";
     $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,olivia.nog@gmail.com,google\n";
@@ -431,10 +606,10 @@ function testUserImport()
         // if ($user1Auth && $user2Auth) {
         //     echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - created.</h3>";
         // } else {
-        //     echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not created.</h3>";
+        //     echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not created.</h3>";
         // }
     } else {
-        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not created.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not created.</h3>";
     }
     //does not update users
     $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
@@ -454,12 +629,18 @@ function testUserImport()
             "isAdmin" => "0"
         ]);
         if ($user1Auth && $user2Auth) {
-            echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - created and updated (not replaced).</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - created and updated (not replaced).</h3>";
+            $GLOBALS['u_2'] = ["success", "<strong style='color:green'>Success:</strong> Users imported - created and updated (not replaced)."];
+            $GLOBALS['success']++;
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated without replace.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not updated without replace.</h3>";
+            $GLOBALS['u_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Users were not correctly imported -  not updated without replace."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated without replace.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not updated without replace.</h3>";
+        $GLOBALS['u_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Users were not correctly imported -  not updated without replace."];
+        $GLOBALS['fail']++;
     }
     //update users
     User::importUsers($usersCSV, true);
@@ -484,9 +665,13 @@ function testUserImport()
         "isAdmin" => "1",
     ], "id");
     if ($user3 && $user4Id) {
-        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - updated (and replaced).</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Users imported - updated (and replaced).</h3>";
+        $GLOBALS['u_3'] = ["success", "<strong style='color:green'>Success:</strong> Users imported - updated (and replaced)."];
+        $GLOBALS['success']++;
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Users were not correctly imported - not updated with replace.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not updated with replace.</h3>";
+        $GLOBALS['u_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Users were not correctly imported - not updated with replace."];
+        $GLOBALS['fail']++;
     }
     Core::$systemDB->delete("game_course_user", ["id" => $user1Id]);
     Core::$systemDB->delete("game_course_user", ["id" => $user2Id]);
@@ -496,7 +681,7 @@ function testUserImport()
 }
 function testCourseImport()
 {
-    echo "<h2>Import/Export Courses</h2>";
+    // echo "<h2>Import/Export Courses</h2>";
 
     $courseID = Core::$systemDB->select("course", ["name" => "Course X", "year" => "2017-2018"], "id");
     $courseObj = null;
@@ -513,43 +698,61 @@ function testCourseImport()
                             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
                                 if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
                                     $json = Course::exportCourses();
-                                    echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses exported.</h3>";
+                                    // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses exported.</h3>";
+                                    $GLOBALS['c_1'] = ["success", "<strong style='color:green'>Success:</strong> Courses exported."];
+                                    $GLOBALS['success']++;
                                     importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId);
                                     unlink("coursesJSONTesteUnit.json");
                                 } else {
-                                    echo "<h3 style='font-weight: normal'><strong style='color:#F7941D;'>Warning:</strong>Enable badges and set maxReward to 2000</h3>";
+                                    // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D;'>Warning: </strong>Enable badges and set maxReward to 2000</h3>";
+                                    $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong>Enable badges and set maxReward to 2000."];
                                 }
                             } else {
-                                echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>You created a template (role single), but it does not contain a image in 'Course X'</h3>";
+                                // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>You created a template (role single), but it does not contain a image in 'Course X'</h3>";
+                                $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>You created a template (role single), but it does not contain a image in 'Course X'."];
                             }
                         } else {
-                            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a template (role single) containing an image</h3>";
+                            // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>Create a template (role single) containing an image</h3>";
+                            $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>Create a template (role single) containing an image."];
                         }
                     } else {
-                        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a template (role single) containing an image</h3>";
+                        // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>Create a template (role single) containing an image</h3>";
+                        $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>Create a template (role single) containing an image."];
                     }
                 } else {
-                    echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>You created a page (role single), but it does not contain a text in 'Course X'</h3>";
+                    // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>You created a page (role single), but it does not contain a text in 'Course X'</h3>";
+                    $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>You created a page (role single), but it does not contain a text in 'Course X'."];
                 }
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Create a page (role single) contaning a text in 'Course X'</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>Create a page (role single) contaning a text in 'Course X'</h3>";
+                $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>Create a page (role single) contaning a text in 'Course X'."];
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong>Enable module views and badges</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong>Enable module views and badges</h3>";
+            $GLOBALS['c_1'] = ["warning", "<strong style='color:#F7941D;'>Warning: </strong><strong style='color:#F7941D; '>Warning: </strong>Enable module views and badges."];
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> To test the course's import and export, do the following:</h3>";
-        echo "<ul>";
-        echo "<li><h3 style='padding:0px;font-weight:normal'>Create a course named 'Course X' and year '2017/2018'.</h3></li>";
-        echo "<li><h3 style='padding:0px;font-weight:normal'>Inside that course, enable views and create a page contaning a text (role single).</h3></li>";
-        echo "<li><h3 style='padding:0px;font-weight:normal'>Create a template containing an image (role single).</h3></li>";
-        echo "<li><h3 style='padding:0px;font-weight:normal'>Enable badges and set maxReward to 2000.</h3></li>";
-        echo "</ul>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning: </strong> To test the course's import and export, do the following:</h3>";
+        // echo "<ul>";
+        // echo "<li><h3 style='padding:0px;font-weight:normal'>Create a course named 'Course X' and year '2017/2018'.</h3></li>";
+        // echo "<li><h3 style='padding:0px;font-weight:normal'>Inside that course, enable views and create a page contaning a text (role single).</h3></li>";
+        // echo "<li><h3 style='padding:0px;font-weight:normal'>Create a template containing an image (role single).</h3></li>";
+        // echo "<li><h3 style='padding:0px;font-weight:normal'>Enable badges and set maxReward to 2000.</h3></li>";
+        // echo "</ul>";
+
+        $GLOBALS['c_1'] = ["warning", "
+        <strong style='color:#F7941D;'>Warning: </strong>To test the course's import and export, do the following:
+        <ul>
+        <li>Create a course named 'Course X' and year '2017/2018'.</li>
+        <li>Inside that course, enable views and create a page contaning a text (role single).</li>
+        <li>Create a template containing an image (role single).</li>
+        <li>Enable badges and set maxReward to 2000.</li>
+        </ul>"];
     }
 }
 function testCourseUserImport($course)
 {
-    echo "<h2>Import/Export Course Users</h2>";
+    // echo "<h2>Import/Export Course Users</h2>";
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
     $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, 0, 1);
     $courseUser = new CourseUser($id, new Course($course));
@@ -559,9 +762,13 @@ function testCourseUserImport($course)
     file_put_contents("courseUsersCSVTesteUnit.csv", $csvCourseUsers);
     $usersCSV = file_get_contents("courseUsersCSVTesteUnit.csv");
     if ($usersCSV) {
-        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users exported.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users exported.</h3>";
+        $GLOBALS['cou_1'] = ["success", "<strong style='color:green'>Success:</strong>  Course Users exported."];
+        $GLOBALS['success']++;
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not exported.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not exported.</h3>";
+        $GLOBALS['cou_1'] = ["fail", "<strong style='color:red'>Fail:</strong>  Course Users not exported."];
+        $GLOBALS['fail']++;
     }
     //adds users
     $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,auth\n";
@@ -604,9 +811,13 @@ function testCourseUserImport($course)
         "course" => $course
     ]);
     if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
-        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
+        $GLOBALS['cou_2'] = ["success", "<strong style='color:green'>Success:</strong>  Course Users imported - created and updated (not replaced)."];
+        $GLOBALS['success']++;
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not imported - created and updated (not replaced).</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not imported - created and updated (not replaced).</h3>";
+        $GLOBALS['cou_2'] = ["fail", "<strong style='color:red'>Fail:</strong> Course Users not imported - created and updated (not replaced)."];
+        $GLOBALS['fail']++;
     }
 
     CourseUser::importCourseUsers($usersCSV, $course, true);
@@ -644,9 +855,13 @@ function testCourseUserImport($course)
     ]);
 
     if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
-        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - updated (and replaced).</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - updated (and replaced).</h3>";
+        $GLOBALS['cou_3'] = ["success", "<strong style='color:green'>Success:</strong>  Course Users imported - updated (and replaced)."];
+        $GLOBALS['success']++;
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Course Users not imported.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Course Users not imported.</h3>";
+        $GLOBALS['cou_3'] = ["fail", "<strong style='color:red'>Fail:</strong> Course Users not imported."];
+        $GLOBALS['fail']++;
     }
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "12345"]);
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "99999"]);
@@ -665,7 +880,9 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
         if (Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])) {
             if (Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])) {
                 if (Core::$systemDB->select("badges_config", ["maxBonusReward" => "2000", "course" => $courseID])) {
-                    echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (not replaced).</h3>";
+                    // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (not replaced).</h3>";
+                    $GLOBALS['c_2'] = ["success", "<strong style='color:green;'>Success: </strong>Courses imported - updated (not replaced)."];
+                    $GLOBALS['success']++;
                     //mudar o maxReward
                     Core::$systemDB->update("badges_config", ["maxBonusReward" => "1000"], ["maxBonusReward" => "2000", "course" => $courseID]);
                     //mudar de text para image (dentro da page)
@@ -678,21 +895,34 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
                         // && Core::$systemDB->select("view", ["partType" => "text", "parent" => $viewPage])
                         // && Core::$systemDB->select("view", ["partType" => "image", "parent" => $viewIdTemplate])
                     ) {
-                        echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (and replaced).</h3>";
+                        // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Courses imported - updated (and replaced).</h3>";
+                        $GLOBALS['c_3'] = ["success", "<strong style='color:green;'>Success: </strong>Courses imported - updated (and replaced)."];
+                        $GLOBALS['success']++;
                     } else {
-                        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported with replace.</h3>";
+                        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Courses could not be imported with replace.</h3>";
+                        $GLOBALS['c_3'] = ["fail", "<strong style='color:red;'>Fail: </strong>could not be imported with replace."];
+                        $GLOBALS['fail']++;
                     }
                 } else {
-                    echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported without replace.</h3>";
+                    // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Courses could not be imported without replace.</h3>";
+                    $GLOBALS['c_2'] = ["fail", "<strong style='color:red;'>Fail: </strong>Courses could not be imported without replace."];
+                    $GLOBALS['fail']++;
                 }
             } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Courses could not be imported without replace.</h3>";
+                // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Courses could not be imported without replace.</h3>";
+                $GLOBALS['c_2'] = ["fail", "<strong style='color:red;'>Fail: </strong>Courses could not be imported without replace."];
+                $GLOBALS['fail']++;
             }
         } else {
-            echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Import courses without replace.</h3>";
+            // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Could not import courses without replace.</h3>";
+            $GLOBALS['c_2'] = ["fail", "<strong style='color:red;'>Fail: </strong>Courses could not be imported without replace."];
+            $GLOBALS['fail']++;
         }
     } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> No file to import found.</h3>";
+        // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> No file to import found.</h3>";
+        $GLOBALS['c_2'] = ["fail", "<strong style='color:red;'>Fail: </strong>No file to import found."];
+
+        $GLOBALS['fail']++;
     }
 }
 
@@ -700,26 +930,7 @@ function importCourses($json, $viewPage, $viewIdTemplate, $courseID, $templateId
 
 /*************************** Auxiliar functions ***************************/
 
-//Check if a photo is created when logging in (by username)
-function checkPhoto($username)
-{
-    if ($username) {
-        $id = Core::$systemDB->select("auth", ["username" => $username], "game_course_user_id");
-        if (!$id) {
-            echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
-        } else {
 
-            if (file_exists("photos/" . $id . ".png")) {
-
-                echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Photo was created</h3>";
-            } else {
-                echo "<h3 style='font-weight: normal'><strong style='color:red'>Failed:</strong> Photo was not created</h3>";
-            }
-        }
-    } else {
-        echo "<h3 style='font-weight: normal'><strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist.</h3>";
-    }
-}
 
 //Check if users where created/updated
 function checkFenix($fenix, $course)
@@ -993,4 +1204,309 @@ function argsToJSON($func, $refersToType, $funcLib)
         }
     }
     return $arg;
+}
+// echo "<hr>";
+// echo "<h2 style='margin-bottom:2px;'>Results: </h2>";
+// $percentage = ($GLOBALS['success'] / ($GLOBALS['success'] + $GLOBALS['fail'])) * 100;
+// if ($percentage < 50) {
+//     echo "<h3 style='margin-bottom:2px;'>Unit Tests Score: <span style='padding-left:2px;padding-right:2px;background-color:#e34a4a;'>" . round($percentage, 2) . "%</span></h3>";
+// } else {
+//     echo "<h3 style='margin-bottom:2px;'>Unit Tests Score: <span style='padding-left:2px;padding-right:2px;background-color:#6aae6f;'>" . round($percentage, 2) . "%</span></h3>";
+// }
+
+// echo "<h3 style='font-weight: normal;margin:2px'> - <strong style='color:green'> Succeded: </strong>" . $GLOBALS['success'] . "</h3>";
+// echo "<h3 style='font-weight: normal;margin:2px'> - <strong style='color:red'> Failed: </strong>" . $GLOBALS['fail'] . "</h3>";
+// $percentageCoverage = (($GLOBALS['success'] + $GLOBALS['fail']) / 26) * 100;
+// if ($percentageCoverage < 50) {
+//     echo "<h3 style='margin-bottom:2px;'>Coverage: <span style='padding-left:2px;padding-right:2px;background-color:#e34a4a;'>" .   round($percentageCoverage, 2) . "%</span></h3>";
+// } else if ($percentageCoverage == 100) {
+//     echo "<h3 style='margin-bottom:2px;'>Coverage: <span style='padding-left:2px;padding-right:2px;background-color:#6aae6f;'>" .   round($percentageCoverage, 2) . "%</span></h3>";
+// } else {
+//     echo "<h3 style='margin-bottom:2px;'>Coverage: <span style='padding-left:2px;padding-right:2px;background-color:#F7941D;'>" .   round($percentageCoverage, 2) . "%</span></h3>";
+// }
+// echo "<h3 style='font-weight: normal;margin:2px'> - <strong> Run: </strong>" . ($GLOBALS['success'] + $GLOBALS['fail']) . "</h3>";
+// echo "<h3 style='font-weight: normal;margin:2px'> - <strong> Total: </strong>26</h3>";
+
+
+
+echo "<table style=' border: 1px solid black; border-collapse: collapse;'>";
+//Nome das colunas
+echo "<tr>";
+echo "<th style='border: 1px solid black; padding: 5px;'><strong>Group</strong></th>";
+echo "<th style='border: 1px solid black; padding: 5px;'><strong>Test</strong></th>";
+echo "<th style='border: 1px solid black; padding: 5px;'><strong>Score</strong></th>";
+echo "<th style='border: 1px solid black; padding: 5px;'><strong>Coverage</strong></th>";
+echo "</tr>";
+// Login Picture
+echo "<tr>";
+echo "<td style='border: 1px solid black; padding: 5px;'>Login Picture</td>";
+echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS['lg_1'][1] . "</td>";
+if ($GLOBALS['lg_1'][0] == "warning") {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5;'>0%</br>(0/1)</td>";
+} else if ($GLOBALS['lg_1'][0] == "success") {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897'>100%</br>(1/1)</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897;'>100%</br>(1/1)</td>";
+} else if ($GLOBALS['lg_1'][0] == "fail") {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;'>0%</br>(0/1)</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color: #FFA5A5;'>1000%</br>(1/1)</td>";
+}
+echo "</tr>";
+// Fénix Import
+echo "<tr>";
+if ($GLOBALS['courseInfo'] == 1) {
+    if ($GLOBALS["pluginInfo"] == 0) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Fénix Import</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/4)</td>";
+        echo "</tr>";
+    } else {
+        $info = $GLOBALS['fi_1'][0] . $GLOBALS["fi_2"][0] . $GLOBALS["fi_3"][0] . $GLOBALS["fi_4"][0];
+        $countedInfo = countInfos($info, 4);
+        echo "<td rowspan='4' style='border: 1px solid black; padding: 5px;'>Fénix Import</td>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS['fi_1'][1] . "</td>";
+        echo "<td rowspan='4' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/4)</td>";
+        echo "<td rowspan='4' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (4 - $countedInfo[0]) . "/4)</td>";
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["fi_2"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["fi_3"][1] . " </td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px'>" . $GLOBALS["fi_4"][1] . "</td>";
+        echo "</tr>";
+    }
+} else {
+    checkCourseTable("Fénix Import", 4);
+}
+
+//Plugin
+echo "<tr>";
+if ($GLOBALS['courseInfo'] == 1) {
+    if ($GLOBALS["pluginInfo"] == 0) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Plugins</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/3)</td>";
+        echo "</tr>";
+    } else {
+        $info = $GLOBALS["p_1"][0] . $GLOBALS["p_2"][0] . $GLOBALS["p_3"][0];
+        $countedInfo = countInfos($info, 3);
+        // return [$warningCount, $successCount, $percentageScore, $percentageCover, $colorScore, $colorCover];
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Plugins</td>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["p_1"][1] . "</td>";
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["p_2"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["p_3"][1] . "</td>";
+        echo "</tr>";
+    }
+} else {
+    checkCourseTable("Plugins", 3);
+}
+// Dictionary
+if ($GLOBALS['courseInfo'] == 1) {
+    if ($GLOBALS['dictionaryInfo'] == 1) {
+
+        $info = $GLOBALS["dl_1"][0] . $GLOBALS["dl_2"][0] . $GLOBALS["dl_3"][0] . $GLOBALS["df_1"][0] . $GLOBALS["df_2"][0] . $GLOBALS["df_3"][0] . $GLOBALS["dv_1"][0] . $GLOBALS["dv_2"][0] . $GLOBALS["dv_3"][0];
+        $countedInfo = countInfos($info, 9);
+        echo "<tr>";
+        echo "<td rowspan='9' style='border: 1px solid black; padding: 5px;'>Dictionary</td>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dl_1"][1] . "</td>";
+        echo "<td rowspan='9' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/9)</td>";
+        echo "<td rowspan='9' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (9 - $countedInfo[0]) . "/9)</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dl_2"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dl_3"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["df_1"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["df_1"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["df_1"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dv_1"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dv_2"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["dv_3"][1] . "</td>";
+        echo "</tr>";
+    } else {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Dictionary</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the dictionary, please enable the views module.</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/3)</td>";
+        echo "</tr>";
+    }
+} else {
+    checkCourseTable("Dictionary", 9);
+}
+//Import/Export Users
+$info = $GLOBALS["u_1"][0] . $GLOBALS["u_2"][0] . $GLOBALS["u_3"][0];
+$countedInfo = countInfos($info, 3);
+echo "<tr>";
+echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Import/Export Users</td>";
+echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["u_1"][1] . "</td>";
+echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
+echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+echo "</tr>";
+
+echo "<tr>";
+echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["u_2"][1] . "</td>";
+echo "</tr>";
+
+echo "<tr>";
+echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["u_3"][1] . "</td>";
+echo "</tr>";
+
+//Import/Export Course Users
+if ($GLOBALS['courseInfo'] == 1) {
+    $info = $GLOBALS["cou_1"][0] . $GLOBALS["cou_2"][0] . $GLOBALS["cou_3"][0];
+    $countedInfo = countInfos($info, 3);
+    echo "<tr>";
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Import/Export Course Users</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_1"][1] . "</td>";
+
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
+    echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+    echo "</tr>";
+
+    echo "<tr>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_2"][1] . "</td>";
+    echo "</tr>";
+
+    echo "<tr>";
+    echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["cou_3"][1] . "</td>";
+    echo "</tr>";
+} else {
+    checkCourseTable("Import/Export Course Users", 3);
+}
+//Import/Export Courses
+if ($GLOBALS['courseInfo'] == 1) {
+    $info = $GLOBALS["c_1"][0] . $GLOBALS["c_2"][0] . $GLOBALS["c_3"][0];
+    $countedInfo = countInfos($info, 3);
+    echo "<tr>";
+    if ($countedInfo[0] > 0) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Import/Export Courses</td>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["c_1"][1] . "</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/3)</td>";
+    } else {
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Import/Export Courses</td>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["c_1"][1] . "</td>";
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";
+
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["c_3"][1] . "</td>";
+        echo "</tr>";
+
+        echo "<tr>";
+        echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["c_3"][1] . "</td>";
+        echo "</tr>";
+    }
+} else {
+    checkCourseTable("Import/Export Courses", 3);
+}
+//total
+
+$percentage = ($GLOBALS['success'] / ($GLOBALS['success'] + $GLOBALS['fail'])) * 100;
+$percentageCoverage = (($GLOBALS['success'] + $GLOBALS['fail']) / 26) * 100;
+
+echo "<tr>";
+echo "<td colspan='2' style='border: 1px solid black; padding: 5px;'><strong>Total</strong></td>";
+if ($percentage == 100) {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897'><strong>" . round($percentage, 2) . "%</br>(" . $GLOBALS['success'] . "/" . ($GLOBALS['success'] + $GLOBALS['fail']) . ")</strong></td>";
+} else if ($percentage < 50) {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'><strong>" . round($percentage, 2) . "%</br>(" . $GLOBALS['success'] . "/" . ($GLOBALS['success'] + $GLOBALS['fail']) . ")</strong></td>";
+} else {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFF1AA'><strong>" . round($percentage, 2) . "%</br>(" . $GLOBALS['success'] . "/" . ($GLOBALS['success'] + $GLOBALS['fail']) . ")</strong></td>";
+}
+
+if ($percentageCoverage == 100) {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897'><strong>" . round($percentageCoverage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
+} else if ($percentageCoverage < 50) {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'><strong>" . round($percentageCoverage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
+} else {
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFF1AA'><strong>" . round($percpercentageCoverageentage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
+}
+echo "</tr>";
+echo "</table>";
+
+
+function countInfos($info, $nrTotal)
+{
+    $warningCount = substr_count($info, "warning");
+    $successCount = substr_count($info, "success");
+    $percentageScore =  round(($successCount / $nrTotal) * 100, 2);
+    $percentageCover = round((($nrTotal - $warningCount) / $nrTotal) * 100, 2);
+
+    $colorScore = null;
+    $colorCover = null;
+
+    if ($percentageScore < 50) {
+        $colorScore = "#FFA5A5";
+    } else if ($percentageScore == 100) {
+        $colorScore = "#C7E897";
+    } else {
+        $colorScore = "#FFF1AA";
+    }
+    if ($percentageCover < 50) {
+        $colorCover = "#FFA5A5";
+    } else if ($percentageScore == 100) {
+        $colorCover = "#C7E897";
+    } else {
+        $colorCover = "#FFF1AA";
+    }
+    return [$warningCount, $successCount, $percentageScore, $percentageCover, $colorScore, $colorCover];
+}
+
+function checkCourseTable($name, $nrTests)
+{
+
+    $semCurso = "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
+    $cursoNaoExiste = "<strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $_GET["course"];
+
+    if ($GLOBALS['courseInfo'] == 0) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $name . "</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $semCurso . "</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/1)</td>";
+        echo "</tr>";
+    } else if ($GLOBALS['courseInfo'] == -1) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $name . "</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $cursoNaoExiste . "</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/" . $nrTests . ")</td>";
+        echo "</tr>";
+    }
 }
