@@ -107,22 +107,28 @@ function testCourse()
 }
 function testPlugin()
 {
-    $course = $_GET["course"];
-    $courseObj = Course::getCourse($course);
-    if ($courseObj->getModule("plugin")) {
-        return 1;
-    } else {
-        return 0;
+    if (array_key_exists("course", $_GET)) {
+
+        $course = $_GET["course"];
+        $courseObj = Course::getCourse($course);
+        if ($courseObj->getModule("plugin")) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }
 function testDictionary()
 {
-    $course = $_GET["course"];
-    $courseObj = Course::getCourse($course);
-    if ($courseObj->getModule("views")) {
-        return 1;
-    } else {
-        return 0;
+    if (array_key_exists("course", $_GET)) {
+
+        $course = $_GET["course"];
+        $courseObj = Course::getCourse($course);
+        if ($courseObj->getModule("views")) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }
 testPhotoDownload();
@@ -176,7 +182,7 @@ function testPhotoDownload()
         }
     } else {
         // " If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx"
-        $GLOBALS['lg_1'] =  ["warning", "<strong style='color:#F7941D; '>Warning:</strong> If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx"];
+        $GLOBALS['lg_1'] =  ["warning", "<strong style='overflow-wrap: break-word;word-wrap: break-word;color:#F7941D; '>Warning:</strong> If you desire to test the download of the login picture,  please specify a username as an URL parameter: ?username=istxxxxx or &username=istxxxxx"];
     }
 }
 function testFenixPlugin($course)
@@ -1229,7 +1235,7 @@ function argsToJSON($func, $refersToType, $funcLib)
 
 
 
-echo "<table style=' border: 1px solid black; border-collapse: collapse;'>";
+echo "<table style=' border: 1px solid black; border-collapse: collapse; table-layout:fixed'>";
 //Nome das colunas
 echo "<tr>";
 echo "<th style='border: 1px solid black; padding: 5px;'><strong>Group</strong></th>";
@@ -1248,8 +1254,8 @@ if ($GLOBALS['lg_1'][0] == "warning") {
     echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897'>100%</br>(1/1)</td>";
     echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#C7E897;'>100%</br>(1/1)</td>";
 } else if ($GLOBALS['lg_1'][0] == "fail") {
-    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;'>0%</br>(0/1)</td>";
-    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color: #FFA5A5;'>1000%</br>(1/1)</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5;'>0%</br>(0/1)</td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color: #C7E897;'>100%</br>(1/1)</td>";
 }
 echo "</tr>";
 // Fénix Import
@@ -1457,7 +1463,7 @@ if ($percentageCoverage == 100) {
 } else if ($percentageCoverage < 50) {
     echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'><strong>" . round($percentageCoverage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
 } else {
-    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFF1AA'><strong>" . round($percpercentageCoverageentage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
+    echo "<td style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFF1AA'><strong>" . round($percentageCoverage, 2) . "%</br>(" . ($GLOBALS['success'] + $GLOBALS['fail']) . "/26)</strong></td>";
 }
 echo "</tr>";
 echo "</table>";
@@ -1494,13 +1500,14 @@ function checkCourseTable($name, $nrTests)
 {
 
     $semCurso = "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
-    $cursoNaoExiste = "<strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $_GET["course"];
-
+    if (array_key_exists("course", $_GET)) {
+        $cursoNaoExiste = "<strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $_GET["course"];
+    }
     if ($GLOBALS['courseInfo'] == 0) {
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $name . "</td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $semCurso . "</td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
-        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/1)</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/" . $nrTests . ")</td>";
         echo "</tr>";
     } else if ($GLOBALS['courseInfo'] == -1) {
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>" . $name . "</td>";

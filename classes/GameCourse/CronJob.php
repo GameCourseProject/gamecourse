@@ -19,7 +19,7 @@ class CronJob
 
         }
         $output = shell_exec('crontab -l');
-        if ($path && $output) {
+        if ($path) {
             $file = $output;
             $lines = explode("\n", $file);
             $exclude = array();
