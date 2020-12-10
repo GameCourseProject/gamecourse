@@ -1264,7 +1264,7 @@ class Views extends Module
         API::registerFunction('views', "globalizeTemplate", function () {
             API::requireCourseAdminPermission();
             API::requireValues('id', 'isGlobal');
-            Core::$systemDB->update("template", ["isGlobal" => !API::getValue("isGlobal")], ["id" => API::getValue("id")]);
+            Core::$systemDB->update("template", ["isGlobal" => API::getValue("isGlobal") ? 0 : 1], ["id" => API::getValue("id")]);
             http_response_code(201);
             return;
         });

@@ -252,11 +252,12 @@ class CourseUser extends User
         foreach ($listOfUsers as $courseUser) {
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
             $auth = Core::$systemDB->select("auth", ["game_course_user_id" => $user["id"]]);
-            $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["id"]]);
+            $role = Core::$systemDB->select("user_role", ["id" => $user["id"], "course" => $courseUser["course"]]);
+        
             if (!$role) {
                 $roleId = "";
             } else {
-                $roleId = $role["id"];
+                $roleId = $role["role"];
             }
             $file .= $courseUser["course"] . "," .  $user["name"] . "," . $user["nickname"] . "," . $user["email"] . "," .
                 $courseUser["campus"] . "," . $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," . 

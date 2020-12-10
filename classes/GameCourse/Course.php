@@ -251,6 +251,11 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
+        if($enabled){
+            $enabled = 1;
+        }else{
+            $enabled = 0;
+        }
         Core::$systemDB->update("course_module", ["isEnabled" => $enabled], ["course" => $this->cid, "moduleId" => $moduleId]);
         if (!$enabled) {
             //ToDo:do something about views that use this module?

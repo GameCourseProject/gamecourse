@@ -71,7 +71,8 @@ API::registerFunction('core', 'importCourses', function(){
     $file = explode(",", API::getValue('file'));
     $fileType = explode(";", $file[0]);
     $fileContents = base64_decode($file[1]);
-    $nCourses = Course::importCourses($fileContents);
+    $replace = API::getValue('replace');
+    $nCourses = Course::importCourses($fileContents, $replace);
     API::response(array('nCourses' => $nCourses));
 });
 
@@ -89,7 +90,8 @@ API::registerFunction('core', 'importUser', function(){
     API::requireValues('file');
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
-    $nUsers = User::importUsers($fileContents);
+    $replace = API::getValue('replace');
+    $nUsers = User::importUsers($fileContents, $replace);
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('core', 'exportUsers', function(){
@@ -129,7 +131,8 @@ API::registerFunction('course', 'importUser', function(){
     API::requireValues('file');
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
-    $nUsers = CourseUser::importCourseUsers($fileContents);
+    $replace = API::getValue('replace');
+    $nUsers = CourseUser::importCourseUsers($fileContents, $replace);
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('course', 'exportUsers', function(){

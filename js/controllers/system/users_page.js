@@ -427,8 +427,10 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         $scope.lastOrder = order;
         $scope.lastArrow = arrow;
     }
-    $scope.importUsers = function(){
+    $scope.importUsers = function(replace){
         $scope.importedUsers = null;
+        $scope.replaceUsers = replace;
+        console.log($scope.replaceUsers);
         var fileInput = document.getElementById('import_user');
         var file = fileInput.files[0];
 
@@ -436,13 +438,15 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 
         reader.onload = function(e) {
             $scope.importedUsers = reader.result;
-            $smartboards.request('core', 'importUser', { file: $scope.importedUsers }, function(data, err) {
+            $smartboards.request('core', 'importUser', { file: $scope.importedUsers, replace: $scope.replaceUsers }, function(data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
                 }
                 nUsers = data.nUsers;
                 $("#import-user").hide();
+                getUsers();
+                fileInput.value = "";
                 $("#action_completed").empty();
                 $("#action_completed").append(nUsers + " Users Imported");
                 $("#action_completed").show().delay(3000).fadeOut();
@@ -494,7 +498,6 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     jQuery.each(header, function(index){
         rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
     });
-
     
     rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
     rowContent.append('<td class="name-column"><span>{{user.name}}</span></td>');
@@ -619,7 +622,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
     action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
     action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
-    mainContent.append($compile(action_buttons)($scope));
+    mainContent.append(action_buttons);
 
 
     //the import modal
@@ -629,7 +632,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
     verification.append( $('<div class="target">The seperator must be comma</div>'));
     verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
-    verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers(true)">Import Users (Replace duplicates)</button><button ng-click="importUsers(false)">Import Users (Ignore duplicates)</button></div>'))
     importModal.append(verification);
     mainContent.append(importModal);
     
@@ -646,7 +649,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 
             $scope.users = data.users.slice();
             $scope.allUsers = data.users.slice();
-
+            
             //no fim do request
             $scope.lastOrder = "none";
             $scope.lastArrow = "none";
@@ -658,5 +661,6 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
         });  
     }          
     getUsers();
+    
     
 });
