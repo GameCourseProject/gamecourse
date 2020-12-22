@@ -42,8 +42,8 @@ class CronJob
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            file_put_contents($cronFile, $toWrite);
             if(file_exists('/tmp/crontab.txt')){
+                file_put_contents($cronFile, $toWrite);
                 echo exec('crontab /tmp/crontab.txt');
             }
         }

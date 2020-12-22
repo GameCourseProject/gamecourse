@@ -42,7 +42,7 @@ foreach ($qr_codes as $row) {
                 "studentNumber" => $row["studentNumber"],
                 "course" => $course,
                 "classNumber" => $row["classNumber"],
-                "classType" => $type
+                "classType" => $row["classType"]
             ]);
 
             $qr_repetidos_participation = Core::$systemDB->selectMultiple("participation", [
