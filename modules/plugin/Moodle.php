@@ -278,13 +278,21 @@ class Moodle
 
     public function getLogs()
     {
+        $whereClause = "(component =='mod_questionnaire' or component == 'mod_resource' or component == 'mod_forum' or (objecttable=='forum_discussions' and (action == 'created' or action == 'deleted')) or (objecttable=='forum_posts' and (action == 'uploaded' or action == 'deleted')))";
         $timeUpLimit = "";
-        if ($this->timeToUpdate && $this->time) {
-            $timeUpLimit =  $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and ";
-        } else if ($this->timeToUpdate && !($this->time)) {
-            $timeUpLimit = " where " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate;
+        if ($this->time) {
+            if ($this->timeToUpdate) {
+                $timeUpLimit =  $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and " . $whereClause;
+            } else {
+                $timeUpLimit =  " and " . $whereClause;
+            }
+        } else {
+            if ($this->timeToUpdate) {
+                $timeUpLimit = " where " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and " . $whereClause;
+            } else {
+                $timeUpLimit = " where " . $whereClause;
+            }
         }
-
         $this->getDBConfigValues();
         if (!($this->time) && !($this->user)) {
             $sql = "select " . $this->prefix . "logstore_standard_log.id,  courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,  contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid, objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id=userid inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid";
@@ -369,8 +377,8 @@ class Moodle
                 $temp_action = "questionnaire " . $row['action'];
                 if ($row["action"] == "submitted") {
                     $temp_info = $other_->questionnaireid;
-                // } else {
-                //     $temp_info = $row['objectid'];
+                    // } else {
+                    //     $temp_info = $row['objectid'];
                 }
 
                 $sqlQuestionnaire = "SELECT name FROM " . $this->prefix . "questionnaire where id=" . $temp_info . ";";
@@ -550,36 +558,36 @@ class Moodle
         //     $temp_info = $other_->itemname;
         // }
 
-        if (array_key_exists("target", $row)) {
+        //if (array_key_exists("target", $row)) {
 
-            // if ($row['target'] == 'role') {
-            //     $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
-            //     $result3 = mysqli_query($db, $sql3);
-            //     $row3 = mysqli_fetch_assoc($result3);
-            //     $temp_module = $row3['shortname'];
-            //     $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
-            // }
+        // if ($row['target'] == 'role') {
+        //     $sql3 = "SELECT shortname FROM " . $this->prefix . "role inner join " . $this->prefix . "logstore_standard_log on  " . $this->prefix . "role.id = objectid and target='role' and " . $this->prefix . "logstore_standard_log.id=" . $row['id'] . ";";
+        //     $result3 = mysqli_query($db, $sql3);
+        //     $row3 = mysqli_fetch_assoc($result3);
+        //     $temp_module = $row3['shortname'];
+        //     $temp_url = "admin/roles/assign.php?contextid=" . $row['cmid'] . "&roleid=" . $row['objectid'];
+        // }
 
-            // if ($row['target'] == 'course_section') {
-            //     $temp_module = $other_->sectionnum;
-            //     $temp_action = "course section " . $row["action"];
-            // }
+        // if ($row['target'] == 'course_section') {
+        //     $temp_module = $other_->sectionnum;
+        //     $temp_action = "course section " . $row["action"];
+        // }
 
-            // if ($row['target'] == 'enrol_instance') {
-            //     $temp_module =  $other_->enrol;
-            //     $temp_action = "enrol instance " . $row["action"];
-            // }
+        // if ($row['target'] == 'enrol_instance') {
+        //     $temp_module =  $other_->enrol;
+        //     $temp_action = "enrol instance " . $row["action"];
+        // }
 
-            // if ($row['target'] == 'user_enrolment') {
-            //     $temp_module = $row["target"];
-            //     $temp_url = "../enrol/users.php?id=" . $row['courseid'];
-            //     if ($row['action'] == 'created') {
-            //         $temp_action = "enrol user";
-            //     } else if ($row['action'] == 'deleted') {
-            //         $temp_action = "unenrol user";
-            //     }
-            // }
-        }
+        // if ($row['target'] == 'user_enrolment') {
+        //     $temp_module = $row["target"];
+        //     $temp_url = "../enrol/users.php?id=" . $row['courseid'];
+        //     if ($row['action'] == 'created') {
+        //         $temp_action = "enrol user";
+        //     } else if ($row['action'] == 'deleted') {
+        //         $temp_action = "unenrol user";
+        //     }
+        // }
+        //}
 
         $moodleFields = array(
             "timecreated" => date('Y-m-d H:i:s', $row['timecreated']),
@@ -605,23 +613,25 @@ class Moodle
                 $user = User::getUserIdByUsername($moodleField["username"]);
                 if ($user) {
                     $courseUser = new CourseUser($user, $this->courseGameCourse);
-                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
-                    if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
-                        if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
-                            $inserted = true;
-                            Core::$systemDB->insert(
-                                "participation",
-                                [
-                                    "user" => $courseUser->getId(),
-                                    "course" => $this->courseId,
-                                    "description" => $moodleField["module"],
-                                    "type" => $moodleField["action"],
-                                    "post" => $moodleField["url"],
-                                    "date" => $moodleField["timecreated"]
-                                ]
-                            );
+                    if ($courseUser->getId()) {
+                        $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
+                        if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
+                            if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
+                                $inserted = true;
+                                Core::$systemDB->insert(
+                                    "participation",
+                                    [
+                                        "user" => $courseUser->getId(),
+                                        "course" => $this->courseId,
+                                        "description" => $moodleField["module"],
+                                        "type" => $moodleField["action"],
+                                        "post" => $moodleField["url"],
+                                        "date" => $moodleField["timecreated"]
+                                    ]
+                                );
+                            }
                         }
-                    } 
+                    }
                 }
             }
         }
