@@ -6,6 +6,7 @@ use GameCourse\GoogleHandler;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\User;
+use GameCourse\CourseUser;
 
 class GoogleSheets
 {
@@ -132,8 +133,10 @@ class GoogleSheets
             $user = User::getUserByStudentNumber($valuesRows[$row][0]);
             $action = $valuesRows[$row][3];
             if ($user) {
-                if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user->getId()])) {
-                    if (
+                $courseUser = new CourseUser($user, $this->courseId);
+                if ($courseUser) {
+                    if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user->getId()])) {
+                        if (
                             $action == "attended lecture" || $action == "attended lecture (late)" || $action == "attended lab"
                             || $action == "replied to questionnaires"
                         ) {
@@ -358,6 +361,7 @@ class GoogleSheets
                     }
             }
         }
+    }
         return $insertedOrUpdated;
     }
 }
