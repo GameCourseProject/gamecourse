@@ -81,26 +81,29 @@ class Moodle
             array_push($row_, $line);
         }
         $insertedOrUpdated = false;
+        $sql = "insert into participation (user, course, description, type, post, rating) values";
+        $values = "";
         foreach ($row_ as $row) {
             $user = User::getUserIdByUsername($row["username"]);
             if ($user) {
-                $courseUser = new CourseUser($user, $course);
+                $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
                 if ($courseUser->getId()) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
                     if (!$result) {
                         $insertedOrUpdated = true;
-                        Core::$systemDB->insert(
-                            "participation",
-                            [
-                                "user" => $user,
-                                "course" => $this->courseId,
-                                "description" => $row['quiz'],
-                                "type" => "quiz grade",
-                                "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                                "date" => date('Y-m-d, H:i:s', $row['timemodified']),
-                                "rating" => $row['grade']
-                            ]
-                        );
+                        $values .= "(" . $user . "," . $this->courseId . ",'" . $row['quiz'] . "','quiz grade', 'mod/quiz/view.php?id=" . $row['quiz'] . "','" . $row['grade'] . "'),";
+                        // Core::$systemDB->insert(
+                        //     "participation",
+                        //     [
+                        //         "user" => $user,
+                        //         "course" => $this->courseId,
+                        //         "description" => $row['quiz'],
+                        //         "type" => "quiz grade",
+                        //         "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
+                        //         "date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                        //         "rating" => $row['grade']
+                        //     ]
+                        // );
                     } else {
                         $insertedOrUpdated = true;
                         Core::$systemDB->update(
@@ -126,6 +129,9 @@ class Moodle
                 }
             }
         }
+        $values = rtrim($values, ",");
+        $sql .= $values;
+        Core::$systemDB->executeQuery($sql);
         if (!empty($row_) && $this->timeToUpdate == null) {
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timemodified"];
@@ -218,30 +224,34 @@ class Moodle
             array_push($row_, $line);
         }
         $insertedOrUpdated = false;
+        $sql = "insert into participation (user, course, description, type, post, rating, evaluator) values";
+        $values = "";
         foreach ($row_ as $row) {
             $votesField = $this->parseVotesToDB($row, $db);
 
             $prof = User::getUserIdByUsername($votesField["evaluator"]);
             $user = User::getUserIdByUsername($votesField["user"]);
             if ($user && $prof) {
-                $courseUser = new CourseUser($user, $course);
-                if ($courseUser->getId()) {
+                $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
+                $courseUserProf = Core::$systemDB->select("course_user", ["id" => $prof, "course" => $this->courseId]);
+                if ($courseUser && $courseUserProf) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
                     if (!$result) {
                         $insertedOrUpdated = true;
-                        Core::$systemDB->insert(
-                            "participation",
-                            [
-                                "user" => $user,
-                                "course" => $this->courseId,
-                                "description" => $votesField["description"],
-                                "type" => "graded post",
-                                "post" => $votesField["post"],
-                                "date" => $votesField["date"],
-                                "rating" => $row['rating'],
-                                "evaluator" => $prof
-                            ]
-                        );
+                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "mod/quiz/view.php?id=' . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
+                        // Core::$systemDB->insert(
+                        //     "participation",
+                        //     [
+                        //         "user" => $user,
+                        //         "course" => $this->courseId,
+                        //         "description" => $votesField["description"],
+                        //         "type" => "graded post",
+                        //         "post" => $votesField["post"],
+                        //         "date" => $votesField["date"],
+                        //         "rating" => $row['rating'],
+                        //         "evaluator" => $prof
+                        //     ]
+                        // );
                     } else {
                         $insertedOrUpdated = true;
                         Core::$systemDB->update(
@@ -253,7 +263,7 @@ class Moodle
                                 "type" => "graded post",
                                 "post" => $votesField["post"],
                                 "date" => $votesField["date"],
-                                "rating" => $row['rating'],
+                                "rating" => $votesField['rating'],
                                 "evaluator" => $prof
                             ],
                             [
@@ -269,6 +279,9 @@ class Moodle
             }
         }
 
+        $values = rtrim($values, ",");
+        $sql .= $values;
+        Core::$systemDB->executeQuery($sql);
         if (!empty($row_) && $this->timeToUpdate == null) {
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timemodified"];
@@ -278,7 +291,7 @@ class Moodle
 
     public function getLogs()
     {
-        $whereClause = "(component =='mod_questionnaire' or component == 'mod_resource' or component == 'mod_forum' or (objecttable=='forum_discussions' and (action == 'created' or action == 'deleted')) or (objecttable=='forum_posts' and (action == 'uploaded' or action == 'deleted')))";
+        $whereClause = "((component = 'mod_questionnaire' and action='submitted') or component = 'mod_resource' or (objecttable = 'forum_discussions' and (action = 'created' or action = 'deleted')) or (objecttable = 'forum_posts' and (action = 'uploaded' or action = 'deleted')))";
         $timeUpLimit = "";
         if ($this->time) {
             if ($this->timeToUpdate) {
@@ -462,6 +475,7 @@ class Moodle
                             $temp_action = "forum add discussion";
                             $temp_url = "discuss.php?d=" . $row['objectid'];
                             $temp_info = $row['objectid'];
+                            strpos($temp_info, '"');
                             // } else if ($row['action'] == 'viewed') {
                             //     $temp_action = "forum view discussion";
                             //     $temp_url = "discuss.php?d=" . $row['cmid'];
@@ -477,7 +491,7 @@ class Moodle
                         if ($resultForum) {
                             $rowForum = mysqli_fetch_assoc($resultForum);
                             if ($rowForum) {
-                                $temp_module = array_key_exists("subject", $rowForum) ? $rowForum['name'] : null;
+                                $temp_module = array_key_exists("name", $rowForum) ? $rowForum['name'] : null;
                             }
                         }
                     }
@@ -607,34 +621,41 @@ class Moodle
             array_push($row_, $line);
         }
         $inserted = false;
+        $sql = "insert into participation (user, course, description, type, post) values";
+        $values = "";
         foreach ($row_ as $row) {
             $moodleField = $this->parseLogsToDB($row, $db);
             if ($moodleField["module"]) {
                 $user = User::getUserIdByUsername($moodleField["username"]);
                 if ($user) {
-                    $courseUser = new CourseUser($user, $this->courseGameCourse);
-                    if ($courseUser->getId()) {
+                    $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
+                    if ($courseUser) {
                         $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
                         if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
                             if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
+                                $module = str_replace('"', ' ', $moodleField["module"]);
+                                $values .= '(' . $courseUser->getId() . ',' . $this->courseId . ',"' . $module . '","' .  $moodleField["action"] . '","' . $moodleField["url"] . '"),';
                                 $inserted = true;
-                                Core::$systemDB->insert(
-                                    "participation",
-                                    [
-                                        "user" => $courseUser->getId(),
-                                        "course" => $this->courseId,
-                                        "description" => $moodleField["module"],
-                                        "type" => $moodleField["action"],
-                                        "post" => $moodleField["url"],
-                                        "date" => $moodleField["timecreated"]
-                                    ]
-                                );
+                                // Core::$systemDB->insert(
+                                //     "participation",
+                                //     [
+                                //         "user" => $courseUser->getId(),
+                                //         "course" => $this->courseId,
+                                //         "description" => $moodleField["module"],
+                                //         "type" => $moodleField["action"],
+                                //         "post" => $moodleField["url"],
+                                //         "date" => $moodleField["timecreated"]
+                                //     ]
+                                // );
                             }
                         }
                     }
                 }
             }
         }
+        $values = rtrim($values, ",");
+        $sql .= $values;
+        Core::$systemDB->executeQuery($sql);
         if (!empty($row_) && $this->timeToUpdate == null) {
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timecreated"];

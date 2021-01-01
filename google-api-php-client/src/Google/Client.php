@@ -1069,7 +1069,7 @@ class Google_Client
 
   protected function createDefaultCache()
   {
-    return new MemoryCacheItemPool;
+    // return new MemoryCacheItemPool;
   }
 
   /**
