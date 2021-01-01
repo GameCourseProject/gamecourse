@@ -332,7 +332,7 @@ class GoogleSheets
                                 }
                             } else if ($action == "hall of fame") {
                                 $info  = $valuesRows[$row][5];
-                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "info"=> $info]);
+                                $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action, "description"=> $info]);
                                 if (!$result) {
                                     $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
                                     // Core::$systemDB->insert(

@@ -87,7 +87,7 @@ class Moodle
             $user = User::getUserIdByUsername($row["username"]);
             if ($user) {
                 $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
-                if ($courseUser->getId()) {
+                if ($courseUser) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
                     if (!$result) {
                         $insertedOrUpdated = true;
@@ -301,9 +301,9 @@ class Moodle
             }
         } else {
             if ($this->timeToUpdate) {
-                $timeUpLimit = " where " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and " . $whereClause;
+                $timeUpLimit = " " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " and " . $whereClause;
             } else {
-                $timeUpLimit = " where " . $whereClause;
+                $timeUpLimit = " " . $whereClause;
             }
         }
         $this->getDBConfigValues();
@@ -318,7 +318,7 @@ class Moodle
             if ($this->course) {
                 $sql .= " and courseid=" . $this->course;
             }
-            $sql .= " where "  . $timeUpLimit .  $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
+            $sql .= " where "  . $timeUpLimit . " and " .  $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " order by  " . $this->prefix . "logstore_standard_log.timecreated;";
         } else if (!($this->time) && $this->user) {
             $sql = "select  " . $this->prefix . "logstore_standard_log.id, courseid, userid, " . $this->prefix . "logstore_standard_log.timecreated, ip, username, " . $this->prefix . "logstore_standard_log.timecreated, target, action, other, component,   contextinstanceid as cmid , " . $this->prefix . "logstore_standard_log.objectid , objecttable from " . $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "user.id='" . $this->user . "' inner join " . $this->prefix . "course on " . $this->prefix . "course.id=courseid ";
             if ($this->course) {
@@ -634,7 +634,7 @@ class Moodle
                         if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
                             if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
                                 $module = str_replace('"', ' ', $moodleField["module"]);
-                                $values .= '(' . $courseUser->getId() . ',' . $this->courseId . ',"' . $module . '","' .  $moodleField["action"] . '","' . $moodleField["url"] . '"),';
+                                $values .= '(' . $courseUser["id"] . ',' . $this->courseId . ',"' . $module . '","' .  $moodleField["action"] . '","' . $moodleField["url"] . '"),';
                                 $inserted = true;
                                 // Core::$systemDB->insert(
                                 //     "participation",
@@ -655,7 +655,9 @@ class Moodle
         }
         $values = rtrim($values, ",");
         $sql .= $values;
-        Core::$systemDB->executeQuery($sql);
+	if($values){
+            Core::$systemDB->executeQuery($sql);
+	}
         if (!empty($row_) && $this->timeToUpdate == null) {
             $lastRecord = end($row_);
             $this->timeToUpdate = $lastRecord["timecreated"];
