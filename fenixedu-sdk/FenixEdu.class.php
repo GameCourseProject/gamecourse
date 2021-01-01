@@ -59,7 +59,7 @@ class FenixEdu
 		$this->accessKey = $config["access_key"];
 		$this->secretKey = $config["secret_key"];
 		$this->accessToken = isset($config["access_token"]) ? $config["access_token"] : null;
-		$this->refreshToken = isset($config["refresh_token"]) ? $config["access_token"] : null;
+		$this->refreshToken = isset($config["refresh_token"]) ? $config["refresh_token"] : null;
 		$this->callbackUrl = isset($config["callback_url"]) ? $config["callback_url"] : $this->getCurrentUrl();
 		$this->apiBaseUrl = isset($config["api_base_url"]) ? $config["api_base_url"] : "http://fenix.ist.utl.pt";
 

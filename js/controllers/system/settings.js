@@ -112,6 +112,8 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
                 return;
             }
 
+            var file = "http://localhost/gamecourse/" + data.file;
+            location.replace(file);
         });
         
     }

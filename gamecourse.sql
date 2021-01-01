@@ -3,6 +3,7 @@ drop trigger if exists parameterDelete;
 drop trigger if exists viewDelete;
 drop table if exists qr_error;
 drop table if exists qr_code;
+drop table if exists config_qr;
 drop table if exists view_parameter;
 drop table if exists parameter;
 drop table if exists view_template;
@@ -167,7 +168,7 @@ create table participation(#for now this is just used for badges
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
-	description varchar(50) not null,
+	description varchar(500) not null,
 	type 	varchar(50) not null, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
 	moduleInstance VARCHAR(200) ,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
@@ -243,19 +244,5 @@ create table view_template(
 	templateId int unsigned,
 	foreign key (templateId) references template(id) on delete cascade,
 	foreign key (viewId) references view(id) on delete cascade
-);
-create table qr_code(
-	qrkey varchar(50) not null,
-	course int unsigned not null,
-	studentNumber int unsigned 
-);
-create table qr_error(
-	studentNumber int unsigned not null,
-	course  int unsigned not null,
-	campus char(1),
-	ip varchar(50),
-	qrkey varchar(50), 
-	msg varchar(500),
-	date timestamp default CURRENT_TIMESTAMP
 );
 #ToDO add trigger when delete level or badge -> delete bagde_has_level

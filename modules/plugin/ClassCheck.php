@@ -66,10 +66,11 @@ class ClassCheck
 
             if ($courseUserStudent && $courseUserProf) {
                 $count = Core::$systemDB->select("participation", ["user" => $courseUserStudent->getData("id"), "description" => $classNumber]);
-                if (!$count) {
-                    $inserted  = true;
-                    Core::$systemDB->insert(
-                        "participation",
+                if (Core::$systemDB->select("course_user", ["course" => $this->courseId, $courseUserStudent->getData("id")])) {
+                    if (!$count) {
+                        $inserted  = true;
+                        Core::$systemDB->insert(
+                            "participation",
                         [
                             "user" => $courseUserStudent->getData("id"),
                             "course" => $this->courseId,
@@ -77,8 +78,9 @@ class ClassCheck
                             "type" => $action,
                             "rating" => 0,
                             "evaluator" => $courseUserProf->getData("id")
-                        ]
-                    );
+                            ]
+                        );
+                    }
                 }
             }
         }

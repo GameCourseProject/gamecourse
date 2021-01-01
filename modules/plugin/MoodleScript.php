@@ -2,12 +2,14 @@
 
 namespace Modules\Plugin;
 
-chdir('../..');
+chdir('/var/www/html/gamecourse');
 include 'classes/ClassLoader.class.php';
+include 'classes/GameCourse/Core.php';
+include 'classes/GameCourse/Course.php';
 include 'modules/plugin/Moodle.php';
 
 use GameCourse\Core;
-use GameRules;
+use GameCourse\Course;
 
 Core::init();
 
@@ -25,6 +27,6 @@ $insertedQuiz = $moodle->writeQuizGradesToDb($values);
 
 $moodle->updateMoodleConfigTime();
 
-if($insertedLogs || $insertedVotes || $insertedQuiz){
-    new GameRules();
+if ($insertedLogs || $insertedVotes || $insertedQuiz) {
+    Course::newExternalData();
 }

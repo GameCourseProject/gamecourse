@@ -604,6 +604,11 @@ class ViewHandler
             );
         }
     }
+    
+    public function unregisterLibrary($moduleId, $libraryName){
+        Core::$systemDB->delete("dictionary_library", ["moduleId" => $moduleId, "name" => $libraryName]);
+    }
+
     public function registerVariable($name, $returnType, $returnName, $libraryName = null, $description = null)
     {
         if ($libraryName) {
@@ -642,6 +647,11 @@ class ViewHandler
             );
         }
     }
+
+    public function unregisterVariable($name){
+        Core::$systemDB->delete("dictionary_variable", ["name" => $name]);
+    }
+
     public function registerFunction($funcLib, $funcName, $processFunc, $description,  $returnType, $returnName = null,  $refersToType = "object", $refersToName = null)
     {
         if ($funcLib) {
@@ -773,6 +783,19 @@ class ViewHandler
         $functionId = Core::$systemDB->select("dictionary_function", ["libraryId" => $libraryId, "keyword" => $funcName], "id");
         $this->registeredFunctions[$functionId] = $processFunc;
     }
+    
+    public function unregisterFunction($funcLib, $funcName){
+        if ($funcLib) {
+            $libraryId = Core::$systemDB->select("dictionary_library", ["name" => $funcLib], "id");
+            if (!$libraryId) {
+                new \Exception('Library named ' . $funcName . ' not found.');
+            }
+        } else {
+            $libraryId = null;
+        }
+        Core::$systemDB->delete("dictionary_function", array("libraryId" => $libraryId, "keyword" => $funcName));
+    }
+
     public function callFunction($funcLib, $funcName, $args, $context = null)
     {
         if (!$funcLib) {

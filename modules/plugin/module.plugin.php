@@ -10,6 +10,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\CourseUser;
 use GameCourse\User;
+use GameCourse\CronJob;
 
 class Plugin extends Module
 {
@@ -129,7 +130,6 @@ class Plugin extends Module
             }
             $names = explode(";", $googleSheetsDB["sheetName"]);
             $googleSheetsVars = [
-                "authCode" => $googleSheetsDB["authCode"],
                 "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
                 "sheetName" => $names,
                 "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
@@ -144,8 +144,12 @@ class Plugin extends Module
     private function setFenixVars($courseId, $fenix)
     {
         $course = new Course($courseId);
+        $year = $course->getData("year");
         for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
             $fields = explode(";", $fenix[$line]);
+            if(count($fields) < 10){
+                return "The number of columns is incorrect, please check the template";
+            }
 
             $username = $fields[0];
             $studentNumber = $fields[1];
@@ -159,45 +163,64 @@ class Plugin extends Module
             } else if (strpos($courseName, 'Taguspark')) {
                 $campus = "T";
             } else {
-                $endpoint = "degrees?academicTerm=2019/2020";
+                $endpoint = "degrees";
+                if($year){
+                    $year = str_replace("-", "/", $year);
+                    $endpoint = "degrees?academicTerm=".$year;
+                }
                 $listOfCourses = Core::getFenixInfo($endpoint);
                 $courseFound = false;
-                foreach ($listOfCourses as $courseFenix) {
-                    if ($courseFound) {
-                        break;
-                    } else {
-                        if (strpos($courseName, $courseFenix->name)) {
-                            $courseFound = true;
-                            foreach ($courseFenix->campus as $campusfenix) {
-                                $campus = $campusfenix->name[0];
+                if($listOfCourses){
+                    foreach ($listOfCourses as $courseFenix) {
+                        if ($courseFound) {
+                            break;
+                        } else {
+                            if (strpos($courseName, $courseFenix->name)) {
+                                $courseFound = true;
+                                foreach ($courseFenix->campus as $campusfenix) {
+                                    $campus = $campusfenix->name[0];
+                                }
                             }
                         }
                     }
                 }
             }
+            $roleId = Core::$systemDB->select("role", ["name"=>"Student", "course"=>$courseId], "id");
             if($studentNumber){
                 if (!User::getUserByStudentNumber($studentNumber)) {
                     User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                     $user = User::getUserByStudentNumber($studentNumber);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB(2, $campus);
+                    $courseUser->addCourseUserToDB($roleId, $campus);
                 } else {
                     $existentUser = User::getUserByStudentNumber($studentNumber);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    $courseUser = new CourseUser($existentUser->getId(), $course);
+                    if(!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])){
+                        $courseUser->addCourseUserToDB($roleId, $campus);
+                    }else{
+                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
+                    }
                 }
             }else{
-                if (!User::getUserByEmail($email)) {
+                if (!User::getUserByUsername($username)) {
                     User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
-                    $user = User::getUserByEmail($email);
+                    $user = User::getUserByUsername($username);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB(2, $campus);
+                    $courseUser->addCourseUserToDB($roleId, $campus);
                 } else {
-                    $existentUser = User::getUserByEmail($email);
+                    $existentUser = User::getUserByUsername($username);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    $courseUser = new CourseUser($existentUser->getId(), $course);
+                    if (!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])) {
+                        $courseUser->addCourseUserToDB($roleId, $campus);
+                    } else {
+                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
+                    }
                 }
             }
         }
-        return true;
+        return "";
     }
     private function setMoodleVars($courseId, $moodleVar)
     {
@@ -224,18 +247,6 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_moodle", $arrayToDb);
             }
-
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            // $logs = $this->moodle->getLogs();
-            // $this->moodle->writeLogsToDB($logs);
-
-            // $quizGrades = $this->moodle->getQuizGrades();
-            // $this->moodle->writeQuizGradesToDb($quizGrades);
-
-            // $votes = $this->moodle->getVotes();
-            // $this->moodle->writeVotesToDb($votes);
-
-            // $this->moodle->updateMoodleConfigTime();
             return true;
         }
     }
@@ -254,14 +265,14 @@ class Plugin extends Module
             } else {
                 Core::$systemDB->update("config_class_check", $arrayToDb);
             }
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO CLASSCHECK:
-            // $this->classCheck->readAttendance();
-
             return true;
         }
     }
     private function setGSCredentials($courseId, $gsCredentials)
     {
+        if(!$gsCredentials){
+            return false;
+        }
         $credentialKey = key($gsCredentials[0]);
         $credentials = $gsCredentials[0][$credentialKey];
         $googleSheetCredentialsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
@@ -289,7 +300,6 @@ class Plugin extends Module
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
             $this->googleSheets->setCredentials();
-            $this->googleSheets->setAuthCode();
             return true;
         }
     }
@@ -306,7 +316,7 @@ class Plugin extends Module
         if ($names != "" && substr($names, -1) == ";") {
             $names = substr($names, 0, -1);
         }
-        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names, "authCode" => $googleSheets["authCode"]];
+        $arrayToDb = ["course" => $courseId, "spreadsheetId" => $googleSheets["spreadsheetId"], "sheetName" => $names];
         if (empty($googleSheets["spreadsheetId"])) {
             return false;
         } else {
@@ -316,9 +326,6 @@ class Plugin extends Module
                 Core::$systemDB->update("config_google_sheets", $arrayToDb);
             }
             $this->googleSheets->saveTokenToDB();
-
-            //QUANDO QUISERMOS ATUALIZAR A BD COM OS DADOS DO MOODLE:
-            // $this->googleSheets->readGoogleSheets();
             return true;
         }
     }
@@ -386,7 +393,7 @@ class Plugin extends Module
         } else if ($script == "ClassCheck") {
             $tableName = "config_class_check";
         } else if ($script == "GoogleSheets") {
-            $tableName == "config_google_sheets";
+            $tableName = "config_google_sheets";
         }
         if($tableName){
             Core::$systemDB->update($tableName, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
@@ -439,12 +446,12 @@ class Plugin extends Module
                 }
                 $pluginArr["config_google_sheets"] = $gcArray;
             }
-            if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
-                return $pluginArr;
-            } else {
-                return false;
-            }    
         }
+        if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
+            return $pluginArr;
+        } else {
+            return false;
+        }   
     }
 
     public function readConfigJson($courseId, $tables, $update=false){
@@ -488,11 +495,15 @@ class Plugin extends Module
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
                 $lastFileUploaded = count($fenix) - 1;
+                if(count($fenix) == 0){
+                    API::error("Please fill the mandatory fields");
+                }
                 //place to verify input values
-                if ($this->setFenixVars($courseId, $fenix[$lastFileUploaded])) {
+                $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
+                if (!$resultFenix) {
                     API::response(["updatedData" => ["Variables for fenix saved"]]);
                 } else {
-                    API::error("Please fill the mandatory fields");
+                    API::error($resultFenix);
                 }
 
                 return;
@@ -525,7 +536,7 @@ class Plugin extends Module
                 if ($response["result"]) {
                     API::response(["updatedData" => ["Plugin Class Check enabled"]]);
                 } else {
-                    API::error([$response["errorMessage"]]);
+                    API::error($response["errorMessage"]);
                 }
                 return;
             }
@@ -584,7 +595,7 @@ class Plugin extends Module
             if (API::hasKey('credentials')) {
                 $credentials = API::getValue('credentials');
                 if ($this->setGSCredentials($courseId, $credentials)) {
-                    API::response(["updatedData" => ["Credentials saved"], "authUrl" => $this->getAuthUrl($courseId)]);
+                    API::response(["authUrl" => $this->getAuthUrl($courseId)]);
                 } else {
                     API::error("Please select a JSON file");
                 }
