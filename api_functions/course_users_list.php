@@ -46,7 +46,7 @@ API::registerFunction('course', 'removeUser', function(){
 //request to edit user information
 API::registerFunction('course', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'userCampus', 'course', 'userRoles');
+    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'course', 'userRoles', 'userCampus');
 
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
@@ -69,9 +69,10 @@ API::registerFunction('course', 'editUser', function() {
             $user->setStudentNumber(API::getValue('userStudentNumber'));
             $user->setNickname(API::getValue('userNickname'));
             $user->setUsername(API::getValue('userUsername'));
+            $user->setCampus(API::getValue('userCampus'));
             $user->setAuthenticationService(API::getValue('userAuthService'));
 
-            $courseUser->setCampus(API::getValue('userCampus'));
+            //$courseUser->setCampus(API::getValue('userCampus'));
             $courseUser->setRoles(API::getValue('userRoles'));
 
             if(API::getValue('userHasImage') == 'true'){
@@ -96,7 +97,7 @@ API::registerFunction('course', 'createUser', function(){
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     if($course != null){
-        API::requireValues('userHasImage','userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
+        API::requireValues('userHasImage', 'userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
         $userName = API::getValue('userName');
         $userEmail = API::getValue('userEmail');
         $userStudentNumber = API::getValue('userStudentNumber');
@@ -109,10 +110,10 @@ API::registerFunction('course', 'createUser', function(){
         //verifies if user exits on the system
         $user = User::getUserByStudentNumber($userStudentNumber);
         if ($user == null) {
-            User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, 0, 1);
+            User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, $userCampus, 0, 1);
             $user = User::getUserByStudentNumber($userStudentNumber);
             $courseUser = new CourseUser($user->getId(),$course);
-            $courseUser->addCourseUserToDB(null, $userCampus);
+            $courseUser->addCourseUserToDB(null);
             $courseUser->setRoles(API::getValue('userRoles'));
             if(API::getValue('userHasImage') == 'true'){
                 API::requireValues('userImage');

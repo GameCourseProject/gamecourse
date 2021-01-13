@@ -760,10 +760,10 @@ function testCourseUserImport($course)
 {
     // echo "<h2>Import/Export Course Users</h2>";
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
-    $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, 0, 1);
+    $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, "T", 0, 1);
     $courseUser = new CourseUser($id, new Course($course));
     $roleId = Core::$systemDB->select("role", ["course" => $course, "name" => "student"], "id");
-    $courseUser->addCourseUserToDB($roleId, "");
+    $courseUser->addCourseUserToDB($roleId);
     $csvCourseUsers = CourseUser::exportCourseUsers($course);
     file_put_contents("courseUsersCSVTesteUnit.csv", $csvCourseUsers);
     $usersCSV = file_get_contents("courseUsersCSVTesteUnit.csv");
@@ -788,6 +788,7 @@ function testCourseUserImport($course)
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
         "studentNumber" => "98765",
+        "campus" => "T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -799,6 +800,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
+        "campus" => "A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -809,6 +811,7 @@ function testCourseUserImport($course)
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
+        "campus" => "T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -831,6 +834,7 @@ function testCourseUserImport($course)
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
         "studentNumber" => "98765",
+        "campus" => "A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -842,6 +846,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa Silva",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
+        "campus" => "T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -852,6 +857,7 @@ function testCourseUserImport($course)
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
+        "campus" => "A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -975,26 +981,26 @@ function checkFenix($fenix, $course)
         }
         if ($studentNumber) {
             if (!User::getUserByStudentNumber($studentNumber)) {
-                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
-                $courseUser->addCourseUserToDB(2, $campus);
+                $courseUser->addCourseUserToDB(2);
                 $newUsers++;
             } else {
                 $existentUser = User::getUserByStudentNumber($studentNumber);
-                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
                 $updatedUsers++;
             }
         } else {
             if (!User::getUserByEmail($email)) {
-                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
                 $user = User::getUserByEmail($email);
                 $courseUser = new CourseUser($user->getId(), $course);
-                $courseUser->addCourseUserToDB(2, $campus);
+                $courseUser->addCourseUserToDB(2);
                 $newUsers++;
             } else {
                 $existentUser = User::getUserByEmail($email);
-                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
                 $updatedUsers++;
             }
         }

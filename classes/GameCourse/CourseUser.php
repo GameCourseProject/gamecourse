@@ -13,29 +13,29 @@ class CourseUser extends User
         $this->course = $course;
     }
     //adds course_user to DB, User must already exist in DB
-    public function addCourseUserToDB($roleId = null, $campus = "")
+    public function addCourseUserToDB($roleId = null)
     {
-        Core::$systemDB->insert("course_user", ["course" => $this->course->getId(), "id" => $this->id, "campus" => $campus]);
+        Core::$systemDB->insert("course_user", ["course" => $this->course->getId(), "id" => $this->id]);
         if ($roleId) {
             Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $roleId]);
         }
     }
 
-    public static function addCourseUser($courseId, $id, $roleId = null, $campus = "")
+    public static function addCourseUser($courseId, $id, $roleId = null)
     {
-        $id = Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id, "campus" => $campus]);
+        $id = Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id]);
         if ($roleId) {
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $id, "role" => $roleId]);
         }
         return $id;
     }
 
-    public static function editCourseUser($id, $course, $campus, $role){
+    public static function editCourseUser($id, $course, $role){
         Core::$systemDB->update(
             "course_user",
             [
                 "course" => $course,
-                "campus" => $campus,
+                
             ],
             [
                 "id" => $id
@@ -145,6 +145,7 @@ class CourseUser extends User
         }
         throw new \Exception("Tried to get XP, but XP is disabled");
     }
+    /*
     function setCampus($campus)
     {
         return Core::$systemDB->update(
@@ -153,11 +154,12 @@ class CourseUser extends User
             ["course" => $this->course->getId(), "id" => $this->id]
         );
     }
+    */
     function getCampus()
     {
-        return $this->getData("campus");
+        return parent::getData("campus");
     }
-
+    
     function getRolesNames()
     {
         return array_column(Core::$systemDB->selectMultiple(
@@ -271,7 +273,7 @@ class CourseUser extends User
 
             $file .= $user["name"] . "," . $user["email"] . "," .  $user["nickname"] . "," . 
                     $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," .
-                    $courseUser["campus"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
+                    $user["campus"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
             if ($i != $len - 1) {
                 $file .= "\n";
             }
@@ -344,7 +346,7 @@ class CourseUser extends User
                     if ($userId) {
                         $courseUserId = Core::$systemDB->select("course_user", ["id" => $userId, "course" => $courseId]);
                         if(!$courseUserId){
-                            CourseUser::addCourseUser($courseId, $userId, null, $user[$campusIndex]);
+                            CourseUser::addCourseUser($courseId, $userId, null);
                             $courseUserObj = new CourseUser($userId, new Course($courseId));
                             if (!$user[$rolesIndex] == "") {
                                 $userRolesArr =  explode("-", $user[$rolesIndex]);
@@ -357,12 +359,12 @@ class CourseUser extends User
                         }else{
                             if ($replace) {
                                 $userToUpdate = User::getUserByUsername($user[$usernameIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                             }
                         }
                     } else {
-                        $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                        CourseUser::addCourseUser($courseId, $id, null, $user[$campusIndex]);
+                        $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                        CourseUser::addCourseUser($courseId, $id, null);
                         $courseUserObj = new CourseUser($id, new Course($courseId));
                         if (!$user[$rolesIndex] == "") {
                             $userRolesArr =  explode("-", $user[$rolesIndex]);
