@@ -573,9 +573,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     rowContent.append('<td>{{course.year}}</td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isActive == true" id="active-{{course.id}}" type="checkbox" checked><input ng-if="course.isActive == false" id="active-{{course.id}}" type="checkbox"><span ng-click= "activeCouse(course.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="course.isVisible == true" id="visible-{{course.id}}" type="checkbox" checked><input ng-if="course.isVisible == false" id="visible-{{course.id}}" type="checkbox"><span ng-click= "visibleCouse(course.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="action-column"><div class="icon duplicate_icon" ng-click="duplicateCourse(course)"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-course" onclick="openModal(this)" ng-click="modifyCourse(course)"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" onclick="openModal(this)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon duplicate_icon" title="Duplicate" ng-click="duplicateCourse(course)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-course" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" title="Remove" onclick="openModal(this)"></div></td>');
 
     //the verification modals
     modal = $("<div class='modal' id='delete-verification-{{course.id}}'></div>");
@@ -600,9 +600,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
-    action_buttons.append( $("<div class='icon add_icon' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
-    action_buttons.append( $("<div class='icon import_icon' value='#import-course' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon' ng-click='exportCourses()'></div>"));
+    action_buttons.append( $("<div class='icon add_icon' title='New' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-course' onclick='openModal(this)'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportCourses()'></div>"));
     $compile(action_buttons)($scope);
 
     //new course modal

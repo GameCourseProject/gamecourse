@@ -82,6 +82,7 @@ var GameCourseExpression = (function () {
     var variablesTemp = [];
     var inputGlobal = "";
     var isLoop = false;
+    var globalVariables;
 
     var parser = {
         trace: function trace() { },
@@ -458,6 +459,13 @@ var GameCourseExpression = (function () {
                 caret = document.activeElement.selectionStart;
             }
             if (option == "loop" || option == "events") {
+                globalVariables = [];
+                variables.forEach(element => {
+                    if (element["library"]) {
+                        console.log(element);
+                        globalVariables.push(element);
+                    }
+                });
                 isLoop = true;
                 var libraries = [];
                 if (library) {
@@ -482,11 +490,22 @@ var GameCourseExpression = (function () {
                         if (!libraryShow.hasOwnProperty("returnType")) {
 
                             if (libraryShow.hasOwnProperty("toShow")) {
-                                output = libraryShow.toShow;
+                                if (Array.isArray(libraryShow.toShow)) {
+                                    output = libraryShow.toShow;
+                                } else {
+                                    output = [libraryShow.toShow];
+                                }
                             } else {
                                 output = "";
                             }
 
+                            if (libraryShow.hasOwnProperty("hasVar")) {
+                                if (Array.isArray(libraryShow.hasVar)) {
+                                    output = libraryShow.hasVar;
+                                } else {
+                                    output = [libraryShow.hasVar];
+                                }
+                            }
                         } else {
                             output = "";
                             inputGlobal = input;
@@ -503,6 +522,7 @@ var GameCourseExpression = (function () {
                 }
 
             } else if (option == "variables" || option == "if" || option == "content") {
+                globalVariables = variables;
                 isLoop = false;
                 if (input) {
                     var libraries = [];
@@ -546,30 +566,38 @@ var GameCourseExpression = (function () {
                         input = input.replace("}", "");
                         caret = caret - 1;
                         if (caret < endInput) {
+                            var variable;
                             if (input.match(new RegExp("%([a-zA-Z]{0,})", "g"))) {
-                                var variable = input.split(".")[0];
-                                if (variable.match(new RegExp("^%([a-zA-Z]{0,})$", "g"))) {
-                                    var variableShow = new checkVariable(input, variables);
-                                    if (!variableShow.hasOwnProperty("library")) {
-                                        if (variableShow.hasOwnProperty("toShow")) {
+                                variable = input.split(".")[0];
+                            } else {
+                                variable = input;
+                            }
+                          
+                            //variavel está no inicio da funçao
+                            if (variable.match(new RegExp("^%([a-zA-Z]{0,})$", "g"))) {
+                                var variableShow = new checkVariable(input, variables);
+                                if (!variableShow.hasOwnProperty("library")) {
+                                    if (variableShow.hasOwnProperty("toShow")) {
+                                        if (Array.isArray(variableShow.toShow)) {
                                             output = variableShow.toShow;
                                         } else {
-                                            output = "";
+                                            output = [variableShow.toShow];
                                         }
                                     } else {
                                         output = "";
-                                        //enters here if variable was completely matched
-                                        inputGlobal = input;
-                                        libraryGlobalCollection = library;
-                                        libraryChosen = variableShow.library;
-                                        varChosenGlobal = variableShow.variable;
-                                        new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType, variableShow.returnName, null, null);
                                     }
                                 } else {
-                                    errorMessage = "Correct the variable name (check the suggestions).";
+                                    output = "";
+                                    //enters here if variable was completely matched
+                                    inputGlobal = input;
+                                    libraryGlobalCollection = library;
+                                    libraryChosen = variableShow.library;
+                                    varChosenGlobal = variableShow.variable;
+                                    new checkFunctions(input.substr(variableShow.variable.length), variableShow.returnType, variableShow.returnName, null, null);
                                 }
+                            } else {  
+                                                             
                                 //new checkFunctions(input, libraryShow.returnType);
-                            } else {
                                 var matches = input.match(new RegExp("([!|&\*<>= ]){0,1}([a-zA-Z.]+([(][^\)]{0,}[)]{0,1}){0,1})+", "g"));
                                 var acc = 0;
                                 var matched = "";
@@ -598,9 +626,20 @@ var GameCourseExpression = (function () {
                                 var libraryShow = new checkLibrary(input, libraries);
                                 if (!libraryShow.hasOwnProperty("returnType")) {
                                     if (libraryShow.hasOwnProperty("toShow")) {
-                                        output = libraryShow.toShow;
+                                        if (Array.isArray(libraryShow.toShow)){
+                                            output = libraryShow.toShow;
+                                        } else {
+                                            output = [libraryShow.toShow];
+                                        }
                                     } else {
                                         output = "";
+                                    }
+                                    if (libraryShow.hasOwnProperty("hasVar")) {
+                                        if (Array.isArray(libraryShow.hasVar)) {
+                                            output = libraryShow.hasVar;
+                                        } else {
+                                            output = [libraryShow.hasVar];
+                                        }
                                     }
                                 } else {
                                     output = "";
@@ -969,7 +1008,10 @@ var GameCourseExpression = (function () {
                                     }
                                 } else {
                                     if (inputArg[inputArg.length - 1] != ",") {
-                                        new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                        var hasVar =  checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                        if (hasVar) {
+                                            return { "hasVar": hasVar };
+                                        }
                                     }
 
                                 }
@@ -988,6 +1030,7 @@ var GameCourseExpression = (function () {
                                 return {};
                             }
                         } else {
+                            
                             if (inputArg.length == 0 && functionToShow != "") {
                                 errorMessage = "Close the parentheses.";
                                 return { "toShow": functionToShow };
@@ -1010,7 +1053,10 @@ var GameCourseExpression = (function () {
                                             }
                                         } else {
                                             if (inputArg[inputArg.length - 1] != ",") {
-                                                new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                                var hasVar = checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                                if (hasVar) {
+                                                    return { "hasVar": hasVar };
+                                                }
                                             }
 
                                         }
@@ -1077,7 +1123,6 @@ var GameCourseExpression = (function () {
     };
     function checkArgs(args, argList, argInfo, inputArg, functionMatched) {
         if (inputArg.length != 0) {
-
             var indexArr = [];
             var index = inputArg.indexOf(",");
             indexArr.push(0);
@@ -1102,38 +1147,74 @@ var GameCourseExpression = (function () {
                     inputArgNow = inputArgNow.substring(1);
                 }
 
+                inputArgNow = inputArgNow.trim();
+                console.log(inputArgNow);
+                var foundVar = false;
+                var returnTypeVar = "";
+                if (inputArgNow.match(new RegExp("^%([a-zA-Z]{0,})$", "g"))) {
+                    var variableShow = checkVariable(inputArgNow, globalVariables);
+                    if (!variableShow.hasOwnProperty("library")) {
+                        if (variableShow.hasOwnProperty("toShow")) {
+                            return variableShow.toShow;
+                        }
+                    } else if (variableShow.hasOwnProperty("returnType")) {
+                        foundVar = true;
+                        returnTypeVar = variableShow.returnType;
+                    }
+                }
                 if (argInfo[i] == "integer") {
                     inputArgNow = inputArgNow.trim();
-                    if (!inputArgNow.match(new RegExp("^[-]{0,1}[0-9]+$", "g"))) {
-                        if (argList[i][0] == "[") {
-                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                    if (foundVar) {
+                        if (returnTypeVar != "integer") {
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be an integer.";
+                            break;
                         }
-                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be an integer.";
-                        break;
+                    } else {
+                        if (!inputArgNow.match(new RegExp("^[-]{0,1}[0-9]+$", "g"))) {
+                            if (argList[i][0] == "[") {
+                                argList[i] = argList[i].substring(1, argList[i].length - 1);
+                            }
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be an integer.";
+                            break;
+                        }
                     }
                 } else if (argInfo[i] == "string") {
                     inputArgNow = inputArgNow.trim();
-                    if (!(inputArgNow[0] == "\"" && inputArgNow[inputArgNow.length - 1] == "\"") && !(inputArgNow[0] == "\'" && inputArgNow[inputArgNow.length - 1] == "\'")) {
-                        if (argList[i][0] == "[") {
-                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                    if (foundVar) {
+                        if (returnTypeVar != "string") {
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
+                            break;
                         }
-                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
-                        break;
+                    } else {
+                        if (!(inputArgNow[0] == "\"" && inputArgNow[inputArgNow.length - 1] == "\"") && !(inputArgNow[0] == "\'" && inputArgNow[inputArgNow.length - 1] == "\'")) {
+                            if (argList[i][0] == "[") {
+                                argList[i] = argList[i].substring(1, argList[i].length - 1);
+                            }
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a string.";
+                            break;
+                        }
                     }
                 } else if (argInfo[i] == "boolean") {
                     inputArgNow = inputArgNow.trim();
-                    if (!inputArgNow.match(new RegExp("^[ ]{0,}(true|false|1|0)[ ]{0,}$"), "g")
-                        && !inputArgNow.match(new RegExp("^[ ]{0,}[\"]{1}[ ]{0,}(true|false|1|0){1}[ ]{0,}[\"]{1}[ ]{0,}$"), "i")) {
-                        if (argList[i][0] == "[") {
-                            argList[i] = argList[i].substring(1, argList[i].length - 1);
+                    if (foundVar) {
+                        if (returnTypeVar != "boolean") {
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a boolean.";
+                            break;
                         }
-                        errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a boolean.";
-                        break;
+                    } else {
+                        if (!inputArgNow.match(new RegExp("^[ ]{0,}(true|false|1|0)[ ]{0,}$"), "g")
+                            && !inputArgNow.match(new RegExp("^[ ]{0,}[\"]{1}[ ]{0,}(true|false|1|0){1}[ ]{0,}[\"]{1}[ ]{0,}$"), "i")) {
+                            if (argList[i][0] == "[") {
+                                argList[i] = argList[i].substring(1, argList[i].length - 1);
+                            }
+                            errorMessage = "The argument " + argList[i] + " of the function " + functionMatched + " must be a boolean.";
+                            break;
+                        }
                     }
                 }
             }
         }
-
+        return "";
     }
     function checkFunctionsForLibrary(input, libraries, refersTo, refersToName) {
         if (input) {
@@ -1222,7 +1303,10 @@ var GameCourseExpression = (function () {
                                         }
                                     } else {
                                         if (inputArg[inputArg.length - 1] != ",") {
-                                            new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                            var hasVar = checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                            if (hasVar) {
+                                                return { "hasVar": hasVar };
+                                            }
                                         }
                                     }
                                     if (isLoop && returnType != "collection") {
@@ -1281,8 +1365,10 @@ var GameCourseExpression = (function () {
                                             }
                                         } else {
                                             if (inputArg[inputArg.length - 1] != ",") {
-                                                console.log(argList);
-                                                new checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                                var hasVar = checkArgs(args, argList, argInfo, inputArg, functionMatched);
+                                                if (hasVar) {
+                                                    return { "hasVar": hasVar };
+                                                }
                                             }
 
                                         }
@@ -1389,7 +1475,18 @@ var GameCourseExpression = (function () {
         var libraryShow = new checkFunctionsForLibrary(input, libraries, refersToType, refersToName);
 
         if (libraryShow.hasOwnProperty("toShow")) {
-            output = libraryShow.toShow;
+            if (Array.isArray(libraryShow.toShow)) {
+                output = libraryShow.toShow;
+            } else {
+                output = [libraryShow.toShow];
+            }
+        }
+        if (libraryShow.hasOwnProperty("hasVar")) {
+            if (Array.isArray(libraryShow.hasVar)) {
+                output = libraryShow.hasVar;
+            } else {
+                output = [libraryShow.hasVar];
+            }
         }
         if (libraryShow.hasOwnProperty("returnType")) {
             testeGlobal = libraryShow.index;

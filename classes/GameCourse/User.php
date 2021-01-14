@@ -15,13 +15,14 @@ class User
     //id ainda existe mas nao tem referencia fora do sistema
 
     //previously was not static
-    public static function addUserToDB($name, $username, $authenticationService, $email, $studentNumber, $nickname, $isAdmin, $isActive)
+    public static function addUserToDB($name, $username, $authenticationService, $email, $studentNumber, $nickname, $campus, $isAdmin, $isActive)
     {
         $id = Core::$systemDB->insert("game_course_user", [
             "name" => $name,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
+            "campus" => $campus,
             "isAdmin" => $isAdmin,
             "isActive" => $isActive
         ]);
@@ -100,6 +101,15 @@ class User
         $this->setData(["studentNumber" => $studentNumber]);
     }
 
+    public function getCampus()
+    {
+        return $this->getData("campus");
+    }
+    function setCampus($campus)
+    {
+        $this->setData(["campus" => $campus]);
+    }
+
 
     public function isAdmin()
     {
@@ -123,13 +133,14 @@ class User
         return array_column(Core::$systemDB->selectMultiple("game_course_user", ["isAdmin" => true], 'id'), 'id');
     }
 
-    public function editUser($name, $username, $authenticationService,  $email, $studentNumber, $nickname, $isAdmin, $isActive)
+    public function editUser($name, $username, $authenticationService,  $email, $studentNumber, $nickname, $campus, $isAdmin, $isActive)
     {
         Core::$systemDB->update("game_course_user", [
             "name" => $name,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
+            "campus" => $campus,
             "isAdmin" => $isAdmin,
             "isActive" => $isActive
         ], ["id" => $this->id]);
@@ -271,7 +282,7 @@ class User
             $u = new User($user["id"]);
             $username = $u->getUsername();
             $auth = User::getUserAuthenticationService($username);
-            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . 
+            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["campus"] . "," .
                      $user["isAdmin"] . "," . $user["isActive"] . "," . $username . "," . $auth;
             if ($i != $len - 1) {
                 $file .= "\n";
@@ -292,14 +303,16 @@ class User
         $emailIndex = "";
         $nicknameIndex = "";
         $studentNumberIndex = "";
+        $campusIndex = "";
         $isAdminIndex = "";
         $isActiveIndex = "";
         //se tiver 1ª linha com nomes
         if($lines[0]){
             $lines[0] = trim($lines[0]);
             $firstLine = explode(",",$lines[0]);
+            $firstLine = array_map('trim', $firstLine);
             if(in_array("name", $firstLine) && in_array("email", $firstLine) 
-                && in_array("nickname", $firstLine) && in_array("studentNumber", $firstLine) 
+                && in_array("nickname", $firstLine) && in_array("studentNumber", $firstLine) && in_array("campus", $firstLine) 
                 && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine)
                 && in_array("username", $firstLine) && in_array("auth", $firstLine))
             {
@@ -308,6 +321,7 @@ class User
                 $emailIndex = array_search("email", $firstLine);
                 $nicknameIndex = array_search("nickname", $firstLine);
                 $studentNumberIndex = array_search("studentNumber", $firstLine);
+                $campusIndex = array_search("campus", $firstLine);
                 $isAdminIndex = array_search("isAdmin", $firstLine);
                 $isActiveIndex = array_search("isActive", $firstLine);
                 $usernameIndex = array_search("username", $firstLine);
@@ -319,57 +333,29 @@ class User
         foreach ($lines as $line) {
             $line = trim($line);
             $user = explode(",", $line);
+            $user = array_map('trim', $user);
             if (count($user) > 1){
                 if (!$has1stLine){
                     $nameIndex = 0;
                     $emailIndex = 1;
                     $nicknameIndex = 2;
                     $studentNumberIndex = 3;
-                    $isAdminIndex = 4;
-                    $isActiveIndex = 5;
-                    $usernameIndex = 6;
-                    $authIndex = 7;
+                    $campus = 4;
+                    $isAdminIndex = 5;
+                    $isActiveIndex = 6;
+                    $usernameIndex = 7;
+                    $authIndex = 8;
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    if ($user[$studentNumberIndex] == "" && $user[$emailIndex] == "") {
-                        $user[$studentNumberIndex] = null;
-                        $user[$emailIndex] = null;
-
-                        User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                        $newUsersNr++;
-                    } else if ($user[$studentNumberIndex] != "") {
-                        if (!User::getUserByStudentNumber($user[$studentNumberIndex])) {
-                            if (!User::getUserByEmail($user[$emailIndex]) && $user[$emailIndex] != "") {
-                                User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                                $newUsersNr++;
-                            } else {
-                                if ($user[$emailIndex] && User::getUserByEmail($user[$emailIndex])) {
-                                    if ($replace) {
-                                        $userToUpdate = User::getUserByEmail($user[$emailIndex]);
-                                        $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
-                                    }
-                                } else {
-                                    User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                                    $newUsersNr++;
-                                }
-                            }
-                        } else {
-                            if ($replace) {
-                                $userToUpdate = User::getUserByStudentNumber($user[$studentNumberIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
-                            }
+                    $userId = Core::$systemDB->select("auth", ["username"=> $user[$usernameIndex], "authentication_service"=> $user[$authIndex]], "id");
+                    if ($userId){
+                        if ($replace) {
+                            $userToUpdate = User::getUserByUsername($user[$usernameIndex]);
+                            $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                         }
                     } else {
-                        $user[$studentNumberIndex] = null;
-                        if (!User::getUserByEmail($user[$emailIndex])) {
-                            User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
-                            $newUsersNr++;
-                        } else {
-                            if ($replace) {
-                                $userToUpdate = User::getUserByEmail($user[$emailIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$isAdminIndex], $user[$isAdminIndex]);
-                            }
-                        }
+                        User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                        $newUsersNr++;
                     }
                 }
             }

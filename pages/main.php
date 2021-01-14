@@ -66,7 +66,7 @@ $user = Core::getLoggedUser();
 
         app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
             $rootScope.loaded = true;
-
+            
             //em caso de entrarmos num curso
             $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                 if ($rootScope.course != course) {
@@ -98,7 +98,7 @@ $user = Core::getLoggedUser();
                                     beginNavbarResize();
                                     if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                                         var landing = $scope.landingPage.replace(/^\//g, '');
-                                        $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
+                                        $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
                                     }
                                 });
                             }, function() {
@@ -106,12 +106,13 @@ $user = Core::getLoggedUser();
                                 console.log(arguments);
                             });
                             $scope.landingPage = data.landingPage;
+                            $scope.landingPageID = data.landingPageID;
                             $scope.setNavigation([], []);
                         });
                     }
                 } else if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                     var landing = $scope.landingPage.replace(/^\//g, '');
-                    $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing));
+                    $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
                 }
             };
             $scope.user = $rootScope.user;

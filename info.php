@@ -116,6 +116,7 @@ API::registerFunction('core', 'exportModule', function () {
     API::requireAdminPermission();
     $zipFile = Module::exportModules();
     API::response(array("file"=> $zipFile));
+    unlink($zipFile);
 });
 
 
@@ -129,18 +130,20 @@ function udiffCompare($a, $b){
 API::registerFunction('course', 'importUser', function(){
     API::requireCourseAdminPermission();
     API::requireValues('file');
+    API::requireValues('course');
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
     $replace = API::getValue('replace');
-    $nUsers = CourseUser::importCourseUsers($fileContents, $replace);
+    $nUsers = CourseUser::importCourseUsers($fileContents, API::getValue('course'), $replace);
+
     API::response(array('nUsers' => $nUsers));
 });
 API::registerFunction('course', 'exportUsers', function(){
     API::requireCourseAdminPermission();
     API::requireValues('course');
     $courseId = API::getValue('course');
-    $courseUsers = CourseUser::exportCourseUsers($courseId);
-    API::response(array('courseUsers' => $courseUsers));
+    [$fileName, $courseUsers] = CourseUser::exportCourseUsers($courseId);
+    API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
 });
 
 

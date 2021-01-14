@@ -16,7 +16,6 @@ create table config_google_sheets(
 	tokenType varchar(200) null,
 	created varchar(200) null,
 	refreshToken varchar(500) null,
-	authCode varchar(200) null,
 	spreadsheetId varchar(200) null,
 	sheetName varchar(200) null,
 	isEnabled boolean,	

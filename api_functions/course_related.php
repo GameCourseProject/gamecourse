@@ -33,6 +33,9 @@ API::registerFunction('core', 'getCourseInfo', function() {
     
         $user = Core::getLoggedUser();
         $courseUser = $course->getLoggedUser();
+        $landingPage = $courseUser->getLandingPage();
+        $landingPageID = Core::$systemDB->select("page", ["name"=>$landingPage], "id");
+
         $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
         
         if ($isAdmin){
@@ -57,7 +60,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
         API::response(array(
             'navigation' => $navPages,
             'settings' => $navSettings,
-            'landingPage' => $courseUser->getLandingPage(),
+            'landingPage' => $landingPage,
+            'landingPageID' => $landingPageID,
             'courseName' => $course->getName(),
             'courseColor' => $course->getData("color"),
             'resources' => $course->getModulesResources(),

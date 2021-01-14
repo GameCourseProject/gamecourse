@@ -473,13 +473,13 @@ app.controller('CourseRolesSettingsController', function($scope, $stateParams, $
         dd.append('<div class="header"><span class="role_sections">Roles</span><span class="page_sections">Landing Page</span></div>')
         
         // add button no fim da lista
-        add_new_role = $('<div id="add_role_button_box"><button ng-click="addRole()" class="add_button icon"></button></div>')
+        add_new_role = $('<div id="add_role_button_box"><button title="New" ng-click="addRole()" class="add_button icon"></button></div>')
         $compile(add_new_role)($scope)
 
         //action buttons
         action_buttons = $("<div class='action-buttons'></div>");
-        action_buttons.append( $("<div id='undo_icon' class='icon undo_icon disabled' ng-click='undo()'></div>"));
-        action_buttons.append( $("<div id='redo_icon' class='icon redo_icon disabled' ng-click='redo()'></div>"));
+        action_buttons.append( $("<div id='undo_icon' class='icon undo_icon disabled' title='Undo' ng-click='undo()'></div>"));
+        action_buttons.append( $("<div id='redo_icon' class='icon redo_icon disabled' title='Redo' ng-click='redo()'></div>"));
         $compile(action_buttons)($scope)
         createChangeButtonIfNone( action_buttons,  saveRoles, dd, false);
 

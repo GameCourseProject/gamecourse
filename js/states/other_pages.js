@@ -1,6 +1,6 @@
 //states
 app.config(function ($locationProvider, $compileProvider, $stateProvider) {
-    $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode(false);
     $compileProvider.debugInfoEnabled(true);
 
     $stateProvider.state('home', {
