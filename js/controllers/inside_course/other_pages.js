@@ -726,8 +726,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         rowContent.append('<td>{{user.campus}}</td>');
         rowContent.append('<td>{{user.studentNumber}}</td>');
         rowContent.append('<td>{{user.lastLogin}}</td>');
-        rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
-        rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
+        rowContent.append('<td class="action-column"><div class="icon edit_icon" title="Edit" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
+        rowContent.append('<td class="action-column"><div class="icon delete_icon" title="Remove" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
 
         //the verification modals
         modal = $("<div class='modal' id='delete-verification-{{user.id}}'></div>");
@@ -816,9 +816,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
         //action buttons
         action_buttons = $("<div class='action-buttons'></div>");
-        action_buttons.append( $("<div class='icon add_icon' value='#add-user' onclick='openModal(this)'></div>"));
-        action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
-        action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
+        action_buttons.append( $("<div class='icon add_icon' title='New' value='#add-user' onclick='openModal(this)'></div>"));
+        action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-user' onclick='openModal(this)'></div>"));
+        action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportUsers()'></div>"));
         mainContent.append($compile(action_buttons)($scope));
 
         //the import modal

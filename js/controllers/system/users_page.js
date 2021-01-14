@@ -504,8 +504,8 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     rowContent.append('<td>{{user.lastLogin}}</td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isAdmin == true" id="admin-{{user.id}}" type="checkbox" checked><input ng-if="user.isAdmin == false" id="admin-{{user.id}}" type="checkbox"><span ng-click= "adminUser(user.id)" class="slider round"></span></label></td>');
     rowContent.append('<td class="check-column"><label class="switch"><input ng-if="user.isActive == true" id="active-{{user.id}}" type="checkbox" checked><input ng-if="user.isActive == false" id="active-{{user.id}}" type="checkbox"><span ng-click= "activeUser(user.id)" class="slider round"></span></label></td>');
-    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
-    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-user" title="Edit" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{user.id}}" title="Remove" onclick="openModal(this)"></div></td>');
 
     //the verification modals
     modal = $("<div class='modal' id='delete-verification-{{user.id}}'></div>");
@@ -616,9 +616,9 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
 
     //action buttons
     action_buttons = $("<div class='action-buttons'></div>");
-    action_buttons.append( $("<div class='icon add_icon' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
-    action_buttons.append( $("<div class='icon import_icon' value='#import-user' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon' ng-click='exportUsers()'></div>"));
+    action_buttons.append( $("<div class='icon add_icon' title='New' value='#new-user' onclick='openModal(this)' ng-click='createUser()'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-user' onclick='openModal(this)'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportUsers()'></div>"));
     mainContent.append($compile(action_buttons)($scope));
 
 

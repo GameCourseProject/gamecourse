@@ -125,8 +125,8 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
     //action buttons
     action_buttons = $("<div class='action-buttons' id='install_modules'></div>");
-    action_buttons.append( $("<div class='icon import_icon' value='#import-module' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon' ng-click='exportModules()'></div>"));
+    action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-module' onclick='openModal(this)'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportModules()'></div>"));
     $compile(action_buttons)($scope);
 
     modules = $('<div id="modules"></div>');

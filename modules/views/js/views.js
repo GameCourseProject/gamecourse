@@ -228,8 +228,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         
         $scope.canUndo = view.canUndo;
         $scope.undo = view.undo;
-        var btnUndoActive = $('<div ng-if="canUndo()" id="undo_icon" class="icon undo_icon" ng-click="undo()"></div>');
-        var btnUndoDisabled = $('<div ng-if="!canUndo()" id="undo_icon" class="icon undo_icon disabled" ></div>');
+        var btnUndoActive = $('<div ng-if="canUndo()" id="undo_icon" class="icon undo_icon" title="Undo" ng-click="undo()"></div>');
+        var btnUndoDisabled = $('<div ng-if="!canUndo()" id="undo_icon" class="icon undo_icon disabled" title="Redo"></div>');
         $compile(btnUndoActive)($scope);
         $compile(btnUndoDisabled)($scope);
         controlsDiv.append(btnUndoActive);
@@ -237,8 +237,8 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
         $scope.canRedo = view.canRedo;
         $scope.redo = view.redo;
-        var btnRedoActive = $('<div ng-if="canRedo()" id="redo_icon" class="icon redo_icon" ng-click="redo()"></div>');
-        var btnRedoDisabled = $('<div ng-if="!canRedo()" id="redo_icon" class="icon redo_icon disabled" ></div>');
+        var btnRedoActive = $('<div ng-if="canRedo()" id="redo_icon" class="icon redo_icon" title="Redo" ng-click="redo()"></div>');
+        var btnRedoDisabled = $('<div ng-if="!canRedo()" id="redo_icon" class="icon redo_icon disabled" title="Undo" ></div>');
         $compile(btnRedoActive)($scope);
         $compile(btnRedoDisabled)($scope);
         controlsDiv.append(btnRedoActive);
@@ -376,8 +376,8 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         var viewsArea = createSection($($element), "Pages");
         viewsArea.attr("id", "pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="edit_icon" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
-        box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" title="Remove" ng-click="deleteView(page,\'page\')"></span></div></div>'))
 
         //for the configure/edit info of the page
         // for the enable/disable feature of pages
@@ -385,7 +385,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
-        viewsArea.append($compile('<div class="add_button icon" ng-click="createView(\'page\')"></div>')($scope));
+        viewsArea.append($compile('<div class="add_button icon" title="New" ng-click="createView(\'page\')"></div>')($scope));
         //error section
         viewsArea.append($("<div class='error_box'><div id='empty_pages' class='error_msg'></div></div>"));
 
@@ -393,18 +393,18 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         var TemplateArea = createSection($($element), "View Templates");
         TemplateArea.attr("id", "templates");
         box = $('<div class="card"  ng-repeat="template in templates" ></div>');
-        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?' + time + ');"><span class="edit_icon" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append($('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">' +
             //for the configure/edit info of the template
             //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
-            '<span class="globalize_icon icon" ng-if="template.isGlobal==false" ng-click="globalize(template)"></span>' +
-            '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" ng-click="globalize(template)"></span>' +
-            '<span class="export_icon_no_outline icon" ng-click="exportTemplate(template)">' +
-            '</span><span class="delete_icon icon" ng-click="deleteView(template,\'template\')"></span></div></div>'))
+            '<span class="globalize_icon icon" ng-if="template.isGlobal==false" title="Globalize" ng-click="globalize(template)"></span>' +
+            '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" title="Deglobalize" ng-click="globalize(template)"></span>' +
+            '<span class="export_icon_no_outline icon" title="Export" ng-click="exportTemplate(template)">' +
+            '</span><span class="delete_icon icon" title="Remove" ng-click="deleteView(template,\'template\')"></span></div></div>'))
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         TemplateArea.append(box);
-        TemplateArea.append($compile('<div class="add_button icon" ng-click="createView(\'template\')"></div>')($scope));
+        TemplateArea.append($compile('<div class="add_button icon" title="New" ng-click="createView(\'template\')"></div>')($scope));
         //error section
         TemplateArea.append($("<div class='error_box'><div id='empty_templates' class='error_msg'></div></div>"));
 
