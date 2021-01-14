@@ -188,32 +188,32 @@ class Plugin extends Module
             $roleId = Core::$systemDB->select("role", ["name"=>"Student", "course"=>$courseId], "id");
             if($studentNumber){
                 if (!User::getUserByStudentNumber($studentNumber)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
                     $user = User::getUserByStudentNumber($studentNumber);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB($roleId, $campus);
+                    $courseUser->addCourseUserToDB($roleId);
                 } else {
                     $existentUser = User::getUserByStudentNumber($studentNumber);
                     $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
                     $courseUser = new CourseUser($existentUser->getId(), $course);
                     if(!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])){
-                        $courseUser->addCourseUserToDB($roleId, $campus);
+                        $courseUser->addCourseUserToDB($roleId);
                     }else{
                         $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
                     }
                 }
             }else{
                 if (!User::getUserByUsername($username)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
                     $user = User::getUserByUsername($username);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB($roleId, $campus);
+                    $courseUser->addCourseUserToDB($roleId);
                 } else {
                     $existentUser = User::getUserByUsername($username);
-                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
+                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
                     $courseUser = new CourseUser($existentUser->getId(), $course);
                     if (!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])) {
-                        $courseUser->addCourseUserToDB($roleId, $campus);
+                        $courseUser->addCourseUserToDB($roleId);
                     } else {
                         $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
                     }

@@ -43,6 +43,7 @@ create table game_course_user(
 	id 		int unsigned primary key auto_increment, #81205
     name 	varchar(50) not null,
     email 	varchar(255),
+	campus 	char(1),
 	nickname varchar(50),
 	studentNumber int unique,
     isAdmin boolean not null default false,
@@ -74,7 +75,6 @@ create table course(
 create table course_user
    (id  int unsigned,
    	course  int unsigned,
-    campus 	char(1),
     lastActivity timestamp default CURRENT_TIMESTAMP,
     previousActivity timestamp default  CURRENT_TIMESTAMP,
     primary key(id, course),
