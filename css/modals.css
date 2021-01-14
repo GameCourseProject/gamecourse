@@ -29,6 +29,7 @@ button {
 .verification .confirmation_btns {
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 .verification .confirmation_btns button {

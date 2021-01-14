@@ -583,7 +583,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     verification.append( $('<button class="close_btn icon" value="#delete-verification-{{course.id}}" onclick="closeModal(this)"></button>'));
     verification.append( $('<div class="warning">Are you sure you want to delete the Course?</div>'));
     verification.append( $('<div class="target">{{course.name}}</div>'));
-    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{course.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)"> Delete</button></div>'))
+    verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{course.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)">Delete</button></div>'))
     modal.append(verification);
     rowContent.append(modal);
 
