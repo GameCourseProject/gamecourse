@@ -456,8 +456,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         });
     }
 
-    $scope.importCourses = function(){
+    $scope.importCourses = function(replace){
         $scope.importedCourses = null;
+        $scope.replaceCourses = replace;
         var fileInput = document.getElementById('import_course');
         var file = fileInput.files[0];
 
@@ -465,13 +466,15 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
         reader.onload = function(e) {
             $scope.importedCourses = reader.result;
-            $smartboards.request('core', 'importCourses', { file: $scope.importedCourses }, function(data, err) {
+            $smartboards.request('core', 'importCourses', { file: $scope.importedCourses, replace: $scope.replaceCourses }, function(data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
                 }
                 nCourses = data.nCourses;
                 $("#import-course").hide();
+                getCourses();
+                fileInput.value = "";
                 $("#action_completed").empty();
                 $("#action_completed").append(nCourses + " Courses Imported");
                 $("#action_completed").show().delay(3000).fadeOut();
@@ -685,7 +688,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     verification.append( $('<div class="warning">Please select a .json file to be imported</div>'));
     verification.append( $('<div class="target">The seperator must be comma</div>'));
     verification.append( $('<input class="config_input" type="file" id="import_course" accept=".json">')); //input file
-    verification.append( $('<div class="confirmation_btns"><button ng-click="importCourses()">Import Courses</button></div>'))
+    verification.append( $('<div class="confirmation_btns"><button ng-click="importCourses(true)">Import Courses (Replace Duplicates)</button><button ng-click="importCourses(false)">Import Courses (Ignore Duplicates)</button></div>'))
     importModal.append(verification);
     allCourses.append(importModal);
 

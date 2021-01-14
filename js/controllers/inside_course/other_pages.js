@@ -642,8 +642,9 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $scope.lastOrder = order;
         $scope.lastArrow = arrow;
     }
-    $scope.importUsers = function(){
+    $scope.importUsers = function(replace){
         $scope.importedUsers = null;
+        $scope.replaceUsers = replace;
         var fileInput = document.getElementById('import_user');
         var file = fileInput.files[0];
 
@@ -651,19 +652,24 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
         reader.onload = function(e) {
             $scope.importedUsers = reader.result;
-            $smartboards.request('course', 'importUser', { file: $scope.importedUsers, course: $scope.course }, function(data, err) {
+            $smartboards.request('course', 'importUser', { file: $scope.importedUsers, course: $scope.course, replace: $scope.replaceUsers}, function(data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
                 }
                 nUsers = data.nUsers;
                 $("#import-user").hide();
+                getUsers();
+                fileInput.value = "";
                 $("#action_completed").empty();
                 $("#action_completed").append(nUsers + " Users Imported");
                 $("#action_completed").show().delay(3000).fadeOut();
+                
             });
         }
         reader.readAsDataURL(file);	
+      
+        
         
     }
     $scope.exportUsers = function(){
@@ -716,6 +722,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         jQuery.each(header, function(index){
             rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
         });
+        
     
         rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
         nameRoleColumn = $('<td class="name-column"><span>{{user.name}}</span></td>')
@@ -819,7 +826,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         action_buttons.append( $("<div class='icon add_icon' title='New' value='#add-user' onclick='openModal(this)'></div>"));
         action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-user' onclick='openModal(this)'></div>"));
         action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportUsers()'></div>"));
-        mainContent.append($compile(action_buttons)($scope));
+        mainContent.append(action_buttons);
+
 
         //the import modal
         importModal = $("<div class='modal' id='import-user'></div>");
@@ -828,7 +836,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         verification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
         verification.append( $('<div class="target">The seperator must be comma</div>'));
         verification.append( $('<input class="config_input" type="file" id="import_user" accept=".csv, .txt">')); //input file
-        verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers()">Import Users</button></div>'))
+        verification.append( $('<div class="confirmation_btns"><button ng-click="importUsers(true)">Import Users (Replace duplicates)</button><button ng-click="importUsers(false)">Import Users (Ignore duplicates)</button></div>'))
         importModal.append(verification);
         mainContent.append(importModal);
 
@@ -848,7 +856,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
                 $scope.users = data.userList.slice();
                 $scope.allUsers = data.userList.slice();
-
+                
                 $element.append(mainContent);
                 $scope.lastOrder = "none";
                 $scope.lastArrow = "none";
@@ -860,6 +868,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             });
         };
         getUsers();
+        
         $element.one("mousemove",function(){
             checkNavbarLength();
         });
