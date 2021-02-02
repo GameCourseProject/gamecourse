@@ -46,7 +46,7 @@ API::registerFunction('course', 'removeUser', function(){
 //request to edit user information
 API::registerFunction('course', 'editUser', function() {
     API::requireAdminPermission();
-    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'course', 'userRoles', 'userCampus');
+    API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'course', 'userRoles', 'userMajor');
 
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
@@ -69,7 +69,7 @@ API::registerFunction('course', 'editUser', function() {
             $user->setStudentNumber(API::getValue('userStudentNumber'));
             $user->setNickname(API::getValue('userNickname'));
             $user->setUsername(API::getValue('userUsername'));
-            $user->setCampus(API::getValue('userCampus'));
+            $user->setMajor(API::getValue('userMajor'));
             $user->setAuthenticationService(API::getValue('userAuthService'));
 
             //$courseUser->setCampus(API::getValue('userCampus'));
@@ -97,20 +97,20 @@ API::registerFunction('course', 'createUser', function(){
     $courseId=API::getValue('course');
     $course = Course::getCourse($courseId);
     if($course != null){
-        API::requireValues('userHasImage', 'userCampus', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
+        API::requireValues('userHasImage', 'userMajor', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
         $userName = API::getValue('userName');
         $userEmail = API::getValue('userEmail');
         $userStudentNumber = API::getValue('userStudentNumber');
         $userNickname = API::getValue('userNickname');
         $userRoles = API::getValue('userRoles');
-        $userCampus = API::getValue('userCampus');
+        $userMajor = API::getValue('userMajor');
         $userUsername = API::getValue('userUsername');
         $userAuthService = API::getValue('userAuthService');
 
         //verifies if user exits on the system
         $user = User::getUserByStudentNumber($userStudentNumber);
         if ($user == null) {
-            User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, $userCampus, 0, 1);
+            User::addUserToDB($userName,$userUsername,$userAuthService,$userEmail,$userStudentNumber, $userNickname, $userMajor, 0, 1);
             $user = User::getUserByStudentNumber($userStudentNumber);
             $courseUser = new CourseUser($user->getId(),$course);
             $courseUser->addCourseUserToDB(null);
@@ -220,7 +220,7 @@ API::registerFunction('course', 'courseUsers', function() {
                     'nickname' => $user->getNickname(),
                     'studentNumber' => $user->getStudentNumber(),
                     'roles' => $user->getRolesNames(),
-                    'campus' => $user->getCampus(),
+                    'major' => $user->getMajor(),
                     'email' => $user->getEmail(),
                     'lastLogin' => $user->getLastLogin(),
                     'username' => $user->getUsername(),

@@ -155,7 +155,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     $scope.missingOne.splice(i, 1);
                     --i;
                 }
-            }
+            } 
             if ($scope.missingOne.length > 0)
                 $scope.selection.missingOneToAdd = $scope.missingOne[0];
         }
@@ -360,7 +360,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         $scope.pages = Object.values(data.pages);
         $scope.templates = Object.values(data.templates);
         $scope.globals = Object.values(data.globals);
-
+    
         //all the information is saved so we can filter it
         $scope.allPages = Object.values(data.pages);
         $scope.allTemplates = Object.values(data.templates);
@@ -377,11 +377,16 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         viewsArea.attr("id", "pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
         box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
-        box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" title="Remove" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        //box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" title="Remove" ng-click="deleteView(page,\'page\')"></span></div></div>'))
 
         //for the configure/edit info of the page
         // for the enable/disable feature of pages
-        //box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="config_icon icon" ng-click="editView(id,\'page\',page.name)"></span><span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'))
+        
+        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions">' +
+         '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(page,\'page\')"></span>' + 
+         '<span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'));
+        box.append($('<div ng-if="page.isEnabled != true" class="status disable">Disabled <div class="background"></div></div>'));
+        box.append($('<div ng-if="page.isEnabled == true" class="status enable">Enabled <div class="background"></div></div>'));
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
@@ -396,7 +401,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append($('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">' +
             //for the configure/edit info of the template
-            //'<span class="config_icon icon" ng-click="editView(template.id,\'template\',template.name)"></span>'+
+            '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(template, \'template\')"></span>'+
             '<span class="globalize_icon icon" ng-if="template.isGlobal==false" title="Globalize" ng-click="globalize(template)"></span>' +
             '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" title="Deglobalize" ng-click="globalize(template)"></span>' +
             '<span class="export_icon_no_outline icon" title="Export" ng-click="exportTemplate(template)">' +
@@ -433,11 +438,14 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         roleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
+        
         // for the enable/disable feature of pages
-        // row = $('<div id="active_page" class= "row"></div>');
-        // row.append( $('<div class= "on_off"><span>Enable </span><label class="switch"><input id="active" type="checkbox" ng-model="newView.IsActive"><span class="slider round"></span></label></div>'))
-        // box.append(row);
+        row = $('<div id="active_page" class= "row"></div>');
+        row.append( $('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="newView.isEnabled"><span class="slider round"></span></label></div>'))
+        //box.append(row);
         content.append(box);
+        // added row to content intead of box to align with the save button
+        content.append(row);
         content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
         newView.append(content);
         modal.append(newView);
@@ -469,11 +477,39 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         $compile(delete_modal)($scope);
         $element.append(delete_modal);
 
+        //edit page modal
+        editmodal = $("<div class='modal' id='edit-view'></div>");
+        editpage = $("<div class='modal_content'></div>");
+        editpage.append( $('<button class="close_btn icon" value="#edit-view" onclick="closeModal(this)"></button>'));
+        editpage.append( $('<div class="title">Edit {{editView.pageOrTemp}}: </div>'));
+        editcontent = $('<div class="content">');
+        editbox = $('<div id="edit_view_box" class= "inputs">');
+        //text inputs
+        
+        editbox.append($('<div class="container" ><input type="text" class="form__input" id="edit_name" placeholder="Name *" ng-model="editView.name"/> <label for="name" class="form__label">Name</label></div>'))
+        editroleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="editView.roleType"></select>'));
+        editroleType.append($('<option value="" disabled selected>Select a role type *</option>'));
+        editbox.append(editroleType);
+        
+        
+        //editrow = $('<div id="#active_visible_inputs" class= "row"></div>');
+        //editrow.append( $('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="editView.viewIsEnabled"><span class="slider round"></span></label></div>'))
+        // authentication information - service and username
+        editcontent.append(editbox);
+        //editcontent.append(editrow);
+        
+        editcontent.append( $('<button class="save_btn" ng-click="submitEditView()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+        editpage.append(editcontent);
+        editmodal.append(editpage);
+
+        $compile(editmodal)($scope);
+        $element.append(editmodal);
+        
 
         angular.extend($scope, data);
 
         $scope.createView = function (pageOrTemp) {
-            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, IsActive: false };
+            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, isEnabled: 0};
 
             $scope.saveView = function () {
                 $smartboards.request('views', 'createView', $scope.newView, alertUpdate);
@@ -494,8 +530,8 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             }
 
             if (pageOrTemp == "page") {
-                $("#active_page").show();
-                $("#inputs_view_box").attr("style", "padding-bottom: 26px");
+                $("#active_page").show();        
+                $("#inputs_view_box").attr("style", "padding-bottom: 26px");           
             }
             else {
                 $("#active_page").hide();
@@ -586,7 +622,87 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             }
 
         }
-    });
+
+        $scope.configureView = function(view, pageOrTemp){
+            $("#view_template_input").remove();
+            $("#active_visible_inputs").remove();
+            $scope.editView = {};
+            $scope.editView.id = view.id;
+            $scope.editView.course = view.course;
+            $scope.editView.roleType = view.roleType;
+            $scope.editView.name = view.name;
+            $scope.editView.theme = null;
+            $scope.editView.pageOrTemp = pageOrTemp;
+  
+            
+            if (pageOrTemp == "page") {
+                //$("#active_visible_inputs").show();
+                //$("#inputs_view_box").attr("style", "padding-bottom: 26px");
+
+
+                editbox = $("#edit_view_box");
+
+                editrow = $('<div class= "row" id="active_visible_inputs"></div>'); 
+                if (view.isEnabled == true){
+                    editrow.append( $('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled" checked><span class="slider round"></span></label></div>'));
+                    $scope.editView.pageIsEnabled = true;
+                }
+                else{
+                    editrow.append( $('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled"><span class="slider round"></span></label></div>'));
+                    $scope.editView.pageIsEnabled = false;
+                }
+                editbox.append(editrow);
+                
+            } else {
+                editbox.attr("style", "padding-bottom: 26px");
+            }
+
+            $compile(editbox)($scope);
+            $("#edit-view").show();
+           
+            $scope.isReadyToEdit = function() {
+                isValid = function(text){
+                    return  (text != "" && text != undefined && text != null)
+                }
+                //validate inputs
+                if (isValid($scope.editView.name) &&
+                $scope.editView.roleType.length != 0){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+    
+            $scope.submitEditView = function() {
+                isEnabled = $scope.editView.pageIsEnabled ? 1 : 0;
+                var editData = {
+                    course: $scope.editView.course,
+                    name: $scope.editView.name,
+                    id: $scope.editView.id,
+                    isEnabled: isEnabled,
+                    roleType:$scope.editView.roleType,
+                    theme: $scope.editView.theme,
+                    pageOrTemp: $scope.editView.pageOrTemp
+                };
+                
+                $smartboards.request('views', 'editView', editData, function(data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $("#edit-view").hide();
+                    // reload the window to update the nav bar
+                    
+                    window.location.reload();
+                    //$("#action_completed").append($scope.editView.pageOrTemp + ": "+ $scope.editView.name + " edited");
+                    //$("#action_completed").show().delay(3000).fadeOut();
+                });
+            };
+        }
+
+        
+});
 });
 
 //controller for pages that are created in the views page
@@ -605,6 +721,7 @@ angular.module('module.views').controller('CustomPage', function ($stateParams,$
     $sbviews.request($stateParams.id, {course: $scope.course}, function(view, err) {
         if (err) {
             console.log(err);
+            console.log(err.description);
             return;
         }
         $element.append(view.element);

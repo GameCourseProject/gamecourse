@@ -777,10 +777,10 @@ function testCourseUserImport($course)
         $GLOBALS['fail']++;
     }
     //adds users
-    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,auth\n";
-    $usersCSV .= "Hugo Sousa Silva,hugo@mail.com,,77777,0,1,A,Student,ist11111,fenix\n";
-    $usersCSV .= "Joaquim Duarte,,,98765,0,1,A,Student,jb@gmail.pt,linkedin\n";
-    $usersCSV .= "Mónica Trindade,,,55555,0,1,T,Student,m.trindade@mail.com,google\n";
+    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,major,roles,username,auth\n";
+    $usersCSV .= "Hugo Sousa Silva,hugo@mail.com,,77777,0,1,MEIC-A,Student,ist11111,fenix\n";
+    $usersCSV .= "Joaquim Duarte,,,98765,0,1,MEIC-A,Student,jb@gmail.pt,linkedin\n";
+    $usersCSV .= "Mónica Trindade,,,55555,0,1,MEIC-T,Student,m.trindade@mail.com,google\n";
     file_put_contents("courseUsersCSVTesteUnit.csv", $usersCSV);
 
     CourseUser::importCourseUsers($usersCSV, $course, false);
@@ -788,7 +788,7 @@ function testCourseUserImport($course)
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
         "studentNumber" => "98765",
-        "campus" => "T",
+        "major" => "MEIC-T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -800,7 +800,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
-        "campus" => "A",
+        "major" => "MEIC-A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -811,7 +811,7 @@ function testCourseUserImport($course)
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
-        "campus" => "T",
+        "major" => "MEIC-T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -834,7 +834,7 @@ function testCourseUserImport($course)
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
         "studentNumber" => "98765",
-        "campus" => "A",
+        "major" => "MEIC-A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -846,7 +846,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa Silva",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
-        "campus" => "T",
+        "major" => "MEIC-T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -857,7 +857,7 @@ function testCourseUserImport($course)
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
-        "campus" => "A",
+        "major" => "MEIC-A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -957,11 +957,11 @@ function checkFenix($fenix, $course)
         $studentName = $fields[2];
         $email = $fields[3];
         $courseName = $fields[10];
-        $campus = "";
+        $major = "";
         if (strpos($courseName, 'Alameda')) {
-            $campus = "A";
+            $major = "MEIC-A";
         } else if (strpos($courseName, 'Taguspark')) {
-            $campus = "T";
+            $major = "MEIC-T";
         } else {
             $endpoint = "degrees?academicTerm=2019/2020";
             $listOfCourses = Core::getFenixInfo($endpoint);
@@ -973,7 +973,7 @@ function checkFenix($fenix, $course)
                     if (strpos($courseName, $courseFenix->name)) {
                         $courseFound = true;
                         foreach ($courseFenix->campus as $campusfenix) {
-                            $campus = $campusfenix->name[0];
+                            $major = $campusfenix->name[0];
                         }
                     }
                 }
@@ -981,26 +981,26 @@ function checkFenix($fenix, $course)
         }
         if ($studentNumber) {
             if (!User::getUserByStudentNumber($studentNumber)) {
-                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
                 $user = User::getUserByStudentNumber($studentNumber);
                 $courseUser = new CourseUser($user->getId(), $course);
                 $courseUser->addCourseUserToDB(2);
                 $newUsers++;
             } else {
                 $existentUser = User::getUserByStudentNumber($studentNumber);
-                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
                 $updatedUsers++;
             }
         } else {
             if (!User::getUserByEmail($email)) {
-                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
+                User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
                 $user = User::getUserByEmail($email);
                 $courseUser = new CourseUser($user->getId(), $course);
                 $courseUser->addCourseUserToDB(2);
                 $newUsers++;
             } else {
                 $existentUser = User::getUserByEmail($email);
-                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "T", 0, 1);
+                $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", "MEIC-T", 0, 1);
                 $updatedUsers++;
             }
         }

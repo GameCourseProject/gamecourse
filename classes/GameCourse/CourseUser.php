@@ -155,9 +155,9 @@ class CourseUser extends User
         );
     }
     */
-    function getCampus()
+    function getMajor()
     {
-        return parent::getData("campus");
+        return parent::getData("major");
     }
     
     function getRolesNames()
@@ -252,7 +252,7 @@ class CourseUser extends User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
-        $file .= "name,email,nickname,studentNumber,isAdmin,isActive,campus,roles,username,auth\n";
+        $file .= "name,email,nickname,studentNumber,isAdmin,isActive,major,roles,username,auth\n";
         foreach ($listOfUsers as $courseUser) {
             $user = Core::$systemDB->select("game_course_user", ["id" => $courseUser["id"]]);
             $auth = Core::$systemDB->select("auth", ["game_course_user_id" => $user["id"]]);
@@ -273,7 +273,7 @@ class CourseUser extends User
 
             $file .= $user["name"] . "," . $user["email"] . "," .  $user["nickname"] . "," . 
                     $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," .
-                    $user["campus"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
+                    $user["major"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
             if ($i != $len - 1) {
                 $file .= "\n";
             }
@@ -291,7 +291,7 @@ class CourseUser extends User
         $nameIndex = "";
         $nicknameIndex = "";
         $emailIndex = "";
-        $campusIndex = "";
+        $majorIndex = "";
         $studentNumberIndex = "";
         $isAdminIndex = "";
         $isActiveIndex = "";
@@ -305,7 +305,7 @@ class CourseUser extends User
             $firstLine = array_map('trim', $firstLine);
                 if (in_array("name", $firstLine) 
                 && in_array("email", $firstLine) && in_array("nickname", $firstLine) 
-                && in_array("campus", $firstLine) && in_array("studentNumber", $firstLine)
+                && in_array("major", $firstLine) && in_array("studentNumber", $firstLine)
                 && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine) 
                 && in_array("roles", $firstLine) && in_array("username", $firstLine) && in_array("auth", $firstLine) 
             ) {
@@ -313,7 +313,7 @@ class CourseUser extends User
                 $nameIndex = array_search("name", $firstLine);
                 $nicknameIndex = array_search("nickname", $firstLine);
                 $emailIndex = array_search("email", $firstLine);
-                $campusIndex = array_search("campus", $firstLine);
+                $majorIndex = array_search("major", $firstLine);
                 $studentNumberIndex = array_search("studentNumber", $firstLine);
                 $isAdminIndex = array_search("isAdmin", $firstLine);
                 $isActiveIndex = array_search("isActive", $firstLine);
@@ -335,7 +335,7 @@ class CourseUser extends User
                     $studentNumberIndex = 3;
                     $isAdminIndex = 4;
                     $isActiveIndex = 5;
-                    $campusIndex = 6;
+                    $majorIndex = 6;
                     $rolesIndex = 7;
                     $usernameIndex = 8;
                     $authIndex = 9;
@@ -359,11 +359,11 @@ class CourseUser extends User
                         }else{
                             if ($replace) {
                                 $userToUpdate = User::getUserByUsername($user[$usernameIndex]);
-                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                                $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$majorIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                             }
                         }
                     } else {
-                        $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                        $id = User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$majorIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                         CourseUser::addCourseUser($courseId, $id, null);
                         $courseUserObj = new CourseUser($id, new Course($courseId));
                         if (!$user[$rolesIndex] == "") {

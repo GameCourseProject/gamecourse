@@ -9,7 +9,7 @@ create table qr_code(
 create table qr_error(
 	studentNumber int unsigned not null,
 	course  int unsigned not null,
-	campus char(1),
+	major varchar(8),
 	ip varchar(50),
 	qrkey varchar(50), 
 	msg varchar(500),

@@ -96,6 +96,11 @@ class Course
         return array_column(Core::$systemDB->selectMultiple("course_user", ["course" => $this->cid], 'id'), 'id');
     }
 
+    public function getUsersNames()
+    {
+        return array_column(Core::$systemDB->selectMultiple("game_course_user natural join course_user", ["course" => $this->cid], 'name'), 'name');
+    }
+
     public function getUser($istid)
     {
         if (!empty(Core::$systemDB->select("course_user", ["course" => $this->cid, "id" => $istid], 'id')))
@@ -894,7 +899,7 @@ class Course
         return $hasLoop;
     }
     public function getAvailablePages(){
-        return Core::$systemDB->selectMultiple("page",["course"=>$this->cid], 'name');
+        return Core::$systemDB->selectMultiple("page",["course"=>$this->cid, 'isEnabled' => 1], 'name');
     }
 
     public static function newExternalData(){

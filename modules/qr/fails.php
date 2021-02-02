@@ -24,17 +24,17 @@
             Core::init();
 
             if (isset($_REQUEST["course"])) {
-                $results = Core::$systemDB->executeQuery("select studentNumber, name, campus, msg, date, ip "
+                $results = Core::$systemDB->executeQuery("select studentNumber, name, major, msg, date, ip "
                     . "from qr_error q natural join course_user u natural join game_course_user g "
                     . "where q.studentNumber=g.StudentNumber and g.id = u.id and course=" . $_REQUEST["course"] . ";");
             } else {
-                $results = Core::$systemDB->executeQuery("select studentNumber, name, campus, msg, date, ip "
+                $results = Core::$systemDB->executeQuery("select studentNumber, name, major, msg, date, ip "
                     . "from qr_error q natural join course_user u natural join game_course_user g "
                     . "where q.studentNumber=g.StudentNumber and g.id = u.id ;");
             }
 
             $sep = ";"; // separador
-            $campus = "";
+            $major = "";
             foreach ($results as $result) {
                 /* if($row_array['campus']=="T"){
 			$campus="Taguspark";
@@ -45,7 +45,7 @@
                 <tr>
                     <th><?= "{$result['studentNumber']}" ?></th>
                     <th><?= "{$result['name']}" ?></th>
-                    <th><?= "{$result['campus']}" ?></th>
+                    <th><?= "{$result['major']}" ?></th>
                     <th><?= "{$result['ip']}" ?></th>
                     <th><?= "{$result['msg']}" ?></th>
                     <th><?= "{$result['date']}" ?></th>

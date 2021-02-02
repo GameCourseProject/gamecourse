@@ -785,7 +785,7 @@ class Skills extends Module
                     $skillsCache[$skillName][] = array(
                         'id' => $id,
                         'name' => $studentsArray[$id]['name'],
-                        'campus' => $studentsArray[$id]['campus'],
+                        'major' => $studentsArray[$id]['major'],
                         'username' => $studentsArray[$id]['username'],
                         'timestamp' => $timestamp,
                         'when' => date('d-M-Y', $timestamp)

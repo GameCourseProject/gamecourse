@@ -15,14 +15,14 @@ class User
     //id ainda existe mas nao tem referencia fora do sistema
 
     //previously was not static
-    public static function addUserToDB($name, $username, $authenticationService, $email, $studentNumber, $nickname, $campus, $isAdmin, $isActive)
+    public static function addUserToDB($name, $username, $authenticationService, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive)
     {
         $id = Core::$systemDB->insert("game_course_user", [
             "name" => $name,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
-            "campus" => $campus,
+            "major" => $major,
             "isAdmin" => $isAdmin,
             "isActive" => $isActive
         ]);
@@ -101,13 +101,13 @@ class User
         $this->setData(["studentNumber" => $studentNumber]);
     }
 
-    public function getCampus()
+    public function getMajor()
     {
-        return $this->getData("campus");
+        return $this->getData("major");
     }
-    function setCampus($campus)
+    function setMajor($major)
     {
-        $this->setData(["campus" => $campus]);
+        $this->setData(["major" => $major]);
     }
 
 
@@ -133,14 +133,14 @@ class User
         return array_column(Core::$systemDB->selectMultiple("game_course_user", ["isAdmin" => true], 'id'), 'id');
     }
 
-    public function editUser($name, $username, $authenticationService,  $email, $studentNumber, $nickname, $campus, $isAdmin, $isActive)
+    public function editUser($name, $username, $authenticationService,  $email, $studentNumber, $nickname, $major, $isAdmin, $isActive)
     {
         Core::$systemDB->update("game_course_user", [
             "name" => $name,
             "email" => $email,
             "studentNumber" => $studentNumber,
             "nickname" => $nickname,
-            "campus" => $campus,
+            "major" => $major,
             "isAdmin" => $isAdmin,
             "isActive" => $isActive
         ], ["id" => $this->id]);
@@ -282,7 +282,7 @@ class User
             $u = new User($user["id"]);
             $username = $u->getUsername();
             $auth = User::getUserAuthenticationService($username);
-            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["campus"] . "," .
+            $file .= $user["name"] . "," . $user["email"] . "," . $user["nickname"] . "," . $user["studentNumber"] . "," . $user["major"] . "," .
                      $user["isAdmin"] . "," . $user["isActive"] . "," . $username . "," . $auth;
             if ($i != $len - 1) {
                 $file .= "\n";
@@ -303,7 +303,7 @@ class User
         $emailIndex = "";
         $nicknameIndex = "";
         $studentNumberIndex = "";
-        $campusIndex = "";
+        $majorIndex = "";
         $isAdminIndex = "";
         $isActiveIndex = "";
         //se tiver 1ª linha com nomes
@@ -312,7 +312,7 @@ class User
             $firstLine = explode(",",$lines[0]);
             $firstLine = array_map('trim', $firstLine);
             if(in_array("name", $firstLine) && in_array("email", $firstLine) 
-                && in_array("nickname", $firstLine) && in_array("studentNumber", $firstLine) && in_array("campus", $firstLine) 
+                && in_array("nickname", $firstLine) && in_array("studentNumber", $firstLine) && in_array("major", $firstLine) 
                 && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine)
                 && in_array("username", $firstLine) && in_array("auth", $firstLine))
             {
@@ -321,7 +321,7 @@ class User
                 $emailIndex = array_search("email", $firstLine);
                 $nicknameIndex = array_search("nickname", $firstLine);
                 $studentNumberIndex = array_search("studentNumber", $firstLine);
-                $campusIndex = array_search("campus", $firstLine);
+                $majorIndex = array_search("major", $firstLine);
                 $isAdminIndex = array_search("isAdmin", $firstLine);
                 $isActiveIndex = array_search("isActive", $firstLine);
                 $usernameIndex = array_search("username", $firstLine);
@@ -340,7 +340,7 @@ class User
                     $emailIndex = 1;
                     $nicknameIndex = 2;
                     $studentNumberIndex = 3;
-                    $campus = 4;
+                    $major = 4;
                     $isAdminIndex = 5;
                     $isActiveIndex = 6;
                     $usernameIndex = 7;
@@ -351,10 +351,10 @@ class User
                     if ($userId){
                         if ($replace) {
                             $userToUpdate = User::getUserByUsername($user[$usernameIndex]);
-                            $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                            $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$majorIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                         }
                     } else {
-                        User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$campusIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
+                        User::addUserToDB($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$majorIndex], $user[$isAdminIndex], $user[$isActiveIndex]);
                         $newUsersNr++;
                     }
                 }
