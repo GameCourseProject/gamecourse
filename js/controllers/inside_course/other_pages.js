@@ -233,7 +233,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         details.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="newUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
         doubledetails = $('<div class="container" >')
         doubledetails.append( $('<div class="details bigger"><div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="newUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div></div>'))
-        doubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="campus" placeholder="Campus *" ng-model="newUser.userCampus"/><label for="campus" class="form__label">Campus</label></div></div>'))
+        doubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="major" placeholder="Major *" ng-model="newUser.userMajor"/><label for="major" class="form__label">Major</label></div></div>'))
+       
         details.append(doubledetails);
         row_inputs.append(details);
         box.append(row_inputs);
@@ -324,7 +325,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             isValid($scope.newUser.userEmail) &&  
             isValid($scope.newUser.userUsername) &&             
             isValid($scope.newUser.userAuthService) &&
-            isValid($scope.newUser.userCampus) && 
+            isValid($scope.newUser.userMajor) && 
             $scope.newUser.userRoles.length != 0){
                 return true;
             }
@@ -341,7 +342,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userNickname: $scope.newUser.userNickname,
                 userEmail: $scope.newUser.userEmail,
                 userRoles: $scope.newUser.userRoles,
-                userCampus: $scope.newUser.userCampus,
+                userMajor: $scope.newUser.userMajor,
                 userUsername: $scope.newUser.userUsername,
                 userAuthService: $scope.newUser.userAuthService,
                 userImage: $scope.newUser.userImage,
@@ -405,7 +406,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         $scope.editUser.userStudentNumber = user.studentNumber;
         $scope.editUser.userNickname = user.nickname;
         $scope.editUser.userRoles = user.roles.slice();
-        $scope.editUser.userCampus = user.campus;
+        $scope.editUser.userMajor = user.major;
         $scope.editUser.userUsername = user.username;
         $scope.editUser.userAuthService = user.authenticationService;
         $scope.editUser.userImage = null;
@@ -478,7 +479,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
             if (isValid($scope.editUser.userName) &&
             isValid($scope.editUser.userEmail) &&
             isValid($scope.editUser.userStudentNumber) &&
-            isValid($scope.editUser.userCampus) &&
+            isValid($scope.editUser.userMajor) &&
             isValid($scope.editUser.userUsername) &&
             isValid($scope.editUser.userAuthService) &&
             $scope.editUser.userRoles.length != 0){
@@ -497,7 +498,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
                 userStudentNumber: $scope.editUser.userStudentNumber,
                 userNickname: $scope.editUser.userNickname,
                 userEmail: $scope.editUser.userEmail,
-                userCampus: $scope.editUser.userCampus,
+                userMajor: $scope.editUser.userMajor,
                 userRoles: $scope.editUser.userRoles,
                 userUsername: $scope.editUser.userUsername,
                 userAuthService: $scope.editUser.userAuthService,
@@ -713,7 +714,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         rowHeader = $("<tr></tr>");
         header = [{class: "name-column", content: "Name"},
                 {class: "", content: "Nickname"},
-                {class: "", content: "Campus"},
+                {class: "", content: "Major"},
                 {class: "", content: "Student nº"},
                 {class: "", content: "Last Login"},
                 {class: "action-column", content: ""},
@@ -730,7 +731,7 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
 
         rowContent.append(nameRoleColumn);
         rowContent.append('<td>{{user.nickname}}</td>');
-        rowContent.append('<td>{{user.campus}}</td>');
+        rowContent.append('<td>{{user.major}}</td>');
         rowContent.append('<td>{{user.studentNumber}}</td>');
         rowContent.append('<td>{{user.lastLogin}}</td>');
         rowContent.append('<td class="action-column"><div class="icon edit_icon" title="Edit" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
@@ -788,8 +789,8 @@ app.controller('CourseUsersss', function($scope, $stateParams, $element, $smartb
         editdetails.append($('<div class="container" ><input type="text" class="form__input" id="email" placeholder="Email *" ng-model="editUser.userEmail"/><label for="email" class="form__label">Email</label></div>'))
         editdoubledetails = $('<div class="container" >')
         editdoubledetails.append( $('<div class="details bigger"><div class="container" ><input type="text" class="form__input" id="studentNumber" placeholder="Student Number *" ng-model="editUser.userStudentNumber"/><label for="studentNumber" class="form__label">Student Number</label></div></div>'))
-        editdoubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="campus" placeholder="Campus *" ng-model="editUser.userCampus"/><label for="campus" class="form__label">Campus</label></div></div>'))
-        editdetails.append(editdoubledetails)
+        editdoubledetails.append( $('<div class="details smaller right"><div class="container" ><input type="text" class="form__input" id="major" placeholder="Major *" ng-model="editUser.userMajor"/><label for="major" class="form__label">Major</label></div></div>'))
+        editdetails.append(editdoubledetails);
         editrow_inputs.append(editdetails);
         editbox.append(editrow_inputs);
         // authentication information - service and username

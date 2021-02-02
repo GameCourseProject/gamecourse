@@ -397,7 +397,7 @@ class ViewHandler
             $organizedView = $anAspect;
             $organizedView["children"] = [];
             $this->lookAtChildrenWQueries($anAspect["id"], $organizedView);
-            $aspectsViews = [$organizedView];
+            $aspectsViews = [$organizedView]; 
         } else { //multiple aspects exist
             $where = ["aspectClass" => $anAspect["aspectClass"]];
             if ($role)
@@ -427,7 +427,7 @@ class ViewHandler
         }
         if ($role)
             return $aspectsViews[0];
-        else
+         else 
             return $aspectsViews;
     }
     //gets contents of template referenced by templateref
@@ -524,18 +524,22 @@ class ViewHandler
     //returns all pages or page of the name or id given
     public function getPages($id = null, $pageName = null)
     {
-        return $this->getPagesOfCourse($this->getCourseId(), $id, $pageName);
+        return $this->getPagesOfCourse($this->getCourseId(), false, $id, $pageName);
     }
-    public static function getPagesOfCourse($courseId, $id = null, $pageName = null)
+    public static function getPagesOfCourse($courseId, $forNavBar = false, $id = null, $pageName = null)
     {
-        $fileds = "course,id,name,theme,viewId,roleType";
+        $fields = "course,id,name,theme,viewId,roleType,isEnabled";
         if ($pageName == null && $id == null) {
-            $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId], $fileds);
+            if ($forNavBar) {
+                $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId, "isEnabled" => 1], $fields);
+            } else {
+                $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId], $fields);
+            }
             return array_combine(array_column($pages, "id"), $pages);
         } else if ($id !== null) {
-            return Core::$systemDB->select("page", ["id" => $id, 'course' => $courseId], $fileds);
+            return Core::$systemDB->select("page", ["id" => $id, 'course' => $courseId], $fields);
         } else {
-            return Core::$systemDB->select("page", ["name" => $pageName, 'course' => $courseId], $fileds);
+            return Core::$systemDB->select("page", ["name" => $pageName, 'course' => $courseId], $fields);
         }
     }
     public function getCourseId()
@@ -564,6 +568,7 @@ class ViewHandler
         $newView = ["name" => $name, "course" => $courseId, "roleType" => $roleType];
         if ($pageOrTemp == "page") {
             $newView["viewId"] = $viewId;
+            $newView['isEnabled'] = 0;
             Core::$systemDB->insert("page", $newView);
         } else {
             Core::$systemDB->insert("template", $newView);
@@ -1095,8 +1100,8 @@ class ViewHandler
                 if ($hasChildren)
                     $continue();
             });
+            
         }
-        //print_r($roleFound);
         return $roleFound;
     }
 
@@ -1130,7 +1135,7 @@ class ViewHandler
             $roleOne = $this->handleHelper($viewRoles, $course, $userRoles);
             $userView = $this->getViewWithParts($view["viewId"], $roleOne);
         }
-
+        
         $this->parseView($userView);
         $this->processView($userView, $viewParams);
 

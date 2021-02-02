@@ -43,7 +43,7 @@ create table game_course_user(
 	id 		int unsigned primary key auto_increment, #81205
     name 	varchar(50) not null,
     email 	varchar(255),
-	campus 	char(1),
+	major 	varchar(8),
 	nickname varchar(50),
 	studentNumber int unique,
     isAdmin boolean not null default false,
@@ -228,6 +228,7 @@ create table page(
 	name varchar(50) not null,
 	theme varchar(50),
 	viewId int unsigned,
+	isEnabled boolean default false,
 	foreign key(viewId) references view(id) on delete set null,
 	foreign key(course) references course(id) on delete cascade
 );

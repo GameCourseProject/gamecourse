@@ -447,9 +447,9 @@ class Views extends Module
             'users',
             'campus',
             function ($user) {
-                return $this->basicGetterFunction($user, "campus");
+                return $this->basicGetterFunction($user, "major");
             },
-            'Returns a string with the campus of the GameCourseUser.',
+            'Returns a string with the major of the GameCourseUser.',
             'string',
             null,
             'object',
@@ -1075,7 +1075,7 @@ class Views extends Module
         //creates a page or template
         API::registerFunction('views', 'createView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'name', 'pageOrTemp', 'roleType');
+            API::requireValues('course', 'name', 'pageOrTemp', 'roleType', 'isEnabled');
 
             $roleType = API::getValue('roleType');
             if ($roleType == "ROLE_INTERACTION") {
@@ -1083,7 +1083,7 @@ class Views extends Module
             } else {
                 $defaultRole = "role.Default";
             }
-
+            
             //create new aspectClass
             Core::$systemDB->insert("aspect_class");
             $aspectClass = Core::$systemDB->getLastId();
@@ -1095,6 +1095,7 @@ class Views extends Module
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => $roleType];
             if (API::getValue('pageOrTemp') == "page") {
                 $newView["viewId"] = $viewId;
+                $newView["isEnabled"] = API::getValue('isEnabled');
                 Core::$systemDB->insert("page", $newView);
             } else {
                 Core::$systemDB->insert("template", $newView);
@@ -1102,6 +1103,22 @@ class Views extends Module
                 Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
             }
         });
+        // edit the info of page/template in db
+        API::registerFunction('views', 'editView', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('course', 'name', 'roleType', 'isEnabled', 'id', 'theme', 'pageOrTemp');
+
+            $id = API::getValue('id');
+            //page or template to update in db
+            $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => API::getValue('roleType')];
+            if (API::getValue('pageOrTemp') == "page") {
+                $newView["isEnabled"] = API::getValue('isEnabled');     
+                Core::$systemDB->update("page", $newView, ['id' => $id]);
+            } else {
+                Core::$systemDB->update("template", $newView, ['id' => $id]);
+            }
+        });
+
         //creates a new aspect for the page/template, copies content of closest aspect
         API::registerFunction('views', 'createAspectView', function () {
             $data = $this->getViewSettings();
@@ -1198,7 +1215,7 @@ class Views extends Module
             $response['viewSpecializations'] = $result;
             $response['allIds'] = array();
             $roles = array_merge([["name" => 'Default', "id" => "Default"]], $course->getRolesData());
-            $users = $course->getUsersIds();
+            $users = $course->getUsersNames();
             $response['allIds'][] = array('id' => 'special.Own', 'name' => 'Own (special)');
             foreach ($roles as $role) {
                 $response['allIds'][] = array('id' => 'role.' . $role["name"], 'name' => $role["name"]);

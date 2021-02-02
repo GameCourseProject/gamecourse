@@ -17,7 +17,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
     $course = Course::getCourse($courseId);
     if($course != null){
         //adding other pages to navigation
-        $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId);
+        $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId, true);
         $OldNavPages = Core::getNavigation();
         $navNames= array_column($OldNavPages,"text");
         foreach ($pages as $pageId => $page){
@@ -51,7 +51,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
 
         $navPages = Core::getNavigation();
         $navSettings = Core::getSettings();
-        //print_r($navPages);
+        
         foreach ($navPages as $nav){
             if ($nav["restrictAcess"]===true && !$isAdmin){
                 unset($navPages[array_search($nav, $navPages)]);

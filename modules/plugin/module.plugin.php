@@ -156,12 +156,12 @@ class Plugin extends Module
             $studentName = $fields[2];
             $email = $fields[3];
             $courseName = $fields[10];
-            $campus = "";
+            $major = "";
 
             if (strpos($courseName, 'Alameda')) {
-                $campus = "A";
+                $major = "MEIC-A";
             } else if (strpos($courseName, 'Taguspark')) {
-                $campus = "T";
+                $major = "MEIC-T";
             } else {
                 $endpoint = "degrees";
                 if($year){
@@ -178,7 +178,7 @@ class Plugin extends Module
                             if (strpos($courseName, $courseFenix->name)) {
                                 $courseFound = true;
                                 foreach ($courseFenix->campus as $campusfenix) {
-                                    $campus = $campusfenix->name[0];
+                                    $major = $campusfenix->name[0];
                                 }
                             }
                         }
@@ -188,7 +188,7 @@ class Plugin extends Module
             $roleId = Core::$systemDB->select("role", ["name"=>"Student", "course"=>$courseId], "id");
             if($studentNumber){
                 if (!User::getUserByStudentNumber($studentNumber)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $user = User::getUserByStudentNumber($studentNumber);
                     $courseUser = new CourseUser($user->getId(), $course);
                     $courseUser->addCourseUserToDB($roleId);
@@ -199,23 +199,23 @@ class Plugin extends Module
                     if(!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])){
                         $courseUser->addCourseUserToDB($roleId);
                     }else{
-                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
+                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $major, null);
                     }
                 }
             }else{
                 if (!User::getUserByUsername($username)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
+                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $user = User::getUserByUsername($username);
                     $courseUser = new CourseUser($user->getId(), $course);
                     $courseUser->addCourseUserToDB($roleId);
                 } else {
                     $existentUser = User::getUserByUsername($username);
-                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", $campus, 0, 1);
+                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($existentUser->getId(), $course);
                     if (!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])) {
                         $courseUser->addCourseUserToDB($roleId);
                     } else {
-                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $campus, null);
+                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $major, null);
                     }
                 }
             }

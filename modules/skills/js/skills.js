@@ -92,7 +92,7 @@ angular.module('module.skills').directive('skillStudentImage', function($state) 
                 var tooltipContent = $('<div>', {'class': 'content'});
                 tooltipContent.append($('<img>', {'class': 'student-image', src: 'photos/' +  user.username + '.png'}));
                 var tooltipUserInfo = $('<div>', {'class': 'userinfo'});
-                tooltipUserInfo.append($('<div>', {'class': 'name', text: user.name + ' [' + user.campus + ']'}));
+                tooltipUserInfo.append($('<div>', {'class': 'name', text: user.name + ' [' + user.major + ']'}));
                 tooltipUserInfo.append($('<div>', {text: 'Date: ' + user.when}));
                 tooltipContent.append(tooltipUserInfo);
 
