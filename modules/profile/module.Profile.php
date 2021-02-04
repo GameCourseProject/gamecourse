@@ -18,7 +18,7 @@ class Profile extends Module {
         $user = $this->getParent()->getLoggedUser();
         if ($user->exists())
             //Core::addNavigation('photos/' . Core::getLoggedUser()->getUsername() . '.png', 'My Profile', 'course.myprofile', true);
-            Core::addNavigation('My Profile', 'course.myprofile', true);
+            //Core::addNavigation('My Profile', 'course.myprofile', true);
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
