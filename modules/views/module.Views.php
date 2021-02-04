@@ -442,10 +442,10 @@ class Views extends Module
             'user',
             'library'
         );
-        //%user.campus
+        //%user.major
         $this->viewHandler->registerFunction(
             'users',
-            'campus',
+            'major',
             function ($user) {
                 return $this->basicGetterFunction($user, "major");
             },
