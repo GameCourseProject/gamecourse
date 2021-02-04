@@ -144,7 +144,7 @@ class XPLevels extends Module
         $viewHandler->registerFunction(
             'xp',
             'getLevel',
-            function (int $user = null, int $number = null, string $goal = null) use ($levelWhere, $levelTable) {
+            function ($user = null, int $number = null, string $goal = null) use ($levelWhere, $levelTable) {
                 $badgesExist = ($this->getParent()->getModule("badges") !== null);
                 $table = $levelTable($badgesExist);
                 $where = $levelWhere($badgesExist);
