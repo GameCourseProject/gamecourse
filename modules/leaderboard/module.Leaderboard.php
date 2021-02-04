@@ -16,7 +16,7 @@ class Leaderboard extends Module {
     }
 
     public function init() {
-        Core::addNavigation( 'Leaderboard', 'course.leaderboard', true);
+        //Core::addNavigation( 'Leaderboard', 'course.leaderboard', true);
 
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
