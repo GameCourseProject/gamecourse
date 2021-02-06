@@ -102,7 +102,11 @@ class Badges extends Module
     {
         $courseId = $this->getCourseId();
         if ($user === null) {
-            return Core::$systemDB->select("badge", ["course" => $courseId], "sum(maxLevel)");
+            $count = Core::$systemDB->select("badge", ["course" => $courseId], "sum(maxLevel)");
+            if (is_null($count))
+                return 0;
+            else
+                return $count;
         }
         $id = $this->getUserId($user);
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
