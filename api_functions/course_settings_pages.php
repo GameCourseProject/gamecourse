@@ -244,3 +244,33 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     }
 
 });
+
+API::registerFunction('settings', 'importItem', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $module = API::getValue('module');
+    $course = API::getValue('course');
+
+    $courseObject = Course::getCourse($course);
+    $moduleObject = $courseObject->getModule($module);
+    $nItems = $moduleObject->importItems( $course, $fileContents, $replace);
+    API::response(array('nItems' => $nItems));
+});
+
+API::registerFunction('settings', 'exportItem', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $course = API::getValue('course');
+    $module = API::getValue('module');
+
+    $courseObject = Course::getCourse($course);
+    $moduleObject = $courseObject->getModule($module);
+    [$fileName, $courseItems] = $moduleObject->exportItems($course);
+    API::response(array('courseItems' => $courseItems, 'fileName' => $fileName));
+});
+
+
