@@ -38,6 +38,7 @@ drop table if exists config_moodle;
 drop table if exists course;
 drop table if exists auth;
 drop table if exists game_course_user;
+drop table if exists autogame;
 
 create table game_course_user(
 	id 		int unsigned primary key auto_increment, #81205
@@ -246,4 +247,18 @@ create table view_template(
 	foreign key (templateId) references template(id) on delete cascade,
 	foreign key (viewId) references view(id) on delete cascade
 );
+
+create table autogame(#table used for gamerules related info
+	id 		int unsigned auto_increment primary key,
+	course 	int unsigned not null,
+	date timestamp default CURRENT_TIMESTAMP,
+	isRunning boolean default false, #?
+	foreign key(course) references course(id) on delete cascade
+);
+
+SET FOREIGN_KEY_CHECKS=0;
+insert into autogame (course, isRunning) values (0,false);
+SET FOREIGN_KEY_CHECKS=1;
+
+
 #ToDO add trigger when delete level or badge -> delete bagde_has_level

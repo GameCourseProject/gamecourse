@@ -115,7 +115,7 @@ class GoogleSheets
         $names = explode(";", $this->sheetName);
 
         $insertedOrUpdated = false;
-        $sql = "insert into participation (user, course, description, type, post, rating) values ";
+        $sql = "insert into participation (user, course, description, type, rating, evaluator) values ";
         $values = "";
         foreach ($names as $name) {
             $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
@@ -126,9 +126,11 @@ class GoogleSheets
                 $insertedOrUpdated = true;
             }
         }
-        $values = rtrim($values, ",");
-        $sql .= $values;
-        Core::$systemDB->executeQuery($sql);
+        if (strlen($values) != 0) {
+            $values = rtrim($values, ",");
+            $sql .= $values;
+            Core::$systemDB->executeQuery($sql);
+        }
         return $insertedOrUpdated;
     }
 
@@ -281,7 +283,7 @@ class GoogleSheets
                                 $info  = $valuesRows[$row][5];
                                 $result = Core::$systemDB->select("participation", ["user" => $user->getId(), "course" => $this->courseId, "type" => $action]);
                                 if (!$result) {
-                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '','" . $profId . "'),";
+                                    $values .= "(" . $user->getId() . "," . $this->courseId . ",'" . $info . "','" . $action . "', '0','" . $profId . "'),";
                                     // Core::$systemDB->insert(
                                     //     "participation",
                                     //     array(

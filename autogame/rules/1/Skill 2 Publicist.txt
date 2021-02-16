@@ -1,0 +1,10 @@
+rule: Publicist
+
+	when:
+		rule_unlocked("Album Cover", target)
+		rule_unlocked("Movie Poster", target)
+		logs = GC.participations.getSkillParticipations(target, "Publicist")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "Publicist", rating, logs)

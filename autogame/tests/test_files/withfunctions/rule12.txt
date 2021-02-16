@@ -1,0 +1,19 @@
+# Test prerequisite rules
+
+rule: R12-0
+	when:
+		rule_unlocked("R12-1",target)
+	then:
+		transform("R12-0")
+
+rule: R12-1
+	when:
+		len(targets) > 1
+	then:
+		transform("R12-1")
+
+rule: R12-2
+	when:
+		rule_unlocked("R12-1")
+	then:
+		transform("R12-2")

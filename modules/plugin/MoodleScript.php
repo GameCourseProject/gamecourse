@@ -28,5 +28,5 @@ $insertedQuiz = $moodle->writeQuizGradesToDb($values);
 $moodle->updateMoodleConfigTime();
 
 if ($insertedLogs || $insertedVotes || $insertedQuiz) {
-    Course::newExternalData();
+    Course::newExternalData($argv[1]);
 }

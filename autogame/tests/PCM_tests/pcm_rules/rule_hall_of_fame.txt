@@ -1,0 +1,14 @@
+rule: Hall of Fame
+# Get into the Hall of Fame
+# lvl.1: one entry
+# lvl.2: two entries
+# lvl.3: three entries
+	when:
+		# get all 'hall of fame' logs from the target student
+		logs = filter_logs(facts,target,action="hall of fame")
+		# compute the lvl achieved based on the number of logs collected
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs,1,2,3)
+		lvl > 0
+	then:
+		award_achievement("Hall of Fame",lvl,target,logs,nlogs)
