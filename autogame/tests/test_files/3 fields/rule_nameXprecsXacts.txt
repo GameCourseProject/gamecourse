@@ -1,0 +1,13 @@
+
+rule : Charles Chaplin
+
+when:
+	
+	charlie = "fenomenal actor"
+	"makes a movie about " + charlie
+
+then:
+	
+	charlie == "fenomenal actor"
+	charlie += "a well deserved Oscar"
+	"Oscar" in charlie

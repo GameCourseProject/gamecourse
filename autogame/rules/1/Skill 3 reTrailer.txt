@@ -1,0 +1,10 @@
+rule: reTrailer
+
+	when:
+		rule_unlocked("Publicist", target)
+		rule_unlocked("Course Image", target)
+		logs = GC.participations.getSkillParticipations(target, "reTrailer")
+		rating = get_rating(logs)
+		rating >= 3
+	then:
+		award_skill(target, "reTrailer", rating, logs)

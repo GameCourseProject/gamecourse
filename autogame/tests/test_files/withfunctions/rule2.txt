@@ -1,0 +1,8 @@
+rule: R2
+>> test_rule_system.TestFire.test_08
+>> test variables
+when:
+	this in targets
+	isinstance(logs,dict)
+then:
+	"success!"

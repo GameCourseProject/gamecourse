@@ -18,6 +18,6 @@ $cc = new ClassCheck($argv[1]);
 $code = $cc->getDBConfigValues();
 if ($code != null) {
     if($cc->readAttendance($code)){
-      Course::newExternalData();
+      Course::newExternalData($argv[1]);
     }
 }

@@ -1,0 +1,7 @@
+rule: Presentation King
+# Present your thing, be the best
+# lvl.1: Have the highest grade in the presentations
+	when:
+		check_existance(facts,target,"presentation king")
+	then:
+		award_achievement("Presentation King",1,target,None,False)

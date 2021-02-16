@@ -1,0 +1,3 @@
+rule: R6
+then:
+	award_achievement("ERROR!",1,target,"none")

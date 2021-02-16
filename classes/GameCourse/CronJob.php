@@ -9,13 +9,13 @@ class CronJob
         $cronFile = "/tmp/crontab.txt";
         $path = null;
         if ($script == "Moodle") {
-            $path = "/modules/plugin/MoodleScript.php";
+            $path = "/var/www/html/gamecourse/modules/plugin/MoodleScript.php";
         } else if ($script == "ClassCheck") {
-            $path = "/modules/plugin/ClassCheckScript.php";
+            $path = "/var/www/html/gamecourse/modules/plugin/ClassCheckScript.php";
         } else if ($script == "GoogleSheets") {
-            $path = "/modules/plugin/GoogleSheetsScript.php";
+            $path = "/var/www/html/gamecourse/modules/plugin/GoogleSheetsScript.php";
         }else if ($script == "QR"){
-            $path = "/modules/qr/QRScript.php";
+            $path = "/var/www/html/gamecourse/modules/qr/QRScript.php";
 
         }
         $output = shell_exec('crontab -l');

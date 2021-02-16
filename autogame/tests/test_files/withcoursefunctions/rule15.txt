@@ -1,0 +1,5 @@
+rule: R15
+	when:
+		satisfied_skill("Podcast",facts[target])
+	then:
+		award_treeskill("Podcast",target,facts[target])

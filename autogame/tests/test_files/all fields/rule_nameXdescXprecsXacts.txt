@@ -1,0 +1,47 @@
+
+rule: gladiator
+# This movie is AWESOME
+When a Roman General is betrayed, and his family murdered by an emperor's
+corrupt son, he comes to Rome as a gladiator to seek revenge.
+	when:
+		# This is when the going gets tough!
+		director = 'Ridley Scott'
+		stars = ["Russell Crowe", "Joaquin Phoenix", "Connie Nielsen"]
+		russel = "Russell Crowe"
+		russel in stars
+	then:
+		distances = sum(map(len,stars))
+		distances > 10
+rule: gladiator
+# This movie is AWESOME
+When a Roman General is betrayed, and his family murdered by an emperor's
+corrupt son, he comes to Rome as a gladiator to seek revenge.
+	when:
+		# This is when the going gets tough!
+		director = 'Ridley Scott'
+		stars = ["Russell Crowe", "Joaquin Phoenix", "Connie Nielsen"]
+		russel = "Russell Crowe"
+		russel in stars
+	then:
+		distances = sum(map(len,stars))
+		distances > 10 
+
+
+
+
+rule: gladiator
+# This movie is AWESOME
+# comcomomcomcoimos
+When a Roman General is betrayed, and his family murdered by an emperor's
+corrupt son, he comes to Rome as a gladiator to seek revenge.
+	
+#hjsoapdan
+	when:
+		# This is when the going gets tough!
+		director = 'Ridley Scott'
+		stars = ["Russell Crowe", "Joaquin Phoenix", "Connie Nielsen"]
+		russel = "Russell Crowe"
+		russel in stars
+	then:
+		distances = sum(map(len,stars))
+		distances > 10 

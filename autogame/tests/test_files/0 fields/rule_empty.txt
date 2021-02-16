@@ -1,0 +1,34 @@
+# this is supposed to generate 12 empty rules
+rule:
+rule:
+rule:
+
+rule:
+when:
+rule:
+then:
+rule:
+	when:
+	then:
+rule:
+
+
+when:
+
+rule:
+		when:
+	rule:
+then:
+rule:
+when:
+then:
+
+
+
+rule:
+	when:
+			then:
+				rule:
+					when:
+						then:
+
