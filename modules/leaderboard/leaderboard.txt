@@ -46,7 +46,7 @@
                         "viewIndex": "0",
                         "label": null,
                         "value": null,
-                        "loopData": "{users.getAllUsers(\"student\",%course).sort( \"ascending\",\"xp.getXP(%item);badges.getBadgesCount(%item)\")}",
+                        "loopData": "{}",
                         "class": "leaderboard-table",
                         "style": null,
                         "link": null,
@@ -54,21 +54,20 @@
                         "visibilityType": "conditional",
                         "info": null,
                         "children": [],
-                        "variables": {
-                            "userXP": {
-                                "value": "{xp.getXP(%item)}"
-                            }
-                        },
-                        "events": {
-                            "click": "{actions.goToPage(\"Profile\",%item)}"
-                        },
+                        "variables": [],
+                        "events": [],
                         "rows": [
                             {
-                                "events": [],
+                                "events": [{
+                                    "click": "{actions.goToPage(\"Profile\",%item)}"
+                                }],
                                 "id": "2742",
-                                "loopData": "{}",
+                                "loopData": "{users.getAllUsers(\"student\",%course).sort( \"descending\",\"xp.getXP(%item);badges.getBadgesCount(%item)\")}",
                                 "aspectClass": null,
-                                "variables": [],
+                                "variables": [
+                                    "userXP": {
+                                        "value": "{xp.getXP(%item)}"
+                                }],
                                 "role": "role.Default",
                                 "partType": "row",
                                 "parent": "2733",

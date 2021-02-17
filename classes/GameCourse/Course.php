@@ -77,9 +77,9 @@ class Course
     public function getUsersWithRole($role)
     {
         return Core::$systemDB->selectMultiple(
-            "game_course_user u natural join course_user cu natural join user_role ur join role r on r.id=ur.role",
+            "game_course_user u natural join course_user cu natural join user_role ur join role r on r.id=ur.role join auth a on u.id=a.game_course_user_id",
             ["r.course" => $this->cid, "r.name" => $role],
-            "u.*,cu.*,r.name as role"
+            "u.*,cu.*,a.username,r.name as role"
         );
     }
     //receives id of role and gets all the course_users w that role

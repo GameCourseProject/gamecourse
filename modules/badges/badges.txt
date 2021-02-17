@@ -55,6 +55,9 @@
                             },
                             "badgeParticipations": {
                                 "value": "{participations.getAllParticipations(%user, \"badge\", %item.id)}"
+                            },
+                            "badge" : {
+                                "value": "{%item}"
                             }
                         },
                         "value": null,
@@ -238,7 +241,7 @@
                                                 "label": null,
                                                 "loopData": "{}",
                                                 "variables": [],
-                                                "value": "Level {%badgeLvl.number+1}: {%badgeLvl.nextLevel.description}",
+                                                "value": "Level {%badgeLvl.nextLevel.number}: {%badgeLvl.nextLevel.description}",
                                                 "class": null,
                                                 "style": null,
                                                 "link": null,
@@ -421,7 +424,11 @@
                                         "viewIndex": "1",
                                         "label": null,
                                         "loopData": "{%levels}",
-                                        "variables": [],
+                                        "variables": {
+                                            "level": {
+                                                "value": "{%item}"
+                                            }
+                                        },
                                         "value": null,
                                         "class": "level-info",
                                         "style": null,
@@ -434,6 +441,48 @@
                                             {
                                                 "aspectClass": "30",
                                                 "id": "2702",
+                                                "role": "role.Default>role.Default",
+                                                "partType": "image",
+                                                "parent": "2701",
+                                                "viewIndex": "0",
+                                                "label": null,
+                                                "loopData": "{users.getUsers(%badge, %level)}",
+                                                "variables": [],
+                                                "value": "photos\/{%item.username}.png",
+                                                "class": "student-image",
+                                                "style": null,
+                                                "link": null,
+                                                "visibilityCondition": "{}",
+                                                "visibilityType": "conditional",
+                                                "events": "events": [{
+                                                        "click": "{actions.goToPage(\"Profile\",%item)}"
+                                                }],
+                                                "info": null,
+                                                "children": []
+                                            },
+                                            {
+                                                "aspectClass": "30",
+                                                "id": "2703",
+                                                "role": "role.Default>role.Default",
+                                                "partType": "text",
+                                                "parent": "2701",
+                                                "viewIndex": "0",
+                                                "label": null,
+                                                "loopData": "{}",
+                                                "variables": [],
+                                                "value": "No one reached this level. Be the first!",
+                                                "class": "leveldesc",
+                                                "style": null,
+                                                "link": null,
+                                                "visibilityCondition": "{badges.doesntHaveBadge(%badge, %level)}",
+                                                "visibilityType": "conditional",
+                                                "events": [],
+                                                "info": null,
+                                                "children": []
+                                            },
+                                            {
+                                                "aspectClass": "30",
+                                                "id": "2704",
                                                 "role": "role.Default>role.Default",
                                                 "partType": "text",
                                                 "parent": "2701",
@@ -451,6 +500,7 @@
                                                 "info": null,
                                                 "children": []
                                             }
+
                                         ]
                                     }
                                 ]

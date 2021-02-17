@@ -397,7 +397,7 @@ class Views extends Module
         },  'Toggles the visibility of a view referred by label.', null, null, 'library');
         //call view handle template (parse and process its view)
         //the $params argument is provided by the visitor
-        $this->viewHandler->registerFunction("actions", 'showToolTip', function (string $templateName, $user, $params) use ($course) {
+        $this->viewHandler->registerFunction("actions", 'showToolTip', function (string $templateName, $user, $params = []) use ($course) {
             return $this->popUpOrToolTip($templateName, $params, "showToolTip", $course, $user);
         },   'Creates a template view referred by name in a form of a tooltip.', null, null, 'library');
         $this->viewHandler->registerFunction("actions", 'showPopUp', function (string $templateName, $user, $params) use ($course) {
@@ -441,6 +441,19 @@ class Views extends Module
             'object',
             'user',
             'library'
+        );
+        //%user.studentnumber
+        $this->viewHandler->registerFunction(
+            'users',
+            'studentNumber',
+            function ($user) {
+                return $this->basicGetterFunction($user, "studentNumber");
+            },
+            'Returns a string with the student number of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
         );
         //%user.major
         $this->viewHandler->registerFunction(
@@ -543,7 +556,11 @@ class Views extends Module
             'picture',
             function ($user) {
                 $this->checkArray($user, "object", "picture", "id");
-                return new ValueNode("photos/" . $user["value"]["id"] . ".png");
+                if (file_exists("photos/" . $user["value"]["username"] . ".png")) {
+                    return new ValueNode("photos/" . $user["value"]["username"] . ".png");
+                }
+                return new ValueNode("images/no-photo.png");
+                
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
@@ -700,25 +717,25 @@ class Views extends Module
                 } else if ($item == "type") {
                     switch ($award["value"]['type']) {
                         case 'grade':
-                            return new ValueNode('<img src="images/quiz.svg">');
+                            return new ValueNode('<img class="img" src="images/quiz.svg">');
                         case 'badge':
                             $name = $this->getModuleNameOfAwardOrParticipation($award);
                             if ($name === null)
                                 throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                             $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
                             $imgName = str_replace(' ', '', $name . '-' . $level);
-                            return new ValueNode('<img src="badges/' . $imgName . '.png">');
+                            return new ValueNode('<img class="img" src="badges/' . $imgName . '.png">');
                         case 'skill':
                             $color = '#fff';
                             $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
                             if ($skillColor)
                                 $color = $skillColor;
                             //needs width and height , should have them if it has latest-awards class in a profile
-                            return new ValueNode('<div class="skill" style="background-color: ' . $color . '">');
+                            return new ValueNode('<div class="img" style="background-color: ' . $color . '">');
                         case 'bonus':
-                            return new ValueNode('<img src="images/awards.svg">');
+                            return new ValueNode('<img class="img" src="images/awards.svg">');
                         default:
-                            return new ValueNode('<img src="images/quiz.svg">');
+                            return new ValueNode('<img class="img" src="images/quiz.svg">');
                     }
                 } else
                     throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");
@@ -1084,20 +1101,24 @@ class Views extends Module
                 $defaultRole = "role.Default";
             }
             
-            //create new aspectClass
-            Core::$systemDB->insert("aspect_class");
-            $aspectClass = Core::$systemDB->getLastId();
-
-            //insert default aspect view
-            Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
-            $viewId = Core::$systemDB->getLastId();
+            
             //page or template to insert in db
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => $roleType];
             if (API::getValue('pageOrTemp') == "page") {
+                Core::$systemDB->insert("view", ["partType" => "block", "parent" => null, "role" => $defaultRole]);
+                $viewId = Core::$systemDB->getLastId();
+                
                 $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');
                 Core::$systemDB->insert("page", $newView);
             } else {
+                //create new aspectClass
+                Core::$systemDB->insert("aspect_class");
+                $aspectClass = Core::$systemDB->getLastId();
+                //insert default aspect view
+                Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
+                $viewId = Core::$systemDB->getLastId();
+
                 Core::$systemDB->insert("template", $newView);
                 $templateId = Core::$systemDB->getLastId();
                 Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
@@ -1399,7 +1420,7 @@ class Views extends Module
                 $params["user"] = (string)$userId;
             }
             if ($viewerId != -1) {
-                $params['viewer'] = $viewerId;
+                $params['viewer'] = $viewerId; 
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
             }

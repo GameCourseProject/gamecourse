@@ -1,110 +1,110 @@
 .navbar {
-    width: 100%;
-    height: 45px;
-    display: block;
-    position: relative;
-    font-size: 18px;
-    border-bottom: 4px solid grey;
-    margin-top: 18px;
-  }
-  .navbar .logo {
-    height: 60px;
-    width: 180px;
-    color: white;
-    float: left;
-    left: 20px;
-    position: relative;
-    background-image: url(/gamecourse/images/logo.svg);
-    cursor: pointer;
-    background-position: top;
-    background-repeat: no-repeat;
-    background-size: contain;
-    margin-top: -15px;
-  }
-  .navbar .menu {
-    display: flex;
-    position: relative;
-    list-style-type: none;
-    justify-content: center;
-  }
-  .navbar .menu.documentation {
-    margin-right: 180px;
-  }
-  .navbar .menu li {
-    margin: 15px 20px 0;
-    display: relative;
-  }
-  .navbar .menu li a {
-    text-decoration: none;
-    color: grey;
-    position: relative;
-    padding: 8px 18px;
-  }
-  .navbar .menu li a.focused{
-    color: black;
-    border-bottom: 4px solid black;
-    font-weight: bold;
-  }
-  .navbar .menu li a:not(focused):hover {
-    border-bottom: 4px solid black;
-  }
-  .navbar .menu .dropdown {
-    display: inline-block;
-    position: relative;
-  }
-  .navbar .menu .dropdown .dropdown-content {
-    display: none;
-    margin-top: 8px;
-    position: absolute;
-    z-index: 3;
-    background-color: gray;
-    width: 100%;
-  }
-  .navbar .menu .dropdown .dropdown-content a {
-    display: block;
-    color: black;
-  }
-  .navbar .menu .dropdown .dropdown-content a.focused {
-    color: white;
-    background-color: gray;
-    border-bottom: none;
-    font-weight: bold;
-  }
-  .navbar .menu .dropdown .dropdown-content a:hover {
-    border: none;
-    background-color: black;
-    color: white;
-  }
-  .navbar .menu .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  .navbar .user_info {
-    float: right;
-    min-width: 180px;
-    position: relative;
-    right: 20px;
-    display: flex;
-    font-size: 12px;
-    align-items: center;
-    justify-content: flex-end;
-    color: #484848;
-  }
-  .navbar .user_info #user_icon{
-    background-image: url(/gamecourse/images/profile_icon.svg);
-    height: 27px;
-    width: 27px;
-    margin-left: 13px;
-  }
-  .navbar .user_info #user_icon.active{
-    background-image: url(/gamecourse/images/profile_icon_bold.svg);
-  }
-  
-  .navbar .user_info #user_exit {
-    background-image: url(/gamecourse/images/log_out_icon.svg);
-    height: 27px;
-    width: 27px;
-    margin-left: 13px;
-  }
+  width: 100%;
+  height: 45px;
+  display: block;
+  position: relative;
+  font-size: 18px;
+  border-bottom: 4px solid grey;
+  margin-top: 18px;
+}
+.navbar .logo {
+  height: 60px;
+  width: 180px;
+  color: white;
+  float: left;
+  left: 20px;
+  position: relative;
+  background-image: url(/gamecourse/images/logo.svg);
+  cursor: pointer;
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-top: -15px;
+}
+.navbar .menu {
+  display: flex;
+  position: relative;
+  list-style-type: none;
+  justify-content: center;
+}
+.navbar .menu.documentation {
+  margin-right: 180px;
+}
+.navbar .menu li {
+  margin: 15px 20px 0;
+  display: relative;
+}
+.navbar .menu li a {
+  text-decoration: none;
+  color: grey;
+  position: relative;
+  padding: 8px 18px;
+}
+.navbar .menu li a.focused {
+  color: black;
+  border-bottom: 4px solid black;
+  font-weight: bold;
+}
+.navbar .menu li a:not(focused):hover {
+  border-bottom: 4px solid black;
+}
+.navbar .menu .dropdown {
+  display: inline-block;
+  position: relative;
+}
+.navbar .menu .dropdown .dropdown-content {
+  display: none;
+  margin-top: 8px;
+  position: absolute;
+  z-index: 3;
+  background-color: gray;
+  width: 100%;
+}
+.navbar .menu .dropdown .dropdown-content a {
+  display: block;
+  color: black;
+}
+.navbar .menu .dropdown .dropdown-content a.focused {
+  color: white;
+  background-color: gray;
+  border-bottom: none;
+  font-weight: bold;
+}
+.navbar .menu .dropdown .dropdown-content a:hover {
+  border: none;
+  background-color: black;
+  color: white;
+}
+.navbar .menu .dropdown:hover .dropdown-content {
+  display: block;
+}
+.navbar .user_info {
+  float: right;
+  min-width: 180px;
+  position: relative;
+  right: 20px;
+  display: flex;
+  font-size: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  color: #484848;
+}
+.navbar .user_info #user_icon {
+  height: 30px;
+  width: 30px;
+  margin-left: 13px;
+  border-radius: 15px;
+}
+.navbar .user_info #user_icon.active {
+  background-image: url(/gamecourse/images/profile_icon_bold.svg);
+}
+
+.navbar .user_info #user_exit {
+  background-image: url(/gamecourse/images/log_out_icon.svg);
+  height: 27px;
+  width: 27px;
+  margin-left: 13px;
+}
 #course_name {
   width: 100%;
   height: 25px;
@@ -118,4 +118,3 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-  

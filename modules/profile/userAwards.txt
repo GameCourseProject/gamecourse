@@ -396,14 +396,14 @@
                         "link": null,
                         "visibilityCondition": "{}",
                         "visibilityType": "conditional",
-                        "loopData": "{awards.getAllAwards(%user).sort(\"descending\",\"date\")}",
+                        "loopData": "{}",
                         "events": [],
                         "info": null,
                         "children": [],
                         "rows": [
                             {
                                 "aspectClass": "33",
-                                "loopData": "{}",
+                                "loopData": "{awards.getAllAwards(%user).sort(\"descending\",\"date\")}",
                                 "id": "3873",
                                 "role": "role.Student>role.Default",
                                 "partType": "row",

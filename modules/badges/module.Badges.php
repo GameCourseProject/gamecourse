@@ -102,10 +102,32 @@ class Badges extends Module
     {
         $courseId = $this->getCourseId();
         if ($user === null) {
-            return Core::$systemDB->select("badge", ["course" => $courseId], "sum(maxLevel)");
+            $count = Core::$systemDB->select("badge", ["course" => $courseId], "sum(maxLevel)");
+             if (is_null($count))
+                 return 0;
+             else
+                 return $count;
         }
         $id = $this->getUserId($user);
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
+    }
+    public function getUsersWithBadge($badge, $level) {
+        $usersWithBadge = array();
+        $courseId = $this->getCourseId();
+        $course = new Course($courseId);
+        $users = $course->getUsers();
+        foreach($users as $user){
+            $userId = $user["id"];
+            $userObj = $this->createNode($course->getUser($userId)->getAllData(), 'users');
+            //print_r($userObj);
+            $userLevel = $this->getLevelNum($badge, $userId);
+            $levelNum = $this->basicGetterFunction($level, "number")->getValue();
+            if ($userLevel >= $levelNum) {
+                array_push($usersWithBadge, $userObj->getValue()["value"]);
+            }
+        }
+
+        return $this->createNode($usersWithBadge, 'users', "collection");
     }
     public function moduleConfigJson($courseId){
         $badgesConfigArray = array();
@@ -221,6 +243,7 @@ class Badges extends Module
             'getBadge',
             function (string $name = null) {
                 return $this->getBadge(false, ["name" => $name]);
+   
             },
             "Returns the badge object with the specific name.",
             'object',
@@ -238,6 +261,34 @@ class Badges extends Module
             "Returns an integer with the number of badges of the GameCourseUser identified by user. If no argument is provided, the function returns the number of badges of the course.",
             'integer',
             null,
+            'library',
+            null
+        );
+        //badges.doesntHaveBadge(%badge, %level) returns True if someone has earned the badge on this level
+        $viewHandler->registerFunction(
+            'badges',
+            'doesntHaveBadge',
+            function ($badge, $level) {
+                $users = $this->getUsersWithBadge($badge, $level);
+                return new ValueNode(empty($users->getValue()['value']));
+            },
+            'Returns an object with value True if there are no students with this badge, False otherwise.',
+            'object',
+            'badge',
+            'library',
+            null
+        );
+        //users.getUsers(%badge, %level) returns True if someone has earned the badge on this level
+        $viewHandler->registerFunction(
+            'users',
+            'getUsersWithBadge',
+            function ($badge, $level) {
+                $users = $this->getUsersWithBadge($badge, $level);
+                return $users;
+            },
+            'Returns an object with all users that earned that badge on that level.',
+            'collection',
+            'user',
             'library',
             null
         );
@@ -472,6 +523,7 @@ class Badges extends Module
             'object',
             'level'
         );
+        
 
 
 

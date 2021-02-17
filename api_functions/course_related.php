@@ -20,18 +20,22 @@ API::registerFunction('core', 'getCourseInfo', function() {
         $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId, true);
         $OldNavPages = Core::getNavigation();
         $navNames= array_column($OldNavPages,"text");
+        $user = Core::getLoggedUser();
         foreach ($pages as $pageId => $page){
             
-            if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
-                continue;
+            //if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
+            //    continue;
             //pages added by modules already have navigation, the otheres need to be added
             if(!in_array($page["name"], $navNames)){
                 $simpleName=str_replace(' ', '', $page["name"]);
-                Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+                if ($page["roleType"]=="ROLE_INTERACTION")
+                    Core::addNavigation( $page["name"], 'course.customUserPage({name: \''.$simpleName.'\',id:\''.$pageId.'\',userID:\''.$user->getId().'\'})', true);
+                else
+                    Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
             }
         }
     
-        $user = Core::getLoggedUser();
+        
         $courseUser = $course->getLoggedUser();
         $landingPage = $courseUser->getLandingPage();
         $landingPageID = Core::$systemDB->select("page", ["name"=>$landingPage], "id");

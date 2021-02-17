@@ -195,10 +195,12 @@ class ViewHandler
                         "aspectClass" => $viewPart["aspectClass"], "viewIndex" => 0
                     ];
                     $image = array_merge($viewPart["header"]["image"], $headerPart);
-
+                    unset($image["id"]);
+               
                     $this->updateViewAndChildren($image, $basicUpdate, $ignoreIds);
                     $headerPart["viewIndex"] = 1;
                     $text = array_merge($viewPart["header"]["title"], $headerPart);
+                    unset($text["id"]);
 
                     $this->updateViewAndChildren($text, $basicUpdate, $ignoreIds);
                 } else if (!empty($header)) { //update (header is in DB)
@@ -397,7 +399,7 @@ class ViewHandler
             $organizedView = $anAspect;
             $organizedView["children"] = [];
             $this->lookAtChildrenWQueries($anAspect["id"], $organizedView);
-            $aspectsViews = [$organizedView]; 
+            $aspectsViews = [$organizedView];
         } else { //multiple aspects exist
             $where = ["aspectClass" => $anAspect["aspectClass"]];
             if ($role)
@@ -943,16 +945,17 @@ class ViewHandler
                     $params = [$repeatKey => $params];
                     $i++;
                 }
-
+                
                 //unset($child['repeat']);
                 $repeatParams = array_values($repeatParams);
+               
                 for ($p = 0; $p < sizeof($repeatParams); $p++) {
                     $value = $repeatParams[$p][$repeatKey];
                     if (!is_array($value))
                         $loopParam = [$repeatKey => $value];
                     else
                         $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
-
+                    
                     $dupChild = $child;
                     $paramsforEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
                     $newvisitor = new EvaluateVisitor($paramsforEvaluator, $this);
@@ -961,6 +964,7 @@ class ViewHandler
                         $func($dupChild, $paramsforEvaluator, $newvisitor);
                         $containerArr[] = $dupChild;
                     }
+                    //print_r($containerArr);
                 }
             }
         }

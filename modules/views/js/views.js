@@ -219,6 +219,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         if (err) {
             viewEditorWindow.html(err);
             console.log(err);
+            console.log(err.description);
             return;
         }
         loadedView = view;
