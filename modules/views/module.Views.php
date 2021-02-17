@@ -507,6 +507,21 @@ class Views extends Module
             'object',
             'user'
         );
+        //%user.previousActivity
+        $this->viewHandler->registerFunction(
+            'users',
+            'previousActivity',
+            function ($user) {
+                $id = $this->basicGetterFunction($user, "id")->getValue();
+                $previousActivity = Core::$systemDB->select("course_user", ["id"=>$id], "previousActivity");
+                return new ValueNode($previousActivity);
+            },
+            'Returns a string with the timestamp with the second to last action of the GameCourseUser in the system.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.name 
         $this->viewHandler->registerFunction(
             'users',
@@ -515,6 +530,21 @@ class Views extends Module
                 return $this->basicGetterFunction($user, "name");
             },
             'Returns a string with the name of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
+        //%user.studentNumber
+        $this->viewHandler->registerFunction(
+            'users',
+            'studentNumber',
+            function ($user) {
+                $id = $this->basicGetterFunction($user, "id")->getValue();
+                $studentNumber = Core::$systemDB->select("game_course_user", ["id"=>$id], "studentNumber");
+                return new ValueNode($studentNumber);
+            },
+            'Returns a string with the student number of the GameCourseUser.',
             'string',
             null,
             'object',
@@ -542,7 +572,9 @@ class Views extends Module
             'users',
             'username',
             function ($user) {
-                return $this->basicGetterFunction($user, "username");
+                $id = $this->basicGetterFunction($user, "id")->getValue();
+                $username = Core::$systemDB->select("auth", ["game_course_user_id"=>$id], "username");
+                return new ValueNode($username);
             },
             'Returns a string with the username of the GameCourseUser.',
             'string',

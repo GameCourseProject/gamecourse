@@ -15,10 +15,10 @@ class QR extends Module {
     }
 
     public function init() {
-        //Core::addNavigation('QR', 'course.qr', true,true);
+        Core::addNavigation('QR', 'course.qr', true,true);
 
-        //$viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        //$viewHandler->createPageOrTemplateIfNew('QR',"page");
+        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
+        $viewHandler->createPageOrTemplateIfNew('QR',"page");
         //ToDo add QR tables to database
         $this->addTables("qr", "qr_code");
         $this->addTables("qr", "qr_error");
