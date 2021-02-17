@@ -60,9 +60,10 @@ angular.module('module.views').run(function($rootScope, $timeout, $sbviews, $com
         },
         createElement: function(scope, part, options) {
             var element;
-            if (part.link && !options.edit)
+            if (part.link && !options.edit) {
+                part.link = part.link.replace(/\s/g, '');
                 element = $(document.createElement('a')).addClass('value').attr('href', part.link);
-            else
+            }else
                 element = $(document.createElement('span')).addClass('value');
             
             if (part.value === '' || scope.placeholderValue === '') {
