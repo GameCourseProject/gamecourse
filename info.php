@@ -154,11 +154,11 @@ API::registerFunction('course', 'exportUsers', function(){
 API::registerFunction('settings', 'courseLevels', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    if (Course::getCourse($courseId)->getModule("badges")!==null)
+    /*if (Course::getCourse($courseId)->getModule("badges")!==null)
         $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
                     ["course"=>$courseId, "levelId"=>null],'number,description,goal,id',"number");
-    else
-        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],'number,description,goal,id',"number");
+    else*/
+    $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],'number,description,goal,id',"number");
     //print_r($levels);
     $levelsByNum = array_combine(array_column($levels,"number") , $levels);
     $numOldLevels=sizeof($levels);
@@ -352,8 +352,6 @@ function updateSkills($list,$tree,$replace, $folder){
     API::response(["updatedData"=>$updatedData ]);
     return;
 }
-
-
 
 
 

@@ -134,6 +134,45 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem, action_type: 'delete'}, alertUpdate);
         }
     }
+    $scope.importItems = function(replace){
+        $scope.importedItems = null;
+        $scope.replaceItems = replace;
+        var fileInput = document.getElementById('import_item');
+        var file = fileInput.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            $scope.importedItems = reader.result;
+            $smartboards.request('settings', 'importItem', { course: $scope.course, module: $stateParams.module, file: $scope.importedItems, replace: $scope.replaceItems}, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                nItems = data.nItems;
+                $("#import-item").hide();
+                fileInput.value = "";
+                location.reload();
+                $("#action_completed").empty();
+                if(nItems > 1)
+                    $("#action_completed").append(nItems + " Items Imported");
+                else
+                    $("#action_completed").append(nItems + " Item Imported");
+                $("#action_completed").show().delay(3000).fadeOut();
+            });
+
+        }
+        reader.readAsDataURL(file);
+    }
+    $scope.exportItem = function(){
+        $smartboards.request('settings', 'exportItem', { course: $scope.course, module: $stateParams.module}, function(data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            download(data.fileName+".txt", data.courseItems);
+        });
+
+    }
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
         if (err) {
             giveMessage(err.description);
@@ -322,6 +361,18 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             $compile(modal)($scope);
             allItems.append(modal);
 
+            //import items modal
+            importModal = $("<div class='modal' id='import-item'></div>");
+            importVerification = $("<div class='verification modal_content'></div>");
+            importVerification.append( $('<button class="close_btn icon" value="#import-item" onclick="closeModal(this)"></button>'));
+            importVerification.append( $('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
+            importVerification.append( $('<div class="target">The seperator must be comma</div>'));
+            importVerification.append( $('<input class="config_input" type="file" id="import_item" accept=".csv, .txt">')); //input file
+            importVerification.append( $('<div class="confirmation_btns"><button ng-click="importItems(true)">Replace duplicates</button><button ng-click="importItems(false)">Ignore duplicates</button></div>'))
+            importModal.append(importVerification);
+            $compile(importModal)($scope);
+            allItems.append(importModal);
+
 
             //delete verification modal
             deletemodal = $("<div class='modal' id='delete-verification'></div>");
@@ -333,8 +384,13 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             deletemodal.append(verification);
             rowContent.append(deletemodal);
 
+            //success section
+            allItems.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
+
             action_buttons = $("<div class='config_save_button'></div>");
             action_buttons.append( $("<div class='icon add_icon' value='#open-item' onclick='openModal(this)' ng-click='addItem()'></div>"));
+            action_buttons.append( $("<div class='icon import_icon' value='#import-item' onclick='openModal(this)'></div>"));
+            action_buttons.append( $("<div class='icon export_icon' value='#export-item' ng-click='exportItem()'></div>"));
             allItems.append($compile(action_buttons)($scope));
         }
     });

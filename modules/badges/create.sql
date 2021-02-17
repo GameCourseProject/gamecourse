@@ -18,11 +18,12 @@ create table badge(
 	foreign key(course) references course(id) on delete cascade
 );
 
-create table badge_has_level(#this table exists to prevent empty parameters on level table
-	levelId 	int unsigned,
+create table badge_level(
+	id 	        int unsigned auto_increment primary key,
 	badgeId 	int unsigned,
+    number      int not null,
+    goal        int not null,
+    description varchar(200),
 	reward 		int unsigned,
-	foreign key(badgeId) references badge(id) on delete cascade,
-	foreign key(levelId) references level(id) on delete cascade,
-	primary key(levelId,badgeId)
+	foreign key(badgeId) references badge(id) on delete cascade
 );

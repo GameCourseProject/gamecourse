@@ -117,7 +117,8 @@ class EvaluateVisitor extends Visitor {
                     if ($contextVal["type"] == "object")
                         $lib = $contextVal["value"]["libraryOfVariable"];
                     else {//type == collection
-                        $lib = $contextVal["value"][0]["libraryOfVariable"];
+                        if (!empty($contextVal["value"]))
+                            $lib = $contextVal["value"][0]["libraryOfVariable"];
                     }
                     $node->setLib($lib);
                 }
