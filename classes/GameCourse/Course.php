@@ -902,7 +902,8 @@ class Course
         return Core::$systemDB->selectMultiple("page",["course"=>$this->cid, 'isEnabled' => 1], 'name');
     }
 
-    public static function newExternalData(){
-        new GameRules();
+    public static function newExternalData($courseId){
+        $gr = new GameRules($courseId);
+        $gr->run();
     }
 }

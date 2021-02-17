@@ -1,0 +1,15 @@
+rule: Golden Star
+# Be creative and do relevant things to help improve the course
+# 	lvl.1: perform one task
+# 	lvl.2: perform two tasks
+# 	lvl.3: perform three task
+
+	when:
+		logs = GC.participations.getAllParticipations(target, "golden star award")
+		nlogs = len(logs)
+
+		# Compute the level of the badge that the student deserves
+		lvl = compute_lvl(nlogs, 1,2,3)
+		
+	then:
+		award_badge(target, "Golden Star", lvl, logs)

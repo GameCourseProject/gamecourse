@@ -1,0 +1,14 @@
+rule: Golden Star
+# Be creative and do relevant things to help improve the course
+# lvl.1: perform one task
+# lvl.2: perform two tasks
+# lvl.3: perform three tasks
+	when:
+		# get all 'golden star award' logs from the target student
+		logs = filter_logs(facts,target,action="golden star award")
+		# compute the lvl achieved based on the number of logs collected
+		nlogs = len(logs)
+		lvl = compute_lvl(nlogs,1,2,3)
+		lvl > 0
+	then:
+		award_achievement("Golden Star",lvl,target,logs,nlogs)

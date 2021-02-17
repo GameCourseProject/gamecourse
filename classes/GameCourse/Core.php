@@ -146,8 +146,9 @@ class Core
     {
         static::init(); // make sure its initialized
         if (array_key_exists('user', $_SESSION)) {
-            static::$loggedUser = User::getUser($_SESSION['user']);
- 	        return true;
+          static::$loggedUser = User::getUserByUsername($_SESSION['username']);
+          $_SESSION['user'] = static::$loggedUser->getId();
+	        return true;
         }
         if (array_key_exists("loginDone", $_SESSION)) {
             $username = $_SESSION['username'];

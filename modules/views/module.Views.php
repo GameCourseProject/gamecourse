@@ -848,6 +848,28 @@ class Views extends Module
             'participation',
             'library'
         );
+
+        //participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getParticipations',
+            function (int $user = null, string $type = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+                $where = [];
+                if ($rating !== null) {
+                    $where["rating"] = (int) $rating;
+                }
+                if ($evaluator !== null) {
+                    $where["evaluator"] = $evaluator;
+                }
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation");
+            },
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
+            'collection',
+            'participation',
+            'library'
+        );
+
+
         //%participation.date
         $this->viewHandler->registerFunction(
             'participations',
@@ -1046,6 +1068,127 @@ class Views extends Module
                 }
             }
         );
+
+        
+        
+        //participations.getResourceViews(user)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getResourceViews',
+
+            function (int $user) use ($courseId) {
+                $table = "participation";
+                
+                $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
+                $likeParams = ["description" => "Lecture % Slides"];
+
+                $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
+
+                return $this->createNode($skillTreeParticipation, "participation", "collection");
+            }
+
+            ,
+            "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.",
+            'collection',
+            'participation',
+            'library'
+        );
+
+
+        //participations.getForumParticipationsuser, forum)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getForumParticipations',
+
+            function (int $user, string $forum, string $thread=null) use ($courseId) {
+                $table = "participation";
+                
+                if ($thread == null) {
+                    # if the name of the thread is not relevant
+                    # aka, if users are rewarded for creating posts + comments
+                    $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
+                    $like = "%" . $forum . " Forum%";
+                    $likeParams = ["description" => $like];
+
+                    $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [],null, $likeParams);
+                } 
+                else {
+                    # Name of thread is important for the badge
+                    $like = "%" . $forum . " Forum, Re: " . $thread . "%";
+                    $where = ["user" => $user, "type" => "graded post"];
+                    $likeParams = ["description" => $like];
+                    $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
+            }
+
+                return $this->createNode($forumParticipation, "participations", "collection");
+            }
+
+            ,
+            "Returns a collection with all the participations in a specific forum of the Course. The  parameter can be used to find participations for a user or forum:\nuser: id of a GameCourseUser that participated.\n
+                forum: name of a moodle forum to filter participations by.",
+            'collection',
+            'participation',
+            'library'
+        );
+
+
+        //participations.getSkillParticipations(user, skill)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getSkillParticipations',
+
+            function (int $user, string $skill) use ($courseId) {
+                $table = "participation";
+                $description = "Skill Tree, Re: " . $skill;
+
+                $where = ["user" => $user, "type" => "graded post", "description" => $description, "course" => $courseId];
+                $orderby = "rating desc limit 1";
+                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', $orderby, [], [],null, null);
+
+                return $this->createNode($forumParticipation, "participations", "collection");
+            }
+
+            ,
+            "Returns a collection with all the skill tree participations for a user in the forums. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated. \nuser: id of a GameCourseUser that participated.",
+            'collection',
+            'participation',
+            'library'
+        );
+
+
+
+
+        //participations.getRankings(user, type)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getRankings',
+
+            function (int $user, string $type) use ($courseId) {
+                $table = "participation";
+                
+                $where = ["user" => $user, "type" => $type, "course" => $courseId];
+                
+                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, 'description', null, [], [],null, null);
+
+                $ranking = 0;
+                if (count($forumParticipation) > 0) {
+                    $ranking = 4 - intval($forumParticipation[0]['description']);
+                }
+
+                return $this->createNode($ranking, "participations", "object");
+            }
+
+            ,
+            "Returns rankings of student awarded rewards.",
+            'collection',
+            'participation',
+            'library'
+        );
+
+
+
+
+
         //API functions (functions called in js)
 
         //gets a parsed and processed view

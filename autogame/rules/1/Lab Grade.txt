@@ -1,0 +1,8 @@
+rule: Lab Grade
+# give grades from quizzes
+
+	when:
+		logs = GC.participations.getParticipations(target, "lab grade")
+        len(logs) > 0
+	then:
+		award_grade(target, "Lab", logs)

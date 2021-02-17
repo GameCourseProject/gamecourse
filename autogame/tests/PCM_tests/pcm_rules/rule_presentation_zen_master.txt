@@ -1,0 +1,7 @@
+rule: Presentation Zen Master
+# Think about your presentation before opening powerpoint
+# lvl.1: hand in document about the rationale of your presentation.
+	when:
+		check_existance(facts,target,"document describing presentation")
+	then:
+		award_achievement("Presentation Zen Master",1,target,None,False)

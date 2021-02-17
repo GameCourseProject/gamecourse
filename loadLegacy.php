@@ -44,7 +44,7 @@ $sbBadges=[];
 foreach($DBbadges as &$b){
     $sbBadges[$b["name"]]=$b;
     for ($i=1;$i<=$b["maxLevel"];$i++){
-        $xp = Core::$systemDB->select("level join badge_has_level on id=levelId",
+        $xp = Core::$systemDB->select("badge_level join badge on badgeId=badge.id",
                 ["course"=>$courseId,"badgeId"=>$b["id"],"number"=>$i],"reward");
         $sbBadges[$b["name"]]['xp'][]=$xp;
     }

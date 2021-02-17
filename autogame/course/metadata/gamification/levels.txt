@@ -1,0 +1,21 @@
+AWOL;0
+Starting to see the light;1000
+Self-Aware;2000
+Aware of your surroundings;3000
+Taking your first Steps;4000
+Going places;5000
+Kindergarten Genius;6000
+Attentive Pupil;7000
+Teacher's Pet;8000
+Apprentice;9000
+Jack of All Trades;10000
+Guildmaster;11000
+Knowledge Pilgrim;12000
+Wandering Sage;13000
+Scholar Recluse;14000
+Grand Master;15000
+Society's Best Hope;16000
+Exalted Savant;17000
+Savior of Mankind;18000
+Professor;19000
+Science God;20000

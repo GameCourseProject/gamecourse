@@ -15,5 +15,5 @@ Core::init();
 
 $moodle = new GoogleSheets($argv[1]);
 if($moodle->readGoogleSheets()){
-    Course::newExternalData();
+    Course::newExternalData($argv[1]);
 }
