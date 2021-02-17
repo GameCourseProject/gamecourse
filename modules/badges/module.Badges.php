@@ -145,21 +145,23 @@ class Badges extends Module
             }
         }
         if (Core::$systemDB->tableExists("badge")) {
-            $badgesVarDB = Core::$systemDB->select("badge", ["course" => $courseId], "*");
+            $badgesVarDB = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*");
             if ($badgesVarDB) {
                 unset($badgesConfigVarDB["course"]);
-                array_push($badgesArray, $badgesVarDB);
-                
-                $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_level", ["badgeId" => $badgesVarDB["id"]], "*");
-                foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
-                    array_push($badgesLevelArray, $badgesLevelVarDB);
+                foreach ($badgesVarDB as $badge) {
+                    array_push($badgesArray, $badge);
+
+                    $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_level", ["badgeId" => $badge["id"]], "*");
+                    foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
+                        array_push($badgesLevelArray, $badgesLevelVarDB);
+                    }
                 }
             }
         }
 
         $badgesArr["badges_config"] = $badgesConfigArray;
         $badgesArr["badge"] = $badgesArray;
-        $badgesArr["badge_has_level"] = $badgesLevelArray; 
+        $badgesArr["badge_level"] = $badgesLevelArray;
 
         if ( $badgesConfigArray || $badgesArray || $badgesLevelArray) {
             return $badgesArr;
@@ -193,16 +195,15 @@ class Badges extends Module
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                     }
                     $badgeIds[$importId] = $newId;
-                } else  if ($tableName[$i] == "badge_has_level") {
-                    $oldLevelId = $levelIds[$entry["levelId"]];
+                } else  if ($tableName[$i] == "badge_level") {
                     $oldBadgeId = $badgeIds[$entry["badgeId"]];
-                    $entry["levelId"] = $oldLevelId;
                     $entry["badgeId"] = $oldBadgeId;
+                    unset($entry["id"]);
                     if ($update) {
-                        Core::$systemDB->update($tableName[$i], $entry ,["levelId" => $oldLevelId, "badgeId" => $oldBadgeId]);
+                        Core::$systemDB->update($tableName[$i], $entry ,["badgeId" => $oldBadgeId, "number" => $entry["number"]]);
                     } else {
-                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
-                    }
+                         Core::$systemDB->insert($tableName[$i], $entry);
+                    };
                 }
             }
             $i++;

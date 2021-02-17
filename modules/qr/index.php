@@ -11,8 +11,8 @@ Core::init();
 
 $disciplina_pt = "PCM - Produ&ccedil;&atilde;o de Conte&uacute;dos Multim&eacute;dia";
 $disciplina_en = "Multimedia Content Production";
-$ano_pt = "2018/2019";
-$ano_en = "2019";
+$ano_pt = "2020/2021";
+$ano_en = "2021";
 $semestre_pt = "2o Semestre";
 $semestre_en = "Spring";
 $titulo_pt = "XP B&oacute;nus de Participa&ccedil;&atilde;o Activa na Aula";
@@ -26,9 +26,10 @@ $class_types = array("Lecture", "Invited Lecture");
 
 $error = FALSE;
 
-function inclass($student_id, $courseId)
+function inclass($studentNumber, $courseId)
 {
-  return !empty(Core::$systemDB->select("course_user", ["id" => $student_id, "course" => $courseId]));
+  $studentId = Core::$systemDB->selectMultiple("course_user left join game_course_user on game_course_user.id=course_user.id", ["studentNumber" => $studentNumber, "course" => $courseId], "course_user.id");
+  return !empty(Core::$systemDB->select("course_user", ["id" => $studentId[0]["id"], "course" => $courseId]));
 }
 
 if (isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["course"]) && isset($_REQUEST["submit"])) {
@@ -83,10 +84,11 @@ $used = TRUE;
 
 <body>
   <h3>IST - DEI - CGM</h3>
-  <h2><?= $disciplina_en ?> - <?= $semestre_en ?> <?= $ano_en ?></h2>
-  <h2><?= $titulo_en ?></h2>
 
   <?php
+  $course = Core::$systemDB->select("course",["id"=> $_REQUEST["course"]], "name , year");
+  $disciplina_en = $course["name"];
+  $ano_en = $course["year"];
   if (isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["aula"]) && isset($_REQUEST["submit"]) && !($error)) {
 
     $user = User::getUserByStudentNumber($_REQUEST["aluno"]);
@@ -114,7 +116,10 @@ $used = TRUE;
     $used = !empty(Core::$systemDB->select("qr_code", ["qrkey" => $_REQUEST["key"]], "studentNumber"));
 
   ?>
-    <form action="<?= $_SERVER['PHP_SELF'] ?>" method="get">
+      <h2><?= $disciplina_en ?> - <?= $semestre_en ?> <?= $ano_en ?></h2>
+      <h2><?= $titulo_en ?></h2>
+
+      <form action="<?= $_SERVER['PHP_SELF'] ?>" method="get">
       <input type="hidden" name="course" value="<?= $_REQUEST['course'] ?>">
       <input type="hidden" name="key" value="<?= $_REQUEST['key'] ?>">
       Your IST Student Number:<input name="aluno" maxlength="5" size="5" <?php if (isset($_REQUEST["aluno"])) { ?> value="<?= $_REQUEST["aluno"] ?>" <?php } ?>><span class="error"><?= $error_student_number_en ?></span><br />
