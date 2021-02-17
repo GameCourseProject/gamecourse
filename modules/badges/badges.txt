@@ -438,7 +438,7 @@
             "parent": "1432",
             "viewIndex": "1",
             "label": null,
-            "loopData": "{users.getUsers(%badge, %level)}",
+            "loopData": "{users.getUsersWithBadge(%badge, %level)}",
             "variables": [],
             "value": "photos\/{%item.username}.png",
             "class": "student-image",
