@@ -27,6 +27,7 @@ angular.module('module.views').run(function($sbviews, $compile) {
             
             var root;
             if (part.link != undefined && !options.edit) {
+                part.link = part.link.replace(/\s/g, '');
                 root = $(document.createElement('a')).attr({href: part.link});
             } else {
                 root = $(document.createElement('span'));
