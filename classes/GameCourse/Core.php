@@ -146,8 +146,8 @@ class Core
     {
         static::init(); // make sure its initialized
         if (array_key_exists('user', $_SESSION)) {
-            static::$loggedUser = User::getUserByUsername($_SESSION['username']);
-            $_SESSION['user'] = static::$loggedUser->getId();
+          static::$loggedUser = User::getUserByUsername($_SESSION['username']);
+          $_SESSION['user'] = static::$loggedUser->getId();
 	        return true;
         }
         if (array_key_exists("loginDone", $_SESSION)) {
@@ -160,7 +160,7 @@ class Core
 
             if (static::$loggedUser != null) {
                 $_SESSION['user'] = static::$loggedUser->getId();
-                if (!file_exists('photos/' . $_SESSION['user'] . 'png')) { //se n existir foto
+                if (!file_exists('photos/' . $username . '.png')) { //se n existir foto
                     if (array_key_exists('type', $_SESSION) && array_key_exists('pictureUrl', $_SESSION)) {
                         if ($_SESSION['type'] == "fenix") {
                             $client = \FenixEdu::getSingleton();
@@ -171,7 +171,7 @@ class Core
                         } else if ($_SESSION['type'] == "linkedin") {
                             $client = Linkedin::getSingleton();
                         }
-                        $client->downloadPhoto($_SESSION['pictureUrl'], $_SESSION['user']);
+                        $client->downloadPhoto($_SESSION['pictureUrl'], $username);
                     }
                 }
                 return true;

@@ -23,7 +23,7 @@ app.controller('MyInfo', function ($element, $scope, $smartboards, $compile, $st
         profile_image.onerror = function () {
             image.append($('<span>No profile image was selected</span>'));
         }
-        profile_image.src = 'photos/' + $scope.myInfo.id + '.png?' + new Date().getTime();
+        profile_image.src = 'photos/' + $scope.myInfo.username + '.png?' + new Date().getTime();
 
 
 

@@ -14,7 +14,7 @@ class XPLevels extends Module
     
     public function setupResources() {
         parent::addResources('js/');
-        parent::addResources('css/awards.css');
+        parent::addResources('css/user-awards.css');
     }
 
     public function deleteDataRows($courseId)
@@ -153,6 +153,7 @@ class XPLevels extends Module
                 if ($user !== null) {
                     //calculate the level of the user
                     $xp = $this->calculateXP($user, $where["course"]);
+                    
                     $goal = Core::$systemDB->select(
                         $table,
                         $where,

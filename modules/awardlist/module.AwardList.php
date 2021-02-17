@@ -16,6 +16,7 @@ class AwardList extends Module
     public function setupResources()
     {
         parent::addResources('js/');
+        parent::addResources('css/awards.css');
     }
 
     public function init()
@@ -24,8 +25,8 @@ class AwardList extends Module
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
 
-        if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
-            $viewHandler->createPageOrTemplateIfNew('AwardList', "page", "ROLE_SINGLE");
+        //if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
+        //    $viewHandler->createPageOrTemplateIfNew('AwardList', "page", "ROLE_SINGLE");
 
         // $viewHandler->registerView($this, 'awardlist', 'Award List View', array(
         //     'type' => ViewHandler::VT_SINGLE

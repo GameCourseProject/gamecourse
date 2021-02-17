@@ -16,13 +16,13 @@ class Profile extends Module {
 
     public function init() {
         $user = $this->getParent()->getLoggedUser();
-        if ($user->exists())
+        //if ($user->exists())
             //Core::addNavigation('photos/' . Core::getLoggedUser()->getUsername() . '.png', 'My Profile', 'course.myprofile', true);
             //Core::addNavigation('My Profile', 'course.myprofile', true);
 
         $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->createPageOrTemplateIfNew('Profile',"page","ROLE_INTERACTION");
+        //$viewHandler = $viewsModule->getViewHandler();
+        //$viewHandler->createPageOrTemplateIfNew('Profile',"page","ROLE_INTERACTION");
 
         if (!$viewsModule->templateExists(self::STUDENT_SUMMARY_TEMPLATE))
             $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'));

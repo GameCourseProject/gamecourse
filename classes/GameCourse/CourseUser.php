@@ -132,8 +132,8 @@ class CourseUser extends User
     function  getAllData($field = "*")
     {
         return Core::$systemDB->select(
-            "course_user natural join game_course_user",
-            ["course" => $this->course->getId(), "id" => $this->id],
+            "course_user natural join game_course_user u join auth a on a.game_course_user_id=u.id",
+            ["course" => $this->course->getId(), "game_course_user_id" => $this->id],
             $field
         );
     }

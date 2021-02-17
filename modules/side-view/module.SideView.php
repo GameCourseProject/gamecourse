@@ -17,16 +17,16 @@ class SideView extends Module {
 
     public function init() {
         $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->createPageOrTemplateIfNew('Side View',"page","ROLE_SINGLE");
+        //$viewHandler = $viewsModule->getViewHandler();
+        //$viewHandler->createPageOrTemplateIfNew('Side View',"page","ROLE_SINGLE");
 
         // $viewHandler->registerPage($this, 'sideview', 'Side View', array(
         //     'type' => ViewHandler::VT_ROLE_SINGLE
         // ));
 
-        if (!$viewsModule->templateExists(self::SIDE_VIEW_TEMPLATE))
+        if (!$viewsModule->templateExists(self::SIDE_VIEW_TEMPLATE)) {
             $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'));
-  
+        }
         
     }
     public function is_configurable(){

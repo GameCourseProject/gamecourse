@@ -217,8 +217,8 @@ $user = Core::getLoggedUser();
         <a class="logo" ui-sref="home"></a>
         <div class="user_info">
             <div ng-if="user" class="user_id">{{user.username}}</div>
-            <a class="icon" ng-if="!course" id="user_icon" ui-sref="myInfo"></a>
-            <a class="icon" ng-if="course" id="user_icon" ui-sref="course.myInfo"></a>
+            <a class="icon" ng-if="!course" id="user_icon" style="background-image: url(/gamecourse/photos/{{user.username}}.png);" ui-sref="myInfo"></a>
+            <a class="icon" ng-if="course" id="user_icon" style="background-image: url(/gamecourse/photos/{{user.username}}.png);" ui-sref="course.myInfo"></a>
             <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
         </div>
         <ul class="menu">
