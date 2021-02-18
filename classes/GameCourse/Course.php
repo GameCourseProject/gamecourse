@@ -395,6 +395,7 @@ class Course
                 //return $newRolesByName[$oldRolesById[$id]["name"]]["id"];
                 return $newRolesByName[$oldRolesByName[$id]["name"]]["id"];
             };
+            Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $newRolesByName["Teacher"]["id"]]);
 
             //modules
             Course::copyCourseContent("course_module", $copyFrom, $courseId);
@@ -517,14 +518,14 @@ class Course
             }
            
         } else {
+            $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
+            if($currentUserId){
+                Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $teacherRoleId]);
+            }
             $modules = Core::$systemDB->selectMultiple("module");
             foreach ($modules as $mod) {
                 Core::$systemDB->insert("course_module", ["course" => $courseId, "moduleId" => $mod["moduleId"]]);
             }
-        }
-        $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
-        if($currentUserId){
-            Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $teacherRoleId]);
         }
         return $course;
     }

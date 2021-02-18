@@ -435,23 +435,25 @@ class XPLevels extends Module
 
     public function readConfigJson($courseId, $tables, $update)
     {
-        $tableName = array_keys($tables);
         $levelIds = array();
-        $i = 0;
-        foreach ($tables as $table) {
-            foreach ($table as $entry) {
-                $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
-                if($update && $existingCourse){
-                    Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
-                }else{
-                    $entry["course"] = $courseId;
-                    $idImported = $entry["id"];
-                    unset($entry["id"]);
-                    $newId = Core::$systemDB->insert($tableName[$i], $entry);
-                    $levelIds[$idImported] = $newId;
+        if($tables) {
+            $tableName = array_keys($tables);
+            $i = 0;
+            foreach ($tables as $table) {
+                foreach ($table as $entry) {
+                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                    if ($update && $existingCourse) {
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                    } else {
+                        $entry["course"] = $courseId;
+                        $idImported = $entry["id"];
+                        unset($entry["id"]);
+                        $newId = Core::$systemDB->insert($tableName[$i], $entry);
+                        $levelIds[$idImported] = $newId;
+                    }
                 }
+                $i++;
             }
-            $i++;
         }
         return $levelIds;
     }
