@@ -1580,7 +1580,7 @@
                                 "label": null,
                                 "loopData": "{}",
                                 "variables": [],
-                                "value": "{%userData.name} - %user",
+                                "value": "{%userData.name} - {%userData.studentNumber}",
                                 "class": null,
                                 "style": null,
                                 "link": null,

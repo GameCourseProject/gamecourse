@@ -468,7 +468,7 @@ class Skills extends Module
                 return $this->createNode(
                     Core::$systemDB->selectMultiple(
                         "skill natural join skill_tier",
-                        ["treeId" => $tier["value"]["treeId"], "tier" => $tier["value"]["tier"]]
+                        ["treeId" => $tier["value"]["treeId"], "tier" => $tier["value"]["tier"]], "*", "name asc"
                     ),
                     'skillTrees',
                     "collection",
@@ -817,6 +817,7 @@ class Skills extends Module
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');
             $courseId = $this->getParent()->getId();
+            $folder = Course::getCourseLegacyFolder($courseId);
 
             if ($skillName) {
                 $skills = Core::$systemDB->selectMultiple(
@@ -835,8 +836,8 @@ class Skills extends Module
                             $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
                         }
                         $page = str_replace('src="http:', 'src="https:', $page);
-                        $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $this->getDir() . 'resources/' . $compressedName, $page);
-                        $page = str_replace(' src="' . $compressedName, ' src="' . $this->getDir() . 'resources/' . $compressedName, $page);
+                        $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $folder . '/tree/' . $compressedName, $page);
+                        $page = str_replace(' src="' . $compressedName, ' src="' . $folder . '/tree/' . $compressedName, $page);
                         API::response(array('name' => $skill['name'], 'description' => $page));
                     }
                 }
