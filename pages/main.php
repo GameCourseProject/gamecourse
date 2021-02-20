@@ -98,7 +98,10 @@ $user = Core::getLoggedUser();
                                     beginNavbarResize();
                                     if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                                         var landing = $scope.landingPage.replace(/^\//g, '');
-                                        $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
+                                        if (data.landingPageType=="ROLE_SINGLE")
+                                            $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
+                                        else
+                                            $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID + '/' + '<?= $user->getId(); ?>'));
                                     }
                                 });
                             }, function() {
@@ -112,7 +115,11 @@ $user = Core::getLoggedUser();
                     }
                 } else if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                     var landing = $scope.landingPage.replace(/^\//g, '');
-                    $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
+                    if (data.landingPageType=="ROLE_SINGLE")
+                        $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
+                    else
+                        $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID + '/' + '<?= $user->getId(); ?>'));
+
                 }
             };
             $scope.user = $rootScope.user;

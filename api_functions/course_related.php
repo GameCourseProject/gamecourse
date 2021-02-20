@@ -31,14 +31,16 @@ API::registerFunction('core', 'getCourseInfo', function() {
                 if ($page["roleType"]=="ROLE_INTERACTION")
                     Core::addNavigation( $page["name"], 'course.customUserPage({name: \''.$simpleName.'\',id:\''.$pageId.'\',userID:\''.$user->getId().'\'})', true);
                 else
-                    Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true); 
+                    Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true);
             }
         }
     
         
         $courseUser = $course->getLoggedUser();
         $landingPage = $courseUser->getLandingPage();
-        $landingPageID = Core::$systemDB->select("page", ["name"=>$landingPage], "id");
+        $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, roleType");
+        $landingPageID = $landingPageInfo["id"];
+        $landingPageType = $landingPageInfo["roleType"];
 
         $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
         
@@ -66,6 +68,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
             'settings' => $navSettings,
             'landingPage' => $landingPage,
             'landingPageID' => $landingPageID,
+            'landingPageType' => $landingPageType,
             'courseName' => $course->getName(),
             'courseColor' => $course->getData("color"),
             'resources' => $course->getModulesResources(),
