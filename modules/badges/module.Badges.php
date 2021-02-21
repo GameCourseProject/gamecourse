@@ -845,6 +845,7 @@ class Badges extends Module
             $badge['countBased'] = $badge["isCount"];
             $badge['postBased'] = $badge["isPost"];
             $badge['pointBased'] = $badge["isPoint"];
+            $badge['extra'] = $badge["isExtra"];
 
             $levels = Core::$systemDB->selectMultiple("badge_level join badge on badge.id=badgeId",
                                 ["course"=>$courseId, "badgeId"=>$badge['id']], 'badge_level.description , goal, reward, number' );
@@ -905,7 +906,8 @@ class Badges extends Module
             array('name' => "XP3", 'id'=> 'xp3', 'type' => "number", 'options' => ""),             
             array('name' => "Is Count", 'id'=> 'countBased', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Post", 'id'=> 'postBased', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Point", 'id'=> 'pointBased', 'type' => "on_off button", 'options' => ""), 
+            array('name' => "Is Point", 'id'=> 'pointBased', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Extra", 'id'=> 'extra', 'type' => "on_off button", 'options' => ""),
             array('name' => "Count 1", 'id'=> 'count1', 'type' => "number", 'options' => ""),
             array('name' => "Count 2", 'id'=> 'count2', 'type' => "number", 'options' => ""),
             array('name' => "count 3", 'id'=> 'count3', 'type' => "number", 'options' => ""),
