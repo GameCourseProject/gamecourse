@@ -191,7 +191,7 @@
           "loopData": "{}",
           "variables": [],
           "value": "{%item.description}",
-          "class": null,
+          "class": "description",
           "style": null,
           "link": null,
           "visibilityCondition": "{}",

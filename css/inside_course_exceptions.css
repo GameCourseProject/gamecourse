@@ -9,4 +9,12 @@
 }
 .smaller_window .page {
     height: calc(100vh - 67px - 25px);
-  }
+}
+
+.section .content .action-buttons {
+    top: -5px;
+    background-color: white;
+    z-index: 1;
+    padding-left: 30px;
+    right: 0;
+}

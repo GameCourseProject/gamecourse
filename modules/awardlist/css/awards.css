@@ -1,10 +1,11 @@
 .awards-table table {
     border-spacing: 0;
     width: 100%;
+    background-color: #cfcfcf;
 }
 
 .awards-table table th {
-    background-color: #d4d4d4;
+    background-color: #ffffff;
     padding: 8px 6px;
     text-align: center;
     outline: 0;
@@ -57,12 +58,8 @@
     transition: all 0.3s ease;
 }
 
-.awards-table table tr:nth-child(odd) {
-    background-color: #d9d9d9;
-}
-
-.awards-table table tr:nth-child(even) {
-    background-color: #d4d4d4;
+.awards-table table tr{
+    background-color: #ffffff;
 }
 
 .awards-table table tr:hover {

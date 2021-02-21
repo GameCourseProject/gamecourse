@@ -387,7 +387,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             //success section
             allItems.append( $("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
 
-            action_buttons = $("<div class='config_save_button'></div>");
+            action_buttons = $("<div class='action-buttons'></div>");
             action_buttons.append( $("<div class='icon add_icon' value='#open-item' onclick='openModal(this)' ng-click='addItem()'></div>"));
             action_buttons.append( $("<div class='icon import_icon' value='#import-item' onclick='openModal(this)'></div>"));
             action_buttons.append( $("<div class='icon export_icon' value='#export-item' ng-click='exportItem()'></div>"));

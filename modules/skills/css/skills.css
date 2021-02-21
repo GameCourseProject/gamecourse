@@ -71,6 +71,10 @@
   cursor: pointer;
 }
 
+.skills-pageblock {
+  border: 2px solid #d9d9d9;
+}
+
 .skills-pageblock>.content {
   margin: 0px !important;
 }
@@ -90,11 +94,10 @@
 }
 
 .skills-pageblock .tier {
-  font-size: 90%;
   margin: 0 !important;
   width: 25%;
   box-sizing: border-box;
-  background-color: #d9d9d9 !important;
+  /*background-color: #d9d9d9 !important;*/
   border-bottom: 2px dashed #bfbfbf;
   display: flex !important;
   align-items: center;
@@ -121,10 +124,11 @@
 .skills-pageblock .tier .content>* {
   margin: 0 !important;
   padding: 0 !important;
+  font-size: 11px;
 }
 
 .skills-pageblock .tier>.content {
-  background-color: #d9d9d9;
+  /* background-color: #d9d9d9; */
   display: block;
 }
 
@@ -139,7 +143,7 @@
 .skills-pageblock .tier .tier-reward {
   width: 100%;
   text-align: center;
-  font-size: 170%;
+  font-size: 20px;
   font-weight: bold;
   top: 0;
   position: absolute;

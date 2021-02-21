@@ -166,7 +166,7 @@ app.controller('CourseSettingsModules', function($scope, $element, $smartboards,
     box.append( $('<div class= "row"><div ><span class="label">Path: </span><span class="details">{{module_open.dir}}</span></div></div>'))
     content.append(box);
     content.append( $('<button class="save_btn" ng-click="saveModule()" ng-disabled="!needsToBeSaved()" > Save </button>'))
-    content.append($('<button ng-if="module_open.hasConfiguration == true" class="config_btn" ui-sref="course.settings.{{module_open.id}}"> Configurate </button>'));
+    content.append($('<button ng-if="module_open.hasConfiguration == true" class="config_btn" ui-sref="course.settings.{{module_open.id}}"> Configure </button>'));
     viewModal.append(content);
     modal.append(viewModal);
     $compile(modal)($scope);

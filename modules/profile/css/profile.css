@@ -1,12 +1,28 @@
-.profile-view .content {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start !important;
+.profile-view {
+  border: 2px solid #d9d9d9;
 }
 
-.profile-container .content {
-  max-width: 75vw;
+.profile-view .content {
+  align-items: stretch !important;
 }
+
+.profile-view .content .block.ng-scope {
+  border: 2px solid #e6e6e6;
+}
+
+.profile-view .content .block.ng-scope {
+  border: 2px solid #e6e6e6;
+}
+
+.profile-view .content .block.ng-scope:nth-child(3) .content,
+.profile-view .content .block.ng-scope:nth-child(4) .content,
+.profile-view .content .block.ng-scope:nth-child(5) .content,
+.profile-view .content .block.ng-scope:nth-child(6) .content,
+.profile-view .content .block.ng-scope:nth-child(7) .content {
+  justify-content: center;
+}
+
+
 
 .block.summary-view.ng-scope {
   padding-top: 0 !important;
