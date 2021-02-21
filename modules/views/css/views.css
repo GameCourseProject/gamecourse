@@ -173,6 +173,7 @@
 .view .content .block .header .title {
   vertical-align: middle;
   margin-left: 8px;
+  font-size: 16px;
 }
 
 .view .content .block .content {

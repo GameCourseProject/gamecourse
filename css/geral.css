@@ -435,3 +435,8 @@ input:checked + .slider:before {
     display: block;
     margin: 20% auto;
 }
+
+.page-block {
+    padding-left: 20px;
+    padding-top: 10px;
+}

@@ -1,7 +1,12 @@
+.badges-page {
+  border: 2px solid #d9d9d9;
+}
+
 .badges-page .badge {
   width: 100%;
   margin-top: 0px !important;
   border-top: 2px solid #e6e6e6;
+  padding: 0px !important;
 }
 
 .badges-page .badge>.content {
@@ -31,6 +36,11 @@
   padding: 0px !important;
 }
 
+
+.badge .content .block {
+  padding: 10px;
+}
+
 .badges-page .badge .badge-images {
   width: 162px;
 }
@@ -56,12 +66,15 @@
 }
 
 .badges-page .badge .badge-info .title {
-  font-size: 120%;
+  font-size: 16px;
   font-weight: bold;
+}
+.badges-page .badge .badge-info .description {
+  font-size: 14px;
 }
 
 .badges-page .badge .badge-info .leveldesc {
-  font-size: 80%;
+  font-size: 12px;
 }
 
 .badges-page .badge .badge-info .leveldesc .progress {
@@ -85,19 +98,19 @@
 }
 
 .badges-page .badge .xp {
-  font-size: 160%;
+  font-size: 22px;
   font-weight: bold;
 }
 
 .badges-page .badge .extra-credit {
   color: #E00;
-  font-size: 80%;
+  font-size: 10px;
   font-weight: bold;
 }
 
 .badges-page .badge .bragging-rights {
   color: #070;
-  font-size: 80%;
+  font-size: 10px;
   font-weight: bold;
 }
 
@@ -148,7 +161,7 @@
   display: block;
   font-weight: bold;
   padding: 8px 0px !important;
-  font-size: 110%;
+  font-size: 14px;
 }
 
 .badges-page .badge .badge-extra>.content .level-info .content .student-image img {

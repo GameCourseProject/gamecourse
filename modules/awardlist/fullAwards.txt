@@ -48,7 +48,7 @@
             "loopData": "{}",
             "variables": [],
             "value": null,
-            "class": null,
+            "class": "awards-table",
             "style": null,
             "link": null,
             "visibilityCondition": "{}",
