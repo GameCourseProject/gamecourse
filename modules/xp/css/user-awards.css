@@ -62,3 +62,8 @@
 .award-list table td:nth-child(3) .block .content {
   align-items: center !important;
 }
+
+.awards-list table td:nth-child(3) .value .img {
+  width: 32px;
+  height: 32px;
+}

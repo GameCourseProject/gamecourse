@@ -113,11 +113,16 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             $scope.openItem[atribute.id] = item[atribute.id];
             
             //click on on/off inputs to visually change to on
-            if(atribute["type"] == "on_off button" && 
-            (item[atribute.id] == "1" || item[atribute.id] == 'true' 
-            || item[atribute.id] == true || item[atribute.id] == 1)){
-                $("#"+atribute.id)[0].checked = true;
+            if(atribute["type"] == "on_off button") {
+                if (item[atribute.id] == "1" || item[atribute.id] == 'true' 
+                || item[atribute.id] == true || item[atribute.id] == 1) {
+                    $("#"+atribute.id)[0].checked = true;
+                } else {
+                    $("#"+atribute.id)[0].checked = false;
+                }
             }
+
+            
             
         });
         
