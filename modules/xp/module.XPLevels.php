@@ -31,7 +31,8 @@ class XPLevels extends Module
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
         $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
         $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true]), "sum(reward)");
-        return min($bonusBadgeXP, $maxBonusXP);
+        $value = min($bonusBadgeXP, $maxBonusXP);
+        return (is_null($value))? 0 : $value;
     }
     public function calculateBadgeXP($userId, $courseId)
     {
