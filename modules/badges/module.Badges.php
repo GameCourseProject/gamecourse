@@ -737,7 +737,7 @@ class Badges extends Module
         $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
         $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
                     "course"=>$courseId,"description"=>$achievement['description'],
-                    "isExtra"=> ($achievement['xp1'] < 0) ? 1 : 0,
+                    "isExtra"=> ($achievement['extra']) ? 1 : 0,
                     "isBragging"=>($achievement['xp1'] == 0) ? 1 : 0,
                     "isCount"=>($achievement['countBased']) ? 1 : 0,
                     "isPost"=>($achievement['postBased']) ? 1 : 0,
@@ -766,17 +766,16 @@ class Badges extends Module
         $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
         $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
                     "course"=>$courseId,"description"=>$achievement['description'],
-                    "isExtra"=> ($achievement['xp1'] < 0) ? 1 : 0,
+                    "isExtra"=> ($achievement['extra']) ? 1 : 0,
                     "isBragging"=>($achievement['xp1'] == 0) ? 1 : 0,
                     "isCount"=>($achievement['countBased']) ? 1 : 0,
                     "isPost"=>($achievement['postBased']) ? 1 : 0,
                     "isPoint"=>($achievement['pointBased']) ? 1 : 0];
         Core::$systemDB->update("badge",$badgeData,["id"=>$achievement["id"]]);
 
-
         if($originalBadge["maxLevel"] <= $maxLevel){
             for ($i=1;$i<=$maxLevel;$i++){
-                $badgeLevel = Core::$systemDB->select("badge_level ", ["number"=>$i, "badgeId"=>$achievement['id']]);
+                
                 if($i > $originalBadge["maxLevel"]){
                     //if they are new levels they need to be inserted and not updated
                     /*Core::$systemDB->insert("level",["number"=>$i,"course"=>$courseId,
@@ -800,7 +799,7 @@ class Badges extends Module
                         "goal"=>$achievement['count'.$i],
                         "description"=>$achievement['desc'.$i],
                         "reward"=>abs($achievement['xp'.$i])
-                    ]);
+                    ], ["number"=>$i, "badgeId"=>$achievement['id']]);
                 }
                 
             }
@@ -1013,6 +1012,7 @@ class Badges extends Module
                         "countBased"=>(!strcasecmp("true",$item[$isCountIndex]))? 1 : ($item[$isCountIndex] == 1)? 1 : 0,
                         "postBased"=>(!strcasecmp("true",$item[$isPostIndex]))? 1 : ($item[$isPostIndex] == 1)? 1 : 0,
                         "pointBased"=>(!strcasecmp("true",$item[$isPointIndex]))? 1 : ($item[$isPointIndex] == 1)? 1 : 0,
+                        "extra"=>($item[$reward[1]] < 0)? 1 : 0,
                         "desc1"=>$item[$description[1]],
                         "desc2"=>$item[$description[2]],
                         "desc3"=>$item[$description[3]],
