@@ -841,10 +841,10 @@ class Badges extends Module
         $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
         foreach($badges as &$badge){
             //information to match needing fields
-            $badge['countBased'] = $badge["isCount"];
-            $badge['postBased'] = $badge["isPost"];
-            $badge['pointBased'] = $badge["isPoint"];
-            $badge['extra'] = $badge["isExtra"];
+            $badge['countBased'] = boolval($badge["isCount"]);
+            $badge['postBased'] = boolval($badge["isPost"]);
+            $badge['pointBased'] = boolval($badge["isPoint"]);
+            $badge['extra'] = boolval($badge["isExtra"]);
 
             $levels = Core::$systemDB->selectMultiple("badge_level join badge on badge.id=badgeId",
                                 ["course"=>$courseId, "badgeId"=>$badge['id']], 'badge_level.description , goal, reward, number' );
