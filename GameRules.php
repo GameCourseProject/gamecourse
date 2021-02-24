@@ -21,24 +21,33 @@ class GameRules{
         $this->courseId = $courseId;
     }
 
+	static function noConnectionsHandler ($errno, $errstr, $errfile, $errline) {
+		Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
+	}
     public function openSocket(){
 
 		$host = "127.0.0.1";
-		$port = 8001;
+		$port = 8002;
 
-		$socket = stream_socket_server("tcp://127.0.0.1:8001", $errno, $errstr) or die("Could not create socket\n");
+
+		$socket = stream_socket_server("tcp://127.0.0.1:8002", $errno, $errstr) or die("Could not create socket\n");
 
 		if (!$socket) {
 		    echo "Error: Could not create server socket";
 		} else {
 			# command that calls python script - output is supressed by latter part of the command
-	    	$cmd = "python3 /var/www/html/gamecourse/autogame/run_autogame.py " . strval($this->courseId) ." > /dev/null &";
-		    exec($cmd);
-
+	    	$cmd = "python3 /var/www/html/gamecourse_test/autogame/run_autogame.py " . strval($this->courseId) ." >> /var/www/html/gamecourse_test/gr_log.txt &";
+			$output = system($cmd);
+		
 
 		    while (True) {
+			try {
 		        $conn = stream_socket_accept($socket);
-		        $msg = fgets($conn);
+			if (!$conn){
+				echo("Help");
+				return;
+			}
+				$msg = fgets($conn);
 
 		        # check if end message was received by instance of gamerules
 		        $res = strcmp($msg, "end gamerules;\n");
@@ -67,6 +76,7 @@ class GameRules{
 		            $func = trim($function, "\n");
 		            
 		            $course = Course::getCourse(intval($courseNr));
+
 					$viewHandler = $course->getModule('views')->getViewHandler();
 
 		            # if args are not empty on call
@@ -108,12 +118,24 @@ class GameRules{
 
 		            fclose($conn);
 		        }
+			}
 
-		    }
-		    
+			catch (Throwable $e){
+				echo("caught here");
+				Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
+				fclose($conn);
+
+				return;
+			}
+
+
+
 		}
 
-    }
+
+		}
+	echo($errstr);
+	}
 
 	public function run()
     {
@@ -131,12 +153,12 @@ class GameRules{
     	foreach ($socketOpen as $row) {
 	    	if ($row["isRunning"] == true) {
 	    		# command that calls python script - output is supressed by latter part of the command
-	    		$cmd = "python3 /var/www/html/gamecourse/autogame/run_autogame.py " . strval($this->courseId) ." > /dev/null &";
-	    		exec($cmd);
-	    	}
+				$cmd = "python3 /var/www/html/gamecourse/autogame/run_autogame.py " . strval($this->courseId) ." >> /var/www/html/gamecourse/gr_log.txt &";
+				$output = system($cmd);
+			}
 	    	else {
 	    		Core::$systemDB->update("autogame", ["isRunning" => (int)1 ], ["course" => 0]);
-	    		$this->openSocket();
+				$this->openSocket();
 	    	}
 	    }
 

@@ -16,7 +16,7 @@ Core::init();
 $moodle = new Moodle($argv[1]);
 
 //logs primeiro porque é o que tem mais registos
-$values = $moodle->getLogs();
+$values = $moodle->getLogsNew();
 $insertedLogs = $moodle->writeLogsToDB($values);
 
 $values = $moodle->getVotes();

@@ -249,8 +249,7 @@ create table view_template(
 );
 
 create table autogame(#table used for gamerules related info
-	id 		int unsigned auto_increment primary key,
-	course 	int unsigned not null,
+	course 	int unsigned not null primary key,
 	date timestamp default CURRENT_TIMESTAMP,
 	isRunning boolean default false, #?
 	foreign key(course) references course(id) on delete cascade

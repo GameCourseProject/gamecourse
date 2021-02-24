@@ -172,10 +172,10 @@ def get_targets(course, timestamp=None, limit=None):
 		cursor = cnx.cursor(prepared=True)
 
 		if limit != None:
-			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND timestamp > %s LIMIT %s;"
+			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s LIMIT %s;"
 			cursor.execute(query, (course, timestamp, limit))
 		else:	
-			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND timestamp > %s;"
+			query = "SELECT user FROM participation LEFT JOIN user_role ON participation.user = user_role.id LEFT JOIN role ON user_role.role = role.id WHERE participation.course =%s AND role.name='Student' AND date > %s;"
 			cursor.execute(query, (course, timestamp))
 
 		table = cursor.fetchall()
@@ -235,6 +235,66 @@ def count_awards(course):
 	return table[0][0]
 
 
+def calculate_xp(course, target):
+	# -----------------------------------------------------------   
+	# Insert current XP values into user_xp table
+	# -----------------------------------------------------------
+
+	(username, password) = get_credentials()
+
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=DATABASE)
+		
+	cursor = cnx.cursor(prepared=True)
+
+	# get max values for each type of award
+	query = "SELECT maxReward from skill_tree where course = %s;"
+	cursor.execute(query, (course,))
+	tree_table = cursor.fetchall()
+
+	query = "SELECT maxBonusReward from badges_config where course = %s;"
+	cursor.execute(query, (course,))
+	badge_table = cursor.fetchall()
+
+	if len(tree_table) == 1:
+		max_tree_reward = tree_table[0][0]
+		
+	if len(badge_table) == 1:
+		max_badge_bonus_reward = badge_table[0][0]
+
+
+	# get atributed xp so far
+
+	query = "SELECT sum(reward) from award where course=%s and type=%s and user=%s group by user;"
+	cursor.execute(query, (course, "skill", target))
+	tree_xp = cursor.fetchall()
+
+	query = "SELECT sum(reward) from award where course=%s and (type !=%s and type !=%s) and user=%s group by user;"
+	cursor.execute(query, (course, "badge", "skill", target))
+	other_xp = cursor.fetchall()
+
+	# rewards from badges where isExtra = 1
+	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where course=%s and type=%s and isExtra =%s and user=%s";
+	cursor.execute(query, (course, "badge", True, target))
+	badge_xp_extra = cursor.fetchall()
+
+	# rewards from badges where isExtra = 0
+	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where course=%s and type=%s and isExtra =%s and user=%s";
+	cursor.execute(query, (course, "badge", False, target))
+	badge_xp = cursor.fetchall()
+
+
+	total_skill_xp = min(tree_xp[0][0], max_tree_reward)
+	total_other_xp = other_xp[0][0]
+	total_badge_extra_xp = min(badge_xp_extra[0][0], max_badge_bonus_reward)
+	total_badge_xp = badge_xp[0][0] + total_badge_extra_xp
+
+	total_xp = total_badge_xp + total_skill_xp + total_other_xp
+
+
+	query = "UPDATE user_xp set xp= %s where course=%s and user=%s;"
+	cursor.execute(query, (total_xp, course, target))
+	cnx.close()
 
 
 def autogame_init(course):
@@ -309,7 +369,7 @@ def autogame_terminate(course):
 
 	if len(table) == 0:
 		HOST = '127.0.0.1' # The server's hostname or IP address
-		PORT = 8001 # The port used by the server
+		PORT = 8002 # The port used by the server
 
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -365,23 +425,13 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
 
-	# massive query: don't ask
-	query = "SELECT number, badgeId, reward from level left join badge_has_level on level.id = badge_has_level.levelId \
-	left join badge on badge_has_level.badgeId = badge.id where level.course = %s and name = %s order by number;"
+	# get badge info
+	query = "SELECT number, badgeId, reward from badge_level left join badge on badge.id = badge_level.badgeId where badge.course = %s and badge.name = %s order by number;"
 	cursor.execute(query, (course, badge))
 	table_badge = cursor.fetchall()
 	
 	
-	"""
-
-	# get the badge id from the "badge" table
-	query = "SELECT id FROM badge where name = %s AND course = %s;"
-	cursor.execute(query, (badge, course))
-	table_badge = cursor.fetchall()
-
-	badge_id = table_badge[0][0] # first column of first (and only) line
-	"""
-
+	
 	# Case 0: lvl is zero and there are no lines to be erased
 	# Simply return right away
 	if lvl == 0 and len(table) == 0:
@@ -405,6 +455,19 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 			cnx.commit()
 			cursor = cnx.cursor(prepared=True)
 
+			# insert in award_participation
+			if level == 1:
+				query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+				cursor.execute(query, (target, course, description, "badge"))
+				table_id = cursor.fetchall()
+				award_id = table_id[0][0]
+								
+				for el in contributions:
+					participation_id = el.log_id
+					query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+					cursor.execute(query, (award_id, participation_id))
+
+			
 			if contributions != None and len(contributions) != 0:
 				nr_contributions = str(len(contributions))
 			else:
@@ -421,13 +484,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 			lvl_info = " (level " + str(diff + 1) + ")"
 			description = badge + lvl_info
 
-
-			sys.stderr.write(str())
-			sys.stderr.write(str(table_badge))
-			sys.stderr.write("\n")
 			badge_id = table_badge[diff][1]
-
-
 
 			query = "DELETE FROM award WHERE user = %s AND course = %s AND description = %s AND moduleInstance = %s AND type=%s;"
 			cursor.execute(query, (target, course, description, badge_id, typeof))
@@ -448,14 +505,28 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 			cursor.execute(query, (target, course, description, typeof, badge_id, reward))
 			cnx.commit()
 
+			level = diff + 1
+			# insert in award_participation
+			if level == 1:
+				query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
+				cursor.execute(query, (target, course, description, "badge"))
+				table_id = cursor.fetchall()
+				award_id = table_id[0][0]
+								
+				for el in contributions:
+					participation_id = el.log_id
+					query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+					cursor.execute(query, (award_id, participation_id))
+
+			"""
 			if contributions != None and len(contributions) != 0:
 				nr_contributions = str(len(contributions))
 			else:
 				nr_contributions = ''
 
-			config.award_list.append([str(target), str(badge), str(level), nr_contributions])
+			config.award_list.append([str(target), str(badge), str(level), nr_contributions]) 
+			"""
 			
-
 	cnx.close()
 	
 	"""
@@ -711,20 +782,20 @@ def get_campus(target):
 	host='localhost', database=DATABASE)
 	
 	cursor = cnx.cursor(prepared=True)
-	query = "SELECT major FROM game_course_user WHERE id = %s AND course = %s;"
+	query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = %s and course_user.id = %s;"
 
-	cursor.execute(query, (target, course))
+	cursor.execute(query, (course, target))
 	table = cursor.fetchall()
 	cnx.close()
 	
 	if len(table) == 1:
 		major = table[0][0]
-		if major == None or major == "":
-			campus = 'A'
-		elif major in config.majors_alameda:
+		if major in config.majors_alameda:
 			campus = 'A'
 		elif major in config.majors_tagus:
 			campus = 'T'
+		else:
+			campus = 'A'
 
 	elif len(table) == 0:
 		print("ERROR: No student with given id found in course_user database.")
@@ -742,7 +813,7 @@ def call_gamecourse(course, library, function, args):
 
 
 	HOST = '127.0.0.1' # The server's hostname or IP address
-	PORT = 8001 # The port used by the server
+	PORT = 8002 # The port used by the server
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

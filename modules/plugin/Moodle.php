@@ -80,6 +80,9 @@ class Moodle
         while ($line = mysqli_fetch_assoc($result)) {
             array_push($row_, $line);
         }
+
+	$inserted = false;
+	$updated = false;
         $insertedOrUpdated = false;
         $sql = "insert into participation (user, course, description, type, post, rating) values";
         $values = "";
@@ -90,8 +93,8 @@ class Moodle
                 if ($courseUser) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
                     if (!$result) {
-                        $insertedOrUpdated = true;
-                        $values .= "(" . $user . "," . $this->courseId . ",'" . $row['quiz'] . "','quiz grade', 'mod/quiz/view.php?id=" . $row['quiz'] . "','" . $row['grade'] . "'),";
+                        $inserted = true;
+                        $values .= "(" . $user . "," . $this->courseId . ",'" . $row['quiz'] . "','quiz grade', 'mod/quiz/view.php?id=" . $row['quizid'] . "','" . $row['grade'] . "'),";
                         // Core::$systemDB->insert(
                         //     "participation",
                         //     [
@@ -105,7 +108,7 @@ class Moodle
                         //     ]
                         // );
                     } else {
-                        $insertedOrUpdated = true;
+                        $updated = true;
                         Core::$systemDB->update(
                             "participation",
                             array(
@@ -130,12 +133,16 @@ class Moodle
             }
         }
         $values = rtrim($values, ",");
-        $sql .= $values;
-        Core::$systemDB->executeQuery($sql);
-        if (!empty($row_) && $this->timeToUpdate == null) {
-            $lastRecord = end($row_);
-            $this->timeToUpdate = $lastRecord["timemodified"];
+        if ($inserted) {
+            $sql .= $values;
+            Core::$systemDB->executeQuery($sql);
+            if (!empty($row_) && $this->timeToUpdate == null) {
+                $lastRecord = end($row_);
+                $this->timeToUpdate = $lastRecord["timemodified"];
+            }
         }
+
+	    $insertedOrUpdated = $inserted || $updated;
         return $insertedOrUpdated;
     }
 
@@ -193,6 +200,8 @@ class Moodle
         }
 
         $sql .= " order by r.timemodified;";
+
+
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
         return array($db, $result);
@@ -223,6 +232,8 @@ class Moodle
         while ($line = mysqli_fetch_assoc($result)) {
             array_push($row_, $line);
         }
+        $inserted = false;
+	    $updated = false;
         $insertedOrUpdated = false;
         $sql = "insert into participation (user, course, description, type, post, rating, evaluator) values";
         $values = "";
@@ -237,8 +248,8 @@ class Moodle
                 if ($courseUser && $courseUserProf) {
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
                     if (!$result) {
-                        $insertedOrUpdated = true;
-                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "mod/quiz/view.php?id=' . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
+                        $inserted = true;
+                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
                         // Core::$systemDB->insert(
                         //     "participation",
                         //     [
@@ -253,7 +264,7 @@ class Moodle
                         //     ]
                         // );
                     } else {
-                        $insertedOrUpdated = true;
+                        $updated = true;
                         Core::$systemDB->update(
                             "participation",
                             [
@@ -263,14 +274,14 @@ class Moodle
                                 "type" => "graded post",
                                 "post" => $votesField["post"],
                                 "date" => $votesField["date"],
-                                "rating" => $votesField['rating'],
+                                "rating" => $votesField["rating"],
                                 "evaluator" => $prof
                             ],
                             [
                                 "user" => $user,
                                 "course" => $this->courseId,
                                 "type" => "graded post",
-                                "post" => $votesField["post"]
+                                "post" => "mod/quiz/view.php?id=" . $votesField["post"]
 
                             ]
                         );
@@ -280,14 +291,105 @@ class Moodle
         }
 
         $values = rtrim($values, ",");
-        $sql .= $values;
-        Core::$systemDB->executeQuery($sql);
-        if (!empty($row_) && $this->timeToUpdate == null) {
-            $lastRecord = end($row_);
-            $this->timeToUpdate = $lastRecord["timemodified"];
+        if ($inserted) { 
+            $sql .= $values;
+            Core::$systemDB->executeQuery($sql);
+            if (!empty($row_) && $this->timeToUpdate == null) {
+                $lastRecord = end($row_);
+                $this->timeToUpdate = $lastRecord["timemodified"];
+            }
         }
+	    $insertedOrUpdated = $inserted || $updated;
         return $insertedOrUpdated;
     }
+
+
+	public function getLogsNew() {
+
+        $this->getDBConfigValues();
+
+        // query fields
+
+        $query = "select "; // base
+        $query .= $this->prefix . "logstore_standard_log.id, " . $this->prefix . "logstore_standard_log.timecreated, username, "; // fields
+        $query .= $this->prefix . "logstore_standard_log.timecreated, action, other, component, contextinstanceid as cmid , "; // fields
+        $query .= $this->prefix . "logstore_standard_log.objectid, objecttable"; // fields
+        $query .= " from "; 
+
+
+        // tables to consult + joins
+
+        $tables_start = $this->prefix . "user inner join " . $this->prefix . "logstore_standard_log on ";
+
+        $tables_user = $this->prefix . "user.id=userid";
+        //$tables_no_user = $this->prefix . "user.id='" . $this->user;
+
+        $tables_end = " inner join " . $this->prefix . "course on " . $this->prefix . "course.id = courseid ";
+
+
+        // where clause fields
+
+        $where = "where (";
+        $where .= "(component = 'mod_questionnaire' and action='submitted')"; // submitted questionaire
+        $where .= " or component = 'mod_resource'"; // resource view
+        $where .= " or (objecttable = 'forum_discussions' and (action = 'created' or action = 'deleted'))"; // forum created or deleted
+        $where .= " or (objecttable = 'forum_posts' and (action = 'uploaded' or action = 'deleted' or action = 'created'))) "; // forum deleted
+
+
+        // others
+
+        $timeUpLimit = "";        
+        $orderby = "order by " . $this->prefix . "logstore_standard_log.timecreated;";
+
+
+        ///////////////////////////////////////
+
+        
+
+        // if a time is set in config
+        if ($this->timeToUpdate) {
+            $timeUpLimit = "and " . $this->prefix . "logstore_standard_log.timecreated <= " . $this->timeToUpdate . " ";
+            $where .= $timeUpLimit;
+        }
+
+        if ($this->course and 1) {
+            $where .= "and courseid=" . $this->course . " ";
+        }
+
+        
+        // if a user IS NOT specified in the config
+        if (!($this->user)) {
+            //$sql = $query . $tables_start . $tables_no_user . $tables_end;
+            $sql = $query . $tables_start . $tables_user . $tables_end;
+        }
+
+        // if a user IS specified in the config
+        if (($this->user)) {
+            //$sql = $query . $tables_start . $tables_user . $tables_end;
+            $sql = $query . $tables_start . $tables_user . $tables_end;
+            $where .= "and " . $this->prefix . "user.id=" . $this->user . " ";
+        }
+
+        $sql .= $where;
+
+        // if no time is set in config
+        if ($this->time) {
+            $sql .=  "and " . $this->prefix . "logstore_standard_log.timecreated>=" . $this->time . " ";
+        }
+
+        $sql .= $orderby;
+        
+
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+
+        $result = mysqli_query($db, $sql);
+        
+        return array($db, $result);
+
+    }
+
+
+
 
     public function getLogs()
     {
@@ -497,11 +599,12 @@ class Moodle
                     }
 
                     if ($row['objecttable'] == 'forum_posts') {
-                        // if ($row['action'] == 'created') {
-                        //     $temp_action = "forum add post";
-                        //     $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
-                        // } 
-                         if ($row['action'] == 'uploaded') {
+                        if ($row['action'] == 'created') {
+                             $temp_action = "forum add post";
+                             $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        }
+                        /* 
+                        if ($row['action'] == 'uploaded') {
                             $temp_action = "forum upload post";
                             $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
                         } else if ($row['action'] == 'deleted') {
@@ -511,7 +614,7 @@ class Moodle
                         //  else if ($row['action'] == 'updated') {
                         //     $temp_action = "forum update post";
                         //     $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
-                        // }
+                        // }*/
 
                         $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
                         $resultForum = mysqli_query($db, $sqlForum);
@@ -625,13 +728,13 @@ class Moodle
         $values = "";
         foreach ($row_ as $row) {
             $moodleField = $this->parseLogsToDB($row, $db);
-            if ($moodleField["module"]) {
+            if ($moodleField["module"] && ($moodleField["action"] != "updated")) {
                 $user = User::getUserIdByUsername($moodleField["username"]);
                 if ($user) {
                     $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
                     if ($courseUser) {
                         $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "description" => $moodleField["module"], "type" => $moodleField["action"], "post" => $moodleField["url"]]);
-                        if (!$result || ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))) {
+                        if (!$result /*|| ($result && Core::$systemDB->select("participation", ["type" => "questionnaire submitted"]))*/) {
                             if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $user])) {
                                 $module = str_replace('"', ' ', $moodleField["module"]);
                                 $values .= '(' . $courseUser["id"] . ',' . $this->courseId . ',"' . $module . '","' .  $moodleField["action"] . '","' . $moodleField["url"] . '"),';
