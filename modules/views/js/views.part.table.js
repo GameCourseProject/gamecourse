@@ -513,6 +513,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             for (var ridx = 0; ridx < part.rows.length; ++ridx) {
                                 $(tbody.children().get(ridx)).append(buildRowToolbar(part.rows, part.rows[ridx]));
                             }
+                            tableDiv.click();
+                            //$('.edit-toolbar').is
                         },
                         layoutEditEnd: function () {
                             checkEmpty(false);

@@ -676,7 +676,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         var myToolbar = undefined;
         var toolbarOptions;
         var layoutEditing = false;
-        var fistclickdone = false;
+        var firstclickdone = false;
 
         var toolOptions = partOptions.toolOptions != undefined ? partOptions.toolOptions : {};
         var toolFunctions = partOptions.toolFunctions != undefined ? $.extend({}, partOptions.toolFunctions) : {};
@@ -699,33 +699,38 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         
 
         element.on('click', function(e) {
-            
+
             //click only works on the closest div.
             e.stopPropagation(); 
 
             //second click closes the toolbar
-            if (fistclickdone){
+            if (firstclickdone){
                 if (layoutEditing){
                     return;
                 }
-                    
                 element.removeClass('highlight');
                 if (myToolbar != undefined)
                     myToolbar.remove();
                 myToolbar = undefined;
-                fistclickdone = false;
+                firstclickdone = false;
             }
 
             //first click opens the toolbar
             else{
+                shouldBuild = true
                 //remove highlight and toolbar from preiously selected elements
                 previousHighlighted = $(".highlight");
                 jQuery.each(previousHighlighted , function( index ) {
                     item = previousHighlighted[index];
                     item.click();
+                    if ($(item)[0].classList.contains('highlight'))
+                        shouldBuild = false;
                 });
                 
                 if (myToolbar)
+                    return;
+
+                if (!shouldBuild)
                     return;
 
                 var defaultOptions = {
@@ -774,9 +779,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 // });
                 //if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
                     element.addClass('highlight');
-                
+             
                 element.append(myToolbar);
-                fistclickdone = true;
+                firstclickdone = true;
                 //console.log("mouseenter",element.data());
             }
             

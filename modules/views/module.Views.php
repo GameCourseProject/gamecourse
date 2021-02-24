@@ -704,20 +704,6 @@ class Views extends Module
             "object",
             "course"
         );
-        //%course.nameNoSpaces
-        $this->viewHandler->registerFunction(
-            'courses',
-            'nameNoSpaces',
-            function ($course) {
-                $name = str_replace(" ", "", $this->basicGetterFunction($course, "name")->getValue());
-                return new ValueNode($name);
-            },
-            'Returns a string with the name of the course with no spaces.',
-            'string',
-            null,
-            "object",
-            "course"
-        );
         //%course.roles   returns collection of roles(which are just strings
         $this->viewHandler->registerFunction(
             'courses',
