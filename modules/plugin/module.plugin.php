@@ -652,7 +652,7 @@ class Plugin extends Module
 ModuleLoader::registerModule(array(
     'id' => 'plugin',
     'name' => 'Plugin',
-    'description' => 'Allows multiple sources of information to be automaticaly included on gamcourse.',
+    'description' => 'Allows multiple sources of information to be automaticaly included on gamecourse.',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

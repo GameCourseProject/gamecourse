@@ -10,7 +10,7 @@ import json
 
 # Folder where all rules will be defined rules will be stored
 RULES_FOLDER = "rules"
-AUTOSAVE = True
+AUTOSAVE = False
 
 
 def config_metadata(course):
@@ -152,10 +152,16 @@ if __name__ == "__main__":
 	rs = RuleSystem(path, AUTOSAVE)
 
 
-	students = get_targets(course, last_activity)
+	students = get_targets(course)
+	#students = get_targets(course, last_activity)
 
 	rs_output = rs.fire(students,logs,scope)
 	
+	"""	
+	# calculate new XP value for each student in targets
+	for el in students.keys():
+		calculate_xp(course, el)"""
+
 	# set this instance as non-running
 	autogame_terminate(course)
 

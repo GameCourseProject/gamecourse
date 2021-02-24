@@ -215,7 +215,7 @@ class Core
 
     public static function getActiveCourses()
     {
-        return static::$systemDB->selectMultiple("course", ["active" => true]);
+        return static::$systemDB->selectMultiple("course", ["isActive" => true]);
     }
 
     /*public static function getPendingInvites() {

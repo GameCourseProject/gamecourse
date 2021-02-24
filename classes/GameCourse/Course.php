@@ -527,6 +527,10 @@ class Course
                 Core::$systemDB->insert("course_module", ["course" => $courseId, "moduleId" => $mod["moduleId"]]);
             }
         }
+
+	// insert line in AutoGame table
+	//Core:$systemDB->insert("autogame", ["course" => $courseId]);
+    
         return $course;
     }
 

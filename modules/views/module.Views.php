@@ -124,7 +124,7 @@ class Views extends Module
     //get award or participations from DB
     public function getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object = "award")
     {
-        $awardParticipation = $this->getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object);
+        $awardParticipation = $this->getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, $object);
         return $this->createNode($awardParticipation, $object . "s", "collection");
     }
     //expression lang function, convert string to int
@@ -1128,7 +1128,7 @@ class Views extends Module
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
                 $likeParams = ["description" => "Lecture % Slides"];
 
-                $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
+                $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
 
                 return $this->createNode($skillTreeParticipation, "participation", "collection");
             }

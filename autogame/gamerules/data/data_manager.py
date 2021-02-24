@@ -45,9 +45,6 @@ class DataManager(object):
 			os.system("mkdir " + data_location)
 
 		setup_location = os.path.join(data_location, SETUP_FILE)
-		sys.stderr.write("\n\n\n\n")
-		sys.stderr.write(setup_location)
-		sys.stderr.write("\n\n\n\n")
 		setup = shelve.open(setup_location, writeback=True)
 		if PATHS_KEY in setup:
 			self.paths = setup[PATHS_KEY]

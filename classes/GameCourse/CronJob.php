@@ -6,7 +6,7 @@ class CronJob
 {
     public function __construct($script, $course, $number, $time, $remove = false)
     {
-        $cronFile = "/tmp/crontab.txt";
+        $cronFile = "/var/www/html/gamecourse/crontab.txt";
         $path = null;
         if ($script == "Moodle") {
             $path = "/var/www/html/gamecourse/modules/plugin/MoodleScript.php";
@@ -42,9 +42,9 @@ class CronJob
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            if(file_exists('/tmp/crontab.txt')){
+            if(file_exists('/var/www/html/gamecourse/crontab.txt')){
                 file_put_contents($cronFile, $toWrite);
-                echo exec('crontab /tmp/crontab.txt');
+                echo exec('crontab /var/www/html/gamecourse/crontab.txt');
             }
         }
     }
