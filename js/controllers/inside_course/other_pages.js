@@ -683,6 +683,7 @@ app.controller(
             }
             $("#edit-user").hide();
             getUsers();
+            window.location.reload();
             $("#action_completed").append(
               "User: " +
                 $scope.editUser.userName +
@@ -1187,7 +1188,7 @@ app.controller(
           );
         };
         getUsers();
-
+        
         $element.one("mousemove", function () {
           checkNavbarLength();
         });

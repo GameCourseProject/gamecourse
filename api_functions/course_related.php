@@ -21,22 +21,62 @@ API::registerFunction('core', 'getCourseInfo', function() {
         $OldNavPages = Core::getNavigation();
         $navNames= array_column($OldNavPages,"text");
         $user = Core::getLoggedUser();
+        $courseUser = $course->getLoggedUser();
+
         foreach ($pages as $pageId => $page){
+            // adding pages to the navbar according to their role
+            // if there is no view for their role, the page is not added to the navbar
             
-            //if ($page["roleType"]=="ROLE_INTERACTION")//not adding pages like profile to the nav bar
-            //    continue;
-            //pages added by modules already have navigation, the otheres need to be added
             if(!in_array($page["name"], $navNames)){
                 $simpleName=str_replace(' ', '', $page["name"]);
-                if ($page["roleType"]=="ROLE_INTERACTION")
-                    Core::addNavigation( $page["name"], 'course.customUserPage({name: \''.$simpleName.'\',id:\''.$pageId.'\',userID:\''.$user->getId().'\'})', true);
-                else
-                    Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true);
+                $view = Core::$systemDB->select("view", ["id" => $page["viewId"]]);
+
+                if ($page["roleType"]=="ROLE_INTERACTION") {
+                    $viewerRole = explode(".", explode(">", $view["role"])[1])[1];
+                    $userRole = explode(".", explode(">", $view["role"])[0])[1];
+                    if ($view["aspectClass"] == null) {
+                        if (!empty(Core::$systemDB->select("view", ["parent" => $view["id"]])))
+                            Core::addNavigation( $page["name"], 'course.customUserPage({name: \''.$simpleName.'\',id:\''.$pageId.'\',userID:\''.$user->getId().'\'})', true);
+                    } else {
+                        $aspect = $view["aspectClass"];
+                        $views = Core::$systemDB->selectMultiple("view", ["aspectClass" => $aspect, "parent" => null]);
+                        foreach ($views as $v) {
+                            $viewerRole = explode(".", explode(">", $v["role"])[1])[1];
+                            //userRole used for pages like profile - only makes sense to add if the user has info to see about himself
+                            $userRole = explode(".", explode(">", $v["role"])[0])[1];
+                            if ((($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
+                            || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole))) 
+                            && !empty(Core::$systemDB->select("view", ["parent" => $v["id"]]))) {
+                                Core::addNavigation( $page["name"], 'course.customUserPage({name: \''.$simpleName.'\',id:\''.$pageId.'\',userID:\''.$user->getId().'\'})', true);
+                                break;
+                            }  
+                        }
+                    } 
+                } 
+                else {
+                    $viewerRole = explode(".", $view["role"])[1];
+                    if ($view["aspectClass"] == null) {
+                        if (!empty(Core::$systemDB->select("view", ["parent" => $view["id"]])))
+                            Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true);
+                    } else {
+                        $aspect = $view["aspectClass"];
+                        $views = Core::$systemDB->selectMultiple("view", ["aspectClass" => $aspect, "parent" => null]);
+                        foreach ($views as $v) {
+                            $viewerRole = explode(".", $v["role"])[1];
+                            if (($viewerRole == "Default" || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole))) && !empty(Core::$systemDB->select("view", ["parent" => $v["id"]]))) {
+                                Core::addNavigation( $page["name"], 'course.customPage({name: \''.$simpleName.'\',id:\''.$pageId.'\'})', true);
+                                break;
+                            }  
+                        }
+                    }
+                        
+                }
+                    
             }
         }
     
         
-        $courseUser = $course->getLoggedUser();
+        
         $landingPage = $courseUser->getLandingPage();
         $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, roleType");
         $landingPageID = $landingPageInfo["id"];
