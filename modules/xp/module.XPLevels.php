@@ -109,12 +109,30 @@ class XPLevels extends Module
         ); //where not
         return $badgeXP + $skillXP + $otherXP;
     }
+
+    //gets user xp from user_xp table
+    public function getUserXP($user, $courseId)
+    {
+        $userId = $this->getUserId($user);
+        $totalXP = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "xp");
+        return $totalXP;
+    }
+
     public function init()
     {
 
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $course = $this->getParent();
         $courseId = $course->getId();
+        $this->addTables("xp", "level");
+
+        //create first entry for every user of the course so that we only have to update later
+        $students = $course->getUsersWithRole("Student");
+        foreach ($students as $student){
+            $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
+            if(!$entry)
+                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp"=>0]);
+        }
 
         /*$levelTable = function ($badgesExist) {
             return (!$badgesExist) ? "level" : "level left join badge_has_level on levelId=id";
@@ -146,14 +164,15 @@ class XPLevels extends Module
             'xp',
             'getLevel',
             function ($user = null, int $number = null, string $goal = null) use ($courseId)/*use ($levelWhere, $levelTable)*/ {
-                $badgesExist = ($this->getParent()->getModule("badges") !== null);
+                //$badgesExist = ($this->getParent()->getModule("badges") !== null);
                 //$table = $levelTable($badgesExist);
                 //$where = $levelWhere($badgesExist);
                 $table = "level";
                 $where = ["course" => $courseId];
                 if ($user !== null) {
                     //calculate the level of the user
-                    $xp = $this->calculateXP($user, $where["course"]);
+                    //$xp = $this->calculateXP($user, $where["course"]);
+                    $xp = $this->getUserXP($user, $where["course"]);
                     
                     $goal = Core::$systemDB->select(
                         $table,
@@ -169,7 +188,6 @@ class XPLevels extends Module
                     $where["number"] = $number;
                 else if ($goal !== null)
                     $where["goal"] = $goal;
-                //print_r($table);
                 $level = Core::$systemDB->select($table, $where);
                 if (empty($level))
                     throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
@@ -231,7 +249,8 @@ class XPLevels extends Module
             'xp',
             'getXP',
             function ($user) use ($courseId) {
-                return new ValueNode($this->calculateXP($user, $courseId));
+                //return new ValueNode($this->calculateXP($user, $courseId));
+                return new ValueNode($this->getUserXP($user, $courseId));
             },
             'Returns the sum of XP that all Modules provide as reward from a GameCourseUser identified by user.',
             'integer',

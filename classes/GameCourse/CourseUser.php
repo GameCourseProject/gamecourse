@@ -197,6 +197,15 @@ class CourseUser extends User
             $id = Course::getRoleId($role, $this->course->getId());
             Core::$systemDB->delete("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $id]);
         }
+
+        //if xp module is enabled and course user is no longer a student, remove from user_xp
+        $xp = Core::$systemDB->select("course_module", ["course" => $this->course->getId(), "moduleId" => "xp"], "isEnabled");
+        if($xp){
+            if(!in_array("Student", $rolesByName) and in_array("Student", $oldRoles)) {
+                Core::$systemDB->delete("user_xp", ["course" => $this->course->getId(), "user" => $this->id]);
+            }
+        }
+
     }
 
     //adds Role (instead of replacing) only if it isn't already in user's roles

@@ -17,6 +17,7 @@ drop table if exists skill;
 drop table if exists skill_tier;
 drop table if exists skill_tree;
 drop table if exists level;
+drop table if exists user_xp;
 drop table if exists badge_level;
 drop table if exists badge;
 drop table if exists badges_config;
@@ -186,15 +187,6 @@ create table award_participation(#this table may be pointles if participations h
 	primary key (award,participation),
     foreign key(award) references award(id) on delete cascade,
     foreign key(participation) references participation(id) on delete cascade
-);
-
-create table level( #levels of xp
-	id 		int unsigned auto_increment primary key,
-	number int not null,
-	course int unsigned not null,
-	goal int not null,
-	description varchar(200),
-	foreign key(course) references course(id) on delete cascade
 );
 
 create table aspect_class(
