@@ -74,7 +74,9 @@ API::registerFunction('core', 'getCourseInfo', function() {
                     
             }
         }
-        
+
+
+
         $landingPage = $courseUser->getLandingPage();
         $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, roleType");
         $landingPageID = $landingPageInfo["id"];
