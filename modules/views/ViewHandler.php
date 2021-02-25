@@ -548,13 +548,13 @@ class ViewHandler
     {
         return $this->viewsModule->getParent()->getId();
     }
-    public function createPageOrTemplateIfNew($name, $pageOrTemp, $roleType = "ROLE_SINGLE")
+    public function createPageOrTemplateIfNew($name, $pageOrTemp, $enabled = false, $roleType = "ROLE_SINGLE")
     {
         if (empty($this->getPages(null, $name))) {
-            $this->createPageOrTemplate($name, $pageOrTemp, $roleType);
+            $this->createPageOrTemplate($name, $pageOrTemp, $enabled, $roleType);
         }
     }
-    public function createPageOrTemplate($name, $pageOrTemp, $roleType = "ROLE_SINGLE")
+    public function createPageOrTemplate($name, $pageOrTemp, $enabled = false, $roleType = "ROLE_SINGLE")
     {
         $courseId = $this->getCourseId();
 
@@ -570,7 +570,7 @@ class ViewHandler
         $newView = ["name" => $name, "course" => $courseId, "roleType" => $roleType];
         if ($pageOrTemp == "page") {
             $newView["viewId"] = $viewId;
-            $newView['isEnabled'] = 0;
+            $newView['isEnabled'] = $enabled;
             Core::$systemDB->insert("page", $newView);
         } else {
             Core::$systemDB->insert("template", $newView);

@@ -18,7 +18,7 @@ class QR extends Module {
         Core::addNavigation('QR', 'course.qr', true,true);
 
         $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->createPageOrTemplateIfNew('QR',"page");
+        $viewHandler->createPageOrTemplateIfNew('QR',"page", true);
         //ToDo add QR tables to database
         $this->addTables("qr", "qr_code");
         $this->addTables("qr", "qr_error");
