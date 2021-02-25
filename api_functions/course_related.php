@@ -74,9 +74,9 @@ API::registerFunction('core', 'getCourseInfo', function() {
                     
             }
         }
-    
-        
-        
+
+
+
         $landingPage = $courseUser->getLandingPage();
         $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, roleType");
         $landingPageID = $landingPageInfo["id"];
@@ -97,9 +97,12 @@ API::registerFunction('core', 'getCourseInfo', function() {
 
         $navPages = Core::getNavigation();
         $navSettings = Core::getSettings();
+        $pageNames= array_column($pages,"name");
         
         foreach ($navPages as $nav){
             if ($nav["restrictAcess"]===true && !$isAdmin){
+                unset($navPages[array_search($nav, $navPages)]);
+            } else if (!in_array($nav["text"], $pageNames) && $nav["text"] !== "Users" && $nav["text"] !== "Course Settings"){
                 unset($navPages[array_search($nav, $navPages)]);
             }
         }

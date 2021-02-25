@@ -3,7 +3,7 @@ app.stateProvider.state('course.settings.xp', {
     url: '/xp',
     views : {
         'tabContent': {
-            controller: 'CourseLevelsSettingsController'
+            controller: 'ConfigurationController'
         }
     },
     params: {

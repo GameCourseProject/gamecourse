@@ -3,4 +3,9 @@
 }
 .section{
     background-color: #d9d9d9;
+    margin-left: 20px;
+}
+
+.plugin_row > *{
+  margin-right: 5px;
 }

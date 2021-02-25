@@ -482,6 +482,138 @@ class XPLevels extends Module
         return true;
     }
 
+    public function getLevels($courseId){
+        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],"*", "number");
+
+        foreach($levels as &$lvl){
+            $lvl["goal"] = intval($lvl["goal"]);
+        }
+        
+        return $levels;
+    }
+
+    public function newLevel($level, $courseId){
+        $levelData = ["number"=>$level['goal'] / 1000,
+                    "course"=>$courseId,"description"=>$level['description'],
+                    "goal"=> $level['goal']];
+
+        Core::$systemDB->insert("level",$levelData);
+    }
+
+    public function editLevel($level, $courseId){
+
+        $levelData = ["number"=> $level['goal'] / 1000,
+                    "course"=>$courseId,
+                    "description"=>$level['description'],
+                    "goal"=> $level['goal']];
+        Core::$systemDB->update("level",$levelData,["id"=>$level["id"]]);
+    }
+
+
+    public function deleteLevel($level, $courseId){
+        Core::$systemDB->delete("level",["id"=>$level['id']]);
+    }
+
+    public function has_general_inputs (){ return false; }
+
+    public function has_listing_items (){ return  true; }
+
+    public function get_listing_items ($courseId){
+        //tenho de dar header
+        $header = ['Level', 'Title', 'Minimum XP'] ;
+        $displayAtributes = ['number', 'description', 'goal'];
+        // items (pela mesma ordem do header)
+        $items = $this->getLevels($courseId);
+        //argumentos para add/edit
+        $allAtributes = [
+            array('name' => "Title", 'id'=> 'description', 'type' => "text", 'options' => ""),
+            array('name' => "Minimum XP", 'id'=> 'goal', 'type' => "number", 'options' => ""),
+        ];
+        return array( 'listName'=> 'Levels', 'itemName'=> 'Level','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
+    }
+    public function save_listing_item ($actiontype, $listingItem, $courseId){
+        if($actiontype == 'new'){
+            $this->newLevel($listingItem, $courseId);
+        }
+        elseif ($actiontype == 'edit'){
+            $this->editLevel($listingItem, $courseId);
+
+        }elseif($actiontype == 'delete'){
+            $this->deleteLevel($listingItem, $courseId);
+        }
+    }
+
+    public static function importItems($course, $fileData, $replace = true){
+        $newItemNr = 0;
+        $lines = explode("\n", $fileData);
+        $has1stLine = false;
+        $descriptionIndex = "";
+        $goalIndex = "";
+        $i = 0;
+        if ($lines[0]) {
+            $lines[0] = trim($lines[0]);
+            $firstLine = explode(";", $lines[0]);
+            $firstLine = array_map('trim', $firstLine);
+            if (in_array("Title", $firstLine)
+                && in_array("Minimum XP", $firstLine)) {
+                $has1stLine = true;
+                $descriptionIndex = array_search("Title", $firstLine);
+                $goalIndex = array_search("Minimum XP", $firstLine);
+            }
+        }
+        foreach ($lines as $line) {
+            $line = trim($line);
+            $item = explode(";", $line);
+            $item = array_map('trim', $item);
+            if (count($item) > 1){
+                if (!$has1stLine){
+                    $descriptionIndex = 0;
+                    $goalIndex = 1;
+                }
+                if (!$has1stLine || ($i != 0 && $has1stLine)) {
+                    $itemId = Core::$systemDB->select("level", ["course"=> $course, "goal"=> $item[$goalIndex]], "id");
+                    $courseObject = Course::getCourse($course);
+                    $moduleObject = $courseObject->getModule("xp");
+                
+
+                    $levelData = [
+                        "description"=>$item[$descriptionIndex],
+                        "goal"=>$item[$goalIndex]
+                        ];
+                    if ($itemId){
+                        if ($replace) {
+                            $levelData["id"] = $itemId;
+                            $moduleObject->editLevel($levelData, $course);
+                        }
+                    } else {
+                        $moduleObject->newLevel($levelData, $course);
+                    }
+                }
+            }
+            $i++;
+        }
+        return $newItemNr;
+    }
+
+    public static function exportItems($course)
+    {
+        $courseInfo = Core::$systemDB->select("course", ["id"=>$course]);
+        $listOfLevels = Core::$systemDB->selectMultiple("level", ["course"=> $course], '*');
+        $file = "";
+        $i = 0;
+        $len = count($listOfLevels);
+        $file .= "Title;Minimum XP\n";
+        foreach ($listOfLevels as $badge) {
+
+            $file .= $badge["description"] . ";" . $badge["goal"];
+            if ($i != $len - 1) {
+                $file .= "\n";
+            }
+            $i++;
+        }
+        return ["Levels - " . $courseInfo["name"], $file];
+    }
+
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
