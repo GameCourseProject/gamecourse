@@ -110,12 +110,20 @@ class XPLevels extends Module
         return $badgeXP + $skillXP + $otherXP;
     }
 
-    //gets user xp from user_xp table
+    //returns the total xp from user_xp table for the course user
     public function getUserXP($user, $courseId)
     {
         $userId = $this->getUserId($user);
         $totalXP = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "xp");
         return $totalXP;
+    }
+
+    //returns the current level from user_xp table for the course user
+    public function getUserLevel($user, $courseId)
+    {
+        $userId = $this->getUserId($user);
+        $level = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "level");
+        return Core::$systemDB->select("level", ["id" => $level]);
     }
 
     public function init()
@@ -126,12 +134,17 @@ class XPLevels extends Module
         $courseId = $course->getId();
         $this->addTables("xp", "level");
 
+        //create level zero
+        $levelZero = Core::$systemDB->select("level", ["course" => $courseId, "number" => 0], "id");
+        if(empty($levelZero))
+            $levelZero = Core::$systemDB->insert("level", ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
+
         //create first entry for every user of the course so that we only have to update later
         $students = $course->getUsersWithRole("Student");
         foreach ($students as $student){
             $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
             if(!$entry)
-                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp"=>0]);
+                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
         }
 
         /*$levelTable = function ($badgesExist) {
@@ -182,6 +195,9 @@ class XPLevels extends Module
                         [],
                         [["goal", "<=", $xp]]
                     );
+
+                    //enable once gamerules can calculate the level
+                    //$goal = $this->getUserLevel($user, $where["course"])["goal"];
                 }
                 //get a level with a specific number or reward
                 if ($number !== null)
