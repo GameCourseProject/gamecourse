@@ -306,6 +306,8 @@ class User
         $majorIndex = "";
         $isAdminIndex = "";
         $isActiveIndex = "";
+        $usernameIndex = "";
+        $authIndex = "";
         //se tiver 1ª linha com nomes
         if($lines[0]){
             $lines[0] = trim($lines[0]);
@@ -340,7 +342,7 @@ class User
                     $emailIndex = 1;
                     $nicknameIndex = 2;
                     $studentNumberIndex = 3;
-                    $major = 4;
+                    $majorIndex = 4;
                     $isAdminIndex = 5;
                     $isActiveIndex = 6;
                     $usernameIndex = 7;
