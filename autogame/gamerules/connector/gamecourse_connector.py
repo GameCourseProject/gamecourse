@@ -333,8 +333,17 @@ def calculate_xp(course, target):
 
 	total_xp = total_badge_xp + total_skill_xp + total_other_xp
 
-	query = "UPDATE user_xp set xp= %s where course=%s and user=%s;"
-	cursor.execute(query, (total_xp, course, target))
+	
+	query = "SELECT id, max(goal) from level where goal <= %s and course = %s group by id order by number desc limit 1;"
+	cursor.execute(query, (total_xp, course))
+	level_table = cursor.fetchall()	
+	
+	current_level = int(level_table[0][0])
+
+	query = "UPDATE user_xp set xp= %s, level=%s where course=%s and user=%s;"
+	cursor.execute(query, (total_xp, current_level, course, target))
+
+
 	cnx.commit()
 	cnx.close()
 
@@ -498,7 +507,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 			cursor = cnx.cursor(prepared=True)
 
 			# insert in award_participation
-			if level == 1:
+			if level == 1 and contributions != None:
 				query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
 				cursor.execute(query, (target, course, description, "badge"))
 				table_id = cursor.fetchall()
@@ -510,7 +519,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 					cursor.execute(query, (award_id, participation_id))
 
 			
-			if contributions != None and len(contributions) != 0:
+			if contributions != None and contributions != None:
 				nr_contributions = str(len(contributions))
 			else:
 				nr_contributions = ''
@@ -549,7 +558,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 			level = diff + 1
 			# insert in award_participation
-			if level == 1:
+			if level == 1 and contributions != None:
 				query = "SELECT id from award where user = %s AND course = %s AND description=%s AND type=%s;"
 				cursor.execute(query, (target, course, description, "badge"))
 				table_id = cursor.fetchall()
@@ -559,6 +568,8 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 					participation_id = el.log_id
 					query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
 					cursor.execute(query, (award_id, participation_id))
+
+
 
 			"""
 			if contributions != None and len(contributions) != 0:

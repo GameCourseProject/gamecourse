@@ -13,7 +13,7 @@ use GameCourse\Course;
 
 Core::init();
 
-$moodle = new GoogleSheets($argv[1]);
-if($moodle->readGoogleSheets()){
+$googleSheets = new GoogleSheets($argv[1]);
+if($googleSheets->readGoogleSheets()){
     Course::newExternalData($argv[1]);
 }

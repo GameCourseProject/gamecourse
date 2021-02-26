@@ -134,7 +134,8 @@ class Plugin extends Module
             foreach($names as $name){
                 $processedName = explode(",", $name);
                 array_push($sheetNames, $processedName[0]);
-                array_push($ownerNames, $processedName[1]);
+                if(count($processedName) > 1)
+                    array_push($ownerNames, $processedName[1]);
             }
 
             $professors = Core::$systemDB->selectMultiple("user_role u join role r on u.role=r.id join auth a on u.id=a.game_course_user_id join game_course_user g on u.id=g.id",
@@ -259,7 +260,7 @@ class Plugin extends Module
             if (empty($moodleVars)) {
                 Core::$systemDB->insert("config_moodle", $arrayToDb);
             } else {
-                Core::$systemDB->update("config_moodle", $arrayToDb);
+                Core::$systemDB->update("config_moodle", $arrayToDb, ["course" => $courseId] );
             }
             return true;
         }
@@ -277,7 +278,7 @@ class Plugin extends Module
             if (empty($classCheckVars)) {
                 Core::$systemDB->insert("config_class_check", $arrayToDb);
             } else {
-                Core::$systemDB->update("config_class_check", $arrayToDb);
+                Core::$systemDB->update("config_class_check", $arrayToDb, ["course" => $courseId] );
             }
             return true;
         }
@@ -311,7 +312,7 @@ class Plugin extends Module
             if (empty($googleSheetCredentialsVars)) {
                 Core::$systemDB->insert("config_google_sheets", $arrayToDb);
             } else {
-                Core::$systemDB->update("config_google_sheets", $arrayToDb);
+                Core::$systemDB->update("config_google_sheets", $arrayToDb, ["course" => $courseId]);
             }
             $this->googleSheets->setCredentials();
             return true;
@@ -324,6 +325,7 @@ class Plugin extends Module
         $i = 0;
         foreach ($googleSheets["sheetName"] as $name) {
             if (strlen($name) != 0) {
+                //$names .= $name . ";";
                 $owner = $googleSheets["ownerName"][$i];
                 $names .= $name . "," . $owner . ";";
             }
@@ -340,7 +342,7 @@ class Plugin extends Module
             if (empty($googleSheetsVars)) {
                 Core::$systemDB->insert("config_google_sheets", $arrayToDb);
             } else {
-                Core::$systemDB->update("config_google_sheets", $arrayToDb);
+                Core::$systemDB->update("config_google_sheets", $arrayToDb, ["course" => $courseId]);
             }
             $this->googleSheets->saveTokenToDB();
             return true;

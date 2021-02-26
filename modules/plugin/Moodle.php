@@ -69,6 +69,7 @@ class Moodle
         }
         $sql .= " order by timemodified;";
 
+
         $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
         $result = mysqli_query($db, $sql);
         return $result;
@@ -603,7 +604,7 @@ class Moodle
                              $temp_action = "forum add post";
                              $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
                         }
-                        /* 
+                        
                         if ($row['action'] == 'uploaded') {
                             $temp_action = "forum upload post";
                             $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
@@ -611,10 +612,10 @@ class Moodle
                             $temp_action = "forum delete post";
                             $temp_url = "discuss.php?d=" . $other_->discussionid;
                         }
-                        //  else if ($row['action'] == 'updated') {
-                        //     $temp_action = "forum update post";
-                        //     $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
-                        // }*/
+                          else if ($row['action'] == 'updated') {
+                             $temp_action = "forum update post";
+                             $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
+                         }
 
                         $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
                         $resultForum = mysqli_query($db, $sqlForum);
