@@ -129,9 +129,23 @@ class Plugin extends Module
                 $googleSheetsDB["periodicityTime"] = 'Minutes';
             }
             $names = explode(";", $googleSheetsDB["sheetName"]);
+            $sheetNames = [];
+            $ownerNames = [];
+            foreach($names as $name){
+                $processedName = explode(",", $name);
+                array_push($sheetNames, $processedName[0]);
+                array_push($ownerNames, $processedName[1]);
+            }
+
+            $professors = Core::$systemDB->selectMultiple("user_role u join role r on u.role=r.id join auth a on u.id=a.game_course_user_id join game_course_user g on u.id=g.id",
+                                                            ["u.course" => $courseId, "r.name" => "Teacher"],
+                                                            "a.username, g.name");
+
             $googleSheetsVars = [
                 "spreadsheetId" => $googleSheetsDB["spreadsheetId"],
-                "sheetName" => $names,
+                "sheetName" => $sheetNames,
+                "ownerName" => $ownerNames,
+                "professors" => $professors,
                 "periodicityNumber" => intval($googleSheetsDB["periodicityNumber"]),
                 "periodicityTime" => $googleSheetsDB["periodicityTime"]
             ];
@@ -307,10 +321,13 @@ class Plugin extends Module
     {
         $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
         $names = "";
+        $i = 0;
         foreach ($googleSheets["sheetName"] as $name) {
             if (strlen($name) != 0) {
-                $names .= $name . ";";
+                $owner = $googleSheets["ownerName"][$i];
+                $names .= $name . "," . $owner . ";";
             }
+            $i++;
         }
 
         if ($names != "" && substr($names, -1) == ";") {

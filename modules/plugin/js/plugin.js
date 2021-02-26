@@ -132,18 +132,24 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         console.log("save google sheets");
         i=1;
         $scope.googleSheetsVars.sheetName=[];
+        $scope.googleSheetsVars.ownerName=[];
         while (i <= $scope.numberGoogleSheets){
-            id = "#sheetname" + i;
-            sheetname = $(id)[0].value;
+            sheetId = "#sheetname" + i;
+            ownerId = "#ownername" + i;
+            sheetname = $(sheetId)[0].value;
+            ownername = $(ownerId)[0].value;
             $scope.googleSheetsVars.sheetName.push(sheetname);
+            $scope.googleSheetsVars.ownerName.push(ownername);
             i++;
         }
         $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdate);
     };
     $scope.addExtraField = function(){
-        inputs = $("#sheet_names");
+        //inputs = $("#sheet_names");
+        inputsButton = $(".input_with_button");
         $scope.numberGoogleSheets++;
-        inputs.append('<input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'">');
+        //inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><select class="config_input" ng-options="user.username as user.name for user in googleSheetsVars.professors track by user.username" ng-model="names" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
+        inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" type:"text" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
     }
 
 
@@ -285,14 +291,16 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
                     inputsButton = $("<div class='input_with_button' ><div id='sheet_names'></div></div>");
                     jQuery.each($scope.googleSheetsVars.sheetName, function (index){
                         sheetName = $scope.googleSheetsVars.sheetName[index];
+                        ownerName = $scope.googleSheetsVars.ownerName[index];
                         $scope.numberGoogleSheets++;
-                        inputsButton.append('<input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'">');
+                        //inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"><select class="config_input" ng-options="user.username as user.name for user in googleSheetsVars.professors track by user.username" ng-model="names"  id="ownername'+ $scope.numberGoogleSheets +'"></select></div>');
+                        inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" value="'+ ownerName +'" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
                     });
                 }
                 else{
                     inputsButton = $("<div class='input_with_button'></div>");
                     $scope.numberGoogleSheets++;
-                    inputsButton.append('<div id="sheet_names"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"></div>');
+                    inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" type:"text" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
                 }
                 inputsButton.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button>');
                 row.append(inputsButton);
