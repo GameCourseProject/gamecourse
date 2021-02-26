@@ -5,7 +5,8 @@ rule: Post Master
 # 	lvl.3: make fifty posts
 
 	when:
-		logs = GC.participations.getAllParticipations(target, "forum upload post")
+		logs = GC.participations.getAllParticipations(target, "forum add post")
+		logs += GC.participations.getAllParticipations(target, "forum add discussion")
 		nlogs = len(logs)
 
 		# Compute the level of the badge that the student deserves

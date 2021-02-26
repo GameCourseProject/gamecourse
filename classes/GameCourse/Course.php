@@ -529,7 +529,7 @@ class Course
         }
 
 	// insert line in AutoGame table
-	//Core:$systemDB->insert("autogame", ["course" => $courseId]);
+	Core::$systemDB->insert("autogame", ["course" => $courseId]);
     
         return $course;
     }

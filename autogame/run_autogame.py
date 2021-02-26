@@ -11,17 +11,36 @@ import json
 # Folder where all rules will be defined rules will be stored
 RULES_FOLDER = "rules"
 AUTOSAVE = False
+LOGFILE = "/var/www/html/gamecourse/autogame/logs/log_file_"
 
+
+
+def write_to_log(text, course):
+	logfile_path = LOGFILE + str(course) + ".txt"
+	separator = "-" * 55
+	separator += "\n\n"
+	timestamp = datetime.now()
+	time = timestamp.strftime("%d/%m/%Y %H:%M:%S")
+	date = "\t" + str(time) + "\n\n"
+	with open(logfile_path, 'a+') as file:
+		file.write(separator)
+		file.write(date)	
+		file.write(separator)
+		file.write(text)
+		file.write("\n\n\n")
 
 def config_metadata(course):
 	CONFIGFILE = "config_" + str(course) + ".txt"
 	CONFIGPATH = os.path.join(os.getcwd(),"config",CONFIGFILE)
 
-	with open(CONFIGPATH, 'r') as f:
-		try:
+	try:
+		with open(CONFIGPATH, 'r') as f:
 			lines = f.read()
-		except:
-			sys.exit("ERROR: No config file found for course ", str(course), ".")
+	
+	except IOError:
+		error_msg = "ERROR: No config file found for course " + str(course) + "."
+		write_to_log(error_msg, course)
+		sys.exit(error_msg)
 
 	data = lines.split("\n")
 	
@@ -112,7 +131,9 @@ def process_indicators(output, course):
 # an argument that indicated which course is being run
 if __name__ == "__main__":
 	if len(sys.argv) != 2:
-		sys.exit("ERROR: GameRules received no course information.")
+		error_msg = "ERROR: GameRules received no course information."
+		write_to_log(error_msg, config.course)
+		sys.exit(error_msg)
 	
 	# change the scripts running location to the folder in which it is located
 	os.chdir(os.path.dirname(sys.argv[0]))
@@ -123,9 +144,11 @@ if __name__ == "__main__":
 		config.course = sys.argv[1]
 		course = config.course
 		config.rules_folder = os.path.join(os.getcwd(), RULES_FOLDER, course)
-	else:
-		sys.exit("ERROR: Course passed is not active or does not exist.")
 
+	else:
+		error_msg = "ERROR: Course passed is not active or does not exist."
+		write_to_log(error_msg, config.course)
+		sys.exit(error_msg)
 
 	METADATA = config_metadata(course)	
 
@@ -134,34 +157,37 @@ if __name__ == "__main__":
 
 
 	if is_running:
-		sys.exit("ERROR: GameRules is already running for this course.")
+		error_msg = "ERROR: GameRules is already running for this course."
+		write_to_log(error_msg, config.course)
+		sys.exit(error_msg)
 
 	# TODO find a mechanism to test socket before opening dat files, get rid of basic inconsistency
 
-	# TODO : fix this when all done, now we are not generating new participations yet
 	
 
 	# read all rules relating to current path	
 	path = os.path.join(rulespath, course)
 	
 
-	# TODO check timestamp table from last time the rulesystem ran
 	
 	#logs is now a list, must adapt list to dict
 	scope, logs = {"METADATA" : METADATA, "null": None}, {}
 	rs = RuleSystem(path, AUTOSAVE)
 
-
-	students = get_targets(course)
-	#students = get_targets(course, last_activity)
+	#students = get_targets(course)
+	students = get_targets(course, last_activity)
 
 	rs_output = rs.fire(students,logs,scope)
-	
-	"""	
+
+
 	# calculate new XP value for each student in targets
 	for el in students.keys():
-		calculate_xp(course, el)"""
-
+		calculate_xp(course, el)
+	
 	# set this instance as non-running
-	autogame_terminate(course)
-
+	try:
+		autogame_terminate(course)
+	except Exception:
+		error_msg = "ERROR: Connection Refused in autogame_terminate()."
+		write_to_log(error_msg, config.course)
+		sys.exit(error_msg)

@@ -28,7 +28,8 @@ class GoogleSheets
         $names = explode(";", $gs->sheetName);
 
         foreach ($names as $name) {
-              $service->spreadsheets_values->get($gs->spreadsheetId, $name);
+            $currentName = explode(",", $name);
+            $service->spreadsheets_values->get($gs->spreadsheetId, $currentName[0]);
         }
         return true;
     }
@@ -94,7 +95,7 @@ class GoogleSheets
                 "created" => $token["created"],
                 "refreshToken" => $token["refresh_token"]
             );
-            Core::$systemDB->update("config_google_sheets", $arrayToDB);
+            Core::$systemDB->update("config_google_sheets", $arrayToDB, ["course" => $this->courseId]);
         }
     }
 
@@ -118,9 +119,11 @@ class GoogleSheets
         $sql = "insert into participation (user, course, description, type, rating, evaluator) values ";
         $values = "";
         foreach ($names as $name) {
+            /*$responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
+            $name = substr($name, 0, -1);
+            $newValues = $this->writeToDB($name, $responseRows->getValues());*/
             $processedName = explode(",", $name);
             $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $processedName[0]);
-            //$name = substr($name, 0, -1);
 
             $newValues = $this->writeToDB($processedName[1], $responseRows->getValues());
             $values .= $newValues;
