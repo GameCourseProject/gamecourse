@@ -118,9 +118,11 @@ class GoogleSheets
         $sql = "insert into participation (user, course, description, type, rating, evaluator) values ";
         $values = "";
         foreach ($names as $name) {
-            $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $name);
-            $name = substr($name, 0, -1);
-            $newValues = $this->writeToDB($name, $responseRows->getValues());
+            $processedName = explode(",", $name);
+            $responseRows = $service->spreadsheets_values->get($this->spreadsheetId, $processedName[0]);
+            //$name = substr($name, 0, -1);
+
+            $newValues = $this->writeToDB($processedName[1], $responseRows->getValues());
             $values .= $newValues;
             if($newValues){
                 $insertedOrUpdated = true;
