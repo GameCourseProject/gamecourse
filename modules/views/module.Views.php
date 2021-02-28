@@ -535,6 +535,21 @@ class Views extends Module
             'object',
             'user'
         );
+        //%user.nickname
+        $this->viewHandler->registerFunction(
+            'users',
+            'nickname',
+            function ($user) {
+                $id = $this->basicGetterFunction($user, "id")->getValue();
+                $nickname = Core::$systemDB->select("game_course_user", ["id" => $id], "nickname");
+                return new ValueNode($nickname);
+            },
+            'Returns a string with the nickname of the GameCourseUser.',
+            'string',
+            null,
+            'object',
+            'user'
+        );
         //%user.studentNumber
         $this->viewHandler->registerFunction(
             'users',
