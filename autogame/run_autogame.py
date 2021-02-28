@@ -174,6 +174,9 @@ if __name__ == "__main__":
 	scope, logs = {"METADATA" : METADATA, "null": None}, {}
 	rs = RuleSystem(path, AUTOSAVE)
 
+	timestamp = datetime.now()
+	date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+
 	#students = get_targets(course)
 	students = get_targets(course, last_activity)
 
@@ -186,7 +189,7 @@ if __name__ == "__main__":
 	
 	# set this instance as non-running
 	try:
-		autogame_terminate(course)
+		autogame_terminate(course, date)
 	except Exception:
 		error_msg = "ERROR: Connection Refused in autogame_terminate()."
 		write_to_log(error_msg, config.course)

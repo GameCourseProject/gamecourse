@@ -375,17 +375,17 @@ def autogame_init(course):
 		# create line as running
 		cursor.execute(query, (course, time, True))
 	else:
-		if table[0][3] == True:
+		if table[0][2] == True:
 			cnx.close()
 			is_running = True
 			return last_activity, is_running
 		
-		last_activity = table[0][2]
-		query = "UPDATE autogame SET date=%s, isRunning=%s WHERE course=%s;"
+		last_activity = table[0][1]
+		query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
 
 		# set as running
-		timestamp = datetime.now()
-		time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+		#timestamp = datetime.now()
+		#time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 
 		cursor.execute(query, (time, True, course))
 
@@ -394,7 +394,7 @@ def autogame_init(course):
 	return last_activity, False
 
 
-def autogame_terminate(course):
+def autogame_terminate(course, date):
 	# -----------------------------------------------------------	
 	# Finishes execution of gamerules, sets isRunning to False
 	# and notifies server to close the socket
@@ -406,8 +406,8 @@ def autogame_terminate(course):
 	host='localhost', database=DATABASE)
 	
 	cursor = cnx.cursor(prepared=True)
-	query = "UPDATE autogame SET isRunning=%s WHERE course=%s;"
-	cursor.execute(query, (False, course))
+	query = "UPDATE autogame SET date=%s, isRunning=%s WHERE course=%s;"
+	cursor.execute(query, (date, False, course))
 
 	cnx.commit()
 
