@@ -387,7 +387,7 @@ def autogame_init(course):
 		#timestamp = datetime.now()
 		#time = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 
-		cursor.execute(query, (time, True, course))
+		cursor.execute(query, (True, course))
 
 	cnx.commit()
 	cnx.close()
