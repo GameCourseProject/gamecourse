@@ -28,9 +28,9 @@ class ClassCheck
     }
 
     public static function checkConnection($code){
-        $url = "https://classcheck.tk/tsv/course?s=" . $code;
         try {
-            fopen($url, 'r');
+            $result = fopen($code, 'r');
+            return $result;
         } catch (\Throwable $th) {
             return false;
         }
@@ -39,13 +39,17 @@ class ClassCheck
     {
         $inserted = false;
         $this->getDBConfigValues();
-        $url = "https://classcheck.tk/tsv/course?s=" . $code;
-        $fp = fopen($url, 'r');
+        $fp = fopen($code, 'r');
 
         $course = new Course($this->courseId);
         while (!feof($fp)) {
             $line = fgets($fp);
             $data = str_getcsv($line, "\t");
+            if (count($data) < 8) {
+                // to do : file returns extra info, source should be fixed
+                // if len of line is too small, do not parse
+                break;
+            }
             $profUsername = $data[0];
             $studentUsername = $data[2];
             $studentName = $data[3];
@@ -65,8 +69,8 @@ class ClassCheck
             }
 
             if ($courseUserStudent && $courseUserProf) {
-                $count = Core::$systemDB->select("participation", ["user" => $courseUserStudent->getData("id"), "description" => $classNumber]);
-                if (Core::$systemDB->select("course_user", ["course" => $this->courseId, $courseUserStudent->getData("id")])) {
+                $count = Core::$systemDB->selectMultiple("participation", ["user" => $courseUserStudent->getData("id"), "description" => $classNumber, "course" => $this->courseId], "*", null, [] , [], null, ["type" => "attended lecture%"] );
+                if (Core::$systemDB->select("course_user", ["course" => $this->courseId, "id" => $courseUserStudent->getData("id")])) {
                     if (!$count) {
                         $inserted  = true;
                         Core::$systemDB->insert(
