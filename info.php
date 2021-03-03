@@ -212,7 +212,7 @@ function getSkillDependencies($skillId){
         ["superSkillId"=>$skillId],"d.id,name");
             
     foreach ($deps as $d){
-        $depArray[$d['id']][]=$d['name'];
+        $depArray[]=$d['name'];
     }
     //$depArray = array_filp($depArray);array_com
     //$depArray = array_values($depArray);   

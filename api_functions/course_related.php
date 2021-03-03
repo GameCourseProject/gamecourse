@@ -104,6 +104,8 @@ API::registerFunction('core', 'getCourseInfo', function() {
                 unset($navPages[array_search($nav, $navPages)]);
             } else if (!in_array($nav["text"], $pageNames) && $nav["text"] !== "Users" && $nav["text"] !== "Course Settings"){
                 unset($navPages[array_search($nav, $navPages)]);
+            } else if ($nav["text"] == 'QR' && !$courseUser->hasRole("Teacher")) {
+                unset($navPages[array_search($nav, $navPages)]);
             }
         }
         API::response(array(

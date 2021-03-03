@@ -213,7 +213,7 @@
     margin-bottom: 20px;
 }
 #configPage .row span {
-    flex: 1;
+    /* flex: 1; */
     font-size: 14px;
 }
 #configPage .row .on_off,
@@ -234,6 +234,25 @@
     top: 7px;
     right: 15px;
 }
+
+#configPage .color_picker {
+    position: relative;
+    margin-right: 0px;
+    margin-left: 15px;
+}
+#configPage .color_picker input{
+    width: 100%;
+    margin-left: 0;
+}
+
+#configPage .half .color-sample{
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    top: 7px;
+    right: 15px;
+}
+
 
 #configPage .config_save_button {
     position: absolute;

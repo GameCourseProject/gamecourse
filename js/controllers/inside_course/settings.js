@@ -43,24 +43,6 @@ app.controller('CourseSettingsGlobal', function($scope, $element, $smartboards, 
         infoDiv.append($compile('<p>Course Name: '+$scope.data.name+'</p>') ($scope));
         infoDiv.append($compile('<p>Course ID: '+$scope.course+'</p>') ($scope));
         courseInfo.append(infoDiv);
-
-        var loadDataSection = createSection(tabContent, 'Load Data');
-        var loadLegacy = $('<div><br>');
-        loadLegacy.append($compile('<a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="loadLegacy.php?course={{course}}">Load Legacy</a>')($scope));
-        loadDataSection.append(loadLegacy);
-
-        var downloadPhotosSettings = $('<br><div>');
-        downloadPhotosSettings.append('<label for="jsessionid" class="label">JSESSIONID</label>');
-        var jsessionidInput = $('<input>', {type: 'text', id:'jsessionid', 'class': 'input-text', placeholder:'', 'ng-model':'data.jsessionid'});
-        downloadPhotosSettings.append($compile(jsessionidInput)($scope));
-        downloadPhotosSettings.append('<label for="backendid" class="label">BACKENDID</label>');
-        var backendidInput = $('<input>', {type: 'text', id:'backendid', 'class': 'input-text', placeholder:'', 'ng-model':'data.backendid'});
-        downloadPhotosSettings.append($compile(backendidInput)($scope));
-        loadDataSection.append(downloadPhotosSettings);
-        var updateDownloadButtons = $('<div>');
-        updateDownloadButtons.append($compile('<br><a style="text-decoration: none; font-size: 80%;" class="button" target="_blank" href="downloadPhotos.php?course={{course}}&jsessionid={{data.jsessionid}}&backendid={{data.backendid}}">Download Photos</a>')($scope));
-
-        loadDataSection.append(updateDownloadButtons);
     });
 });
 
