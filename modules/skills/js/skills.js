@@ -65,7 +65,7 @@ app.stateProvider.state('course.settings.skills', {
     url: '/skills',
     views : {
         'tabContent': {
-            controller: 'CourseSkillsSettingsController'
+            controller: 'ConfigurationController'
         }
     },
     params: {

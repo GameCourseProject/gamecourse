@@ -5,7 +5,7 @@ create table skill_tree(
 	foreign key(course) references course(id) on delete cascade
 );
 create table skill_tier(
-	tier int unsigned not null,
+	tier varchar(50) not null,
 	reward int unsigned not null,
 	treeId int unsigned not null,
 	primary key(treeId,tier),
@@ -16,7 +16,7 @@ create table skill(
 	name varchar(50) not null,
 	color varchar(10),
 	page TEXT,
-	tier int unsigned not null,
+	tier varchar(50) not null,
 	treeId int unsigned not null,
 	foreign key(treeId,tier) references skill_tier(treeId, tier) on delete cascade
 );

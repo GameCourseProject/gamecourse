@@ -51,8 +51,7 @@ app.controller('SettingsGlobal', function($scope, $element, $smartboards, $compi
 
         //Autentication
         var autentication = createSection(tabContent, 'Autentication');
-        //LMS
-        var sistem = createSection(tabContent, 'Learning Management System');
+       
     });
 });
 

@@ -194,10 +194,16 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
                 $listingItems = $module->get_listing_items($course->getId());
             }
 
+            $tiers = [];
+            if ($moduleInfo["name"] == "Skills") {
+                $tiers = $module->get_tiers_items($course->getId());
+            }
+
             $info = array(
                 'generalInputs' => $generalInputs,
                 'listingItems' => $listingItems,
                 'personalizedConfig' => $personalizedConfig,
+                'tiers' => $tiers,
                 'module' => $moduleInfo
             );
 
@@ -232,7 +238,15 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function() {
             if(API::hasKey('listingItems')){
                 $listingItems = API::getValue('listingItems');
                 $action_type = API::getValue('action_type'); //new, edit, delete
-                $module->save_listing_item($action_type, $listingItems, $course->getId());
+                if ($module->getName() != "Skills") 
+                    $module->save_listing_item($action_type, $listingItems, $course->getId());
+                else {
+                    if (array_key_exists("reward", $listingItems))
+                        $module->save_tiers($action_type, $listingItems, $course->getId());
+                    else
+                        $module->save_listing_item($action_type, $listingItems, $course->getId());
+                    
+                }
             }
         }
         else{

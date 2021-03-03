@@ -110,7 +110,8 @@ input:focus, select:focus {
 .data-table {
     width: 100%;
     position: relative;
-    height: 70%;
+    /* height: 70%; */
+    margin-bottom: 80px;
     overflow: auto;
 }
 .data-table table {

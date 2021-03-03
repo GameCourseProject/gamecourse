@@ -558,8 +558,12 @@ class ViewHandler
     {
         $courseId = $this->getCourseId();
 
-        if ($roleType == "ROLE_SINGLE")
-            $role = 'role.Default';
+        if ($roleType == "ROLE_SINGLE"){
+            if ($name == 'QR')
+                $role = 'role.Teacher';
+            else
+                $role = 'role.Default';
+        } 
         else if ($roleType == "ROLE_INTERACTION")
             $role = 'role.Default>role.Default';
 
