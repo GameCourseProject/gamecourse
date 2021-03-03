@@ -284,7 +284,7 @@ class Charts extends Module {
             $xpValues = array();
             foreach ($students as $student) {
                 $xpModule = $course->getModule("xp");
-                $xp = $xpModule->calculateXP($student["id"],$params['course']);
+                $xp = $xpModule->getUserXP($student["id"],$params['course']);
                 $xp = $xp - ($xp % 500);
                 if (array_key_exists($xp, $xpValues))
                     $xpValues[$xp]++;
