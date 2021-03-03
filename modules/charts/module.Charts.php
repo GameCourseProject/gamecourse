@@ -81,7 +81,7 @@ class Charts extends Module {
             $userID = $params['user'];
             $course = \GameCourse\Course::getCourse($params['course']);
             $xpModule = $course->getModule("xp");
-            $xp = $xpModule->calculateXP($userID,$params['course']);
+            $xp = $xpModule->getUserXP($userID,$params['course']);
             $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
