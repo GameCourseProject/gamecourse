@@ -53,7 +53,7 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
             }); 
         };
         checkFailedAttempts.append($compile(errorList)($scope));
-        $scope.enableQR = function () {
+        /*$scope.enableQR = function () {
             var periodicity1 = document.getElementById("qrPeriodicidade1");
             var periodicity2 = document.getElementById("qrPeriodicidade2");
             var selectedNumber = periodicity1.value;
@@ -135,7 +135,7 @@ angular.module('module.qr').controller('QRController', function ($element, $scop
             qrPeriodicity.append($compile(row2)($scope));
         }).error(function (response) {
             console.log("Error with request to get QR: " + response);
-        }); 
+        });*/
     });
 
 });
