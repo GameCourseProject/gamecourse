@@ -1,4 +1,4 @@
-body{
+body {
     font-family: "Montserrat";
     margin: 0px;
     height: auto;
@@ -6,6 +6,7 @@ body{
     color: #484848;
     margin: 0;
 }
+
 button {
     cursor: pointer;
     padding: 10px 15px;
@@ -19,25 +20,33 @@ button {
     font-weight: 600;
     letter-spacing: 1px;
 }
+
 button:disabled {
     opacity: 0.3;
     cursor: not-allowed;
 }
-input:focus, select:focus {
+
+input:focus,
+select:focus {
     outline: none;
 }
 
-.centered{
+.centered {
     text-align: center;
 }
-.clickable{
+
+.clickable {
     cursor: pointer;
 }
+
+
 /* search bar and button*/
+
 .search {
     display: flex;
     justify-content: center;
 }
+
 .search input[type=text] {
     padding: 6px;
     font-size: 14px;
@@ -45,6 +54,7 @@ input:focus, select:focus {
     border-radius: 5px;
     width: 150px;
 }
+
 .search .magnifying-glass {
     background: url(/gamecourse/images/search_icon.svg);
     height: 35px;
@@ -54,46 +64,60 @@ input:focus, select:focus {
     cursor: pointer;
 }
 
+
 /* where the content is shown*/
-#mainContent{
+
+#mainContent {
     margin-left: 200px;
     padding: 80px 55px 35px 70px;
     position: relative;
 }
+
 #wrapper #content-wrapper {
     background-color: white;
-  }
+}
+
+
 /* error messages*/
+
 .error_box {
     width: 100%;
     text-align: center;
     position: absolute;
     top: 0;
 }
+
 .error_msg {
     color: red;
     padding-top: 20px;
 }
+
+
 /* success messages*/
+
 .success_box {
     width: 90%;
     text-align: center;
     position: absolute;
     top: 35px;
 }
+
 .success_msg {
     color: green;
 }
 
+
 /*used on both versions of the page*/
-.box{
+
+.box {
     width: 100%;
     height: 100%;
     /*background-color: red; - filled by course color*/
-    border: 1px solid white; 
+    border: 1px solid white;
     opacity: 0.5;
 }
-.frame{
+
+.frame {
     width: 100%;
     height: 100%;
     position: absolute;
@@ -101,12 +125,15 @@ input:focus, select:focus {
     /*border: 2px solid red; - filled by course color*/
 }
 
-
-#allUsers, #modules, #allCourses{
+#allUsers,
+#modules,
+#allCourses {
     position: relative;
 }
 
+
 /*tables structure*/
+
 .data-table {
     width: 100%;
     position: relative;
@@ -114,11 +141,13 @@ input:focus, select:focus {
     margin-bottom: 80px;
     overflow: auto;
 }
+
 .data-table table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
 }
+
 .data-table table th {
     font-size: 11px;
     position: sticky;
@@ -129,110 +158,141 @@ input:focus, select:focus {
     padding-bottom: 15px;
     font-weight: 700;
     text-transform: uppercase;
-
 }
+
 .data-table table th.name-column {
     padding-left: 10px;
 }
+
 .data-table table td {
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid gray;
     border-top: 1px solid gray;
 }
+
 .data-table table td span {
     margin-right: 10px;
 }
+
 .data-table table td .profile-icon {
     width: 27px;
     height: 27px;
     position: relative;
 }
+
 .data-table table tr:hover {
     background-color: #f5f5f5;
 }
+
 .data-table table .first-column {
     width: 30px;
 }
+
 .data-table table .name-column {
     text-align: left;
     max-width: 200px;
     cursor: pointer;
 }
-#allUsers table .name-column{
+
+#allUsers table .name-column {
     max-width: 150px;
     cursor: auto;
 }
+
 .data-table table .check-column {
     min-width: 50px;
 }
+
 .data-table table .check-column span {
     margin-right: 0;
 }
+
 .data-table table .action-column {
     width: 20px;
 }
+
 .data-table table .icon {
     height: 23px;
     width: 23px;
     opacity: 0.8;
 }
 
+
 /*icons*/
-.duplicate_icon{
+
+.duplicate_icon {
     background-image: url(/gamecourse/images/duplicate_icon.svg);
 }
-.edit_icon{
+
+.edit_icon {
     background-image: url(/gamecourse/images/edit_icon.svg);
 }
-.delete_icon{
+
+.delete_icon {
     background-image: url(/gamecourse/images/delete_icon.svg);
 }
-.config_icon{
+
+.config_icon {
     background-image: url(/gamecourse/images/config_icon.svg);
 }
-.globalize_icon{
+
+.globalize_icon {
     background-image: url(/gamecourse/images/globalize_icon.svg);
 }
-.de_globalize_icon{
+
+.de_globalize_icon {
     background-image: url(/gamecourse/images/de_globalize_icon.svg);
 }
-.add_icon{
+
+.add_icon {
     background-image: url(/gamecourse/images/add_icon.svg);
 }
-.add_icon_no_outline{
+
+.add_icon_no_outline {
     background-image: url(/gamecourse/images/add_icon_no_outline.svg);
 }
-.import_icon{
+
+.import_icon {
     background-image: url(/gamecourse/images/import_icon.svg);
 }
-.export_icon{
+
+.export_icon {
     background-image: url(/gamecourse/images/export_icon.svg);
 }
-.export_icon_no_outline{
+
+.export_icon_no_outline {
     background-image: url(/gamecourse/images/export_icon_no_outline.svg);
 }
-.undo_icon{
+
+.undo_icon {
     background-image: url(/gamecourse/images/undo_icon.svg);
 }
-.redo_icon{
+
+.redo_icon {
     background-image: url(/gamecourse/images/redo_icon.svg);
 }
 
+
 /*line of cards structure*/
-#myCourses{
+
+#myCourses {
     margin-top: -30px;
 }
-#not_active_courses, #active_courses {
+
+#not_active_courses,
+#active_courses {
     margin-left: -20px;
     display: inline-grid;
     grid-template-columns: repeat(auto-fill, 219px);
     width: calc(100% + 15px);
     justify-content: space-between;
 }
+
 .section .content {
     margin-bottom: 20px;
 }
+
 .section .content .card {
     display: flex;
     flex-direction: column;
@@ -242,13 +302,16 @@ input:focus, select:focus {
     cursor: pointer;
     font-size: 14px;
 }
+
 .section .content .card .color_box {
     flex-grow: 500;
     position: relative;
 }
-.section .content .card .color_box .box{
+
+.section .content .card .color_box .box {
     border: 0;
 }
+
 .section .content .card .footer {
     flex-grow: 1;
     display: flex;
@@ -258,12 +321,15 @@ input:focus, select:focus {
     background-color: white;
 }
 
+
 /*courses page - non admin version*/
-.section .content .card .color_box .frame-course{
+
+.section .content .card .color_box .frame-course {
     width: calc(100% - 2px);
     height: calc(100% - 1px);
     text-align: center;
- }
+}
+
 .section .content .card .color_box .frame-course span {
     opacity: 0.2;
     height: 70%;
@@ -271,21 +337,22 @@ input:focus, select:focus {
     padding: 40px 0;
     width: 95%;
 }
+
 .section .content .card .color_box .frame-course span:hover {
     opacity: 1;
 }
 
-.section .content .error_box .error_msg{
+.section .content .error_box .error_msg {
     padding-top: 30px;
 }
+
 .section .content .error_box {
     margin-left: 20px;
 }
 
-  
-
 
 /* add, import and export buttons*/
+
 .action-buttons {
     display: flex;
     width: 115px;
@@ -295,7 +362,8 @@ input:focus, select:focus {
     top: 30px;
     right: 55px;
 }
-.action-buttons .icon{
+
+.action-buttons .icon {
     height: 30px;
     width: 30px;
     opacity: 0.8;
@@ -305,27 +373,33 @@ input:focus, select:focus {
     width: 100%;
 }
 
+
 /* all buttons using images*/
-.icon{
+
+.icon {
     cursor: pointer;
     background-size: contain;
     background-position: top;
     background-repeat: no-repeat;
 }
 
+
 /*on-off buttons*/
+
 .switch {
     position: relative;
     display: inline-block;
     width: 48px;
     height: 26px;
 }
+
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
     margin: 6px;
 }
+
 .slider {
     position: absolute;
     cursor: pointer;
@@ -337,6 +411,7 @@ input:focus, select:focus {
     -webkit-transition: .4s;
     transition: .4s;
 }
+
 .slider:before {
     position: absolute;
     content: "";
@@ -348,19 +423,24 @@ input:focus, select:focus {
     -webkit-transition: .4s;
     transition: .4s;
 }
-input:checked + .slider {
+
+input:checked+.slider {
     background-color: #2196F3;
 }
-input:focus + .slider {
+
+input:focus+.slider {
     box-shadow: 0 0 1px #2196F3;
 }
-input:checked + .slider:before {
+
+input:checked+.slider:before {
     -webkit-transform: translateX(22px);
     -ms-transform: translateX(22px);
     transform: translateX(22px);
 }
 
+
 /* Rounded sliders */
+
 .slider.round {
     border-radius: 34px;
 }
@@ -369,49 +449,61 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
+
 /* Disabled slider*/
-.switch.disabled{
+
+.switch.disabled {
     cursor: not-allowed;
 }
-.switch.disabled .slider{
+
+.switch.disabled .slider {
     background-color: #e9e9e9;
     pointer-events: none;
 }
 
 
 /*tags for user role (on course) or course on user list(system)*/
-.role_tag, .course_tag, .user_tag {
+
+.role_tag,
+.course_tag,
+.user_tag {
     text-transform: uppercase;
     font-size: 10px;
-    background-color: lightgrey;
+    background-color: grey;
     font-family: "Jost", verdana, sans-serif;
     display: inline-block;
-    color: grey;
+    color: white;
     padding: 5px 10px;
     margin: 5px 5px 0 0;
 }
 
+
 /*Text Dividers*/
-.section{
+
+.section {
     margin-bottom: 40px;
     background-color: white !important;
     position: relative;
 }
+
 .divider {
     font-size: 16px;
     margin-bottom: 15px;
     font-weight: 500;
 }
+
 .divider .title {
     position: relative;
     z-index: 1;
 }
+
 .divider .title span {
     background-color: white;
     padding-right: 20px;
     height: auto;
     width: auto;
 }
+
 .divider .title:after {
     content: "";
     position: absolute;
@@ -423,7 +515,9 @@ input:checked + .slider:before {
     z-index: -1;
 }
 
+
 /* Loading symbol*/
+
 #page-loading {
     position: fixed;
     z-index: 1;
@@ -432,7 +526,8 @@ input:checked + .slider:before {
     width: 100%;
     height: 100%;
 }
-#page-loading img{
+
+#page-loading img {
     display: block;
     margin: 20% auto;
 }

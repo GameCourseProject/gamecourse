@@ -1,7 +1,7 @@
 //All the aux functions used to create the views of the system
 
-function addPagesBackToNavBar(){
-    if($("#other-pages") && $("#other-pages")[0]){
+function addPagesBackToNavBar() {
+    if ($("#other-pages") && $("#other-pages")[0]) {
         menu = $('.menu')[0];
         menu_div = $('.menu');
         menu_length = menu.children.length;
@@ -23,10 +23,11 @@ function addPagesBackToNavBar(){
 
         menu_div.append(settings);
     }
-    
+
 
 }
-function beginNavbarResize(){
+
+function beginNavbarResize() {
     $(".reputed").remove();
     $("#other-pages").remove();
     checkNavbarLength();
@@ -34,14 +35,14 @@ function beginNavbarResize(){
 
 //so pode ser chamado até x size depois passa a versao mobile
 //to make sure everything fits on the navbar
-function checkNavbarLength(){
+function checkNavbarLength() {
     console.log("I'm going to check navbar length");
     var menu_div = $('.menu');
-    if ( menu_div.prop('scrollWidth') > menu_div.prop('clientWidth')  ||  menu_div.height() > 55 ){
+    if (menu_div.prop('scrollWidth') > menu_div.prop('clientWidth') || menu_div.height() > 55) {
         menu = menu_div[0];
         menu_length = menu.children.length;
 
-        if (menu_div.find("#other-pages").size() > 0){
+        if (menu_div.find("#other-pages").size() > 0) {
             //gets the li element
             last_before_otherpages_and_settings = menu.children[menu_length - 3];
             //gets the a element
@@ -53,8 +54,7 @@ function checkNavbarLength(){
 
             last_before_otherpages_and_settings.remove();
             other_content.prepend(a_last_before_otherpages_and_settings);
-        }
-        else{
+        } else {
             settings = menu.children[menu_length - 1];
             //gets the li element
             last_before_settings = menu.children[menu_length - 2];
@@ -62,7 +62,7 @@ function checkNavbarLength(){
             //gets the a element
             a_last_before_settings = last_before_settings.children[0];
             a_before_last_before_settings = before_last_before_settings.children[0];
-            
+
             //removes li elements from menu
             last_before_settings.remove();
             before_last_before_settings.remove();
@@ -77,7 +77,7 @@ function checkNavbarLength(){
 
             other_pages.append(other_title);
             other_pages.append(other_content);
-            
+
             settings.remove();
             menu_div.append(other_pages);
             menu_div.append(settings);
@@ -100,10 +100,10 @@ function range(start, end) {
     return Array(end - start + 1).fill().map((_, idx) => start + idx)
 }
 
-function semestersYears(start, end){
+function semestersYears(start, end) {
     years = range(start, end);
     semesters = [];
-    jQuery.each(years, function(index){
+    jQuery.each(years, function(index) {
         se = years[index].toString() + "-" + (years[index] + 1).toString();
         semesters.push(se)
     });
@@ -120,10 +120,10 @@ function download(filename, text) {
     element.click();
     document.body.removeChild(element);
 }
- 
-function removeSpacefromName(name){
-    name = name.replace(/\s/g,'');
-    name = name.replace('-','');
+
+function removeSpacefromName(name) {
+    name = name.replace(/\s/g, '');
+    name = name.replace('-', '');
     return name;
 }
 
@@ -131,8 +131,8 @@ function removeSpacefromName(name){
 //from settings.js
 function buildTabs(info, parent, $smartboards, $scope) {
     var el = $('<li>');
-    var link = $('<a>', {'ui-sref': info.sref});
-    link.append($('<span>', {text: info.text}));
+    var link = $('<a>', { 'ui-sref': info.sref });
+    link.append($('<span>', { text: info.text }));
     el.append(link);
     if (info.subItems != null) {
         var subList = $('<ul>');
@@ -145,19 +145,19 @@ function buildTabs(info, parent, $smartboards, $scope) {
 }
 
 function createSection(parent, title) {
-    var sec = $('<div>', {'class':'section'});
-    var divider = $('<div class="divider"><div class="title"><span>'+ title +'</span></div></div>');
+    var sec = $('<div>', { 'class': 'section' });
+    var divider = $('<div class="divider"><div class="title"><span>' + title + '</span></div></div>');
     sec.append(divider);
-    var content = $('<div>', {'class':'content'});
+    var content = $('<div>', { 'class': 'content' });
     sec.append(content);
     parent.append(sec);
     return content;
 }
 
 function createSectionWithTemplate(parent, title, templateUrl) {
-    var sec = $('<div>', {'class':'section'});
-    sec.append($('<div>', {'class':'title', text: title}));
-    var content = $('<div>', {'class':'content', 'ng-include': '\'' + templateUrl + '\''});
+    var sec = $('<div>', { 'class': 'section' });
+    sec.append($('<div>', { 'class': 'title', text: title }));
+    var content = $('<div>', { 'class': 'content', 'ng-include': '\'' + templateUrl + '\'' });
     sec.append(content);
     parent.append(sec);
     return content;
@@ -167,12 +167,12 @@ function createInputWithChange(id, text, placeholder, $compile, $smartboards, $p
     //ngModel =  'data.roles.landingPage'
     var wrapperDiv = $('<div>');
     wrapperDiv.append('<label for="' + id + '" class="label">' + text + '</label>');
-    var textInput = $('<input>', {type: 'text', id:'' + id + '', 'class': 'input-text', placeholder: placeholder, 'ng-model': ngModel});
+    var textInput = $('<input>', { type: 'text', id: '' + id + '', 'class': 'input-text', placeholder: placeholder, 'ng-model': ngModel });
     wrapperDiv.append($compile(textInput)(scope));
 
     textInput.bind('change paste keyup', function() {
         var input = $(this);
-        createChangeButtonIfNone(id, textInput, function (status) {
+        createChangeButtonIfNone(id, textInput, function(status) {
             var data = {};
             data[field] = $parse(ngModel)(scope);
             $.extend(data, additionalData);
@@ -188,7 +188,7 @@ function createInputWithChange(id, text, placeholder, $compile, $smartboards, $p
             });
         }, {
             createMode: 'after',
-            disableFunc: function () {
+            disableFunc: function() {
                 input.prop('disabled', true);
             }
         });
@@ -199,7 +199,7 @@ function createInputWithChange(id, text, placeholder, $compile, $smartboards, $p
 
 function createChangeButtonIfNone(name, anchor, action, config) {
     var defaults = {
-        'buttonText' : 'Save',
+        'buttonText': 'Save',
         'statusTextUpdating': 'Updating',
         'enableFunc': undefined,
         'disableFunc': undefined,
@@ -212,9 +212,9 @@ function createChangeButtonIfNone(name, anchor, action, config) {
         var pageStatus = anchor.parent().find('#' + name + '-status');
         if (pageStatus.length != 0)
             pageStatus.remove();
-        var changePage = $('<button>', {id: name + '-button', text: config.buttonText, 'class': 'button'});
+        var changePage = $('<button>', { id: name + '-button', text: config.buttonText, 'class': 'button' });
         changePage.click(function() {
-            var status = $('<span>', {id: name + '-status', text: config.statusTextUpdating});
+            var status = $('<span>', { id: name + '-status', text: config.statusTextUpdating });
             if (config.disableFunc != undefined)
                 config.disableFunc();
             $(this).replaceWith(status);
@@ -248,7 +248,7 @@ function updateTabTitle(stateName, stateParams) {
         } else if (sref.substr(stateName.length, 1) == '(') {
             var paramsStart = stateName.length + 2;
             var params = sref.substr(paramsStart, sref.length - paramsStart - 2).split(',');
-            for(var j = 0; j < params.length; ++j) {
+            for (var j = 0; j < params.length; ++j) {
                 var param = params[j].split(':');
                 var key = param[0];
                 var value = param[1].substr(1, param[1].length - 2);
@@ -269,7 +269,7 @@ function updateTabTitle(stateName, stateParams) {
 
     title = final.text();
     var parent = final.parent().parent();
-    while(!parent.hasClass('tabs-container')) {
+    while (!parent.hasClass('tabs-container')) {
         final = parent.prev();
         parent = final.parent().parent();
 
@@ -321,58 +321,59 @@ function lightOrDark(color) {
 
     // Check the format of the color, HEX or RGB?
     if (color.match(/^rgb/)) {
-  
-      // If HEX --> store the red, green, blue values in separate variables
-      color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
-  
-      r = color[1];
-      g = color[2];
-      b = color[3];
-    } 
-    else {
-  
-      // If RGB --> Convert it to HEX: http://gist.github.com/983661
-      color = +("0x" + color.slice(1).replace( 
-        color.length < 5 && /./g, '$&$&'
-      )
-               );
-  
-      r = color >> 16;
-      g = color >> 8 & 255;
-      b = color & 255;
+
+        // If HEX --> store the red, green, blue values in separate variables
+        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+
+        r = color[1];
+        g = color[2];
+        b = color[3];
+    } else {
+
+        // If RGB --> Convert it to HEX: http://gist.github.com/983661
+        color = +("0x" + color.slice(1).replace(
+            color.length < 5 && /./g, '$&$&'
+        ));
+
+        r = color >> 16;
+        g = color >> 8 & 255;
+        b = color & 255;
     }
-  
+
     // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
     hsp = Math.sqrt(
-      0.299 * (r * r) +
-      0.587 * (g * g) +
-      0.114 * (b * b)
+        0.299 * (r * r) +
+        0.587 * (g * g) +
+        0.114 * (b * b)
     );
-  
+
     // Using the HSP value, determine whether the color is light or dark
-    if (hsp>127.5) {
-      return 'light';
-    } 
-    else {
-      return 'dark';
+    if (hsp > 127.5) {
+        return 'light';
+    } else {
+        return 'dark';
     }
 }
 
-function changeElColor(el, color){
+function changeElColor(el, color) {
     brightness = lightOrDark(color);
-    if(brightness == 'dark') {
+    if (brightness == 'dark') {
         $(el).css("backgroundColor", color);
         $(el).css("color", "white");
-    }
-    else {
-        if(color == "#FFFFFF"){
+    } else {
+        if (color == "#FFFFFF") {
             $(el).css("backgroundColor", "#e6e6e6");
             $(el).css("color", "#484848");
-        }
-        else{
+        } else {
             $(el).css("backgroundColor", color);
             $(el).css("color", "#484848");
         }
     }
 }
 
+function changeSelectTextColor(el) {
+    if (el.value == "")
+        $(el).css("color", "rbg(170,170,170)");
+    else
+        $(el).css("color", "#333");
+}
