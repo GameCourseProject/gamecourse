@@ -47,7 +47,6 @@ button {
 .verification .confirmation_btns .cancel {
     opacity: 0.7;
     background: green;
-
 }
 
 .verification .config_input {
@@ -236,7 +235,7 @@ button {
 
 .modal_content .content .form__label {
     font-family: 'Roboto', sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     margin: 2px 0 10px 10px;
     display: block;
     transition: all 0.3s;
@@ -256,7 +255,9 @@ button {
     margin-bottom: 22px;
 }
 
+
 /*New Role version of the modal*/
+
 .little_modal {
     width: 410px;
 }
@@ -264,7 +265,6 @@ button {
 .little_modal .form__input {
     margin-bottom: 50px !important;
 }
-
 
 #courses_list {
     margin-bottom: 15px;
@@ -304,7 +304,15 @@ button {
 
 .modal_content select.form__input {
     padding: 9px 10px;
+}
 
+.modal_content select#authService option {
+    color: #333;
+}
+
+#add-user .modal_content select#authService,
+#new-user .modal_content select#authService {
+    color: rgb(106, 106, 106);
 }
 
 .modal_content .form__input:placeholder-shown+.form__label {
@@ -354,7 +362,6 @@ button {
 
 .modal_content .options .option #choose_create_new_user {
     background-image: url(/gamecourse/images/add_user_icon.svg);
-
 }
 
 .modal_content .options .option #choose_select_user {
