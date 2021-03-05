@@ -92,7 +92,7 @@ class Moodle
             if ($user) {
                 $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
                 if ($courseUser) {
-                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "/mod/quiz/view.php?id=" . $row['quizid']]);
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "quiz grade", "post" => "mod/quiz/view.php?id=" . $row['quizid']]);
                     if (!$result) {
                         $inserted = true;
                         $values .= "(" . $user . "," . $this->courseId . ",'" . $row['quiz'] . "','quiz grade', 'mod/quiz/view.php?id=" . $row['quizid'] . "','" . $row['grade'] . "'),";
@@ -103,8 +103,8 @@ class Moodle
                         //         "course" => $this->courseId,
                         //         "description" => $row['quiz'],
                         //         "type" => "quiz grade",
-                        //         "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                        //         "date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                        //         "post" => "mod/quiz/view.php?id=" . $row['quizid'],
+                        //         "date" => date('Y-m-d H:i:s', $row['timemodified']),
                         //         "rating" => $row['grade']
                         //     ]
                         // );
@@ -117,8 +117,8 @@ class Moodle
                                 "course" => $this->courseId,
                                 "description" => $row['quiz'],
                                 "type" => "quiz grade",
-                                "post" => "/mod/quiz/view.php?id=" . $row['quizid'],
-                                "date" => date('Y-m-d, H:i:s', $row['timemodified']),
+                                "post" => "mod/quiz/view.php?id=" . $row['quizid'],
+                                "date" => date('Y-m-d H:i:s', $row['timemodified']),
                                 "rating" => $row['grade']
                             ),
                             array(
@@ -207,6 +207,75 @@ class Moodle
         $result = mysqli_query($db, $sql);
         return array($db, $result);
     }
+
+
+	public function getProfessorRatings()
+    {
+        // this function gets professor ratings from peer-rated forums
+        $timeUpLimit = "";
+        if ($this->timeToUpdate) {
+            $timeUpLimit = " and r.timemodified <= " . $this->timeToUpdate;
+        }
+        $this->getDBConfigValues();
+        if (!($this->time) && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if (!($this->time) && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id=" . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        }
+
+        $sql .= " order by r.timemodified;";
+
+
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+        $result = mysqli_query($db, $sql);
+        return array($db, $result);
+    }
+
+
+	
+
+
+
     public function parseVotesToDB($row, $db)
     {
 
@@ -224,7 +293,7 @@ class Moodle
         );
         return $votesFields;
     }
-    public function writeVotesToDb($dbResult)
+    public function writeVotesToDb($dbResult, $peerForum=false)
     {
         $db = $dbResult[0];
         $result = $dbResult[1];
@@ -238,6 +307,12 @@ class Moodle
         $insertedOrUpdated = false;
         $sql = "insert into participation (user, course, description, type, post, rating, evaluator) values";
         $values = "";
+
+        if ($peerForum)
+            $forumPrefix = "mod/peerforum/";
+        else
+            $forumPrefix = "mod/forum/";
+
         foreach ($row_ as $row) {
             $votesField = $this->parseVotesToDB($row, $db);
 
@@ -250,7 +325,7 @@ class Moodle
                     $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
                     if (!$result) {
                         $inserted = true;
-                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
+                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . $forumPrefix . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
                         // Core::$systemDB->insert(
                         //     "participation",
                         //     [
@@ -273,7 +348,7 @@ class Moodle
                                 "course" => $this->courseId,
                                 "description" => $votesField["description"],
                                 "type" => "graded post",
-                                "post" => $votesField["post"],
+                                "post" => $forumPrefix . $votesField["post"],
                                 "date" => $votesField["date"],
                                 "rating" => $votesField["rating"],
                                 "evaluator" => $prof
@@ -282,7 +357,7 @@ class Moodle
                                 "user" => $user,
                                 "course" => $this->courseId,
                                 "type" => "graded post",
-                                "post" => "mod/quiz/view.php?id=" . $votesField["post"]
+                                "post" => $forumPrefix . $votesField["post"]
 
                             ]
                         );
@@ -334,8 +409,8 @@ class Moodle
         $where .= "(component = 'mod_questionnaire' and action='submitted')"; // submitted questionaire
         $where .= " or component = 'mod_resource'"; // resource view
         $where .= " or (objecttable = 'forum_discussions' and (action = 'created' or action = 'deleted'))"; // forum created or deleted
-        $where .= " or (objecttable = 'forum_posts' and (action = 'uploaded' or action = 'deleted' or action = 'created'))) "; // forum deleted
-
+        $where .= " or (objecttable = 'forum_posts' and (action = 'uploaded' or action = 'deleted' or action = 'created')) "; // forum deleted
+	    $where .= " or (objecttable = 'peerforum_posts' and (action = 'uploaded' or action = 'deleted' or action = 'created'))) "; // peerforum
 
         // others
 
@@ -389,8 +464,151 @@ class Moodle
 
     }
 
+    public function getPeergrades()
+    {
+        $timeUpLimit = "";
+        if ($this->timeToUpdate) {
+            $timeUpLimit = " and r.timemodified <= " . $this->timeToUpdate;
+        }
+        $this->getDBConfigValues();
+        if (!($this->time) && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if (!($this->time) && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade,  r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id  
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id=" . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && !($this->user)) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        } else if ($this->time && $this->user) {
+            $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
+                from " . $this->prefix . "peerforum f
+                join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
+                join " . $this->prefix . "course c ON c.id = f.course";
+            if ($this->course) {
+                $sql .= " and f.course=" . $this->course;
+            }
+        }
+
+        $sql .= " order by r.timemodified;";
 
 
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+        $result = mysqli_query($db, $sql);
+        return array($db, $result);
+    }
+    public function parsePeergradesToDB($row, $db)
+    {
+
+        $sqlEvaluator = "SELECT username FROM " . $this->prefix . "user where id=" . $row["evaluatorId"] . ";";
+        $resultEvaluator = mysqli_query($db, $sqlEvaluator);
+        $rowEvaluator = mysqli_fetch_assoc($resultEvaluator);
+        $evaluator = $rowEvaluator['username'];
+        $votesFields = array(
+                "user" => $row["username"],
+                "description" => $row['name'] . ", " . $row['subject'],
+                "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
+                "date" => date('Y-m-d H:i:s', $row['timemodified']),
+                "rating" => $row['peergrade'],
+                "evaluator" => $evaluator
+        );
+        return $votesFields;
+    }
+
+    public function writePeergradesToDB($dbResult){
+        $db = $dbResult[0];
+        $result = $dbResult[1];
+        $course = new Course($this->courseId);
+        $row_ = array();
+        while ($line = mysqli_fetch_assoc($result)) {
+            array_push($row_, $line);
+        }
+        $inserted = false;
+	    $updated = false;
+        $insertedOrUpdated = false;
+        $sql = "insert into participation (user, course, description, type, post, rating, evaluator) values";
+        $values = "";
+        foreach ($row_ as $row) {
+            $votesField = $this->parsePeergradesToDB($row, $db);
+
+            $evaluator = User::getUserIdByUsername($votesField["evaluator"]);
+            $user = User::getUserIdByUsername($votesField["user"]);
+            if ($user && $evaluator) {
+                $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
+                $courseUserEvaluator = Core::$systemDB->select("course_user", ["id" => $evaluator, "course" => $this->courseId]);
+                if ($courseUser && $courseUserEvaluator) {
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
+                    if (!$result) {
+                        $inserted = true;
+                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . "mod/peerforum/" . $votesField["post"] . '","' . $votesField["rating"] . '",' . $evaluator . '),';
+                        
+                    } else {
+                        $updated = true;
+                        Core::$systemDB->update(
+                            "participation",
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $votesField["description"],
+                                "type" => "graded post",
+                                "post" => "mod/peerforum/" . $votesField["post"],
+                                "date" => $votesField["date"],
+                                "rating" => $votesField["rating"],
+                                "evaluator" => $evaluator
+                            ],
+                            [
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "evaluator" => $evaluator,
+                                "type" => "graded post",
+                                "post" => "mod/peerforum/" . $votesField["post"]
+
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+
+        $values = rtrim($values, ",");
+        if ($inserted) {
+            $sql .= $values;
+            Core::$systemDB->executeQuery($sql);
+            if (!empty($row_) && $this->timeToUpdate == null) {
+                $lastRecord = end($row_);
+                $this->timeToUpdate = $lastRecord["timemodified"];
+            }
+        }
+	    $insertedOrUpdated = $inserted || $updated;
+        return $insertedOrUpdated;
+    }
 
     public function getLogs()
     {
@@ -576,7 +794,7 @@ class Moodle
                     if ($row['objecttable'] == 'forum_discussions') {
                         if ($row['action'] == 'created') {
                             $temp_action = "forum add discussion";
-                            $temp_url = "discuss.php?d=" . $row['objectid'];
+                            $temp_url = "mod/forum/discuss.php?d=" . $row['objectid'];
                             $temp_info = $row['objectid'];
                             strpos($temp_info, '"');
                             // } else if ($row['action'] == 'viewed') {
@@ -602,19 +820,19 @@ class Moodle
                     if ($row['objecttable'] == 'forum_posts') {
                         if ($row['action'] == 'created') {
                              $temp_action = "forum add post";
-                             $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                             $temp_url = "mod/forum/discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
                         }
                         
                         if ($row['action'] == 'uploaded') {
                             $temp_action = "forum upload post";
-                            $temp_url = "discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                            $temp_url = "mod/forum/discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
                         } else if ($row['action'] == 'deleted') {
                             $temp_action = "forum delete post";
-                            $temp_url = "discuss.php?d=" . $other_->discussionid;
+                            $temp_url = "mod/forum/discuss.php?d=" . $other_->discussionid;
                         }
                           else if ($row['action'] == 'updated') {
                              $temp_action = "forum update post";
-                             $temp_url = "discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
+                             $temp_url = "mod/forum/discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
                          }
 
                         $sqlForum = "SELECT subject FROM " . $this->prefix . "forum_posts where id=" . $row['objectid'] . ";";
@@ -625,8 +843,40 @@ class Moodle
                                 $temp_module = array_key_exists("subject", $rowForum) ? $rowForum['subject'] : null;
                             }
                         }
+                    }    
+                }
+            }
+
+            if ($row['component'] == "mod_peerforum") {
+                if (array_key_exists("objecttable", $row)) {
+                    if ($row['objecttable'] == 'peerforum_posts') {
+                        if ($row['action'] == 'created') {
+                            $temp_action = "forum add post";
+                            $temp_url = "mod/peerforum/discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        }
+                        
+                        if ($row['action'] == 'uploaded') {
+                            $temp_action = "forum upload post";
+                            $temp_url = "mod/peerforum/discuss.php?d=" . $other_->discussionid . "&parent=" . $row['objectid'];
+                        } else if ($row['action'] == 'deleted') {
+                            $temp_action = "forum delete post";
+                            $temp_url = "mod/peerforum/discuss.php?d=" . $other_->discussionid;
+                        } else if ($row['action'] == 'updated') {
+                            $temp_action = "forum update post";
+                            $temp_url = "mod/peerforum/discuss.php?d=" . $other_->discussionid . "#p" . $row['objectid'] . "&parent=" . $row['objectid'];
+                        }
+
+                        $sqlForum = "SELECT subject FROM " . $this->prefix . "peerforum_posts where id=" . $row['objectid'] . ";";
+                        $resultForum = mysqli_query($db, $sqlForum);
+                        if ($resultForum) {
+                            $rowForum = mysqli_fetch_assoc($resultForum);
+                            if ($rowForum) {
+                                $temp_module = array_key_exists("subject", $rowForum) ? $rowForum['subject'] : null;
+                            }
+                        }
                     }
                 }
+
             }
         }
 
@@ -743,7 +993,7 @@ class Moodle
                                 // Core::$systemDB->insert(
                                 //     "participation",
                                 //     [
-                                //         "user" => $courseUser->getId(),
+                                     //         "user" => $courseUser->getId(),
                                 //         "course" => $this->courseId,
                                 //         "description" => $moodleField["module"],
                                 //         "type" => $moodleField["action"],
