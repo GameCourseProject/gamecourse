@@ -6,6 +6,7 @@ create table skill_tree(
 );
 create table skill_tier(
 	tier varchar(50) not null,
+	seqId int unsigned not null,
 	reward int unsigned not null,
 	treeId int unsigned not null,
 	primary key(treeId,tier),
@@ -13,6 +14,7 @@ create table skill_tier(
 );
 create table skill(
 	id 	int unsigned auto_increment primary key,
+	seqId int unsigned not null,
 	name varchar(50) not null,
 	color varchar(10),
 	page TEXT,

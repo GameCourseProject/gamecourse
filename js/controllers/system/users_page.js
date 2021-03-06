@@ -521,7 +521,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     //new user modal
     modal = $("<div class='modal' id='new-user'></div>");
     newUser = $("<div class='modal_content'></div>");
-    newUser.append($('<button class="close_btn icon" value="#new-user" onclick="closeModal(this)"></button>'));
+    newUser.append($('<button class="close_btn icon" value="#new-user" onclick="closeModal(this);resetSelectTextColor(\'authService\');"></button>'));
     newUser.append($('<div class="title">New User: </div>'));
     content = $('<div class="content">');
     box = $('<div class= "inputs">');
@@ -560,7 +560,7 @@ app.controller('Users', function($scope, $state, $compile, $smartboards, $elemen
     row.append($('<div class= "on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newUser.userIsActive"><span class="slider round"></span></label></div>'))
     box.append(row);
     content.append(box);
-    content.append($('<button class="save_btn" ng-click="submitUser()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+    content.append($('<button class="save_btn" ng-click="submitUser()" ng-disabled="!isReadyToSubmit()" onclick="resetSelectTextColor("authService");"> Save </button>'))
     newUser.append(content);
     modal.append(newUser);
     allUsers.append(modal);
