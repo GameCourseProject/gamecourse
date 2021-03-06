@@ -691,7 +691,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         //add user modal
         modal = $("<div class='modal' id='add-user'></div>");
         modal_content = $("<div class='modal_content'></div>");
-        modal_content.append($('<button class="close_btn icon" value="#add-user" onclick="closeModal(this)"></button>'));
+        modal_content.append($('<button class="close_btn icon" value="#add-user" onclick="closeModal(this);resetSelectTextColor(\'authService\');"></button>'));
         modal_content.append($('<div class="title centered" >How do you want to add a new user? </div>'));
         content = $('<div class="content options">');
         opt1 = $('<div class="option" ng-click="createUser()"></div>');

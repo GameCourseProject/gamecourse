@@ -373,7 +373,47 @@ function changeElColor(el, color) {
 
 function changeSelectTextColor(el) {
     if (el.value == "")
-        $(el).css("color", "rbg(170,170,170)");
+        el.style.color = "rbg(106,106,106)";
     else
-        $(el).css("color", "#333");
+        el.style.color = "#333";
+}
+
+function resetSelectTextColor(id) {
+    var el = document.getElementById(id);
+    el.removeAttribute("style");
+    el.style.color = "rbg(106,106,106)";
+}
+
+function moveRow(containerId, item, oldIdx, newIdx, limit = -1) {
+    // children[0] - gives tbody; children gives the rows
+    // cut the first child because the header is inside tbody
+    var rows = Array.from(document.getElementById(containerId).children[0].children).slice(1);
+
+    if (containerId == "listing-table") {
+        var myTier = rows[oldIdx].children[0].innerHTML;
+        if (newIdx < 0 || newIdx > rows.length - 1 || rows[newIdx].children[0].innerHTML != myTier)
+            return false;
+
+        var oldRow = rows[oldIdx];
+        var tbody = $(document.getElementById(containerId).children[0]);
+
+        $(tbody.children().get(oldIdx + 1)).remove();
+        $('#listing-table > tbody > tr').eq(newIdx).after(oldRow);
+        return true;
+    } else {
+        if (newIdx < 0 || newIdx > rows.length - 1)
+            return false;
+
+        var oldRow = rows[oldIdx];
+        // var newRow = rows[newIdx];
+
+        var tbody = $(document.getElementById(containerId).children[0]);
+
+        $(tbody.children().get(oldIdx + 1)).remove();
+        $('#tier-table > tbody > tr').eq(newIdx).after(oldRow);
+        return true;
+    }
+
+
+
 }

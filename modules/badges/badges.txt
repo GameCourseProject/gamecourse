@@ -51,7 +51,7 @@
           "value": "{%item.currLevel(%viewer)}"
         },
         "badgeParticipations": {
-          "value": "{participations.getAllParticipations(%viewer, \"badge\", %item.id)}"
+          "value": "{badges.badgeProgression(%item.id, %viewer)}"
         },
         "badge": {
           "value": "{%item}"
@@ -446,7 +446,9 @@
             "link": null,
             "visibilityCondition": "{}",
             "visibilityType": "conditional",
-            "events": [],
+            "events": {
+                "click": "{actions.goToPage(\"Profile\", %item)}"
+              },
             "info": null,
             "children": []
           }, {

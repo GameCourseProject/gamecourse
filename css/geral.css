@@ -273,6 +273,14 @@ select:focus {
     background-image: url(/gamecourse/images/redo_icon.svg);
 }
 
+.up_icon {
+    background-image: url(/gamecourse/images/arrow_top_icon.svg);
+}
+
+.down_icon {
+    background-image: url(/gamecourse/images/arrow_bottom_icon.svg);
+}
+
 
 /*line of cards structure*/
 

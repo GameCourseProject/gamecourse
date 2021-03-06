@@ -315,6 +315,10 @@ button {
     color: rgb(106, 106, 106);
 }
 
+#open-item .modal_content select {
+    color: rgb(106, 106, 106);
+}
+
 .modal_content .form__input:placeholder-shown+.form__label {
     opacity: 0;
     visibility: hidden;
@@ -438,6 +442,14 @@ button {
     position: absolute;
     bottom: 0px;
     right: 0;
+}
+
+#open-tier .modal_content .cancel,
+#open-item .modal_content .cancel {
+    position: absolute;
+    bottom: 0px;
+    right: 80;
+    background-color: tomato;
 }
 
 .modal_content .config_btn {
