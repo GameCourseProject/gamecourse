@@ -43,12 +43,12 @@ def config_metadata(course):
 		sys.exit(error_msg)
 
 	data = lines.split("\n")
-	
 	metadata = {}
 	for el in data:
-		[key,val] = el.split(":")
-		metadata[key] = int(val)
-	return metadata
+		if len(el.split(":")) == 2:
+			[key,val] = el.split(":")
+			metadata[key] = int(val)
+	return metadata	
 
 
 def read_indicators():
@@ -179,6 +179,10 @@ if __name__ == "__main__":
 
 	#students = get_targets(course)
 	students = get_targets(course, last_activity)
+
+	# clear badge progression before calculating again
+	for el in students.keys():
+		clear_badge_progression(el)
 
 	rs_output = rs.fire(students,logs,scope)
 

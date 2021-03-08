@@ -20,6 +20,7 @@ drop table if exists level;
 drop table if exists user_xp;
 drop table if exists badge_level;
 drop table if exists badge;
+drop table if exists badge_progression;
 drop table if exists badges_config;
 drop table if exists award_participation;
 drop table if exists participation;
