@@ -322,7 +322,7 @@ class Moodle
                 $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
                 $courseUserProf = Core::$systemDB->select("course_user", ["id" => $prof, "course" => $this->courseId]);
                 if ($courseUser && $courseUserProf) {
-                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $forumPrefix . $votesField["post"]]);
                     if (!$result) {
                         $inserted = true;
                         $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . $forumPrefix . $votesField["post"] . '","' . $votesField["rating"] . '",' . $prof . '),';
@@ -564,10 +564,10 @@ class Moodle
                 $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
                 $courseUserEvaluator = Core::$systemDB->select("course_user", ["id" => $evaluator, "course" => $this->courseId]);
                 if ($courseUser && $courseUserEvaluator) {
-                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "graded post", "post" => $votesField["post"]]);
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "peergraded post", "post" => "mod/peerforum/" . $votesField["post"], "evaluator" => $evaluator]);
                     if (!$result) {
                         $inserted = true;
-                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","graded post", "' . "mod/peerforum/" . $votesField["post"] . '","' . $votesField["rating"] . '",' . $evaluator . '),';
+                        $values .= '(' . $user . ',' . $this->courseId . ',"' . $votesField["description"] . '","peergraded post", "' . "mod/peerforum/" . $votesField["post"] . '","' . $votesField["rating"] . '",' . $evaluator . '),';
                         
                     } else {
                         $updated = true;
@@ -577,7 +577,7 @@ class Moodle
                                 "user" => $user,
                                 "course" => $this->courseId,
                                 "description" => $votesField["description"],
-                                "type" => "graded post",
+                                "type" => "peergraded post",
                                 "post" => "mod/peerforum/" . $votesField["post"],
                                 "date" => $votesField["date"],
                                 "rating" => $votesField["rating"],
@@ -587,7 +587,7 @@ class Moodle
                                 "user" => $user,
                                 "course" => $this->courseId,
                                 "evaluator" => $evaluator,
-                                "type" => "graded post",
+                                "type" => "peergraded post",
                                 "post" => "mod/peerforum/" . $votesField["post"]
 
                             ]
