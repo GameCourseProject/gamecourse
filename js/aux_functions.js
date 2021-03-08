@@ -36,7 +36,6 @@ function beginNavbarResize() {
 //so pode ser chamado até x size depois passa a versao mobile
 //to make sure everything fits on the navbar
 function checkNavbarLength() {
-    console.log("I'm going to check navbar length");
     var menu_div = $('.menu');
     if (menu_div.prop('scrollWidth') > menu_div.prop('clientWidth') || menu_div.height() > 55) {
         menu = menu_div[0];

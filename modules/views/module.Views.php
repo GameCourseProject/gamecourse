@@ -1162,7 +1162,7 @@ class Views extends Module
                 else {
                     # Name of thread is important for the badge
                     $like = "%" . $forum . " Forum, Re: " . $thread . "%";
-                    $where = ["user" => $user, "type" => "graded post"];
+                    $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
             }
@@ -1185,14 +1185,31 @@ class Views extends Module
             'getSkillParticipations',
 
             function (int $user, string $skill) use ($courseId) {
+                // get users who are evaluators, aka, users who have the role "Teacher"
+                // select user_role.id from user_role left join role on user_role.role=role.id where role.name = "Teacher" and role.course = 1;
+                $table = "user_role left join role on user_role.role=role.id";
+                $columns = "user_role.id";
+                $where = ["role.name" => "Teacher", "role.course" => $courseId];
+                
+                $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [],null, null);
+                $teachers = [];
+                foreach ($evaluators as $evaluator){
+                    array_push($teachers, $evaluator["id"]);
+                }
                 $table = "participation";
                 $description = "Skill Tree, Re: " . $skill;
-
+                $orderby = "rating desc";
                 $where = ["user" => $user, "type" => "graded post", "description" => $description, "course" => $courseId];
-                $orderby = "rating desc limit 1";
                 $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', $orderby, [], [],null, null);
+                $filteredParticipations = array();
 
-                return $this->createNode($forumParticipation, "participations", "collection");
+                foreach ($forumParticipation as $participation) {
+                    if (in_array($participation["evaluator"], $teachers) ) {
+                        array_push($filteredParticipations, $participation);
+			            break;
+                    }
+                }
+                return $this->createNode($filteredParticipations, "participations", "collection");
             }
 
             ,
@@ -1201,8 +1218,6 @@ class Views extends Module
             'participation',
             'library'
         );
-
-
 
 
         //participations.getRankings(user, type)

@@ -442,6 +442,27 @@ def autogame_terminate(course, date):
 	return
 
 
+def clear_badge_progression(target):
+	# -----------------------------------------------------------	
+	# Clear all badge progression for a given user before  
+	# calculating new progression. Needs to be refresh everytime
+	# the rule system runs.
+	# -----------------------------------------------------------
+
+	(username, password) = get_credentials()
+
+	course = config.course
+	
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=DATABASE)
+
+	cursor = cnx.cursor(prepared=True)
+
+	query = "DELETE from badge_progression where course=%s and user=%s;"
+	cursor.execute(query, (course, target))
+	cnx.commit()
+
+
 def award_badge(target, badge, lvl, contributions=None, info=None):
 	# -----------------------------------------------------------	
 	# Writes and updates 'award' table with badge levels won by 
@@ -482,6 +503,23 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	table_badge = cursor.fetchall()
 	
 	
+	# update the badge_progression table with the current status
+	if contributions != None:
+		if len(contributions) > 0:
+			badgeid = table_badge[0][1]
+			query = "SELECT * from badge_progression where course=%s and user=%s and badgeId=%s;"
+			cursor.execute(query, (course, target, badgeid))
+			table_progression = cursor.fetchall()
+			if len(table_progression) > 0:
+				query = "DELETE from badge_progression where course=%s and user=%s and badgeId=%s;"
+				cursor.execute(query, (course, target, badge))
+				cnx.commit()
+
+			for log in contributions:
+				query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
+				cursor.execute(query, (course, target, badgeid, log.log_id))
+				cnx.commit()	
+	
 	
 	# Case 0: lvl is zero and there are no lines to be erased
 	# Simply return right away
@@ -517,6 +555,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 					participation_id = el.log_id
 					query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
 					cursor.execute(query, (award_id, participation_id))
+					cnx.commit()
 
 			
 			if contributions != None and contributions != None:
@@ -568,6 +607,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 					participation_id = el.log_id
 					query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
 					cursor.execute(query, (award_id, participation_id))
+					cnx.commit()
 
 
 

@@ -487,6 +487,54 @@ class Badges extends Module
             'object',
             'badge'
         );
+
+        //%badge.badgeProgression(user)
+        $viewHandler->registerFunction(
+            'badges',
+            'badgeProgression',
+
+            function ($badge, $user) {
+
+                $badgeParticipation = $this->getBadgeProgression($badge, $user);
+                return $this->createNode($badgeParticipation, 'badges', 'collection');
+
+            },
+            'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that badge.',
+            'object',
+            null,
+            'object',
+            'badge'
+        );
+
+        //%badgeProgression.post
+        $viewHandler->registerFunction(
+            'badges',
+            'post',
+            function ($badge) {
+                return $this->basicGetterFunction($badge, "post");
+            },
+            'Returns a post from a collection of badge progression participations.',
+            'string',
+            null,
+            'object',
+            'badge'
+        );
+
+        //%badgeProgression.description
+        $viewHandler->registerFunction(
+            'badges',
+            'description',
+            function ($badge) {
+                return $this->basicGetterFunction($badge, "description");
+            },
+            'Returns a post description from a collection of badge progression participations.',
+            'string',
+            null,
+            'object',
+            'badge'
+        );	
+
+
         //%level.goal
         $viewHandler->registerFunction(
             'badges',
@@ -733,6 +781,36 @@ class Badges extends Module
         return Core::$systemDB->select("badges_config",["course"=>$courseId], "maxBonusReward");
     }
 
+    public function getBadgeProgression($badge, $user) {
+        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "post, description");
+        for ($i = 0 ; $i < sizeof($badgePosts); $i++) {
+                if (!empty($badgePosts[$i]["post"])) {
+                    if (substr($badgePosts[$i]["post"],0,8) === "view.php") {
+                        $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/mod/resource/" . $badgePosts[$i]["post"];
+                        $badgePosts[$i]["description"] = "(". strval($badgePosts[$i]["description"]) . ")";
+                    }
+                    else {
+                        $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/" . $badgePosts[$i]["post"];
+                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
+                    }
+                }
+                else {
+                    if (strlen($badgePosts[$i]["description"]) > 15) {
+                        $badgePosts[$i]["post"] = $badgePosts[$i]["description"];
+                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
+                    }
+                    else if (empty($badgePosts[$i]["description"])) {
+                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
+                    }
+                    else {
+                        $desc = $badgePosts[$i]["description"];
+                        $badgePosts[$i]["description"] = "(" . $desc . ")";
+                    }
+                }
+        }
+        return $badgePosts;
+    }
+    
     public function newBadge($achievement, $courseId){
         $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
         $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],

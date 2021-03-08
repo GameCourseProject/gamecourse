@@ -27,3 +27,14 @@ create table badge_level(
 	reward 		int unsigned,
 	foreign key(badgeId) references badge(id) on delete cascade
 );
+
+create table badge_progression(
+	course int unsigned not null,
+	user int unsigned not null,
+	badgeId 	int unsigned,
+	participationId 	int unsigned,
+	foreign key(course) references course(id) on delete cascade,
+	foreign key(user) references game_course_user(id) on delete cascade,
+	foreign key(badgeId) references badge(id) on delete cascade,
+	foreign key(participationId) references participation(id) on delete cascade
+);

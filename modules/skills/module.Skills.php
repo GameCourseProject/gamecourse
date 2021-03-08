@@ -600,6 +600,7 @@ class Skills extends Module
             'object',
             'skill'
         );
+
         //%skill.getPost(user)
         $viewHandler->registerFunction(
             'skillTrees',
@@ -607,12 +608,21 @@ class Skills extends Module
             function ($skill, $user) use ($courseId) {
                 $this->checkArray($skill, "object", "getPost()");
                 $userId = $this->getUserId($user);
+                
+                $columns = "award left join award_participation on award.id=award_participation.award left join participation on award_participation.participation=participation.id";
                 $post = Core::$systemDB->select(
-                    "participation",
-                    ["type" => "skill", "moduleInstance" => $skill["value"]["id"], "user" => $userId, "course" => $courseId],
+                    $columns,
+                    ["award.type" => "skill", "award.moduleInstance" => $skill["value"]["id"], "award.user" => $userId, "award.course" => $courseId],
                     "post"
                 );
-                return new ValueNode($post);
+
+                if (!empty($post)) {
+                    $postURL = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/" . $post;
+                }
+                else {
+                    $postURL = $post;
+                }
+                return new ValueNode($postURL);
             },
             'Returns a string with the link to the post of the skill made by the GameCourseUser identified by user.',
             'string',
@@ -620,6 +630,7 @@ class Skills extends Module
             'object',
             'skill'
         );
+
         //%skill.isUnlocked(user), returns true if skill is available to the user
         $viewHandler->registerFunction(
             'skillTrees',
