@@ -180,8 +180,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "forum f
                 join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id
+                join " . $this->prefix . "rating r ON r.itemid = fp.id and r.timemodified > " . $this->time . $timeUpLimit . " 
                 join " . $this->prefix . "user u ON fp.userid = u.id
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
@@ -191,8 +191,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "forum f
                 join " . $this->prefix . "forum_discussions fd ON fd.forum = f.id
-                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "forum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id and r.timemodified > " . $this->time . $timeUpLimit . " 
                 join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
@@ -243,8 +243,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "peerforum f
                 join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
-                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "rating r ON r.itemid = fp.id and r.timemodified > " . $this->time . $timeUpLimit . " 
                 join " . $this->prefix . "user u ON fp.userid = u.id
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
@@ -254,8 +254,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, rating, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "peerforum f
                 join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
-                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "rating r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id
+                join " . $this->prefix . "rating r ON r.itemid = fp.id and r.timemodified > " . $this->time . $timeUpLimit . "
                 join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
@@ -270,10 +270,6 @@ class Moodle
         $result = mysqli_query($db, $sql);
         return array($db, $result);
     }
-
-
-	
-
 
 
     public function parseVotesToDB($row, $db)
@@ -497,8 +493,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "peerforum f
                 join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
-                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id and r.timemodified >" . $this->time . $timeUpLimit . " 
                 join " . $this->prefix . "user u ON fp.userid = u.id
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
@@ -508,8 +504,8 @@ class Moodle
             $sql = "select fp.created, c.shortname, fp.userid, username, f.name, subject, peergrade, r.timemodified as timemodified, r.userid as evaluatorId, fd.id, itemid
                 from " . $this->prefix . "peerforum f
                 join " . $this->prefix . "peerforum_discussions fd ON fd.peerforum = f.id
-                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id and fp.created > " . $this->time . " 
-                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id " . $timeUpLimit . " 
+                join " . $this->prefix . "peerforum_posts fp ON fp.discussion = fd.id 
+                join " . $this->prefix . "peerforum_peergrade r ON r.itemid = fp.id and r.timemodified >" . $this->time . $timeUpLimit . "
                 join " . $this->prefix . "user u ON fp.userid = u.id and u.id="  . $this->user . " 
                 join " . $this->prefix . "course c ON c.id = f.course";
             if ($this->course) {
