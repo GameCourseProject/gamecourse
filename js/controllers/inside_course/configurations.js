@@ -231,12 +231,15 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
 
         $scope.submitItem = function() {
-            $scope.openItem.dependencies = ""
-            $scope.openItem.dependenciesList.forEach(element => {
-                $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
-            });
-            if ($scope.openItem.dependencies != "")
-                $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+            if ($scope.openItem) {
+                $scope.openItem.dependencies = ""
+                $scope.openItem.dependenciesList.forEach(element => {
+                    $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
+                });
+                if ($scope.openItem.dependencies != "")
+                    $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+            }
+
 
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' }, alertUpdate);
         }
@@ -337,13 +340,14 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
 
         $scope.submitItem = function() {
-            $scope.openItem.dependencies = ""
-            $scope.openItem.dependenciesList.forEach(element => {
-                $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
-            });
-            if ($scope.openItem.dependencies != "")
-                $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
-
+            if ($scope.openItem) {
+                $scope.openItem.dependencies = ""
+                $scope.openItem.dependenciesList.forEach(element => {
+                    $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
+                });
+                if ($scope.openItem.dependencies != "")
+                    $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+            }
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'edit' }, alertUpdate);
         }
     };
