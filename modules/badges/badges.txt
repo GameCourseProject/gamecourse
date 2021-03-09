@@ -440,7 +440,7 @@
             "label": null,
             "loopData": "{users.getUsersWithBadge(%badge, %level)}",
             "variables": [],
-            "value": "photos\/{%item.username}.png",
+            "value": "{%item.picture}",
             "class": "student-image",
             "style": null,
             "link": null,

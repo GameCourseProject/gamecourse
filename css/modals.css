@@ -136,10 +136,6 @@ button {
     position: relative;
 }
 
-.modal_content .content .inputs .row_inputs .container {
-    position: relative;
-}
-
 .modal_content .content .inputs .row {
     display: flex;
     margin-top: 10px;
@@ -218,12 +214,31 @@ button {
     position: relative;
 }
 
+.modal_content .content .inputs .btn {
+    display: flex;
+    align-items: center;
+    padding: 2px 10px;
+    background-color: #484848;
+    opacity: 0.7;
+    margin-bottom: 22px;
+}
+
+.modal_content .content .inputs .btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 .modal_content .content .inputs .bigger {
     width: calc(65% - 22px);
 }
 
 .modal_content .content .inputs .smaller {
     width: calc(35% - 11px);
+}
+
+.modal_content .content .inputs .skills {
+    width: calc(25%);
+    margin-right: 5px;
 }
 
 .modal_content .content .inputs .right {
@@ -364,6 +379,22 @@ button {
     /*the rest is gotten from icon on general*/
 }
 
+.modal_content .icon {
+    height: 30px;
+    width: 30px;
+}
+
+.modal_content .delete_icon {
+    height: 25px;
+    width: 25px;
+    opacity: 0.8;
+    margin-left: 10px;
+}
+
+.modal_content .skill_tag {
+    margin-top: 0px;
+}
+
 .modal_content .options .option #choose_create_new_user {
     background-image: url(/gamecourse/images/add_user_icon.svg);
 }
@@ -467,4 +498,14 @@ button {
 .on_off span {
     padding-right: 10px;
     line-height: 26px;
+}
+
+#dep_row {
+    align-items: center;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+#dep_list {
+    margin-bottom: 12px;
 }

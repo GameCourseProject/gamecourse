@@ -810,8 +810,9 @@ class Skills extends Module
                     }
                     $skill['dependencies'] = substr_replace($skill['dependencies'], '', -3, -1);
                 }
+                $skill["dependenciesList"] = $this->transformStringToList($skill["dependencies"]);
                 array_push($skillsArray, $skill);
-
+                
             }
         }
         return $skillsArray;
@@ -867,7 +868,19 @@ class Skills extends Module
 
     public function changeSeqId($courseId, $itemId, $oldSeq, $nextSeq, $tierOrSkill) {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        if ($tierOrSkill == "tier") {;
+        if ($tierOrSkill == "tier") {
+            // if this tier will be the first one
+            if ($nextSeq + 1 == 1) {
+                $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier["tier"]]);
+                foreach($skillsInTier as $skill) {
+                    $dependencies = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]], "id");
+                    if(!empty($dependencies)) {
+                        foreach($dependencies as $dep) {
+                            Core::$systemDB->delete("dependency", ["id" => $dep["id"]]);
+                        }
+                    }
+                }   
+            }
             Core::$systemDB->update("skill_tier", ["seqId" => $oldSeq + 1], ["seqId" => $nextSeq + 1, "treeId" => $treeId]);
             Core::$systemDB->update("skill_tier", ["seqId" => $nextSeq + 1], ["seqId" => $oldSeq + 1, "tier" => $itemId, "treeId" => $treeId]);
         } else {
@@ -987,6 +1000,7 @@ class Skills extends Module
         Core::$systemDB->insert("skill",$skillData);
         $skillId = Core::$systemDB->getLastId();
         if ($skill["dependencies"] != "") {
+            
             if (strpos($skill["dependencies"], '|')) {
                 $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
                 foreach ($pairDep as $dep) {
@@ -1141,8 +1155,6 @@ class Skills extends Module
                             // delete the dependency
                             Core::$systemDB->delete("dependency",[
                                 "id" => $dId["id"]]);
-                            Core::$systemDB->delete("skill_dependency",[
-                                "dependencyId" => $dId["id"]]);
                         }
                     }
                 } 
@@ -1185,16 +1197,6 @@ class Skills extends Module
             // it had dependencies before, and now those are removed
             if (!empty($dependencyId)) {
                 foreach ($dependencyId as $depId) {
-                    $skillDepIds = Core::$systemDB->selectMultiple("skill_dependency",[
-                        "dependencyId" => $depId["id"]
-                    ], "normalSkillId");
-    
-                    foreach($skillDepIds as $id) {
-                        Core::$systemDB->delete("skill_dependency",[
-                            "dependencyId" => $depId["id"],
-                            "normalSkillId" => $id["normalSkillId"]
-                        ]);
-                    }
                     Core::$systemDB->delete("dependency",[
                         "dependencyId" => $depId["id"]
                     ]);
@@ -1215,6 +1217,32 @@ class Skills extends Module
 
     }
 
+    public function transformStringToList($skillDependencyString) {
+        $skillDependencyArray = [];
+        if ($skillDependencyString != "") {
+            
+            if (strpos($skillDependencyString, '|')) {
+                $pairDep = explode("|", str_replace(" | ", "|", $skillDependencyString));
+                foreach ($pairDep as $dep) {
+                    $newDep = [];
+                    $dependencies = explode("+", str_replace(" + ", "+", $dep));
+                    foreach($dependencies as $d) {
+                        $newDep[] = trim($d);
+                    }
+                    $skillDependencyArray[] = $newDep;
+                }
+            } else {
+                $newDep = [];
+                $dependencies = explode("+", str_replace(" + ", "+", $skillDependencyString));
+                foreach($dependencies as $d) {
+                    $newDep[] = trim($d);
+                }
+                $skillDependencyArray[] = $newDep;
+            }
+        }
+        return $skillDependencyArray;
+    }
+
     public function has_listing_items() { return  true; }
     public function get_listing_items($courseId){
         //tenho de dar header
@@ -1226,7 +1254,8 @@ class Skills extends Module
         $allAtributes = [
             array('name' => "Tier", 'id'=> 'tier', 'type' => "select", 'options' => $this->getTiers($courseId)),
             array('name' => "Name", 'id'=> 'name', 'type' => "text", 'options' => ""),
-            array('name' => "Dependencies", 'id'=> 'dependencies', 'type' => "text", 'options' => ""),
+            array('name' => "Dependencies", 'id'=> 'dependencies', 'type' => "button", 'options' => ""),
+            array('name' => "DependenciesList", 'id'=> 'dependenciesList', 'type' => "", 'options' => ""),
             array('name' => "Color", 'id'=> 'color', 'type' => "color", 'options'=>"", 'current_val' => ""),
             //array('name' => "XP", 'id'=> 'xp', 'type' => "number", 'options' => ""),
         ];
@@ -1293,6 +1322,7 @@ class Skills extends Module
                         "tier"=>$item[$tierIndex],
                         "name"=>$item[$nameIndex],
                         "dependencies"=>$item[$dependenciesIndex],
+                        "dependenciesList"=>(new self)->transformStringToList($item[$dependenciesIndex]),
                         "color"=>$item[$colorIndex],
                         "xp"=>$item[$xpIndex],
                         "treeId"=>$treeId
