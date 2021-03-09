@@ -474,7 +474,8 @@ input:checked+.slider:before {
 
 .role_tag,
 .course_tag,
-.user_tag {
+.user_tag,
+.skill_tag {
     text-transform: uppercase;
     font-size: 10px;
     background-color: grey;

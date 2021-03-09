@@ -383,7 +383,7 @@ function resetSelectTextColor(id) {
     el.style.color = "rbg(106,106,106)";
 }
 
-function moveRow(containerId, item, oldIdx, newIdx, limit = -1) {
+function moveRow(containerId, oldIdx, newIdx) {
     // children[0] - gives tbody; children gives the rows
     // cut the first child because the header is inside tbody
     var rows = Array.from(document.getElementById(containerId).children[0].children).slice(1);
