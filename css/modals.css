@@ -509,3 +509,14 @@ button {
 #dep_list {
     margin-bottom: 12px;
 }
+
+#add_dep {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#dependency1,
+#dependency2 {
+    margin-bottom: 0px;
+}
