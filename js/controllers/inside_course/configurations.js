@@ -116,7 +116,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             add_dep.append(add_skill1);
             add_dep.append(add_skill2);
             add_dep.append($('<button ng-click="addDependency()">Add</button>'));
-            dep_row.append($('<div class="delete_icon icon" ng-click="removeAddForm()"></div>'));
+            add_dep.append($('<div class="delete_icon icon" ng-click="removeAddForm()"></div>'));
 
             add_dep.insertBefore("#dependency");
         }
