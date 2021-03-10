@@ -5,6 +5,7 @@ create table skill_tree(
 	foreign key(course) references course(id) on delete cascade
 );
 create table skill_tier(
+	id 	int unsigned auto_increment unique,
 	tier varchar(50) not null,
 	seqId int unsigned not null,
 	reward int unsigned not null,
@@ -30,6 +31,14 @@ create table dependency(
 create table skill_dependency(
 	dependencyId int unsigned not null,
 	normalSkillId int unsigned not null,
-	foreign key (dependencyId) references dependency(id) on delete cascade,
-	foreign key(normalSkillId) references skill(id) on delete cascade
+	isTier boolean not null default false,
+	primary key(dependencyId, normalSkillId, isTier),
+	foreign key (dependencyId) references dependency(id) on delete cascade
+);
+create table award_wildcard(
+	awardId int unsigned not null,
+	tierId int unsigned not null,
+	primary key(awardId,tierId),
+	foreign key (awardId) references award(id) on delete cascade,
+	foreign key (tierId) references skill_tier(id) on delete cascade
 );
