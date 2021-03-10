@@ -207,15 +207,20 @@ API::registerFunction('settings', 'courseLevels', function() {
 //returns array with all dependencies of a skill
 function getSkillDependencies($skillId){
     $depArray=[];
-    $deps = Core::$systemDB->selectMultiple(
-        "dependency d join skill_dependency on dependencyId=id join skill s on s.id=normalSkillId",
-        ["superSkillId"=>$skillId],"d.id,name");
-            
-    foreach ($deps as $d){
-        $depArray[]=$d['name'];
-    }
-    //$depArray = array_filp($depArray);array_com
-    //$depArray = array_values($depArray);   
+    $dependencyIDs = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skillId],"id");
+
+    foreach ($dependencyIDs as $id){
+        $individualDeps = Core::$systemDB->selectMultiple("skill_dependency",["dependencyId"=>$id["id"]]);
+        foreach ($individualDeps as $dep){
+            if($dep["isTier"]){
+                $name = Core::$systemDB->select("skill_tier",["id" => $dep["normalSkillId"]], "tier");
+            }
+            else {
+                $name = Core::$systemDB->select("skill",["id" => $dep["normalSkillId"]], "name");
+            }
+            array_push($depArray, $name);
+        } 
+    }   
     return $depArray;
 }
 
