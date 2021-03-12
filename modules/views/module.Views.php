@@ -1154,19 +1154,18 @@ class Views extends Module
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
-                    $like = "%" . $forum . " Forum%";
+                    $like = $forum . ",%";
                     $likeParams = ["description" => $like];
-
+                    
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [],null, $likeParams);
                 } 
                 else {
                     # Name of thread is important for the badge
-                    $like = "%" . $forum . " Forum, Re: " . $thread . "%";
+                    $like = $forum . ", Re: " . $thread . "%";
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
-            }
-
+            }   
                 return $this->createNode($forumParticipation, "participations", "collection");
             }
 

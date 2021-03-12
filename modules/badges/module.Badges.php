@@ -782,32 +782,42 @@ class Badges extends Module
     }
 
     public function getBadgeProgression($badge, $user) {
-        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "post, description");
+        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description");
+
+        
         for ($i = 0 ; $i < sizeof($badgePosts); $i++) {
-                if (!empty($badgePosts[$i]["post"])) {
-                    if (substr($badgePosts[$i]["post"],0,8) === "view.php") {
-                        $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/mod/resource/" . $badgePosts[$i]["post"];
-                        $badgePosts[$i]["description"] = "(". strval($badgePosts[$i]["description"]) . ")";
-                    }
-                    else {
-                        $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/" . $badgePosts[$i]["post"];
-                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
-                    }
+            if ($badgePosts[$i]["isPost"]) {
+                if (substr($badgePosts[$i]["post"],0,9) === "mod/quiz/") {
+                    $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/mod/resource/" . $badgePosts[$i]["post"];
+                    $badgePosts[$i]["description"] = "(". strval($badgePosts[$i]["description"]) . ")";
                 }
                 else {
-                    if (strlen($badgePosts[$i]["description"]) > 15) {
-                        $badgePosts[$i]["post"] = $badgePosts[$i]["description"];
-                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
-                    }
-                    else if (empty($badgePosts[$i]["description"])) {
-                        $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
-                    }
-                    else {
-                        $desc = $badgePosts[$i]["description"];
-                        $badgePosts[$i]["description"] = "(" . $desc . ")";
-                    }
+                    $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/" . $badgePosts[$i]["post"];
+                    $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
                 }
+            }
+            else {
+                if (substr($badgePosts[$i]["post"],0,8) === "view.php") {
+                    $badgePosts[$i]["post"] = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/mod/resource/" . $badgePosts[$i]["post"];
+                    $badgePosts[$i]["description"] = "(". strval($badgePosts[$i]["description"]) . ")";
+                }
+
+                else if (empty($badgePosts[$i]["description"])) {
+                    $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
+                }
+
+                else if (strlen($badgePosts[$i]["description"]) > 23) {
+                    $badgePosts[$i]["post"] = $badgePosts[$i]["description"];
+                    $badgePosts[$i]["description"] = "(". strval($i + 1) . ")";
+                }
+
+                else {
+                    $desc = $badgePosts[$i]["description"];
+                    $badgePosts[$i]["description"] = "(" . $desc . ")";
+                }
+            }
         }
+        
         return $badgePosts;
     }
     

@@ -301,7 +301,6 @@ def calculate_xp(course, target):
 
 	# if query returns empty set
 	if len(badge_xp_extra) > 0:
-		sys.stderr.write("\n\n")
 		if badge_xp_extra[0][0] != None:
 			user_badge_xp_extra = int(badge_xp_extra[0][0])
 		else:
@@ -420,7 +419,7 @@ def autogame_terminate(course, date):
 
 	if len(table) == 0:
 		HOST = '127.0.0.1' # The server's hostname or IP address
-		PORT = 8002 # The port used by the server
+		PORT = 8004 # The port used by the server
 
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -461,6 +460,7 @@ def clear_badge_progression(target):
 	query = "DELETE from badge_progression where course=%s and user=%s;"
 	cursor.execute(query, (course, target))
 	cnx.commit()
+	cnx.close()
 
 
 def award_badge(target, badge, lvl, contributions=None, info=None):
@@ -507,13 +507,6 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	if contributions != None:
 		if len(contributions) > 0:
 			badgeid = table_badge[0][1]
-			query = "SELECT * from badge_progression where course=%s and user=%s and badgeId=%s;"
-			cursor.execute(query, (course, target, badgeid))
-			table_progression = cursor.fetchall()
-			if len(table_progression) > 0:
-				query = "DELETE from badge_progression where course=%s and user=%s and badgeId=%s;"
-				cursor.execute(query, (course, target, badge))
-				cnx.commit()
 
 			for log in contributions:
 				query = "INSERT into badge_progression (course, user, badgeId, participationId) values (%s,%s,%s,%s);"
@@ -653,7 +646,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
 
-def award_skill(target, skill, rating, contributions=None):
+def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
 	# -----------------------------------------------------------	
 	# Writes and updates 'award' table with skills completed by 
 	# the user. Will retract if rules/participations have been
@@ -675,9 +668,16 @@ def award_skill(target, skill, rating, contributions=None):
 	table = cursor.fetchall()
 
 
+	if use_wildcard != False and wildcard_tier != None:
+		# get wildcard tier information
+		query = "select t.id from skill_tier t left join skill_tree s on t.treeId=s.id where tier =%s and course = %s;"
+		cursor.execute(query, (wildcard_tier, course))
+		table_tier = cursor.fetchall()
+		if len(table_tier) == 1:
+			tier_id = table_tier[0][0]
+		
 
-
-	query = "SELECT s.id, reward FROM skill s natural join skill_tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
+	query = "SELECT s.id, reward FROM skill s join skill_tier on s.tier=skill_tier.tier join skill_tree t on t.id=s.treeId where s.name = %s and course = %s;"
 	cursor.execute(query, (skill, course))
 	table_skill = cursor.fetchall()
 
@@ -705,6 +705,14 @@ def award_skill(target, skill, rating, contributions=None):
 
 		query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
 		cursor.execute(query, (award_id, participation_id))
+		cnx.commit()
+
+		if use_wildcard != False and wildcard_tier != None:
+			# insert into wildcard table
+			query = "INSERT INTO award_wildcard (awardId, tierId) VALUES (%s,%s);"
+			cursor.execute(query, (award_id, tier_id))
+			cnx.commit()
+
 	
 	# If skill has already been awarded to used
 	# compare ratings given before and now
@@ -906,7 +914,7 @@ def call_gamecourse(course, library, function, args):
 
 
 	HOST = '127.0.0.1' # The server's hostname or IP address
-	PORT = 8002 # The port used by the server
+	PORT = 8004 # The port used by the server
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

@@ -17,7 +17,7 @@ class GameRules{
 	private $courseId;
 
 	private $host = "127.0.0.1";
-	private $port = "8002";
+	private $port = "8004";
 	private $logFile = "/var/www/html/gamecourse/legacy_data/GR_log_";
 	private $autogamePath = "/var/www/html/gamecourse/autogame/run_autogame.py";
 
