@@ -2,7 +2,7 @@
 
 namespace Modules\Plugin;
 
-chdir('/var/www/html/gamecourse_test');
+chdir('/var/www/html/gamecourse');
 include 'classes/ClassLoader.class.php';
 include 'classes/GameCourse/Core.php';
 include 'classes/GameCourse/Course.php';

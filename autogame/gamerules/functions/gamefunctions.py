@@ -164,8 +164,14 @@ def filter_quiz(logs):
 			filtered_logs.append(line)	
 	return filtered_logs
 
+@rule_effect
+def print_info(text):
+        """ 
+        returns the output of a skill and writes the award to database
+        """
+        sys.stderr.write(str(text))
 
-
+		
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Decorated Functions
@@ -188,11 +194,11 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 
 
 @rule_effect
-def award_skill(target, skill, rating, contributions=None):
+def award_skill(target, skill, rating, contributions=None, use_wildcard=False, wildcard_tier=None):
 	""" 
 	returns the output of a skill and writes the award to database
 	"""
-	result = connector.award_skill(target, skill, rating, contributions)
+	result = connector.award_skill(target, skill, rating, contributions, use_wildcard, wildcard_tier)
 	return result
 
 @rule_effect

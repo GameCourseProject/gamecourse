@@ -30,7 +30,9 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
         "course" => $courseId,
     ]);
     $db->insert("user_role", ["id" => 1, "course" => $courseId, "role" => $roleId]);
-
+    // insert line in AutoGame table
+    $db->insert("autogame", ["course" => $courseId]);	
+        
     file_put_contents('setup.done', '');
 
     unset($_SESSION['user']); // if the user was logged and the config folder was destroyed..
