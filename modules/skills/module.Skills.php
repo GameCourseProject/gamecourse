@@ -246,6 +246,7 @@ class Skills extends Module
     public function isSkillUnlocked($skill, $user, $courseId)
     {
         $dependency = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["value"]["id"]]);
+        $skillName = $skill["value"]["name"];
         //goes through all dependencies to check if they unlock the skill
         $unlocked = true;
         foreach ($dependency as $dep) {
@@ -260,9 +261,9 @@ class Skills extends Module
                     // if it depends on a tier, check every skill from that tier
                     $tierName = Core::$systemDB->select("skill_tier", ["id" => $depSkill["normalSkillId"]], "tier");
                     $tierSkills = Core::$systemDB->selectMultiple("skill s join skill_tree t on s.treeId = t.id", ["tier" => $tierName, "t.course" => $courseId], "s.id");
-                    foreach($tierSkills as $skill){
-                        //if one skill from tier is completed
-                        if ($this->isSkillCompleted($skill["id"], $user, $courseId)){ //ToDo: ver se wildcard já foi usada
+                    foreach($tierSkills as $tierSkill){
+                        //if one skill from tier is completed AND the super skill is completed or there are wildcards to use
+                        if ($this->isSkillCompleted($tierSkill["id"], $user, $courseId) and $this->getAvailableWildcards($skillName, $tierName, $user, $courseId)){ 
                             $unlocked = true;
                             break;
                         }
@@ -560,18 +561,37 @@ class Skills extends Module
             'object',
             'tier'
         );
-        //%skill.reward
+        //%tier.usedWildcards
         $viewHandler->registerFunction(
             'skillTrees',
-            'reward',
-            function ($arg) {
-                return $this->basicGetterFunction($arg, "reward");
+            'usedWildcards',
+            function ($arg, $user) {
+                $tierName = $arg["value"]["tier"];
+                $course = $arg["value"]["parent"]["value"]["course"];
+                return new ValueNode($this->getUsedWildcards($tierName, $user,  $course));
+                
             },
-            'Returns a string with the reward of completing a skill from that tier.',
+            'Returns a string with the number of wildcards from this tier that have been used by a user.',
             'string',
             null,
             'object',
-            'skill'
+            'tier'
+        );
+        //%tier.hasWildcards
+        $viewHandler->registerFunction(
+            'skillTrees',
+            'hasWildcards',
+            function ($arg) {
+                $tierName = $arg["value"]["tier"];
+                $course = $arg["value"]["parent"]["value"]["course"];
+                return new ValueNode($this->tierHasWildcards($tierName,  $course));
+                
+            },
+            'Returns a bool that indicates if a tier has wildcards (i.e. if other skills depend on this tier).',
+            'boolean',
+            null,
+            'object',
+            'tier'
         );
         //%tier.tier
         $viewHandler->registerFunction(
@@ -805,8 +825,8 @@ class Skills extends Module
         $viewHandler->registerFunction(
             'skillTrees',
             'wildcardAvailable',
-            function ($tier, $user) use ($courseId) {
-                return new ValueNode($this->getAvailableWildcards($tier, $user, $courseId));
+            function ($skill, $tier, $user) use ($courseId) {
+                return $this->createNode($this->getAvailableWildcards($skill, $tier, $user, $courseId), "skillTrees", "object");
             },
             'Returns a boolean regarding whether the GameCourseUser identified by user has "wildcards" to use from a certain tier.',
             'boolean',
@@ -829,7 +849,7 @@ class Skills extends Module
 
             if ($skillName) {
                 $skills = Core::$systemDB->selectMultiple(
-                    "skill_tier natural join skill s join skill_tree t on t.id=treeId",
+                    "skill_tier st left join skill s on st.tier=s.tier join skill_tree t on t.id=st.treeId",
                     ["course" => $courseId],
                     "name,page"
                 );
@@ -914,12 +934,27 @@ class Skills extends Module
         
     //     return $skillsArray;
     // }
-    public function getAvailableWildcards($tier, $user, $course){
-        $tierSkills = Core::$systemDB->selectMultiple(
-            "skill sk left join skill_tier t on sk.tier = t.tier left join skill_tree s on t.treeId=s.id",
-            ["course" => $course, "t.tier" => $tier],
-            "count(sk.id) as numWild"
+
+    public function getAvailableWildcards($skill, $tier, $user, $course){
+	//this works because only one insertion is made in award_wildcard
+	//on the first time that a skill rule is triggered
+        $completedWildcards = Core::$systemDB->selectMultiple(
+            "award a left join skill s on a.moduleInstance = s.id left join skill_tier t on s.tier = t.tier and t.treeId = s.treeId",
+            ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
+            "count(a.id) as numCompleted"
         );
+
+        $usedWildcards = $this->getUsedWildcards($tier, $user, $course);
+	
+	$isCompleted = Core::$systemDB->selectMultiple(
+            "award a left join skill s on a.moduleInstance = s.id",
+            ["a.user" => $user, "a.course" => $course, "s.name" => $skill]
+        );
+
+        return (($usedWildcards < $completedWildcards[0]["numCompleted"]) or !empty($isCompleted));
+    }
+
+    public function getUsedWildcards($tier, $user, $course){
 
         $usedWildcards = Core::$systemDB->selectMultiple(
             "award_wildcard w left join award a on w.awardId = a.id left join skill_tier t on w.tierId = t.id",
@@ -927,7 +962,17 @@ class Skills extends Module
             "count(w.awardId) as numUsed"
         );
 
-        return ($usedWildcards[0]["numUsed"] < $tierSkills[0]["numWild"]);
+        return $usedWildcards[0]["numUsed"];
+    }
+
+    public function tierHasWildcards($tier, $course){
+        $tierSkills = Core::$systemDB->selectMultiple(
+            "skill_dependency d left join skill_tier t on d.normalSkillId = t.id left join skill_tree s on t.treeId=s.id",
+            ["course" => $course, "t.tier" => $tier, "d.isTier" => true],
+            "count(*) as numWild"
+        );
+
+        return $tierSkills[0]["numWild"] > 0;
     }
 
     public function getNumberOfSkillsInTier($treeId, $tier){
