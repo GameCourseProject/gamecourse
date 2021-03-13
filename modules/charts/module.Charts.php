@@ -92,7 +92,12 @@ class Charts extends Module {
             }
             $awards = Core::$systemDB->selectMultiple("award",["user"=>$userID,"course"=>$course->getId()],"*","date");
 
-            $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
+            if(array_key_exists(0, $awards)){
+                $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
+            }
+            else {
+                $currentDay = (new DateTime('2021-03-01'));
+            }
             $xpDay = 0;
             $xpTotal = 0;
             $xpValue = array();
@@ -143,7 +148,7 @@ class Charts extends Module {
             };
             
             //keeps cache of leaderboard chart of user since the last update
-            $updated = $calcDay(Core::$systemDB->select("course",["id"=>$params['course']],"lastUpdate"));
+            $updated = $calcDay(Core::$systemDB->select("autogame",["course"=>$params['course']],"date"));
             $cacheId = 'leaderboardEvolution' . $params['course'] . '-' . $userID . '-' . $updated;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
