@@ -341,9 +341,31 @@ class Course
         $folder = Course::getCourseLegacyFolder($courseId, $courseName);
         if (!file_exists($folder))
             mkdir($folder);
-        if (!file_exists($folder . "/tree"))
-            mkdir($folder . "/tree");
+        /*if (!file_exists($folder . "/tree"))
+            mkdir($folder . "/tree");*/
         return $folder;
+    }
+
+    public static function copyCourseLegacyFolder($source, $destination)
+    {
+        $dir = opendir($source);
+        if (!file_exists($destination))
+            mkdir($destination);
+            
+        while($file = readdir($dir) ) {  
+            if (( $file != '.' ) && ( $file != '..' )) {  
+                if ( is_dir($source . '/' . $file) )  
+                {  
+                    // Recursively calling custom copy function for sub directory  
+                    Course::copyCourseLegacyFolder($source . '/' . $file, $destination . '/' . $file);  
+                }  
+                else {  
+                    copy($source . '/' . $file, $destination . '/' . $file);  
+                }  
+            }  
+        }  
+      
+        closedir($dir);  
     }
 
     public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive)
@@ -366,6 +388,7 @@ class Course
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
         $legacyFolder = Course::createCourseLegacyFolder($courseId, $courseName);
+        
 
         //course_user table (add current user)
         $currentUserId = null;
@@ -376,6 +399,8 @@ class Course
 
         if ($copyFrom !== null) {
             $copyFromCourse = Course::getCourse($copyFrom);
+            $copyLegacyFolder = Course::getCourseLegacyFolder($copyFrom);
+            Course::copyCourseLegacyFolder($copyLegacyFolder, $legacyFolder);
 
             //course table
             $keys = ['defaultLandingPage', "roleHierarchy", "theme"];
