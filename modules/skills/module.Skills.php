@@ -277,17 +277,15 @@ class Skills extends Module
         }
         return ($unlocked);
     }
-    //adds skills tables if they dont exist, and fills it with tiers, the remaining info needs to be setup in config page
+    //adds skills tables and data folder if they dont exist
     private function setupData($courseId)
     {
         if ($this->addTables("skills", "skill") || empty(Core::$systemDB->select("skill_tree", ["course" => $courseId]))) {
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
-            //$skillTree = Core::$systemDB->getLastId();
-            // Core::$systemDB->insert("skill_tier", ["tier" => 1, "reward" => 150, "treeId" => $skillTree]);
-            // Core::$systemDB->insert("skill_tier", ["tier" => 2, "reward" => 400, "treeId" => $skillTree]);
-            // Core::$systemDB->insert("skill_tier", ["tier" => 3, "reward" => 750, "treeId" => $skillTree]);
-            // Core::$systemDB->insert("skill_tier", ["tier" => 4, "reward" => 1150, "treeId" => $skillTree]);
         }
+        $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
+        if (!file_exists($folder . "/tree"))
+            mkdir($folder . "/tree");
     }
 
     public function deleteDataRows($courseId)
