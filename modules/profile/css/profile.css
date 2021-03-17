@@ -187,8 +187,9 @@
   text-align: left;
 }
 
-.latest-awards img {
-  width: 48px;
+.latest-awards .img {
+  width: 32px;
+  height: 32px;
 }
 
 .latest-awards .skill {

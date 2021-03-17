@@ -6,7 +6,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 func(undefined, err);
                 return;
             }
-            console.log("view", data.view);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.viewBlock = {
@@ -239,7 +238,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     this.openOverlay = function (callbackFunc, closeFunc) {
-        
+
         var overlay = $("<div class='modal'></div>");
         var overlayCenter = $("<div class='modal_content'></div>");
         overlay.append(overlayCenter);
@@ -292,7 +291,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.createToolbar = function (scope, part, toolbarOptions, isTableTool) {
         var toolbar = $(document.createElement('div')).addClass('edit-toolbar');
-        if(isTableTool){
+        if (isTableTool) {
             toolbar.addClass('table-toolbar');
         }
 
@@ -461,7 +460,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         execClose();
                     };
                     modal.parent().attr("id", "switch_part");
-                    modal.append( $('<button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"</button>'));
+                    modal.append($('<button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"</button>'));
                     modal.append($('<div class="title">Switch Part Into: </div>'));
                     modalContent = $("<div class='content'></div>");
                     parts_selection = $('<div id="parts_selection"></div>');
@@ -485,19 +484,19 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             partsList.append(option);
 
                             partIconName = "images/" + type + "_part_icon.svg";
-                            part_option = $('<div value="'+type+'" class="part_option"></div>')
+                            part_option = $('<div value="' + type + '" class="part_option"></div>')
                             part_option.append($(document.createElement('img')).attr('src', partIconName));
-                            part_option.append($('<div class="part_label">'+type+'</div>'));
+                            part_option.append($('<div class="part_label">' + type + '</div>'));
                             parts_selection.append(part_option);
-                            part_option.click(function(){ 
+                            part_option.click(function () {
                                 $(".part_option").removeClass("focus");
                                 $(this).addClass("focus");
                                 type = this.getAttribute('value');
-                                $("#partList").val("part:"+ type);
+                                $("#partList").val("part:" + type);
                                 template_selection.hide();
                                 turnButton.prop('disabled', false);
                             });
-                            if( type == part.partType){
+                            if (type == part.partType) {
                                 part_option.append($('<div class="current_label">(current)</div>'));
                                 part_option.addClass("current");
                             }
@@ -509,11 +508,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     temp_option.val('temp:');
                     partsList.append(temp_option);
                     // add template icon option
-                    part_option = $('<div value="'+type+'" class="part_option"></div>')
+                    part_option = $('<div value="' + type + '" class="part_option"></div>')
                     part_option.append($(document.createElement('img')).attr('src', "images/template_part_icon.svg"));
                     part_option.append($('<div class="part_label"> template</div>'));
                     parts_selection.append(part_option);
-                    part_option.click(function(){ 
+                    part_option.click(function () {
                         $(".part_option").removeClass("focus");
                         $(this).addClass("focus");
                         type = this.getAttribute('value');
@@ -603,10 +602,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         optionsScope.saveTemplate = function () {
                             optionsScope.template.part.role = $rootScope.role;
                             var isbyRef = $('#isRef').is(':checked');
-                            if(isbyRef){
+                            if (isbyRef) {
                                 var templateIndex = optionsScope.editData.templates.length;
-                                optionsScope.template.roleType= "ROLE_SINGLE";
-                                optionsScope.template.role= "Role.Default";
+                                optionsScope.template.roleType = "ROLE_SINGLE";
+                                optionsScope.template.role = "Role.Default";
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                     if (err) {
                                         giveMessage(err.description);
@@ -629,7 +628,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     });
                                 });
                             }
-                            else{
+                            else {
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                     if (err) {
                                         giveMessage(err.description);
@@ -640,15 +639,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     optionsScope.editData.templates[optionsScope.template.name] = templatePart;
                                 });
                             }
-                            
+
                         };
 
                         modal.parent().attr("id", "save_as_template");
-                        modal.append( $('<button class="close_btn icon" value="#save_as_template" ng-click="closeOverlay()"</button>'));
+                        modal.append($('<button class="close_btn icon" value="#save_as_template" ng-click="closeOverlay()"</button>'));
                         modal.append($('<div class="title">Save Part as Template: </div>'));
                         modalContent = $("<div class='content'></div>");
-                        modalContent.append( $('<div class="full"><input type="text" class="form__input" id="templateName" placeholder="Template Name *" ng-model="template.name"/> <label for="templateName" class="form__label">Template Name</label></div>'))
-                        modalContent.append( $('<div class= "on_off"><span>Save as reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
+                        modalContent.append($('<div class="full"><input type="text" class="form__input" id="templateName" placeholder="Template Name *" ng-model="template.name"/> <label for="templateName" class="form__label">Template Name</label></div>'))
+                        modalContent.append($('<div class= "on_off"><span>Save as reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
                         modalContent.append($('<button class="save_btn" ng-click="saveTemplate()">Save</button>'));
                         modal.append(modalContent);
                         $compile(modal)(optionsScope)
@@ -696,16 +695,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         };
 
-        
 
-        element.on('click', function(e) {
+
+        element.on('click', function (e) {
 
             //click only works on the closest div.
-            e.stopPropagation(); 
+            e.stopPropagation();
 
             //second click closes the toolbar
-            if (firstclickdone){
-                if (layoutEditing){
+            if (firstclickdone) {
+                if (layoutEditing) {
                     return;
                 }
                 element.removeClass('highlight');
@@ -716,17 +715,17 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
 
             //first click opens the toolbar
-            else{
+            else {
                 shouldBuild = true
                 //remove highlight and toolbar from preiously selected elements
                 previousHighlighted = $(".highlight");
-                jQuery.each(previousHighlighted , function( index ) {
+                jQuery.each(previousHighlighted, function (index) {
                     item = previousHighlighted[index];
                     item.click();
                     if ($(item)[0].classList.contains('highlight'))
                         shouldBuild = false;
                 });
-                
+
                 if (myToolbar)
                     return;
 
@@ -749,8 +748,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     },
                     view: partOptions.view
                 };
-                
-                if (element.parent().hasClass("header")){
+
+                if (element.parent().hasClass("header")) {
                     defaultOptions.overlayOptions.allowEvents = true;
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
@@ -766,25 +765,25 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 if (element.hasClass('view')) {
                     toolOptions.noSettings = true;
                 }
-                toolbarOptions = $.extend(true, defaultOptions, {tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions}, options);
+                toolbarOptions = $.extend(true, defaultOptions, { tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions }, options);
                 toolbarOptions.editData = editData;
-                
+
                 myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions, false);
-    
-                
+
+
                 // myToolbar.css({
                 //     position: 'absolute',
                 //     top: 0,
                 //     right: 0
                 // });
                 //if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
-                    element.addClass('highlight');
-             
+                element.addClass('highlight');
+
                 element.append(myToolbar);
                 firstclickdone = true;
                 //console.log("mouseenter",element.data());
             }
-            
+
         });
     };
 

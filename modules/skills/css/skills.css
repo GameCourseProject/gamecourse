@@ -235,3 +235,7 @@
 .skills-pageblock .tier .post:hover {
   color: #e6e6e6;
 }
+
+.value.wildcards.ng-scope {
+  margin-left: 15px !important;
+}

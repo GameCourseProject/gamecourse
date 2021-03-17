@@ -544,4 +544,14 @@ input:checked+.slider:before {
 .page-block {
     padding-left: 20px;
     padding-top: 10px;
+    padding-bottom: 50px;
+}
+
+.page-block .header {
+    display: flex;
+    align-items: center;
+}
+
+.page-block .header span {
+    margin-left: 10px;
 }
