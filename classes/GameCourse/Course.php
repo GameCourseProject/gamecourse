@@ -939,4 +939,28 @@ class Course
         $gr = new GameRules($courseId);
         $gr->run();
     }
+
+    public function upload($file, $filename, $module = null, $subfolder = null){
+        $location = Course::getCourseLegacyFolder($this->getId());
+
+        if ($module) {
+            $location .=  "/" . strtolower($module);
+        }
+        if ($subfolder) {
+            $location .=  "/" . str_replace(' ', '', $subfolder);
+        }
+        $locationFile = "/" . $filename;
+        $response = 0;
+
+        // Upload file
+        $decoded = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $file));
+        if (!file_exists($location))
+            mkdir($location);
+
+        $result = file_put_contents($location . $locationFile, $decoded);
+        if ($result) {
+            $response = $location . $locationFile;
+        }
+        return $response;
+    }
 }

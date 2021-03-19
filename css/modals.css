@@ -520,3 +520,8 @@ button {
 #dependency2 {
     margin-bottom: 0px;
 }
+
+#editor {
+    height: 150px;
+    margin-bottom: 30px;
+  }

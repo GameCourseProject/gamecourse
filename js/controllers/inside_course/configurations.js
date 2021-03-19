@@ -60,14 +60,14 @@ function constructConfigPage(data, err, $scope, $element, $compile, name, text, 
     configurationSection.append(configSectionContent);
 }
 
-app.controller('ConfigurationController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+app.controller('ConfigurationController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
 
-    $scope.saveDataGeneralInputs = function() {
+    $scope.saveDataGeneralInputs = function () {
         $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, generalInputs: $scope.inputs }, alertUpdate);
     }
-    $scope.generalInputsChanged = function() {
+    $scope.generalInputsChanged = function () {
         changed = false;
-        jQuery.each($scope.generalInputs, function(index) {
+        jQuery.each($scope.generalInputs, function (index) {
             inputName = $scope.generalInputs[index].id
             initialInput = $scope.initialInputs[inputName];
             currentInput = $scope.inputs[inputName];
@@ -78,7 +78,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         return changed;
     }
 
-    updateDependenciesAddSection = function($scope, box, allSkills, addForm) {
+    updateDependenciesAddSection = function ($scope, box, allSkills, addForm) {
         $("#dep_list").remove();
         $("#add_dep").remove();
         editbox = $(box);
@@ -88,8 +88,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             for (var i = 0; i < $scope.openItem.dependenciesList.length; i++) {
 
                 dep_row = $('<div id="dep_row"><span style="margin-right: 8px;">Dependency ' + String(i + 1) + ': </span></div>');
-                console.log(dep_row);
-                jQuery.each($scope.openItem.dependenciesList[i], function(index) {
+                jQuery.each($scope.openItem.dependenciesList[i], function (index) {
                     skill = $scope.openItem.dependenciesList[i][index];
                     dep_row.append($('<div class="skill_tag">' + skill + "</div>"));
                 });
@@ -108,7 +107,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             add_skill2 = $('<select id="dependency2" class="form__input skills" name="dependency2" onchange="changeSelectTextColor(this);">');
             add_skill1.append($('<option value="" disabled selected>Select Skill 1</option>'));
             add_skill2.append($('<option value="" disabled selected>Select Skill 2</option>'));
-            jQuery.each(allSkills, function(index) {
+            jQuery.each(allSkills, function (index) {
                 role = allSkills[index];
                 add_skill1.append($('<option value="' + role + '">' + role + "</option>"));
                 add_skill2.append($('<option value="' + role + '">' + role + "</option>"));
@@ -123,29 +122,76 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
         $compile(editbox)($scope);
     };
-    $scope.addItem = function() {
+
+    //second way to do it
+    $scope.selectImage = function () {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.click();
+        input.onchange = () => {
+            const file = input.files[0];
+            // file type is only image.
+            if (/^image\//.test(file.type)) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $scope.uploadFile = reader.result;
+                    $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                        if (err) {
+                            giveMessage(err.description);
+                            return;
+                        }
+                        if (data.url != 0) {
+                            insertToEditor(data.url);// Display image element
+                        } else {
+                            alert('file not uploaded');
+                        }
+                    }
+                    );
+                }
+                reader.readAsDataURL(file);
+            } else {
+                console.warn('You could only upload images.');
+            }
+        };
+    }
+
+    insertToEditor = function (url) {
+        // push image url to rich editor.
+        const range = quill.getSelection();
+        quill.insertEmbed(range.index, 'image', `../gamecourse/${url}`); m
+    }
+
+    $scope.addItem = function () {
 
         if ($('#open_item_action').is(':visible')) {
             $("#add_dep").remove();
+            $("#dep_list").remove();
             $scope.openItem = {};
             if ($scope.module.name == "Skills") {
                 $scope.openItem.dependenciesList = [];
+                document.getElementById('close').onclick = function () {
+                    closeModal(this);
+                    resetSelectTextColor('select-item');
+                }
             }
             //reset atributes fields
-            jQuery.each($scope.listingItems.allAtributes, function(index) {
+            jQuery.each($scope.listingItems.allAtributes, function (index) {
                 atribute = $scope.listingItems.allAtributes[index];
                 switch (atribute.type) {
                     case 'text':
                         $scope.openItem[atribute.id] = "";
                         break;
+                    case 'editor':
+                        quill.setContents([{ insert: '\n' }]);
+                        break;
                     case 'select':
                         $scope.openItem[atribute.id] = "";
-                        document.getElementById("select-item").onchange = function() {
+                        document.getElementById("select-item").style.color = "rgb(106,106,106)";
+                        document.getElementById("select-item").onchange = function () {
                             changeSelectTextColor(this);
                             if ($('#add_dep').is(':visible')) {
                                 $scope.showDepSection();
                             }
-
                         };
                         break;
                     case 'on_off button':
@@ -159,12 +205,13 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                         $scope.openItem[atribute.id] = 0;
                         break;
                     case 'color':
+                        const attr = atribute;
                         $scope.openItem[atribute.id] = "#000000";
-                        const inputElement_colorPicker = $('#' + atribute.id)[0];
+                        const inputElement_colorPicker = $('#' + attr.id)[0];
                         const pickr = new Pickr({
                             el: inputElement_colorPicker,
                             useAsButton: true,
-                            default: $scope.openItem[atribute.id],
+                            default: $scope.openItem[attr.id],
                             theme: 'monolith',
                             components: {
                                 hue: true,
@@ -177,10 +224,10 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                             pickr.hide();
                         }).on('change', color => {
                             inputElement_colorPicker.value = color.toHEXA().toString(0);
-                            color_sample = $('#' + atribute.id + '-color-sample');
+                            color_sample = $('#' + attr.id + '-color-sample');
                             color_sample[0].children[0].style.backgroundColor = color.toHEXA().toString(0);
                             color_sample[0].children[1].style.borderColor = color.toHEXA().toString(0);
-                            $scope.openItem[atribute.id] = inputElement_colorPicker.value;
+                            $scope.openItem[attr.id] = inputElement_colorPicker.value;
                         });
                         break;
                 }
@@ -190,7 +237,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         } else {
             $scope.openTier = {};
             //reset atributes fields
-            jQuery.each($scope.tiers.allAtributes, function(index) {
+            jQuery.each($scope.tiers.allAtributes, function (index) {
                 atribute = $scope.tiers.allAtributes[index];
                 switch (atribute.type) {
                     case 'text':
@@ -204,33 +251,33 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             $("#open_tier_action").text('New ' + $scope.tiers.itemName + ': ');
         }
 
-        $scope.isReadyToSubmit = function() {
-            isValid = function(text) {
-                return (text != "" && text != undefined && text != null)
-            }
+        // $scope.isReadyToSubmit = function () {
+        //     isValid = function (text) {
+        //         return (text != "" && text != undefined && text != null)
+        //     }
 
-            //validate inputs
-            if ($scope.openTier) {
-                if (isValid($scope.openTier.tier) &&
-                    $scope.openTier.reward > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                if (isValid($scope.openItem.tier) &&
-                    isValid($scope.openItem.name) &&
-                    isValid($scope.openItem.color)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        }
+        //     //validate inputs
+        //     if ($scope.openTier) {
+        //         if (isValid($scope.openTier.tier) &&
+        //             $scope.openTier.reward > 0) {
+        //             return true;
+        //         } else {
+        //             return false;
+        //         }
+        //     } else {
+        //         if (isValid($scope.openItem.tier) &&
+        //             isValid($scope.openItem.name) &&
+        //             isValid($scope.openItem.color)) {
+        //             return true;
+        //         } else {
+        //             return false;
+        //         }
+        //     }
+        // }
 
 
 
-        $scope.submitItem = function() {
+        $scope.submitItem = function () {
             if ($scope.openItem) {
                 $scope.openItem.dependencies = ""
                 $scope.openItem.dependenciesList.forEach(element => {
@@ -238,14 +285,16 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                 });
                 if ($scope.openItem.dependencies != "")
                     $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+
+                if ($scope.module.name == "Skills") {
+                    $scope.openItem.description = quill.root.innerHTML;
+                }
             }
-
-
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' }, alertUpdate);
         }
     }
 
-    $scope.editItem = function(item) {
+    $scope.editItem = function (item) {
 
         if ($('#open_item_action').is(':visible')) {
             $scope.openItem = {};
@@ -254,7 +303,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
             $("#open_item_action").text('Edit ' + $scope.listingItems.itemName + ': ');
 
-            jQuery.each($scope.listingItems.allAtributes, function(index) {
+            jQuery.each($scope.listingItems.allAtributes, function (index) {
                 atribute = $scope.listingItems.allAtributes[index];
                 $scope.openItem[atribute.id] = item[atribute.id];
                 //click on on/off inputs to visually change to on
@@ -267,18 +316,23 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                     }
                 } else if (atribute["type"] == "select") {
                     document.getElementById("select-item").style.color = "#333";
-                    document.getElementById("select-item").onchange = function() {
+                    document.getElementById("select-item").onchange = function () {
                         if ($('#add_dep').is(':visible')) {
                             $scope.showDepSection();
                         }
                     };
 
+                } else if (atribute["type"] == "editor") {
+                    quill.setContents([{ insert: '\n' }]);
+                    quill.clipboard.dangerouslyPasteHTML(item[atribute.id]);
+
                 } else if (atribute["type"] == "color") {
-                    const inputElement_colorPicker = $('#' + atribute.id)[0];
+                    const attr = atribute;
+                    const inputElement_colorPicker = $('#' + attr.id)[0];
                     const pickr = new Pickr({
                         el: inputElement_colorPicker,
                         useAsButton: true,
-                        default: item[atribute.id],
+                        default: item[attr.id],
                         theme: 'monolith',
                         components: {
                             hue: true,
@@ -291,10 +345,10 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                         pickr.hide();
                     }).on('change', color => {
                         inputElement_colorPicker.value = color.toHEXA().toString(0);
-                        color_sample = $('#' + atribute.id + '-color-sample');
+                        color_sample = $('#' + attr.id + '-color-sample');
                         color_sample[0].children[0].style.backgroundColor = color.toHEXA().toString(0);
                         color_sample[0].children[1].style.borderColor = color.toHEXA().toString(0);
-                        $scope.openItem[atribute.id] = inputElement_colorPicker.value;
+                        $scope.openItem[attr.id] = inputElement_colorPicker.value;
                     });
                 }
 
@@ -303,7 +357,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         } else {
             $scope.openTier = {};
             $scope.openTier.id = item.tier;
-            jQuery.each($scope.tiers.allAtributes, function(index) {
+            jQuery.each($scope.tiers.allAtributes, function (index) {
                 atribute = $scope.tiers.allAtributes[index];
                 $scope.openTier[atribute.id] = item[atribute.id];
                 if (atribute["type"] == "number")
@@ -312,34 +366,34 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             $("#open_tier_action").text('Edit ' + $scope.tiers.itemName + ': ');
         }
 
-        $scope.isReadyToSubmit = function() {
-            isValid = function(text) {
-                return (text != "" && text != undefined && text != null)
-            }
+        // $scope.isReadyToSubmit = function () {
+        //     isValid = function (text) {
+        //         return (text != "" && text != undefined && text != null)
+        //     }
 
-            //validate inputs
-            if ($scope.openTier) {
-                if (isValid($scope.openTier.tier) &&
-                    $scope.openTier.reward > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                if (isValid($scope.openItem.tier) &&
-                    isValid($scope.openItem.name) &&
-                    isValid($scope.openItem.color)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-
-        }
+        //     //validate inputs
+        //     if ($scope.openTier) {
+        //         if (isValid($scope.openTier.tier) &&
+        //             $scope.openTier.reward > 0) {
+        //             return true;
+        //         } else {
+        //             return false;
+        //         }
+        //     } else {
+        //         if (isValid($scope.openItem.tier) &&
+        //             isValid($scope.openItem.name) &&
+        //             isValid($scope.openItem.color)) {
+        //             return true;
+        //         } else {
+        //             return false;
+        //         }
+        //     }
 
 
-        $scope.submitItem = function() {
+        // }
+
+
+        $scope.submitItem = function () {
             if ($scope.openItem) {
                 $scope.openItem.dependencies = ""
                 $scope.openItem.dependenciesList.forEach(element => {
@@ -347,17 +401,20 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                 });
                 if ($scope.openItem.dependencies != "")
                     $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+                if ($scope.module.name == "Skills") {
+                    $scope.openItem.description = quill.root.innerHTML;
+                }
             }
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'edit' }, alertUpdate);
         }
     };
 
-    $scope.isAddDepEnabled = function() {
-        isValid = function(text) {
+    $scope.isAddDepEnabled = function () {
+        isValid = function (text) {
             return (text != "" && text != undefined && text != null)
         }
         if ($scope.openItem) {
-            var firstTier = $scope.tiers.items.filter(function(el) {
+            var firstTier = $scope.tiers.items.filter(function (el) {
                 return el.seqId == 1;
             })[0];
             if (isValid($scope.openItem.tier) && $scope.openItem.tier != firstTier.tier && !($("#add_dep").is(':visible'))) {
@@ -368,7 +425,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         }
     };
 
-    $scope.addDependency = function() {
+    $scope.addDependency = function () {
         firstSelector = $("#dependency1")[0];
         secondSelector = $("#dependency2")[0];
         firstSkill = firstSelector.options[firstSelector.selectedIndex].value;
@@ -381,40 +438,37 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         $scope.openItem.dependenciesList.push([firstSkill, secondSkill]);
         $scope.showDepSection(false);
     };
-    $scope.removeDependency = function(dependencyIdx) {
+    $scope.removeDependency = function (dependencyIdx) {
         array = $scope.openItem.dependenciesList;
-        console.log(array);
 
         array.splice(dependencyIdx, 1);
-        console.log(array);
         //scope array keeps info
         $scope.showDepSection(false);
     };
 
-    $scope.removeAddForm = function() {
+    $scope.removeAddForm = function () {
         $("#add_dep").remove();
     };
 
-    $scope.showDepSection = function(addForm = true) {
-        var currentTier = $scope.tiers.items.filter(function(el) {
+    $scope.showDepSection = function (addForm = true) {
+        var currentTier = $scope.tiers.items.filter(function (el) {
             return el.tier == $scope.openItem.tier;
         })[0];
-
 
         var tierToSeqId = Object.assign({}, ...$scope.tiers.items.map((x) => ({
             [x.tier]: x.seqId
         })));
 
-        var skillsForDep = $scope.listingItems.items.filter(function(el) {
+        var skillsForDep = $scope.listingItems.items.filter(function (el) {
             // get the seqid of each skill
             return parseInt(tierToSeqId[el.tier]) == parseInt(currentTier.seqId) - 1;
         }).map(el => el.name);
 
-        if (currentTier.seqId != 1) {
-            var previousTier = $scope.tiers.items.filter(function(el) {
+        if (parseInt(currentTier.seqId) != 1) {
+            var previousTier = $scope.tiers.items.filter(function (el) {
                 return parseInt(el.seqId) == parseInt(currentTier.seqId) - 1;
             })[0];
-            var isThereWildcardTier = $scope.tiers.items.filter(function(el) {
+            var isThereWildcardTier = $scope.tiers.items.filter(function (el) {
                 return parseInt(el.reward) == parseInt(previousTier.reward) && el.tier != previousTier.tier;
             });
             if (isThereWildcardTier.length != 0) {
@@ -423,7 +477,6 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             } else {
                 allDependencies = skillsForDep;
             }
-            console.log(allDependencies);
             updateDependenciesAddSection($scope, "#new_box", allDependencies, addForm);
         } else {
             updateDependenciesAddSection($scope, "#new_box", skillsForDep, addForm);
@@ -433,7 +486,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
     };
 
-    $scope.deleteItem = function(item) {
+    $scope.deleteItem = function (item) {
 
         if ($('#delete_action_info').is(':visible')) {
             $scope.openItem = {};
@@ -446,20 +499,20 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             $('#delete_tier_info').text($scope.tiers.itemName + ': ' + $scope.openTier.id);
         }
 
-        $scope.confirmDelete = function() {
+        $scope.confirmDelete = function () {
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'delete' }, alertUpdate);
         }
     }
-    $scope.importItems = function(replace) {
+    $scope.importItems = function (replace) {
         $scope.importedItems = null;
         $scope.replaceItems = replace;
         var fileInput = document.getElementById('import_item');
         var file = fileInput.files[0];
         var reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             $scope.importedItems = reader.result;
-            $smartboards.request('settings', 'importItem', { course: $scope.course, module: $stateParams.module, file: $scope.importedItems, replace: $scope.replaceItems }, function(data, err) {
+            $smartboards.request('settings', 'importItem', { course: $scope.course, module: $stateParams.module, file: $scope.importedItems, replace: $scope.replaceItems }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -479,8 +532,8 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         }
         reader.readAsDataURL(file);
     }
-    $scope.exportItem = function() {
-        $smartboards.request('settings', 'exportItem', { course: $scope.course, module: $stateParams.module }, function(data, err) {
+    $scope.exportItem = function () {
+        $smartboards.request('settings', 'exportItem', { course: $scope.course, module: $stateParams.module }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -490,7 +543,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
     }
 
-    $scope.moveUp = function(row) {
+    $scope.moveUp = function (row) {
         var item = row.item;
         var index = parseInt(item.seqId) - 1;
         var changed = false;
@@ -508,7 +561,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         }
 
         if (changed) {
-            $smartboards.request('settings', 'saveNewSequence', { course: $scope.course, module: $stateParams.module, itemId: item.reward ? item.tier : item.id, oldSeq: index, nextSeq: index - 1, table: item.reward ? "tier" : "skill" }, function(data, err) {
+            $smartboards.request('settings', 'saveNewSequence', { course: $scope.course, module: $stateParams.module, itemId: item.reward ? item.tier : item.id, oldSeq: index, nextSeq: index - 1, table: item.reward ? "tier" : "skill" }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -519,7 +572,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
     }
 
-    $scope.moveDown = function(row) {
+    $scope.moveDown = function (row) {
         var item = row.item;
         var index = parseInt(item.seqId) - 1;
         var changed = false;
@@ -532,7 +585,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         }
 
         if (changed) {
-            $smartboards.request('settings', 'saveNewSequence', { course: $scope.course, module: $stateParams.module, itemId: item.reward ? item.tier : item.id, oldSeq: index, nextSeq: index + 1, table: item.reward ? "tier" : "skill" }, function(data, err) {
+            $smartboards.request('settings', 'saveNewSequence', { course: $scope.course, module: $stateParams.module, itemId: item.reward ? item.tier : item.id, oldSeq: index, nextSeq: index + 1, table: item.reward ? "tier" : "skill" }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -542,12 +595,13 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
         }
     }
 
-    $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function(data, err) {
+    $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
         }
 
+        $scope.courseFolder = data.courseFolder;
         //page title
         $scope.module = data.module;
         configPage = $("<div id='configPage'></div>");
@@ -568,7 +622,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
             $scope.inputs = {};
             $scope.initialInputs = {};
-            jQuery.each($scope.generalInputs, function(index) {
+            jQuery.each($scope.generalInputs, function (index) {
                 input = $scope.generalInputs[index];
                 row = $("<div class='row'></div>");
                 row.append('<span >' + input.name + '</span>');
@@ -578,7 +632,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                         break;
                     case 'select':
                         select = $('<select class="config_input" ng-model="inputs.' + input.id + '"></select>');
-                        jQuery.each(input.options, function(index) {
+                        jQuery.each(input.options, function (index) {
                             option = input.options[index];
                             select.append($('<option value="' + option + '">' + option + '</option>'))
                         });
@@ -652,7 +706,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             allTiersSection = $('<div class="data-table"></div>');
             tableTiers = $('<table id="tier-table"></table>');
             rowHeaderTiers = $("<tr></tr>");
-            jQuery.each($scope.tiers.header, function(index) {
+            jQuery.each($scope.tiers.header, function (index) {
                 header = $scope.tiers.header[index];
                 rowHeaderTiers.append($("<th>" + header + "</th>"));
             });
@@ -662,7 +716,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             rowHeaderTiers.append($("<th class='action-column'></th>")); // move down
 
             rowContentTiers = $("<tr ng-repeat='(i, item) in tiers.items' id='item-{{item.tier}}'> ></tr>");
-            jQuery.each($scope.tiers.displayAtributes, function(index) {
+            jQuery.each($scope.tiers.displayAtributes, function (index) {
                 atribute = $scope.tiers.displayAtributes[index];
                 stg = "item." + atribute;
                 rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
@@ -689,7 +743,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             row_inputsTiers = $('<div class= "row_inputs"></div>');
 
             detailsTiers = $('<div class="details full config_item"></div>');
-            jQuery.each($scope.tiers.allAtributes, function(index) {
+            jQuery.each($scope.tiers.allAtributes, function (index) {
                 atribute = $scope.tiers.allAtributes[index];
                 switch (atribute.type) {
                     case 'text':
@@ -704,7 +758,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             boxTiers.append(row_inputsTiers);
             contentTiers.append(boxTiers);
             contentTiers.append($('<button class="cancel" value="#open-tier" onclick="closeModal(this)" > Cancel </button>'))
-            contentTiers.append($('<button class="save_btn" ng-click="submitItem()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+            contentTiers.append($('<button class="save_btn" ng-click="submitItem()"> Save </button>'))
             open_itemTiers.append(contentTiers);
             modalTiers.append(open_itemTiers);
             $compile(modalTiers)($scope);
@@ -747,7 +801,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             allItemsSection = $('<div class="data-table"></div>');
             table = $('<table id="listing-table"></table>');
             rowHeader = $("<tr></tr>");
-            jQuery.each($scope.listingItems.header, function(index) {
+            jQuery.each($scope.listingItems.header, function (index) {
                 header = $scope.listingItems.header[index];
                 rowHeader.append($("<th>" + header + "</th>"));
             });
@@ -759,7 +813,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             }
 
             rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}'> ></tr>");
-            jQuery.each($scope.listingItems.displayAtributes, function(index) {
+            jQuery.each($scope.listingItems.displayAtributes, function (index) {
                 atribute = $scope.listingItems.displayAtributes[index];
                 stg = "item." + atribute;
                 if (atribute == "color") {
@@ -784,7 +838,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             //add and edit item modal
             modal = $("<div class='modal' id='open-item'></div>");
             open_item = $("<div class='modal_content'></div>");
-            open_item.append($('<button class="close_btn icon" value="#open-item" onclick="closeModal(this);resetSelectTextColor(\'select-item\');"></button>'));
+            open_item.append($('<button class="close_btn icon" id="close" value="#open-item" onclick="closeModal(this);"></button>'));
             open_item.append($('<div class="title" id="open_item_action"></div>'));
             content = $('<div class="content">');
             box = $('<div id="new_box" class= "inputs">');
@@ -792,7 +846,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
             $scope.listingItems.allAtributes
             details = $('<div class="details full config_item"></div>');
-            jQuery.each($scope.listingItems.allAtributes, function(index) {
+            jQuery.each($scope.listingItems.allAtributes, function (index) {
                 atribute = $scope.listingItems.allAtributes[index];
                 switch (atribute.type) {
                     case 'text':
@@ -803,7 +857,7 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                         select_box.append($('<span >' + atribute.name + ': </span>'))
                         select = $('<select class="form__input" id="select-item" ng-model="openItem.' + atribute.id + '"></select>');
                         select.append($('<option value="" disabled>Select a ' + atribute.name + '</option>'));
-                        jQuery.each(atribute.options, function(index) {
+                        jQuery.each(atribute.options, function (index) {
                             option = atribute.options[index];
                             select.append($('<option value="' + option + '">' + option + '</option>'))
                         });
@@ -813,9 +867,9 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                     case 'on_off button':
                         details.append($('<div class= "on_off"><span>' + atribute.name + ' </span><label class="switch"><input id="' + atribute.id + '" type="checkbox" ng-model="openItem.' + atribute.id + '"><span class="slider round"></span></label></div>'))
                         break;
-                        // case 'button':
-                        //     details.append($('<div class="half"><button class="btn" ng-click="addDepRow()" ng-disabled="!isTierSet()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add ' + atribute.name + ' </span></button></div>'));
-                        //     break;
+                    // case 'button':
+                    //     details.append($('<div class="half"><button class="btn" ng-click="addDepRow()" ng-disabled="!isTierSet()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add ' + atribute.name + ' </span></button></div>'));
+                    //     break;
                     case 'date':
                         details.append('<div class="half"><div class="container"><input type="date" class="form__input"  ng-model="openItem.' + atribute.id + '"><label for="' + atribute.id + '" class="form__label date_label">' + atribute.name + '</label></div></div>');
                         break;
@@ -828,15 +882,52 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
                         color_picker_section.append($('<div id="' + atribute.id + '-color-sample" class="color-sample"><div class="box" style="background-color: {{openItem.color}}";"></div><div  class="frame" style="border: 1px solid {{openItem.color}}"></div>'));
                         details.append(color_picker_section);
                         break;
+                    case 'editor':
+                        editor_container = $('<div class="editor_container"></div>');
+                        editor = $('<div id="editor"></div>');
+                        editor_container.append(editor);
+                    // if using the first way, you must uncomment these 2 lines
+                    // image_upload = $('<input id="uploadImg" type="file" style="display:none" accept="image/png, image/jpeg, image/gif" onchange="uploadImage()">');
+                    // editor_container.append(image_upload);
+
+
                 }
             });
             row_inputs.append(details);
             box.append(row_inputs);
-            //add dependency button
-            box.append($('<div class="half" id="dependency"><button class="btn" ng-click="showDepSection()" ng-disabled="!isAddDepEnabled()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add Dependency</span></button></div>'));
+            if (data.module.name == "Skills") {
+
+                //add dependency button
+                box.append($('<div class="half" id="dependency"><button class="btn" ng-click="showDepSection()" ng-disabled="!isAddDepEnabled()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add Dependency</span></button></div>'));
+                //add editor
+                box.append(editor_container);
+                quill = new Quill(editor[0], {
+                    modules: {
+                        toolbar: [
+                            [{ header: [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            [{ 'align': [] }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link', 'image', 'video', 'code-block'],
+                        ],
+                        imageResize: {
+
+                        }
+                    },
+                    scrollingContainer: '#editor',
+                    placeholder: 'Add the skill description here...',
+                    theme: 'snow'
+                });
+
+
+                quill.getModule("toolbar").addHandler("image", $scope.selectImage);
+
+            }
+
+
             content.append(box);
             content.append($('<button class="cancel" value="#open-item" onclick="closeModal(this)" > Cancel </button>'))
-            content.append($('<button class="save_btn" ng-click="submitItem()" ng-disabled="!isReadyToSubmit()"> Save </button>'))
+            content.append($('<button class="save_btn" ng-click="submitItem()"> Save </button>'))
             open_item.append(content);
             modal.append(open_item);
             $compile(modal)($scope);
@@ -888,10 +979,10 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
             for (t in data.tiers.items) {
                 var tier = data.tiers.items[t];
 
-                var skills = data.listingItems.items.filter(function(el) {
+                var skills = data.listingItems.items.filter(function (el) {
                     return el.tier == tier.tier;
                 });
-                skills.sort(function(a, b) {
+                skills.sort(function (a, b) {
                     return a.seqId - b.seqId;
                 })
 
@@ -933,34 +1024,34 @@ app.controller('ConfigurationController', function($scope, $stateParams, $elemen
 
 
 // old version, not used anymore
-app.controller('CourseSkillsSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
 
-    $scope.replaceData = function(arg) {
+    $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
             $smartboards.request('settings', 'courseSkills', { course: $scope.course, skillsList: arg }, alertUpdate);
     };
-    $scope.replaceTier = function(arg) {
+    $scope.replaceTier = function (arg) {
         if (confirm("Are you sure you want to replace all the Tiers with the ones on the input box?"))
             $smartboards.request('settings', 'courseSkills', { course: $scope.course, tiersList: arg }, alertUpdate);
     };
-    $scope.replaceNumber = function(arg) {
+    $scope.replaceNumber = function (arg) {
         if (confirm("Are you sure you want to change the Maximum Tree XP?"))
             $smartboards.request('settings', 'courseSkills', { course: $scope.course, maxReward: arg }, alertUpdate);
     };
-    $scope.addData = function(arg) { //Currently not being used
+    $scope.addData = function (arg) { //Currently not being used
         $smartboards.request('settings', 'courseSkills', { course: $scope.course, newSkillsList: arg }, alertUpdate);
     };
-    $scope.clearData = function() {
+    $scope.clearData = function () {
         clearFillBox($scope);
     };
-    $scope.clearTier = function() { //clear textarea of the tiers
+    $scope.clearTier = function () { //clear textarea of the tiers
         if ($scope.tierList !== "")
             $scope.tierList = "";
         else if ("file2" in $scope.data)
             $scope.tierList = $scope.data.file2;
     };
 
-    $smartboards.request('settings', 'courseSkills', { course: $scope.course }, function(data, err) {
+    $smartboards.request('settings', 'courseSkills', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -1033,21 +1124,21 @@ app.controller('CourseSkillsSettingsController', function($scope, $stateParams, 
         configurationSection.append(configSectionContent);
     });
 });
-app.controller('CourseBadgesSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+app.controller('CourseBadgesSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //old version, not used, only here for verification
 
-    $scope.replaceData = function(arg) {
+    $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Badges with the ones on the input box?"))
             $smartboards.request('settings', 'courseBadges', { course: $scope.course, badgesList: arg }, alertUpdate);
     };
-    $scope.clearData = function() {
+    $scope.clearData = function () {
         clearFillBox($scope);
     };
-    $scope.replaceNumber = function(arg) {
+    $scope.replaceNumber = function (arg) {
         if (confirm("Are you sure you want to change the Maximum Bonus Badge Reward?"))
             $smartboards.request('settings', 'courseBadges', { course: $scope.course, maxReward: arg }, alertUpdate);
     };
-    $smartboards.request('settings', 'courseBadges', { course: $scope.course }, function(data, err) {
+    $smartboards.request('settings', 'courseBadges', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -1105,17 +1196,17 @@ app.controller('CourseBadgesSettingsController', function($scope, $stateParams, 
         configurationSection.append(configSectionContent);
     });
 });
-app.controller('CourseLevelsSettingsController', function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+app.controller('CourseLevelsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //old version, not used
-    $scope.replaceData = function(arg) {
+    $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
             $smartboards.request('settings', 'courseLevels', { course: $scope.course, levelList: arg }, alertUpdate);
     };
-    $scope.clearData = function() {
+    $scope.clearData = function () {
         clearFillBox($scope);
     };
 
-    $smartboards.request('settings', 'courseLevels', { course: $scope.course }, function(data, err) {
+    $smartboards.request('settings', 'courseLevels', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;

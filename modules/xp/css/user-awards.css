@@ -18,8 +18,9 @@
   background-color: #cfcfcf;
 }
 
-.award-list table img {
+.award-list table .img {
   height: 32px;
+  width: 32px;
 }
 
 .award-list table thead tr {
@@ -63,7 +64,7 @@
   align-items: center !important;
 }
 
-.awards-list table td:nth-child(3) .value .img {
+.award-list table td:nth-child(3) .block .content .value img {
   width: 32px;
   height: 32px;
 }

@@ -24,6 +24,8 @@ class Skills extends Module
     {
         parent::addResources('js/');
         parent::addResources('css/skills.css');
+        parent::addResources('css/skill-page.css');
+
     }
 
     public function moduleConfigJson($courseId){
@@ -284,8 +286,8 @@ class Skills extends Module
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
         $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
-        if (!file_exists($folder . "/tree"))
-            mkdir($folder . "/tree");
+        if (!file_exists($folder . "/skills"))
+            mkdir($folder . "/skills");
     }
 
     public function deleteDataRows($courseId)
@@ -854,16 +856,16 @@ class Skills extends Module
                 foreach ($skills as $skill) {
                     $compressedName = str_replace(' ', '', $skill['name']);
                     if ($compressedName == $skillName) {
-                        $page = htmlspecialchars_decode($skill['page']);
+                        $page = $this->getDescriptionFromPage($skill, $courseId);
                         //to support legacy, TODO: Remove this when skill editing is supported in GameCourse
-                        preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
-                        foreach ($matches[0] as $id => $match) {
-                            $linkSkillName = $matches[1][$id];
-                            $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
-                        }
-                        $page = str_replace('src="http:', 'src="https:', $page);
-                        $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $folder . '/tree/' . $compressedName, $page);
-                        $page = str_replace(' src="' . $compressedName, ' src="' . $folder . '/tree/' . $compressedName, $page);
+                        // preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
+                        // foreach ($matches[0] as $id => $match) {
+                        //     $linkSkillName = $matches[1][$id];
+                        //     $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
+                        // }
+                        // $page = str_replace('src="http:', 'src="https:', $page);
+                        // $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $folder . '/tree/' . $compressedName, $page);
+                        // $page = str_replace(' src="' . $compressedName, ' src="' . $folder . '/tree/' . $compressedName, $page);
                         API::response(array('name' => $skill['name'], 'description' => $page));
                     }
                 }
@@ -878,7 +880,7 @@ class Skills extends Module
         $skillsArray = array();
 
         foreach($tiers as &$tier) {
-            $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier["tier"]],"id,name,color,tier,seqId", "seqId");
+            $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier["tier"]],"id,name,page,color,tier,seqId", "seqId");
             foreach($skillsInTier as &$skill){
                 //information to match needing fields
                 $skill['xp'] = $tier["reward"];
@@ -895,6 +897,9 @@ class Skills extends Module
                     $skill['dependencies'] = substr_replace($skill['dependencies'], '', -3, -1);
                 }
                 $skill["dependenciesList"] = $this->transformStringToList($skill["dependencies"]);
+                $skill["description"] = $this->getDescriptionFromPage($skill, $courseId);
+
+                unset($skill["page"]);
                 array_push($skillsArray, $skill);
 
             }
@@ -1098,6 +1103,22 @@ class Skills extends Module
         }
     }
 
+    public function getDescriptionFromPage($skill, $courseId) {
+        $folder = Course::getCourseLegacyFolder($courseId);
+        $description = htmlspecialchars_decode($skill['page']);
+        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/skills/" . str_replace(' ', '', $skill['name']), $description);
+        //$page = preg_replace( "/\r|\n/", "", $page );
+        return $description;
+    }
+
+    public function createFolderForSkillResources($skill, $courseId) {
+        $courseFolder = Course::getCourseLegacyFolder($courseId);
+        $hasFolder = is_dir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
+        if (!$hasFolder) {
+            mkdir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
+        }
+    }
+
     public function newSkill($skill, $courseId){
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
 
@@ -1109,14 +1130,17 @@ class Skills extends Module
                     "seqId" => $numSkills + 1];
             
         $folder = Course::getCourseLegacyFolder($courseId);
-        $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
-        if ($descriptionPage===FALSE){
-            echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
-            return null;
-        }
-        $start = strpos($descriptionPage, '<td>') + 4;
-        $end = stripos($descriptionPage, '</td>');
-        $descriptionPage = substr($descriptionPage, $start, $end - $start);
+        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
+        $descriptionPage = @file_get_contents($path);
+        if ($descriptionPage === FALSE){
+            file_put_contents($path, $skill['description']);
+            $descriptionPage = @file_get_contents($path);
+            //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
+            //return null;
+        };
+        // $start = strpos($descriptionPage, '<td>') + 4;
+        // $end = stripos($descriptionPage, '</td>');
+        // $descriptionPage = substr($descriptionPage, $start, $end - $start);
         $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
 
         Core::$systemDB->insert("skill",$skillData);
@@ -1167,6 +1191,57 @@ class Skills extends Module
                     "treeId"=>$treeId,
                     "tier"=>$skill['tier'],
                     "color"=> $skill['color']];
+
+        // update description
+        $folder = Course::getCourseLegacyFolder($courseId);
+        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: legacy_data/1-PCM/skills/Director
+        $descriptionPage = @file_get_contents( $path . '.html');
+        if ($descriptionPage === FALSE) {
+
+            // update image folder if exists
+            $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
+            if (file_exists($oldDir)){
+                if (!file_exists($path)){
+                    // if there are no new images simply rename old folder
+                    rename($oldDir, $path);
+                }
+                else {
+                    // if we have new and old images, copy each image from old folder to the new one
+                    if ($dh = opendir($oldDir)) {
+                        // ignore hidden files and directories
+                        $ignore = array( 'cgi-bin', '.', '..','._' );
+                        while (($file = readdir($dh)) !== false) {
+                            if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
+                                copy($oldDir . '/' . $file , $path . '/' . $file);
+                            }
+                        }
+                        closedir($dh);
+                        //rmdir($oldDir);
+                    }
+                }
+                //replace image source links in the html file
+                $htmlDom = new DOMDocument;
+                $htmlDom->loadHTML($skill['description']);
+                $imageTags = $htmlDom->getElementsByTagName('img');
+                foreach($imageTags as $imageTag){
+                    //Get the src attribute of the image.
+                    $imgSrc = $imageTag->getAttribute('src');
+                    $exploded = explode("/", $imgSrc);
+                    $imageName = end($exploded);
+                    $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
+                }
+                $skill['description'] = $htmlDom->saveHTML();
+            }
+
+        }
+        file_put_contents($path . '.html', $skill['description']);
+        $descriptionPage = @file_get_contents($path . '.html');
+        $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
+        
+        // $start = strpos($descriptionPage, '<td>') + 4;
+        // $end = stripos($descriptionPage, '</td>');
+        // $descriptionPage = substr($descriptionPage, $start, $end - $start);
+        
 
         Core::$systemDB->update("skill",$skillData,["id"=>$skill["id"]]);
         $skillId = $originalSkill["id"];
@@ -1326,7 +1401,7 @@ class Skills extends Module
             array('name' => "Dependencies", 'id'=> 'dependencies', 'type' => "button", 'options' => ""),
             array('name' => "DependenciesList", 'id'=> 'dependenciesList', 'type' => "", 'options' => ""),
             array('name' => "Color", 'id'=> 'color', 'type' => "color", 'options'=>"", 'current_val' => ""),
-            //array('name' => "XP", 'id'=> 'xp', 'type' => "number", 'options' => ""),
+            array('name' => "Description", 'id'=> 'description', 'type' => "editor", 'options' => ""),
         ];
         return array( 'listName'=> 'Skills', 'itemName'=> 'Skill','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
     }

@@ -168,9 +168,11 @@ API::registerFunction('settings', 'courseModules', function() {
 //gets module information for the configuration page
 API::registerFunction('settings', 'getModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
+        $folder = Course::getCourseLegacyFolder($courseId);
 
         if($module != null){
             $moduleInfo = array(
@@ -204,9 +206,9 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
                 'listingItems' => $listingItems,
                 'personalizedConfig' => $personalizedConfig,
                 'tiers' => $tiers,
-                'module' => $moduleInfo
+                'module' => $moduleInfo,
+                'courseFolder' => $folder,
             );
-
             API::response($info);
         }
         else{
@@ -312,4 +314,16 @@ API::registerFunction('settings', 'saveNewSequence', function(){
     }
 });
 
+API::registerFunction('settings', 'upload', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $course = API::getValue('course');
+    $module = API::getValue('module');
+    $file = API::getValue('newFile');
+    $fileName = API::getValue('fileName');
+    $subfolder = API::getValue('subfolder');
 
+    $courseObject = Course::getCourse($course);
+    $result = $courseObject->upload($file, $fileName, $module, $subfolder);
+    API::response(array('url' => $result));
+});
