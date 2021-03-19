@@ -286,8 +286,8 @@ class Skills extends Module
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
         $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
-        if (!file_exists($folder . "/tree"))
-            mkdir($folder . "/tree");
+        if (!file_exists($folder . "/skills"))
+            mkdir($folder . "/skills");
     }
 
     public function deleteDataRows($courseId)
@@ -1106,7 +1106,7 @@ class Skills extends Module
     public function getDescriptionFromPage($skill, $courseId) {
         $folder = Course::getCourseLegacyFolder($courseId);
         $description = htmlspecialchars_decode($skill['page']);
-        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/tree/" . str_replace(' ', '', $skill['name']), $description);
+        $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/skills/" . str_replace(' ', '', $skill['name']), $description);
         //$page = preg_replace( "/\r|\n/", "", $page );
         return $description;
     }

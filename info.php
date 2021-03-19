@@ -278,7 +278,7 @@ function updateSkills($list,$tree,$replace, $folder){
         
         unset($skill['xp']);//Not being used because xp is defined by tier (FIX?)
 
-        $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
+        $descriptionPage = @file_get_contents($folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html');
 
         if ($descriptionPage===FALSE){
             echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
