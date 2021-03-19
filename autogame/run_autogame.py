@@ -150,7 +150,8 @@ if __name__ == "__main__":
 		write_to_log(error_msg, config.course)
 		sys.exit(error_msg)
 
-	METADATA = config_metadata(course)	
+	METADATA = config_metadata(course)
+	config.metadata = METADATA
 
 	last_activity, is_running = autogame_init(course)
 	#is_running = False # temporary to circumvent errors

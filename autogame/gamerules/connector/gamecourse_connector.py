@@ -790,7 +790,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 
 
 
-def award_grade(target, item, contributions=None):
+def award_grade(target, item, contributions=None, extra=None):
 	# -----------------------------------------------------------	
 	# Writes 'award' table with reward that is not a badge or a
 	# skill. Will not retract effects, but will not award twice
@@ -832,12 +832,40 @@ def award_grade(target, item, contributions=None):
 				query = "UPDATE award SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s"
 				cursor.execute(query, (grade, course, target, typeof, description))
 				cnx.commit()
+	
+	elif item == "Quiz" and extra:
+		# add last quiz
+		if len(contributions) == 1:
+			number = int(contributions[0].description.split()[1]) # get the number
+			grade = int(contributions[0].rating)
+			found = False
+			for row in table:
+				if row[0] == number:
+					found = True
+					line = row
+					break
 
-	elif item == "Quiz" or item == "Lab":
+			if found:
+				# if the line already existed and the new rating is different, update the line
+				old_grade = int(line[1])
+				if old_grade != grade:
+					query = "UPDATE award SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s AND moduleInstance = %s;"
+					cursor.execute(query, (grade, course, target, typeof, description, number))
+					cnx.commit()
+
+			else:
+				# if the line did not exist, add it
+				query = "INSERT INTO award (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
+				cursor.execute(query, (target, course, description, typeof, grade, number))
+				cnx.commit()
+				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+	
+
+	elif (item == "Quiz" and not extra) or item == "Lab":
 		for line in contributions:
-			if line.description == "Dry Run" or line.description == "Quiz 9":
+			if line.description == "Dry Run":
 				continue
-
+			
 			grade = int(line.rating)
 			nums = [int(s) for s in line.description.split() if s.isdigit()]
 			number = nums[0]
@@ -862,7 +890,7 @@ def award_grade(target, item, contributions=None):
 				query = "INSERT INTO award (user, course, description, type, reward, moduleInstance) VALUES(%s, %s , %s, %s, %s, %s);"
 				cursor.execute(query, (target, course, description, typeof, grade, number))
 				cnx.commit()
-				config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
+				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
 		
 	cnx.close()
 	return
