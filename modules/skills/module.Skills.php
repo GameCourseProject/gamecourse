@@ -1130,10 +1130,11 @@ class Skills extends Module
                     "seqId" => $numSkills + 1];
             
         $folder = Course::getCourseLegacyFolder($courseId);
-        $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
-        if ($descriptionPage===FALSE){
-            file_put_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html', $skill['description']);
-            $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
+        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
+        $descriptionPage = @file_get_contents($path);
+        if ($descriptionPage === FALSE){
+            file_put_contents($path, $skill['description']);
+            $descriptionPage = @file_get_contents($path);
             //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
             //return null;
         };
@@ -1192,17 +1193,55 @@ class Skills extends Module
                     "color"=> $skill['color']];
 
         // update description
-        $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
-        if ($descriptionPage == FALSE) {
-            $folder = Course::getCourseLegacyFolder($courseId);
-            file_put_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html', $skill['description']);
-            $descriptionPage = @file_get_contents($folder . '/tree/' . str_replace(' ', '', $skill['name']) . '.html');
+        $folder = Course::getCourseLegacyFolder($courseId);
+        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: legacy_data/1-PCM/skills/Director
+        $descriptionPage = @file_get_contents( $path . '.html');
+        if ($descriptionPage === FALSE) {
+
+            // update image folder if exists
+            $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
+            if (file_exists($oldDir)){
+                if (!file_exists($path)){
+                    // if there are no new images simply rename old folder
+                    rename($oldDir, $path);
+                }
+                else {
+                    // if we have new and old images, copy each image from old folder to the new one
+                    if ($dh = opendir($oldDir)) {
+                        // ignore hidden files and directories
+                        $ignore = array( 'cgi-bin', '.', '..','._' );
+                        while (($file = readdir($dh)) !== false) {
+                            if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
+                                copy($oldDir . '/' . $file , $path . '/' . $file);
+                            }
+                        }
+                        closedir($dh);
+                        //rmdir($oldDir);
+                    }
+                }
+                //replace image source links in the html file
+                $htmlDom = new DOMDocument;
+                $htmlDom->loadHTML($skill['description']);
+                $imageTags = $htmlDom->getElementsByTagName('img');
+                foreach($imageTags as $imageTag){
+                    //Get the src attribute of the image.
+                    $imgSrc = $imageTag->getAttribute('src');
+                    $exploded = explode("/", $imgSrc);
+                    $imageName = end($exploded);
+                    $imageTag->setAttribute('src', "http://localhost/gamecourse/" . $path . '/' . $imageName);
+                }
+                $skill['description'] = $htmlDom->saveHTML();
+            }
+
         }
+        file_put_contents($path . '.html', $skill['description']);
+        $descriptionPage = @file_get_contents($path . '.html');
+        $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
         
         // $start = strpos($descriptionPage, '<td>') + 4;
         // $end = stripos($descriptionPage, '</td>');
         // $descriptionPage = substr($descriptionPage, $start, $end - $start);
-        $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
+        
 
         Core::$systemDB->update("skill",$skillData,["id"=>$skill["id"]]);
         $skillId = $originalSkill["id"];
