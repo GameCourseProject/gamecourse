@@ -814,7 +814,7 @@ class ViewHandler
             if ($function) {
                 $fun = $this->registeredFunctions[$function["id"]];
             } else {
-                throw new \Exception("Function " . $funcName . " doesn't exists.");
+                throw new \Exception("Function " . $funcName . " doesn't exist.");
             }
         } else {
             //ver se esta associado

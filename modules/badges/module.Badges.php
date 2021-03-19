@@ -534,6 +534,20 @@ class Badges extends Module
             'badge'
         );	
 
+        //%collection.countBadgesProgress  returns size of the collection or points obtained
+        $viewHandler->registerFunction(
+            'badges', 
+            'countBadgesProgress', 
+            function ($collection, $badge) {
+                $count = $this->countBadgesProgress($collection, $badge);
+                return new ValueNode($count);
+        },   
+        'Returns the number of elements (posts or points) in the collection.', 
+        'integer', 
+        null, 
+        'collection'
+    );
+
 
         //%level.goal
         $viewHandler->registerFunction(
@@ -782,7 +796,7 @@ class Badges extends Module
     }
 
     public function getBadgeProgression($badge, $user) {
-        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description");
+        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description, participation.rating");
 
         
         for ($i = 0 ; $i < sizeof($badgePosts); $i++) {
@@ -820,6 +834,23 @@ class Badges extends Module
         
         return $badgePosts;
     }
+
+    public function countBadgesProgress($collection, $badge) {
+        $badgeParams = Core::$systemDB->selectMultiple("badge",["id" => $badge], "isPost, isPoint, isCount");
+        $count = 0;
+        if (!empty($collection["value"])) {
+            if ($badgeParams[0]["isPoint"]) {
+                foreach ($collection["value"] as $line) {
+                    $count += intval($line["rating"]); 
+                }
+            }
+            else {
+                $count = sizeof($collection["value"]);
+            }
+        }
+        return $count;
+    }
+
     
     public function newBadge($achievement, $courseId){
         $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);

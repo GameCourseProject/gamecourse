@@ -150,9 +150,8 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
-def filter_quiz(logs):
+def filter_quiz(logs, desc):
 	"""
-	Temporary function for testing purposes:
 	Filters the list of logs in a way that quiz 9
 	is removed
 	"""
@@ -160,9 +159,29 @@ def filter_quiz(logs):
 	filtered_logs = []
 
 	for line in logs:
-		if line.description != "Quiz 9":
+		if line.description != desc or line.description != "Dry Run":
 			filtered_logs.append(line)	
 	return filtered_logs
+
+@rule_function
+def exclude_worst(logs, last):
+	"""
+	Will calculate the adjustment for getting rid of the
+	worst quiz in the bunch
+	"""
+
+	worst = int(config.metadata["quiz_max_grade"])
+	fix = last
+
+	if len(logs) == 9:
+		for line in logs:
+			worst = min(int(line.rating), worst)
+
+		if len(last) == 1:
+			last_quiz = max(int(last[0].rating) - worst, 0)
+			fix[0].rating = last_quiz
+	
+	return fix
 
 @rule_effect
 def print_info(text):
@@ -211,11 +230,11 @@ def award_prize(target, reward_name, xp, contributions=None):
 	return
 
 @rule_effect
-def award_grade(target, item, contributions=None):
+def award_grade(target, item, contributions=None, extra=None):
 	""" 
 	returns the output of a skill and writes the award to database
 	"""
-	connector.award_grade(target, item, contributions)
+	connector.award_grade(target, item, contributions, extra)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 

@@ -916,6 +916,29 @@ class Views extends Module
             'library'
         );
 
+        //participations.getParticipationsByDescription(user,type,description,rating,evaluator,initialDate,finalDate)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getParticipationsByDescription',
+            function (int $user = null, string $type = null, string $desc = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+                $where = [];
+                if ($rating !== null) {
+                    $where["rating"] = (int) $rating;
+                }
+                if ($evaluator !== null) {
+                    $where["evaluator"] = $evaluator;
+                }
+                if ($desc !== null) {
+                    $where["description"] = $desc;
+                }
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation");
+            },
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\ndescription: Description of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
+            'collection',
+            'participation',
+            'library'
+        );
+
 
         //%participation.date
         $this->viewHandler->registerFunction(
