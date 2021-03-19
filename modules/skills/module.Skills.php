@@ -1228,7 +1228,7 @@ class Skills extends Module
                     $imgSrc = $imageTag->getAttribute('src');
                     $exploded = explode("/", $imgSrc);
                     $imageName = end($exploded);
-                    $imageTag->setAttribute('src', "http://localhost/gamecourse/" . $path . '/' . $imageName);
+                    $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
                 }
                 $skill['description'] = $htmlDom->saveHTML();
             }

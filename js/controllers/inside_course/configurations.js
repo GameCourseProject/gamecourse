@@ -123,40 +123,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $compile(editbox)($scope);
     };
 
-    //first way to upload
-    uploadImageHandler = function () {
-        const input = $('#uploadImg');
-        input.value = '';
-        input.click();
-    };
-
-    uploadImage = async function (event) {
-        let form = new FormData();
-        const files = $('#uploadImg')[0].files;
-
-        if (files.length > 0) {
-            form.append('image', files[0]);
-
-            const url = $.ajax({
-                url: 'http://localhost/gamecourse/#/upload.php',
-                type: 'post',
-                data: form,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    if (response != 0) {
-                    } else {
-                        alert('file not uploaded');
-                    }
-                },
-            }); //Upload image access address
-            const addImageRange = quill.getSelection();
-            const newRange = 0 + (addImageRange !== null ? addImageRange.index : 0);
-            quill.insertEmbed(newRange, 'image', url);
-            quill.setSelection(1 + newRange);
-        }
-    };
-
     //second way to do it
     $scope.selectImage = function () {
         const input = document.createElement('input');
@@ -169,17 +135,17 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     $scope.uploadFile = reader.result;
-                    $smartboards.request('settings', 'upload', {course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name}, function (data, err) {
-                            if (err) {
-                                giveMessage(err.description);
-                                return;
-                            }
-                            if (data.url != 0) {
-                                insertToEditor(data.url);// Display image element
-                            } else {
-                                alert('file not uploaded');
-                            }
+                    $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                        if (err) {
+                            giveMessage(err.description);
+                            return;
                         }
+                        if (data.url != 0) {
+                            insertToEditor(data.url);// Display image element
+                        } else {
+                            alert('file not uploaded');
+                        }
+                    }
                     );
                 }
                 reader.readAsDataURL(file);
@@ -189,42 +155,10 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         };
     }
 
-    /*saveToServer = function (file) {
-        const fd = new FormData();
-        fd.append('file', file);
-
-        // const xhr = new XMLHttpRequest();
-        // xhr.open('POST', '../gamecourse/upload.php', true);
-        // xhr.onload = () => {
-        //     if (xhr.status === 200) {
-        //         // this is callback data: url
-        //         console.log(xhr.responseText);
-        //         const url = JSON.parse(xhr.responseText).data;
-        //         insertToEditor(url);
-        //     }
-        // };
-        // xhr.send(fd);
-
-        $.ajax({
-            url: '../gamecourse/upload.php',
-            type: 'post',
-            data: fd,
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                if (response != 0) {
-                    insertToEditor(response);// Display image element
-                } else {
-                    alert('file not uploaded');
-                }
-            },
-        });
-    };*/
-
     insertToEditor = function (url) {
         // push image url to rich editor.
         const range = quill.getSelection();
-        quill.insertEmbed(range.index, 'image', `http://localhost/gamecourse/${url}`);
+        quill.insertEmbed(range.index, 'image', `../gamecourse/${url}`); m
     }
 
     $scope.addItem = function () {
@@ -985,9 +919,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     theme: 'snow'
                 });
 
-                // first way
-                //quill.getModule("toolbar").addHandler("image", uploadImageHandler);
-                // second way
+
                 quill.getModule("toolbar").addHandler("image", $scope.selectImage);
 
             }
