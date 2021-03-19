@@ -158,23 +158,38 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     };
 
     //second way to do it
-    selectImage = function () {
+    $scope.selectImage = function () {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.click();
         input.onchange = () => {
             const file = input.files[0];
-
             // file type is only image.
             if (/^image\//.test(file.type)) {
-                saveToServer(file);
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $scope.uploadFile = reader.result;
+                    $smartboards.request('settings', 'upload', {course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name}, function (data, err) {
+                            if (err) {
+                                giveMessage(err.description);
+                                return;
+                            }
+                            if (data.url != 0) {
+                                insertToEditor(data.url);// Display image element
+                            } else {
+                                alert('file not uploaded');
+                            }
+                        }
+                    );
+                }
+                reader.readAsDataURL(file);
             } else {
                 console.warn('You could only upload images.');
             }
         };
     }
 
-    saveToServer = function (file) {
+    /*saveToServer = function (file) {
         const fd = new FormData();
         fd.append('file', file);
 
@@ -204,7 +219,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
             },
         });
-    };
+    };*/
 
     insertToEditor = function (url) {
         // push image url to rich editor.
@@ -973,7 +988,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 // first way
                 //quill.getModule("toolbar").addHandler("image", uploadImageHandler);
                 // second way
-                quill.getModule("toolbar").addHandler("image", selectImage);
+                quill.getModule("toolbar").addHandler("image", $scope.selectImage);
 
             }
 

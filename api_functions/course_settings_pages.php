@@ -313,3 +313,17 @@ API::registerFunction('settings', 'saveNewSequence', function(){
         API::error("There is no course with that id: ". API::getValue('course'));
     }
 });
+
+API::registerFunction('settings', 'upload', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $course = API::getValue('course');
+    $module = API::getValue('module');
+    $file = API::getValue('newFile');
+    $fileName = API::getValue('fileName');
+    $subfolder = API::getValue('subfolder');
+
+    $courseObject = Course::getCourse($course);
+    $result = $courseObject->upload($file, $fileName, $module, $subfolder);
+    API::response(array('url' => $result));
+});
