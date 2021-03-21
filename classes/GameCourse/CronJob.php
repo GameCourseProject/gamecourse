@@ -22,11 +22,10 @@ class CronJob
         if ($path) {
             $file = $output;
             $lines = explode("\n", $file);
-            $exclude = array();
-            $found = false;
             $toWrite = "";
             foreach ($lines as $line) {
-                if (strpos($line, $script) === false) {
+                $separated = explode(" ", $line);
+                if ((strpos($line, $path) === false or end($separated) != $course) and $line != '') {
                     $toWrite .= $line . "\n";
                 }
             }
@@ -42,7 +41,7 @@ class CronJob
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            if(file_exists('/var/www/html/gamecourse/crontab.txt')){
+            if(file_exists($cronFile)){
                 file_put_contents($cronFile, $toWrite);
                 echo exec('crontab /var/www/html/gamecourse/crontab.txt');
             }
