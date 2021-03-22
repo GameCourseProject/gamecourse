@@ -902,3 +902,7 @@ select:disabled {
   padding: 5px 10px;
   cursor: pointer;
 }
+
+.form__input.pages_info {
+  color: rgb(106, 106, 106);
+}

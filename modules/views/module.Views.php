@@ -1319,7 +1319,7 @@ class Views extends Module
         //creates a page or template
         API::registerFunction('views', 'createView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'name', 'pageOrTemp', 'roleType', 'isEnabled');
+            API::requireValues('course', 'name', 'pageOrTemp', 'roleType', 'isEnabled', 'templateId');
 
             $roleType = API::getValue('roleType');
             if ($roleType == "ROLE_INTERACTION") {
