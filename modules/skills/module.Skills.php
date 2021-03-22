@@ -1386,6 +1386,11 @@ class Skills extends Module
         }
         return $skillDependencyArray;
     }
+
+    public function dropTables($moduleName)
+    {
+        parent::dropTables($moduleName);
+    }
     
     public function has_listing_items() { return  true; }
     public function get_listing_items($courseId){
