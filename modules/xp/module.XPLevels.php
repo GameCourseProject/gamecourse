@@ -19,6 +19,7 @@ class XPLevels extends Module
 
     public function deleteDataRows($courseId)
     {
+        Core::$systemDB->delete("user_xp", ["course" => $courseId]);
         $lvls = Core::$systemDB->selectMultiple("level", ["course" => $courseId]);
         foreach ($lvls as $lvl) {
             Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
