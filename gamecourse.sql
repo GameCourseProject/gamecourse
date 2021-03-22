@@ -218,7 +218,7 @@ create table view(
 create table page(
 	id int unsigned auto_increment primary key,
 	course int unsigned not null,
-	roleType enum('ROLE_SINGLE','ROLE_INTERACTION') default 'ROLE_SINGLE',	
+	#roleType enum('ROLE_SINGLE','ROLE_INTERACTION') default 'ROLE_SINGLE',	
 	name varchar(50) not null,
 	theme varchar(50),
 	viewId int unsigned,
