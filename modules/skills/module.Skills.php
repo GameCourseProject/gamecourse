@@ -1133,15 +1133,18 @@ class Skills extends Module
         $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
         $descriptionPage = @file_get_contents($path);
         if ($descriptionPage === FALSE){
-            file_put_contents($path, $skill['description']);
-            $descriptionPage = @file_get_contents($path);
+            if (array_key_exists("description", $skill)) {
+                file_put_contents($path, $skill['description']);
+                $descriptionPage = @file_get_contents($path);
+                $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
+            }
             //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
             //return null;
         };
         // $start = strpos($descriptionPage, '<td>') + 4;
         // $end = stripos($descriptionPage, '</td>');
         // $descriptionPage = substr($descriptionPage, $start, $end - $start);
-        $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
+        
 
         Core::$systemDB->insert("skill",$skillData);
         $skillId = Core::$systemDB->getLastId();

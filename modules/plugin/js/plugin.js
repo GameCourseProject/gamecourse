@@ -1,7 +1,7 @@
 //add config page to course
 app.stateProvider.state('course.settings.plugin', {
     url: '/plugin',
-    views : {
+    views: {
         'tabContent': {
             controller: 'ConfigurationController'
         }
@@ -11,9 +11,9 @@ app.stateProvider.state('course.settings.plugin', {
     }
 });
 
-function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
+function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
     $scope.changeLimit = function (plugin) {
-        
+
         var periodicity1 = document.getElementById(plugin + "Periodicidade1");
         var periodicity2 = document.getElementById(plugin + "Periodicidade2");
         var selectedOption = periodicity2.options[periodicity2.selectedIndex].text;
@@ -34,14 +34,14 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         if (setValue) {
             if (plugin == "moodle") {
                 $scope.moodleVarsPeriodicity.number = setValue;
-            } else if (plugin == "classCheck" ) {
+            } else if (plugin == "classCheck") {
                 $scope.classCheckVarsPeriodicity.number = setValue;
             } else if (plugin == "googleSheets") {
                 $scope.googleSheetsVarsPeriodicity.number = setValue;
             }
         }
         periodicity1.setAttribute("max", maxLimit);
-        
+
     }
     //uma funcao de submit para cada
 
@@ -130,10 +130,10 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
     };
     $scope.saveGoogleSheets = function () {
         console.log("save google sheets");
-        i=1;
-        $scope.googleSheetsVars.sheetName=[];
-        $scope.googleSheetsVars.ownerName=[];
-        while (i <= $scope.numberGoogleSheets){
+        i = 1;
+        $scope.googleSheetsVars.sheetName = [];
+        $scope.googleSheetsVars.ownerName = [];
+        while (i <= $scope.numberGoogleSheets) {
             sheetId = "#sheetname" + i;
             ownerId = "#ownername" + i;
             sheetname = $(sheetId)[0].value;
@@ -144,12 +144,12 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         }
         $smartboards.request('settings', 'coursePlugin', { googleSheets: $scope.googleSheetsVars, course: $scope.course }, alertUpdate);
     };
-    $scope.addExtraField = function(){
+    $scope.addExtraField = function () {
         //inputs = $("#sheet_names");
         inputsButton = $(".input_with_button");
         $scope.numberGoogleSheets++;
         //inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><select class="config_input" ng-options="user.username as user.name for user in googleSheetsVars.professors track by user.username" ng-model="names" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
-        inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" type:"text" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
+        inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname' + $scope.numberGoogleSheets + '"><input class="config_input" type:"text" id="ownername' + $scope.numberGoogleSheets + '"></div>');
     }
 
 
@@ -173,10 +173,10 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
 
         //Fenix
         var fenixconfigurationSection = createSection(configurationSection, 'Fenix Variables');
-        fenixconfigurationSection.attr("class","multiple_inputs content");
+        fenixconfigurationSection.attr("class", "multiple_inputs content");
         fenixInputs = $('<div class="row" ></div>');
         fenixInputs.append('<span">Fenix Course Id: </span>');
-        fenixInputs.append('<input class="config_input" type="file" accept=".csv, .txt" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
+        fenixInputs.append('<input class="config_input plugin" type="file" accept=".csv, .txt" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
         fenixconfigurationSection.append(fenixInputs);
 
         action_buttons = $("<div class='config_save_button'></div>");
@@ -228,7 +228,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         row2.append('<button class="button small" ng-click="disableMoodle()">Disable Moodle</button><br>');
         moodleconfigSectionPeriodicity.append(row2);
         moodleconfigurationSection.append(moodleconfigSectionPeriodicity);
-        
+
         action_buttons = $("<div class='config_save_button'></div>");
         action_buttons.append('<button class="button small" ng-click="saveMoodle()">Save Moodle Vars</button><br>');
         moodleconfigurationSection.append(action_buttons);
@@ -254,8 +254,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
         };
         //class check
         var classCheckconfigurationSection = createSection(configurationSection, 'Class Check Variables');
-        classCheckconfigurationSection.attr("class","column content");
-        row = $("<div class='plugin_row'></div>");      
+        classCheckconfigurationSection.attr("class", "column content");
+        row = $("<div class='plugin_row'></div>");
         row.append('<span>TSV Code: </span>');
         row.append('<input class="config_input" type:"text" id="newList" ng-model="classCheckVars.tsvCode"><br>');
         classCheckconfigurationSection.append(row);
@@ -273,7 +273,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
 
         //google sheets
         var googleSheetsconfigurationSection = createSection(configurationSection, 'Google Sheets Variables');
-        googleSheetsconfigurationSection.attr("class","column content");
+        googleSheetsconfigurationSection.attr("class", "column content");
         googleSheetsVars = ["credentials", "spreadsheetId", "sheetName"];
         googleSheetsTitles = ["Credentials:", "Spread Sheet Id: ", "Sheet Name: "];
         jQuery.each(googleSheetsVars, function (index) {
@@ -282,25 +282,25 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile){
             row = $("<div class='plugin_row'></div>");
             row.append('<span >' + title + '</span>');
             if (model == "credentials") {
-                row.append('<input class="config_input" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
+                row.append('<input class="config_input plugin" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
                 row.append('<button class="button small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
-            } else if (model == "sheetName"){
-                row.attr('id','sheet_names_row');
+            } else if (model == "sheetName") {
+                row.attr('id', 'sheet_names_row');
                 $scope.numberGoogleSheets = 0;
-                if($scope.googleSheetsVars.sheetName.length != 0){
+                if ($scope.googleSheetsVars.sheetName.length != 0) {
                     inputsButton = $("<div class='input_with_button' ><div id='sheet_names'></div></div>");
-                    jQuery.each($scope.googleSheetsVars.sheetName, function (index){
+                    jQuery.each($scope.googleSheetsVars.sheetName, function (index) {
                         sheetName = $scope.googleSheetsVars.sheetName[index];
                         ownerName = $scope.googleSheetsVars.ownerName[index];
                         $scope.numberGoogleSheets++;
                         //inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"><select class="config_input" ng-options="user.username as user.name for user in googleSheetsVars.professors track by user.username" ng-model="names"  id="ownername'+ $scope.numberGoogleSheets +'"></select></div>');
-                        inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" value="'+ sheetName +'" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" value="'+ ownerName +'" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
+                        inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" value="' + sheetName + '" id="sheetname' + $scope.numberGoogleSheets + '"><input class="config_input" value="' + ownerName + '" id="ownername' + $scope.numberGoogleSheets + '"></div>');
                     });
                 }
-                else{
+                else {
                     inputsButton = $("<div class='input_with_button'></div>");
                     $scope.numberGoogleSheets++;
-                    inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><input class="config_input" type:"text" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
+                    inputsButton.append('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname' + $scope.numberGoogleSheets + '"><input class="config_input" type:"text" id="ownername' + $scope.numberGoogleSheets + '"></div>');
                 }
                 inputsButton.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button>');
                 row.append(inputsButton);
