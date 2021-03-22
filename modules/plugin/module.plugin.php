@@ -655,6 +655,11 @@ class Plugin extends Module
         }
         //verificar compatibilidade
     }
+
+    public function dropTables($moduleName)
+    {
+        parent::dropTables($moduleName);
+    }
     
     public function is_configurable(){
         return true;

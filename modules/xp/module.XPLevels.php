@@ -19,7 +19,7 @@ class XPLevels extends Module
 
     public function deleteDataRows($courseId)
     {
-        $lvls = Core::$systemDB->selectMultiple("level", ["course" => $this->getCourseId()]);
+        $lvls = Core::$systemDB->selectMultiple("level", ["course" => $courseId]);
         foreach ($lvls as $lvl) {
             Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
         }
@@ -528,6 +528,11 @@ class XPLevels extends Module
 
     public function deleteLevel($level, $courseId){
         Core::$systemDB->delete("level",["id"=>$level['id']]);
+    }
+
+    public function dropTables($moduleName)
+    {
+        parent::dropTables($moduleName);
     }
 
     public function has_general_inputs (){ return false; }

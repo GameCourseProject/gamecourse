@@ -32,6 +32,12 @@ class QR extends Module {
     {
         //verificar compatibilidade
     }
+
+    public function dropTables($moduleName)
+    {
+        parent::dropTables($moduleName);
+    }
+    
 }
 ModuleLoader::registerModule(array(
     'id' => 'qr',
