@@ -130,7 +130,8 @@ button {
     flex-direction: column;
 }
 
-.modal_content .content .inputs .row_inputs {
+.modal_content .content .inputs .row_inputs,  
+.modal_content .content .inputs .row_inputs .container{
     display: block;
     width: 100%;
     position: relative;
