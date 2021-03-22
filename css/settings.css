@@ -333,6 +333,16 @@
     margin-right: 15px;
 }
 
+#configPage .badge_image {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#configPage .badge_image #badge_img {
+    margin-left: 15px;
+}
+
 
 /*satatus bar also used on the views page*/
 

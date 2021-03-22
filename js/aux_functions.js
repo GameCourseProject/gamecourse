@@ -86,7 +86,7 @@ function checkNavbarLength() {
 
 }
 
-$(window).resize(function() {
+$(window).resize(function () {
     //resize just happened, pixels changed
     addPagesBackToNavBar();
     checkNavbarLength();
@@ -102,7 +102,7 @@ function range(start, end) {
 function semestersYears(start, end) {
     years = range(start, end);
     semesters = [];
-    jQuery.each(years, function(index) {
+    jQuery.each(years, function (index) {
         se = years[index].toString() + "-" + (years[index] + 1).toString();
         semesters.push(se)
     });
@@ -169,13 +169,13 @@ function createInputWithChange(id, text, placeholder, $compile, $smartboards, $p
     var textInput = $('<input>', { type: 'text', id: '' + id + '', 'class': 'input-text', placeholder: placeholder, 'ng-model': ngModel });
     wrapperDiv.append($compile(textInput)(scope));
 
-    textInput.bind('change paste keyup', function() {
+    textInput.bind('change paste keyup', function () {
         var input = $(this);
-        createChangeButtonIfNone(id, textInput, function(status) {
+        createChangeButtonIfNone(id, textInput, function (status) {
             var data = {};
             data[field] = $parse(ngModel)(scope);
             $.extend(data, additionalData);
-            $smartboards.request(module, request, data, function(data, err) {
+            $smartboards.request(module, request, data, function (data, err) {
                 if (err) {
                     status.text('Error, please try again!');
                     input.prop('disabled', false);
@@ -187,7 +187,7 @@ function createInputWithChange(id, text, placeholder, $compile, $smartboards, $p
             });
         }, {
             createMode: 'after',
-            disableFunc: function() {
+            disableFunc: function () {
                 input.prop('disabled', true);
             }
         });
@@ -212,7 +212,7 @@ function createChangeButtonIfNone(name, anchor, action, config) {
         if (pageStatus.length != 0)
             pageStatus.remove();
         var changePage = $('<button>', { id: name + '-button', text: config.buttonText, 'class': 'button' });
-        changePage.click(function() {
+        changePage.click(function () {
             var status = $('<span>', { id: name + '-status', text: config.statusTextUpdating });
             if (config.disableFunc != undefined)
                 config.disableFunc();
@@ -375,6 +375,15 @@ function changeSelectTextColor(el) {
         el.style.color = "rbg(106,106,106)";
     else
         el.style.color = "#333";
+}
+
+function hideIfNeed(id) {
+    var el = document.getElementById(id);
+    if (el.src == "") {
+        $(el).hide();
+    } else {
+        $(el).show();
+    }
 }
 
 function resetSelectTextColor(id) {
