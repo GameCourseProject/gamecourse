@@ -47,6 +47,6 @@
     margin-right: 20px;
     margin-left: 0;
 }
-#configPage input[type="file"].config_input {
+#configPage input[type="file"].config_input.plugin {
     border: none;
 }
