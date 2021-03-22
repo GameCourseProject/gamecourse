@@ -949,7 +949,7 @@ class Course
         if ($subfolder) {
             $location .=  "/" . str_replace(' ', '', $subfolder);
         }
-        $locationFile = "/" . $filename;
+        $locationFile = "/" . str_replace(' ', '', $filename);
         $response = 0;
 
         // Upload file

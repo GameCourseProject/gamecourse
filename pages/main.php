@@ -63,6 +63,9 @@ $user = Core::getLoggedUser();
     <!-- Quill stylesheet -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
+    <!-- Merge images library-->
+    <script src="https://unpkg.com/merge-images"></script>
+
     <script>
         app.run(['$rootScope', function($rootScope) {
             $rootScope.user = {

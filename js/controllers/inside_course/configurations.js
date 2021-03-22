@@ -123,7 +123,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $compile(editbox)($scope);
     };
 
-    //second way to do it
     $scope.selectImage = function () {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
@@ -161,6 +160,88 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         quill.insertEmbed(range.index, 'image', `../gamecourse/${url}`); m
     }
 
+    $scope.uploadImages = function () {
+
+        const file = document.getElementById("imageFile").files[0];
+
+        filename = $('#imageFile').val().split('\\')[2];
+        $(".config_input #textBadge").text(filename);
+        // file type is only image.
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $scope.uploadFile = reader.result;
+
+            //upload base image
+            $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: $scope.openItem.name + '.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+            });
+
+            $scope.buildMergeImages($scope.uploadFile);
+
+        }
+        //if ($("#imageFile").files)
+        reader.readAsDataURL(file);
+        document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename;
+
+
+    }
+
+    $scope.buildMergeImages = function (file) {
+
+        const isExtra = $scope.openItem.extra;
+        // upload image for level 1
+        if (isExtra) {
+            layersL1 = [file, 'images/red border.png'];
+            imageLevel1 = mergeImages(layersL1)
+                .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: $scope.openItem.name + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                }
+                ));
+        } else {
+            $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: $scope.openItem.name + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+            });
+        }
+
+        if ($scope.openItem.desc2 != "") {
+            // create and upload image for level 2
+            layersL2 = isExtra ? [file, 'images/red border.png', 'images/single-star.png'] : [file, 'images/single-star.png'];
+
+            imageLevel2 = mergeImages(layersL2)
+                .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: $scope.openItem.name + '-2.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                }
+                ));
+        }
+
+        if ($scope.openItem.desc3 != "") {
+            // create and upload image for level 3 
+            layersL3 = isExtra ? [file, 'images/red border.png', 'images/double-star.png'] : [file, 'images/double-star.png'];
+
+            imageLevel3 = mergeImages(layersL3)
+                .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: $scope.openItem.name + '-3.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                }
+                ));
+        }
+    }
+
     $scope.addItem = function () {
 
         if ($('#open_item_action').is(':visible')) {
@@ -180,9 +261,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 switch (atribute.type) {
                     case 'text':
                         $scope.openItem[atribute.id] = "";
-                        break;
-                    case 'editor':
-                        quill.setContents([{ insert: '\n' }]);
                         break;
                     case 'select':
                         $scope.openItem[atribute.id] = "";
@@ -230,6 +308,19 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                             $scope.openItem[attr.id] = inputElement_colorPicker.value;
                         });
                         break;
+                    case 'editor':
+                        quill.setContents([{ insert: '\n' }]);
+                        break;
+                    case 'image':
+                        $scope.openItem[atribute.id] = "";
+                        $(".config_input #textBadge").text("No file chosen");
+                        $("#badge_img").hide();
+                        document.getElementById("imageFile").onchange = function () {
+                            $scope.uploadImages();
+                            hideIfNeed('badge_img');
+                        };
+                        break;
+
                 }
             })
             $("#open_item_action").text('New ' + $scope.listingItems.itemName + ': ');
@@ -279,16 +370,17 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
         $scope.submitItem = function () {
             if ($scope.openItem) {
-                $scope.openItem.dependencies = ""
-                $scope.openItem.dependenciesList.forEach(element => {
-                    $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
-                });
-                if ($scope.openItem.dependencies != "")
-                    $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
-
                 if ($scope.module.name == "Skills") {
+                    $scope.openItem.dependencies = ""
+                    $scope.openItem.dependenciesList.forEach(element => {
+                        $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
+                    });
+                    if ($scope.openItem.dependencies != "")
+                        $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
+
                     $scope.openItem.description = quill.root.innerHTML;
                 }
+
             }
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' }, alertUpdate);
         }
@@ -326,6 +418,15 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     quill.setContents([{ insert: '\n' }]);
                     quill.clipboard.dangerouslyPasteHTML(item[atribute.id]);
 
+                } else if (atribute["type"] == "image") {
+                    document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
+                    $("#badge_img").show();
+                    $(".config_input #textBadge").text($scope.openItem[atribute.id]);
+                    document.getElementById("imageFile").onchange = function () {
+                        $scope.uploadImages();
+                        hideIfNeed('badge_img');
+                    };
+
                 } else if (atribute["type"] == "color") {
                     const attr = atribute;
                     const inputElement_colorPicker = $('#' + attr.id)[0];
@@ -353,7 +454,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
 
             });
-            $scope.showDepSection(false);
+            if ($scope.module.name == "Skills")
+                $scope.showDepSection(false);
         } else {
             $scope.openTier = {};
             $scope.openTier.id = item.tier;
@@ -395,15 +497,22 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
         $scope.submitItem = function () {
             if ($scope.openItem) {
-                $scope.openItem.dependencies = ""
-                $scope.openItem.dependenciesList.forEach(element => {
-                    $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
-                });
-                if ($scope.openItem.dependencies != "")
-                    $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
                 if ($scope.module.name == "Skills") {
                     $scope.openItem.description = quill.root.innerHTML;
+
+                    $scope.openItem.dependencies = ""
+                    $scope.openItem.dependenciesList.forEach(element => {
+                        $scope.openItem.dependencies += element[0] + " + " + element[1] + " | ";
+                    });
+                    if ($scope.openItem.dependencies != "")
+                        $scope.openItem.dependencies = $scope.openItem.dependencies.slice(0, -3);
                 }
+                if ($scope.module.name == "Badges") {
+                    baseImage = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem.image;
+                    $scope.buildMergeImages(baseImage);
+                }
+
+
             }
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'edit' }, alertUpdate);
         }
@@ -879,16 +988,23 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     case 'color':
                         color_picker_section = $('<div class="color_picker half"></div>');
                         color_picker_section.append($('<input type="text" class="config_input pickr" id="' + atribute.id + '" placeholder="Color *" ng-model="openItem.' + atribute.id + '"/><label for="color" class="form__label">Color</label>'));
-                        color_picker_section.append($('<div id="' + atribute.id + '-color-sample" class="color-sample"><div class="box" style="background-color: {{openItem.color}}";"></div><div  class="frame" style="border: 1px solid {{openItem.color}}"></div>'));
+                        color_picker_section.append($('<div id="' + atribute.id + '-color-sample" class="color-sample"><div class="box" style="background-color: {{openItem.' + atribute.id + '}}";"></div><div  class="frame" style="border: 1px solid {{openItem.' + atribute.id + '}}"></div>'));
                         details.append(color_picker_section);
                         break;
                     case 'editor':
                         editor_container = $('<div class="editor_container"></div>');
                         editor = $('<div id="editor"></div>');
                         editor_container.append(editor);
-                    // if using the first way, you must uncomment these 2 lines
-                    // image_upload = $('<input id="uploadImg" type="file" style="display:none" accept="image/png, image/jpeg, image/gif" onchange="uploadImage()">');
-                    // editor_container.append(image_upload);
+                        // if using the first way, you must uncomment these 2 lines
+                        // image_upload = $('<input id="uploadImg" type="file" style="display:none" accept="image/png, image/jpeg, image/gif" onchange="uploadImage()">');
+                        // editor_container.append(image_upload);  
+                        break;
+                    case 'image':
+                        details.append($('<div class="full" ><div class="badge_image"><span>' + atribute.name + ' </span> ' +
+                            '<div class="config_input" style="flex: none;"><input style="display: none;" id="imageFile" type="file" accept=".png, .jpeg, .jpg" class="form__input" ng-model="openItem.' + atribute.id + '"/> ' +
+                            '<input  type="button" value="Choose File" onclick="document.getElementById(\'imageFile\').click();" />' +
+                            '<span id="textBadge" style="margin-left:10px;margin-right: 20px;"> </span></div> <img class="icon" id="badge_img" /></div ></div > '));
+                        break;
 
 
                 }
