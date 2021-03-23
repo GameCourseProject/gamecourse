@@ -157,7 +157,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     insertToEditor = function (url) {
         // push image url to rich editor.
         const range = quill.getSelection();
-        quill.insertEmbed(range.index, 'image', `../gamecourse/${url}`); m
+        quill.insertEmbed(range.index, 'image', `${url}`); m
     }
 
     $scope.uploadImages = function () {

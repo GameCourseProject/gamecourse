@@ -1119,6 +1119,16 @@ class Skills extends Module
         }
     }
 
+    public function insertHeadHtml(&$htmlDom, $skillName) {
+        $htmlTag = $htmlDom->getElementsByTagName('html')->item(0);
+        $bodyTag = $htmlDom->getElementsByTagName('body')->item(0);
+
+        $headNode = $htmlDom->createElement("head");
+        $titleNode = $htmlDom->createElement("title", "Skill Tree - " . $skillName);
+        $headNode->appendChild($titleNode);
+        $htmlTag->insertBefore($headNode, $bodyTag);
+    }
+
     public function newSkill($skill, $courseId){
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
 
@@ -1134,17 +1144,34 @@ class Skills extends Module
         $descriptionPage = @file_get_contents($path);
         if ($descriptionPage === FALSE){
             if (array_key_exists("description", $skill)) {
+                $htmlDom = new DOMDocument;
+                
+                $htmlDom->loadHTML($skill['description']);
+
+                $this->insertHeadHtml($htmlDom, $skill['name']);
+
+                $imageTags = $htmlDom->getElementsByTagName('img');
+                foreach($imageTags as $imageTag){
+                    //Get the src attribute of the image.
+                    $imgSrc = $imageTag->getAttribute('src');
+                    $exploded = explode("/", $imgSrc);
+                    $imageName = end($exploded);
+                    $imageTag->setAttribute('src', str_replace(' ', '', $skill['name']) . '/' . $imageName);
+                }
+
+                $skill['description'] = $htmlDom->saveHTML();
                 file_put_contents($path, $skill['description']);
                 $descriptionPage = @file_get_contents($path);
+
+                $start = strpos($descriptionPage, '<body>') + 6;
+                $end = stripos($descriptionPage, '</body>');
+                $descriptionPage = substr($descriptionPage, $start, $end - $start);
+
                 $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
             }
             //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
             //return null;
         };
-        // $start = strpos($descriptionPage, '<td>') + 4;
-        // $end = stripos($descriptionPage, '</td>');
-        // $descriptionPage = substr($descriptionPage, $start, $end - $start);
-        
 
         Core::$systemDB->insert("skill",$skillData);
         $skillId = Core::$systemDB->getLastId();
@@ -1225,6 +1252,7 @@ class Skills extends Module
                 //replace image source links in the html file
                 $htmlDom = new DOMDocument;
                 $htmlDom->loadHTML($skill['description']);
+                $this->insertHeadHtml($htmlDom, $skill['name']);
                 $imageTags = $htmlDom->getElementsByTagName('img');
                 foreach($imageTags as $imageTag){
                     //Get the src attribute of the image.
@@ -1236,14 +1264,23 @@ class Skills extends Module
                 $skill['description'] = $htmlDom->saveHTML();
             }
 
+        } else {
+            $htmlDom = new DOMDocument;
+
+            $htmlDom->loadHTML($skill['description']);
+
+            $this->insertHeadHtml($htmlDom, $skill['name']);
+
+            $skill['description'] = $htmlDom->saveHTML();
         }
         file_put_contents($path . '.html', $skill['description']);
         $descriptionPage = @file_get_contents($path . '.html');
+
+        $start = strpos($descriptionPage, '<body>') + 6;
+        $end = stripos($descriptionPage, '</body>');
+        $descriptionPage = substr($descriptionPage, $start, $end - $start);
+
         $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
-        
-        // $start = strpos($descriptionPage, '<td>') + 4;
-        // $end = stripos($descriptionPage, '</td>');
-        // $descriptionPage = substr($descriptionPage, $start, $end - $start);
         
 
         Core::$systemDB->update("skill",$skillData,["id"=>$skill["id"]]);
