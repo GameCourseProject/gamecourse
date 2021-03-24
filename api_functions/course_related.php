@@ -30,8 +30,9 @@ API::registerFunction('core', 'getCourseInfo', function() {
             if(!in_array($page["name"], $navNames)){
                 $simpleName=str_replace(' ', '', $page["name"]);
                 $view = Core::$systemDB->select("view", ["id" => $page["viewId"]]);
+                $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $page["viewId"], "course" => $courseId], "id,name,roleType");
 
-                if ($page["roleType"]=="ROLE_INTERACTION") {
+                if ($template["roleType"]=="ROLE_INTERACTION") {
                     $viewerRole = explode(".", explode(">", $view["role"])[1])[1];
                     $userRole = explode(".", explode(">", $view["role"])[0])[1];
                     if ($view["aspectClass"] == null) {
@@ -78,9 +79,9 @@ API::registerFunction('core', 'getCourseInfo', function() {
 
 
         $landingPage = $courseUser->getLandingPage();
-        $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, roleType");
+        $landingPageInfo = Core::$systemDB->select("page", ["name"=>$landingPage], "id, viewId");
         $landingPageID = $landingPageInfo["id"];
-        $landingPageType = $landingPageInfo["roleType"];
+        $landingPageType = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $landingPageInfo["viewId"], "course" => $courseId], "roleType");
 
         $isAdmin =(($user != null && $user->isAdmin()) || $courseUser->isTeacher());
         
