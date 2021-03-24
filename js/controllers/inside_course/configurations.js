@@ -185,7 +185,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         }
         //if ($("#imageFile").files)
         reader.readAsDataURL(file);
-        document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename;
+        document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem.name + '.png';
 
 
     }
