@@ -653,20 +653,35 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     }
 
     $scope.moveUp = function (row) {
-        var item = row.item;
-        var index = parseInt(item.seqId) - 1;
+        var item = row.item ? row.item : row.tier;
+        var index = parseInt(row.$index);
+        var newIdx = index - 1;
         var changed = false;
 
+        console.log(index);
 
         if (item.reward != undefined) {
-            if (index - 1 == 0) {
-                if (confirm("You are moving this tier to the first position. If you continue, all the dependencies of its skills will be deleted. Are you sure you want to continue?"))
-                    changed = moveRow("tier-table", index, index - 1, $scope.tiers.displayAtributes);
+            if (newIdx >= 0 && newIdx <= $scope.tiers.items.length - 1) {
+                if (index - 1 == 0) {
+                    if (confirm("You are moving this tier to the first position. If you continue, all the dependencies of its skills will be deleted. Are you sure you want to continue?")) {
+                        // changed = moveRow("tier-table", index, index - 1);
+                        $scope.tiers.items.splice(newIdx, 2, item, $scope.tiers.items[newIdx]);
+                        changed = true;
+                    }
+
+                } else {
+                    $scope.tiers.items.splice(newIdx, 2, item, $scope.tiers.items[newIdx]);
+                    changed = true;
+                }
             }
 
         } else {
-            var idx = parseInt(row.$index);
-            changed = moveRow("listing-table", idx, idx - 1, $scope.listingItems.displayAtributes);
+            var myTier = item.tier;
+            if (newIdx >= 0 && newIdx <= $scope.listingItems.items.length - 1 && $scope.listingItems.items[newIdx].tier == myTier) {
+                $scope.listingItems.items.splice(newIdx, 2, item, $scope.listingItems.items[newIdx]);
+                changed = true;
+            }
+
         }
 
         if (changed) {
@@ -675,33 +690,60 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     giveMessage(err.description);
                     return;
                 }
-                location.reload()
             });
+            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                $scope.listingItems.items = data.listingItems.items;
+            });
+
         }
 
     }
 
     $scope.moveDown = function (row) {
-        var item = row.item;
-        var index = parseInt(item.seqId) - 1;
+        var item = row.item ? row.item : row.tier;
+        var index = parseInt(row.$index);
+        var newIdx = index + 1;
         var changed = false;
+        console.log(index);
+
 
         if (item.reward != undefined) {
-            changed = moveRow("tier-table", index, index + 1, $scope.tiers.displayAtributes)
-        } else {
-            var idx = parseInt(row.$index);
-            changed = moveRow("listing-table", idx, idx + 1, $scope.listingItems.displayAtributes)
-        }
 
+            if (newIdx >= 0 && newIdx <= $scope.tiers.items.length - 1) {
+                $scope.tiers.items.splice(index, 2, $scope.tiers.items[newIdx], item);
+                changed = true;
+            }
+        } else {
+            // var idx = parseInt(row.$index);
+            // var newIdx = indxx + 1;
+            var myTier = item.tier;
+
+            if (newIdx >= 0 && newIdx <= $scope.listingItems.items.length - 1 && $scope.listingItems.items[newIdx].tier == myTier) {
+                $scope.listingItems.items.splice(index, 2, $scope.listingItems.items[newIdx], item);
+                changed = true;
+            }
+        }
         if (changed) {
             $smartboards.request('settings', 'saveNewSequence', { course: $scope.course, module: $stateParams.module, itemId: item.reward ? item.tier : item.id, oldSeq: index, nextSeq: index + 1, table: item.reward ? "tier" : "skill" }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
                 }
-                location.reload()
+            });
+
+            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                $scope.listingItems.items = data.listingItems.items;
             });
         }
+
     }
 
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
@@ -824,14 +866,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             rowHeaderTiers.append($("<th class='action-column'></th>")); // move up
             rowHeaderTiers.append($("<th class='action-column'></th>")); // move down
 
-            rowContentTiers = $("<tr ng-repeat='(i, item) in tiers.items' id='item-{{item.tier}}'> ></tr>");
+            rowContentTiers = $("<tr ng-repeat='(i, tier) in tiers.items' id='tier-{{tier.tier}}'> ></tr>");
             jQuery.each($scope.tiers.displayAtributes, function (index) {
                 atribute = $scope.tiers.displayAtributes[index];
-                stg = "item." + atribute;
+                stg = "tier." + atribute;
                 rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
             });
             rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(item)"></div></td>');
-            rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(item)"></div></td>');
+            rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
 

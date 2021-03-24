@@ -998,7 +998,7 @@ class Skills extends Module
         if ($tierOrSkill == "tier") {
                 // if this tier will be the first one
                 if ($nextSeq + 1 == 1) {
-                    $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier["tier"]]);
+                    $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $itemId]);
                     foreach($skillsInTier as $skill) {
                         $dependencies = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]], "id");
                         if(!empty($dependencies)) {
