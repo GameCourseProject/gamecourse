@@ -21,10 +21,10 @@ class QR extends Module {
         API::registerFunction('settings', 'qrError', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            $errors = Core::$systemDB->selectMultiple("qr_error", 
+            $errors = Core::$systemDB->selectMultiple("qr_error q left join game_course_user u on q.user = u.id", 
             ["course" => $courseId], 
             "date, studentNumber, msg, qrkey", 
-            "date");
+            "date DESC");
             API::response(["errors" => $errors]);
         });
     }

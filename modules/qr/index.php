@@ -26,10 +26,13 @@ $class_types = array("Lecture", "Invited Lecture");
 
 $error = FALSE;
 
-function inclass($studentNumber, $courseId)
+function inCourse($studentNumber, $courseId)
 {
-  $studentId = Core::$systemDB->selectMultiple("course_user left join game_course_user on game_course_user.id=course_user.id", ["studentNumber" => $studentNumber, "course" => $courseId], "course_user.id");
-  return !empty(Core::$systemDB->select("course_user", ["id" => $studentId[0]["id"], "course" => $courseId]));
+  $studentId = Core::$systemDB->selectMultiple(
+    "course_user left join game_course_user on game_course_user.id=course_user.id", 
+    ["studentNumber" => $studentNumber, "course" => $courseId], 
+    "course_user.id");
+  return (!empty($studentId));
 }
 
 if (isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["course"]) && isset($_REQUEST["submit"])) {
@@ -39,7 +42,7 @@ if (isset($_REQUEST["key"]) && isset($_REQUEST["aluno"]) && isset($_REQUEST["cou
   } else if (strlen($_REQUEST["aluno"]) < 5) {
     $error_student_number_en = "Student Number must have 5 numbers! Example: 48283";
     $error = TRUE;
-  } else if (!(inclass($_REQUEST["aluno"], $_REQUEST["course"]))) {
+  } else if (!(inCourse($_REQUEST["aluno"], $_REQUEST["course"]))) {
     $error_student_number_en = "The student with that Student Number is not enrolled in class.";
     $error = TRUE;
   } else {
@@ -56,8 +59,6 @@ if (isset($_REQUEST["key"])  && isset($_REQUEST["aula"]) && isset($_REQUEST["sub
   }
 }
 
-$valid = FALSE;
-$used = TRUE;
 ?>
 
 <html>
@@ -89,35 +90,49 @@ $used = TRUE;
   $course = Core::$systemDB->select("course",["id"=> $_REQUEST["course"]], "name , year");
   $disciplina_en = $course["name"];
   $ano_en = $course["year"];
-  if (isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["aula"]) && isset($_REQUEST["submit"]) && !($error)) {
+  if (isset($_REQUEST["key"]) && !empty($_REQUEST["aluno"]) && !empty($_REQUEST["aula"]) && isset($_REQUEST["course"]) && isset($_REQUEST["submit"]) && !($error)) {
 
     $user = User::getUserByStudentNumber($_REQUEST["aluno"]);
     try {
-        Core::$systemDB->update("qr_code", ["studentNumber" => $user->getId(), "classNumber" =>  $_REQUEST['aula'], "classType" => $_REQUEST['classtype'] ], ["qrkey" => $_REQUEST["key"]]);
-        $type = "";
-        if ($_REQUEST['classtype'] == "Lecture") {
-            $type = "participated in lecture";
-        } else if ($_REQUEST['classtype'] == "Invited Lecture") {
-            $type = "participated in lecture (invited)";
+      $check = Core::$systemDB->select("qr_code", ["qrkey" => $_REQUEST["key"], "course" => $_REQUEST["course"]], "*");
+      // Code exists?
+      if($check) {
+        // Code has already been redeemed?
+        if(!($check["studentNumber"])){
+          Core::$systemDB->update("qr_code", ["studentNumber" => $user->getId(), "classNumber" =>  $_REQUEST['aula'], "classType" => $_REQUEST['classtype'] ], ["qrkey" => $_REQUEST["key"]]);
+          $type = "";
+          if ($_REQUEST['classtype'] == "Lecture") {
+              $type = "participated in lecture";
+          } else if ($_REQUEST['classtype'] == "Invited Lecture") {
+              $type = "participated in lecture (invited)";
+          }
+          Core::$systemDB->insert("participation", ["user" => $user->getId(), "course" => $_REQUEST["course"], "description" => $_REQUEST['aula'], "type" => $type]);
+          echo "<span class='success'>Your active participation was registered.<br />Congratulations! Keep participating. ;)</span>";
         }
-        Core::$systemDB->insert("participation", ["user" => $user->getId(), "course" => $_REQUEST["course"], "description" => $_REQUEST['aula'], "type" => $type]);
-      echo "<span class='success'>Your active participation was registered.<br />Congratulations! Keep participating. ;)</span>";
+        else {
+          echo "<span class='error'>Sorry. This code has already been redeemed.<br />The participation was not registered. </span>";
+          Core::$systemDB->insert("qr_error", [
+            "user" => $user->getId(), "course" => $_REQUEST["course"],
+            "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => "Code has already been redeemed."
+          ]);
+        }
+      } 
+      else {
+        echo "<span class='error'>Sorry. This code does not exist.<br />The participation was not registered. </span>";
+        Core::$systemDB->insert("qr_error", [
+          "user" => $user->getId(), "course" => $_REQUEST["course"],
+          "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => "Code not found for this course."
+        ]);
+      }
     } catch (PDOException $e) {
       echo "<br/><span class='error'>Sorry. An error occured. Contact your class professor with your QRCode and this message. Your student ID and IP number was registered.</span>\n";
       $erro = $e->getMessage();
-      $sql = "INSERT INTO error(student_id, ip, qrcode, datetime, msg) VALUES ('{$_REQUEST['aluno']}','{$_SERVER['REMOTE_ADDR']}','{$_REQUEST['key']}',date_trunc('second', current_timestamp), '{$erro}');";
       Core::$systemDB->insert("qr_error", [
-        "studentNumber" => $_REQUEST["aluno"], "course" => $_REQUEST["course"],
+        "user" => $user->getId(), "course" => $_REQUEST["course"],
         "ip" => $_SERVER['REMOTE_ADDR'], "qrkey" => $_REQUEST["key"], "msg" => $erro
       ]);
     }
   } else if (isset($_REQUEST["key"]) && isset($_REQUEST["course"])) {
-    // QRCode e valido?
-    $valid = !empty(Core::$systemDB->select("qr_code", ["qrkey" => $_REQUEST["key"]], "qrkey"));
-
-    // QRCode já foi atribuido?
-    $used = !empty(Core::$systemDB->select("qr_code", ["qrkey" => $_REQUEST["key"]], "studentNumber"));
-
   ?>
       <h2><?= $disciplina_en ?> - <?= $semestre_en ?> <?= $ano_en ?></h2>
       <h2><?= $titulo_en ?></h2>
