@@ -1,15 +1,15 @@
 angular.module('module.views', []);
-angular.module('module.views').controller('ViewSettings', function($state, $stateParams, $smartboards, $element, $compile, $scope) {
+angular.module('module.views').controller('ViewSettings', function ($state, $stateParams, $smartboards, $element, $compile, $scope) {
     $element.html('Loading...');
-    $smartboards.request('views', 'getInfo', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp,course: $scope.course}, function(data, err) {
+    $smartboards.request('views', 'getInfo', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
         }
         function subtractSpecializations(one, two) {
             var cpy = one.slice(0);
-            for(var i = 0; i < cpy.length; ++i) {
-                for(var j = 0; j < two.length; ++j) {
+            for (var i = 0; i < cpy.length; ++i) {
+                for (var j = 0; j < two.length; ++j) {
                     if (cpy[i].id == two[j].id) {
                         cpy.splice(i, 1);
                         --i;
@@ -31,10 +31,10 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             'background-color': 'rgba(0, 0, 0, 0.07)'
         };
 
-        $scope.selectOne = function(specializationOne) {
+        $scope.selectOne = function (specializationOne) {
             $scope.oneSelected = specializationOne;
             if ($scope.viewType == "ROLE_SINGLE") {
-                $state.go('course.settings.views.view.edit-role-single', {role: $scope.oneSelected.id});
+                $state.go('course.settings.views.view.edit-role-single', { role: $scope.oneSelected.id });
             } else if ($scope.viewType == "ROLE_INTERACTION") {
                 $scope.specializationsTwo = specializationOne.viewedBy;
                 $scope.missingTwo = subtractSpecializations($scope.allIds, $scope.specializationsTwo);
@@ -43,13 +43,13 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             }
         };
 
-        $scope.selectTwo = function(specializationTwo) {
-            $state.go('course.settings.views.view.edit-role-interaction', {roleOne: $scope.oneSelected.id, roleTwo: specializationTwo.id});
+        $scope.selectTwo = function (specializationTwo) {
+            $state.go('course.settings.views.view.edit-role-interaction', { roleOne: $scope.oneSelected.id, roleTwo: specializationTwo.id });
         };
 
-        $scope.createViewOne = function() {
+        $scope.createViewOne = function () {
             if ($scope.viewType == "ROLE_SINGLE") {
-                $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id}}, function(data, err) {
+                $smartboards.request('views', 'createAspectView', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: { roleOne: $scope.selection.missingOneToAdd.id } }, function (data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
@@ -62,13 +62,13 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                         $scope.selection.missingOneToAdd = $scope.missingOne[0];
                 });
             } else if ($scope.viewType == "ROLE_INTERACTION") {
-                $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default'}}, function(data, err) {
+                $smartboards.request('views', 'createAspectView', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: { roleOne: $scope.selection.missingOneToAdd.id, roleTwo: 'role.Default' } }, function (data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
                     }
 
-                    var newSpec = $.extend({viewedBy: [{id: 'role.Default', name: 'Default'}]}, $scope.selection.missingOneToAdd);
+                    var newSpec = $.extend({ viewedBy: [{ id: 'role.Default', name: 'Default' }] }, $scope.selection.missingOneToAdd);
                     $scope.viewSpecializations.push(newSpec);
 
                     $scope.missingOne.splice($scope.missingOne.indexOf($scope.selection.missingOneToAdd), 1);
@@ -78,8 +78,8 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             }
         };
 
-        $scope.createViewTwo = function() {
-            $smartboards.request('views', 'createAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: $scope.selection.missingTwoToAdd.id}}, function(data, err) {
+        $scope.createViewTwo = function () {
+            $smartboards.request('views', 'createAspectView', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: { roleOne: $scope.oneSelected.id, roleTwo: $scope.selection.missingTwoToAdd.id } }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -92,17 +92,17 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             });
         };
 
-        $scope.deleteViewOne = function(what, $event) {
+        $scope.deleteViewOne = function (what, $event) {
             $event.stopPropagation();
-            if ($stateParams.pageOrTemp=="template"){
-                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?\nAny template references that use it will also be deleted"))
+            if ($stateParams.pageOrTemp == "template") {
+                if (!confirm("Are you sure you want to delete the " + what.name + " aspect?\nAny template references that use it will also be deleted"))
                     return;
-            }else{
-                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?"))
+            } else {
+                if (!confirm("Are you sure you want to delete the " + what.name + " aspect?"))
                     return;
             }
-            
-            $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: what.id}}, function(data, err) {
+
+            $smartboards.request('views', 'deleteAspectView', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: { roleOne: what.id } }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -121,17 +121,17 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
             });
         };
 
-        $scope.deleteViewTwo = function(what, $event) {
+        $scope.deleteViewTwo = function (what, $event) {
             $event.stopPropagation();
-            if ($stateParams.pageOrTemp=="template"){
-                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?\nAny template references that use it will also be deleted"))
+            if ($stateParams.pageOrTemp == "template") {
+                if (!confirm("Are you sure you want to delete the " + what.name + " aspect?\nAny template references that use it will also be deleted"))
                     return;
-            }else{
-                if (!confirm("Are you sure you want to delete the "+what.name+" aspect?"))
+            } else {
+                if (!confirm("Are you sure you want to delete the " + what.name + " aspect?"))
                     return;
             }
 
-            $smartboards.request('views', 'deleteAspectView', {view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: {roleOne: $scope.oneSelected.id, roleTwo: what.id}}, function(data, err) {
+            $smartboards.request('views', 'deleteAspectView', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course, info: { roleOne: $scope.oneSelected.id, roleTwo: what.id } }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -144,7 +144,7 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     $scope.selection.missingTwoToAdd = $scope.missingTwo[0];
             });
         };
-        $scope.gotoEdit = function() {
+        $scope.gotoEdit = function () {
             $state.go('course.settings.views.view.edit-single');
         };
 
@@ -155,19 +155,19 @@ angular.module('module.views').controller('ViewSettings', function($state, $stat
                     $scope.missingOne.splice(i, 1);
                     --i;
                 }
-            } 
+            }
             if ($scope.missingOne.length > 0)
                 $scope.selection.missingOneToAdd = $scope.missingOne[0];
         }
         var el = $('<div ng-include="\'' + $scope.modulesDir + '/views/partials/view-settings.html\'">');
         $element.html(el);
         $compile(el)($scope);
-                
+
     });
-    
+
 });
 
-angular.module('module.views').controller('ViewEditController', function($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {
+angular.module('module.views').controller('ViewEditController', function ($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {
     var loadedView;
     var initialViewContent;
 
@@ -177,9 +177,9 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
     var breadcrum = $("<div id='page_history'></div>");
     breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'> Views </span>"));
     breadcrum.append($("<div class='go_back icon' ui-sref='course.settings.views'></div>"));
-    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'>"+ $stateParams.pageOrTemp +"s</span>"));
+    breadcrum.append($("<span class='clickable' ui-sref='course.settings.views'>" + $stateParams.pageOrTemp + "s</span>"));
     breadcrum.append($("<div class='go_back icon'></div>"));
-    breadcrum.append($("<span>"+ $stateParams.name +"</span>")); 
+    breadcrum.append($("<span>" + $stateParams.name + "</span>"));
 
     var helper = $('<div class="side_helper">');
     var open_helper = $('<div id="open_helper">');
@@ -190,32 +190,32 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
     helper.append(open_helper);
     helper.append(helper_content);
-    open_helper.click( function () {
+    open_helper.click(function () {
         arrow = $("#arrow");
-        if (helper_content.hasClass("visible")){
-          helper_content.removeClass("visible");
-          helper_content.addClass("invisible");
-          arrow.removeClass("closed");
+        if (helper_content.hasClass("visible")) {
+            helper_content.removeClass("visible");
+            helper_content.addClass("invisible");
+            arrow.removeClass("closed");
         }
-        else{
-          helper_content.removeClass("invisible");
-          helper_content.addClass("visible");
-          arrow.addClass("closed");
+        else {
+            helper_content.removeClass("invisible");
+            helper_content.addClass("visible");
+            arrow.addClass("closed");
         }
     })
-    
 
-    var reqData = {course: $scope.course};
-    if ($state.current.name == 'course.settings.views.view.edit-role-single'){
-        reqData.info = {role: $stateParams.role};
-        breadcrum.append($("<span class='role_type'>"+ $stateParams.role +"</span>")); 
+
+    var reqData = { course: $scope.course };
+    if ($state.current.name == 'course.settings.views.view.edit-role-single') {
+        reqData.info = { role: $stateParams.role };
+        breadcrum.append($("<span class='role_type'>" + $stateParams.role + "</span>"));
     }
-    if ($state.current.name == 'course.settings.views.view.edit-role-interaction'){
-        reqData.info = {roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo};
-        breadcrum.append($("<span class='role_type'>"+ $stateParams.roleOne +" - "+ $stateParams.roleTwo + "</span>")); 
+    if ($state.current.name == 'course.settings.views.view.edit-role-interaction') {
+        reqData.info = { roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo };
+        breadcrum.append($("<span class='role_type'>" + $stateParams.roleOne + " - " + $stateParams.roleTwo + "</span>"));
     }
 
-    $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function(view, err) {
+    $sbviews.requestEdit($stateParams.view, $stateParams.pageOrTemp, reqData, function (view, err) {
         if (err) {
             viewEditorWindow.html(err);
             console.log(err);
@@ -226,7 +226,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         initialViewContent = angular.copy(view.get());
 
         var controlsDiv = $('<div class="action-buttons" id="view_editor_actions">');
-        
+
         $scope.canUndo = view.canUndo;
         $scope.undo = view.undo;
         var btnUndoActive = $('<div ng-if="canUndo()" id="undo_icon" class="icon undo_icon" title="Undo" ng-click="undo()"></div>');
@@ -247,45 +247,45 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
 
         //meter so save quando e preciso
         var btnSave = $('<button>Save Changes</button>');
-        btnSave.click(function() {
+        btnSave.click(function () {
             btnSave.prop('disabled', true);
             var saveData = $.extend({}, reqData);
             saveData.view = $stateParams.view;
             saveData.pageOrTemp = $stateParams.pageOrTemp;
             saveData.content = view.get();
-            console.log("saveEdit",saveData.content);
+            console.log("saveEdit", saveData.content);
             html2canvas($("#viewEditor .view.editing"), {
-                onrendered: function(canvas) {
-                  var img = canvas.toDataURL();
-                  saveData.sreenshoot = img;
-                  $smartboards.request('views', 'saveEdit', saveData, function(data, err) {
-                    btnSave.prop('disabled', false);
-                    if (err) {
-                        giveMessage(err.description);
-                        return;
-                    }
-    
-                    if (data != undefined)
-                        giveMessage(data);
-                    else {
-                        giveMessage('Saved!');
-                    }
-                    initialViewContent = angular.copy(saveData.content);
-                    //location.reload();//reloading to prevent bug that kept adding new parts over again
-                });
+                onrendered: function (canvas) {
+                    var img = canvas.toDataURL();
+                    saveData.sreenshoot = img;
+                    $smartboards.request('views', 'saveEdit', saveData, function (data, err) {
+                        btnSave.prop('disabled', false);
+                        if (err) {
+                            giveMessage(err.description);
+                            return;
+                        }
+
+                        if (data != undefined)
+                            giveMessage(data);
+                        else {
+                            giveMessage('Saved!');
+                        }
+                        initialViewContent = angular.copy(saveData.content);
+                        //location.reload();//reloading to prevent bug that kept adding new parts over again
+                    });
                 }
             });
-            
+
         });
         controlsDiv.append(btnSave);
         var btnPreview = $('<button>Preview</button>');
-        btnPreview.click(function() {
+        btnPreview.click(function () {
             btnPreview.prop('disabled', true);
             var editData = $.extend({}, reqData);
             editData.view = $stateParams.view;
             editData.pageOrTemp = $stateParams.pageOrTemp;
             editData.content = view.get();
-            $smartboards.request('views', 'previewEdit', editData, function(data, err) {
+            $smartboards.request('views', 'previewEdit', editData, function (data, err) {
                 btnPreview.prop('disabled', false);
                 if (err) {
                     giveMessage(err.description);
@@ -312,7 +312,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
                 acion_buttons = $('<div class="action-buttons" >');
                 acion_buttons.css("width", "130px");
                 var btnClosePreview = $('<button>Close Preview</button>');
-                btnClosePreview.click(function() {
+                btnClosePreview.click(function () {
                     viewBlock.remove();
                     acion_buttons.remove();
                     view.element.show();
@@ -333,7 +333,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
         viewEditorWindow.prepend(helper);
     });
 
-    var watcherDestroy = $rootScope.$on('$stateChangeStart', function($event, toState, toParams) {
+    var watcherDestroy = $rootScope.$on('$stateChangeStart', function ($event, toState, toParams) {
         if (initialViewContent == undefined || loadedView == undefined) {
             watcherDestroy();
             return;
@@ -348,7 +348,7 @@ angular.module('module.views').controller('ViewEditController', function($rootSc
             watcherDestroy();
     });
 
-    
+
 });
 angular.module('module.views').controller('ViewsList', function ($smartboards, $element, $compile, $scope, $state, $sbviews) {
     $smartboards.request('views', 'listViews', { course: $scope.course }, function (data, err) {
@@ -361,7 +361,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         $scope.pages = Object.values(data.pages);
         $scope.templates = Object.values(data.templates);
         $scope.globals = Object.values(data.globals);
-    
+
         //all the information is saved so we can filter it
         $scope.allPages = Object.values(data.pages);
         $scope.allTemplates = Object.values(data.templates);
@@ -377,21 +377,25 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         var viewsArea = createSection($($element), "Pages");
         viewsArea.attr("id", "pages");
         box = $('<div class="card"  ng-repeat="(id, page) in pages" ></div>');
-        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
+        box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/page/{{id}}.png?' + time + ');">'));
+        //+ <span class="edit_icon" title="Edit" ng-click="editView(id,\'page\',page.name)"></span></div></div>'));
         //box.append($('<div class="footer"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions"><span class="delete_icon icon" title="Remove" ng-click="deleteView(page,\'page\')"></span></div></div>'))
 
         //for the configure/edit info of the page
         // for the enable/disable feature of pages
-        
-        box.append( $('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions">' +
-         '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(page,\'page\')"></span>' + 
-         '<span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'));
+
+        box.append($('<div class="footer with_status"><div class="page_info"><span>{{page.name}}</span> <span>(id: {{id}})</span></div><div class="page_actions">' +
+            '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(page,\'page\')"></span>' +
+            '<span class="delete_icon icon" ng-click="deleteView(page,\'page\')"></span></div></div>'));
         box.append($('<div ng-if="page.isEnabled != true" class="status disable">Disabled <div class="background"></div></div>'));
         box.append($('<div ng-if="page.isEnabled == true" class="status enable">Enabled <div class="background"></div></div>'));
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         viewsArea.append(box);
-        viewsArea.append($compile('<div class="add_button icon" title="New" ng-click="createView(\'page\')"></div>')($scope));
+        action_button = $("<div class='action-buttons' style='width:30px;'></div>");
+        action_button.append($('<div class="icon add_icon" title="New" ng-click="createView(\'page\')"></div>'));
+        viewsArea.append($compile(action_button)($scope));
+        //viewsArea.append($compile('<div class="add_button icon" title="New" ng-click="createView(\'page\')"></div>')($scope));
         //error section
         viewsArea.append($("<div class='error_box'><div id='empty_pages' class='error_msg'></div></div>"));
 
@@ -402,7 +406,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         box.append($('<div class="color_box"><div class="box" ></div> <div  class="frame frame-page" style="background-image: url(/gamecourse/screenshoots/template/{{template.id}}.png?' + time + ');"><span class="edit_icon" title="Edit" ng-click="editView(template.id,\'template\',template.name)"></span></div></div>'));
         box.append($('<div class="footer"><div class="page_name">{{template.name}}</div><div class="template_actions">' +
             //for the configure/edit info of the template
-            '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(template, \'template\')"></span>'+
+            '<span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(template, \'template\')"></span>' +
             '<span class="globalize_icon icon" ng-if="template.isGlobal==false" title="Globalize" ng-click="globalize(template)"></span>' +
             '<span class="de_globalize_icon icon" ng-if="template.isGlobal==true" title="Deglobalize" ng-click="globalize(template)"></span>' +
             '<span class="export_icon_no_outline icon" title="Export" ng-click="exportTemplate(template)">' +
@@ -410,7 +414,9 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         //box.append( $('<div class="status enable">Enabled<div class="background"></div></div>'))
         $compile(box)($scope);
         TemplateArea.append(box);
-        TemplateArea.append($compile('<div class="add_button icon" title="New" ng-click="createView(\'template\')"></div>')($scope));
+        action_button_template = $("<div class='action-buttons' style='width:30px;'></div>");
+        action_button_template.append($('<div class="icon add_icon" title="New" ng-click="createView(\'template\')"></div>'));
+        TemplateArea.append($compile(action_button_template)($scope));
         //error section
         TemplateArea.append($("<div class='error_box'><div id='empty_templates' class='error_msg'></div></div>"));
 
@@ -431,23 +437,27 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         //new view modal
         modal = $("<div class='modal' style='' id='new-view'></div>");
         newView = $("<div class='modal_content'></div>");
-        newView.append($('<button class="close_btn icon" value="#new-view" onclick="closeModal(this)"></button>'));
+        newView.append($('<button class="close_btn icon" value="#new-view" onclick="closeModal(this);resetSelectTextColor(\'new_view_role\');resetSelectTextColor(\'new_view_template\');"></button>'));
         newView.append($('<div class="title">New {{newView.pageOrTemp}}: </div>'));
         content = $('<div class="content">');
         box = $('<div class="inputs" id="inputs_view_box">');
-        box.append($('<div class="name full"><input type="text" class="form__input " id="name" placeholder="Name *" ng-model="newView.name"/> <label for="name" class="form__label">Name</label></div>'))
-        roleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="newView.roleType"></select>'));
+        box.append($('<div class="name full"><input type="text" class="form__input" id="name" placeholder="Name *" ng-model="newView.name"/> <label for="name" class="form__label">Name</label></div>'))
+        roleType = ($('<select class="form__input pages_info" id="new_view_role" ng-options="type.id as type.name for type in types" ng-model="newView.roleType" onchange="changeSelectTextColor(this);"></select>'));
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
-        
+        // which view this page will show
+        viewTemplate = ($('<select class="form__input pages_info" id="new_view_template" ng-options="template.viewId as template.name for template in templates" ng-model="newView.viewId" onchange="changeSelectTextColor(this);"></select>'));
+        viewTemplate.append($('<option value="" disabled selected>Select a view template *</option>'));
+        box.append(viewTemplate);
         // for the enable/disable feature of pages
         row = $('<div id="active_page" class= "row"></div>');
-        row.append( $('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="newView.isEnabled"><span class="slider round"></span></label></div>'))
+        row.append($('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="newView.isEnabled"><span class="slider round"></span></label></div>'))
         //box.append(row);
         content.append(box);
         // added row to content intead of box to align with the save button
         content.append(row);
-        content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+        content.append($('<button class="cancel" value="#new-view" onclick="closeModal(this);resetSelectTextColor(\'new_view_role\');resetSelectTextColor(\'new_view_template\');" > Cancel </button>'))
+        content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit(newView.pageOrTemp)" > Save </button>'))
         newView.append(content);
         modal.append(newView);
         $compile(modal)($scope);
@@ -481,61 +491,74 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         //edit page modal
         editmodal = $("<div class='modal' id='edit-view'></div>");
         editpage = $("<div class='modal_content'></div>");
-        editpage.append( $('<button class="close_btn icon" value="#edit-view" onclick="closeModal(this)"></button>'));
-        editpage.append( $('<div class="title">Edit {{editView.pageOrTemp}}: </div>'));
+        editpage.append($('<button class="close_btn icon" value="#edit-view" onclick="closeModal(this)"></button>'));
+        editpage.append($('<div class="title">Edit {{editView.pageOrTemp}}: </div>'));
         editcontent = $('<div class="content">');
         editbox = $('<div id="edit_view_box" class= "inputs">');
         //text inputs
-        
+
         editbox.append($('<div class="container" ><input type="text" class="form__input" id="edit_name" placeholder="Name *" ng-model="editView.name"/> <label for="name" class="form__label">Name</label></div>'))
-        editroleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="editView.roleType"></select>'));
-        editroleType.append($('<option value="" disabled selected>Select a role type *</option>'));
-        editbox.append(editroleType);
-        
-        
+
+
         //editrow = $('<div id="#active_visible_inputs" class= "row"></div>');
         //editrow.append( $('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="editView.viewIsEnabled"><span class="slider round"></span></label></div>'))
         // authentication information - service and username
         editcontent.append(editbox);
         //editcontent.append(editrow);
-        
-        editcontent.append( $('<button class="save_btn" ng-click="submitEditView()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+        editcontent.append($('<button class="cancel" value="#edit-view" onclick="closeModal(this)" > Cancel </button>'))
+        editcontent.append($('<button class="save_btn" ng-click="submitEditView()" ng-disabled="!isReadyToEdit()" > Save </button>'))
         editpage.append(editcontent);
         editmodal.append(editpage);
 
         $compile(editmodal)($scope);
         $element.append(editmodal);
-        
+
 
         angular.extend($scope, data);
 
         $scope.createView = function (pageOrTemp) {
-            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, isEnabled: 0};
+            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, isEnabled: 0, viewId: '' };
 
             $scope.saveView = function () {
                 $smartboards.request('views', 'createView', $scope.newView, alertUpdate);
             };
             //criar funcao de verificacao
-            $scope.isReadyToSubmit = function () {
+            $scope.isReadyToSubmit = function (pageOrTemp) {
                 isValid = function (text) {
                     return (text != "" && text != undefined && text != null)
                 }
+
+                if (pageOrTemp == "page") {
+                    if (isValid($scope.newView.name) &&
+                        //isValid($scope.newView.roleType) &&
+                        isValid($scope.newView.viewId)) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                } else {
+                    if (isValid($scope.newView.name) &&
+                        isValid($scope.newView.roleType)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
                 //validate inputs
-                if (isValid($scope.newView.name) &&
-                    isValid($scope.newView.roleType)) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+
             }
 
             if (pageOrTemp == "page") {
-                $("#active_page").show();        
-                $("#inputs_view_box").attr("style", "padding-bottom: 26px");           
+                $("#active_page").show();
+                $("#new_view_template").show();
+                $("#new_view_role").hide();
+                $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
             else {
                 $("#active_page").hide();
+                $("#new_view_template").hide();
+                $("#new_view_role").show();
                 $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
 
@@ -623,8 +646,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             }
 
         }
-
-        $scope.configureView = function(view, pageOrTemp){
+        $scope.configureView = function (view, pageOrTemp) {
             $("#view_template_input").remove();
             $("#active_visible_inputs").remove();
             $scope.editView = {};
@@ -634,67 +656,78 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             $scope.editView.name = view.name;
             $scope.editView.theme = null;
             $scope.editView.pageOrTemp = pageOrTemp;
-  
-            
+            $scope.editView.viewId = view.viewId;
+
             if (pageOrTemp == "page") {
-                //$("#active_visible_inputs").show();
+                $("#active_visible_inputs").show();
                 //$("#inputs_view_box").attr("style", "padding-bottom: 26px");
 
 
+                // view that this page will show
                 editbox = $("#edit_view_box");
 
-                editrow = $('<div class= "row" id="active_visible_inputs"></div>'); 
-                if (view.isEnabled == true){
-                    editrow.append( $('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled" checked><span class="slider round"></span></label></div>'));
+                editviewTemplate = ($('<select class="form__input" id="view_template_input" ng-options="template.viewId as template.name for template in templates" ng-model="editView.viewId"></select>'));
+                editviewTemplate.append($('<option value="" disabled selected>Select a view template *</option>'));
+                editbox.append(editviewTemplate);
+
+                editrow = $('<div class= "row" id="active_visible_inputs"></div>');
+                if (view.isEnabled == true) {
+                    editrow.append($('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled" checked><span class="slider round"></span></label></div>'));
                     $scope.editView.pageIsEnabled = true;
                 }
-                else{
-                    editrow.append( $('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled"><span class="slider round"></span></label></div>'));
+                else {
+                    editrow.append($('<div class= "on_off"><span>Enable Page </span><label class="switch"><input id="active" type="checkbox" ng-model="editView.pageIsEnabled"><span class="slider round"></span></label></div>'));
                     $scope.editView.pageIsEnabled = false;
                 }
                 editbox.append(editrow);
-                
+
             } else {
+                editbox = $("#edit_view_box");
                 editbox.attr("style", "padding-bottom: 26px");
+
+                editroleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="editView.roleType"></select>'));
+                editroleType.append($('<option value="" disabled selected>Select a role type *</option>'));
+                editbox.append(editroleType);
             }
 
             $compile(editbox)($scope);
             $("#edit-view").show();
-           
-            $scope.isReadyToEdit = function() {
-                isValid = function(text){
-                    return  (text != "" && text != undefined && text != null)
+
+            $scope.isReadyToEdit = function () {
+                isValid = function (text) {
+                    return (text != "" && text != undefined && text != null)
                 }
                 //validate inputs
                 if (isValid($scope.editView.name) &&
-                $scope.editView.roleType.length != 0){
+                    $scope.editView.roleType.length != 0) {
                     return true;
                 }
-                else{
+                else {
                     return false;
                 }
             }
-    
-            $scope.submitEditView = function() {
+
+            $scope.submitEditView = function () {
                 isEnabled = $scope.editView.pageIsEnabled ? 1 : 0;
                 var editData = {
                     course: $scope.editView.course,
                     name: $scope.editView.name,
                     id: $scope.editView.id,
                     isEnabled: isEnabled,
-                    roleType:$scope.editView.roleType,
+                    roleType: $scope.editView.roleType,
+                    viewId: $scope.editView.viewId,
                     theme: $scope.editView.theme,
                     pageOrTemp: $scope.editView.pageOrTemp
                 };
-                
-                $smartboards.request('views', 'editView', editData, function(data, err) {
+
+                $smartboards.request('views', 'editView', editData, function (data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
                     }
                     $("#edit-view").hide();
                     // reload the window to update the nav bar
-                    
+
                     window.location.reload();
                     //$("#action_completed").append($scope.editView.pageOrTemp + ": "+ $scope.editView.name + " edited");
                     //$("#action_completed").show().delay(3000).fadeOut();
@@ -702,14 +735,14 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             };
         }
 
-        
-});
+
+    });
 });
 
 //controller for pages that are created in the views page
 angular.module('module.views').controller('CustomUserPage', function ($stateParams, $element, $scope, $sbviews) {
     changeTitle($stateParams.name, 1);
-    $sbviews.request($stateParams.id, {course: $scope.course, user: $stateParams.userID}, function(view, err) {
+    $sbviews.request($stateParams.id, { course: $scope.course, user: $stateParams.userID }, function (view, err) {
         if (err) {
             console.log(err);
             return;
@@ -717,9 +750,9 @@ angular.module('module.views').controller('CustomUserPage', function ($statePara
         $element.append(view.element);
     });
 });
-angular.module('module.views').controller('CustomPage', function ($stateParams,$rootScope, $element, $scope, $sbviews, $compile, $state) {
+angular.module('module.views').controller('CustomPage', function ($stateParams, $rootScope, $element, $scope, $sbviews, $compile, $state) {
     changeTitle($stateParams.name, 1);
-    $sbviews.request($stateParams.id, {course: $scope.course}, function(view, err) {
+    $sbviews.request($stateParams.id, { course: $scope.course }, function (view, err) {
         if (err) {
             console.log(err);
             console.log(err.description);
@@ -728,18 +761,18 @@ angular.module('module.views').controller('CustomPage', function ($stateParams,$
         $element.append(view.element);
     });
 });
-angular.module('module.views').config(function($stateProvider) {
+angular.module('module.views').config(function ($stateProvider) {
     $stateProvider.state('course.customUserPage', {
         url: '/{name:[A-z0-9]+}-{id:[0-9]+}/{userID:[0-9]{1,5}}',
         views: {
-            'main-view@':{
+            'main-view@': {
                 controller: 'CustomUserPage'
             }
         }
     }).state('course.customPage', {
         url: '/{name:[A-z0-9]+}-{id:[0-9]+}',
         views: {
-            'main-view@':{
+            'main-view@': {
                 controller: 'CustomPage'
             }
         }
