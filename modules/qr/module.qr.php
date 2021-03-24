@@ -1,6 +1,7 @@
 <?php
 namespace Modules\QR;
 
+use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
@@ -15,22 +16,37 @@ class QR extends Module {
     }
 
     public function init() {
-        Core::addNavigation('QR', 'course.qr', true,true);
-
-        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $viewHandler->createPageOrTemplateIfNew('QR',"page", true);
-        //ToDo add QR tables to database
         $this->addTables("qr", "qr_code");
-        $this->addTables("qr", "qr_error");
-        $this->addTables("qr", "config_qr");
+
+        API::registerFunction('settings', 'qrError', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            $errors = Core::$systemDB->selectMultiple("qr_error", 
+            ["course" => $courseId], 
+            "date, studentNumber, msg, qrkey", 
+            "date");
+            API::response(["errors" => $errors]);
+        });
     }
     public function is_configurable(){
-        return false;
+        return true;
     }
+    public function has_personalized_config (){ return true;}
+    public function get_personalized_function(){
+        return "qrPersonalizedConfig";
+    }
+    
+    public function has_general_inputs (){ return false; }
+    public function has_listing_items (){ return  false; }
 
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
+    }
+
+    public function deleteDataRows($courseId)
+    {
+        Core::$systemDB->delete("badge", ["course" => $courseId]);
     }
 
     public function dropTables($moduleName)
