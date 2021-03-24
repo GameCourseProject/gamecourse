@@ -530,7 +530,7 @@ class ViewHandler
     }
     public static function getPagesOfCourse($courseId, $forNavBar = false, $id = null, $pageName = null)
     {
-        $fields = "course,id,name,theme,viewId,roleType,isEnabled";
+        $fields = "course,id,name,theme,viewId,isEnabled";
         if ($pageName == null && $id == null) {
             if ($forNavBar) {
                 $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId, "isEnabled" => 1], $fields);
@@ -559,10 +559,7 @@ class ViewHandler
         $courseId = $this->getCourseId();
 
         if ($roleType == "ROLE_SINGLE"){
-            if ($name == 'QR')
-                $role = 'role.Teacher';
-            else
-                $role = 'role.Default';
+            $role = 'role.Default';
         } 
         else if ($roleType == "ROLE_INTERACTION")
             $role = 'role.Default>role.Default';
@@ -571,12 +568,13 @@ class ViewHandler
         $viewId = Core::$systemDB->getLastId();
 
         //page or template to insert in db
-        $newView = ["name" => $name, "course" => $courseId, "roleType" => $roleType];
+        $newView = ["name" => $name, "course" => $courseId];
         if ($pageOrTemp == "page") {
             $newView["viewId"] = $viewId;
             $newView['isEnabled'] = $enabled;
             Core::$systemDB->insert("page", $newView);
         } else {
+            $newView["roleType"] = $roleType;
             Core::$systemDB->insert("template", $newView);
             $templateId = Core::$systemDB->getLastId();
             Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);

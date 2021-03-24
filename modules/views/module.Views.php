@@ -1319,7 +1319,7 @@ class Views extends Module
         //creates a page or template
         API::registerFunction('views', 'createView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'name', 'pageOrTemp', 'roleType', 'isEnabled', 'templateId');
+            API::requireValues('course', 'name', 'pageOrTemp', 'roleType', 'isEnabled', 'viewId');
 
             $roleType = API::getValue('roleType');
             if ($roleType == "ROLE_INTERACTION") {
@@ -1330,10 +1330,11 @@ class Views extends Module
             
             
             //page or template to insert in db
-            $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => $roleType];
+            $newView = ["name" => API::getValue('name'), "course" => API::getValue('course')];
             if (API::getValue('pageOrTemp') == "page") {
-                Core::$systemDB->insert("view", ["partType" => "block", "parent" => null, "role" => $defaultRole]);
-                $viewId = Core::$systemDB->getLastId();
+                // Core::$systemDB->insert("view", ["partType" => "block", "parent" => null, "role" => $defaultRole]);
+                $viewId = API::getValue('viewId');
+                //$viewId = Core::$systemDB->select("view_template", ["templateId" => API::getValue('templateId')], "viewId");
                 
                 $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');
@@ -1346,6 +1347,7 @@ class Views extends Module
                 Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
                 $viewId = Core::$systemDB->getLastId();
 
+                $newView["roleType"] = API::getValue('roleType');
                 Core::$systemDB->insert("template", $newView);
                 $templateId = Core::$systemDB->getLastId();
                 Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
@@ -1354,12 +1356,15 @@ class Views extends Module
         // edit the info of page/template in db
         API::registerFunction('views', 'editView', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('course', 'name', 'roleType', 'isEnabled', 'id', 'theme', 'pageOrTemp');
+            API::requireValues('course', 'name', 'roleType', 'isEnabled', 'id', 'theme', 'pageOrTemp', 'viewId');
 
             $id = API::getValue('id');
             //page or template to update in db
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course'), "roleType" => API::getValue('roleType')];
             if (API::getValue('pageOrTemp') == "page") {
+                $viewId = API::getValue('viewId');
+                //$viewId = Core::$systemDB->select("view_template", ["templateId" => API::getValue('templateId')], "viewId");
+                $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');     
                 Core::$systemDB->update("page", $newView, ['id' => $id]);
             } else {
@@ -1561,18 +1566,20 @@ class Views extends Module
 
             if (API::getValue("pageOrTemp") == "template") {
                 $pageOrTemplates = Core::$systemDB->selectMultiple("view_template", ["templateId" => $id]);
-            } else {
-                $pageOrTemplates = Core::$systemDB->selectMultiple("page", ["id" => $id]);
-            }
-
-            foreach ($pageOrTemplates as $pageTemp) { //aspect views of pages or template or templateReferences
-                $aspectView = Core::$systemDB->select("view", ["id" => $pageTemp["viewId"]]);
-                if ($aspectView["partType"] == "block" && $aspectView["parent"] == null && $aspectView["aspectClass"] != null) {
-                    Core::$systemDB->delete("view", ["aspectClass" => $aspectView["aspectClass"]]);
-                    Core::$systemDB->delete("aspect_class", ["aspectClass" => $aspectView["aspectClass"]]);
+                foreach ($pageOrTemplates as $pageTemp) { //aspect views of pages or template or templateReferences
+                    $aspectView = Core::$systemDB->select("view", ["id" => $pageTemp["viewId"]]);
+                    if ($aspectView["partType"] == "block" && $aspectView["parent"] == null && $aspectView["aspectClass"] != null) {
+                        Core::$systemDB->delete("view", ["aspectClass" => $aspectView["aspectClass"]]);
+                        Core::$systemDB->delete("aspect_class", ["aspectClass" => $aspectView["aspectClass"]]);
+                    }
+                    Core::$systemDB->delete("view", ["id" => $pageTemp["viewId"]]);
                 }
-                Core::$systemDB->delete("view", ["id" => $pageTemp["viewId"]]);
-            }
+             } 
+            // else {
+            //     $pageOrTemplates = Core::$systemDB->selectMultiple("page", ["id" => $id]);
+            // }
+
+            
             Core::$systemDB->delete(API::getValue("pageOrTemp"), ["id" => $id]);
         });
         //export template to a txt file on main project folder, it needs to be moved to a module folder to be used
@@ -1839,7 +1846,6 @@ class Views extends Module
             $aspect["aspectClass"] = $aspectClass;
             Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
             $aspect["id"] = Core::$systemDB->getLastId();
-            //print_r($aspect);
             if ($content) {
                 $aspect["children"][] = $content;
             }
@@ -1856,20 +1862,23 @@ class Views extends Module
         API::requireValues('view', 'pageOrTemp', 'course');
         $id = API::getValue('view'); //page or template id
         $pgOrTemp = API::getValue('pageOrTemp');
+        $courseId = API::getValue('course');
+        $course = Course::getCourse($courseId);
+
         if ($pgOrTemp == "page") {
             if (is_numeric($id)) {
                 $viewSettings = $this->viewHandler->getPages($id);
             } else { //for pages, the value of 'view' could be a name instead of an id
                 $viewSettings = $this->viewHandler->getPages(null, $id);
             }
+            $viewSettings["roleType"] = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $viewSettings["viewId"], "course" => $courseId], "roleType");
         } else { //template
             $viewSettings = $this->getTemplate($id);
         }
         if (empty($viewSettings)) {
             API::error('Unknown ' . $pgOrTemp . ' ' . $id);
         }
-        $courseId = API::getValue('course');
-        $course = Course::getCourse($courseId);
+        
         return [
             "courseId" => $courseId, "course" => $course, "viewId" => $id,
             "pageOrTemp" => $pgOrTemp, "viewSettings" => $viewSettings

@@ -446,7 +446,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         roleType.append($('<option value="" disabled selected>Select a role type *</option>'));
         box.append(roleType);
         // which view this page will show
-        viewTemplate = ($('<select class="form__input pages_info" id="new_view_template" ng-options="template.id as template.name for template in templates" ng-model="newView.templateId" onchange="changeSelectTextColor(this);"></select>'));
+        viewTemplate = ($('<select class="form__input pages_info" id="new_view_template" ng-options="template.viewId as template.name for template in templates" ng-model="newView.viewId" onchange="changeSelectTextColor(this);"></select>'));
         viewTemplate.append($('<option value="" disabled selected>Select a view template *</option>'));
         box.append(viewTemplate);
         // for the enable/disable feature of pages
@@ -457,7 +457,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         // added row to content intead of box to align with the save button
         content.append(row);
         content.append($('<button class="cancel" value="#new-view" onclick="closeModal(this);resetSelectTextColor(\'new_view_role\');resetSelectTextColor(\'new_view_template\');" > Cancel </button>'))
-        content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit()" > Save </button>'))
+        content.append($('<button class="save_btn" ng-click="saveView()" ng-disabled="!isReadyToSubmit(newView.pageOrTemp)" > Save </button>'))
         newView.append(content);
         modal.append(newView);
         $compile(modal)($scope);
@@ -498,13 +498,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         //text inputs
 
         editbox.append($('<div class="container" ><input type="text" class="form__input" id="edit_name" placeholder="Name *" ng-model="editView.name"/> <label for="name" class="form__label">Name</label></div>'))
-        editroleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="editView.roleType"></select>'));
-        editroleType.append($('<option value="" disabled selected>Select a role type *</option>'));
-        editbox.append(editroleType);
-        // which view this page will show
-        editviewTemplate = ($('<select class="form__input pages_info" ng-options="template.id as template.name for template in templates" ng-model="newView.templateId"></select>'));
-        editviewTemplate.append($('<option value="" disabled selected>Select a view template *</option>'));
-        editbox.append(editviewTemplate);
+
 
         //editrow = $('<div id="#active_visible_inputs" class= "row"></div>');
         //editrow.append( $('<div class= "on_off"><span>Enable Page</span><label class="switch"><input id="active" type="checkbox" ng-model="editView.viewIsEnabled"><span class="slider round"></span></label></div>'))
@@ -523,32 +517,48 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         angular.extend($scope, data);
 
         $scope.createView = function (pageOrTemp) {
-            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, isEnabled: 0 };
+            $scope.newView = { name: '', roleType: '', pageOrTemp: pageOrTemp, course: $scope.course, isEnabled: 0, viewId: '' };
 
             $scope.saveView = function () {
                 $smartboards.request('views', 'createView', $scope.newView, alertUpdate);
             };
             //criar funcao de verificacao
-            $scope.isReadyToSubmit = function () {
+            $scope.isReadyToSubmit = function (pageOrTemp) {
                 isValid = function (text) {
                     return (text != "" && text != undefined && text != null)
                 }
+
+                if (pageOrTemp == "page") {
+                    if (isValid($scope.newView.name) &&
+                        //isValid($scope.newView.roleType) &&
+                        isValid($scope.newView.viewId)) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                } else {
+                    if (isValid($scope.newView.name) &&
+                        isValid($scope.newView.roleType)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
                 //validate inputs
-                if (isValid($scope.newView.name) &&
-                    isValid($scope.newView.roleType)) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+
             }
 
             if (pageOrTemp == "page") {
                 $("#active_page").show();
+                $("#new_view_template").show();
+                $("#new_view_role").hide();
                 $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
             else {
                 $("#active_page").hide();
+                $("#new_view_template").hide();
+                $("#new_view_role").show();
                 $("#inputs_view_box").attr("style", "padding-bottom: 26px");
             }
 
@@ -636,7 +646,6 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             }
 
         }
-
         $scope.configureView = function (view, pageOrTemp) {
             $("#view_template_input").remove();
             $("#active_visible_inputs").remove();
@@ -647,14 +656,19 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             $scope.editView.name = view.name;
             $scope.editView.theme = null;
             $scope.editView.pageOrTemp = pageOrTemp;
-
+            $scope.editView.viewId = view.viewId;
 
             if (pageOrTemp == "page") {
-                //$("#active_visible_inputs").show();
+                $("#active_visible_inputs").show();
                 //$("#inputs_view_box").attr("style", "padding-bottom: 26px");
 
 
+                // view that this page will show
                 editbox = $("#edit_view_box");
+
+                editviewTemplate = ($('<select class="form__input" id="view_template_input" ng-options="template.viewId as template.name for template in templates" ng-model="editView.viewId"></select>'));
+                editviewTemplate.append($('<option value="" disabled selected>Select a view template *</option>'));
+                editbox.append(editviewTemplate);
 
                 editrow = $('<div class= "row" id="active_visible_inputs"></div>');
                 if (view.isEnabled == true) {
@@ -668,7 +682,12 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
                 editbox.append(editrow);
 
             } else {
+                editbox = $("#edit_view_box");
                 editbox.attr("style", "padding-bottom: 26px");
+
+                editroleType = ($('<select class="form__input" ng-options="type.id as type.name for type in types" ng-model="editView.roleType"></select>'));
+                editroleType.append($('<option value="" disabled selected>Select a role type *</option>'));
+                editbox.append(editroleType);
             }
 
             $compile(editbox)($scope);
@@ -696,6 +715,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
                     id: $scope.editView.id,
                     isEnabled: isEnabled,
                     roleType: $scope.editView.roleType,
+                    viewId: $scope.editView.viewId,
                     theme: $scope.editView.theme,
                     pageOrTemp: $scope.editView.pageOrTemp
                 };
