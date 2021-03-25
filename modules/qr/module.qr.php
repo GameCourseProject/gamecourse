@@ -44,9 +44,8 @@ class QR extends Module {
         //verificar compatibilidade
     }
 
-    public function deleteDataRows($courseId)
-    {
-        Core::$systemDB->delete("badge", ["course" => $courseId]);
+    public function deleteDataRows($courseId){
+        
     }
 
     public function dropTables($moduleName)
