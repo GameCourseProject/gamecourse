@@ -1262,12 +1262,22 @@ class Skills extends Module
                     $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
                 }
                 $skill['description'] = $htmlDom->saveHTML();
+            } else {
+                $htmlDom = new DOMDocument;
+                
+                $htmlDom->preserveWhiteSpace = false;
+                $htmlDom->loadHTML($skill['description']);
+    
+                $this->insertHeadHtml($htmlDom, $skill['name']);
+                $htmlDom->formatOutput = true;
+                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             }
 
         } else {
             $htmlDom = new DOMDocument;
 
             $htmlDom->loadHTML($skill['description']);
+            str_replace(">", ">\n", $htmlDom);
 
             $this->insertHeadHtml($htmlDom, $skill['name']);
 

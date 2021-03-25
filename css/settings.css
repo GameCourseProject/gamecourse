@@ -202,6 +202,11 @@
     flex-direction: column;
     margin-bottom: 30px;
 }
+#configPage .page-block .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
 
 #configPage .header #name {
     font-size: 20px;

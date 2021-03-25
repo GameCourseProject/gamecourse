@@ -60,6 +60,7 @@ $user = Core::getLoggedUser();
     <script src="//cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
     <script src="js/image-resize.min.js"></script>
+    <script src="js/quill.htmlEditButton.min.js"></script>
     <!-- Quill stylesheet -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
