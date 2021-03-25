@@ -612,6 +612,19 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'delete' }, alertUpdate);
         }
     }
+
+    $scope.showPreview = function () {
+        $('#preview_content').empty();
+        $('#preview_content').append($compile(Builder.createPageBlock({
+            'image': 'images/skills.svg',
+            'text': 'Skill - {{openItem.name}}'
+        }, function (el) {
+            el.attr('class', 'content');
+            el.append($('<div>', { 'class': 'text-content', 'bind-trusted-html': 'openItem.description' }));
+        }))($scope));
+    };
+
+
     $scope.importItems = function (replace) {
         $scope.importedItems = null;
         $scope.replaceItems = replace;
@@ -884,7 +897,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             allTiers.append(allTiersSection);
             $compile(allTiers)($scope);
 
-            //add and edit item modal
+            //add and edit tier modal
             modalTiers = $("<div class='modal' id='open-tier'></div>");
             open_itemTiers = $("<div class='modal_content'></div>");
             open_itemTiers.append($('<button class="close_btn icon" value="#open-tier" onclick="closeModal(this)"></button>'));
@@ -988,7 +1001,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
             //add and edit item modal
             modal = $("<div class='modal' id='open-item'></div>");
-            open_item = $("<div class='modal_content'></div>");
+            open_item = $("<div class='modal_content' style='width:650px;'></div>");
             open_item.append($('<button class="close_btn icon" id="close" value="#open-item" onclick="closeModal(this);"></button>'));
             open_item.append($('<div class="title" id="open_item_action"></div>'));
             content = $('<div class="content">');
@@ -1059,18 +1072,24 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 box.append($('<div class="half" id="dependency"><button class="btn" ng-click="showDepSection()" ng-disabled="!isAddDepEnabled()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add Dependency</span></button></div>'));
                 //add editor
                 box.append(editor_container);
+                Quill.register("modules/htmlEditButton", htmlEditButton);
                 quill = new Quill(editor[0], {
                     modules: {
                         toolbar: [
-                            [{ header: [1, 2, 3, false] }],
+                            [{ 'font': [] }, { header: [1, 2, 3, false] }],
                             ['bold', 'italic', 'underline'],
+                            [{ 'script': 'sub' }, { 'script': 'super' }],
+                            [{ 'color': [] }, { 'background': [] }],
                             [{ 'align': [] }],
-                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
                             ['link', 'image', 'video', 'code-block'],
+                            // dropdown with defaults from theme
+
                         ],
                         imageResize: {
 
-                        }
+                        },
+                        htmlEditButton: {}
                     },
                     scrollingContainer: '#editor',
                     placeholder: 'Add the skill description here...',
@@ -1084,12 +1103,25 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
 
             content.append(box);
+            if (data.module.name == "Skills")
+                content.append($('<button class="preview" value="#open-preview" ng-click="showPreview()" onclick="openModal(this)"> Preview </button>'))
             content.append($('<button class="cancel" value="#open-item" onclick="closeModal(this)" > Cancel </button>'))
             content.append($('<button class="save_btn" ng-click="submitItem()"> Save </button>'))
             open_item.append(content);
             modal.append(open_item);
             $compile(modal)($scope);
             allItems.append(modal);
+
+            // preview modal
+            previewModal = $("<div class='modal' id='open-preview'></div>");
+            open_preview = $("<div class='modal_content' style='width:90%;'></div>");
+            open_preview.append($('<button class="close_btn icon" id="close" value="#open-preview" onclick="closeModal(this);"></button>'));
+            open_preview.append($('<div class="title"> Preview for Skill: {{openItem.name}}</div>'));
+            previewContent = $('<div class="content" id="preview_content">');
+            open_preview.append(previewContent);
+            previewModal.append(open_preview);
+            $compile(previewModal)($scope);
+            allItems.append(previewModal);
 
             //import items modal
             importModal = $("<div class='modal' id='import-item'></div>");

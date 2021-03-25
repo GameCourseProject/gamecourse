@@ -486,6 +486,12 @@ button {
     background-color: tomato;
 }
 
+#open-item .modal_content .preview {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+}
+
 .modal_content .config_btn {
     position: absolute;
     bottom: 0px;
@@ -527,4 +533,8 @@ button {
 #editor {
     height: 150px;
     margin-bottom: 30px;
+  }
+
+  .ql-formats button {
+      color: #444;
   }
