@@ -11,13 +11,26 @@ use GameCourse\Course;
 class Badges extends Module
 {
     const BADGES_TEMPLATE_NAME = 'Badges block - by badges';
-    const MAX_BONUS_BADGES = 500;
 
     public function setupResources()
     {
         parent::addResources('js/');
         parent::addResources('css/badges.css');
     }
+
+    private function setupData($courseId)
+    {
+        $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
+        if (!file_exists($folder . "/badges"))
+            mkdir($folder . "/badges");
+        if (!file_exists($folder . "/badges" . "/Extra"))
+            mkdir($folder . "/badges" . "/Extra");
+        if (!file_exists($folder . "/badges" . "/Level2"))
+            mkdir($folder . "/badges" . "/Level2");
+        if (!file_exists($folder . "/badges" . "/Level3"))
+            mkdir($folder . "/badges" . "/Level3");
+    }
+
     public function getBadge($selectMultiple, $where)
     {
         $where["course"] = $this->getCourseId();
@@ -216,6 +229,8 @@ class Badges extends Module
         if ($this->addTables("badges", "badge") || empty(Core::$systemDB->select("badges_config", ["course" => $this->getCourseId()]))) {
             Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $this->getCourseId()]);
         }
+        $courseId = $this->getParent()->getId();
+        $this->setupData($courseId);
         $viewsModule = $this->getParent()->getModule('views');
         $viewHandler = $viewsModule->getViewHandler();
 
@@ -795,6 +810,17 @@ class Badges extends Module
         return Core::$systemDB->select("badges_config",["course"=>$courseId], "maxBonusReward");
     }
 
+    public function saveGeneralImages($image, $value, $courseId){
+        Core::$systemDB->update("badges_config",[$image=>$value],["course"=>$courseId]);
+    }
+
+    public function getGeneralImages($image, $courseId){
+        $result = Core::$systemDB->select("badges_config",["course"=>$courseId], $image);
+        if ($result == NULL)
+            return "";
+        return $result;
+    }
+
     public function getBadgeProgression($badge, $user) {
         $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id",["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description, participation.rating");
 
@@ -861,6 +887,9 @@ class Badges extends Module
                     "isCount"=>($achievement['countBased']) ? 1 : 0,
                     "isPost"=>($achievement['postBased']) ? 1 : 0,
                     "isPoint"=>($achievement['pointBased']) ? 1 : 0];
+        if (array_key_exists("image", $achievement)) {
+            $badgeData["image"] = $achievement['image'];
+        }
         Core::$systemDB->insert("badge",$badgeData);
         $badgeId=Core::$systemDB->getLastId();
         for ($i=1;$i<=$maxLevel;$i++){
@@ -885,6 +914,7 @@ class Badges extends Module
         $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
         $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
                     "course"=>$courseId,"description"=>$achievement['description'],
+                    "image" => $achievement['image'],
                     "isExtra"=> ($achievement['extra']) ? 1 : 0,
                     "isBragging"=>($achievement['xp1'] == 0) ? 1 : 0,
                     "isCount"=>($achievement['countBased']) ? 1 : 0,
@@ -964,7 +994,6 @@ class Badges extends Module
             $badge['postBased'] = boolval($badge["isPost"]);
             $badge['pointBased'] = boolval($badge["isPoint"]);
             $badge['extra'] = boolval($badge["isExtra"]);
-            $badge['image'] = str_replace(' ', '', $badge['name']) . '.png';
 
             $levels = Core::$systemDB->selectMultiple("badge_level join badge on badge.id=badgeId",
                                 ["course"=>$courseId, "badgeId"=>$badge['id']], 'badge_level.description , goal, reward, number' );
@@ -982,7 +1011,6 @@ class Badges extends Module
         return true;
     }
 
-    
     public function has_general_inputs (){ return true; }
     public function get_general_inputs ($courseId){
         // $input1 = array('name' => "input 1", 'id'=> 'input1', 'type' => "text", 'options' => "", 'current_val' => "cenas");
@@ -994,14 +1022,32 @@ class Badges extends Module
         // $input8 = array('name' => "input 8", 'id'=> 'input8', 'type' => "paragraph", 'options' => "", 'current_val' => "my text here");
         // return [$input1, $input2, $input3, $input4, $input5, $input7, $input8];
 
-        $input = array('name' => "Max Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
-        return [$input];
+        $input = [
+            array('name' => "Max Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId))),
+            array('name' => "Overlay for extra", 'id'=> 'extraImg', 'type' => "image", 'options' => "Extra", 'current_val' => $this->getGeneralImages('imageExtra', $courseId)),
+            array('name' => "Overlay for level 2", 'id'=> 'imgL2', 'type' => "image", 'options' => "Level2", 'current_val' => $this->getGeneralImages('imageLevel2', $courseId)),
+            array('name' => "Overlay for level 3", 'id'=> 'imgL3', 'type' => "image", 'options' => "Level3", 'current_val' => $this->getGeneralImages('imageLevel3', $courseId))
+        ];
+        return $input;
         
 
     }
     public function save_general_inputs($generalInputs,$courseId){
         $maxVal = $generalInputs["maxReward"];
         $this->saveMaxReward($maxVal, $courseId);
+
+        $extraImg = $generalInputs["extraImg"];
+        if ($extraImg != "") {
+            $this->saveGeneralImages('imageExtra', $extraImg, $courseId);
+        }
+        $imageL2 = $generalInputs["imgL2"];
+        if ($imageL2 != "") {
+            $this->saveGeneralImages('imageLevel2', $imageL2, $courseId);
+        }
+        $imageL3 = $generalInputs["imgL3"];
+        if ($imageL3 != "") {
+            $this->saveGeneralImages('imageLevel3', $imageL3, $courseId);
+        }
     }
 
 
@@ -1009,8 +1055,8 @@ class Badges extends Module
     public function has_listing_items (){ return  true; }
     public function get_listing_items ($courseId){
         //tenho de dar header
-        $header = ['Name', 'Description', '# Levels', 'Level 1', 'XP Level 1', 'Is Count','Is Post', 'Is Point', 'Is Extra'] ;
-        $displayAtributes = ['name', 'description', 'maxLevel', 'desc1','xp1',  'isCount', 'isPost', 'isPoint', 'isExtra'];
+        $header = ['Name', 'Description', '# Levels', 'Level 1', 'XP Level 1', 'Is Count','Is Post', 'Is Point', 'Is Extra', 'Image'] ;
+        $displayAtributes = ['name', 'description', 'maxLevel', 'desc1','xp1',  'isCount', 'isPost', 'isPoint', 'isExtra', 'image'];
         // items (pela mesma ordem do header)
         $items = $this->getBadges($courseId);
         //argumentos para add/edit
@@ -1030,7 +1076,7 @@ class Badges extends Module
             array('name' => "Count 1", 'id'=> 'count1', 'type' => "number", 'options' => ""),
             array('name' => "Count 2", 'id'=> 'count2', 'type' => "number", 'options' => ""),
             array('name' => "Count 3", 'id'=> 'count3', 'type' => "number", 'options' => ""),
-            array('name' => "Base Image", 'id'=> 'image', 'type' => "image", 'options' => ""),
+            array('name' => "Badge images", 'id'=> 'image', 'type' => "image", 'options' => ""),
         ];
         return array( 'listName'=> 'Badges', 'itemName'=> 'Badge','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
     }
@@ -1210,7 +1256,7 @@ class Badges extends Module
 ModuleLoader::registerModule(array(
     'id' => 'badges',
     'name' => 'Badges',
-    'description' => 'Enables Badges with 3 levels and xp points that ca be atributed to a student in certain conditions.',
+    'description' => 'Enables Badges with 3 levels and xp points that can be atributed to a student in certain conditions.',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
