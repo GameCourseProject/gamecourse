@@ -1,5 +1,8 @@
 create table badges_config(
 	maxBonusReward 	int not null,
+	imageExtra varchar(50),
+	imageLevel2 varchar(50),
+	imageLevel3 varchar(50),
 	course int unsigned primary key,
 	foreign key(course) references course(id) on delete cascade
 );
@@ -15,6 +18,7 @@ create table badge(
 	isCount boolean not null default false,
 	isPost boolean not null default false,
 	isPoint boolean not null default false,
+	image varchar(50),
 	foreign key(course) references course(id) on delete cascade
 );
 
