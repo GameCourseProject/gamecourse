@@ -267,7 +267,7 @@
   position: relative;
   font-weight: bold;
   color: lightgray;
-  align-self: end;
+  /* align-self: end; */
   margin-left: 10px;
   line-height: 32px;
 }
