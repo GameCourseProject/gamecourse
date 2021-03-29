@@ -1083,7 +1083,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     rowContent.append($('<td><div style="display:flex;justify-content:flex-start;"><div class="color-sample" style="margin-right:8px"><div class="box" style="border:none;background-color:{{ ' + stg + '}};width:20px;height:20px;opacity:1;"></div></div><div>{{' + stg + '}}</div></td>'));
                 } else if (atribute == "image") {
                     path = $scope.courseFolder + "/badges/";
-                    rowContent.append($('<td ng-if="!item.image"><img src="images/no-image-1.png" class="badges"/></td>'));
+                    rowContent.append($('<td ng-if="!item.image"><img src="images/no-image.png" class="badges"/></td>'));
                     rowContent.append($('<td ng-if="item.image"><img src="' + path + '{{' + "item.name" + '}}' + "/" + '{{' + stg + '}}" title="{{ ' + stg + '}}" class="badges"/></td>'));
                 } else {
                     rowContent.append($('<td>{{' + stg + '}}</td>'));
