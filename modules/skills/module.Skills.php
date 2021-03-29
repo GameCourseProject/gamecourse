@@ -1171,7 +1171,7 @@ class Skills extends Module
             }
             //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
             //return null;
-        };
+        }
 
         Core::$systemDB->insert("skill",$skillData);
         $skillId = Core::$systemDB->getLastId();

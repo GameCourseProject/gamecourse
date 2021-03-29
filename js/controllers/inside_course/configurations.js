@@ -233,10 +233,13 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     $scope.buildMergeImages = function (file, filename) {
 
         const isExtra = $scope.openItem.extra;
-        console.log(isExtra);
+        const isBragging = $scope.openItem.xp1 == 0;
         // initialInputs to get the values that are saved in the DB
         const extraImg = $scope.initialInputs["extraImg"];
+        const braggingImg = $scope.initialInputs["extraImg"];
+
         var fileExtra = $scope.courseFolder + '/badges/Extra/' + extraImg;
+        var fileBragging = $scope.courseFolder + '/badges/Bragging/' + braggingImg;
         // upload image for level 1
         if (isExtra) {
             layersL1 = [file, fileExtra];
@@ -249,7 +252,18 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
                 ));
 
-        } else {
+        } else if (isBragging) {
+            layersL1 = [file, fileBragging];
+            imageLevel1 = mergeImages(layersL1)
+                .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: filename + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                }
+                ));
+        }
+        else {
             $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: filename + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
@@ -265,7 +279,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             var fileLevel2 = $scope.courseFolder + '/badges/Level2/' + imgL2;
 
             // create and upload image for level 2
-            layersL2 = isExtra ? [file, fileExtra, fileLevel2] : [file, fileLevel2];
+            layersL2 = isExtra ? [file, fileExtra, fileLevel2] : isBragging ? [file, fileBragging, fileLevel2] : [file, fileLevel2];
 
             imageLevel2 = mergeImages(layersL2)
                 .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: filename + '-2.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
@@ -283,7 +297,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             const imgL3 = $scope.initialInputs["imgL3"];
             var fileLevel3 = $scope.courseFolder + '/badges/Level3/' + imgL3;
             // create and upload image for level 3 
-            layersL3 = isExtra ? [file, fileExtra, fileLevel3] : [file, fileLevel3];
+            layersL3 = isExtra ? [file, fileExtra, fileLevel3] : isBragging ? [file, fileBragging, fileLevel3] : [file, fileLevel3];
 
             imageLevel3 = mergeImages(layersL3)
                 .then(b64 => $smartboards.request('settings', 'upload', { course: $scope.course, newFile: b64, fileName: filename + '-3.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
@@ -441,7 +455,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
 
             }
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' }, alertUpdate);
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' });
+            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                $scope.listingItems.items = data.listingItems.items;
+            });
         }
     }
 
@@ -478,22 +499,32 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     quill.clipboard.dangerouslyPasteHTML(item[atribute.id]);
 
                 } else if (atribute["type"] == "image") {
-                    console.log($scope.openItem["image"]);
                     //module badges
-                    document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
-                    $("#badge_img").show();
-                    filename = $scope.openItem[atribute.id].split(".")[0];
-                    document.getElementById("badge_img_l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-1.png";
-                    $("#badge_img_l1").show();
-                    if ($scope.openItem["desc2"] != "") {
-                        document.getElementById("badge_img_l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-2.png";
-                        $("#badge_img_l2").show();
+                    if ($scope.openItem[atribute.id] != "") {
+                        document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
+                        $("#badge_img").show();
+
+                        filename = $scope.openItem[atribute.id].split(".")[0];
+
+                        document.getElementById("badge_img_l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-1.png";
+                        $("#badge_img_l1").show();
+
+                        if ($scope.openItem["desc2"] != "") {
+                            document.getElementById("badge_img_l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-2.png";
+                            $("#badge_img_l2").show();
+                        }
+                        if ($scope.openItem["desc3"] != "") {
+                            document.getElementById("badge_img_l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-3.png";
+                            $("#badge_img_l3").show();
+                        }
+                        $(".config_input #textBadge").text($scope.openItem[atribute.id]);
+                    } else {
+                        $(".config_input #textBadge").text("No file chosen");
+                        hideIfNeed('badge_img');
+                        hideIfNeed('badge_img_l1');
+                        hideIfNeed('badge_img_l2');
+                        hideIfNeed('badge_img_l3');
                     }
-                    if ($scope.openItem["desc3"] != "") {
-                        document.getElementById("badge_img_l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-3.png";
-                        $("#badge_img_l3").show();
-                    }
-                    $(".config_input #textBadge").text($scope.openItem[atribute.id]);
                     document.getElementById("imageFile").onchange = function () {
                         $scope.uploadImages();
                         hideIfNeed('badge_img');
@@ -589,7 +620,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
 
             }
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'edit' }, alertUpdate);
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'edit' });
+            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                $scope.listingItems.items = data.listingItems.items;
+            });
         }
     };
 
@@ -684,7 +722,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         }
 
         $scope.confirmDelete = function () {
-            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'delete' }, alertUpdate);
+            $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'delete' });
+            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+                $scope.listingItems.items = data.listingItems.items;
+            });
         }
     }
 
@@ -777,13 +822,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     return;
                 }
             });
-            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.listingItems.items = data.listingItems.items;
-            });
 
         }
 
@@ -794,7 +832,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         var index = parseInt(row.$index);
         var newIdx = index + 1;
         var changed = false;
-        console.log(index);
 
 
         if (item.reward != undefined) {
@@ -819,14 +856,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     giveMessage(err.description);
                     return;
                 }
-            });
-
-            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.listingItems.items = data.listingItems.items;
             });
         }
 
@@ -919,7 +948,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         row.append($('<div class="full" ><div class="badge_image">' +
-                            '<div class="config_input" style="flex: none;"><input style="display: none;" id="' + input.id + '" type="file" accept=".png, .jpeg, .jpg" class="form__input" ng-click="getSelectedInput(\'' + input.id + '\');"/> ' +
+                            '<div class="config_input" style="flex: none;max-width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" accept=".png, .jpeg, .jpg" class="form__input" ng-click="getSelectedInput(\'' + input.id + '\');"/> ' +
                             '<input type="button" value="Choose File" onclick="document.getElementById(\'' + input.id + '\').click();" />' +
                             '<span id="text_' + input.id + '" > </span></div> <img title="' + input.name + '" class="icon" id="badge_' + input.id + '"/></div></div>'));
 
@@ -1021,7 +1050,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             boxTiers.append(row_inputsTiers);
             contentTiers.append(boxTiers);
             contentTiers.append($('<button class="cancel" value="#open-tier" onclick="closeModal(this)" > Cancel </button>'))
-            contentTiers.append($('<button class="save_btn" ng-click="submitItem()"> Save </button>'))
+            contentTiers.append($('<button class="save_btn" value="#open-tier" onclick="closeModal(this)" ng-click="submitItem()"> Save </button>'))
             open_itemTiers.append(contentTiers);
             modalTiers.append(open_itemTiers);
             $compile(modalTiers)($scope);
@@ -1158,7 +1187,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         details.append($('<div class="full" ><div class="badge_image"><span>' + atribute.name + ' </span> ' +
-                            '<div class="config_input" style="flex: none;"><input style="display: none;" id="imageFile" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
+                            '<div class="config_input" style="flex: none;max-width: 230px;"><input style="display: none;" id="imageFile" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
                             '<input  type="button" value="Choose File" onclick="document.getElementById(\'imageFile\').click();" />' +
                             '<span id="textBadge"> </span></div> <img title="Base image" class="icon" id="badge_img" /><img title="Level 1" class="icon" id="badge_img_l1" /><img title="Level 2" class="icon" id="badge_img_l2" /><img title="Level 3" class="icon" id="badge_img_l3" /></div ></div > '));
                         break;
@@ -1208,7 +1237,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             if (data.module.name == "Skills")
                 content.append($('<button class="preview" value="#open-preview" ng-click="showPreview()" onclick="openModal(this)"> Preview </button>'))
             content.append($('<button class="cancel" value="#open-item" onclick="closeModal(this)" > Cancel </button>'))
-            content.append($('<button class="save_btn" ng-click="submitItem()"> Save </button>'))
+            content.append($('<button class="save_btn" value="#open-item" onclick="closeModal(this)" ng-click="submitItem()"> Save </button>'))
             open_item.append(content);
             modal.append(open_item);
             $compile(modal)($scope);

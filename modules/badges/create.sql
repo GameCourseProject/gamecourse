@@ -1,6 +1,7 @@
 create table badges_config(
 	maxBonusReward 	int not null,
 	imageExtra varchar(50),
+	imageBragging varchar(50),
 	imageLevel2 varchar(50),
 	imageLevel3 varchar(50),
 	course int unsigned primary key,

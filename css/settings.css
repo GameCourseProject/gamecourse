@@ -234,7 +234,7 @@
     flex: 3;
     margin-left: 20px;
     border: 2px solid lightgray;
-    max-width: 70%;
+    /* max-width: 70%; */
 }
 
 #configPage .multiple_inputs {
@@ -249,15 +249,17 @@
     margin-bottom: 20px;
 }
 
-#configPage .row span {
+#configPage .row span,
+#configPage #textBadge {
     /* flex: 1; */
     margin-left: 10px;
     margin-right: 10px;
     font-size: 14px;
     white-space: nowrap;
 }
-#configPage .row #textBadge, 
+#configPage #textBadge, 
 #configPage .row #text_extraImg,
+#configPage .row #text_braggingImg,
 #configPage .row #text_imgL2,
 #configPage .row #text_imgL3 {
     width: 100%;
@@ -365,6 +367,7 @@
 #configPage .badge_image #badge_img_l2,
 #configPage .badge_image #badge_img_l3,
 #configPage .badge_image #badge_extraImg,
+#configPage .badge_image #badge_braggingImg,
 #configPage .badge_image #badge_imgL2,
 #configPage .badge_image #badge_imgL3 {
     margin-left: 10px;
@@ -373,6 +376,7 @@
 }
 
 #configPage .badge_image #badge_extraImg,
+#configPage .badge_image #badge_braggingImg,
 #configPage .badge_image #badge_imgL2,
 #configPage .badge_image #badge_imgL3 {
     border: 1px solid gray;
@@ -381,6 +385,7 @@
 
 #configPage .data-table #listing-table td .badges,
 #configPage .badge_image #badge_extraImg,
+#configPage .badge_image #badge_braggingImg,
 #configPage .badge_image #badge_imgL2,
 #configPage .badge_image #badge_imgL3 {
     height: 30px;
