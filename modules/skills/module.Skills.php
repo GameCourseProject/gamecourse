@@ -1145,11 +1145,11 @@ class Skills extends Module
         if ($descriptionPage === FALSE){
             if (array_key_exists("description", $skill)) {
                 $htmlDom = new DOMDocument;
-                
+                $htmlDom->preserveWhiteSpace = false;
                 $htmlDom->loadHTML($skill['description']);
 
                 $this->insertHeadHtml($htmlDom, $skill['name']);
-
+                $htmlDom->formatOutput = true;
                 $imageTags = $htmlDom->getElementsByTagName('img');
                 foreach($imageTags as $imageTag){
                     //Get the src attribute of the image.
@@ -1159,7 +1159,7 @@ class Skills extends Module
                     $imageTag->setAttribute('src', str_replace(' ', '', $skill['name']) . '/' . $imageName);
                 }
 
-                $skill['description'] = $htmlDom->saveHTML();
+                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
                 file_put_contents($path, $skill['description']);
                 $descriptionPage = @file_get_contents($path);
 
@@ -1251,8 +1251,10 @@ class Skills extends Module
                 }
                 //replace image source links in the html file
                 $htmlDom = new DOMDocument;
+                $htmlDom->preserveWhiteSpace = false;
                 $htmlDom->loadHTML($skill['description']);
                 $this->insertHeadHtml($htmlDom, $skill['name']);
+                $htmlDom->formatOutput = true;
                 $imageTags = $htmlDom->getElementsByTagName('img');
                 foreach($imageTags as $imageTag){
                     //Get the src attribute of the image.
@@ -1261,7 +1263,7 @@ class Skills extends Module
                     $imageName = end($exploded);
                     $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
                 }
-                $skill['description'] = $htmlDom->saveHTML();
+                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             } else {
                 $htmlDom = new DOMDocument;
                 
@@ -1275,13 +1277,12 @@ class Skills extends Module
 
         } else {
             $htmlDom = new DOMDocument;
-
+            $htmlDom->preserveWhiteSpace = false;
             $htmlDom->loadHTML($skill['description']);
-            str_replace(">", ">\n", $htmlDom);
 
             $this->insertHeadHtml($htmlDom, $skill['name']);
-
-            $skill['description'] = $htmlDom->saveHTML();
+            $htmlDom->formatOutput = true;
+            $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
         }
         file_put_contents($path . '.html', $skill['description']);
         $descriptionPage = @file_get_contents($path . '.html');
