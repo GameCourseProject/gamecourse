@@ -279,6 +279,16 @@ class Skills extends Module
         }
         return ($unlocked);
     }
+
+    //returns students who completed a skill
+    private function skillCompletedBy($skill, $courseId) {
+        $students = Core::$systemDB->selectMultiple(
+            "award a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id", 
+            ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
+            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive");
+        return $students;
+    }
+
     //adds skills tables and data folder if they dont exist
     private function setupData($courseId)
     {
@@ -702,6 +712,19 @@ class Skills extends Module
             },
             'Returns a boolean regarding whether the GameCourseUser identified by user has completed a skill.',
             'boolean',
+            null,
+            'object',
+            'skill'
+        );
+        //%skill.completedBy(), returns a collection with the users that completed the skill
+        $viewHandler->registerFunction(
+            'skillTrees',
+            'completedBy',
+            function ($skill) use ($courseId) {
+                return $this->createNode($this->skillCompletedBy($skill['value']['id'], $courseId), 'users', "collection");
+            },
+            'Returns a collection of the users that completed the skill.',
+            'collection',
             null,
             'object',
             'skill'
