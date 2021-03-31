@@ -159,6 +159,30 @@ API::registerFunction('course', 'addUser', function(){
     }
 });
 
+//used on the notCourseUsers API function, do not remove
+function udiffCompare($a, $b){
+    return $a['id'] - $b['id'];
+}
+
+API::registerFunction('course', 'importUser', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('file');
+    API::requireValues('course');
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $nUsers = CourseUser::importCourseUsers($fileContents, API::getValue('course'), $replace);
+
+    API::response(array('nUsers' => $nUsers));
+});
+
+API::registerFunction('course', 'exportUsers', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    [$fileName, $courseUsers] = CourseUser::exportCourseUsers($courseId);
+    API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
+});
 
 //get users not registered on the course
 API::registerFunction('course', 'notCourseUsers', function() {
@@ -184,7 +208,7 @@ API::registerFunction('course', 'notCourseUsers', function() {
                 'studentNumber' => $userData['studentNumber']);
         }
         
-        //udiffCompare declared on the info.php file
+        //udiffCompare declared on this file
         $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, 'udiffCompare');
         
         API::response(array('notCourseUsers'=> $notCourseUsers)); 

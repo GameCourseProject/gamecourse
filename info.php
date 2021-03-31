@@ -62,102 +62,13 @@ API::registerFunction('core', 'getUserActiveCourses', function() {
     API::response(array('userActiveCourses' => $courses));
 });
 
-//-------------------Course List related
-
-
-API::registerFunction('core', 'importCourses', function(){
-    API::requireAdminPermission();
-    API::requireValues('file');
-    $file = explode(",", API::getValue('file'));
-    $fileType = explode(";", $file[0]);
-    $fileContents = base64_decode($file[1]);
-    $replace = API::getValue('replace');
-    $nCourses = Course::importCourses($fileContents, $replace);
-    API::response(array('nCourses' => $nCourses));
-});
-
-API::registerFunction('core', 'exportCourses', function(){
-    API::requireAdminPermission();
-    $courses = Course::exportCourses();
-    API::response(array('courses' => $courses));
-});
-
- 
-// ------------------- Users List
-
-API::registerFunction('core', 'importUser', function(){
-    API::requireAdminPermission();
-    API::requireValues('file');
-    $file = explode(",", API::getValue('file'));
-    $fileContents = base64_decode($file[1]);
-    $replace = API::getValue('replace');
-    $nUsers = User::importUsers($fileContents, $replace);
-    API::response(array('nUsers' => $nUsers));
-});
-API::registerFunction('core', 'exportUsers', function(){
-    API::requireAdminPermission();
-    $users = User::exportUsers();
-    API::response(array('users' => $users));
-});
-
-// ------------------- Module List
-
-API::registerFunction('core', 'importModule', function () {
-    API::requireAdminPermission();
-    API::requireValues('file');
-    API::requireValues('fileName');
-    $file = explode(",", API::getValue('file'));
-    $fileContents = base64_decode($file[1]);
-    Module::importModules($fileContents, API::getValue("fileName"));
-    API::response(array());
-});
-
-API::registerFunction('core', 'exportModule', function () {
-    API::requireAdminPermission();
-    $zipFile = Module::exportModules();
-    API::response(array("file"=> $zipFile));
-    unlink($zipFile);
-});
-
-
-//------------------Users inside the course
-
-//used on the notCourseUsers API function, do not remove
-function udiffCompare($a, $b){
-    return $a['id'] - $b['id'];
-}
-
-API::registerFunction('course', 'importUser', function(){
-    API::requireCourseAdminPermission();
-    API::requireValues('file');
-    API::requireValues('course');
-    $file = explode(",", API::getValue('file'));
-    $fileContents = base64_decode($file[1]);
-    $replace = API::getValue('replace');
-    $nUsers = CourseUser::importCourseUsers($fileContents, API::getValue('course'), $replace);
-
-    API::response(array('nUsers' => $nUsers));
-});
-API::registerFunction('course', 'exportUsers', function(){
-    API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $courseId = API::getValue('course');
-    [$fileName, $courseUsers] = CourseUser::exportCourseUsers($courseId);
-    API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
-});
-
-
-
 //-------------------this functions have to be passed into the xp and levels module--------
 
-//update list of course levels, from the levels configuration page
-API::registerFunction('settings', 'courseLevels', function() {
+//NO LONGER USED - remove later
+//update list of course levels, from the levels configuration page 
+/*API::registerFunction('settings', 'courseLevels', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    /*if (Course::getCourse($courseId)->getModule("badges")!==null)
-        $levels = Core::$systemDB->selectMultiple("level left join badge_has_level on levelId=id",
-                    ["course"=>$courseId, "levelId"=>null],'number,description,goal,id',"number");
-    else*/
     $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],'number,description,goal,id',"number");
     //print_r($levels);
     $levelsByNum = array_combine(array_column($levels,"number") , $levels);
@@ -202,7 +113,7 @@ API::registerFunction('settings', 'courseLevels', function() {
     $file = @file_get_contents($folder . '/levels.txt');
     if ($file===FALSE){$file="";}
     API::response(array('levelList' => $levels, "file"=>$file ));
-});
+});*/
 
 //returns array with all dependencies of a skill
 function getSkillDependencies($skillId){
@@ -357,8 +268,6 @@ function updateSkills($list,$tree,$replace, $folder){
     API::response(["updatedData"=>$updatedData ]);
     return;
 }
-
-
 
 /*register_shutdown_function(function() {
     echo '<pre>';

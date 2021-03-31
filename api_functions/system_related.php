@@ -51,3 +51,22 @@ API::registerFunction('settings', 'modules', function() {
     API::response($modulesArr);
 
 });
+
+// ------------------- Module List
+
+API::registerFunction('core', 'importModule', function () {
+    API::requireAdminPermission();
+    API::requireValues('file');
+    API::requireValues('fileName');
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    Module::importModules($fileContents, API::getValue("fileName"));
+    API::response(array());
+});
+
+API::registerFunction('core', 'exportModule', function () {
+    API::requireAdminPermission();
+    $zipFile = Module::exportModules();
+    API::response(array("file"=> $zipFile));
+    unlink($zipFile);
+});
