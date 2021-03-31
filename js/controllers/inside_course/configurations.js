@@ -1517,7 +1517,7 @@ app.controller('CourseBadgesSettingsController', function ($scope, $stateParams,
         configurationSection.append(configSectionContent);
     });
 });
-app.controller('CourseLevelsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+/*app.controller('CourseLevelsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //old version, not used
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
@@ -1548,4 +1548,4 @@ app.controller('CourseLevelsSettingsController', function ($scope, $stateParams,
         $scope.newList = data.file;
         constructConfigPage(data, err, $scope, $element, $compile, "Level", text, tabContents, columns);
     });
-});
+});*/

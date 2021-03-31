@@ -112,3 +112,22 @@ API::registerFunction('core', 'setCoursesActive', function(){
         API::error("There is no course with that id: ". $course_id);
     }
 });
+
+//import courses - check if it's working
+API::registerFunction('core', 'importCourses', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+    $file = explode(",", API::getValue('file'));
+    $fileType = explode(";", $file[0]);
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $nCourses = Course::importCourses($fileContents, $replace);
+    API::response(array('nCourses' => $nCourses));
+});
+
+//export courses - check if it's working
+API::registerFunction('core', 'exportCourses', function(){
+    API::requireAdminPermission();
+    $courses = Course::exportCourses();
+    API::response(array('courses' => $courses));
+});

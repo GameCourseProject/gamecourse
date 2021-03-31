@@ -131,3 +131,21 @@ API::registerFunction('core', 'editUser', function() {
     }
     
 });
+
+//import users to the system
+API::registerFunction('core', 'importUser', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $nUsers = User::importUsers($fileContents, $replace);
+    API::response(array('nUsers' => $nUsers));
+});
+
+//export users from the system
+API::registerFunction('core', 'exportUsers', function(){
+    API::requireAdminPermission();
+    $users = User::exportUsers();
+    API::response(array('users' => $users));
+});
