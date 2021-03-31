@@ -249,13 +249,13 @@
     margin-bottom: 20px;
 }
 
-#configPage .row span,
-#configPage #textBadge {
+#configPage .row span {
     /* flex: 1; */
-    margin-left: 10px;
-    margin-right: 10px;
+    /* margin-left: 10px;
+    margin-right: 10px; */
     font-size: 14px;
     white-space: nowrap;
+    width: 30%;
 }
 #configPage #textBadge, 
 #configPage .row #text_extraImg,
@@ -266,6 +266,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 

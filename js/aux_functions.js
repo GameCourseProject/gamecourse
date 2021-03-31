@@ -392,6 +392,50 @@ function resetSelectTextColor(id) {
     el.style.color = "rbg(106,106,106)";
 }
 
+
+function buildImagePicker($scope, $compile) {
+    modal_picker = $("<div class='modal' id='image-picker' value='#image-picker'></div>");
+    modal_picker_content = $("<div class='modal_content' style='display: flex;padding-bottom: 60px;'></div>");
+    modal_picker_content.append($('<button class="close_btn icon" value="#image-picker" onclick="closeModal(this)"></button>'));
+    //modal_content.append($('<div class="title centered" >Where do you want to pick your image from? </div>'));
+    tabs = $('<div class="tab"></div>');
+    tabs.append($('<button class="tablinks" onclick="openTab(event,\'upload\')" id="defaultOpen">Upload file</button>'));
+    tabs.append($('<button class="tablinks" onclick="openTab(event,\'browse\')">Browse file</button>'));
+
+    upload = $('<div class="tabcontent" id="upload" ></div>');
+    upload.append($('<div class="full"><div class="picker">' +
+        '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
+        '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
+        '<span id="text_upload-picker" style="margin-left: 10px;"> No file chosen </span></div> <img id="img_upload-picker"/></div></div>'));
+
+
+    browse = $('<div class="tabcontent" id="browse" ></div>');
+
+    modal_picker_content.append(tabs);
+    modal_picker_content.append(upload);
+    modal_picker_content.append(browse);
+    modal_picker_content.append($('<button class="cancel" style="right:95px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
+    modal_picker_content.append($('<button class="save_btn" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" ng-click="saveChosenImage()"> Save </button>'))
+    modal_picker.append(modal_picker_content);
+    $compile(modal_picker)($scope);
+    return modal_picker;
+    //document.getElementById("defaultOpen").click();
+};
+
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
 // function moveRow(containerId, oldIdx, newIdx, atributes, item) {
 //     // children[0] - gives tbody; children gives the rows
 //     // cut the first child because the header is inside tbody
