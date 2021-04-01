@@ -124,7 +124,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     };
 
     $scope.openImagePicker = function () {
-        const imageUploaded = document.getElementById("img_upload-picker");
+        const imageUploaded = document.getElementById("img-upload-picker");
 
         const modal = document.getElementById("image-picker");
         openModal(modal);
@@ -160,8 +160,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     return;
                 }
                 if (data.url != 0) {
-                    document.getElementById("img_upload-picker").src = data.url;
-                    hideIfNeed("img_upload-picker");
+                    document.getElementById("img-upload-picker").src = data.url;
+                    hideIfNeed("img-upload-picker");
                     //insertToEditor(data.url);// Display image element
                 } else {
                     alert('file not uploaded');
@@ -173,7 +173,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     };
 
     $scope.saveChosenImage = function () {
-        const upload = document.getElementById("img_upload-picker");
+        const upload = document.getElementById("img-upload-picker");
         if (upload.src != "" && upload.style.borderColor != "rgb(255, 255, 255)") {
             insertToEditor(upload.src);
             $scope.resetUploadImage(upload);
