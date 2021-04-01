@@ -406,7 +406,7 @@ function buildImagePicker($scope, $compile) {
     upload.append($('<div class="full"><div class="picker">' +
         '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
         '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
-        '<span id="text_upload-picker" style="margin-left: 10px;"> No file chosen </span></div> <img id="img-upload-picker"/></div></div>'));
+        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div> <img id="img-upload-picker"/></div></div>'));
 
 
     browse = $('<div class="tabcontent" id="browse" ></div>');

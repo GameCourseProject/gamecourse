@@ -150,7 +150,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         const file = document.getElementById(input.id).files[0];
 
         filename = $('#' + input.id).val().split('\\')[2];
-        $(".config_input #text_" + input.id).text(filename);
+        $(".config_input #text-" + input.id).text(filename);
         var reader = new FileReader();
         reader.onload = function (e) {
             $scope.uploadFile = reader.result;
@@ -175,7 +175,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     $scope.saveChosenImage = function () {
         const upload = document.getElementById("img-upload-picker");
         if (upload.src != "" && upload.style.borderColor != "rgb(255, 255, 255)") {
-            insertToEditor(upload.src);
+            $scope.insertToEditor(upload.src);
             $scope.resetUploadImage(upload);
         } else if ("") {
             // browser file
@@ -185,11 +185,11 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     $compile.resetUploadImage = function (element) {
         element.src = "";
         hideIfNeed(upload);
-        $(".config_input #text_" + element.id).text("");
+        $(".config_input #text-" + element.id).text("");
     }
 
 
-    insertToEditor = function (url) {
+    $scope.insertToEditor = function (url) {
         // push image url to rich editor.
         const range = quill.getSelection();
         quill.insertEmbed(range.index, 'image', `${url}`);
