@@ -1026,10 +1026,10 @@ class Badges extends Module
 
         $input = [
             array('name' => "Max Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId))),
-            array('name' => "Overlay for extra", 'id'=> 'extraImg', 'type' => "image", 'options' => "Extra", 'current_val' => $this->getGeneralImages('imageExtra', $courseId)),
-            array('name' => "Overlay for bragging", 'id'=> 'braggingImg', 'type' => "image", 'options' => "Bragging", 'current_val' => $this->getGeneralImages('imageBragging', $courseId)),
-            array('name' => "Overlay for level 2", 'id'=> 'imgL2', 'type' => "image", 'options' => "Level2", 'current_val' => $this->getGeneralImages('imageLevel2', $courseId)),
-            array('name' => "Overlay for level 3", 'id'=> 'imgL3', 'type' => "image", 'options' => "Level3", 'current_val' => $this->getGeneralImages('imageLevel3', $courseId))
+            array('name' => "Overlay for extra", 'id'=> 'extra', 'type' => "image", 'options' => "Extra", 'current_val' => $this->getGeneralImages('imageExtra', $courseId)),
+            array('name' => "Overlay for bragging", 'id'=> 'bragging', 'type' => "image", 'options' => "Bragging", 'current_val' => $this->getGeneralImages('imageBragging', $courseId)),
+            array('name' => "Overlay for level 2", 'id'=> 'level2', 'type' => "image", 'options' => "Level2", 'current_val' => $this->getGeneralImages('imageLevel2', $courseId)),
+            array('name' => "Overlay for level 3", 'id'=> 'level3', 'type' => "image", 'options' => "Level3", 'current_val' => $this->getGeneralImages('imageLevel3', $courseId))
         ];
         return $input;
         

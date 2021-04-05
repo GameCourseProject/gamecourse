@@ -479,7 +479,8 @@ button {
 #open-tier .modal_content .cancel,
 #open-item .modal_content .cancel,
 #new-view .modal_content .cancel,
-#edit-view .modal_content .cancel{
+#edit-view .modal_content .cancel,
+#image-picker .modal_content .cancel{
     position: absolute;
     bottom: 0px;
     right: 80;
@@ -538,3 +539,4 @@ button {
   .ql-formats button {
       color: #444;
   }
+

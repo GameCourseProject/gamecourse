@@ -392,6 +392,204 @@ function resetSelectTextColor(id) {
     el.style.color = "rbg(106,106,106)";
 }
 
+
+function buildImagePicker($scope, $compile) {
+    modal_picker = $("<div class='modal' id='image-picker' value='#image-picker'></div>");
+    modal_picker_content = $("<div class='modal_content' style='display: flex;padding-bottom: 60px;'></div>");
+    modal_picker_content.append($('<button class="close_btn icon" value="#image-picker" onclick="closeModal(this)"></button>'));
+    //modal_content.append($('<div class="title centered" >Where do you want to pick your image from? </div>'));
+    tabs = $('<div class="tab"></div>');
+    tabs.append($('<button class="tablinks" onclick="openTab(event,\'upload\')" id="defaultOpen">Upload file</button>'));
+    tabs.append($('<button class="tablinks" onclick="openTab(event,\'browse\')">Browse file</button>'));
+
+    upload = $('<div class="tabcontent" id="upload" ></div>');
+    upload.append($('<div class="full"><div class="picker">' +
+        '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
+        '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
+        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div> <img id="img-upload-picker" onclick="changeBorderColor(this)"/></div></div>'));
+
+
+    browse = $('<div class="tabcontent" id="browse" ></div>');
+    browseContainer = populateBrowseFolders($scope);
+    browse.append($('<div class="top_browser"><div id="back" ></div><div class="path"><span id="browse-path" >' + $scope.path + '</span></div></div>'));
+    browse.append(browseContainer);
+
+    modal_picker_content.append(tabs);
+    modal_picker_content.append(upload);
+    modal_picker_content.append(browse);
+    modal_picker_content.append($('<button class="cancel" style="right:95px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
+    modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Save </button>'))
+    modal_picker.append(modal_picker_content);
+    $compile(modal_picker)($scope);
+    return modal_picker;
+};
+
+function populateBrowseFolders($scope, folder = "", isBack = false) {
+    $("#browse-grid").remove();
+    if (isBack) {
+        var temp = $scope.path.split("/").slice(0, $scope.path.split("/").length - 1);
+        $scope.path = temp.join("/");
+    } else if (!isBack && folder != "") {
+        $scope.path = $scope.path + "/" + folder;
+    }
+
+    $("#browse-path").text($scope.path);
+
+    let files = $scope.folders;
+    if (folder != "" || isBack) {
+        var path_folders = $scope.path.split("/").slice(2);
+        for (i = 0; i < path_folders.length; i++) {
+            files = files[path_folders[i]].files;
+        }
+    }
+    browseContainer = $('<div class="grid" id="browse-grid" ></div>');
+    jQuery.each(files, function (index) {
+        file = files[index];
+        switch (file.filetype) {
+            case 'file':
+                browseContainer.append($('<div class="square" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;"src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
+                break;
+            case 'folder':
+                browseContainer.append($('<div class="square folder" value="' + file.name + '"><img style="width: 60px; height: 60px;" src="images/folder.svg"/><span>' + file.name + '</span></div>'))
+                break;
+        }
+    });
+    return browseContainer;
+}
+
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function openImagePicker($scope, $smartboards) {
+
+    //const imageUploaded = document.getElementById("img-upload-picker");
+
+    const modal = document.getElementById("image-picker");
+    openModal(modal);
+    document.getElementById("defaultOpen").click();
+
+    //file input
+    document.getElementById("upload-picker").onchange = function () {
+        chooseFileFromPC($scope, $smartboards);
+    }
+
+    hideIfNeed("img-upload-picker");
+
+
+
+    // //save file
+    // document.getElementById("save-picker").onclick = function () {
+    //     closeModal(this);
+    //     if (imageUploaded.src != "")
+    //         resetUploadImage('img-upload-picker');
+    //     //saveImage($scope, $smartboards, itemId);
+    //     if (imageUploaded.src != "" && imageUploaded.style.borderColor != "rgb(255, 255, 255)") {
+    //         if ($scope.module && $scope.module.name == "Skills") {
+    //             $scope.insertToEditor(imageUploaded.src);
+    //         }
+    //     } else {
+    //         document.getElementsByClassName("square-image").forEach(element => {
+    //             if ($(element).css("borderColor") != "rgb(255, 255, 255)") {
+    //                 document.getElementById(itemId).src = element.src;
+    //                 hideIfNeed(itemId);
+    //             }
+    //         });
+    //     }
+    // }
+
+    //back button
+    document.getElementById("back").onclick = function () {
+        if ($scope.path != $scope.courseFolder) {
+            browseContainer = populateBrowseFolders($scope, "", true);
+            $("#browse").append(browseContainer);
+            setDoubleClickEvent($scope);
+        }
+    }
+
+    // folder click
+    setDoubleClickEvent($scope);
+}
+
+function setDoubleClickEvent($scope) {
+    document.getElementsByClassName("folder").forEach(element => {
+        element.ondblclick = function () {
+            browseContainer = populateBrowseFolders($scope, element.getAttribute("value"));
+            $("#browse").append(browseContainer);
+            setDoubleClickEvent($scope);
+        }
+    });
+}
+
+function changeBorderColor(element) {
+    if ($(element).css("borderColor") == "rgb(255, 255, 255)") {
+        element.style.borderColor = "#0070f9";
+    } else {
+        element.style.borderColor = "rgb(255, 255, 255)";
+    }
+}
+
+function chooseFileFromPC($scope, $smartboards) {
+    const input = document.getElementById("upload-picker");
+    const file = document.getElementById(input.id).files[0];
+    const filename = file.name;
+    let subfolder;
+
+    if ($scope.openItem) {
+        subfolder = $scope.openItem.name;
+    } else {
+        subfolder = $scope.selectedInput.charAt(0).toUpperCase() + $scope.selectedInput.slice(1);
+    }
+
+    $(".config_input #text-" + input.id).text(filename);
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        $scope.uploadFile = reader.result;
+        $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: filename, module: $scope.module.name, subfolder: subfolder }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if (data.url != 0) {
+                document.getElementById('img-upload-picker').src = data.url;
+                hideIfNeed('img-upload-picker');
+                // document.getElementById(itemId).src = data.url;
+                // hideIfNeed(itemId);
+                // $(".config_input #text-" + itemId).text(file["name"]);
+                //insertToEditor(data.url);// Display image element
+            } else {
+                alert('file not uploaded');
+            }
+        }
+        );
+    }
+    reader.readAsDataURL(file);
+};
+
+// function saveImage($scope, $smartboards, itemId) {
+//     const imageUploaded = document.getElementById("img-upload-picker");
+//     if (imageUploaded.src != "" && imageUploaded.style.borderColor != "rgb(255, 255, 255)") {
+
+//     }
+// }
+
+function resetUploadImage(id) {
+    var element = document.getElementById(id);
+    element.src = "";
+    hideIfNeed(id);
+    $(".config_input #text-" + id).text("No file chosen");
+}
+
 // function moveRow(containerId, oldIdx, newIdx, atributes, item) {
 //     // children[0] - gives tbody; children gives the rows
 //     // cut the first child because the header is inside tbody
