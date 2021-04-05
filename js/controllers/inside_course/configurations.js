@@ -123,69 +123,70 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $compile(editbox)($scope);
     };
 
-    $scope.openImagePicker = function () {
-        const imageUploaded = document.getElementById("img-upload-picker");
-
-        const modal = document.getElementById("image-picker");
-        openModal(modal);
-
-        document.getElementById("defaultOpen").click();
-        //image
-        $scope.resetUploadImage(imageUploaded);
-        imageUploaded.onclick = function () {
-            if ($(this).css("borderColor") == "rgb(255, 255, 255)") {
-                this.style.borderColor = "#0070f9";
-            } else {
-                this.style.borderColor = "rgb(255, 255, 255)";
-            }
-        }
-        //file input
-        document.getElementById("upload-picker").onchange = function () {
-            $scope.chooseFileFromPC();
-        }
+    $scope.openPickerModal = function (itemId = "") {
+        $scope.selectedInput = itemId;
+        openImagePicker($scope, $smartboards);
     }
 
-    $scope.chooseFileFromPC = function () {
-        const input = document.getElementById("upload-picker");
-        const file = document.getElementById(input.id).files[0];
+    // $scope.chooseFileFromPC = function () {
+    //     const input = document.getElementById("upload-picker");
+    //     const file = document.getElementById(input.id).files[0];
 
-        filename = $('#' + input.id).val().split('\\')[2];
-        $(".config_input #text-" + input.id).text(filename);
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            $scope.uploadFile = reader.result;
-            $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                if (data.url != 0) {
-                    document.getElementById("img-upload-picker").src = data.url;
-                    hideIfNeed("img-upload-picker");
-                    //insertToEditor(data.url);// Display image element
-                } else {
-                    alert('file not uploaded');
-                }
-            }
-            );
-        }
-        reader.readAsDataURL(file);
-    };
+    //     filename = $('#' + input.id).val().split('\\')[2];
+    //     $(".config_input #text-" + input.id).text(filename);
+    //     var reader = new FileReader();
+    //     reader.onload = function (e) {
+    //         $scope.uploadFile = reader.result;
+    //         $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: file["name"], module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+    //             if (err) {
+    //                 giveMessage(err.description);
+    //                 return;
+    //             }
+    //             if (data.url != 0) {
+    //                 document.getElementById("img-upload-picker").src = data.url;
+    //                 hideIfNeed("img-upload-picker");
+    //                 //insertToEditor(data.url);// Display image element
+    //             } else {
+    //                 alert('file not uploaded');
+    //             }
+    //         }
+    //         );
+    //     }
+    //     reader.readAsDataURL(file);
+    // };
 
     $scope.saveChosenImage = function () {
-        const upload = document.getElementById("img-upload-picker");
-        if (upload.src != "" && upload.style.borderColor != "rgb(255, 255, 255)") {
-            $scope.insertToEditor(upload.src);
-            $scope.resetUploadImage(upload);
-        } else if ("") {
-            // browser file
-        }
-    }
+        const imageUploaded = document.getElementById("img-upload-picker");
 
-    $compile.resetUploadImage = function (element) {
-        element.src = "";
-        hideIfNeed(upload);
-        $(".config_input #text-" + element.id).text("");
+        if (imageUploaded.src != "" && imageUploaded.style.borderColor == "rgb(0, 112, 249)") {
+            if ($scope.module.name == "Skills") {
+                $scope.insertToEditor(imageUploaded.src);
+            } else {
+                document.getElementById("img-" + $scope.selectedInput).src = imageUploaded.src;
+                hideIfNeed($scope.selectedInput);
+                filename = $(".config_input #text-upload-picker").innerHTML;
+                $(".config_input #text-" + $scope.selectedInput).text(filename);
+            }
+            //resetUploadImage("img-upload-picker");
+        } else {
+            document.getElementsByClassName("square-image").forEach(element => {
+                if ($(element).css("borderColor") == "rgb(0, 112, 249)") {
+                    // get the name of the file
+                    var filename = element.children[1].innerHTML;
+                    if ($scope.module.name == "Skills") {
+                        $scope.insertToEditor(imageUploaded.src);
+                    } else {
+                        document.getElementById("img-" + $scope.selectedInput).src = imageUploaded.src;
+                        hideIfNeed($scope.selectedInput);
+                        $(".config_input #text-" + $scope.selectedInput).text(filename);
+                    }
+
+                    if ($scope.selectedInput == "badge") {
+                        $scope.buildMergeImages($scope.uploadFile, filename.split(".")[0]);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -306,8 +307,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
             });
         }
-        document.getElementById("badge_img_l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-1.png';
-        hideIfNeed('badge_img_l1');
+        document.getElementById("img-badge-l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-1.png';
+        hideIfNeed('img-badge-l1');
 
         if ($scope.openItem.desc2 != "") {
             const imgL2 = $scope.initialInputs["imgL2"];
@@ -324,8 +325,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     }
                 }
                 ));
-            document.getElementById("badge_img_l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-2.png';
-            hideIfNeed('badge_img_l2');
+            document.getElementById("img-badge-l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-2.png';
+            hideIfNeed('img-badge-l2');
         }
 
         if ($scope.openItem.desc3 != "") {
@@ -342,8 +343,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     }
                 }
                 ));
-            document.getElementById("badge_img_l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-3.png';
-            hideIfNeed('badge_img_l3');
+            document.getElementById("img-badge-l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + '-3.png';
+            hideIfNeed('img-badge-l3');
         }
     }
 
@@ -419,13 +420,13 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     case 'image':
                         $scope.openItem[atribute.id] = "";
                         // module badges
-                        $(".config_input #textBadge").text("No file chosen");
-                        $("#badge_img").hide();
-                        $("#badge_img_l1").hide();
-                        $("#badge_img_l2").hide();
-                        $("#badge_img_l3").hide();
-                        document.getElementById("imageFile").onchange = function () {
-                            $scope.uploadBadgeImage();
+                        $(".config_input #text-badge").text("No file chosen");
+                        $("#img-badge").hide();
+                        $("#img-badge-l1").hide();
+                        $("#img-badge-l2").hide();
+                        $("#img-badge-l3").hide();
+                        document.getElementById("badge").onchange = function () {
+                            //$scope.uploadBadgeImage();
                         };
                         break;
 
@@ -541,36 +542,36 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 } else if (atribute["type"] == "image") {
                     //module badges
                     if ($scope.openItem[atribute.id] != "") {
-                        document.getElementById("badge_img").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
-                        $("#badge_img").show();
+                        document.getElementById("img-badge").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
+                        $("#img-badge").show();
 
                         filename = $scope.openItem[atribute.id].split(".")[0];
 
-                        document.getElementById("badge_img_l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-1.png";
-                        $("#badge_img_l1").show();
+                        document.getElementById("img-badge-l1").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-1.png";
+                        $("#img-badge-l1").show();
 
                         if ($scope.openItem["desc2"] != "") {
-                            document.getElementById("badge_img_l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-2.png";
-                            $("#badge_img_l2").show();
+                            document.getElementById("img-badge-l2").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-2.png";
+                            $("#img-badge-l2").show();
                         }
                         if ($scope.openItem["desc3"] != "") {
-                            document.getElementById("badge_img_l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-3.png";
-                            $("#badge_img_l3").show();
+                            document.getElementById("img-badge-l3").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + filename + "-3.png";
+                            $("#img-badge-l3").show();
                         }
-                        $(".config_input #textBadge").text($scope.openItem[atribute.id]);
+                        $(".config_input #text-badge").text($scope.openItem[atribute.id]);
                     } else {
-                        $(".config_input #textBadge").text("No file chosen");
-                        hideIfNeed('badge_img');
-                        hideIfNeed('badge_img_l1');
-                        hideIfNeed('badge_img_l2');
-                        hideIfNeed('badge_img_l3');
+                        $(".config_input #text-badge").text("No file chosen");
+                        hideIfNeed('img-badge');
+                        hideIfNeed('img-badge-l1');
+                        hideIfNeed('img-badge-l2');
+                        hideIfNeed('img-badge-l3');
                     }
-                    document.getElementById("imageFile").onchange = function () {
-                        $scope.uploadBadgeImage();
-                        hideIfNeed('badge_img');
-                        hideIfNeed('badge_img_l1');
-                        hideIfNeed('badge_img_l2');
-                        hideIfNeed('badge_img_l3');
+                    document.getElementById("badge").onchange = function () {
+                        //$scope.uploadBadgeImage();
+                        hideIfNeed('img-badge');
+                        hideIfNeed('img-badge-l1');
+                        hideIfNeed('img-badge-l2');
+                        hideIfNeed('img-badge-l3');
                     };
 
                 } else if (atribute["type"] == "color") {
@@ -998,9 +999,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         row.append($('<div class="full" ><div class="badge_image">' +
-                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" accept=".png, .jpeg, .jpg" class="form__input" ng-click="getSelectedInput(\'' + input.id + '\');"/> ' +
-                            '<input type="button" value="Choose File" onclick="document.getElementById(\'' + input.id + '\').click();" />' +
-                            '<span id="text_' + input.id + '" > </span></div> <img title="' + input.name + '" class="icon" id="badge_' + input.id + '"/></div></div>'));
+                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" accept=".png, .jpeg, .jpg" class="form__input" /> ' +
+                            '<input type="button" value="Choose File" ng-click="openPickerModal(\'' + input.id + '\');" />' +
+                            '<span id="text-' + input.id + '" > </span></div> <img title="' + input.name + '" class="icon" id="img-' + input.id + '"/></div></div>'));
 
                         break;
                 }
@@ -1019,13 +1020,13 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 input = $scope.generalInputs[index];
                 if (input.type == "image") {
                     if (input.current_val != "") {
-                        $(".config_input #text_" + input.id).text(input.current_val);
-                        document.getElementById("badge_" + input.id).src = $scope.courseFolder + "/badges/" + input.options + "/" + input.current_val;
+                        $(".config_input #text-" + input.id).text(input.current_val);
+                        document.getElementById("img-" + input.id).src = $scope.courseFolder + "/badges/" + input.options + "/" + input.current_val;
                     }
                     else {
-                        $(".config_input #text_" + input.id).text("No file chosen");
+                        $(".config_input #text-" + input.id).text("No file chosen");
                     }
-                    hideIfNeed("badge_" + input.id);
+                    hideIfNeed("img-" + input.id);
                 }
             });
 
@@ -1237,9 +1238,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         details.append($('<div class="full" ><div class="badge_image"><span>' + atribute.name + ' </span> ' +
-                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="imageFile" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
-                            '<input  type="button" value="Choose File" onclick="document.getElementById(\'imageFile\').click();" />' +
-                            '<span id="textBadge"> </span></div> <img title="Base image" class="icon" id="badge_img" /><img title="Level 1" class="icon" id="badge_img_l1" /><img title="Level 2" class="icon" id="badge_img_l2" /><img title="Level 3" class="icon" id="badge_img_l3" /></div ></div > '));
+                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="badge" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
+                            '<input  type="button" value="Choose File" ng-click="openPickerModal(\'badge\');" />' +
+                            '<span id="text-badge"> </span></div> <img title="Base image" class="icon" id="img-badge" /><img title="Level 1" class="icon" id="img-badge-l1" /><img title="Level 2" class="icon" id="img-badge-l2" /><img title="Level 3" class="icon" id="img-badge-l3" /></div ></div > '));
                         break;
 
 
@@ -1247,6 +1248,22 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             });
             row_inputs.append(details);
             box.append(row_inputs);
+
+            if (data.module.name == "Skills" || data.module.name == "Badges") {
+                $smartboards.request('course', 'getDataFolders', { course: $scope.course }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.folders = data.folders;
+                    $scope.path = $scope.courseFolder;
+                    modal_picker = buildImagePicker($scope, $compile);
+                    allItems.append(modal_picker);
+
+                });
+
+            }
+
             if (data.module.name == "Skills") {
 
                 //add dependency button
@@ -1267,9 +1284,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                             // dropdown with defaults from theme
 
                         ],
-                        imageResize: {
-
-                        },
+                        imageResize: {},
                         htmlEditButton: {}
                     },
                     scrollingContainer: '#editor',
@@ -1277,8 +1292,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     theme: 'snow'
                 });
 
-                quill.getModule("toolbar").addHandler("image", $scope.openImagePicker);
-                modal_picker = buildImagePicker($scope, $compile);
+                quill.getModule("toolbar").addHandler("image", $scope.openPickerModal);
+                //modal_picker = buildImagePicker($scope, $compile);
 
             }
 
@@ -1292,7 +1307,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             modal.append(open_item);
             $compile(modal)($scope);
             allItems.append(modal);
-            allItems.append(modal_picker);
+            //allItems.append(modal_picker);
 
             // preview modal
             previewModal = $("<div class='modal' id='open-preview'></div>");

@@ -125,3 +125,14 @@ API::registerFunction('core', 'getCourseInfo', function() {
         API::error("There is no course with that id: ". $courseId);
     }
 });
+//------------------ File System-----------------------------------
+API::registerFunction('course', 'getDataFolders', function() {
+
+    API::requireCoursePermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    $courseName = Course::getCourse($courseId)->getName();
+    $dir = Course::getCourseLegacyFolder($courseId, $courseName);
+    $folders = Course::getDataFolders($dir);
+    API::response(array('folders' => $folders));
+});

@@ -257,11 +257,11 @@
     white-space: nowrap;
     width: 30%;
 }
-#configPage #textBadge, 
-#configPage .row #text_extraImg,
-#configPage .row #text_braggingImg,
-#configPage .row #text_imgL2,
-#configPage .row #text_imgL3 {
+#configPage #text-badge, 
+#configPage .row #text-extra,
+#configPage .row #text-bragging,
+#configPage .row #text-level2,
+#configPage .row #text-level3 {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -364,32 +364,32 @@
     margin-bottom: 15px;
 }
 
-#configPage .badge_image #badge_img,
-#configPage .badge_image #badge_img_l1,
-#configPage .badge_image #badge_img_l2,
-#configPage .badge_image #badge_img_l3,
-#configPage .badge_image #badge_extraImg,
-#configPage .badge_image #badge_braggingImg,
-#configPage .badge_image #badge_imgL2,
-#configPage .badge_image #badge_imgL3 {
+#configPage .badge_image #img-badge,
+#configPage .badge_image #img-badge-l1,
+#configPage .badge_image #img-badge-l2,
+#configPage .badge_image #img-badge-l3,
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
     margin-left: 10px;
     margin-right: 10px;
     cursor: inherit;
 }
 
-#configPage .badge_image #badge_extraImg,
-#configPage .badge_image #badge_braggingImg,
-#configPage .badge_image #badge_imgL2,
-#configPage .badge_image #badge_imgL3 {
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
     border: 1px solid gray;
     border-radius: 5px;
 }
 
 #configPage .data-table #listing-table td .badges,
-#configPage .badge_image #badge_extraImg,
-#configPage .badge_image #badge_braggingImg,
-#configPage .badge_image #badge_imgL2,
-#configPage .badge_image #badge_imgL3 {
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
     height: 30px;
     width: 30px;
 }

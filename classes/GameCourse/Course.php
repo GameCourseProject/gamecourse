@@ -963,4 +963,26 @@ class Course
         }
         return $response;
     }
+
+    public static function getDataFolders($dir) {
+        $results = [];
+        $files = scandir($dir);
+
+        foreach ($files as $key => $value) {
+            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
+            if (!is_dir($path)) {
+                $temp = explode(".", $value);
+                $extension = end($temp);
+                if ($extension == "png" || $extension == "jpeg" || $extension == "jpg" || $extension == "gif") {
+                    $file = array('name' => $value, 'filetype'=> 'file');
+                    array_push($results,$file);
+                }
+                
+            } else if ($value != "." && $value != "..") {
+                $folder = array('name' => $value, 'filetype'=> 'folder', 'files'=> Course::getDataFolders($path));
+                $results[$value] = $folder;
+            }
+        }  
+        return $results;
+    }
 }
