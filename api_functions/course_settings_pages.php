@@ -327,3 +327,14 @@ API::registerFunction('settings', 'upload', function(){
     $result = $courseObject->upload($file, $fileName, $module, $subfolder);
     API::response(array('url' => $result));
 });
+
+API::registerFunction('settings', 'deleteFile', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('course', 'path');
+    $course = API::getValue('course');
+    $path =  API::getValue('path');
+    $courseObject = Course::getCourse($course);
+    $courseObject->deleteFile($path);
+    http_response_code(201);
+    return;
+});
