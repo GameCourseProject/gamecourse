@@ -973,10 +973,9 @@ class Course
             if (!is_dir($path)) {
                 $temp = explode(".", $value);
                 $extension = end($temp);
-                if ($extension == "png" || $extension == "jpeg" || $extension == "jpg" || $extension == "gif") {
-                    $file = array('name' => $value, 'filetype'=> 'file');
-                    array_push($results,$file);
-                }
+                $file = array('name' => $value, 'filetype'=> 'file', 'extension' => $extension);
+                array_push($results,$file);
+                
                 
             } else if ($value != "." && $value != "..") {
                 $folder = array('name' => $value, 'filetype'=> 'folder', 'files'=> Course::getDataFolders($path));
@@ -984,5 +983,10 @@ class Course
             }
         }  
         return $results;
+    }
+
+    public function deleteFile($path) {
+        $locationFile = Course::getCourseLegacyFolder($this->getId()) . $path;
+        unlink($locationFile);
     }
 }

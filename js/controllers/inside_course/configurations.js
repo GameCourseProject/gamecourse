@@ -123,8 +123,11 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $compile(editbox)($scope);
     };
 
-    $scope.openPickerModal = function (itemId = "") {
+    $scope.openPickerModal = function (itemId = "", allowedExtensions = []) {
         $scope.selectedInput = itemId;
+        $scope.allowedExtensions = allowedExtensions;
+        if ($scope.module.name == "Skills")
+            $scope.allowedExtensions = ["png", "jpg", "jpeg", "gif"];
         openImagePicker($scope, $smartboards);
     }
 
@@ -496,14 +499,15 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     giveMessage(err.description);
                     return;
                 }
+                $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.listingItems.items = data.listingItems.items;
+                });
             });
-            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.listingItems.items = data.listingItems.items;
-            });
+
         }
     }
 
@@ -666,14 +670,15 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     giveMessage(err.description);
                     return;
                 }
+                $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.listingItems.items = data.listingItems.items;
+                });
             });
-            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.listingItems.items = data.listingItems.items;
-            });
+
         }
     };
 
@@ -773,14 +778,15 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     giveMessage(err.description);
                     return;
                 }
+                $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.listingItems.items = data.listingItems.items;
+                });
             });
-            $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.listingItems.items = data.listingItems.items;
-            });
+
         }
     }
 
@@ -999,8 +1005,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         row.append($('<div class="full" ><div class="badge_image">' +
-                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" accept=".png, .jpeg, .jpg" class="form__input" /> ' +
-                            '<input type="button" value="Choose File" ng-click="openPickerModal(\'' + input.id + '\');" />' +
+                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" class="form__input" /> ' +
+                            '<input type="button" value="Choose File" ng-click="openPickerModal(\'' + input.id + '\', [\'png\', \'jpg\', \'jpeg\']);" />' +
                             '<span id="text-' + input.id + '" > </span></div> <img title="' + input.name + '" class="icon" id="img-' + input.id + '"/></div></div>'));
 
                         break;
@@ -1238,8 +1244,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         break;
                     case 'image':
                         details.append($('<div class="full" ><div class="badge_image"><span>' + atribute.name + ' </span> ' +
-                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="badge" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
-                            '<input  type="button" value="Choose File" ng-click="openPickerModal(\'badge\');" />' +
+                            '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="badge" type="file" class="form__input"/> ' +
+                            '<input  type="button" value="Choose File" ng-click="openPickerModal(\'badge\', [\'png\', \'jpg\', \'jpeg\']);" />' +
                             '<span id="text-badge"> </span></div> <img title="Base image" class="icon" id="img-badge" /><img title="Level 1" class="icon" id="img-badge-l1" /><img title="Level 2" class="icon" id="img-badge-l2" /><img title="Level 3" class="icon" id="img-badge-l3" /></div ></div > '));
                         break;
 
