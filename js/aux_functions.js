@@ -406,7 +406,7 @@ function buildImagePicker($scope, $compile) {
     upload.append($('<div class="full"><div class="picker">' +
         '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
         '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
-        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div> <img class="file" id="img-upload-picker" onclick="changeBorderColor(this)"/></div></div>'));
+        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div><div class="file" id="div-upload-picker" style="display:inline-block;margin-left: 20px;margin-top: 10px;" onclick="changeBorderColor(this)"> <img id="img-upload-picker" style="width: 100px; height: 100px;"/></div></div></div>'));
 
 
     browse = $('<div class="tabcontent" id="browse" ></div>');
@@ -418,8 +418,8 @@ function buildImagePicker($scope, $compile) {
     modal_picker_content.append(upload);
     modal_picker_content.append(browse);
     modal_picker_content.append($('<button id="delete" style="left:60px;bottom:10px;" > Delete </button>'));
-    modal_picker_content.append($('<button class="cancel" style="right:95px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
-    modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Save </button>'))
+    modal_picker_content.append($('<button class="cancel" style="right:105px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
+    modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Select </button>'))
     modal_picker.append(modal_picker_content);
     $compile(modal_picker)($scope);
     return modal_picker;
@@ -450,9 +450,9 @@ function populateBrowseFolders($scope, folder = "", isBack = false, isDelete = f
             case 'file':
                 if ($scope.allowedExtensions.length == 0 || $scope.allowedExtensions.includes(file.extension)) {
                     if (file.extension != "png" && file.extension != "jpeg" && file.extension != "jpg" && file.extension != "gif") {
-                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;"src="images/file.svg"/><span>' + file.name + '</span></div>'))
+                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="images/file.svg"/><span>' + file.name + '</span></div>'))
                     } else {
-                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;"src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
+                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
                     }
                 }
 
@@ -509,9 +509,11 @@ function openImagePicker($scope, $smartboards) {
                 const path = element.children[0].src.split(divider)[1];
                 $smartboards.request('settings', 'deleteFile', { course: $scope.course, path: path }, function (data, err) {
                     if (err) {
-                        console.log(err.description);
                         giveMessage(err);
                         return;
+                    }
+                    if ($("#upload").css("display") == "block") {
+                        resetUploadImage("upload-picker");
                     }
                     $smartboards.request('course', 'getDataFolders', { course: $scope.course }, function (data, err) {
                         if (err) {
@@ -522,6 +524,7 @@ function openImagePicker($scope, $smartboards) {
                         const folder = path.split("/")[1];
                         browseContainer = populateBrowseFolders($scope, folder, false, true);
                         $("#browse").append(browseContainer);
+                        setClickEvent($scope);
                         $(document.getElementById("delete")).hide();
                     });
                 });
@@ -554,20 +557,20 @@ function openImagePicker($scope, $smartboards) {
         if ($scope.path != $scope.courseFolder) {
             browseContainer = populateBrowseFolders($scope, "", true);
             $("#browse").append(browseContainer);
-            setDoubleClickEvent($scope);
+            setClickEvent($scope);
         }
     }
 
     // folder click
-    setDoubleClickEvent($scope);
+    setClickEvent($scope);
 }
 
-function setDoubleClickEvent($scope) {
+function setClickEvent($scope) {
     document.getElementsByClassName("folder").forEach(element => {
-        element.ondblclick = function () {
+        element.onclick = function () {
             browseContainer = populateBrowseFolders($scope, element.getAttribute("value"));
             $("#browse").append(browseContainer);
-            setDoubleClickEvent($scope);
+            setClickEvent($scope);
         }
     });
 }
@@ -590,6 +593,8 @@ function changeBorderColor(element) {
 function chooseFileFromPC($scope, $smartboards) {
     const input = document.getElementById("upload-picker");
     const file = document.getElementById(input.id).files[0];
+    if (file == undefined)
+        return;
     const filename = file.name;
     let subfolder;
 
@@ -635,6 +640,7 @@ function resetUploadImage(id) {
     var element = document.getElementById("img-" + id);
     element.removeAttribute("src");
     hideIfNeed("img-" + id);
+    document.getElementById("div-" + id).style.borderColor = "rgb(255, 255, 255)";
     $(".config_input #text-" + id).text("No file chosen");
 }
 
