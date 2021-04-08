@@ -127,7 +127,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $scope.selectedInput = itemId;
         $scope.allowedExtensions = allowedExtensions;
         if ($scope.module.name == "Skills")
-            $scope.allowedExtensions = ["png", "jpg", "jpeg", "gif"];
+            $scope.allowedExtensions = [".png", ".jpg", ".jpeg", ".gif"];
         openImagePicker($scope, $smartboards);
     }
 
@@ -1006,7 +1006,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     case 'image':
                         row.append($('<div class="full" ><div class="badge_image">' +
                             '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="' + input.id + '" type="file" class="form__input" /> ' +
-                            '<input type="button" value="Choose File" ng-click="openPickerModal(\'' + input.id + '\', [\'png\', \'jpg\', \'jpeg\']);" />' +
+                            '<input type="button" value="Choose File" ng-click="openPickerModal(\'' + input.id + '\', [\'.png\', \'.jpg\', \'.jpeg\']);" />' +
                             '<span id="text-' + input.id + '" > </span></div> <img title="' + input.name + '" class="icon" id="img-' + input.id + '"/></div></div>'));
 
                         break;
@@ -1245,7 +1245,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     case 'image':
                         details.append($('<div class="full" ><div class="badge_image"><span>' + atribute.name + ' </span> ' +
                             '<div class="config_input" style="flex: none;width: 230px;"><input style="display: none;" id="badge" type="file" class="form__input"/> ' +
-                            '<input  type="button" value="Choose File" ng-click="openPickerModal(\'badge\', [\'png\', \'jpg\', \'jpeg\']);" />' +
+                            '<input  type="button" value="Choose File" ng-click="openPickerModal(\'badge\', [\'.png\', \'.jpg\', \'.jpeg\']);" />' +
                             '<span id="text-badge"> </span></div> <img title="Base image" class="icon" id="img-badge" /><img title="Level 1" class="icon" id="img-badge-l1" /><img title="Level 2" class="icon" id="img-badge-l2" /><img title="Level 3" class="icon" id="img-badge-l3" /></div ></div > '));
                         break;
 

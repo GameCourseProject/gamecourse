@@ -402,9 +402,10 @@ function buildImagePicker($scope, $compile) {
     tabs.append($('<button class="tablinks" onclick="openTab(event,\'upload\')" id="defaultOpen">Upload file</button>'));
     tabs.append($('<button class="tablinks" onclick="openTab(event,\'browse\')">Browse file</button>'));
 
+
     upload = $('<div class="tabcontent" id="upload" ></div>');
     upload.append($('<div class="full"><div class="picker">' +
-        '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" accept=".png, .jpeg, .jpg" class="form__input"/> ' +
+        '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" class="form__input"/> ' +
         '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
         '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div><div class="file" id="div-upload-picker" style="display:inline-block;margin-left: 20px;margin-top: 10px;" onclick="changeBorderColor(this)"> <img id="img-upload-picker" style="width: 100px; height: 100px;"/></div></div></div>'));
 
@@ -449,7 +450,7 @@ function populateBrowseFolders($scope, folder = "", isBack = false, isDelete = f
         switch (file.filetype) {
             case 'file':
                 if ($scope.allowedExtensions.length == 0 || $scope.allowedExtensions.includes(file.extension)) {
-                    if (file.extension != "png" && file.extension != "jpeg" && file.extension != "jpg" && file.extension != "gif") {
+                    if (file.extension != ".png" && file.extension != ".jpeg" && file.extension != ".jpg" && file.extension != ".gif") {
                         browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="images/file.svg"/><span>' + file.name + '</span></div>'))
                     } else {
                         browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
@@ -491,6 +492,8 @@ function openImagePicker($scope, $smartboards) {
     document.getElementById("upload-picker").onchange = function () {
         chooseFileFromPC($scope, $smartboards);
     }
+    const allowed = $scope.allowedExtensions.join(", ");
+    document.getElementById("upload-picker").setAttribute("accept", allowed);
 
     //reset
     resetUploadImage("upload-picker");

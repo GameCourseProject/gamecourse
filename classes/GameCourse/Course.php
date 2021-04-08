@@ -972,7 +972,7 @@ class Course
             $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
             if (!is_dir($path)) {
                 $temp = explode(".", $value);
-                $extension = end($temp);
+                $extension = "." . end($temp);
                 $file = array('name' => $value, 'filetype'=> 'file', 'extension' => $extension);
                 array_push($results,$file);
                 
