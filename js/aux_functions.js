@@ -505,7 +505,7 @@ function openImagePicker($scope, $smartboards) {
     document.getElementById("delete").onclick = function () {
         document.getElementsByClassName("file").forEach(element => {
             if ($(element).css("borderColor") != "rgb(255, 255, 255)") {
-                const divider = $scope.courseFolder.split("/")[1].replace(" ", "%20"); // to match url spaces
+                const divider = $scope.courseFolder.split("/")[1].replaceAll(" ", "%20"); // to match url spaces
                 const path = element.children[0].src.split(divider)[1];
                 $smartboards.request('settings', 'deleteFile', { course: $scope.course, path: path }, function (data, err) {
                     if (err) {
