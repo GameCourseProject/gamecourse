@@ -407,7 +407,7 @@ function buildImagePicker($scope, $compile) {
     upload.append($('<div class="full"><div class="picker">' +
         '<div class="config_input" style="flex: none;"><input style="display: none;" id="upload-picker" type="file" class="form__input"/> ' +
         '<input type="button" value="Choose File" onclick="document.getElementById(\'upload-picker\').click();" />' +
-        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div><div class="file" id="div-upload-picker" style="display:inline-block;margin-left: 20px;margin-top: 10px;" onclick="changeBorderColor(this)"> <img id="img-upload-picker" style="width: 100px; height: 100px;"/></div></div></div>'));
+        '<span id="text-upload-picker" style="margin-left: 10px;"> No file chosen </span></div><div class="file" id="div-upload-picker" style="display:inline-block;margin-left: 20px;margin-top: 10px;"> <img id="img-upload-picker" style="width: 100px; height: 100px;"/></div></div></div>'));
 
 
     browse = $('<div class="tabcontent" id="browse" ></div>');
@@ -418,10 +418,11 @@ function buildImagePicker($scope, $compile) {
     modal_picker_content.append(tabs);
     modal_picker_content.append(upload);
     modal_picker_content.append(browse);
-    modal_picker_content.append($('<button id="delete" style="left:60px;bottom:10px;" > Delete </button>'));
+    modal_picker_content.append($('<button id="delete" value="#delete-verification-file" style="left:60px;bottom:10px;" > Delete </button>'));
     modal_picker_content.append($('<button class="cancel" style="right:105px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
     modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Select </button>'))
     modal_picker.append(modal_picker_content);
+
     $compile(modal_picker)($scope);
     return modal_picker;
 };
@@ -451,9 +452,9 @@ function populateBrowseFolders($scope, folder = "", isBack = false, isDelete = f
             case 'file':
                 if ($scope.allowedExtensions.length == 0 || $scope.allowedExtensions.includes(file.extension)) {
                     if (file.extension != ".png" && file.extension != ".jpeg" && file.extension != ".jpg" && file.extension != ".gif") {
-                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="images/file.svg"/><span>' + file.name + '</span></div>'))
+                        browseContainer.append($('<div class="square file"><img class="square-image" style="width: 60px; height: 60px;" src="images/file.svg"/><span>' + file.name + '</span></div>'))
                     } else {
-                        browseContainer.append($('<div class="square file" onclick="changeBorderColor(this)"><img class="square-image" style="width: 60px; height: 60px;" src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
+                        browseContainer.append($('<div class="square file"><img class="square-image" style="width: 60px; height: 60px;" src="' + $scope.path + "/" + file.name + '"/><span>' + file.name + '</span></div>'))
                     }
                 }
 
@@ -506,33 +507,14 @@ function openImagePicker($scope, $smartboards) {
     //delete file and refresh view
     $(document.getElementById("delete")).hide();
     document.getElementById("delete").onclick = function () {
-        document.getElementsByClassName("file").forEach(element => {
-            if ($(element).css("borderColor") != "rgb(255, 255, 255)") {
-                const divider = $scope.courseFolder.split("/")[1].replaceAll(" ", "%20"); // to match url spaces
-                const path = element.children[0].src.split(divider)[1];
-                $smartboards.request('settings', 'deleteFile', { course: $scope.course, path: path }, function (data, err) {
-                    if (err) {
-                        giveMessage(err);
-                        return;
-                    }
-                    if ($("#upload").css("display") == "block") {
-                        resetUploadImage("upload-picker");
-                    }
-                    $smartboards.request('course', 'getDataFolders', { course: $scope.course }, function (data, err) {
-                        if (err) {
-                            giveMessage(err.description);
-                            return;
-                        }
-                        $scope.folders = data.folders;
-                        const folder = path.split("/")[1];
-                        browseContainer = populateBrowseFolders($scope, folder, false, true);
-                        $("#browse").append(browseContainer);
-                        setClickEvent($scope);
-                        $(document.getElementById("delete")).hide();
-                    });
-                });
-            }
-        });
+        openModal(this);
+        const src = $scope.selectedFile.children[0].src.split("/");
+        $('#delete_file_info').text('File: ' + src[src.length - 1]);
+        //delete confirmation
+        document.getElementById("confirm_delete").onclick = function () {
+            confirmDelete($scope, $smartboards);
+            closeModal(this);
+        }
     }
 
     // //save file
@@ -561,11 +543,44 @@ function openImagePicker($scope, $smartboards) {
             browseContainer = populateBrowseFolders($scope, "", true);
             $("#browse").append(browseContainer);
             setClickEvent($scope);
+            setClickOnFiles($scope);
         }
     }
 
     // folder click
     setClickEvent($scope);
+    setClickOnFiles($scope);
+}
+
+function confirmDelete($scope, $smartboards) {
+    document.getElementsByClassName("file").forEach(element => {
+        if ($(element).css("borderColor") != "rgb(255, 255, 255)") {
+            const divider = $scope.courseFolder.split("/")[1].replaceAll(" ", "%20"); // to match url spaces
+            const path = element.children[0].src.split(divider)[1];
+            $smartboards.request('settings', 'deleteFile', { course: $scope.course, path: path }, function (data, err) {
+                if (err) {
+                    giveMessage(err);
+                    return;
+                }
+                if ($("#upload").css("display") == "block") {
+                    resetUploadImage("upload-picker");
+                }
+                $smartboards.request('course', 'getDataFolders', { course: $scope.course }, function (data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.folders = data.folders;
+                    const folder = path.split("/")[1];
+                    browseContainer = populateBrowseFolders($scope, folder, false, true);
+                    $("#browse").append(browseContainer);
+                    setClickEvent($scope);
+                    setClickOnFiles($scope);
+                    $(document.getElementById("delete")).hide();
+                });
+            });
+        }
+    });
 }
 
 function setClickEvent($scope) {
@@ -574,19 +589,37 @@ function setClickEvent($scope) {
             browseContainer = populateBrowseFolders($scope, element.getAttribute("value"));
             $("#browse").append(browseContainer);
             setClickEvent($scope);
+            setClickOnFiles($scope);
         }
     });
+}
+
+function setClickOnFiles($scope) {
+    document.getElementsByClassName("file").forEach(element => {
+        console.log(element);
+        element.onclick = function () {
+            console.log("clickkk");
+            // remove border from previous selected
+            if ($scope.selectedFile != null)
+                changeBorderColor($scope.selectedFile);
+            // first click or when there is another one selected
+            else if ($scope.selectedFile == null || $scope.selectedFile != element) {
+                console.log("here");
+                changeBorderColor(element);
+                $scope.selectedFile = element;
+            }
+            // none selected
+            else {
+                $scope.selectedFile = null;
+            }
+        }
+    })
 }
 
 function changeBorderColor(element) {
     if ($(element).css("borderColor") == "rgb(255, 255, 255)") {
         element.style.borderColor = "#0070f9";
         $(document.getElementById("delete")).show();
-        document.getElementsByClassName("file").forEach(el => {
-            if ($(el).css("borderColor") != "rgb(255, 255, 255)" && element != el) {
-                el.style.borderColor = "rgb(255, 255, 255)";
-            }
-        });
     } else {
         element.style.borderColor = "rgb(255, 255, 255)";
         $(document.getElementById("delete")).hide();
