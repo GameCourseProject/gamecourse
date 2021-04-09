@@ -1265,18 +1265,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     $scope.path = $scope.courseFolder;
                     modal_picker = buildImagePicker($scope, $compile);
 
-                    //delete verification modal
-                    deletemodal = $("<div class='modal' id='delete-verification-file'></div>");
-                    verification = $("<div class='verification modal_content'></div>");
-                    verification.append($('<button class="close_btn icon" value="#delete-verification-file" onclick="closeModal(this)"></button>'));
-                    verification.append($('<div class="warning">Are you sure you want to delete?</div>'));
-                    verification.append($('<div class="target" id="delete_file_info"></div>'));
-                    verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-file" onclick="closeModal(this)">Cancel</button><button class="continue" value="#delete-verification-file" id="confirm_delete"> Delete</button></div>'))
-                    deletemodal.append(verification);
-                    $compile(deletemodal)($scope);
 
                     allItems.append(modal_picker);
-                    allItems.append(deletemodal);
+                    //allItems.append(deletemodal);
 
                 });
 
