@@ -419,9 +419,20 @@ function buildImagePicker($scope, $compile) {
     modal_picker_content.append(upload);
     modal_picker_content.append(browse);
     modal_picker_content.append($('<button id="delete" value="#delete-verification-file" style="left:60px;bottom:10px;" > Delete </button>'));
-    modal_picker_content.append($('<button class="cancel" style="right:105px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
+    modal_picker_content.append($('<button class="cancel_btn" style="right:105px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
     modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Select </button>'))
     modal_picker.append(modal_picker_content);
+
+    //delete verification modal
+    deletemodal = $("<div class='modal' id='delete-verification-file'></div>");
+    verification = $("<div class='verification modal_content'></div>");
+    verification.append($('<button class="close_btn icon" value="#delete-verification-file" onclick="closeModal(this)"></button>'));
+    verification.append($('<div class="warning">Are you sure you want to delete?</div>'));
+    verification.append($('<div class="target" id="delete_file_info"></div>'));
+    verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-file" onclick="closeModal(this)">Cancel</button><button class="continue" value="#delete-verification-file" id="confirm_delete"> Delete</button></div>'))
+    deletemodal.append(verification);
+    modal_picker.append(deletemodal);
+    //$compile(deletemodal)($scope);
 
     $compile(modal_picker)($scope);
     return modal_picker;
