@@ -41,6 +41,9 @@ drop table if exists course;
 drop table if exists auth;
 drop table if exists game_course_user;
 drop table if exists autogame;
+drop table if exists profiling_config;
+drop table if exists user_profile;
+drop table if exists saved_user_profile;
 
 create table game_course_user(
 	id 		int unsigned primary key auto_increment, #81205
