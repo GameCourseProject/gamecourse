@@ -381,7 +381,7 @@ class Profiling extends Module {
     }
     
     public function dropTables($moduleName) {
-        $this->removeClusterRoles($courseId);
+        //$this->removeClusterRoles($courseId);
         parent::dropTables($moduleName);
     }
 
