@@ -11,6 +11,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 visibilityCondition: "{}",
                 visibilityType: "conditional"
             };
+            console.log("here");
             part.rows[0].values.push({ value: $sbviews.defaultPart('text') });
             return part;
         },
@@ -31,7 +32,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         canDelete: false,
                         canSwitch: true,
                         canDuplicate: false,
-                        canSaveTemplate: true
+                        canSaveTemplate: true,
+                        canHaveAspects: true,
                     },
                     toolFunctions: {
                         switch: function (oldPart, newPart) {
@@ -514,7 +516,6 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                                 $(tbody.children().get(ridx)).append(buildRowToolbar(part.rows, part.rows[ridx]));
                             }
                             tableDiv.click();
-                            //$('.edit-toolbar').is
                         },
                         layoutEditEnd: function () {
                             checkEmpty(false);

@@ -1,7 +1,7 @@
-angular.module('module.views').run(function($smartboards,$sbviews, $compile, $timeout) {
+angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $timeout) {
     $sbviews.registerPartType('block', {
         name: 'Block',
-        defaultPart: function() {
+        defaultPart: function () {
             var part = {
                 partType: 'block',
                 header: {
@@ -21,29 +21,29 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
             return part;
         },
         build: function (scope, part, options) {
-            function deleteIds(newPart){
+            function deleteIds(newPart) {
                 delete newPart.id;
-                for (var c in newPart.children){
+                for (var c in newPart.children) {
                     deleteIds(newPart.children[c]);
                 }
-                for (var r in newPart.rows){
+                for (var r in newPart.rows) {
                     deleteIds(newPart.rows[r]);
                 }
-                for (var r in newPart.headerRows){
+                for (var r in newPart.headerRows) {
                     deleteIds(newPart.headerRows[r]);
                 }
-                for (var c in newPart.values){
+                for (var c in newPart.values) {
                     deleteIds(newPart.values[c].value);
                 }
             }
             $sbviews.setDefaultParamters(part);
             var block = $(document.createElement('div')).addClass('block');
-            if (part.header) {  
+            if (part.header) {
                 var blockHeader = $(document.createElement('div')).addClass('header');
                 if (part.header.anchor && !options.edit)
                     blockHeader.append('<a name="' + part.header.anchor + '"></a>');
-                blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {partType: 'image'})));
-                blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {partType: 'text'})).addClass('title'));
+                blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, { partType: 'image' })));
+                blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, { partType: 'text' })).addClass('title'));
                 block.append(blockHeader);
             }
 
@@ -69,7 +69,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     function defineOverlayClick(overlay, child) {
                         overlay.on('mousedown', function (event) {
                             moving = true;
-                            replaceDiv.css({flexShrink: 0, width: child.innerWidth(), height: child.innerHeight()});
+                            replaceDiv.css({ flexShrink: 0, width: child.innerWidth(), height: child.innerHeight() });
                             oldIndex = Array.prototype.indexOf.call(block.children('.content').get(0).children, child.get(0));
                             child.before(replaceDiv);
                             child.css({
@@ -117,7 +117,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         }
                         replaceDiv.replaceWith(child);
                         if (newIdx != -1 && newIdx != oldIndex) {
-                            $timeout(function() {
+                            $timeout(function () {
                                 var value = part.children[oldIndex];
                                 child.detach();
                                 if (newIdx < part.children.length - 1)
@@ -140,13 +140,14 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     });
                     child.append(overlay);
                 }
-                
+
                 childOptions = $sbviews.editOptions(options, {
                     toolOptions: {
                         canDelete: true,
                         canSwitch: true,
                         canDuplicate: true,
-                        canSaveTemplate: true
+                        canSaveTemplate: true,
+                        canHaveAspects: true,
                     },
                     toolFunctions: {
                         remove: function (obj) {
@@ -157,7 +158,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
                             //$sbviews.notifyChanged(part, options);
                         },
-                        duplicate: function(obj) {
+                        duplicate: function (obj) {
                             var idx = part.children.indexOf(obj);
                             var newPart = $.extend(true, {}, obj);
                             //$sbviews.changePids(newPart);
@@ -168,7 +169,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             $(blockContent.children().get(idx)).before(newPartEl);
                             //$sbviews.notifyChanged(part, options);
                         },
-                        switch: function(obj, newPart) {
+                        switch: function (obj, newPart) {
                             var idx = part.children.indexOf(obj);
                             part.children.splice(idx, 1, newPart);
                             var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
@@ -185,8 +186,8 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         var header = n;
                         if (header != undefined) {
                             blockHeader = $(document.createElement('div')).addClass('header');
-                            blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, {partType: 'image'})));
-                            blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, {partType: 'text'})).addClass('title'));
+                            blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, { partType: 'image' })));
+                            blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, { partType: 'text' })).addClass('title'));
                             block.prepend(blockHeader);
                             $sbviews.notifyChanged(part, options);
                         } else {
@@ -210,7 +211,7 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                     layoutEditor: true,
                     overlayOptions: {
                         callbackFunc: function (el, execClose, optionsScope, watch) {
-                            optionsScope.toggleHeader = function() {
+                            optionsScope.toggleHeader = function () {
                                 if (optionsScope.part.header == undefined) {
                                     optionsScope.part.header = $sbviews.defaultPart('block').header;
                                 } else
@@ -236,22 +237,22 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                         }
                     },
                     toolFunctions: {
-                        layoutEditStart: function() {
-                            $(block.children('.content').get(0)).children().each(function() {
+                        layoutEditStart: function () {
+                            $(block.children('.content').get(0)).children().each(function () {
                                 var el = $(this);
                                 if (el.hasClass('no-children'))
                                     return;
                                 addOverlay(el);
                             });
-                            
-                        
-                            
+
+
+
                             var addDiv = $("<div class='add_new_part icon' value='#add_part' onclick='openModal(this)'></div>");
 
                             //select part done on a modal
                             var addPartModal = $("<div class='modal' id='add_part'></div>");
                             addPartModalContent = $("<div class='modal_content'></div>");
-                            addPartModalContent.append( $('<button class="close_btn icon" value="#add_part" onclick="closeModal(this)"></button>'));
+                            addPartModalContent.append($('<button class="close_btn icon" value="#add_part" onclick="closeModal(this)"></button>'));
                             //addPartModalContent.append($('<div class="title">Add New Part: </div>'));
                             parts_selection = $('<div id="parts_selection"></div>');
                             template_selection = $('<div id="template_selection"></div>');
@@ -262,28 +263,28 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             addPartModal.append(addPartModalContent);
 
                             var addPartsDiv = $(document.createElement('div')).addClass('add-parts');
-                            
+
                             //creates options for the different parts
                             var partsList = $(document.createElement('select')).attr('id', 'partList');
                             partsList.append($('<option value="" disabled selected >Part Type</option>'))
-                            for(var type in $sbviews.registeredPartType) {
+                            for (var type in $sbviews.registeredPartType) {
                                 var partDef = $sbviews.registeredPartType[type];
                                 if (partDef.name != undefined && partDef.defaultPart != undefined) {
                                     var option = $(document.createElement('option'));
                                     option.text(partDef.name);
                                     option.val('part:' + type);
                                     partsList.append(option);
-    
+
                                     partIconName = "images/" + type + "_part_icon.svg";
-                                    part_option = $('<div value="'+type+'" class="part_option"></div>')
+                                    part_option = $('<div value="' + type + '" class="part_option"></div>')
                                     part_option.append($(document.createElement('img')).attr('src', partIconName));
-                                    part_option.append($('<div class="part_label">'+type+'</div>'));
+                                    part_option.append($('<div class="part_label">' + type + '</div>'));
                                     parts_selection.append(part_option);
-                                    part_option.click(function(){ 
+                                    part_option.click(function () {
                                         $(".part_option").removeClass("focus");
                                         $(this).addClass("focus");
                                         type = this.getAttribute('value');
-                                        $("#partList").val("part:"+ type);
+                                        $("#partList").val("part:" + type);
                                         template_selection.hide();
                                         addButton.prop('disabled', false);
                                     });
@@ -295,11 +296,11 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             temp_option.val('temp:');
                             partsList.append(temp_option);
                             // add template icon option
-                            part_option = $('<div value="'+type+'" class="part_option"></div>')
+                            part_option = $('<div value="' + type + '" class="part_option"></div>')
                             part_option.append($(document.createElement('img')).attr('src', "images/template_part_icon.svg"));
                             part_option.append($('<div class="part_label"> template</div>'));
                             parts_selection.append(part_option);
-                            part_option.click(function(){ 
+                            part_option.click(function () {
                                 $(".part_option").removeClass("focus");
                                 $(this).addClass("focus");
                                 type = this.getAttribute('value');
@@ -309,26 +310,26 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                             });
                             addPartsDiv.append(partsList);
                             partsList.hide();
-                            
+
                             var templateList = $(document.createElement('select')).attr('id', 'templateList').addClass("form__input");
                             templateList.append('<option disabled>Select a template</option>');
                             var templates = options.editData.templates;
                             for (var t in templates) {
                                 var template = templates[t];
                                 var option = $(document.createElement('option'));
-                                option.text(template["name"]+" ("+template['id']+")");
+                                option.text(template["name"] + " (" + template['id'] + ")");
                                 option.val('temp:' + t);
                                 templateList.append(option);
                             }
                             template_selection.append(templateList);
-                            template_selection.append( $('<div class= "on_off"><span>Use Template by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
+                            template_selection.append($('<div class= "on_off"><span>Use Template by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>'))
                             template_selection.hide();
                             addPartsDiv.append(template_selection);
-                            
-                            function addPart(newPart,$isTemplateRef=false){
+
+                            function addPart(newPart, $isTemplateRef = false) {
                                 console.log("newPart", newPart);
                                 console.log("template by ref?", $isTemplateRef);
-                                if ($isTemplateRef===false)
+                                if ($isTemplateRef === false)
                                     deleteIds(newPart);
                                 //$sbviews.changePids(newPart);
                                 blockContent.children('.no-children').remove();
@@ -338,26 +339,34 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                 blockContent.append(newChild);
                                 addOverlay(newChild);
                             }
-                            
+
                             var addButton = $(document.createElement('button')).text('Add Item');
                             addButton.prop('disabled', true);
                             addButton.addClass("save_btn");
-                            addButton.click(function() {                                
+                            addButton.click(function () {
                                 var value = partsList.val();
                                 var index = value.substr(5);
                                 var newPart = [];
-                                if (value.indexOf('part:') == 0){
+                                if (value.indexOf('part:') == 0) {
                                     newPart = $sbviews.registeredPartType[index].defaultPart();
+                                    newPart.role = "role." + $("#viewer_role").find(":selected")[0].text;
+                                    if (part.children.length == 0)
+                                        newPart.viewId = (parseInt(part.viewId) + 1).toString();
+                                    else
+                                        newPart.viewId = (parseInt(part.children[part.children.length - 1].viewId) + 1).toString();
+                                    if (newPart.part == "table") {
+                                        newPart.rows[0].values[0].viewId = (parseInt(newPart.viewId) + 1).toString();
+                                    }
                                     addPart(newPart);
                                 }
-                                else if (value.indexOf('temp:') == 0){   
+                                else if (value.indexOf('temp:') == 0) {
                                     var isRef = $('#isRef').is(':checked');
                                     var value = templateList.val();
                                     var id = value.substr(5);
-                                    templates[id].role=scope.$root.role;
-                                    if(isRef){
+                                    templates[id].role = scope.$root.role;
+                                    if (isRef) {
                                         // with reference
-                                        console.log("newTemplateRef",templates[id]);
+                                        console.log("newTemplateRef", templates[id]);
                                         $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
                                             if (err) {
                                                 giveMessage(err.description);
@@ -365,10 +374,10 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                             }
                                             delete data.template.id;
                                             console.log("getTemplateReference", data);
-                                            addPart(data.template,true);
+                                            addPart(data.template, true);
                                         });
                                     }
-                                    else{
+                                    else {
                                         //without ref
                                         $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                             if (err) {
@@ -377,25 +386,25 @@ angular.module('module.views').run(function($smartboards,$sbviews, $compile, $ti
                                             }
                                             console.log("getTemp", data.template);
                                             addPart(data.template);
-                                        });   
-                                    }                                  
-                                    
+                                        });
+                                    }
+
                                 }
-                                addPartModal.hide();                                
+                                addPartModal.hide();
                             });
 
-                            
-                            addPartContent.append(addPartsDiv);   
+
+                            addPartContent.append(addPartsDiv);
                             addPartContent.append(addButton);
                             $(document.body).append(addPartModal);
                             block.append(addDiv);
                             block.click();
                         },
-                        layoutEditEnd: function() {
+                        layoutEditEnd: function () {
                             block.children('.content').find('.block-edit-overlay').remove();
                             block.children('.add_new_part').remove();
                             $("#add_part").remove();
-                            
+
                         }
                     }
                 });

@@ -1,10 +1,13 @@
-<button class="close_btn icon" value="#switch_part" ng-click="closeOverlay()"></button>
-<div class="title">Edit Part Settings: <div class="warning">All information here will be automatically added to your selected part</div></div>
+<button class="close_btn icon" value="#edit_part" ng-click="closeOverlay()"></button>
+<div class="title">Edit Part Settings: <div class="warning">All information here will be automatically added to your
+        selected part</div>
+</div>
 
-  
 
-<sb-menu ng-if="options.allowDataLoop" sb-menu-title="Loop Data" >
-    <sb-expression id="visLoop" sb-expression="part.loopData"  sb-expression-link="./docs/#ViewsLoop" sb-expression-info="Data allows to repeat the element, for example to make lists."></sb-expression>
+
+<sb-menu ng-if="options.allowDataLoop" sb-menu-title="Loop Data">
+    <sb-expression id="visLoop" sb-expression="part.loopData" sb-expression-link="./docs/#ViewsLoop"
+        sb-expression-info="Data allows to repeat the element, for example to make lists."></sb-expression>
     <!--sb-checkbox ng-if="options.allowRepeat" sb-checkbox="part.loopData" sb-checkbox-label="Enable Loop" sb-checkbox-default="" sb-checkbox-info="Loop allows to repeat the element, for example to make lists." sb-checkbox-link="./docs/#ViewsDOMRepeat">
         <sb-expression sb-expression="part.loopData" sb-expression-label="Loop Data"></sb-expression>
         <!--sb-input sb-input="part.repeat.key" sb-input-label="Key"></sb-input>
@@ -24,9 +27,11 @@
     <!--/sb-checkbox-->
 </sb-menu>
 
-<sb-menu  ng-if="options.allowVariables" sb-menu-title="Variables" >
+<sb-menu ng-if="options.allowVariables" sb-menu-title="Variables">
     <div ng-repeat="(key, variables) in part.variables">
-        <sb-expression id="visVariable"  sb-expression="part.variables[key].value" sb-expression-label="%{{key}}" sb-expression-link="./docs/#ViewsVariables" sb-expression-info="Define the value of a variables for the element">
+        <sb-expression id="visVariable" sb-expression="part.variables[key].value" sb-expression-label="%{{key}}"
+            sb-expression-link="./docs/#ViewsVariables"
+            sb-expression-info="Define the value of a variables for the element">
             <div class="icon delete_icon" ng-click="delete(part.variables, key)"></div>
         </sb-expression>
     </div>
@@ -37,42 +42,59 @@
 
 <div class="partSpecific"></div>
 
-<sb-menu sb-menu-title="Styling/Misc" >
-    <sb-expression ng-if="options.allowStyle" sb-expression="part.style" sb-expression-label="Style" sb-expression-link="./docs/#ViewsStyleMiscStyle" sb-expression-info="Define CSS code for the element"></sb-expression>
-    <sb-expression ng-if="options.allowClass" sb-expression="part.class" sb-expression-label="Class" sb-expression-link="./docs/#ViewsStyleMiscClass" sb-expression-info="Define the HTML class of the element"></sb-expression>
-    <sb-expression sb-expression="part.label" sb-expression-label="Label" sb-expression-link="./docs/#ViewsStyleMiscLabel" sb-expression-info="Define a label for the part that can be used in events"></sb-expression>   
+<sb-menu sb-menu-title="Styling/Misc">
+    <sb-expression ng-if="options.allowStyle" sb-expression="part.style" sb-expression-label="Style"
+        sb-expression-link="./docs/#ViewsStyleMiscStyle" sb-expression-info="Define CSS code for the element">
+    </sb-expression>
+    <sb-expression ng-if="options.allowClass" sb-expression="part.class" sb-expression-label="Class"
+        sb-expression-link="./docs/#ViewsStyleMiscClass" sb-expression-info="Define the HTML class of the element">
+    </sb-expression>
+    <sb-expression sb-expression="part.label" sb-expression-label="Label"
+        sb-expression-link="./docs/#ViewsStyleMiscLabel"
+        sb-expression-info="Define a label for the part that can be used in events"></sb-expression>
 </sb-menu>
 
-<sb-menu sb-menu-title="Visibility" >
+<sb-menu sb-menu-title="Visibility">
     <div class="visibility-options">
         <div class="option">
-            <input type="radio" name="visibility" ng-model="part.visibilityType" value="visible" ng-change="toggleVisCondition()"><span>Visible</span> 
+            <input type="radio" name="visibility" ng-model="part.visibilityType" value="visible"
+                ng-change="toggleVisCondition()"><span>Visible</span>
         </div>
         <div class="option">
-            <input type="radio" name="visibility" ng-model="part.visibilityType" value="invisible" ng-change="toggleVisCondition()"><span>Invisible</span> 
+            <input type="radio" name="visibility" ng-model="part.visibilityType" value="invisible"
+                ng-change="toggleVisCondition()"><span>Invisible</span>
         </div>
         <div class="option" ng-if="options.allowIf">
-            <input  type="radio" name="visibility" ng-model="part.visibilityType" value="conditional" ng-change="toggleVisCondition()"> <span>Visible by condition</span>
+            <input type="radio" name="visibility" ng-model="part.visibilityType" value="conditional"
+                ng-change="toggleVisCondition()"> <span>Visible by condition</span>
         </div>
     </div>
     <div class="condition">
-        <sb-expression ng-if="options.allowIf" id="visCondition" sb-expression="part.visibilityCondition" sb-expression-label="Condition" sb-expression-link="./docs/#ViewsVisibility" sb-expression-info="Define a condition that needs to be true for the element to appear"></sb-expression>
+        <sb-expression ng-if="options.allowIf" id="visCondition" sb-expression="part.visibilityCondition"
+            sb-expression-label="Condition" sb-expression-link="./docs/#ViewsVisibility"
+            sb-expression-info="Define a condition that needs to be true for the element to appear"></sb-expression>
     </div>
-    
+
 </sb-menu>
 
-<sb-menu ng-if="options.allowEvents" sb-menu-title="Events" >
-    <div >
+<sb-menu ng-if="options.allowEvents" sb-menu-title="Events">
+    <div>
         <div ng-repeat="(type, event) in part.events">
-            <sb-expression sb-expression="part.events[type]" sb-expression-label="{{type}}" sb-expression-link="./docs/#ViewsStyleMiscEvents" sb-expression-info="Define the behaviour trigered by an event" ><!--
-                --><div class="icon delete_icon" ng-click="delete(part.events, type); addEventToMissing(type)"></div><!--
-            --></sb-expression>
+            <sb-expression sb-expression="part.events[type]" sb-expression-label="{{type}}"
+                sb-expression-link="./docs/#ViewsStyleMiscEvents"
+                sb-expression-info="Define the behaviour trigered by an event">
+                <!--
+                -->
+                <div class="icon delete_icon" ng-click="delete(part.events, type); addEventToMissing(type)"></div>
+                <!--
+            -->
+            </sb-expression>
         </div>
         <div class="sb-component" ng-if="missingEvents.length > 0">
             <label for="events-missing">Add Event:</label>
-            <select class="form__input" id="events-missing" ng-model="events.eventToAdd" ng-options="event for event in missingEvents"></select>
+            <select class="form__input" id="events-missing" ng-model="events.eventToAdd"
+                ng-options="event for event in missingEvents"></select>
             <button ng-disabled="events.eventToAdd == undefined" ng-click="addEvent()">Add</button>
         </div>
     </div>
 </sb-menu>
-

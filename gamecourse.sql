@@ -196,6 +196,7 @@ create table aspect_class(
 );
 create table view(
 	id int unsigned auto_increment primary key,
+	viewId int unsigned,
 	aspectClass int unsigned,
 	role varchar(100) default "role.Default",
 	partType enum ('block','text','image','table','headerRow','row','header','templateRef','chart'),

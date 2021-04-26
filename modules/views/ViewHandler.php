@@ -302,15 +302,27 @@ class ViewHandler
         }
         return end($parentViews);
     }
-    public function createAspect($roleType, $aspectId, $course, $roleInfo)
+    public function createAspect($roleType, $id, $course, $roleInfo, $copyOrNew)
     {
-        if ($roleType == "ROLE_SINGLE") {
-            $role = $roleInfo['roleOne'];
-            $parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId);
-        } else if ($roleType == "ROLE_INTERACTION") {
-            $role = $roleInfo['roleOne'] . '>' . $roleInfo['roleTwo'];
-            $parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId, $roleInfo['roleTwo']);
+        if ($copyOrNew == "new") {
+            if ($roleType == "ROLE_SINGLE") { 
+                $role = $roleInfo['roleOne'];
+                //$parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId);
+                
+            } else if ($roleType == "ROLE_INTERACTION") {
+                $role = $roleInfo['roleOne'] . '>' . $roleInfo['roleTwo'];
+                //$parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId, $roleInfo['roleTwo']);
+            }
+        } else {
+            if ($roleType == "ROLE_SINGLE") { 
+                $role = $roleInfo['roleOne'];
+                //$parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId);
+            } else if ($roleType == "ROLE_INTERACTION") {
+                $role = $roleInfo['roleOne'] . '>' . $roleInfo['roleTwo'];
+                //$parentView = $this->getClosestAspect($course, $roleType, $roleInfo['roleOne'], $aspectId, $roleInfo['roleTwo']);
+            }
         }
+       
 
         if ($parentView != null) {
             if ($parentView["aspectClass"] == null) {
@@ -402,8 +414,8 @@ class ViewHandler
             $aspectsViews = [$organizedView];
         } else { //multiple aspects exist
             $where = ["aspectClass" => $anAspect["aspectClass"]];
-            if ($role)
-                $where["role"] = $role;
+            // if ($role)
+            //     $where["role"] = $role;
             //gets all the views of the aspect (using aspectclass and role)
             $viewsOfAspect = Core::$systemDB->selectMultiple(
                 "aspect_class natural join view",
@@ -417,8 +429,21 @@ class ViewHandler
             foreach ($viewsOfAspect as $v) {
                 if ($v['partType'] == "block" && $v["parent"] == null)
                     $aspectsViews[] = $v;
-                else
-                    $parts[$v['parent']][] = $v;
+                else {
+                    $viewAspects = Core::$systemDB->selectMultiple(
+                        "aspect_class natural join view",
+                        ["aspectClass" => $anAspect["aspectClass"], "viewId" => $v["viewId"]],
+                        "id,role"
+                    );
+                    if (sizeof($viewAspects) > 1) {
+                        $key = $this->findViewForUser($role, $viewAspects);
+                        $parts[$v['parent']][] = $viewAspects[$key];
+                    } else {
+                        $parts[$v['parent']][] = $v;
+                    }
+                    
+                }
+                    
             }
             foreach ($aspectsViews as &$organizedView) {
                 $organizedView["children"] = [];
@@ -432,6 +457,55 @@ class ViewHandler
          else 
             return $aspectsViews;
     }
+
+    public function findViewForUser($userRoles, $viewAspects) {
+        //if (roletype == ROLE_SINGLE)
+        foreach ($userRoles as $role) {
+            $key = array_search("role." . $role, array_column($viewAspects, 'role'));
+            if ($key) {
+                return $key;
+            }
+        }
+        //since userRoles includes Default, it will never ends here
+        return;
+    }
+
+
+    // get roles for which there is one different (sub)view
+    public function getViewRoles($id, $courseRoles) {
+
+        $aspectId = Core::$systemDB->select("view", ["id" => $id], "aspectClass");
+        $subviewsOfView = Core::$systemDB->selectMultiple(
+            "view",
+            ["aspectClass" => $aspectId],
+            "id,viewId,role"
+        );
+
+        $viewRoles = [];
+
+        foreach ($subviewsOfView as $v) {
+            $viewAspects = Core::$systemDB->selectMultiple(
+                "view",
+                ["aspectClass" => $aspectId, "viewId" => $v["viewId"]],
+                "id,role as name"
+            );
+            foreach($viewAspects as &$asp) {
+                $asp["name"] = preg_replace("/\w+\./", "", $asp["name"]);
+            }
+            $viewRoles = array_merge($viewRoles, $viewAspects);
+        }
+        $roles = array_uintersect($courseRoles, $viewRoles, function($a, $b) {
+            if ($a["name"]===$b["name"]) {
+                return 0;
+            }
+            if ($a["name"] > $b["name"]) return 1;
+            return -1;
+        });
+        return $roles;
+        
+    }
+   
+
     //gets contents of template referenced by templateref
     public function lookAtTemplateReference($templatRef, &$organizedView)
     {
@@ -517,10 +591,10 @@ class ViewHandler
         return [$asp];
     }
     //contructs an array of the view with all it's children, if there isn't a role returns array of view arrays
-    public function getViewWithParts($anAspectId, $role = null)
+    public function getViewWithParts($viewId, $userRoles = null)
     {
-        $anAspect = $this->getAspect($anAspectId);
-        return $this->getViewContents($anAspect, $role);
+        $anAspect = $this->getAspect($viewId);
+        return $this->getViewContents($anAspect, $userRoles);
     }
 
     //returns all pages or page of the name or id given
@@ -1114,7 +1188,10 @@ class ViewHandler
     //handles requests to show a page
     public function handle($view, $course, $viewParams)
     { //receives page/template     
-        $viewRoles = array_column($this->getAspects($view["viewId"]), 'role');
+        $viewRoles = array_column($this->getAspects($view["id"]), 'role');
+        $userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
+        // add Default as the last choice
+        array_push($userRolesHierarchy, "Default");
         $viewType = $view["roleType"];
         $roleOne = $roleTwo = null;
 
@@ -1135,11 +1212,11 @@ class ViewHandler
                 $loggedUserRoles = $course->getLoggedUser()->getRolesNames();
                 $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
             }
-            $userView = $this->getViewWithParts($view["viewId"], $roleOne . '>' . $roleTwo);
+            $userView = $this->getViewWithParts($view["id"], $roleOne . '>' . $roleTwo);
         } else if ($viewType == "ROLE_SINGLE") {
-            $userRoles = $course->getLoggedUser()->getRolesNames();
-            $roleOne = $this->handleHelper($viewRoles, $course, $userRoles);
-            $userView = $this->getViewWithParts($view["viewId"], $roleOne);
+            //$userRoles = $course->getLoggedUser()->getRolesNames();
+            //$roleOne = $this->handleHelper($viewRoles, $course, $userRoles);
+            $userView = $this->getViewWithParts($view["id"], $userRolesHierarchy);
         }
         
         $this->parseView($userView);

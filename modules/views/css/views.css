@@ -243,7 +243,7 @@
   right: 0;
   width: 100vw;
   display: flex;
-  z-index: 5;
+  z-index: 2;
   justify-content: center;
 }
 
@@ -324,6 +324,14 @@
   height: 20px;
   padding: 3px;
 }
+#editing_role {
+  border-radius: 5px;
+  border: 2px solid #868686;
+  align-self: center;
+  padding: 10px;
+  margin: 5px;
+  width: 80px;
+}
 
 .view .red {
   color: red !important;
@@ -367,7 +375,7 @@
 
 #switch_part,
 #save_as_template,
-#edit_part {
+#edit_part, #aspects_modal {
   display: block;
 }
 
@@ -452,6 +460,48 @@
 
 .modal_content .add-parts {
   min-height: 33px;
+}
+
+/* View Editor */
+
+#view_editor_actions {
+  width: 450px;
+}
+
+#view_editor_actions select {
+  padding: 5px 10px;
+}
+
+.editor-roles {
+  display:flex; 
+  flex-direction: row;
+  align-items: center;
+}
+
+#viewer_role {
+  border: 2px solid lightgray;
+  border-radius: 5px;
+}
+
+.diff_aspect.highlight {
+  border: 2px dashed grey !important;
+}
+
+.diff_aspect {
+  border: 2px dashed lightgray !important;
+}
+
+.aspect_hide {
+  display: none !important;
+}
+
+/* aspects modal*/
+#viewer_selection {
+  display: flex;
+}
+
+.select_label {
+  padding: 9px 10px;
 }
 
 /*---------------------------------*/

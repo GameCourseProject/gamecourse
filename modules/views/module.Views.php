@@ -1346,6 +1346,7 @@ class Views extends Module
                 //insert default aspect view
                 Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
                 $viewId = Core::$systemDB->getLastId();
+                Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
 
                 $newView["roleType"] = API::getValue('roleType');
                 Core::$systemDB->insert("template", $newView);
@@ -1375,12 +1376,13 @@ class Views extends Module
         //creates a new aspect for the page/template, copies content of closest aspect
         API::registerFunction('views', 'createAspectView', function () {
             $data = $this->getViewSettings();
-            API::requireValues('info');
+            API::requireValues( 'info', 'copyOrNew');
             $this->viewHandler->createAspect(
                 $data["viewSettings"]["roleType"],
-                $data["viewSettings"]["viewId"],
+                $data["viewSettings"]["id"],
                 $data["course"],
-                API::getValue('info')
+                API::getValue('info'),
+                API::getValue('copyOrNew')
             );
 
             http_response_code(201);
@@ -1402,20 +1404,20 @@ class Views extends Module
             $isTemplate = $data["pageOrTemp"] == "template";
             if ($type == "ROLE_INTERACTION" && !array_key_exists('roleTwo', $info)) {
                 $role = ["role" => $info['roleOne'] . '>%'];
-                $this->deleteTemplateRefs($isTemplate, $data["viewId"], $info['roleOne'] . '>%', false);
+                $this->deleteTemplateRefs($isTemplate, $data["id"], $info['roleOne'] . '>%', false);
                 //This is assuming that there is always an undeletable default aspect
                 Core::$systemDB->delete("view", ["aspectClass" => $aspects[0]["aspectClass"], "partType" => "block", "parent" => null], $role);
             } else {
                 $aspectsByRole = array_combine(array_column($aspects, "role"), $aspects);
                 if ($type == "ROLE_SINGLE") {
                     $role = $info["roleOne"];
-                    $this->deleteTemplateRefs($isTemplate, $data["viewId"], "%>" . $role, false);
+                    $this->deleteTemplateRefs($isTemplate, $data["id"], "%>" . $role, false);
                 } else if ($type == "ROLE_INTERACTION") {
                     $role = $info['roleOne'] . '>' . $info['roleTwo'];
-                    $this->deleteTemplateRefs($isTemplate, $data["viewId"], $info['roleTwo'], true);
+                    $this->deleteTemplateRefs($isTemplate, $data["id"], $info['roleTwo'], true);
                 }
                 $aspect = $aspectsByRole[$role];
-                $this->deleteTemplateRefs($isTemplate, $data["viewId"], $role, true);
+                $this->deleteTemplateRefs($isTemplate, $data["id"], $role, true);
 
                 Core::$systemDB->delete("view", ["id" => $aspect["id"]]);
             }
@@ -1589,7 +1591,7 @@ class Views extends Module
             $templateId = API::getValue('id');
             //get aspect
             $aspect = Core::$systemDB->select(
-                "view_template join view on viewId=id",
+                "view_template vt join view v on vt.viewId=v.id",
                 ["partType" => "block", "parent" => null, "templateId" => $templateId]
             );
             //will get all the aspects (and contents) of the template
@@ -1602,15 +1604,21 @@ class Views extends Module
         API::registerFunction('views', 'getEdit', function () {
             API::requireCourseAdminPermission();
             $data = $this->getViewSettings();
+            $course = $data["course"];
+            $courseId = $course->getId();
             $viewSettings = $data["viewSettings"];
             $viewType = $viewSettings['roleType'];
-            API::requireValues('info');
-            $info = API::getValue('info');
+            //API::requireValues('info');
+            //$info = API::getValue('info');
+            $userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
+            // add Default as the last choice
+            array_push($userRolesHierarchy, "Default");
             if ($viewType == "ROLE_SINGLE") {
-                if (!array_key_exists('role', $info)) {
-                    API::error('Missing role');
-                }
-                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['role']);
+                // if (!array_key_exists('role', $info)) {
+                //     API::error('Missing role');
+                // }
+                
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $userRolesHierarchy);
             } else if ($viewType == "ROLE_INTERACTION") {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
                     API::error('Missing roleOne and/or roleTwo in info');
@@ -1618,7 +1626,10 @@ class Views extends Module
                 $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['roleOne'] . '>' . $info['roleTwo']);
             }
             $templates = $this->getTemplates();
-            API::response(array('view' => $view, 'fields' => [], 'templates' => $templates));
+            $courseRoles = $course->getRolesData("id,name");
+            array_unshift($courseRoles, ["id" => "0","name" => "Default"]);
+            $viewRoles = $this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles);
+            API::response(array('view' => $view, 'courseId' => $courseId, 'fields' => [], 'templates' => $templates, 'courseRoles' => $courseRoles, 'viewRoles' => $viewRoles));
         });
         //getDictionary
         API::registerFunction('views', 'getDictionary', function () {
@@ -1672,24 +1683,26 @@ class Views extends Module
         $viewContent = API::getValue('content');
         $viewType = $data["viewSettings"]['roleType'];
 
-        API::requireValues('info');
-        $info = API::getValue('info');
-        if ($viewType == "ROLE_SINGLE") {
-            if (!array_key_exists('role', $info)) {
-                API::error('Missing role');
-            }
-        } else if ($viewType == "ROLE_INTERACTION") {
-            if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
-                API::error('Missing roleOne and/or roleTwo in info');
-            }
-        }
+        // API::requireValues('info');
+        // $info = API::getValue('info');
+        // if ($viewType == "ROLE_SINGLE") {
+        //     if (!array_key_exists('role', $info)) {
+        //         API::error('Missing role');
+        //     }
+        // } else if ($viewType == "ROLE_INTERACTION") {
+        //     if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
+        //         API::error('Missing roleOne and/or roleTwo in info');
+        //     }
+        // }
         $testDone = false;
         $warning = false;
         $viewCopy = $viewContent;
         try {
             $this->viewHandler->parseView($viewCopy);
             if ($viewType == "ROLE_SINGLE") {
-                $this->testView($course, $courseId, $testDone, $viewCopy, $info['role']);
+                //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
+                //$this->testView($course, $courseId, $testDone, $viewCopy, $info['role']);
+                $this->testView($course, $courseId, $testDone, $viewCopy, "role.Default");
             } else if ($viewType == "ROLE_INTERACTION") {
                 $this->testView($course, $courseId, $testDone, $viewCopy, $info['roleTwo'], $info['roleOne']);
             }
@@ -1707,13 +1720,13 @@ class Views extends Module
             }
         }
         if ($saving) {
-            API::requireValues('sreenshoot', 'pageOrTemp', 'view');
-            $pageOrTemplate = API::getValue('pageOrTemp');
+            API::requireValues('sreenshoot',/*,'pageOrTemp', */ 'view');
+            //$pageOrTemplate = API::getValue('pageOrTemp');
             $viewId = API::getValue('view');
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('sreenshoot')));
-            $this->saveScreensoot($img, $viewId, $pageOrTemplate);
+            $this->saveScreensoot($img, $viewId);//, $pageOrTemplate);
 
-            //print_R($viewContent);
+            //print_r($viewContent);
             $this->viewHandler->updateViewAndChildren($viewContent);
             $errorMsg = "Saved, but skipping test (no users in role to test or special role";
         } else {
@@ -1797,9 +1810,9 @@ class Views extends Module
     public function getTemplates($includeGlobals = false)
     {
         $temps = Core::$systemDB->selectMultiple(
-            'template t join view_template on templateId=id join view v on v.id=viewId',
+            'template t join view_template vt on templateId=id join view v on v.id=vt.viewId',
             ['course' => $this->getCourseId(), "partType" => "block", "parent" => null],
-            "t.id,name,course,isGlobal,roleType,viewId,role"
+            "t.id,name,course,isGlobal,roleType,vt.viewId,role"
         );
         if ($includeGlobals) {
             $globalTemp = Core::$systemDB->selectMultiple("template", ["isGlobal" => true]);
@@ -1810,14 +1823,14 @@ class Views extends Module
     //gets template by id
     public function getTemplate($id = null, $name = null)
     {
-        $tables = "template t join view_template on templateId=id join view v on v.id=viewId";
+        $tables = "template t join view_template vt on templateId=id join view v on v.id=vt.viewId";
         $where = ['course' => $this->getCourseId(), "partType" => "block", "parent" => null];
         if ($id) {
             $where["t.id"] = $id;
         } else {
             $where["name"] = $name;
         }
-        $fields = "t.id,name,course,isGlobal,roleType,viewId,role";
+        $fields = "t.id,name,course,isGlobal,roleType,vt.viewId,role";
         return Core::$systemDB->select($tables, $where, $fields);
     }
 
@@ -1832,6 +1845,7 @@ class Views extends Module
     {
         $aspects = json_decode($template, true);
         $aspectClass = null;
+        //comentar este if - todos os templates devem ter aspect class
         if (sizeof($aspects) > 1) {
             Core::$systemDB->insert("aspect_class");
             $aspectClass = Core::$systemDB->getLastId();
@@ -1845,6 +1859,8 @@ class Views extends Module
         foreach ($aspects as &$aspect) {
             $aspect["aspectClass"] = $aspectClass;
             Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+            $viewId = Core::$systemDB->getLastId();
+            Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
             $aspect["id"] = Core::$systemDB->getLastId();
             if ($content) {
                 $aspect["children"][] = $content;
@@ -1880,12 +1896,12 @@ class Views extends Module
         }
         
         return [
-            "courseId" => $courseId, "course" => $course, "viewId" => $id,
+            "courseId" => $courseId, "course" => $course, "id" => $id,
             "pageOrTemp" => $pgOrTemp, "viewSettings" => $viewSettings
         ];
     }
-    public static function saveScreensoot($img, $viewId, $pageOrTemplate){
-        file_put_contents("screenshoots/". $pageOrTemplate . "/". $viewId . ".png", $img);
+    public static function saveScreensoot($img, $viewId){
+        file_put_contents("screenshoots/template" . "/". $viewId . ".png", $img);
     }
     public function is_configurable(){
         return false;

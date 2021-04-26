@@ -82,9 +82,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 partType: 'block',
                 noHeader: true,
                 children: viewScope.view.children,
-                role: viewScope.view.role
+                role: viewScope.view.role,
+                viewId: viewScope.view.viewId
             };
+
+            $rootScope.partsHierarchy = viewScope.viewBlock;
             $rootScope.role = viewScope.view.role;
+            $rootScope.roleType = $rootScope.role.includes(">") ? "ROLE_INTERACTION" : "ROLE_SINGLE";
+            $rootScope.courseRoles = data.courseRoles;
+            $rootScope.viewRoles = JSON.parse(angular.toJson(data.viewRoles));
+            $rootScope.courseId = data.courseId;
+            if ($rootScope.roleType == "ROLE_SINGLE") {
+                $rootScope.current_viewer_role = viewScope.view.role.split(".")[1];
+            } else {
+                //TODO - confirmar e adicionar user role
+                $rootScope.current_viewer_role = viewScope.view.role.split(">")[0].split(".")[1];
+            }
+
 
             function build() {
                 var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
@@ -107,6 +121,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             var view = {
                 scope: viewScope,
                 element: viewBlock,
+                courseRoles: $rootScope.courseRoles,
+                viewRoles: $rootScope.viewRoles,
                 get: function () {
                     return viewScope.view;
                 },
@@ -169,6 +185,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             tempRefOptions.toolOptions.noSettings = true;
             tempRefOptions.toolOptions.canDuplicate = false;
             tempRefOptions.toolOptions.canSaveTemplate = false;
+            tempRefOptions.toolOptions.canHaveAspects = false;
             var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
             element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the original template</span>'));
             element.attr("style", "padding: 10px; background-color: #ddedeb; ");//#881111
@@ -280,7 +297,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     this.createTool = function (title, img, click) {
-        div = $("<div class='tool'></div>").addClass('btn').attr('title', title).on('click', function () {
+        div = $("<div class='tool'></div>").addClass('btn').attr('title', title).on('click', function (e) {
+            e.stopPropagation();
             var thisArg = this;
             var args = arguments;
             $timeout(function () { click.apply(thisArg, args); });
@@ -657,10 +675,335 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }));
         }
 
+        if (toolbarOptions.tools.canHaveAspects) {
+            toolbar.append($sbviews.createTool('Manage Aspects', 'images/aspects_icon.svg', function () {
+                var optionsScope = scope.$new();
+                optionsScope.part = angular.copy(part);
+
+                getAvailableRoles = function () {
+                    return $rootScope.courseRoles.filter(elem => !$rootScope.viewRoles.some(role => role.name == elem.name));
+                }
+
+                var rolesWithoutAspect = getAvailableRoles();
+
+                optionsScope.isReadyToSubmit = function () {
+                    isValid = function (text) {
+                        return (text != "" && text != undefined && text != null)
+                    }
+
+                    if (isValid($("#viewer").val()) && isValid($("#aspect_selection").val())) {
+                        if ($rootScope.roleType == "ROLE_SINGLE")
+                            return true;
+                        //is ROLE_INTERACTION
+                        else if (isValid(("#user").val()))
+                            return true;
+                        return false;
+                    } else
+                        return false;
+                }
+
+                function deleteIds(newPart) {
+                    delete newPart.id;
+                    for (var c in newPart.children) {
+                        deleteIds(newPart.children[c]);
+                    }
+                    for (var r in newPart.rows) {
+                        deleteIds(newPart.rows[r]);
+                    }
+                    for (var r in newPart.headerRows) {
+                        deleteIds(newPart.headerRows[r]);
+                    }
+                    for (var c in newPart.values) {
+                        deleteIds(newPart.values[c].value);
+                    }
+                }
+
+                function addPart() {
+                    var new_role_viewer = $("#viewer").find(":selected")[0];
+                    var new_aspect = $rootScope.create_aspect;
+
+                    // add this role to toolbar 
+                    $rootScope.current_viewer_role = new_role_viewer.text;
+                    document.getElementById("editing_role").innerHTML = "View Aspect: " + $rootScope.current_viewer_role;
+
+
+                    if (new_aspect == "new_aspect") {
+                        if ($rootScope.roleType == "ROLE_SINGLE") {
+                            var el = $('.highlight');
+                            var parentContent = $(el[0].parentElement);
+                            var newAspect = [];
+
+                            newAspect = $sbviews.defaultPart([part.partType]);
+                            newAspect.viewId = part.viewId;
+                            newAspect.role = new_aspect;
+                            var partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
+                            partParent.children.push(newAspect);
+
+                            var childOptions = $sbviews.editOptions(toolbarOptions, {
+                                edit: true, toolOptions: {
+                                    canDelete: true,
+                                    canSwitch: true,
+                                    canDuplicate: true,
+                                    canSaveTemplate: true,
+                                    canHaveAspects: true,
+                                },
+                                toolFunctions: {
+                                    remove: function (obj) {
+                                        var idx = partParent.children.indexOf(obj);
+                                        partParent.children.splice(idx, 1);
+                                        $sbviews.destroy($(parentContent.children().get(idx)));
+                                        if (parentContent.children().length == 0)
+                                            parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+                                        //$sbviews.notifyChanged(part, options);
+                                    },
+                                    duplicate: function (obj) {
+                                        var idx = partParent.children.indexOf(obj);
+                                        var newPart = $.extend(true, {}, obj);
+                                        //$sbviews.changePids(newPart);
+                                        deleteIds(newPart);
+                                        delete newPart.viewIndex;
+                                        partParent.children.splice(idx, 0, newPart);
+                                        var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                                        $(parentContent.children().get(idx)).before(newPartEl);
+                                        //$sbviews.notifyChanged(part, options);
+                                    },
+                                    switch: function (obj, newPart) {
+                                        var idx = partParent.children.indexOf(obj);
+                                        partParent.children.splice(idx, 1, newPart);
+                                        var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                                        var oldEl = $(parentContent.children().get(idx));
+                                        oldEl.replaceWith(newPartEl);
+                                        $sbviews.destroy(oldEl);
+                                        //$sbviews.notifyChanged(part, options);
+                                    }
+                                }
+                            });
+
+                            var newChild = $sbviews.buildElement(scope, newAspect, childOptions);
+                            newChild.addClass("diff_aspect");
+                            //remove highlight
+                            //el.click();
+                            el.addClass("aspect_hide");
+                            //$sbviews.notifyChanged(part, options);
+                            parentContent.append(newChild);
+                            newChild.click();
+
+                        } else if ($rootScope.roleType == "ROLE_INTERACTION") {
+
+                        }
+                    }
+                    //copy
+                    else {
+                        if ($rootScope.roleType == "ROLE_SINGLE") {
+
+                        }
+                    }
+                }
+
+
+
+                updateAddAspectSection = function (viewerRoles, userRoles = null) {
+                    $("#add_asp").remove();
+                    aspect_box = $("#aspects_modal");
+
+                    add_asp = $('<div id="add_asp"></div>');
+                    //add_asp.append($('<span style="margin-right: 8px;">New Dependency:</span>'));
+
+                    add_viewer = $('<select id="viewer" class="form__input roles_aspect" name="viewer" onchange="changeSelectTextColor(this);">');
+                    add_viewer.append($('<option value="" disabled selected>Select Viewer Role *</option>'));
+                    jQuery.each(viewerRoles, function (index, item) {
+                        add_viewer.append($('<option value="' + item.id + '">' + item.name + "</option>"));
+                    });
+                    add_asp.append(add_viewer);
+
+                    if (userRoles != null) {
+                        add_user = $('<select id="user" class="form__input roles_aspect" name="user" onchange="changeSelectTextColor(this);">');
+                        add_user.append($('<option value="" disabled selected>Select User Role *</option>'));
+                        jQuery.each(userRoles, function (index, item) {
+                            add_user.append($('<option value="' + item.id + '">' + item.name + "</option>"));
+                        });
+
+                        add_asp.append(add_user);
+                    }
+
+                    aspect_selection = $('<select class="form__input roles_aspect" name="aspect_selection" id="aspect_selection" onchange="changeSelectTextColor(this);"></select>');
+                    aspect_selection.append($('<option value="" disabled selected>How ?</option>'));
+                    aspect_selection.append($('<option value="new_aspect">Create from scratch</option>'));
+                    aspect_selection.append($('<option value="copy_aspect">Use default as basis</option>'));
+
+                    add_asp.append(aspect_selection);
+
+                    add_asp.append($('<button ng-click="addAspect()">Create</button>'));
+                    add_asp.append($('<div class="delete_icon icon" ng-click="removeAddForm()"></div>'));
+
+                    add_asp.insertBefore("#aspect");
+
+                    $compile(aspect_box)(optionsScope);
+                }
+
+                optionsScope.removeAddForm = function () {
+                    $("#add_asp").remove();
+                };
+
+                optionsScope.addAspect = function () {
+                    var new_viewer = $("#viewer").find(":selected")[0];
+                    $rootScope.create_aspect = $("#aspect_selection").find(":selected")[0].value;
+
+                    if ($rootScope.roleType == "ROLE_SINGLE" && new_viewer.value != "") {
+                        //update select elements
+                        $rootScope.viewRoles.push({ "id": new_viewer.value, "name": new_viewer.text });
+                        //select ???
+                        //$("#edit_viewer_select").append($('<option selected value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
+                        document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
+
+                        rolesWithoutAspect = getAvailableRoles();
+
+                        //add part
+                        addPart();
+
+                        //remove form
+                        optionsScope.closeOverlay();
+                    }
+                    //TODO role_interaction
+                    else {
+                        var new_viewer = $("#user").find(":selected")[0];
+                    }
+
+                };
+
+                optionsScope.isAddAspectEnabled = function () {
+                    if (rolesWithoutAspect.length == 0)
+                        return false;
+                    else
+                        return true;
+
+                };
+
+                optionsScope.showAspectSection = function () {
+                    //viewerRolesWithoutAspect
+                    //userRolesWithoutAspect
+                    if ($rootScope.roleType == "ROLE_SINGLE")
+                        updateAddAspectSection(rolesWithoutAspect);
+                    else
+                        updateAddAspectSection(rolesWithoutAspect);
+                };
+
+                $sbviews.openOverlay(function (modal, execClose) {
+                    optionsScope.closeOverlay = function () {
+                        execClose();
+                    };
+                    modal.parent().attr("id", "aspects_modal");
+                    modal.append($('<button class="close_btn icon" value="#aspects_modal" ng-click="closeOverlay()"</button>'));
+                    modal.append($('<div class="title">Edit aspect for this view: </div>'));
+                    modalContent = $("<div class='content'></div>");
+
+
+                    //TODO : add user for role interaction templates
+                    edit_viewer_selection = $('<div id="edit_viewer_selection"></div>');
+                    edit_viewer_selection.append($('<div class="select_label">Viewer: </div>'));
+                    edit_viewer_selector = $('<select class="form__input roles_aspect" id="edit_viewer_select" class="form__input"></select>');
+                    $.each($rootScope.viewRoles, function (i, item) {
+                        if ($("#viewer_role").find(":selected")[0].text == item.name || $rootScope.current_viewer_role == item.name) {
+                            edit_viewer_selector.append($('<option selected value="' + item.id + '">' + item.name + '</option>'));
+                        } else {
+                            edit_viewer_selector.append($('<option value="' + item.id + '">' + item.name + '</option>'));
+                        }
+                    });
+                    //edit_viewer_selector.change(isReadyToSubmit);
+                    edit_viewer_selection.append(edit_viewer_selector);
+                    modalContent.append(edit_viewer_selection);
+
+                    //add aspect button
+                    modalContent.append($('<div class="half" id="aspect"><button class="btn" ng-click="showAspectSection()" ng-disabled="!isAddAspectEnabled()"><img class="icon" src="./images/add_icon.svg"/><span>Add Aspect</span></button></div>'));
+
+
+                    //TODO : add user for role interaction templates
+                    new_viewer_selection = $('<div id="new_viewer_selection"></div>');
+                    new_viewer_selection.append($('<div class="select_label">Viewer: </div>'));
+                    new_viewer_selector = $('<select id="viewer_select" class="form__input"></select>');
+                    new_viewer_selector.append($('<option value="" disabled selected>Select a role *</option>'));
+                    $.each(rolesWithoutAspect, function (i, item) {
+                        new_viewer_selector.append($('<option value="' + item.name + '">' + item.name + '</option>'));
+                    });
+                    //new_viewer_selector.change(isReadyToSubmit);
+                    new_viewer_selection.append(new_viewer_selector);
+
+                    //aspect_selection.change(isReadyToSubmit);
+
+                    saveButton = $(document.createElement('button')).text('Save');
+                    //saveButton.prop('disabled', true);
+                    saveButton.addClass("save_btn");
+                    saveButton.click(function () {
+
+
+                        // ISTO DEVE SER FEITO APENAS QUANDO GUARDAMOS AS ALTERACOES 
+
+                        // if (new_aspect == "new_aspect") {
+                        //     if ($rootScope.roleType == "ROLE_SINGLE") {
+                        //         $smartboards.request('views', 'createAspectView', { view: part.id, pageOrTemp: "template", course: $rootScope.courseId, info: { roleOne: "role." + new_role_viewer }, copyOrNew: "new" }, function (data, err) {
+                        //             if (err) {
+                        //                 giveMessage(err.description);
+                        //                 return;
+                        //             }
+                        //         })
+                        //     } else if ($rootScope.roleType == "ROLE_INTERACTION") {
+
+                        //     }
+                        // }
+                        // //copy
+                        // else {
+                        //     if ($rootScope.roleType == "ROLE_SINGLE") {
+                        //         $smartboards.request('views', 'createAspectView', { view: part.id, pageOrTemp: "template", course: $rootScope.courseId, info: { roleOne: "role." + new_role_viewer }, copyOrNew: "copy" }, function (data, err) {
+                        //             if (err) {
+                        //                 giveMessage(err.description);
+                        //                 return;
+                        //             }
+                        //         })
+                        //     }
+                        // }
+                    });
+                    modalContent.append(saveButton);
+                    modal.append(modalContent);
+                    $compile(modal)(optionsScope);
+
+
+                }, function () {
+                    optionsScope.$destroy();
+                });
+            }));
+            //TODO
+            toolbar.append('<span id="editing_role">View Aspect: ' + $rootScope.current_viewer_role + '</span>');
+        }
+
         var nTools = toolbar.children().length;
         toolbar.css('min-width', nTools * 15 + 1);
 
         return toolbar;
+    };
+
+    this.findParent = function (parentId, view) {
+        if (view.viewId == parentId)
+            return view;
+        if (view.children.length != 0) {
+            for (viewChild in view.children) {
+                this.findParent(parentId, viewChild);
+            }
+        }
+    };
+
+    this.checkViews = function (mainPart, current_role, mainContent) {
+
+        if (mainPart.children.length != 0) {
+            var i = 0;
+            for (viewChild in mainPart.children) {
+                viewContent = mainContent.children[i];
+                i++;
+                this.checkViews(viewChild, current_role, viewContent);
+            }
+        }
+        if (mainPart.role != current_role) { //&& main.role != role imediatamente acima na hierarquia (ver course roles)
+            mainContent.addClass("aspect_hide");
+        }
     };
 
     this.editOptions = function (options, extend) {
@@ -695,7 +1038,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         };
 
-
+        console.log(element);
 
         element.on('click', function (e) {
 
@@ -708,6 +1051,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     return;
                 }
                 element.removeClass('highlight');
+                if (element.hasClass('diff_aspect') && $rootScope.current_viewer_role != $("#viewer_role").find(":selected")[0]) {
+                    element.removeClass('diff_aspect');
+                    var mainContent = $('.view.editing')[0].parentElement;
+                    this.checkViews(part, $("#viewer_role").find(":selected")[0], mainContent);
+                }
                 if (myToolbar != undefined)
                     myToolbar.remove();
                 myToolbar = undefined;
@@ -744,7 +1092,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         canSwitch: false,
                         canDelete: false,
                         canDuplicate: false,
-                        canSaveTemplate: false
+                        canSaveTemplate: false,
+                        canHaveAspects: false,
                     },
                     view: partOptions.view
                 };
@@ -769,7 +1118,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 toolbarOptions.editData = editData;
 
                 myToolbar = $sbviews.createToolbar(scope, part, toolbarOptions, false);
-
 
                 // myToolbar.css({
                 //     position: 'absolute',
