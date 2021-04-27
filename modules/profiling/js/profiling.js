@@ -179,21 +179,47 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 giveMessage(err.description);
                 return;
             }
-            $scope.clusters = data.clusters;
-            $scope.cluster_names = data.names;
-            $scope.select = {};
-
-            var headerHtmlString = "<th> Student </th><th ng-repeat='day in days'>{{day}}</th><th></th><th> After </th>";
-            $("#cluster-table thead").html(headerHtmlString);
-            var htmlString = "<tr ng-repeat='(key, value) in history'><td>{{value.name}}</td><td ng-repeat='entry in value.history'>{{entry.cluster}}</td><td class=\"arrow_right\"></td><td><select class=\"dd-content\" ng-init=\"select[key]=clusters[key].cluster\" ng-model=\"select[key]\" ng-style=\"{'width' : '70%'}\" ng-options=\"cl.name as cl.name for cl in cluster_names\"></select></td></tr>";
-            $("#cluster-table tbody").html(htmlString);
-            var table = document.getElementById("cluster-table");
-            $compile(table)($scope);
-
-            $scope.buildButtons.call();
-             
+            var modal = document. getElementById("running-modal");
+            openModal(modal);
         });
     };
+
+    $scope.checkRunningStatus = function () {
+        $smartboards.request('settings', 'checkRunningStatus', {course: $scope.course}, function(data, err){
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            //console.log(data);
+            var modal = document. getElementById("running-modal");
+            closeModal(modal);
+            if(!('running' in data) && $scope.running){
+                $scope.running = false;
+                $scope.clusters = data.clusters;
+                $scope.cluster_names = data.names;
+                $scope.select = {};
+
+                var headerHtmlString = "<th> Student </th><th ng-repeat='day in days'>{{day}}</th><th></th><th> After </th>";
+                $("#cluster-table thead").html(headerHtmlString);
+                var htmlString = "<tr ng-repeat='(key, value) in history'><td>{{value.name}}</td><td ng-repeat='entry in value.history'>{{entry.cluster}}</td><td class=\"arrow_right\"></td><td><select class=\"dd-content\" ng-init=\"select[key]=clusters[key].cluster\" ng-model=\"select[key]\" ng-style=\"{'width' : '70%'}\" ng-options=\"cl.name as cl.name for cl in cluster_names\"></select></td></tr>";
+                $("#cluster-table tbody").html(htmlString);
+                var table = document.getElementById("cluster-table");
+                $compile(table)($scope);
+
+                $scope.buildButtons.call();
+            }
+            else if(data.running){
+                console.log("here");
+                $scope.running = true;
+                var modal = document. getElementById("running-modal");
+                openModal(modal);
+                return;
+            }
+            
+        });
+    };
+             
+
 
     var configurationSection = $($element);
     var overviewSection = createSection(configurationSection, 'Overview');
@@ -213,12 +239,24 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
     importModal.append(importVerification);
     $compile(importModal)($scope);
     runSection.append(importModal);
+
+    runningModal = $("<div class='modal' id='running-modal' value='#running-modal'></div>");
+    runningVerification = $("<div class='verification modal_content'></div>");
+    runningVerification.append($('<button class="close_btn icon" value="#running-modal" onclick="closeModal(this)"></button>'));
+    runningVerification.append($('<div class="warning">The profiler is running</div>'));
+    //runningVerification.append($('<div class="target">The seperator must be comma</div>'));
+    runningVerification.append($('<div class="confirmation_btns"></div>'));
+    runningVerification.append($('<button ng-click="checkRunningStatus()">Refresh</button>'));
+    runningModal.append(runningVerification);
+    $compile(runningModal)($scope);
+    runSection.append(runningModal);
     
 
     contentDiv = ($('<div class="title"><p id="results" ><b>Profiling Results:</b></p></div>'));
     content = $('<div class="content">');
     
     $scope.getHistory.call();
+    
     $smartboards.request('settings', 'getSaved', {course: $scope.course}, function(data, err){
         if (err) {
             giveMessage(err.description);
@@ -243,6 +281,8 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             rowContent = $("<tr id='table-content' ng-repeat='item in history'>");
             rowContent.append("<td>{{item.name}}</td>");
             rowContent.append("<td ng-repeat='entry in item.history'>{{entry.cluster}}</td>");
+
+            $scope.checkRunningStatus.call();      
         }
         else {
             rowHeader.append("<th> Student </th><th ng-repeat='day in days'>{{day}}</th><th></th><th> After </th>");

@@ -8,7 +8,7 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    //private $logPath = "C:\\xampp\htdocs\gamecourse\modules\profiling\log.txt";
+    private $logPath = "/var/www/html/gamecourse/modules/profiling/log.py";
 
     public function __construct() {
         parent::__construct('profiling', 'Profiling', '0.1', array(
@@ -41,19 +41,34 @@ class Profiling extends Module {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = $this->runProfiler($courseId);
+        });
+        API::registerFunction('settings', 'checkRunningStatus', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            if(file_exists($this->logPath)){
+                $clusters = $this->checkStatus($courseId);
 
-            if(array_key_exists("errorMessage", $clusters)){
-                API::error($clusters["errorMessage"], 400);
+                if(array_key_exists("errorMessage", $clusters)){
+                    API::error($clusters["errorMessage"], 400);
+                }
+                if(empty($clusters)){
+                    API::response(array('running' => true));
+                }
+                
+                $names = array(array('name' => "Underachiever"),array('name' =>"Halfhearted"), array('name' =>"Regular"), array('name' =>"Achiever"));
+                API::response(array('clusters' => $clusters, 'names' => $names));
             }
-            
-            $names = array(array('name' => "Underachiever"),array('name' =>"Halfhearted"), array('name' =>"Regular"), array('name' =>"Achiever"));
-            API::response(array('clusters' => $clusters, 'names' => $names));
+            else {
+                API::response(array('running' => false));
+            }
         });
         API::registerFunction('settings', 'commitClusters', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = API::getValue('clusters');
-
+            if (file_exists($this->logPath)){
+                unlink($this->logPath);
+            }
             $this->processClusterRoles($courseId, $clusters);
         });
         API::registerFunction('settings', 'saveClusters', function () {
@@ -66,7 +81,9 @@ class Profiling extends Module {
         API::registerFunction('settings', 'deleteSaved', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-
+            if (file_exists($this->logPath)){
+                unlink($this->logPath);
+            }
             $this->deleteSaved($courseId);
         });
         API::registerFunction('settings', 'getHistory', function () {
@@ -261,9 +278,9 @@ class Profiling extends Module {
         $course = Course::getCourse($courseId);
         $students = $course->getUsersWithRole('Student');
         $result = [];
+
         for ($i = 0; $i < count($students); $i++){
             $roles = $course->getUser($students[$i]["id"])->getRolesNames();
-            
             $exploded =  explode(' ', $students[$i]["name"]);
             $nickname = $exploded[0] . ' ' . end($exploded);
             $result[$students[$i]["id"]]['name'] = $nickname;
@@ -273,39 +290,52 @@ class Profiling extends Module {
     }
 
     public function runProfiler($courseId) {
-        set_time_limit(500);
-        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId); //python3
+        $myfile = fopen($this->logPath, "w");
+        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) .">> " . $this->logPath . " &"; //python3
         exec($cmd, $output, $ret_codde);
-        if($ret_codde == 0) {
-            $exploded = explode('+', $output[0]);
-            $assignedClusters = explode(',', str_replace(["[", "]", " "], "", $exploded[1]));
-            $clusters = explode(',', str_replace(["{", "}"], "", $exploded[0]));
+    }
 
-            // creating cluster array and sorting cluster indexes based on grade
-            $array = [];
-            foreach($clusters as $cluster) {
-                $pair = explode(':', $cluster);
-                $array[$pair[0]] = str_replace([" "], "", $pair[1]);
+    public function checkStatus($courseId){
+        clearstatcache();
+        if(filesize($this->logPath)) {
+            $file = fopen($this->logPath, 'r');
+            $line = fgets($file);
+            fclose($file);
+            if (stripos($line,"error") !== false) {
+                return array("errorMessage" => $line);
             }
-            if(ksort($array)){
-                // cluster names
-                $names = ["Underachiever", "Halfhearted", "Regular", "Achiever"];
+            else {
+                $exploded = explode('+', $line);
+                $assignedClusters = explode(',', str_replace(["[", "]", " ","\n","\r"], "", $exploded[1]));
+                $clusters = explode(',', str_replace(["{", "}"], "", $exploded[0]));
 
-                // assign cluster names by replacing key with cluster name
-                $namedClusters = [];
-                $i = 0;
-                foreach($array as $entry) {
-                    $namedClusters[$entry] = $names[$i];
-                    $i++;
+                // creating cluster array and sorting cluster indexes based on grade
+                $array = [];
+                foreach($clusters as $cluster) {
+                    $pair = explode(':', $cluster);
+                    $array[$pair[0]] = str_replace([" "], "", $pair[1]);
                 }
-                // update time of the last run on bd
-                Core::$systemDB->update("profiling_config", ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
+                if(ksort($array)){
+                    // cluster names
+                    $names = ["Underachiever", "Halfhearted", "Regular", "Achiever"];
 
-                return $this->createClusterList($courseId, $namedClusters, $assignedClusters);     
+                    // assign cluster names by replacing key with cluster name
+                    $namedClusters = [];
+                    $i = 0;
+                    foreach($array as $entry) {
+                        $namedClusters[$entry] = $names[$i];
+                        $i++;
+                    }
+                    // update time of the last run on bd
+                    Core::$systemDB->update("profiling_config", ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
+
+                    return $this->createClusterList($courseId, $namedClusters, $assignedClusters);     
+                }
             }
+        
         }
         else {
-            return array("errorMessage" => $output);
+            return array();
         }
     }
 

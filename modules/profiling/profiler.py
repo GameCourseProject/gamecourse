@@ -180,12 +180,12 @@ def calculate_xp(course, awards, participations, students):
 			xp_per_day_dict[date][student] = {}
 			xp_per_day_dict[date][student]['xp'] = 0
 
-		if 'skill' in award_type and student_dict[student]['skills'] < max_tree_reward:
+		if 'skill' == award_type and student_dict[student]['skills'] < max_tree_reward:
 			student_dict[student]['total'] += reward
 			student_dict[student]['skills'] += reward
 			xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
 		
-		elif 'badge' in award_type:
+		elif 'badge' == award_type:
 			if xp_per_day_dict[date].get('badges') is None:
 				xp_per_day_dict[date]['badges'] = {}
 			
@@ -433,7 +433,7 @@ def clustering(total_xp, maindata, headers):
 # an argument that indicated which course is being run
 if __name__ == "__main__":
 	#np.set_printoptions(threshold=sys.maxsize)
-	#warnings.filterwarnings("ignore", category=DeprecationWarning)
+	warnings.filterwarnings("ignore", category=DeprecationWarning)
 	if len(sys.argv) != 2:
 		error_msg = "ERROR: Profiler didn't receive all the information."
 		print(error_msg)
@@ -459,11 +459,13 @@ if __name__ == "__main__":
 			maindata, headers = create_maindata(data_per_day, course, students)
 			order, clustered = clustering(total_xp, maindata, headers)
 			print(order, '+', clustered)
+
 		except Exception as e:
 			print(e)
+			sys.exit(1)
 
 	else:
 		error_msg = "ERROR: Course is not active or does not exist."
 		print(error_msg)
-		sys.exit(error_msg)
+		sys.exit(1)
 		
