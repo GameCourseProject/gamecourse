@@ -71,7 +71,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             runButton.className += "button small";
             runButton.innerHTML = "Run";
             runButton.onclick = $scope.runProfiler;
-            runButton.id = "run_button";
+            runButton.id = "run-button";
 
             section.appendChild(exportButton);
             section.appendChild(importButton);
@@ -86,6 +86,9 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
 
             var table = document.getElementById("cluster-table");
             $compile(table)($scope);
+
+            var statusDiv = document.getElementById("running-tag");
+            statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
         });
     };
 
@@ -100,14 +103,6 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 return;
             }
         });
-    };
-
-    $scope.updateClusterCounter = function() {
-        $scope.selected_count = [];
-        $scope.cluster_names.forEach(element => $scope.selected_count[element["name"]] = filterByCluster($scope.select, element["name"]));
-        var results = document.getElementById("results");
-        results.innerHTML = "<b>Profiling Results:</b><span ng-repeat='(key, value) in selected_count'>{{key}} : {{value}}</span>"
-        $compile(results)($scope);
     };
 
     $scope.buildChart = function(){
@@ -137,10 +132,17 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
 
     $scope.buildButtons = function(){
 
-            if (document.getElementById("run_button")){
-                document.getElementById("run_button").remove();
+            if (document.getElementById("run-button")){
+                document.getElementById("run-button").remove();
+            }
+            if (document.getElementById("export_button")){
                 document.getElementById("export_button").remove();
+            }
+            if (document.getElementById("import_button")){
                 document.getElementById("import_button").remove();
+            }
+            if (document.getElementById("refresh-button")){
+                document.getElementById("refresh-button").remove();
             }
 
             var section = document.getElementById("buttons");
@@ -173,27 +175,17 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
 
     };
 
-    $scope.runProfiler = function () {
-        $smartboards.request('settings', 'runProfiler', {course: $scope.course}, function(data, err){
-            if (err) {
-                giveMessage(err.description);
-                return;
-            }
-            var modal = document. getElementById("running-modal");
-            openModal(modal);
-        });
-    };
-
     $scope.checkRunningStatus = function () {
         $smartboards.request('settings', 'checkRunningStatus', {course: $scope.course}, function(data, err){
             if (err) {
+                clearInterval($scope.timerID);
                 giveMessage(err.description);
                 return;
             }
-            //console.log(data);
-            var modal = document. getElementById("running-modal");
-            closeModal(modal);
-            if(!('running' in data) && $scope.running){
+            var statusDiv = document.getElementById("running-tag");
+
+            if(!('running' in data)){
+                clearInterval($scope.timerID);
                 $scope.running = false;
                 $scope.clusters = data.clusters;
                 $scope.cluster_names = data.names;
@@ -207,19 +199,66 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 $compile(table)($scope);
 
                 $scope.buildButtons.call();
+                statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
             }
             else if(data.running){
                 console.log("here");
                 $scope.running = true;
-                var modal = document. getElementById("running-modal");
-                openModal(modal);
+                
+                
+                statusDiv.innerHTML = '<p><b>Status:  </b> running </p>';
+                if (document.getElementById("run-button")){
+                    document.getElementById("run-button").remove();
+                }
+                if (!document.getElementById("refresh-button")){
+                    var section = document.getElementById("buttons");
+                    var button = document. createElement("BUTTON");
+                    button.innerHTML = "Refresh";
+                    button.id = "refresh-button"
+                    button.onclick = $scope.checkRunningStatus;
+                    section.appendChild(button);
+                }
                 return;
             }
-            
+            else{
+                statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
+                if (document.getElementById("refresh-button")){
+                    document.getElementById("refresh-button").remove();
+                }
+                if (!document.getElementById("run-button")){
+                    var runButton = document. createElement("BUTTON");
+                    runButton.className += "button small";
+                    runButton.innerHTML = "Run";
+                    runButton.onclick = $scope.runProfiler;
+                    runButton.id = "run-button";
+                }
+                
+                $scope.running = false;
+            }
+        })
+    };
+
+    $scope.runProfiler = function () {
+        $smartboards.request('settings', 'runProfiler', {course: $scope.course}, function(data, err){
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            var statusDiv = document.getElementById("running-tag");
+            statusDiv.innerHTML = '<p><b>Status:  </b> running </p>';
+
+            document.getElementById("run-button").remove();
+            var section = document.getElementById("buttons");
+
+            var button = document. createElement("BUTTON");
+            button.innerHTML = "Refresh";
+            button.id = "refresh-button"
+            button.onclick = $scope.checkRunningStatus;
+            section.appendChild(button);
+
+            $scope.timerID = setInterval($scope.checkRunningStatus, 30000);
         });
     };
-             
-
 
     var configurationSection = $($element);
     var overviewSection = createSection(configurationSection, 'Overview');
@@ -240,70 +279,15 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
     $compile(importModal)($scope);
     runSection.append(importModal);
 
-    runningModal = $("<div class='modal' id='running-modal' value='#running-modal'></div>");
-    runningVerification = $("<div class='verification modal_content'></div>");
-    runningVerification.append($('<button class="close_btn icon" value="#running-modal" onclick="closeModal(this)"></button>'));
-    runningVerification.append($('<div class="warning">The profiler is running</div>'));
-    //runningVerification.append($('<div class="target">The seperator must be comma</div>'));
-    runningVerification.append($('<div class="confirmation_btns"></div>'));
-    runningVerification.append($('<button ng-click="checkRunningStatus()">Refresh</button>'));
-    runningModal.append(runningVerification);
-    $compile(runningModal)($scope);
-    runSection.append(runningModal);
-    
+    var runningTag = $("<div id='running-tag'></div>");
+    runSection.append(runningTag);
 
+    
+    
     contentDiv = ($('<div class="title"><p id="results" ><b>Profiling Results:</b></p></div>'));
     content = $('<div class="content">');
     
     $scope.getHistory.call();
-    
-    $smartboards.request('settings', 'getSaved', {course: $scope.course}, function(data, err){
-        if (err) {
-            giveMessage(err.description);
-            return;
-        }
-        $scope.cluster_names = data.names;
-        $scope.select = data.saved;
-
-        
-        
-        var dataTable = $('<div class="data-table" ></div>');
-        var table = $('<table id="cluster-table">');
-        rowHeader = $('<thead>');
-
-        if ($scope.select.length == 0){
-            action_buttons.append($("<button id='export_button' class='icon export_icon profiling_button other' value='#export-item' ng-click='exportItem()'></button></div>"));
-            action_buttons.append($("<button id='import_button' class='icon import_icon profiling_button other' value='#import-item' onclick='openModal(this)'></button>"));
-            action_buttons.append($('<button id="run_button" class="button small" ng-click="runProfiler()">Run</button>'));
-            runSection.append($compile(action_buttons)($scope));
-            rowHeader.append("<th> Student </th><th ng-repeat='day in days'>{{day}}</th>");
-            rowHeader.append('</thead>')
-            rowContent = $("<tr id='table-content' ng-repeat='item in history'>");
-            rowContent.append("<td>{{item.name}}</td>");
-            rowContent.append("<td ng-repeat='entry in item.history'>{{entry.cluster}}</td>");
-
-            $scope.checkRunningStatus.call();      
-        }
-        else {
-            rowHeader.append("<th> Student </th><th ng-repeat='day in days'>{{day}}</th><th></th><th> After </th>");
-            rowHeader.append('</thead>')
-            rowContent = $("<tr id='table-content' ng-repeat='(key, value) in history'>");
-            rowContent.append("<td>{{value.name}}</td>");
-            rowContent.append("<td ng-repeat='entry in value.history'>{{entry.cluster}}</td>");
-            rowContent.append("<td class=\"arrow_right\"></td><td><select class=\"dd-content\" ng-model=\"select[key]\" ng-style=\"{'width' : '70%'}\" ng-options=\"cl.name as cl.name for cl in cluster_names\"></select></td>");
-            $scope.buildButtons.call();
-        }
-
-        rowContent.append("</tr></table>");
-        table.append(rowHeader);
-        table.append(rowContent);
-        dataTable.append($compile(table)($scope));
-        content.append(dataTable);
-
-        contentDiv.append(content);
-        runSection.append($compile(contentDiv)($scope));
-    });
-
     $smartboards.request('settings', 'getTime', { course: $scope.course }, function(data, err){
         if (err) {
             giveMessage(err.description);
@@ -322,6 +306,59 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         runSection.prepend($compile(time)($scope));
         
     });
+    
+    $smartboards.request('settings', 'getSaved', {course: $scope.course}, function(data, err){
+        if (err) {
+            giveMessage(err.description);
+            return;
+        }
+        $scope.cluster_names = data.names;
+        $scope.select = data.saved;
+
+        
+        
+        var dataTable = $('<div class="data-table" ></div>');
+        var table = $('<table id="cluster-table">');
+        rowHeader = $('<thead>');
+
+        if ($scope.select.length == 0){
+            action_buttons.append($("<button id='export_button' class='icon export_icon profiling_button other' value='#export-item' ng-click='exportItem()'></button></div>"));
+            action_buttons.append($("<button id='import_button' class='icon import_icon profiling_button other' value='#import-item' onclick='openModal(this)'></button>"));
+            action_buttons.append($('<button id="run-button" class="button small" ng-click="runProfiler()">Run</button>'));
+            runSection.append($compile(action_buttons)($scope));
+            rowHeader.append("<th> Student </th><th ng-repeat='day in days'>{{day}}</th>");
+            rowHeader.append('</thead>')
+            rowContent = $("<tr id='table-content' ng-repeat='item in history'>");
+            rowContent.append("<td>{{item.name}}</td>");
+            rowContent.append("<td ng-repeat='entry in item.history'>{{entry.cluster}}</td>");
+            
+            $scope.checkRunningStatus.call();
+ 
+            
+        }
+        else {
+            rowHeader.append("<th> Student </th><th ng-repeat='day in days'>{{day}}</th><th></th><th> After </th>");
+            rowHeader.append('</thead>')
+            rowContent = $("<tr id='table-content' ng-repeat='(key, value) in history'>");
+            rowContent.append("<td>{{value.name}}</td>");
+            rowContent.append("<td ng-repeat='entry in value.history'>{{entry.cluster}}</td>");
+            rowContent.append("<td class=\"arrow_right\"></td><td><select class=\"dd-content\" ng-model=\"select[key]\" ng-style=\"{'width' : '70%'}\" ng-options=\"cl.name as cl.name for cl in cluster_names\"></select></td>");
+            var statusDiv = document.getElementById("running-tag");
+            statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
+            $scope.buildButtons.call();
+        }
+
+        rowContent.append("</tr></table>");
+        table.append(rowHeader);
+        table.append(rowContent);
+        dataTable.append($compile(table)($scope));
+        content.append(dataTable);
+
+        contentDiv.append(content);
+        runSection.append($compile(contentDiv)($scope));
+    });
+
+    
     
     $compile(configurationSection)($scope);
 }

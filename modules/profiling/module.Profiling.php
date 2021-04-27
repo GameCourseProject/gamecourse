@@ -8,7 +8,7 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    private $logPath = "/var/www/html/gamecourse/modules/profiling/log.py";
+    private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
 
     public function __construct() {
         parent::__construct('profiling', 'Profiling', '0.1', array(
@@ -70,6 +70,7 @@ class Profiling extends Module {
                 unlink($this->logPath);
             }
             $this->processClusterRoles($courseId, $clusters);
+            $this->deleteSaved($courseId);
         });
         API::registerFunction('settings', 'saveClusters', function () {
             API::requireCourseAdminPermission();
@@ -291,10 +292,10 @@ class Profiling extends Module {
 
     public function runProfiler($courseId) {
         $myfile = fopen($this->logPath, "w");
-        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) .">> " . $this->logPath . " &"; //python3
+        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) ." >> " . $this->logPath . " &"; //python3
         exec($cmd, $output, $ret_codde);
     }
-
+    
     public function checkStatus($courseId){
         clearstatcache();
         if(filesize($this->logPath)) {
