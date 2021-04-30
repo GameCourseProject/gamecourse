@@ -1420,7 +1420,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
 
 // old version, not used anymore
-app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+/*app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
 
     $scope.replaceData = function (arg) {
         if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
@@ -1519,7 +1519,7 @@ app.controller('CourseSkillsSettingsController', function ($scope, $stateParams,
         configSectionContent.append(bigBox);
         configurationSection.append(configSectionContent);
     });
-});
+});*/
 app.controller('CourseBadgesSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //old version, not used, only here for verification
 

@@ -895,6 +895,27 @@ class Skills extends Module
             }
             API::error('Skill ' . $skillName . ' not found.', 404);
         });
+
+    }
+
+    //returns array with all dependencies of a skill
+    public function getSkillDependencies($skillId){
+        $depArray=[];
+        $dependencyIDs = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skillId],"id");
+
+        foreach ($dependencyIDs as $id){
+            $individualDeps = Core::$systemDB->selectMultiple("skill_dependency",["dependencyId"=>$id["id"]]);
+            foreach ($individualDeps as $dep){
+                if($dep["isTier"]){
+                    $name = Core::$systemDB->select("skill_tier",["id" => $dep["normalSkillId"]], "tier");
+                }
+                else {
+                    $name = Core::$systemDB->select("skill",["id" => $dep["normalSkillId"]], "name");
+                }
+                array_push($depArray, $name);
+            } 
+        }   
+        return $depArray;
     }
 
     public function getSkills($courseId){
@@ -909,7 +930,7 @@ class Skills extends Module
                 $skill['xp'] = $tier["reward"];
                 $skill["dependencies"] = '';
                 if (!empty(Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]]))) {
-                    $dependencies = getSkillDependencies($skill["id"]);
+                    $dependencies = $this->getSkillDependencies($skill["id"]);
     
                     for ($i=0; $i < sizeof($dependencies); $i++){
                         $skill['dependencies'] .= $dependencies[$i] .  " + ";
