@@ -90,10 +90,7 @@ API::registerFunction('settings', 'courseModules', function() {
                                 API::error('Must disable all modules that depend on this one first.');
                         }
                     }
-                    new CronJob("Moodle", API::getValue('course'), null, null, true);
-                    new CronJob("ClassCheck", API::getValue('course'), null, null, true);
-                    new CronJob("GoogleSheets", API::getValue('course'), null, null, true);
-                    //ToDo: check if is working correctly with multiple courses
+
                     if (Core::$systemDB->select("course_module",["moduleId"=>$moduleId, "isEnabled"=>1],"count(*)")==1){
                         //only drop the tables of the module data if this is the last course where it is enabled
                         $moduleObject->dropTables($moduleId);//deletes tables associated with the module
