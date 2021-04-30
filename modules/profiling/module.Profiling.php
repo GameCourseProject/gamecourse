@@ -49,6 +49,9 @@ class Profiling extends Module {
                 $clusters = $this->checkStatus($courseId);
 
                 if(array_key_exists("errorMessage", $clusters)){
+                    if (file_exists($this->logPath)){
+                        unlink($this->logPath);
+                    }
                     API::error($clusters["errorMessage"], 400);
                 }
                 if(empty($clusters)){
@@ -292,8 +295,8 @@ class Profiling extends Module {
 
     public function runProfiler($courseId) {
         $myfile = fopen($this->logPath, "w");
-        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) ." >> " . $this->logPath . " &"; //python3
-        exec($cmd, $output, $ret_codde);
+        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) ." > /dev/null &"; //python3
+        exec($cmd);
     }
     
     public function checkStatus($courseId){

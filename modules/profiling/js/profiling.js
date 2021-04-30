@@ -177,15 +177,26 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
 
     $scope.checkRunningStatus = function () {
         $smartboards.request('settings', 'checkRunningStatus', {course: $scope.course}, function(data, err){
+		    var statusDiv = document.getElementById("running-tag");
             if (err) {
-                clearInterval($scope.timerID);
-                giveMessage(err.description);
+                //clearInterval($scope.timerID);
+                statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
+                if (document.getElementById("refresh-button")){
+                    document.getElementById("refresh-button").remove();
+                }
+                if (!document.getElementById("run-button")){
+                    var runButton = document. createElement("BUTTON");
+                    runButton.className += "button small";
+                    runButton.innerHTML = "Run";
+                    runButton.onclick = $scope.runProfiler;
+                    runButton.id = "run-button";
+                }
+		        giveMessage(err.description);
                 return;
             }
-            var statusDiv = document.getElementById("running-tag");
 
             if(!('running' in data)){
-                clearInterval($scope.timerID);
+                //clearInterval($scope.timerID);
                 $scope.running = false;
                 $scope.clusters = data.clusters;
                 $scope.cluster_names = data.names;
@@ -256,7 +267,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             button.onclick = $scope.checkRunningStatus;
             section.appendChild(button);
 
-            $scope.timerID = setInterval($scope.checkRunningStatus, 30000);
+            //$scope.timerID = setInterval($scope.checkRunningStatus, 30000);
         });
     };
 
