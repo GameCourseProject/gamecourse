@@ -38,8 +38,10 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             }
             $sbviews.setDefaultParamters(part);
             var block = $(document.createElement('div')).addClass('block');
-            if (options.edit && scope.role != parseRole(part.role) && part.parent != null) {
-                block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId).addClass('aspect_hide');
+            if (options.edit) {
+                block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId)
+                if (scope.role != parseRole(part.role) && part.parent != null)
+                    block.addClass('aspect_hide');
             }
             if (part.header) {
                 var blockHeader = $(document.createElement('div')).addClass('header');
