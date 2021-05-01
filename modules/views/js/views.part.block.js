@@ -38,6 +38,9 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             }
             $sbviews.setDefaultParamters(part);
             var block = $(document.createElement('div')).addClass('block');
+            if (options.edit && scope.role != parseRole(part.role) && part.parent != null) {
+                block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId).addClass('aspect_hide');
+            }
             if (part.header) {
                 var blockHeader = $(document.createElement('div')).addClass('header');
                 if (part.header.anchor && !options.edit)
@@ -350,6 +353,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                 if (value.indexOf('part:') == 0) {
                                     newPart = $sbviews.registeredPartType[index].defaultPart();
                                     newPart.role = "role." + $("#viewer_role").find(":selected")[0].text;
+                                    newPart.parent = part.viewId;
                                     if (part.children.length == 0)
                                         newPart.viewId = (parseInt(part.viewId) + 1).toString();
                                     else

@@ -19,7 +19,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             $sbviews.setDefaultParamters(part);
             var tableDiv = $(document.createElement('div')).addClass('table');
             var table = $(document.createElement('table'));
-
+            if (options.edit) {
+                table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
+                if (scope.role != parseRole(part.role))
+                    table.addClass('aspect_hide');
+            }
             /*part.filterBox = {
                 field: 'd',
                 options: ['abc', 'def']
@@ -537,7 +541,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             filterBox.append($('<div class="sb-component"><label for="mode-select">Mode</label><select id="mode-select" ng-model="part.filterBox.mode"><option value="hide">Hide</option><option value="fade">Fade</option></select></div>'));
                             partSpecificMenu.append(filterBox);
                             partSpecificMenu.append($('<sb-checkbox sb-checkbox="part.sort" sb-checkbox-label="Enable Sort" sb-checkbox-default="true" sb-checkbox-info="Enables sorting of the columns of the table." sb-checkbox-link="./docs/#PartTableSort"></sb-checkbox>'));
-
+        
                             watch('part.sort');
                             watch('part.filterBox');
                             el.children('.partSpecific').after($compile(partSpecificMenu)(optionsScope));*/

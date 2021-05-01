@@ -1328,14 +1328,11 @@ class Views extends Module
                 $defaultRole = "role.Default";
             }
             
-            
             //page or template to insert in db
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course')];
             if (API::getValue('pageOrTemp') == "page") {
-                // Core::$systemDB->insert("view", ["partType" => "block", "parent" => null, "role" => $defaultRole]);
                 $viewId = API::getValue('viewId');
-                //$viewId = Core::$systemDB->select("view_template", ["templateId" => API::getValue('templateId')], "viewId");
-                
+
                 $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');
                 Core::$systemDB->insert("page", $newView);
@@ -1608,28 +1605,30 @@ class Views extends Module
             $courseId = $course->getId();
             $viewSettings = $data["viewSettings"];
             $viewType = $viewSettings['roleType'];
-            //API::requireValues('info');
-            //$info = API::getValue('info');
-            $userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
+            API::requireValues('roles');
+            $roles = API::getValue('roles');
+            $rolesHierarchy = $course->getRolesHierarchy();
+            array_unshift($rolesHierarchy, ["name" => "Default", "id" => "0"]);
+            //$userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
             // add Default as the last choice
-            array_push($userRolesHierarchy, "Default");
+            // array_push($userRolesHierarchy, "Default");
             if ($viewType == "ROLE_SINGLE") {
                 // if (!array_key_exists('role', $info)) {
                 //     API::error('Missing role');
                 // }
-                
-                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $userRolesHierarchy);
+                //When entering the view editor, starts always with Default
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['viewerRole'], true);
             } else if ($viewType == "ROLE_INTERACTION") {
                 if (!array_key_exists('roleOne', $info) || !array_key_exists('roleTwo', $info)) {
                     API::error('Missing roleOne and/or roleTwo in info');
                 }
-                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $info['roleOne'] . '>' . $info['roleTwo']);
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['viewerRole'] . '>' . $roles['userRole'], true);
             }
             $templates = $this->getTemplates();
             $courseRoles = $course->getRolesData("id,name");
             array_unshift($courseRoles, ["id" => "0","name" => "Default"]);
-            $viewRoles = $this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles);
-            API::response(array('view' => $view, 'courseId' => $courseId, 'fields' => [], 'templates' => $templates, 'courseRoles' => $courseRoles, 'viewRoles' => $viewRoles));
+            $viewRoles = array_values($this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles));
+            API::response(array('view' => $view, 'courseId' => $courseId, 'fields' => [], 'templates' => $templates, 'courseRoles' => $courseRoles, 'viewRoles' => $viewRoles, 'rolesHierarchy' => $rolesHierarchy));
         });
         //getDictionary
         API::registerFunction('views', 'getDictionary', function () {
@@ -1683,8 +1682,8 @@ class Views extends Module
         $viewContent = API::getValue('content');
         $viewType = $data["viewSettings"]['roleType'];
 
-        // API::requireValues('info');
-        // $info = API::getValue('info');
+        API::requireValues('roles');
+        $roles = API::getValue('roles');
         // if ($viewType == "ROLE_SINGLE") {
         //     if (!array_key_exists('role', $info)) {
         //         API::error('Missing role');
@@ -1701,7 +1700,7 @@ class Views extends Module
             $this->viewHandler->parseView($viewCopy);
             if ($viewType == "ROLE_SINGLE") {
                 //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
-                //$this->testView($course, $courseId, $testDone, $viewCopy, $info['role']);
+                //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
                 $this->testView($course, $courseId, $testDone, $viewCopy, "role.Default");
             } else if ($viewType == "ROLE_INTERACTION") {
                 $this->testView($course, $courseId, $testDone, $viewCopy, $info['roleTwo'], $info['roleOne']);

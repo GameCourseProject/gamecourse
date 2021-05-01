@@ -206,14 +206,15 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
 
 
     var reqData = { course: $scope.course };
-    // if ($state.current.name == 'course.settings.views.view.edit-role-single') {
-    //     reqData.info = { role: $stateParams.role };
-    //     breadcrum.append($("<span class='role_type'>" + $stateParams.role + "</span>"));
-    // }
-    // if ($state.current.name == 'course.settings.views.view.edit-role-interaction') {
-    //     reqData.info = { roleOne: $stateParams.roleOne, roleTwo: $stateParams.roleTwo };
-    //     breadcrum.append($("<span class='role_type'>" + $stateParams.roleOne + " - " + $stateParams.roleTwo + "</span>"));
-    // }
+    if ($state.current.name == 'course.settings.views.edit-role-single') {
+        reqData.roles = { viewerRole: "Default" };
+        //breadcrum.append($("<span class='role_type'>" + $stateParams.role + "</span>"));
+    }
+    if ($state.current.name == 'course.settings.views.edit-role-interaction') {
+        reqData.roles = { viewerRole: "Default", userRole: "Default" };
+        //breadcrum.append($("<span class='role_type'>" + $stateParams.roleOne + " - " + $stateParams.roleTwo + "</span>"));
+    }
+
 
     $sbviews.requestEdit($stateParams.view, "template", reqData, function (view, err) {
         if (err) {
@@ -224,16 +225,40 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         }
         loadedView = view;
         initialViewContent = angular.copy(view.get());
-        console.log(view);
         $scope.courseRoles = view.courseRoles;
         $scope.viewRoles = view.viewRoles;
         $scope.selectedRole = $scope.viewRoles[0].id;
+
+        selectViews = function () {
+            const view = $('.view.editing')[0].children[0];
+            const targetRole = $("#viewer_role").find(":selected")[0].text;
+            $sbviews.findViewsForRole(view, targetRole);
+            // if ($state.current.name == 'course.settings.views.edit-role-single') {
+            //     reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text };
+            // }
+            // if ($state.current.name == 'course.settings.views.edit-role-interaction') {
+            //     reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text, userRole: $("#user_role").find(":selected")[0].text };
+            // }
+            // // so funciona para quando as views estao na Bd
+            // $sbviews.requestEdit($stateParams.view, "template", reqData, function (view, err) {
+            //     if (err) {
+            //         viewEditorWindow.html(err);
+            //         console.log(err);
+            //         console.log(err.description);
+            //         return;
+            //     }
+            //     console.log("editView:", view);
+
+            //     viewEditorWindow[0].lastChild.remove();
+            //     viewEditorWindow.append(view.element);
+            // });
+        };
 
         var controlsDiv = $('<div class="action-buttons" id="view_editor_actions">');
 
         //TODO : add dropdown for user for role interaction templates // View for: 
 
-        var dropdownRoles = $('<div class="editor-roles"><div style="margin-right:10px;">View as: </div><select id="viewer_role" ng-options="role.id as role.name for role in viewRoles" ng-model="selectedRole" ng-selected="role.id==selectedRole"></select></div>');
+        var dropdownRoles = $('<div class="editor-roles"><div style="margin-right:10px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-options="role.id as role.name for role in viewRoles" ng-model="selectedRole" ng-selected="role.id==selectedRole"></select></div>');
         $compile(dropdownRoles)($scope);
         controlsDiv.append(dropdownRoles);
 
@@ -259,6 +284,14 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         var btnSave = $('<button>Save Changes</button>');
         btnSave.click(function () {
             btnSave.prop('disabled', true);
+            if ($state.current.name == 'course.settings.views.edit-role-single') {
+                reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text };
+                //breadcrum.append($("<span class='role_type'>" + $stateParams.role + "</span>"));
+            }
+            if ($state.current.name == 'course.settings.views.edit-role-interaction') {
+                reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text, userRole: $("#user_role").find(":selected")[0].text };
+                //breadcrum.append($("<span class='role_type'>" + $stateParams.roleOne + " - " + $stateParams.roleTwo + "</span>"));
+            }
             var saveData = $.extend({}, reqData);
             saveData.view = $stateParams.view;
             saveData.pageOrTemp = $stateParams.pageOrTemp;
@@ -805,29 +838,31 @@ angular.module('module.views').config(function ($stateProvider) {
                 controller: 'ViewSettings'
             }
         }
-    }).state('course.settings.views.view.edit-single', {
-        url: '/edit',
-        views: {
-            'main-view@': {
-                template: '',
-                controller: 'ViewEditController'
+    })
+        // .state('course.settings.views.view.edit-single', {
+        //     url: '/edit',
+        //     views: {
+        //         'main-view@': {
+        //             template: '',
+        //             controller: 'ViewEditController'
+        //         }
+        //     }
+        // })
+        .state('course.settings.views.edit-role-single', {
+            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
+            views: {
+                'main-view@': {
+                    template: '',
+                    controller: 'ViewEditController'
+                }
             }
-        }
-    }).state('course.settings.views.edit-role-single', {
-        url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
-        views: {
-            'main-view@': {
-                template: '',
-                controller: 'ViewEditController'
+        }).state('course.settings.views.edit-role-interaction', {
+            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
+            views: {
+                'main-view@': {
+                    template: '',
+                    controller: 'ViewEditController'
+                }
             }
-        }
-    }).state('course.settings.views.edit-role-interaction', {
-        url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
-        views: {
-            'main-view@': {
-                template: '',
-                controller: 'ViewEditController'
-            }
-        }
-    });
+        });
 });
