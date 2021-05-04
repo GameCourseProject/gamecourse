@@ -721,69 +721,80 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     }
                 }
 
+
+                var childOptions = $sbviews.editOptions(toolbarOptions, {
+                    edit: true, toolOptions: {
+                        canDelete: true,
+                        canSwitch: true,
+                        canDuplicate: true,
+                        canSaveTemplate: true,
+                        canHaveAspects: true,
+                    },
+                    toolFunctions: {
+                        remove: function (obj) {
+                            const el = $('.highlight');
+                            const viewId = el[0].getAttribute('data-viewId');
+                            const parentContent = el[0].parentElement;
+                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
+                            var idx = partParent.children.indexOf(el);
+                            partParent.children.splice(idx, 1);
+                            $sbviews.destroy(el);
+                            if ($(parentContent).children().length == 0)
+                                parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+                            //$sbviews.notifyChanged(part, options);
+                            $sbviews.findViewToShow(viewId);
+                        },
+                        duplicate: function (obj) {
+                            const el = $('.highlight');
+                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
+                            var idx = partParent.children.indexOf(el);
+                            var newPart = $.extend(true, {}, el);
+                            //$sbviews.changePids(newPart);
+                            deleteIds(newPart);
+                            delete newPart.viewIndex;
+                            partParent.children.splice(idx, 0, newPart);
+                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                            $(el)[0].before(newPartEl);
+                            //$sbviews.notifyChanged(part, options);
+                        },
+                        switch: function (obj, newPart) {
+                            const el = $('.highlight');
+                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
+                            var idx = partParent.children.indexOf(el);
+                            partParent.children.splice(idx, 1, newPart);
+                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                            var oldEl = el;
+                            oldEl.replaceWith(newPartEl);
+                            $sbviews.destroy(oldEl);
+                            //$sbviews.notifyChanged(part, options);
+                        }
+                    }
+                });
+
                 function addPart() {
                     var new_role_viewer = $("#viewer").find(":selected")[0];
                     var new_aspect = $rootScope.create_aspect;
 
-                    var parentContent;
-                    var partParent;
-
-                    var childOptions = $sbviews.editOptions(toolbarOptions, {
-                        edit: true, toolOptions: {
-                            canDelete: true,
-                            canSwitch: true,
-                            canDuplicate: true,
-                            canSaveTemplate: true,
-                            canHaveAspects: true,
-                        },
-                        toolFunctions: {
-                            remove: function (obj) {
-                                var idx = partParent.children.indexOf(obj);
-                                partParent.children.splice(idx, 1);
-                                $sbviews.destroy($(parentContent.children().get(idx)));
-                                if (parentContent.children().length == 0)
-                                    parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
-                                //$sbviews.notifyChanged(part, options);
-                            },
-                            duplicate: function (obj) {
-                                var idx = partParent.children.indexOf(obj);
-                                var newPart = $.extend(true, {}, obj);
-                                //$sbviews.changePids(newPart);
-                                deleteIds(newPart);
-                                delete newPart.viewIndex;
-                                partParent.children.splice(idx, 0, newPart);
-                                var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                                $(parentContent.children().get(idx)).before(newPartEl);
-                                //$sbviews.notifyChanged(part, options);
-                            },
-                            switch: function (obj, newPart) {
-                                var idx = partParent.children.indexOf(obj);
-                                partParent.children.splice(idx, 1, newPart);
-                                var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                                var oldEl = $(parentContent.children().get(idx));
-                                oldEl.replaceWith(newPartEl);
-                                $sbviews.destroy(oldEl);
-                                //$sbviews.notifyChanged(part, options);
-                            }
-                        }
-                    });
+                    var el = $('.highlight');
+                    var parentContent = el[0].parentElement;
+                    var partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
 
                     // default part
                     if (new_aspect == "new_aspect") {
                         if ($rootScope.roleType == "ROLE_SINGLE") {
-                            var el = $('.highlight');
-                            parentContent = el[0].parentElement;
+
                             var newAspect = [];
 
                             newAspect = $sbviews.defaultPart([part.partType]);
                             newAspect.viewId = part.viewId;
                             newAspect.role = "role." + new_role_viewer.text;
                             newAspect.parent = part.parent;
-                            partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
                             partParent.children.splice(partParent.children.indexOf(part), 0, newAspect);
 
                             var newChild = $sbviews.buildElement(scope, newAspect, childOptions);
                             newChild.addClass("diff_aspect");
+                            if (newChild.hasClass('aspect_hide'))
+                                newChild.removeClass('aspect_hide');
 
                             el.addClass("aspect_hide");
                             //$sbviews.notifyChanged(part, options);
@@ -797,16 +808,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     //copy
                     else {
                         if ($rootScope.roleType == "ROLE_SINGLE") {
-                            var el = $('.highlight');
-                            parentContent = el[0].parentElement;
+
                             var newAspect = Object.assign({}, part);
                             delete newAspect.id;
                             newAspect.role = "role." + new_role_viewer.text;
-                            partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
                             partParent.children.splice(partParent.children.indexOf(part), 0, newAspect);
 
                             var newChild = $sbviews.buildElement(scope, newAspect, childOptions);
                             newChild.addClass("diff_aspect");
+                            if (newChild.hasClass('aspect_hide'))
+                                newChild.removeClass('aspect_hide');
 
                             el.addClass("aspect_hide");
                             //$sbviews.notifyChanged(part, options);
@@ -995,18 +1006,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
 
-    //finds the child that we should show after close editing a "diff_aspect" view
-    this.findViewToShow = function (childViewId, newEl) {
+    //finds the child that we should show after close editing a "diff_aspect" view or after delete
+    this.findViewToShow = function (childViewId) {
         var currentGlobalViewerRole = $("#viewer_role").find(":selected")[0].text;
-        var hiddenViews = document.getElementsByClassName('aspect_hide');
-        for (let aspect of hiddenViews) {
-            //TODO: find the right view if no view for the role selected
-            if (aspect.getAttribute('data-role') == currentGlobalViewerRole && aspect.getAttribute('data-viewid') == childViewId) {
-                $(aspect).removeClass('aspect_hide');
-                return;
-            }
+        var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
+        //find the right view to show for the globally selected role
+        this.findViewsForRole(otherViews, currentGlobalViewerRole);
+
+        //remove the aspect if there are no more specific views for it
+        if ($("[data-role=" + currentGlobalViewerRole + "]").toArray().length == 0 && currentGlobalViewerRole != "Default") {
+            const roles = this.buildRolesHierarchyForOneRole(currentGlobalViewerRole);
+            const newRole = roles[roles.length - 2];
+            const newOption = $("#viewer_role option").filter((idx, option) => {
+                return option.label == newRole.name
+            });
+            document.getElementById('viewer_role').value = newOption[0].value;
+            $("#viewer_role option[label='" + currentGlobalViewerRole + "']").remove();
         }
-        newEl.removeClass('aspect_hide');
     };
 
     //finds the child that we want to show with "diff_aspect"
@@ -1016,11 +1032,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         const elementToShow = views.filter((el) => {
             return el.getAttribute('data-role') == roleToEdit;
         });
-        console.log(elementToShow);
         $(elementToShow).addClass('diff_aspect');
         $(elementToShow).removeClass('aspect_hide');
     };
 
+    //returns the roles that a (sub)view has
     this.findRolesOfView = function (viewId) {
         const views = $("[data-viewid=" + viewId + "]").toArray();
         const roles = views.map(x => x.getAttribute('data-role'));
@@ -1030,7 +1046,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         return result;
     };
 
-
+    //finds the right views to show for the targetRole
     this.findViewsForRole = function (viewAspects, targetRole) {
         //if (roletype == ROLE_SINGLE)
         if (viewAspects.children) {
@@ -1045,13 +1061,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 }, []);
             });
             //console.log(aspectChildren);
-            aspectChildren.forEach(aspect => {
-                this.findViewsForRole(aspect, targetRole);
+            aspectChildren.forEach(aspects => {
+                this.findViewsForRole(aspects, targetRole);
             });
 
 
         } else {
-
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             //console.log(rolesForTargetRole);
             //search from the most specific role to the least one
@@ -1062,8 +1077,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 let view = viewAspects.filter(function (el) {
                     return el.getAttribute('data-role') == role.name;
                 });
-                console.log(otherViews);
-                console.log(view);
+                //console.log(otherViews);
+                //console.log(view);
                 if (otherViews.length == 1 && view.length == 0) {
                     //when there is a view for other role (and not to default), but not this one
                     $(otherViews).addClass('aspect_hide');
@@ -1076,6 +1091,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     $(v).addClass('aspect_hide');
                 }
                 $(view).removeClass('aspect_hide');
+                if ($(view).hasClass('diff_aspect')) {
+                    $(view).removeClass('diff_aspect');
+                    $(view).click();
+                }
                 break
             }
         }
@@ -1151,7 +1170,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 element.removeClass('highlight');
                 if (element.hasClass('diff_aspect')) {
                     element.addClass('aspect_hide');
-                    $sbviews.findViewToShow(part.viewId, element);
+                    $sbviews.findViewToShow(part.viewId);
                     element.removeClass('diff_aspect');
                 }
                 if (myToolbar != undefined)

@@ -50,7 +50,7 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
                                 if (element.hasClass('diff_aspect')) {
                                     newEl.addClass('aspect_hide');
                                     newEl.removeClass('diff_aspect');
-                                    $sbviews.findViewToShow(part.viewId, newEl);
+                                    $sbviews.findViewToShow(part.viewId);
                                 }
                                 element.replaceWith(newEl);
                                 element = newEl;

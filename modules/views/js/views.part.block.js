@@ -162,6 +162,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                             if (blockContent.children().length == 0)
                                 blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
                             //$sbviews.notifyChanged(part, options);
+                            $sbviews.findViewToShow(obj.viewId);
                         },
                         duplicate: function (obj) {
                             var idx = part.children.indexOf(obj);
