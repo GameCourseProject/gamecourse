@@ -71,7 +71,7 @@ $user = Core::getLoggedUser();
         app.run(['$rootScope', function($rootScope) {
             $rootScope.user = {
                 id: '<?= $user->getId(); ?>',
-                name: '<?= $user->getName(); ?>',
+                name: "<?= $user->getName(); ?>",
                 username: '<?= $user->getUsername(); ?>'
             };
         }]);
