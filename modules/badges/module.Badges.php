@@ -107,7 +107,6 @@ class Badges extends Module
     }
     public function dropTables($moduleName)
     {
-        $this->deleteLevels("");
         parent::dropTables($moduleName);
     }
     public function deleteDataRows($courseId)
@@ -119,7 +118,7 @@ class Badges extends Module
     {
         $courseId = $this->getCourseId();
         if ($user === null) {
-            $count = Core::$systemDB->select("badge", ["course" => $courseId], "sum(maxLevel)");
+            $count = Core::$systemDB->select("badge", ["course" => $courseId, "isActive" => true], "sum(maxLevel)");
             if (is_null($count))
                 return 0;
             else
@@ -248,9 +247,10 @@ class Badges extends Module
                     $where["isExtra"] = $isExtra;
                 if ($isBragging !== null)
                     $where["isBragging"] = $isBragging;
+                $where["isActive"] = true;
                 return $this->getBadge(true, $where);
             },
-            "Returns a collection with all the badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisExtra: Badge has a reward.\nisBragging: Badge has no reward.",
+            "Returns a collection with all the active badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisExtra: Badge has a reward.\nisBragging: Badge has no reward.",
             'collection',
             'badge',
             'library',
@@ -271,7 +271,7 @@ class Badges extends Module
             'library',
             null
         );
-        //badges.getCountBadges(user) returns num of badges of user (if specified) or of course 
+        //badges.getBadgesCount(user) returns num of badges of user (if specified) or of course 
         $viewHandler->registerFunction(
             'badges',
             'getBadgesCount',
@@ -398,6 +398,19 @@ class Badges extends Module
                 return $this->basicGetterFunction($badge, "isBragging");
             },
             "Returns a boolean regarding whether the badge provides no reward.",
+            'boolean',
+            null,
+            'object',
+            'badge'
+        );
+        //%badge.isActive
+        $viewHandler->registerFunction(
+            'badges',
+            'isActive',
+            function ($badge) {
+                return $this->basicGetterFunction($badge, "isActive");
+            },
+            "Returns a boolean regarding whether the badge is active.",
             'boolean',
             null,
             'object',
@@ -996,6 +1009,7 @@ class Badges extends Module
             $badge['postBased'] = boolval($badge["isPost"]);
             $badge['pointBased'] = boolval($badge["isPoint"]);
             $badge['extra'] = boolval($badge["isExtra"]);
+            $badge['isActive'] = boolval($badge["isActive"]);
 
             $levels = Core::$systemDB->selectMultiple("badge_level join badge on badge.id=badgeId",
                                 ["course"=>$courseId, "badgeId"=>$badge['id']], 'badge_level.description , goal, reward, number' );
@@ -1062,8 +1076,8 @@ class Badges extends Module
     public function has_listing_items (){ return  true; }
     public function get_listing_items ($courseId){
         //tenho de dar header
-        $header = ['Name', 'Description', '# Levels', 'Level 1', 'XP Level 1', 'Is Count','Is Post', 'Is Point', 'Is Extra', 'Image'] ;
-        $displayAtributes = ['name', 'description', 'maxLevel', 'desc1','xp1',  'isCount', 'isPost', 'isPoint', 'isExtra', 'image'];
+        $header = ['Name', 'Description', '# Levels', 'Level 1', 'XP Level 1', 'Is Count','Is Post', 'Is Point', 'Is Extra', 'Image', 'Active'] ;
+        $displayAtributes = ['name', 'description', 'maxLevel', 'desc1','xp1',  'isCount', 'isPost', 'isPoint', 'isExtra', 'image', 'isActive'];
         // items (pela mesma ordem do header)
         $items = $this->getBadges($courseId);
         //argumentos para add/edit
@@ -1083,7 +1097,7 @@ class Badges extends Module
             array('name' => "Count 1", 'id'=> 'count1', 'type' => "number", 'options' => ""),
             array('name' => "Count 2", 'id'=> 'count2', 'type' => "number", 'options' => ""),
             array('name' => "Count 3", 'id'=> 'count3', 'type' => "number", 'options' => ""),
-            array('name' => "Badge images", 'id'=> 'image', 'type' => "image", 'options' => ""),
+            array('name' => "Badge images", 'id'=> 'image', 'type' => "image", 'options' => "")
         ];
         return array( 'listName'=> 'Badges', 'itemName'=> 'Badge','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
     }
@@ -1097,6 +1111,12 @@ class Badges extends Module
         }elseif($actiontype == 'delete'){
             $this->deleteBadge($listingItem, $courseId);
         }
+    }
+
+    public function activeItem($itemId){
+        $active = Core::$systemDB->select("badge", ["id" => $itemId], "isActive");
+        Core::$systemDB->update("badge", ["isActive" => $active? 0 : 1], ["id" => $itemId]);
+        //ToDo: ADD RULE MANIPULATION HERE
     }
 
     public function update_module($compatibleVersions)

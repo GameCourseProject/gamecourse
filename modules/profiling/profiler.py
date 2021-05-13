@@ -76,8 +76,8 @@ def get_badges(course):
 	cnx = mysql.connector.connect(user=username, password=password,
 	host='localhost', database=DATABASE, charset="utf8")
 	cursor = cnx.cursor(prepared=True)
-	query = "SELECT id, name FROM badge WHERE course = %s;"
-	cursor.execute(query, (course,))
+	query = "SELECT id, name FROM badge WHERE course = %s and isActive = %s;"
+	cursor.execute(query, (course, True))
 	badges = cursor.fetchall()
 	cnx.close()
 
@@ -147,8 +147,8 @@ def calculate_xp(course, awards, participations, students):
 	if len(badge_table) == 1:
 		max_badge_bonus_reward = int(badge_table[0][0])
 
-	query = "SELECT id, isExtra from badge where course = %s;"
-	cursor.execute(query, (course,))
+	query = "SELECT id, isExtra from badge where course = %s and isActive = %s;"
+	cursor.execute(query, (course, True))
 	badges = cursor.fetchall()
 	cnx.close()
 

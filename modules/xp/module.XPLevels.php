@@ -32,7 +32,7 @@ class XPLevels extends Module
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
         $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
-        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true]), "sum(reward)");
+        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
         $value = min($bonusBadgeXP, $maxBonusXP);
         return (is_null($value))? 0 : $value;
     }
@@ -41,7 +41,7 @@ class XPLevels extends Module
         //badges XP (bonus badges have a maximum value of XP)
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false]), "sum(reward)");
+        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
         $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
         return $badgeXP;
     }

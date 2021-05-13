@@ -19,6 +19,7 @@ create table badge(
 	isCount boolean not null default false,
 	isPost boolean not null default false,
 	isPoint boolean not null default false,
+	isActive boolean not null default true,
 	image varchar(50),
 	foreign key(course) references course(id) on delete cascade
 );
