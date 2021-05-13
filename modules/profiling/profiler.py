@@ -335,7 +335,7 @@ def create_maindata(data, course, students):
 	#normalized_df.to_excel('maindata.xlsx', sheet_name='sheet1', index=index)
 	return normalized, new_headers
 
-def calculate_kmeans(data):
+def calculate_kmeans(data, num_clusters, min_cluster_size):
 	"""
 	Perform k-means clustering.
 	"""
@@ -344,18 +344,18 @@ def calculate_kmeans(data):
 		xp_array.append(np.array(data[key]['total']))
 
 	xp = np.array(xp_array).reshape(-1, 1)
-	kmeans = KMeans(n_clusters=4, random_state=0)
+	kmeans = KMeans(n_clusters=num_clusters, random_state=0)
 	prediction = kmeans.fit_predict(xp)
 
 	unique, counts = np.unique(prediction, return_counts=True)
 
-	if np.all(counts > 4):
-		kmeans = KMeans(n_clusters=4, random_state=0).fit(xp)
-		return 4, kmeans
+	if np.all(counts > min_cluster_size):
+		kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(xp)
+		return num_clusters, kmeans
 	
 	else:
-		kmeans = KMeans(n_clusters=3, random_state=0).fit(xp)
-		return 3, kmeans
+		kmeans = KMeans(n_clusters=(num_clusters - 1), random_state=0).fit(xp)
+		return num_clusters - 1, kmeans
 
 def order_clusters(centers):
 	ordered = {}
@@ -366,9 +366,9 @@ def order_clusters(centers):
 	
 	return ordered
 
-def clustering(total_xp, maindata, headers):
+def clustering(total_xp, maindata, headers, num_clusters, min_cluster_size):
 
-	n_clusters, prediction = calculate_kmeans(total_xp)
+	n_clusters, prediction = calculate_kmeans(total_xp, num_clusters, min_cluster_size)
 	ordered = order_clusters(prediction.cluster_centers_)
 	grades = []
 	clusters = []
@@ -436,7 +436,7 @@ def clustering(total_xp, maindata, headers):
 if __name__ == "__main__":
 	#np.set_printoptions(threshold=sys.maxsize)
 	#warnings.filterwarnings("ignore", category=DeprecationWarning)
-	if len(sys.argv) != 2:
+	if len(sys.argv) != 4:
 		error_msg = "ERROR: Profiler didn't receive all the information."
 		#print(error_msg)
 		f = open(RESULTS_PATH + "results.txt", "w")
@@ -446,6 +446,8 @@ if __name__ == "__main__":
 	
 	file = open(RESULTS_PATH + "results.txt", "w")
 	course = sys.argv[1]
+	num_clusters = int(sys.argv[2])
+	min_cluster_size = int(sys.argv[3])
 	if course_exists(course):
 		try:
 			awards = get_awards(course)
@@ -466,7 +468,7 @@ if __name__ == "__main__":
 			students = get_students(course)
 			total_xp, data_per_day = calculate_xp(course, awards, participations, students)
 			maindata, headers = create_maindata(data_per_day, course, students)
-			order, clustered = clustering(total_xp, maindata, headers)
+			order, clustered = clustering(total_xp, maindata, headers, num_clusters, min_cluster_size)
 			#print(order, '+', clustered)
 			file.write(str(order) + '+' + str(clustered))
 			file.close()

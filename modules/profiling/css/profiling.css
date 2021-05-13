@@ -36,3 +36,43 @@
     max-width: 1000px;
     margin: 1em auto;
 }
+
+.triangle-up {
+    background-image: url(/gamecourse/images/arrow_top_icon.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 21px;
+}
+
+.triangle-down {
+    background-image: url(/gamecourse/images/arrow_bottom_icon.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 21px;
+}
+
+.cluster_row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 20px;
+}
+
+.cluster_input input {
+    width: 150px;
+}
+
+.cluster_column{
+    grid-template-columns: repeat(auto-fill, 460px);
+    display: grid;
+    justify-content: space-between;
+}
+
+.disabled_arrow{
+    opacity: 0; /* css standard */
+}
+
+th:hover .disabled_arrow{
+    opacity: 0.5; /* css standard */
+}

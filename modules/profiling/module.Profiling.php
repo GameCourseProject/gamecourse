@@ -11,6 +11,8 @@ class Profiling extends Module {
     private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
+    // colors
+    private $colorNone = "#949494";
 
     public function __construct() {
         parent::__construct('profiling', 'Profiling', '0.1', array(
@@ -64,7 +66,9 @@ class Profiling extends Module {
         API::registerFunction('settings', 'runProfiler', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            $clusters = $this->runProfiler($courseId);
+            $nClusters = API::getValue('nClusters');
+            $minSize = API::getValue('minSize');
+            $clusters = $this->runProfiler($courseId, $nClusters, $minSize);
         });
         API::registerFunction('settings', 'checkRunningStatus', function () {
             API::requireCourseAdminPermission();
@@ -165,9 +169,10 @@ class Profiling extends Module {
         // get roles from hierarchy
         foreach ($hierarchy as $obj){
             if($obj->name == "Student"){
-                foreach ($hierarchy[$studentIndex]->children as $children){
-                    if($children->name == "Profiling"){
-                        $children = $hierarchy[$studentIndex]->children[$profilingIndex]->children;
+                foreach ($hierarchy[$studentIndex]->children as $child){
+                    if($child->name == "Profiling"){
+                        if (isset($hierarchy[$studentIndex]->children[$profilingIndex]->children))
+                            $children = $hierarchy[$studentIndex]->children[$profilingIndex]->children;
                         break;
                     }
                     $profilingIndex++;
@@ -183,6 +188,9 @@ class Profiling extends Module {
                     array_push($names, $child->name);
                 }
             }
+        }
+        else{
+            $names = $this->baseNames;
         }
         return $names;
     }
@@ -279,6 +287,7 @@ class Profiling extends Module {
         // assign new cluster roles to students
         $date = date('Y-m-d H:i:s');
         $students = $course->getUsersWithRole('Student');
+
         foreach ($students as $student){
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $student["id"], "role" => $names[$clusters[$student["id"]]]]);
             Core::$systemDB->insert("user_profile", ["course" => $courseId, "user" => $student["id"], "date" => $date, "cluster" => $names[$clusters[$student["id"]]]]);
@@ -288,34 +297,35 @@ class Profiling extends Module {
 
     public function getClusterEvolution($courseId, $history, $days){
         $colors = ["#7cb5ec", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"];
-        $colorNone = "#949494";
-        $clusterNames = Core::$systemDB->selectMultiple("user_profile p left join role r on cluster = r.id and p.course = r.course", ["p.course" => $courseId], "distinct r.name");
-        
+        $clusterNames = $this->getClusterNames($courseId);
+
         $nDays = count($days);
         $nodes = [];
         $data = [];
         $transitions = [];
+        $nameOrder = ["None"];
 
         for($i = 0; $i < count($clusterNames); $i++){
             $color = $colors[$i];
-            $name = $clusterNames[$i]['name'];
+            $name = $clusterNames[$i];
             for ($j = 0; $j < $nDays; $j++){
                 $nodes[] = array(
                     "id" => $name . $j,
                     "name" => $name,
                     "color" => $color
                 );
+                array_push($nameOrder, $name . $j);
             }
         }
-
+        
         if ($nDays == 1){
-            $nodes[] = array("id" => "None", "color" => $colorNone);
+            $nodes[] = array("id" => "None", "color" => $this->colorNone);
         }
 
         foreach($history as $entry){
             if($nDays == 1){
                 $from = "None";
-                $to = $entry["history"][0]["cluster"] . 0;
+                $to = $entry[array_keys($entry)[2]] . 0;
                 if(array_key_exists($from, $transitions) and array_key_exists($to, $transitions[$from])){
                     $transitions[$from][$to]++;
                 }
@@ -324,9 +334,10 @@ class Profiling extends Module {
                 }
             }
             else {
-                for ($i = 0; $i < $nDays - 1; $i++){
-                    $from = $entry["history"][$i]["cluster"] . $i;
-                    $to = $entry["history"][$i + 1]["cluster"] . ($i + 1);
+                $k = 0;
+                for ($i = 2; $i < $nDays + 1; $i++){
+                    $from = $entry[array_keys($entry)[$i]] . $k;
+                    $to = $entry[array_keys($entry)[$i + 1]] . ($k + 1);
 
                     if(array_key_exists($from, $transitions) and array_key_exists($to, $transitions[$from])){
                         $transitions[$from][$to]++;
@@ -334,6 +345,7 @@ class Profiling extends Module {
                     else {
                         $transitions[$from][$to] = 1;
                     }
+                    $k++;
                 }
             }  
         }
@@ -343,6 +355,15 @@ class Profiling extends Module {
                 $data[] = [$key, $to, $weight];
             }
         }
+
+        usort($data, function ($a, $b) use ($nameOrder) {
+            $pos_from_a = array_search($a[0], $nameOrder);
+            $pos_to_a = array_search($a[1], $nameOrder);
+            $pos_from_b = array_search($b[0], $nameOrder);
+            $pos_to_b = array_search($b[1], $nameOrder);
+
+            return $pos_from_a - $pos_from_b?: $pos_to_a - $pos_to_b;
+        });
         
         return array($nodes, $data);
     }
@@ -358,20 +379,28 @@ class Profiling extends Module {
             foreach ($students as $student){
                 $exploded =  explode(' ', $student["name"]);
                 $nickname = $exploded[0] . ' ' . end($exploded);
-                $clusters[$student["id"]]['name'] = $nickname;
-                $clusters[$student["id"]]['history'] = array(array('day' => date('Y-m-d H:i:s'), 'cluster' => "None"));
+               
+                // if you change the name of the column when there are no clusters assigned, change "Current" to that exact name
+                $clusters[] = array ('id' => $student["id"],'name' => $nickname, "Current" => "None");
                 
             }
         }
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"]], "u.name as name, r.name as cluster, p.user as id", "u.name");
+                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"]], "u.name as name, r.name as cluster, p.user as id");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
-                    $clusters[$record["id"]]['name'] = $nickname;
-                    $clusters[$record["id"]]['history'][] = array('day' => $day["date"], 'cluster' => $record["cluster"]);
+                    $id = array_search($record["id"], array_column($clusters, 'id'));
+
+                    if ($id === false){
+                        $clusters[] = array ('id' => $record["id"],'name' => $nickname,  $day["date"] => $record["cluster"]);
+                    }
+                    else {
+                        $clusters[$id][$day["date"]] = $record["cluster"];
+                    }
+                
                 }
                 array_push($daysArray, $day["date"]); // to return in a format that js can read easily
             }
@@ -395,9 +424,8 @@ class Profiling extends Module {
         return $result;
     }
 
-    public function runProfiler($courseId) {
-        $myfile = fopen($this->logPath, "w");
-        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) ." > /dev/null &"; //python3
+    public function runProfiler($courseId, $nClusters, $minClusterSize) {
+        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) . " " . strval($nClusters) . " " . strval($minClusterSize) . " > /dev/null &"; //python3
         exec($cmd);
     }
     
