@@ -14,7 +14,7 @@ Needs a server with PHP 5.6 and a MySQL Database (needs to be a higher version -
   - The FENIX constants should match those values in the fenix app.
 3. If there is a file called **setup.done** , delete it
 4. Setup the course by visiting the GameCourse page
-5. There will be a folder inside **legacy_data** with the id and name of the course created, if it is empty copy the contents of **legacy_data/defaultData** to the new folder.
+5. There will be a folder inside **course_data** with the id and name of the course created, if it is empty copy the contents of **course_data/defaultData** to the new folder.
 (this will allow you to have the data of the PCM on 2017, the rest of the years data are in PCM's sigma)
 6. Go to the GameCourse page, in there go to the course that was created, and then to its Settings page. Now you may enable modules, you can enable Views, XP and Levels, Skills, Profile, Leaderboard and Badges.
 7. There will be a side menu on the left, now go every option inside Configurations to set it up (there will at least be configuration of students and teachers)
@@ -33,7 +33,7 @@ Everything should be good to go! Now you just need to update GameCourse if somet
 Update
 ----
 
-1. Run the **old python script**(not in this repository, can be found in PCM's area in sigma) (using python 2.7) to update de txt files in the **legacy_data** folder of the course
+1. Run the **old python script**(not in this repository, can be found in PCM's area in sigma) (using python 2.7) to update de txt files in the **course_data** folder of the course
 2. Go to the course settings page and click on **Load Legacy** or run the **loadLegacy.php** script manualy (if you run the script it needs to receive a course argument or it will assume it's the 1st)
 3. If a new user was added to the system:
   - Get the cookie values and click on **Download Photos** or run **downloadPhotos.php**

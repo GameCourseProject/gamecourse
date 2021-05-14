@@ -36,7 +36,7 @@ $course = Course::getCourse($courseId);
 if (!$isCLI)
     echo '<pre>';
 
-$legacyFolder = Course::getCourseLegacyFolder($courseId);
+$dataFolder = Course::getCourseDataFolder($courseId);
 
 //get badges info that is needed when reading awards and for the user_badges
 $DBbadges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId]);
@@ -51,7 +51,7 @@ foreach($DBbadges as &$b){
 }
 
 // Read Indicators
-$indicators = json_decode(file_get_contents($legacyFolder . '/indicators.json'), true);
+$indicators = json_decode(file_get_contents($dataFolder . '/indicators.json'), true);
 $indicatorsByNum = array();
 foreach ($indicators as &$indicatorsUser) {
     $indicatorsByNum[$indicatorsUser['num']] = $indicatorsUser['indicators'];   
@@ -62,7 +62,7 @@ $badgesNames = array_keys($sbBadges);
 $userIds=$course->getUsersIds();
 // Read Awards
 $keys = array('time', 'userid', 'what', 'field1', 'field2');
-$awards = file_get_contents($legacyFolder . '/awards.txt');
+$awards = file_get_contents($dataFolder . '/awards.txt');
 $awards = preg_split('/[\r]?\n/', $awards, -1, PREG_SPLIT_NO_EMPTY);
 
 $userBadge=[];

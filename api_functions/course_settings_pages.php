@@ -169,7 +169,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
     $course = Course::getCourse($courseId);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
-        $folder = Course::getCourseLegacyFolder($courseId);
+        $folder = Course::getCourseDataFolder($courseId);
 
         if($module != null){
             $moduleInfo = array(
