@@ -132,7 +132,7 @@ API::registerFunction('course', 'getDataFolders', function() {
     API::requireValues('course');
     $courseId = API::getValue('course');
     $courseName = Course::getCourse($courseId)->getName();
-    $dir = Course::getCourseLegacyFolder($courseId, $courseName);
+    $dir = Course::getCourseDataFolder($courseId, $courseName);
     $folders = Course::getDataFolders($dir);
     API::response(array('folders' => $folders));
 });

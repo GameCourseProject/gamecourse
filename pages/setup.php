@@ -16,7 +16,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->executeQuery($sql);
     $courseId = 1;
     $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
-    \GameCourse\Course::createCourseLegacyFolder($courseId, $courseName);
+    \GameCourse\Course::createCourseDataFolder($courseId, $courseName);
     $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
 
     $db->insert("game_course_user", [

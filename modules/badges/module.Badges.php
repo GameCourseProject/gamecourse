@@ -20,7 +20,7 @@ class Badges extends Module
 
     private function setupData($courseId)
     {
-        $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId)->getName());
         if (!file_exists($folder . "/badges"))
             mkdir($folder . "/badges");
         if (!file_exists($folder . "/badges" . "/Extra"))
@@ -701,7 +701,7 @@ class Badges extends Module
         // API::registerFunction('settings', 'courseBadges', function() {
         //     API::requireCourseAdminPermission();
         //     $courseId=API::getValue('course');
-        //     $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
+        //     $folder = Course::getCourseDataFolder($courseId);// Course::getCourseDataFolder($courseId);
         //     $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
             
         //     //set maxreward
