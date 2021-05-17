@@ -79,7 +79,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             $compile(section)($scope);
             $scope.getHistory.call();
 
-            var header = "<th ng-click='sortColumn(\"name\")'><div ng-class=\"{'triangle-up': (column == 'name' && !ascending)  || (column != 'name' && ascending) , 'triangle-down': (column == 'name' && ascending) || (column != 'name' && !ascending), 'disabled_arrow': column != 'name'}\" ></div> Student </th><th ng-repeat='day in days'><div ng-class=\"{'triangle-up': (column == day && !ascending)  || (column != day && ascending) , 'triangle-down': (column == day && ascending) || (column != day && !ascending), 'disabled_arrow': column != day}\"></div><a ng-click='sortColumn(day)'>{{day}}</a></th>";
+            var header = "<th><div class='container'><div ng-click='sortColumn(\"name\", false)' class='triangle-up' ng-class=\"{'checked_arrow': column == 'name' && !ascending}\"></div><div ng-click='sortColumn(\"name\", true)' class='triangle-down' ng-class=\"{'checked_arrow': column == 'name' && ascending}\"></div> Student </div></th><th ng-repeat='day in days'><div class='container'><div ng-click='sortColumn(day, false)' class='triangle-up' ng-class=\"{'checked_arrow': column == day && !ascending}\"></div><div ng-click='sortColumn(day, true)' class='triangle-down' ng-class=\"{'checked_arrow': column == day && ascending}\"></div>{{day}}</div></th>";
             $("#cluster-table thead").html(header);
             var body = "<tr id='table-content' ng-repeat='(key, value) in history | orderBy:predicate:ascending'><td>{{value.name}}</td><td ng-repeat='day in days'>{{value[day]}}</td></tr>";
             $("#cluster-table tbody").html(body);
@@ -406,7 +406,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         content.append(dataTable);
 
         contentDiv.append(content);
-        runSection.append($compile(contentDiv)($scope));
+        runSection.append($compile(contentDiv)($scope));      
     });
 
     $compile(configurationSection)($scope);
