@@ -42,7 +42,9 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    height: 21px;
+    height: 18px;
+    width: 21px;
+    opacity: 0.5;
 }
 
 .triangle-down {
@@ -50,7 +52,9 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    height: 21px;
+    height: 18px;
+    width: 21px;
+    opacity: 0.5;
 }
 
 .cluster_row {
@@ -69,10 +73,20 @@
     justify-content: space-between;
 }
 
+.checked_arrow{
+    opacity: 1;
+}
+
 .disabled_arrow{
     opacity: 0; /* css standard */
 }
 
 th:hover .disabled_arrow{
     opacity: 0.5; /* css standard */
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

@@ -106,14 +106,13 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
     };
 
     // called on header click
-    $scope.sortColumn = function(col){
+    $scope.sortColumn = function(col, descending){
         $scope.column = col;
-        console.log(col);
-        if($scope.ascending){
-            $scope.ascending = false;
+        if(descending){
+            $scope.ascending = true;
         }
         else {
-            $scope.ascending = true;
+            $scope.ascending = false;
         }
     };
 
@@ -218,7 +217,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 $scope.cluster_names = data.names;
                 $scope.select = {};
 
-                var headerHtmlString = "<th ng-click='sortColumn(\"name\")'><div ng-class=\"{'triangle-up': (column == 'name' && !ascending)  || (column != 'name' && ascending) , 'triangle-down': (column == 'name' && ascending) || (column != 'name' && !ascending), 'disabled_arrow': column != 'name'}\" ></div> Student </th><th ng-repeat='day in days'><div ng-class=\"{'triangle-up': (column == day && !ascending)  || (column != day && ascending) , 'triangle-down': (column == day && ascending) || (column != day && !ascending), 'disabled_arrow': column != day}\"></div><a ng-click='sortColumn(day)'>{{day}}</a></th><th></th><th> After </th>";
+                var headerHtmlString = "<th><div class='container'><div ng-click='sortColumn(\"name\", false)' class='triangle-up' ng-class=\"{'checked_arrow': column == 'name' && !ascending}\"></div><div ng-click='sortColumn(\"name\", true)' class='triangle-down' ng-class=\"{'checked_arrow': column == 'name' && ascending}\"></div> Student </div></th><th ng-repeat='day in days'><div class='container'><div ng-click='sortColumn(day, false)' class='triangle-up' ng-class=\"{'checked_arrow': column == day && !ascending}\"></div><div ng-click='sortColumn(day, true)' class='triangle-down' ng-class=\"{'checked_arrow': column == day && ascending}\"></div>{{day}}</div></th><th></th><th> After </th>";
                 $("#cluster-table thead").html(headerHtmlString);
 
                 var htmlString = "<tr ng-repeat='(key, value) in history | orderBy:predicate:ascending'><td>{{value.name}}</td><td ng-repeat='day in days'>{{value[day]}}</td><td class=\"arrow_right\"></td><td><select class=\"dd-content\" ng-init=\"select[value.id]=clusters[value.id].cluster\" ng-model=\"select[value.id]\" ng-style=\"{'width' : '70%'}\" ng-options=\"cl.name as cl.name for cl in cluster_names\"></select></td></tr>";
@@ -378,7 +377,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             action_buttons.append($("<button id='import_button' class='icon import_icon profiling_button other' value='#import-item' onclick='openModal(this)'></button>"));
             action_buttons.append($('<button id="run-button" class="button small" ng-click="runProfiler()">Run</button>'));
             runSection.append($compile(action_buttons)($scope));
-            rowHeader.append("<th ng-click='sortColumn(\"name\")'><div ng-class=\"{'triangle-up': (column == 'name' && !ascending)  || (column != 'name' && ascending) , 'triangle-down': (column == 'name' && ascending) || (column != 'name' && !ascending), 'disabled_arrow': column != 'name'}\" ></div> Student </th><th ng-repeat='day in days'><div ng-class=\"{'triangle-up': (column == day && !ascending)  || (column != day && ascending) , 'triangle-down': (column == day && ascending) || (column != day && !ascending), 'disabled_arrow': column != day}\"></div><a ng-click='sortColumn(day)'>{{day}}</a></th>");
+            rowHeader.append("<th><div class='container'><div ng-click='sortColumn(\"name\", false)' class='triangle-up' ng-class=\"{'checked_arrow': column == 'name' && !ascending}\"></div><div ng-click='sortColumn(\"name\", true)' class='triangle-down' ng-class=\"{'checked_arrow': column == 'name' && ascending}\"></div> Student </div></th><th ng-repeat='day in days'><div class='container'><div ng-click='sortColumn(day, false)' class='triangle-up' ng-class=\"{'checked_arrow': column == day && !ascending}\"></div><div ng-click='sortColumn(day, true)' class='triangle-down' ng-class=\"{'checked_arrow': column == day && ascending}\"></div>{{day}}</div></th>");
             rowHeader.append('</thead>')
             rowContent = $("<tr id='table-content' ng-repeat='(key, value) in history | orderBy:predicate:ascending'>");
             rowContent.append("<td>{{value.name}}</td>");
@@ -389,7 +388,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             
         }
         else {
-            rowHeader.append("<th ng-click='sortColumn(\"name\")'><div ng-class=\"{'triangle-up': (column == 'name' && !ascending)  || (column != 'name' && ascending) , 'triangle-down': (column == 'name' && ascending) || (column != 'name' && !ascending), 'disabled_arrow': column != 'name'}\" ></div> Student </th><th ng-repeat='day in days'><div ng-class=\"{'triangle-up': (column == day && !ascending)  || (column != day && ascending) , 'triangle-down': (column == day && ascending) || (column != day && !ascending), 'disabled_arrow': column != day}\"></div><a ng-click='sortColumn(day)'>{{day}}</a></th><th></th><th> After </th>");
+            rowHeader.append("<th><div class='container'><div ng-click='sortColumn(\"name\", false)' class='triangle-up' ng-class=\"{'checked_arrow': column == 'name' && !ascending}\"></div><div ng-click='sortColumn(\"name\", true)' class='triangle-down' ng-class=\"{'checked_arrow': column == 'name' && ascending}\"></div> Student </div></th><th ng-repeat='day in days'><div class='container'><div ng-click='sortColumn(day, false)' class='triangle-up' ng-class=\"{'checked_arrow': column == day && !ascending}\"></div><div ng-click='sortColumn(day, true)' class='triangle-down' ng-class=\"{'checked_arrow': column == day && ascending}\"></div>{{day}}</div></th><th></th><th> After </th>");
             rowHeader.append('</thead>')
             rowContent = $("<tr id='table-content' ng-repeat='(key, value) in history | orderBy:predicate:ascending'>");
             rowContent.append("<td>{{value.name}}</td>");
