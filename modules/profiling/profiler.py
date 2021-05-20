@@ -60,8 +60,8 @@ def get_students(course):
 	host='localhost', database=DATABASE, charset="utf8")
 
 	cursor = cnx.cursor(prepared=True)
-	query = "SELECT g.id, g.name  FROM user_role ur left join course_user u on u.id = ur.id and ur.course=u.course left join game_course_user g on u.id = g.id join role r on ur.role = r.id WHERE ur.course = %s and r.name = 'Student';"
-	args = (course,)
+	query = "SELECT g.id, g.name FROM user_role ur left join course_user u on u.id = ur.id and ur.course=u.course left join game_course_user g on u.id = g.id join role r on ur.role = r.id WHERE ur.course = %s and r.name = 'Student' and u.isActive = %s;"
+	args = (course, True)
 
 	cursor.execute(query, args)
 	table = cursor.fetchall()
@@ -168,64 +168,66 @@ def calculate_xp(course, awards, participations, students):
 
 	for award in awards:
 		student = award[1]
-		award_type = award[4].decode()
-		mod_instance = award[5]
-		reward = award[6]
-		date = award[7].date()
+		if student_dict.get(student) is not None:
+			award_type = award[4].decode()
+			mod_instance = award[5]
+			reward = award[6]
+			date = award[7].date()
 
 
-		if xp_per_day_dict.get(date) is None:
-			xp_per_day_dict[date] = {}
+			if xp_per_day_dict.get(date) is None:
+				xp_per_day_dict[date] = {}
 
-		if xp_per_day_dict[date].get(student) is None:
-			xp_per_day_dict[date][student] = {}
-			xp_per_day_dict[date][student]['xp'] = 0
+			if xp_per_day_dict[date].get(student) is None:
+				xp_per_day_dict[date][student] = {}
+				xp_per_day_dict[date][student]['xp'] = 0
 
-		if ('skill' == award_type) and (student_dict[student]['skills'] < max_tree_reward):
-			student_dict[student]['total'] += reward
-			student_dict[student]['skills'] += reward
-			xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
-		
-		elif 'badge' == award_type:
-
-			if xp_per_day_dict[date].get('badges') is None:
-				xp_per_day_dict[date]['badges'] = {}
-			
-			if badge_dict[mod_instance] == 1 and student_dict[student]['badges'] < max_badge_bonus_reward:
-				maximum = max_badge_bonus_reward - student_dict[student]['badges']
-				reward =  min(reward, maximum)
+			if ('skill' == award_type) and (student_dict[student]['skills'] < max_tree_reward):
 				student_dict[student]['total'] += reward
-				student_dict[student]['badges'] += reward
+				student_dict[student]['skills'] += reward
 				xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
 			
-			elif badge_dict[mod_instance] == 0:
+			elif 'badge' == award_type:
+
+				if xp_per_day_dict[date].get('badges') is None:
+					xp_per_day_dict[date]['badges'] = {}
+				
+				if badge_dict[mod_instance] == 1 and student_dict[student]['badges'] < max_badge_bonus_reward:
+					maximum = max_badge_bonus_reward - student_dict[student]['badges']
+					reward =  min(reward, maximum)
+					student_dict[student]['total'] += reward
+					student_dict[student]['badges'] += reward
+					xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
+				
+				elif badge_dict[mod_instance] == 0:
+					student_dict[student]['total'] += reward
+					xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
+				
+				if xp_per_day_dict[date]['badges'].get(mod_instance) is None:
+					xp_per_day_dict[date]['badges'][mod_instance] = []
+				
+				xp_per_day_dict[date]['badges'][mod_instance].append(student)
+			
+			else:
 				student_dict[student]['total'] += reward
 				xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
-			
-			if xp_per_day_dict[date]['badges'].get(mod_instance) is None:
-				xp_per_day_dict[date]['badges'][mod_instance] = []
-			
-			xp_per_day_dict[date]['badges'][mod_instance].append(student)
-		
-		else:
-			student_dict[student]['total'] += reward
-			xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
 
 	for entry in participations:
 		student = entry[0]
-		action = entry[1].decode()
-		date = entry[2].date()
+		if student_dict.get(student) is not None:
+			action = entry[1].decode()
+			date = entry[2].date()
 
-		if xp_per_day_dict.get(date) is None:
-			xp_per_day_dict[date] = {}
-				
-		if xp_per_day_dict[date].get('participations') is None:
-			xp_per_day_dict[date]['participations'] = {}
-		
-		if xp_per_day_dict[date]['participations'].get(action) is None:
-			xp_per_day_dict[date]['participations'][action] = []
-		
-		xp_per_day_dict[date]['participations'][action].append(student)
+			if xp_per_day_dict.get(date) is None:
+				xp_per_day_dict[date] = {}
+					
+			if xp_per_day_dict[date].get('participations') is None:
+				xp_per_day_dict[date]['participations'] = {}
+			
+			if xp_per_day_dict[date]['participations'].get(action) is None:
+				xp_per_day_dict[date]['participations'][action] = []
+			
+			xp_per_day_dict[date]['participations'][action].append(student)
 
 	return student_dict, xp_per_day_dict
 

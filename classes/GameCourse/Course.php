@@ -65,29 +65,43 @@ class Course
         $this->setData("defaultLandingPage", $page);
     }
 
-    public function getUsers()
-    {
+    public function getUsers($active = true)
+    {   
+        if (!$active){
+            $where = ["course" => $this->cid];
+        }
+        else {
+            $where = ["course" => $this->cid, "c.isActive" => true];
+        }
         return Core::$systemDB->selectMultiple(
-            "course_user natural join game_course_user",
-            ["course" => $this->cid]
+            "course_user c left join game_course_user g on c.id=g.id",
+            $where
         );
     }
 
     //receives name of role and gets all the course_users w that role
-    public function getUsersWithRole($role)
-    {
-        return Core::$systemDB->selectMultiple(
-            "game_course_user u natural join course_user cu natural join user_role ur join role r on r.id=ur.role join auth a on u.id=a.game_course_user_id",
-            ["r.course" => $this->cid, "r.name" => $role],
-            "u.*,cu.*,a.username,r.name as role"
+    public function getUsersWithRole($role, $active = true)
+    {   
+        if (!$active){
+            $where = ["r.course" => $this->cid, "r.name" => $role];
+        }
+        else {
+            $where = ["r.course" => $this->cid, "r.name" => $role, "cu.isActive" => true];
+        }
+        $result = Core::$systemDB->selectMultiple(
+            "course_user cu left join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on r.id=ur.role join auth a on u.id=a.game_course_user_id",
+            $where,
+            "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
         );
+        return $result;
     }
     //receives id of role and gets all the course_users w that role
     public function getUsersWithRoleId($role)
     {
         return Core::$systemDB->selectMultiple(
-            "game_course_user natural join course_user natural join user_role",
-            ["course" => $this->cid, "role" => $role]
+            "game_course_user g  join course_user c on c.id=g.id join user_role r on g.id=r.id",
+            ["course" => $this->cid, "role" => $role],
+            "g.*, c.lastActivity, c.previousActivity, c.isActive as active, role"
         );
     }
 
@@ -96,9 +110,15 @@ class Course
         return array_column(Core::$systemDB->selectMultiple("course_user", ["course" => $this->cid], 'id'), 'id');
     }
 
-    public function getUsersNames()
+    public function getUsersNames($active = false)
     {
-        return array_column(Core::$systemDB->selectMultiple("game_course_user natural join course_user", ["course" => $this->cid], 'name'), 'name');
+        if(!$active){
+            $where = ["course" => $this->cid];
+        }
+        else {
+            $where = ["course" => $this->cid, "c.isActive" => true];
+        }
+        return array_column(Core::$systemDB->selectMultiple("course_user c left join game_course_user g on c.id=g.id", $where, 'name'), 'name');
     }
 
     public function getUser($istid)

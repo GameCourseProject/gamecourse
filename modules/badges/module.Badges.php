@@ -127,11 +127,11 @@ class Badges extends Module
         $id = $this->getUserId($user);
         return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
     }
-    public function getUsersWithBadge($badge, $level) {
+    public function getUsersWithBadge($badge, $level, $active=false) {
         $usersWithBadge = array();
         $courseId = $this->getCourseId();
         $course = new Course($courseId);
-        $users = $course->getUsers();
+        $users = $course->getUsers($active);
         foreach($users as $user){
             $userId = $user["id"];
             $userObj = $this->createNode($course->getUser($userId)->getAllData(), 'users');
@@ -241,16 +241,16 @@ class Badges extends Module
         $viewHandler->registerFunction(
             'badges',
             'getAllBadges',
-            function (bool $isExtra = null, bool $isBragging = null) {
+            function (bool $isExtra = null, bool $isBragging = null, bool $isActive = true) {
                 $where = [];
                 if ($isExtra !== null)
                     $where["isExtra"] = $isExtra;
                 if ($isBragging !== null)
                     $where["isBragging"] = $isBragging;
-                $where["isActive"] = true;
-                return $this->getBadge(true, $where);
+                    $where["isActive"] = $isActive;
+                return $this->getBadge($isActive, $where);
             },
-            "Returns a collection with all the active badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisExtra: Badge has a reward.\nisBragging: Badge has no reward.",
+            "Returns a collection with all the badges in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisExtra: Badge has a reward.\nisBragging: Badge has no reward.\nisActive: Badge is active.",
             'collection',
             'badge',
             'library',
@@ -284,29 +284,29 @@ class Badges extends Module
             'library',
             null
         );
-        //badges.doesntHaveBadge(%badge, %level) returns True if someone has earned the badge on this level
+        //badges.doesntHaveBadge(%badge, %level, %active) returns True if there are no students with this badge, False otherwise
         $viewHandler->registerFunction(
             'badges',
             'doesntHaveBadge',
-            function ($badge, $level) {
-                $users = $this->getUsersWithBadge($badge, $level);
+            function ($badge, $level, $active = true) {
+                $users = $this->getUsersWithBadge($badge, $level, $active);
                 return new ValueNode(empty($users->getValue()['value']));
             },
-            'Returns an object with value True if there are no students with this badge, False otherwise.',
+            "Returns an object with value True if there are no students with this badge, False otherwise.\nactive: if True only returns data regarding active students. When False, returns data reagrding all students. Defaults to True.",
             'object',
             'badge',
             'library',
             null
         );
-        //users.getUsers(%badge, %level) returns True if someone has earned the badge on this level
+        //users.getUsersWithBadge(%badge, %level, %active) returns an object with all users that earned that badge on that level
         $viewHandler->registerFunction(
             'users',
             'getUsersWithBadge',
-            function ($badge, $level) {
-                $users = $this->getUsersWithBadge($badge, $level);
+            function ($badge, $level, $active = true) {
+                $users = $this->getUsersWithBadge($badge, $level, $active);
                 return $users;
             },
-            'Returns an object with all users that earned that badge on that level.',
+            "Returns an object with all users that earned that badge on that level.\nactive: If set to True, returns information regarding active students only. Otherwise, returns information regarding all students. Defaults to True.",
             'collection',
             'user',
             'library',

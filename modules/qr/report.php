@@ -9,11 +9,11 @@ Core::init();
 
 if (isset($_REQUEST["course"])) {
 	$results = Core::$systemDB->executeQuery("select studentNumber, name, major, type, description "
-		. "from participation p natural join course_user u natural join game_course_user g "
+		. "from participation p natural join course_user u left join game_course_user g on u.id=g.id"
 		. "where p.user=g.id and u.id = g.id and course=" . $_REQUEST["course"] . ";");
 } else {
 	$results = Core::$systemDB->executeQuery("select studentNumber ,name, major, type, description "
-		. "from participation p natural join course_user u natural join game_course_user g "
+		. "from participation p natural join course_user u left join game_course_user g on u.id=g.id"
 		. "where p.user=g.id and u.id = g.id ;");
 }
 $results = $results->fetchAll(\PDO::FETCH_ASSOC);
