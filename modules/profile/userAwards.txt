@@ -58,7 +58,7 @@
                         "variables": [],
                         "value": null,
                         "class": null,
-                        "loopData": "{awards.getAllAwards(%user).sort(\"descending\",\"date\")}",
+                        "loopData": "{awards.getAllAwards(%user, null, null, null,null, false).sort(\"descending\",\"date\")}",
                         "style": null,
                         "link": null,
                         "visibilityCondition": "{}",
@@ -403,7 +403,7 @@
                         "rows": [
                             {
                                 "aspectClass": "33",
-                                "loopData": "{awards.getAllAwards(%user).sort(\"descending\",\"date\")}",
+                                "loopData": "{awards.getAllAwards(%user, null, null, null,null, false).sort(\"descending\",\"date\")}",
                                 "id": "3873",
                                 "role": "role.Student>role.Default",
                                 "partType": "row",
