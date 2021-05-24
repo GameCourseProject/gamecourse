@@ -237,7 +237,7 @@ class Badges extends Module
 
         $viewHandler->registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
 
-        //badges.getAllBadges(isExtra,IsBragging)
+        //badges.getAllBadges(isExtra,isBragging,isActive)
         $viewHandler->registerFunction(
             'badges',
             'getAllBadges',

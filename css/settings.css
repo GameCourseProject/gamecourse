@@ -609,6 +609,13 @@
     margin-left: 7px;
 }
 
+.notAllActive{
+    background-color: rgba(235, 57, 57, 0.562);
+}
+
+.data-table table tr.notAllActive:hover{
+    background-color: rgba(187, 49, 49, 0.562);
+}
 
 /* View Editor */
 

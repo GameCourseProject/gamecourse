@@ -45,15 +45,19 @@ class XPLevels extends Module
         $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
         return $badgeXP;
     }
-    public function calculateSkillXP($userId, $courseId)
+    public function calculateSkillXP($userId, $courseId, $isActive = true)
     {
         //skills XP (skill trees have a maximum value of XP)
         $skillTrees = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]);
         $skillTreeXP = 0;
         foreach ($skillTrees as $tree) {
+            $where = ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]];
+            if ($isActive){
+                $where["isActive"] = true;
+            }
             $fullTreeXP = Core::$systemDB->select(
                 "award a join skill s on moduleInstance=s.id",
-                ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]],
+                $where,
                 "sum(reward)"
             );
             $skillTreeXP += min($fullTreeXP, $tree["maxReward"]);

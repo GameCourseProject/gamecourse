@@ -919,12 +919,33 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
     }
 
     $scope.activeItem = function(id){
-        console.log()
         $smartboards.request('settings', 'activeItem', { course: $scope.course, module: $stateParams.module, itemId: id }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
             }
+            if($scope.listingItems.items[0].hasOwnProperty('dependenciesList')){
+                jQuery.each($scope.listingItems.items, function(index){
+                    for (var i = 0; i < $scope.listingItems.items[index].dependenciesList.length; i++){
+
+                        var dep1 = $scope.listingItems.items.find((item) => {
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][0];   
+                        });
+                        var dep2 = $scope.listingItems.items.find((item) => {
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][1];   
+                        });
+                        
+                        if(dep1 !== undefined && !$scope.active[dep1.name] || dep2 !== undefined && !$scope.active[dep2.name]){
+                            $scope.listingItems.items[index].allActive = false;
+                            break;
+                        }
+                        else {
+                            $scope.listingItems.items[index].allActive = true;
+                        }
+                    }
+                });
+            }
+            
         });
     }
 
@@ -1170,8 +1191,10 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 rowHeader.append($("<th class='action-column'></th>")); // move up
                 rowHeader.append($("<th class='action-column'></th>")); // move down
             }
+
+            $scope.active = [];
             
-            rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}'></tr>");
+            rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}' ng-class=\"{'notAllActive': item.allActive === false}\"></tr>");
             jQuery.each($scope.listingItems.displayAtributes, function (index) {
                 atribute = $scope.listingItems.displayAtributes[index];
                 stg = "item." + atribute;
@@ -1182,7 +1205,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     rowContent.append($('<td ng-if="!item.image"><img src="images/no-image.png" class="badges"/></td>'));
                     rowContent.append($('<td ng-if="item.image"><img src="' + path + '{{' + "item.name" + '}}' + "/" + '{{' + stg + '}}" title="{{ ' + stg + '}}" class="badges"/></td>'));
                 } else if (atribute == "isActive") {
-                    rowContent.append($('<td class="check-column"><label class="switch"><input id="active" type="checkbox" ng-model="item.isActive"><span class="slider round" ng-click="activeItem(item.id)" ></span></label></td>'));
+                    rowContent.append($('<td class="check-column"><label class="switch"><input id="active" type="checkbox" ng-init="active[item.name]=item.isActive" ng-model="active[item.name]"><span class="slider round" ng-click="activeItem(item.id)" ></span></label></td>'));
                 } else {
                     rowContent.append($('<td>{{' + stg + '}}</td>'));
                 }

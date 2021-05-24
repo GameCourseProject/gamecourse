@@ -328,16 +328,21 @@ abstract class Module
         }
 
         if ($activeUser){
-            $where["cu.isActive"] = $activeUser;
+            $where["cu.isActive"] = true;
         }
 
         if ($type !== null) {
             $where["type"] = $type;
             //should only use module instance if the type is specified (so we know if we should use skils or badges)
             if ($moduleInstance !== null && ($type == "badge" || $type == "skill")) {
-                $where["name"] = $moduleInstance;
+                if (is_numeric($moduleInstance)) {
+                    $where["moduleInstance"] = $moduleInstance;
+                } else {
+                    $where["name"] = $moduleInstance;
+                }
+
                 if ($activeItem){
-                    $where["m.isActive"] = $activeItem;
+                    $where["m.isActive"] = true;
                 }
 
                 $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user";
