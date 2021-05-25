@@ -928,14 +928,14 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 jQuery.each($scope.listingItems.items, function(index){
                     for (var i = 0; i < $scope.listingItems.items[index].dependenciesList.length; i++){
 
-                        var dep1 = $scope.listingItems.items.find((item) => {
+                        var dep1 = $scope.listingItems.items.findIndex((item) => {
                             return item.name === $scope.listingItems.items[index].dependenciesList[i][0];   
                         });
-                        var dep2 = $scope.listingItems.items.find((item) => {
+                        var dep2 = $scope.listingItems.items.findIndex((item) => {
                             return item.name === $scope.listingItems.items[index].dependenciesList[i][1];   
                         });
-                        
-                        if(dep1 !== undefined && !$scope.active[dep1.name] || dep2 !== undefined && !$scope.active[dep2.name]){
+
+                        if(dep1 !== -1 && (!$scope.active[$scope.listingItems.items[dep1].name] || !$scope.listingItems.items[dep1].allActive) || dep2 !== -1 && (!$scope.active[$scope.listingItems.items[dep2].name] || !$scope.listingItems.items[dep2].allActive)){
                             $scope.listingItems.items[index].allActive = false;
                             break;
                         }
