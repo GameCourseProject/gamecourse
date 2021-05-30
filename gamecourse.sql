@@ -81,8 +81,8 @@ create table course(
 create table course_user
    (id  int unsigned,
    	course  int unsigned,
-    lastActivity timestamp default CURRENT_TIMESTAMP,
-    previousActivity timestamp default  CURRENT_TIMESTAMP,
+    lastActivity timestamp NULL,
+    previousActivity timestamp NULL,
     primary key(id, course),
     foreign key(id) references game_course_user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade

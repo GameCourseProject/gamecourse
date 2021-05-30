@@ -22,6 +22,7 @@ API::registerFunction('core', 'getCourseInfo', function() {
         $navNames= array_column($OldNavPages,"text");
         $user = Core::getLoggedUser();
         $courseUser = $course->getLoggedUser();
+        $courseUser->refreshActivity();
 
         foreach ($pages as $pageId => $page){
             // adding pages to the navbar according to their role
