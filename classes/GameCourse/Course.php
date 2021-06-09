@@ -210,6 +210,18 @@ class Course
         Core::$systemDB->update("course", ["roleHierarchy" => json_encode($rolesHierarchy)], ["id" => $this->cid]);
     }
 
+    //returns number of awards
+    public function getNumAwards()
+    {
+        return Core::$systemDB->select("award", ["course" => $this->cid], "count(*)");
+    }
+
+    //returns number of awards
+    public function getNumParticipations()
+    {
+        return Core::$systemDB->select("participation", ["course" => $this->cid], "count(*)");
+    }
+
     //returns array w module names
     public function getEnabledModules()
     {
