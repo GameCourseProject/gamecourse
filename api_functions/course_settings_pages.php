@@ -75,9 +75,19 @@ API::registerFunction('settings', 'getTableData', function() {
     $tableName = API::getValue('table');
 
     if($tableName != null){
-        $data = Core::$systemDB->selectMultiple($tableName,["course"=>$courseId]);
+        $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user",["course"=>$courseId], "t.*, g.name, g.studentNumber");
+        foreach($data as &$d){
+            $exploded =  explode(' ', $d["name"]);
+            $nickname = $exploded[0] . ' ' . end($exploded);
+            $d["name"] = $nickname;
+        }
+        // get columns in order: id , name, studentNumber, (...)
         $columns = array_keys($data[0]);
-        API::response(array("entries" => $data, "columns" => $columns));
+        $lastHalf = array_slice($columns, 1, -2);
+        $lastTwo = array_slice($columns, -2);
+        $orderedColumns = array_merge(array_merge(["id"], $lastTwo), $lastHalf);
+
+        API::response(array("entries" => $data, "columns" => $orderedColumns));
         
     }
 });
@@ -90,6 +100,10 @@ API::registerFunction('settings', 'deleteTableEntry', function() {
 
     if($tableName != null){
         $row = API::getValue('rowData');
+         // only keep keys that are columns on the target table
+        unset($row['name']);
+        unset($row['studentNumber']);
+
         Core::$systemDB->delete($tableName, $row);
     }
 });
@@ -104,16 +118,42 @@ API::registerFunction('settings', 'submitTableEntry', function() {
         $update = API::getValue('update');
         $newData = API::getValue('newData');
         $newData['course'] = $courseId;
+        $newStudentNumber = $newData['studentNumber'];
+
+        $newStudent = Core::$systemDB->select("course_user c join game_course_user g on c.id=g.id", ["course" => $courseId, "studentNumber" => $newStudentNumber], "g.id, name");
+        if (!$newStudent){
+            API::error('There are no students in this course with student number ' . $newStudentNumber, 400);
+        }
+        // only keep keys that are columns on the target table
+        unset($newData['name']);
+        unset($newData['studentNumber']);
+
+        $exploded =  explode(' ', $newStudent["name"]);
+        $nickname = $exploded[0] . ' ' . end($exploded);
+
+        $newData['user'] = $newStudent['id'];
 
         if($update){
             $where = API::getValue('rowData');
             if($newData != null and $where != null){
+                // only keep keys that are columns on the target table
+                unset($where['name']);
+                unset($where['studentNumber']);
+                
                 Core::$systemDB->update($tableName, $newData, $where);
+                $newData['name'] = $nickname;
+                $newData['studentNumber'] = $newStudentNumber;
+                
+                API::response(array("newRecord" =>$newData));
+                
+                
             }
         }
         else {
             $id = Core::$systemDB->insert($tableName, $newData);
             $newRecord = Core::$systemDB->select($tableName, ["id" => $id]);
+            $newRecord['name'] = $nickname;
+            $newRecord['studentNumber'] = $newStudentNumber;
             
             API::response(array("newRecord" =>$newRecord));
         }
