@@ -63,52 +63,43 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                 return;
             }
             var table = $('#database').DataTable();
+            var newRow = [];
+            var dataSource = data.newRecord;
+            var id = dataSource['id'];
 
-            // updating data that was not inserted during this interaction
-            if(update && !($scope.newData['id'] in $scope.newRecord)){
-                Object.assign($scope.rowData, $scope.newData);
+            if(update) {   
+                var index = table.rows().eq(0).filter( function (rowIdx) {
+                    return table.cell( rowIdx, 0).data() === $scope.newData['id'] ? true : false;
+                });   
+            }
+            
+            $scope.newRecord[id] = Object.assign({}, dataSource);
+
+            for (let column in $scope.columns){
+                if(!(["user", "course"].includes($scope.columns[column])))
+                    newRow.push(dataSource[$scope.columns[column]]);
+            }
+
+            var editButton = '<div id="new-edit-' + id + '" class="icon edit_icon" title="Edit" value="#edit-row" ng-click="editRecord(newRecord[' + id + '])" onclick="openModal(this)"></div>';
+            var deleteButton = '<div id="new-delete-' + id + '" class="icon delete_icon" title="Delete" value="#delete-verification" ng-click="editRecord(newRecord[' + id + '])" onclick="openModal(this)"></div>';
+
+            newRow.push(editButton);
+            newRow.push(deleteButton);
+
+            if(update) {
+                // update row
+                table.row(index).data(newRow).draw(false);
             }
             else {
-                if(update) {
-                    var dataSource = $scope.newData;
-                    var index = table.rows().eq(0).filter( function (rowIdx) {
-                        return table.cell( rowIdx, 0).data() === $scope.newData['id'] ? true : false;
-                    });
-                }
-                else {
-                    var dataSource = data.newRecord;
-                }
-
-                var id = dataSource['id'];
-                var newRow = [];
-               
-                $scope.newRecord[id] = Object.assign({}, dataSource);
-
-                for (let column in $scope.columns){
-                    newRow.push(dataSource[$scope.columns[column]]);
-                }
-
-                var editButton = '<div id="new-edit-' + id + '" class="icon edit_icon" title="Edit" value="#edit-row" ng-click="editRecord(newRecord[' + id + '])" onclick="openModal(this)"></div>';
-                var deleteButton = '<div id="new-delete-' + id + '" class="icon delete_icon" title="Delete" value="#delete-verification" ng-click="editRecord(newRecord[' + id + '])" onclick="openModal(this)"></div>';
-
-                newRow.push(editButton);
-                newRow.push(deleteButton);
-
-                if(update) {
-                    // update row
-                    table.row(index).data(newRow).draw(false);
-                }
-                else {
-                    // create new row
-                    table.row.add(newRow).draw().show().draw(false);
-                }
-
-                var newEdit = document.getElementById("new-edit-" + id);
-                var newDelete = document.getElementById("new-delete-" + id);
-                $compile(newEdit)($scope);
-                $compile(newDelete)($scope);
-
+                // create new row
+                table.row.add(newRow).draw().show().draw(false);
             }
+
+            var newEdit = document.getElementById("new-edit-" + id);
+            var newDelete = document.getElementById("new-delete-" + id);
+            $compile(newEdit)($scope);
+            $compile(newDelete)($scope);
+
             $scope.newData = {};
         });
     }
@@ -139,9 +130,9 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             var dataTable = $('<div class="data-table" ></div>');
             var table = $('<table id="database" class="order-column" style="width:100%"></table>');
             rowHeader = $('<thead></thead>');
-            rowHeader.append("<tr><th ng-repeat='column in columns'>{{column}}</th><th></th><th></th></tr>");
+            rowHeader.append("<tr><th ng-repeat='column in columns' ng-if=\"column !== 'user' && column !== 'course'\">{{column}}</th><th></th><th></th></tr>");
             rowContent = $("<tr id='table-content' ng-repeat='(key, value) in entries'></tr>");
-            rowContent.append("<td ng-repeat='column in columns'>{{value[column]}}</td>");
+            rowContent.append("<td ng-repeat='column in columns' ng-if=\"column !== 'user' && column !== 'course'\">{{value[column]}}</td>");
             rowContent.append('<td class="action-column"><div class="icon edit_icon" title="Edit" value="#edit-row" ng-click="editRecord(value)" onclick="openModal(this)"></div></td>');
             rowContent.append('<td class="action-column"><div class="icon delete_icon" title="Delete" value="#delete-verification" ng-click="editRecord(value)" onclick="openModal(this)"></div></td>');
             table.append(rowHeader);
@@ -197,7 +188,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             box = $('<div id="new_box" class= "inputs">');
             row_inputs = $('<div class= "row_inputs"></div>');
             details = $('<div class="details full config_item"></div>');
-            details.append($('<div class="half" ng-repeat="(key, value) in rowData" ng-if="key !== \'id\' && key !== \'course\'"><div class="container"><input type="text" class="form__input" ng-init="newData[key] = rowData[key]" ng-model="newData[key]" value="{{key}}" id="{{key}}" /><label for="{{key}}" class="form__label">{{key}}</label></div></div>'))
+            details.append($('<div class="half" ng-repeat="column in columns" ng-if="column !== \'id\' && column !== \'course\' && column !== \'user\' && column !== \'name\'"><div class="container"><input type="text" class="form__input" ng-init="newData[column] = rowData[column]" ng-model="newData[column]" value="{{column}}" id="{{column}}" /><label for="{{column}}" class="form__label">{{column}}</label></div></div>'))
             row_inputs.append(details);
             box.append(row_inputs);
             content.append(box);
@@ -216,7 +207,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             addBox = $('<div id="new_box" class= "inputs">');
             addRowInputs = $('<div class= "row_inputs"></div>');
             addDetails = $('<div class="details full config_item"></div>');
-            addDetails.append($('<div class="half" ng-repeat="column in columns" ng-if="column !== \'id\' && column !== \'course\'"><div class="container"><input type="text" class="form__input" ng-model="newData[column]" value="{{column}}" id="{{column}}" /><label for="{{column}}" class="form__label">{{column}}</label></div></div>'))
+            addDetails.append($('<div class="half" ng-repeat="column in columns" ng-if="column !== \'id\' && column !== \'course\' && column !== \'user\' && column !== \'name\'"><div class="container"><input type="text" class="form__input" ng-model="newData[column]" value="{{column}}" id="{{column}}" /><label for="{{column}}" class="form__label">{{column}}</label></div></div>'))
             addRowInputs.append(addDetails);
             addBox.append(addRowInputs);
             addContent.append(addBox);
