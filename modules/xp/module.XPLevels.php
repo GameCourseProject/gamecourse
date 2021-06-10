@@ -180,17 +180,16 @@ class XPLevels extends Module
                     //calculate the level of the user
                     $xp = $this->getUserXP($user, $where["course"]);
                     
-                    $goal = Core::$systemDB->select(
+                    /*$goal = Core::$systemDB->select(
                         $table,
                         $where,
                         "max(goal)",
                         null,
                         [],
                         [["goal", "<=", $xp]]
-                    );
+                    );*/
 
-                    //enable once gamerules can calculate the level
-                    //$goal = $this->getUserLevel($user, $where["course"])["goal"];
+                    $goal = $this->getUserLevel($user, $where["course"])["goal"];
                 }
                 //get a level with a specific number or reward
                 if ($number !== null)
