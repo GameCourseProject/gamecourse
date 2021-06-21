@@ -159,11 +159,6 @@ API::registerFunction('course', 'addUser', function(){
     }
 });
 
-//used on the notCourseUsers API function, do not remove
-function udiffCompare($a, $b){
-    return $a['id'] - $b['id'];
-}
-
 API::registerFunction('course', 'importUser', function(){
     API::requireCourseAdminPermission();
     API::requireValues('file');
@@ -209,7 +204,9 @@ API::registerFunction('course', 'notCourseUsers', function() {
         }
         
         //udiffCompare declared on this file
-        $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, 'udiffCompare');
+        $notCourseUsers = array_udiff($systemUsersInfo, $courseUsersInfo, function($a, $b){
+            return $a['id'] - $b['id'];
+        });
         
         API::response(array('notCourseUsers'=> $notCourseUsers)); 
     }

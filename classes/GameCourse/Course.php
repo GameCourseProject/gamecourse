@@ -210,6 +210,18 @@ class Course
         Core::$systemDB->update("course", ["roleHierarchy" => json_encode($rolesHierarchy)], ["id" => $this->cid]);
     }
 
+    //returns number of awards
+    public function getNumAwards()
+    {
+        return Core::$systemDB->select("award", ["course" => $this->cid], "count(*)");
+    }
+
+    //returns number of awards
+    public function getNumParticipations()
+    {
+        return Core::$systemDB->select("participation", ["course" => $this->cid], "count(*)");
+    }
+
     //returns array w module names
     public function getEnabledModules()
     {
@@ -326,19 +338,19 @@ class Course
         }
         return $fromData;
     }
-    public static function getCourseLegacyFolder($courseId, $courseName = null)
+    public static function getCourseDataFolder($courseId, $courseName = null)
     {
         if ($courseName === null) {
             $courseName = Course::getCourse($courseId)->getName();
         }
         $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
-        $folder = LEGACY_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
+        $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
         return $folder;
     }
 
-    public static function createCourseLegacyFolder($courseId, $courseName)
+    public static function createCourseDataFolder($courseId, $courseName)
     {
-        $folder = Course::getCourseLegacyFolder($courseId, $courseName);
+        $folder = Course::getCourseDataFolder($courseId, $courseName);
         if (!file_exists($folder))
             mkdir($folder);
         /*if (!file_exists($folder . "/tree"))
@@ -346,7 +358,7 @@ class Course
         return $folder;
     }
 
-    public static function copyCourseLegacyFolder($source, $destination)
+    public static function copyCourseDataFolder($source, $destination)
     {
         $dir = opendir($source);
         if (!file_exists($destination))
@@ -356,14 +368,16 @@ class Course
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($source . '/' . $file)) {
                     // Recursively calling custom copy function for sub directory  
-                    Course::copyCourseLegacyFolder($source . '/' . $file, $destination . '/' . $file);
-                } else {
-                    copy($source . '/' . $file, $destination . '/' . $file);
-                }
-            }
-        }
 
-        closedir($dir);
+                    Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);  
+                }  
+                else {  
+                    copy($source . '/' . $file, $destination . '/' . $file);  
+                }  
+            }  
+        }  
+      
+        closedir($dir);  
     }
 
     public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive)
@@ -385,8 +399,8 @@ class Course
         $courseId = Core::$systemDB->getLastId();
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
-        $legacyFolder = Course::createCourseLegacyFolder($courseId, $courseName);
-
+        $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
+        
 
         //course_user table (add current user)
         $currentUserId = null;
@@ -397,8 +411,8 @@ class Course
 
         if ($copyFrom !== null) {
             $copyFromCourse = Course::getCourse($copyFrom);
-            $copyLegacyFolder = Course::getCourseLegacyFolder($copyFrom);
-            Course::copyCourseLegacyFolder($copyLegacyFolder, $legacyFolder);
+            $copyDataFolder = Course::getCourseDataFolder($copyFrom);
+            Course::copyCourseDataFolder($copyDataFolder, $dataFolder);
 
             //course table
             $keys = ['defaultLandingPage', "roleHierarchy", "theme"];
@@ -939,9 +953,9 @@ class Course
         $gr->run();
     }
 
-    public function upload($file, $filename, $module = null, $subfolder = null)
-    {
-        $location = Course::getCourseLegacyFolder($this->getId());
+
+    public function upload($file, $filename, $module = null, $subfolder = null){
+        $location = Course::getCourseDataFolder($this->getId());
 
         if ($module) {
             $location .=  "/" . strtolower($module);
@@ -973,9 +987,12 @@ class Course
             $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
             if (!is_dir($path)) {
                 $temp = explode(".", $value);
-                $extension = end($temp);
-                $file = array('name' => $value, 'filetype' => 'file', 'extension' => $extension);
-                array_push($results, $file);
+
+                $extension = "." . end($temp);
+                $file = array('name' => $value, 'filetype'=> 'file', 'extension' => $extension);
+                array_push($results,$file);
+                
+                
             } else if ($value != "." && $value != "..") {
                 $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFolders($path));
                 $results[$value] = $folder;
@@ -984,9 +1001,8 @@ class Course
         return $results;
     }
 
-    public function deleteFile($path)
-    {
-        $locationFile = Course::getCourseLegacyFolder($this->getId()) . $path;
+    public function deleteFile($path) {
+        $locationFile = Course::getCourseDataFolder($this->getId()) . $path;
         unlink($locationFile);
     }
 }

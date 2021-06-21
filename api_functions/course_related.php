@@ -23,6 +23,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
         $navNames = array_column($OldNavPages, "text");
         $user = Core::getLoggedUser();
         $courseUser = $course->getLoggedUser();
+        $courseUser->refreshActivity();
 
         foreach ($pages as $pageId => $page) {
             // adding pages to the navbar according to their role
@@ -129,7 +130,7 @@ API::registerFunction('course', 'getDataFolders', function () {
     API::requireValues('course');
     $courseId = API::getValue('course');
     $courseName = Course::getCourse($courseId)->getName();
-    $dir = Course::getCourseLegacyFolder($courseId, $courseName);
+    $dir = Course::getCourseDataFolder($courseId, $courseName);
     $folders = Course::getDataFolders($dir);
     API::response(array('folders' => $folders));
 });

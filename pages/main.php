@@ -23,6 +23,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
     <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -49,6 +50,9 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
     <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
+    <script src = "https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src = "https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
+
 
 
     <!-- Color picker -->
@@ -71,7 +75,7 @@ $user = Core::getLoggedUser();
         app.run(['$rootScope', function($rootScope) {
             $rootScope.user = {
                 id: '<?= $user->getId(); ?>',
-                name: '<?= $user->getName(); ?>',
+                name: "<?= $user->getName(); ?>",
                 username: '<?= $user->getUsername(); ?>'
             };
         }]);
@@ -229,6 +233,13 @@ $user = Core::getLoggedUser();
             $urlRouter.listen();
         });
     </script>
+
+    <!-- Sankey Chart -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 </head>
 
 <body ng-controller="SmartBoard">

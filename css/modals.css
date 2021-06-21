@@ -488,7 +488,8 @@ button {
 #open-item .modal_content .cancel,
 #new-view .modal_content .cancel,
 #edit-view .modal_content .cancel,
-#image-picker .modal_content .cancel{
+#edit-row .modal_content .cancel,
+#add-row .modal_content .cancel{
     position: absolute;
     bottom: 0px;
     right: 80;
