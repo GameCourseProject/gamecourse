@@ -658,7 +658,22 @@ class Plugin extends Module
 
     public function dropTables($moduleName)
     {
+        $courseId = API::getValue('course');
+        new CronJob("Moodle", $courseId, null, null, true);
+        new CronJob("ClassCheck", $courseId, null, null, true);
+        new CronJob("GoogleSheets", $courseId, null, null, true);
         parent::dropTables($moduleName);
+    }
+
+    public function deleteDataRows($courseId)
+    {
+        new CronJob("Moodle", $courseId, null, null, true);
+        new CronJob("ClassCheck", $courseId, null, null, true);
+        new CronJob("GoogleSheets", $courseId, null, null, true);
+
+        Core::$systemDB->delete("config_google_sheets", ["course" => $courseId]);
+        Core::$systemDB->delete("config_class_check", ["course" => $courseId]);
+        Core::$systemDB->delete("config_moodle", ["course" => $courseId]);
     }
     
     public function is_configurable(){

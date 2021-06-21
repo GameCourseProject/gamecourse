@@ -46,7 +46,7 @@ drop table if exists user_profile;
 drop table if exists saved_user_profile;
 
 create table game_course_user(
-	id 		int unsigned primary key auto_increment, #81205
+	id 		int unsigned primary key auto_increment,
     name 	varchar(50) not null,
     email 	varchar(255),
 	major 	varchar(8),
@@ -81,8 +81,8 @@ create table course(
 create table course_user
    (id  int unsigned,
    	course  int unsigned,
-    lastActivity timestamp default CURRENT_TIMESTAMP,
-    previousActivity timestamp default  CURRENT_TIMESTAMP,
+    lastActivity timestamp NULL,
+    previousActivity timestamp NULL,
     primary key(id, course),
     foreign key(id) references game_course_user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
@@ -185,7 +185,7 @@ create table participation(#for now this is just used for badges
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
-create table award_participation(#this table may be pointles if participations havent got more than 1 award
+create table award_participation(#this table may be pointless if participations havent got more than 1 award
 	award int unsigned,
 	participation int unsigned,
 	primary key (award,participation),
@@ -193,17 +193,14 @@ create table award_participation(#this table may be pointles if participations h
     foreign key(participation) references participation(id) on delete cascade
 );
 
-create table aspect_class(
-	aspectClass int unsigned auto_increment primary key
-	#foreign key (viewId) references view(id) on delete cascade
-);
 create table view(
 	id int unsigned auto_increment primary key,
-	aspectClass int unsigned,
+	viewId int unsigned,
+	#aspectClass int unsigned,
 	role varchar(100) default "role.Default",
-	partType enum ('block','text','image','table','headerRow','row','header','templateRef','chart'),
-	parent int unsigned,
-	viewIndex int unsigned,
+	partType enum ('block','text','image','table','headerRow','row','header','chart'),
+	#parent int unsigned,
+	#viewIndex int unsigned,
 	label varchar(50),
 	loopData varchar(200),
 	variables varchar(500),
@@ -214,9 +211,17 @@ create table view(
 	visibilityCondition varchar(200),
 	visibilityType enum ("visible","invisible","conditional"),
 	events varchar(500),
-	info varchar(500),
-	foreign key (aspectClass) references aspect_class(aspectClass) on delete set null,
-	foreign key (parent) references view(id) on delete cascade
+	info varchar(500)
+	#foreign key (aspectClass) references aspect_class(aspectClass) on delete set null
+	#foreign key (parent) references view(id) on delete cascade
+);
+create table view_parent(
+	parentId int unsigned,
+	childId int unsigned,
+	viewIndex int unsigned,
+	#primary key (parentId,childId),
+	foreign key (parentId) references view(id) on delete cascade
+	#foreign key (childId) references view(viewId) on delete cascade
 );
 create table page(
 	id int unsigned auto_increment primary key,
@@ -231,7 +236,7 @@ create table page(
 );
 create table template(
 	id int unsigned auto_increment primary key,
-	name varchar(100) not null,#
+	name varchar(100) not null,
 	roleType enum('ROLE_SINGLE','ROLE_INTERACTION') default 'ROLE_SINGLE',
 	course int unsigned not null,
 	isGlobal boolean default false,
@@ -240,8 +245,8 @@ create table template(
 create table view_template(
 	viewId int unsigned primary key,
 	templateId int unsigned,
-	foreign key (templateId) references template(id) on delete cascade,
-	foreign key (viewId) references view(id) on delete cascade
+	foreign key (templateId) references template(id) on delete cascade
+	#foreign key (viewId) references view(viewId) on delete cascade
 );
 
 create table autogame(#table used for gamerules related info

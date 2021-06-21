@@ -3,7 +3,7 @@
     define('CONNECTION_USERNAME', 'root');
     define('CONNECTION_PASSWORD', '');
     define('MODULES_FOLDER', 'modules');
-    define('LEGACY_DATA_FOLDER', 'legacy_data');
+    define('COURSE_DATA_FOLDER', 'course_data');
     define('BASE', 'gamecourse');
 
     define('FENIX_CLIENT_ID', '1977390058176612');

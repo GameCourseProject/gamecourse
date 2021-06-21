@@ -4,6 +4,7 @@ import mysql.connector
 import numpy as np
 import pandas as pd
 import warnings
+import traceback
 from datetime import date, timedelta, datetime
 
 from boruta import BorutaPy
@@ -18,6 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 DATABASE = "gamecourse"
+RESULTS_PATH = "/var/www/html/gamecourse/modules/profiling/"
 
 def get_credentials():
 	with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:
@@ -34,7 +36,7 @@ def course_exists(course):
 	"""
 	(username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
+	host='localhost', database=DATABASE, charset="utf8")
 
 	cursor = cnx.cursor(prepared=True)
 	query = "SELECT isActive FROM course WHERE id = %s;"
@@ -55,7 +57,7 @@ def get_students(course):
 	"""
 	(username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
+	host='localhost', database=DATABASE, charset="utf8")
 
 	cursor = cnx.cursor(prepared=True)
 	query = "SELECT g.id, g.name  FROM user_role ur left join course_user u on u.id = ur.id and ur.course=u.course left join game_course_user g on u.id = g.id join role r on ur.role = r.id WHERE ur.course = %s and r.name = 'Student';"
@@ -72,8 +74,7 @@ def get_badges(course):
 	"""
 	(username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=DATABASE, charset="utf8")
 	cursor = cnx.cursor(prepared=True)
 	query = "SELECT id, name FROM badge WHERE course = %s;"
 	cursor.execute(query, (course,))
@@ -82,7 +83,7 @@ def get_badges(course):
 
 	badge_dict = {}
 	for badge in badges:
-		badge_dict[badge[0]] = badge[1]
+		badge_dict[badge[0]] = badge[1].decode()
 
 	return badge_dict
 
@@ -92,8 +93,8 @@ def get_awards(course):
 	"""
 	(username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=DATABASE, charset="utf8")
+	
 	cursor = cnx.cursor(prepared=True)
 	query = "SELECT * FROM award WHERE course = %s ORDER BY date;"
 	args = (course,)
@@ -109,7 +110,7 @@ def get_participations(course):
 	"""
 	(username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
+	host='localhost', database=DATABASE, charset="utf8")
 
 	cursor = cnx.cursor(prepared=True)
 	query = "SELECT user, type, date FROM participation WHERE course = %s and type != 'lab grade' and type not like 'attended %' and type != 'initial bonus' and type != 'quiz grade' and type != 'graded post' and type != 'suggested presentation subject' and type != 'participated in lecture' order by date;"
@@ -127,8 +128,8 @@ def calculate_xp(course, awards, participations, students):
 	(username, password) = get_credentials()
 
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=DATABASE, charset="utf8")
+	
 	cursor = cnx.cursor(prepared=True)
 
 	# get max values for each type of award
@@ -167,7 +168,7 @@ def calculate_xp(course, awards, participations, students):
 
 	for award in awards:
 		student = award[1]
-		award_type = award[4]
+		award_type = award[4].decode()
 		mod_instance = award[5]
 		reward = award[6]
 		date = award[7].date()
@@ -180,12 +181,13 @@ def calculate_xp(course, awards, participations, students):
 			xp_per_day_dict[date][student] = {}
 			xp_per_day_dict[date][student]['xp'] = 0
 
-		if 'skill' in award_type and student_dict[student]['skills'] < max_tree_reward:
+		if ('skill' == award_type) and (student_dict[student]['skills'] < max_tree_reward):
 			student_dict[student]['total'] += reward
 			student_dict[student]['skills'] += reward
 			xp_per_day_dict[date][student]['xp'] = student_dict[student]['total']
 		
-		elif 'badge' in award_type:
+		elif 'badge' == award_type:
+
 			if xp_per_day_dict[date].get('badges') is None:
 				xp_per_day_dict[date]['badges'] = {}
 			
@@ -211,15 +213,15 @@ def calculate_xp(course, awards, participations, students):
 
 	for entry in participations:
 		student = entry[0]
-		action = entry[1]
+		action = entry[1].decode()
 		date = entry[2].date()
 
 		if xp_per_day_dict.get(date) is None:
 			xp_per_day_dict[date] = {}
-		
+				
 		if xp_per_day_dict[date].get('participations') is None:
 			xp_per_day_dict[date]['participations'] = {}
-
+		
 		if xp_per_day_dict[date]['participations'].get(action) is None:
 			xp_per_day_dict[date]['participations'][action] = []
 		
@@ -236,7 +238,7 @@ def create_maindata(data, course, students):
 	badges = get_badges(course)
 
 	for student in students:
-		index.append(student[1])
+		index.append(student[1].decode())
 
 	index.append("Dates")
 	xp_df = pd.DataFrame({'Index Title': index}).set_index('Index Title')
@@ -311,10 +313,10 @@ def create_maindata(data, course, students):
 		result.append(values)
 		headers.append('xp')
 
-
+	
 	xp_df.columns = headers
 	#xp_df.to_excel('xp.xlsx', sheet_name='sheet1', index=index)
-	
+
 	aux_df = xp_df.copy()
 	constant_filter = VarianceThreshold(threshold=0)
 	aux_df.drop(aux_df.tail(1).index,inplace=True)
@@ -333,7 +335,7 @@ def create_maindata(data, course, students):
 	#normalized_df.to_excel('maindata.xlsx', sheet_name='sheet1', index=index)
 	return normalized, new_headers
 
-def calculate_kmeans(data):
+def calculate_kmeans(data, num_clusters, min_cluster_size):
 	"""
 	Perform k-means clustering.
 	"""
@@ -342,18 +344,18 @@ def calculate_kmeans(data):
 		xp_array.append(np.array(data[key]['total']))
 
 	xp = np.array(xp_array).reshape(-1, 1)
-	kmeans = KMeans(n_clusters=4, random_state=0)
+	kmeans = KMeans(n_clusters=num_clusters, random_state=0)
 	prediction = kmeans.fit_predict(xp)
 
 	unique, counts = np.unique(prediction, return_counts=True)
 
-	if np.all(counts > 4):
-		kmeans = KMeans(n_clusters=4, random_state=0).fit(xp)
-		return 4, kmeans
+	if np.all(counts > min_cluster_size):
+		kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(xp)
+		return num_clusters, kmeans
 	
 	else:
-		kmeans = KMeans(n_clusters=3, random_state=0).fit(xp)
-		return 3, kmeans
+		kmeans = KMeans(n_clusters=(num_clusters - 1), random_state=0).fit(xp)
+		return num_clusters - 1, kmeans
 
 def order_clusters(centers):
 	ordered = {}
@@ -364,9 +366,9 @@ def order_clusters(centers):
 	
 	return ordered
 
-def clustering(total_xp, maindata, headers):
+def clustering(total_xp, maindata, headers, num_clusters, min_cluster_size):
 
-	n_clusters, prediction = calculate_kmeans(total_xp)
+	n_clusters, prediction = calculate_kmeans(total_xp, num_clusters, min_cluster_size)
 	ordered = order_clusters(prediction.cluster_centers_)
 	grades = []
 	clusters = []
@@ -422,7 +424,7 @@ def clustering(total_xp, maindata, headers):
 				'min_samples_leaf': min_samples_leaf,
 				'bootstrap': bootstrap}
 
-	grid_search = GridSearchCV(estimator = rf, param_grid = param_grid, cv = 10, n_jobs = -1, verbose = 0)
+	grid_search = GridSearchCV(estimator = rf, param_grid = param_grid, cv = 10, verbose = 0)
 	grid_search.fit(X_filtered, y_res)
 	X = boruta_feature_selector.transform(X)
 	model = grid_search.predict(X)
@@ -434,12 +436,18 @@ def clustering(total_xp, maindata, headers):
 if __name__ == "__main__":
 	#np.set_printoptions(threshold=sys.maxsize)
 	#warnings.filterwarnings("ignore", category=DeprecationWarning)
-	if len(sys.argv) != 2:
+	if len(sys.argv) != 4:
 		error_msg = "ERROR: Profiler didn't receive all the information."
-		print(error_msg)
-		sys.exit(error_msg)
-
+		#print(error_msg)
+		f = open(RESULTS_PATH + "results.txt", "w")
+		f.write(error_msg)
+		f.close()
+		sys.exit(1)
+	
+	file = open(RESULTS_PATH + "results.txt", "w")
 	course = sys.argv[1]
+	num_clusters = int(sys.argv[2])
+	min_cluster_size = int(sys.argv[3])
 	if course_exists(course):
 		try:
 			awards = get_awards(course)
@@ -447,23 +455,33 @@ if __name__ == "__main__":
 
 			if not awards:
 				error_msg = "ERROR: No awards to analyze."
-				print(error_msg)
+				file.write(error_msg)
+				file.close()
 				sys.exit(1)
+
 			if not participations:
 				error_msg = "ERROR: No participations to analyze."
-				print(error_msg)
+				file.write(error_msg)
+				file.close()
 				sys.exit(1)
 
 			students = get_students(course)
 			total_xp, data_per_day = calculate_xp(course, awards, participations, students)
 			maindata, headers = create_maindata(data_per_day, course, students)
-			order, clustered = clustering(total_xp, maindata, headers)
-			print(order, '+', clustered)
+			order, clustered = clustering(total_xp, maindata, headers, num_clusters, min_cluster_size)
+			#print(order, '+', clustered)
+			file.write(str(order) + '+' + str(clustered))
+			file.close()
+
 		except Exception as e:
-			print(e)
+			file.write("ERROR: " + str(e) + "\n" + str(traceback.format_exc()))
+			file.close()
+			sys.exit(1)
+
 
 	else:
 		error_msg = "ERROR: Course is not active or does not exist."
-		print(error_msg)
-		sys.exit(error_msg)
+		file.write(error_msg)
+		file.close()
+		sys.exit(1)
 		

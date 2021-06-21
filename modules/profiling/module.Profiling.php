@@ -8,7 +8,11 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    //private $logPath = "C:\\xampp\htdocs\gamecourse\modules\profiling\log.txt";
+    private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
+    // cluster names
+    private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
+    // colors
+    private $colorNone = "#949494";
 
     public function __construct() {
         parent::__construct('profiling', 'Profiling', '0.1', array(
@@ -23,6 +27,28 @@ class Profiling extends Module {
     public function setupData($courseId){
         if ($this->addTables("profiling", "profiling_config")){
             Core::$systemDB->insert("profiling_config", ["course" => $courseId]);
+        }
+        $course = Course::getCourse($courseId);
+        $role = $course->getRoleByName("Profiling");
+        if (!$role){
+            $names = [];
+            Core::$systemDB->insert("role", ["course" => $courseId, "name" => "Profiling"]);
+            $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
+
+            $courseRoles = $course->getRoles('name, id');
+            foreach($courseRoles as $role){
+                $names[$role['name']] = $role['id'];
+            }
+
+            $studentIndex = array_search("Student", array_keys($names));
+
+            if(!isset($hierarchy[$studentIndex]->children))
+                $hierarchy[$studentIndex]->children = array();
+           
+            $object = (object) ['name' => "Profiling"];
+            array_push($hierarchy[$studentIndex]->children, $object);
+
+            Core::$systemDB->update("course", ["roleHierarchy" => json_encode($hierarchy)], ["id" => $courseId]);
         }
     }
 
@@ -40,21 +66,42 @@ class Profiling extends Module {
         API::registerFunction('settings', 'runProfiler', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            $clusters = $this->runProfiler($courseId);
+            $nClusters = API::getValue('nClusters');
+            $minSize = API::getValue('minSize');
+            $clusters = $this->runProfiler($courseId, $nClusters, $minSize);
+        });
+        API::registerFunction('settings', 'checkRunningStatus', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            if(file_exists($this->logPath)){
+                $clusters = $this->checkStatus($courseId);
 
-            if(array_key_exists("errorMessage", $clusters)){
-                API::error($clusters["errorMessage"], 400);
+                if(array_key_exists("errorMessage", $clusters)){
+                    if (file_exists($this->logPath)){
+                        unlink($this->logPath);
+                    }
+                    API::error($clusters["errorMessage"], 400);
+                }
+                if(empty($clusters)){
+                    API::response(array('running' => true));
+                }
+                
+                $names = $this->createNamesArray($this->getClusterNames($courseId));
+                API::response(array('clusters' => $clusters, 'names' => $names));
             }
-            
-            $names = array(array('name' => "Underachiever"),array('name' =>"Halfhearted"), array('name' =>"Regular"), array('name' =>"Achiever"));
-            API::response(array('clusters' => $clusters, 'names' => $names));
+            else {
+                API::response(array('running' => false));
+            }
         });
         API::registerFunction('settings', 'commitClusters', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = API::getValue('clusters');
-
+            if (file_exists($this->logPath)){
+                unlink($this->logPath);
+            }
             $this->processClusterRoles($courseId, $clusters);
+            $this->deleteSaved($courseId);
         });
         API::registerFunction('settings', 'saveClusters', function () {
             API::requireCourseAdminPermission();
@@ -66,7 +113,9 @@ class Profiling extends Module {
         API::registerFunction('settings', 'deleteSaved', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-
+            if (file_exists($this->logPath)){
+                unlink($this->logPath);
+            }
             $this->deleteSaved($courseId);
         });
         API::registerFunction('settings', 'getHistory', function () {
@@ -80,7 +129,7 @@ class Profiling extends Module {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $saved = $this->getSavedClusters($courseId);
-            $names = array(array('name' => "Underachiever"),array('name' =>"Halfhearted"), array('name' =>"Regular"), array('name' =>"Achiever"));
+            $names = $this->createNamesArray($this->getClusterNames($courseId));
             API::response(array('saved' => $saved, 'names' => $names));
         });
     }
@@ -109,12 +158,85 @@ class Profiling extends Module {
         }
         return $result;
     }
+
+    public function getClusterNames($courseId){
+        // collect all cluster names: base names + roles inserte manually as Profiling role children
+        $names = [];
+        $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
+        $studentIndex = 0;
+        $profilingIndex = 0;
+        $children = null;
+        // get roles from hierarchy
+        foreach ($hierarchy as $obj){
+            if($obj->name == "Student"){
+                foreach ($hierarchy[$studentIndex]->children as $child){
+                    if($child->name == "Profiling"){
+                        if (isset($hierarchy[$studentIndex]->children[$profilingIndex]->children))
+                            $children = $hierarchy[$studentIndex]->children[$profilingIndex]->children;
+                        break;
+                    }
+                    $profilingIndex++;
+                }
+                break;
+            }
+            $studentIndex++;
+        }
+
+        if(!is_null($children)){
+            foreach ($children as $child){
+                if (!in_array($child->name, $names)){
+                    array_push($names, $child->name);
+                }
+            }
+        }
+        else{
+            $names = $this->baseNames;
+        }
+        return $names;
+    }
+
+    public function createNamesArray($clusters){
+        $names = [];
+        foreach ($clusters as $cluster){
+            $names[] = array(
+                "name" => $cluster
+            );
+        }
+        return $names;
+    }
     
     public function removeClusterRoles($courseId){
         $roleIds = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct cluster");
         foreach($roleIds as $id){
             Core::$systemDB->delete("user_role", ["course" => $courseId, "role" => $id["cluster"]]);
         }
+    }
+
+    public function deleteClusterRoles($courseId){
+        $roleIds = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct cluster");
+        foreach($roleIds as $id){
+            Core::$systemDB->delete("role", ["course" => $courseId, "id" => $id["cluster"]]);
+        }
+        Core::$systemDB->delete("role", ["course" => $courseId, "name" => "Profiling"]);
+       
+        $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
+        $studentIndex = 0;
+        foreach ($hierarchy as $obj){
+            if($obj->name == "Student"){
+                break;
+            }
+            $studentIndex++;
+        }
+        $profilingIndex = 0;
+        foreach ($hierarchy[$studentIndex]->children as $children){
+            if($children->name == "Profiling"){
+                unset($hierarchy[$studentIndex]->children[$profilingIndex]);
+                break;
+            }
+            $profilingIndex++;
+        }
+        Core::$systemDB->update("course", ["roleHierarchy" => json_encode($hierarchy)], ["id" => $courseId]);
+        
     }
 
     public function processClusterRoles($courseId, $clusters){
@@ -128,7 +250,7 @@ class Profiling extends Module {
         }
 
         // see which roles need to be created for the clusters
-        foreach ($clusters as $clusterName){
+        foreach ($this->baseNames as $clusterName){
             if($clusterName and !array_key_exists($clusterName, $names)){
                 $id = Core::$systemDB->insert("role", ["course" => $courseId, "name" => $clusterName]);
                 $names[$clusterName] = $newRoles[$clusterName] = $id;
@@ -136,17 +258,26 @@ class Profiling extends Module {
         }
         $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
         $studentIndex = array_search("Student", array_keys($names));
+        $profilingIndex = 0;
 
-        if(!isset($hierarchy[$studentIndex]->children))
-            $hierarchy[$studentIndex]->children = array();
+        foreach ($hierarchy[$studentIndex]->children as $children){
+            if($children->name == "Profiling"){
+                break;
+            }
+            $profilingIndex++;
+        }
+
+        if(!isset($hierarchy[$studentIndex]->children[$profilingIndex]->children))
+            $hierarchy[$studentIndex]->children[$profilingIndex]->children = array();
 
         // roles belonging to clusters are children of the "Student" role
         foreach(array_keys($newRoles) as $newRole){
             $object = (object) [
                 'name' => $newRole
             ];
-            array_push($hierarchy[$studentIndex]->children, $object);
+            array_push($hierarchy[$studentIndex]->children[$profilingIndex]->children, $object);
         }
+
         // update role hierarchy in the course
         Core::$systemDB->update("course", ["roleHierarchy" => json_encode($hierarchy)], ["id" => $courseId]);
 
@@ -156,6 +287,7 @@ class Profiling extends Module {
         // assign new cluster roles to students
         $date = date('Y-m-d H:i:s');
         $students = $course->getUsersWithRole('Student');
+
         foreach ($students as $student){
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $student["id"], "role" => $names[$clusters[$student["id"]]]]);
             Core::$systemDB->insert("user_profile", ["course" => $courseId, "user" => $student["id"], "date" => $date, "cluster" => $names[$clusters[$student["id"]]]]);
@@ -165,34 +297,35 @@ class Profiling extends Module {
 
     public function getClusterEvolution($courseId, $history, $days){
         $colors = ["#7cb5ec", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"];
-        $colorNone = "#949494";
-        $clusterNames = Core::$systemDB->selectMultiple("user_profile p left join role r on cluster = r.id and p.course = r.course", ["p.course" => $courseId], "distinct r.name");
-        
+        $clusterNames = $this->getClusterNames($courseId);
+
         $nDays = count($days);
         $nodes = [];
         $data = [];
         $transitions = [];
+        $nameOrder = ["None"];
 
         for($i = 0; $i < count($clusterNames); $i++){
             $color = $colors[$i];
-            $name = $clusterNames[$i]['name'];
+            $name = $clusterNames[$i];
             for ($j = 0; $j < $nDays; $j++){
                 $nodes[] = array(
                     "id" => $name . $j,
                     "name" => $name,
                     "color" => $color
                 );
+                array_push($nameOrder, $name . $j);
             }
         }
-
+        
         if ($nDays == 1){
-            $nodes[] = array("id" => "None", "color" => $colorNone);
+            $nodes[] = array("id" => "None", "color" => $this->colorNone);
         }
 
         foreach($history as $entry){
             if($nDays == 1){
                 $from = "None";
-                $to = $entry["history"][0]["cluster"] . 0;
+                $to = $entry[array_keys($entry)[2]] . 0;
                 if(array_key_exists($from, $transitions) and array_key_exists($to, $transitions[$from])){
                     $transitions[$from][$to]++;
                 }
@@ -201,9 +334,10 @@ class Profiling extends Module {
                 }
             }
             else {
-                for ($i = 0; $i < $nDays - 1; $i++){
-                    $from = $entry["history"][$i]["cluster"] . $i;
-                    $to = $entry["history"][$i + 1]["cluster"] . ($i + 1);
+                $k = 0;
+                for ($i = 2; $i < $nDays + 1; $i++){
+                    $from = $entry[array_keys($entry)[$i]] . $k;
+                    $to = $entry[array_keys($entry)[$i + 1]] . ($k + 1);
 
                     if(array_key_exists($from, $transitions) and array_key_exists($to, $transitions[$from])){
                         $transitions[$from][$to]++;
@@ -211,6 +345,7 @@ class Profiling extends Module {
                     else {
                         $transitions[$from][$to] = 1;
                     }
+                    $k++;
                 }
             }  
         }
@@ -220,6 +355,15 @@ class Profiling extends Module {
                 $data[] = [$key, $to, $weight];
             }
         }
+
+        usort($data, function ($a, $b) use ($nameOrder) {
+            $pos_from_a = array_search($a[0], $nameOrder);
+            $pos_to_a = array_search($a[1], $nameOrder);
+            $pos_from_b = array_search($b[0], $nameOrder);
+            $pos_to_b = array_search($b[1], $nameOrder);
+
+            return $pos_from_a - $pos_from_b?: $pos_to_a - $pos_to_b;
+        });
         
         return array($nodes, $data);
     }
@@ -235,20 +379,28 @@ class Profiling extends Module {
             foreach ($students as $student){
                 $exploded =  explode(' ', $student["name"]);
                 $nickname = $exploded[0] . ' ' . end($exploded);
-                $clusters[$student["id"]]['name'] = $nickname;
-                $clusters[$student["id"]]['history'] = array(array('day' => date('Y-m-d H:i:s'), 'cluster' => "None"));
+               
+                // if you change the name of the column when there are no clusters assigned, change "Current" to that exact name
+                $clusters[] = array ('id' => $student["id"],'name' => $nickname, "Current" => "None");
                 
             }
         }
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"]], "u.name as name, r.name as cluster, p.user as id", "u.name");
+                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"]], "u.name as name, r.name as cluster, p.user as id");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
-                    $clusters[$record["id"]]['name'] = $nickname;
-                    $clusters[$record["id"]]['history'][] = array('day' => $day["date"], 'cluster' => $record["cluster"]);
+                    $id = array_search($record["id"], array_column($clusters, 'id'));
+
+                    if ($id === false){
+                        $clusters[] = array ('id' => $record["id"],'name' => $nickname,  $day["date"] => $record["cluster"]);
+                    }
+                    else {
+                        $clusters[$id][$day["date"]] = $record["cluster"];
+                    }
+                
                 }
                 array_push($daysArray, $day["date"]); // to return in a format that js can read easily
             }
@@ -261,9 +413,9 @@ class Profiling extends Module {
         $course = Course::getCourse($courseId);
         $students = $course->getUsersWithRole('Student');
         $result = [];
+
         for ($i = 0; $i < count($students); $i++){
             $roles = $course->getUser($students[$i]["id"])->getRolesNames();
-            
             $exploded =  explode(' ', $students[$i]["name"]);
             $nickname = $exploded[0] . ' ' . end($exploded);
             $result[$students[$i]["id"]]['name'] = $nickname;
@@ -272,40 +424,52 @@ class Profiling extends Module {
         return $result;
     }
 
-    public function runProfiler($courseId) {
-        set_time_limit(500);
-        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId); //python3
-        exec($cmd, $output, $ret_codde);
-        if($ret_codde == 0) {
-            $exploded = explode('+', $output[0]);
-            $assignedClusters = explode(',', str_replace(["[", "]", " "], "", $exploded[1]));
-            $clusters = explode(',', str_replace(["{", "}"], "", $exploded[0]));
-
-            // creating cluster array and sorting cluster indexes based on grade
-            $array = [];
-            foreach($clusters as $cluster) {
-                $pair = explode(':', $cluster);
-                $array[$pair[0]] = str_replace([" "], "", $pair[1]);
+    public function runProfiler($courseId, $nClusters, $minClusterSize) {
+        $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) . " " . strval($nClusters) . " " . strval($minClusterSize) . " > /dev/null &"; //python3
+        exec($cmd);
+    }
+    
+    public function checkStatus($courseId){
+        clearstatcache();
+        if(filesize($this->logPath)) {
+            $file = fopen($this->logPath, 'r');
+            $line = fgets($file);
+            fclose($file);
+            if (stripos($line,"error") !== false) {
+                return array("errorMessage" => $line);
             }
-            if(ksort($array)){
-                // cluster names
-                $names = ["Underachiever", "Halfhearted", "Regular", "Achiever"];
+            else {
+                $exploded = explode('+', $line);
+                $assignedClusters = explode(',', str_replace(["[", "]", " ","\n","\r"], "", $exploded[1]));
+                $clusters = explode(',', str_replace(["{", "}"], "", $exploded[0]));
 
-                // assign cluster names by replacing key with cluster name
-                $namedClusters = [];
-                $i = 0;
-                foreach($array as $entry) {
-                    $namedClusters[$entry] = $names[$i];
-                    $i++;
+                // creating cluster array and sorting cluster indexes based on grade
+                $array = [];
+                foreach($clusters as $cluster) {
+                    $pair = explode(':', $cluster);
+                    $array[$pair[0]] = str_replace([" "], "", $pair[1]);
                 }
-                // update time of the last run on bd
-                Core::$systemDB->update("profiling_config", ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
+                if(krsort($array)){
+                    
+                    $names = $this->getClusterNames($courseId);
 
-                return $this->createClusterList($courseId, $namedClusters, $assignedClusters);     
+                    // assign cluster names by replacing key with cluster name
+                    $namedClusters = [];
+                    $i = 0;
+                    foreach($array as $entry) {
+                        $namedClusters[$entry] = $names[$i];
+                        $i++;
+                    }
+                    // update time of the last run on bd
+                    Core::$systemDB->update("profiling_config", ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
+
+                    return $this->createClusterList($courseId, $namedClusters, $assignedClusters);     
+                }
             }
+        
         }
         else {
-            return array("errorMessage" => $output);
+            return array();
         }
     }
 
@@ -375,13 +539,14 @@ class Profiling extends Module {
     public function has_listing_items (){ return  false; }
 
     public function deleteDataRows($courseId){
-        $this->removeClusterRoles($courseId);
+        $this->deleteClusterRoles($courseId);
         Core::$systemDB->delete("profiling_config", ["course" => $courseId]);
         Core::$systemDB->delete("saved_user_profile", ["course" => $courseId]);
     }
     
     public function dropTables($moduleName) {
-        //$this->removeClusterRoles($courseId);
+        $courseId = API::getValue('course');
+        $this->deleteClusterRoles($courseId);
         parent::dropTables($moduleName);
     }
 
