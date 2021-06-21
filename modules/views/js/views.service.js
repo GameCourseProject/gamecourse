@@ -1483,10 +1483,14 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             if (operation == 'duplicate') {
                 var newPart = $.extend(true, {}, aspectPart);
                 newPart.viewId = nextViewId;
+                if (newPart.isTemplateRef)
+                    delete newPart.isTemplateRef;
                 this.deleteIds(newPart);
                 delete newPart.viewIndex;
                 for (let i = 0; i < newPart.children.length; i++) {
                     newPart.children[i].viewId = (parseInt(newPart.viewId) + i + 1).toString();
+                    if (newPart.children[i].isTemplateRef)
+                        delete newPart.children[i].isTemplateRef;
                 }
                 parentPart.children.splice(idx, 0, newPart);
                 var newPartEl = this.build(scope, 'part.children[' + idx + ']', childOptions);
