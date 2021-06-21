@@ -36,8 +36,13 @@ angular.module('module.views').run(function ($sbviews, $compile) {
             root.addClass('image');
             if (options.edit) {
                 root.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
-                if (scope.role != parseRole(part.role))
-                    root.addClass('aspect_hide');
+                if (scope.role != parseRole(part.role)) {
+                    if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
+                        element.addClass('aspect_hide');
+                }
+            }
+            if (part.isTemplateRef) {
+                root.attr("style", "border-color: #e34309; ");
             }
             //TODO: role interaction
             img.addClass('img');

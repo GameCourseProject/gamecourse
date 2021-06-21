@@ -392,6 +392,12 @@ button {
     width: 25px;
     opacity: 0.8;
     margin-left: 10px;
+    background-color: white;
+}
+
+.modal_content .delete_icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
 }
 
 .modal_content .skill_tag {

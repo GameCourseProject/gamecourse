@@ -196,9 +196,12 @@ angular.module('module.charts', []).run(function ($sbviews, $compile) {
 
             var chartWrapper = $(document.createElement('div')).addClass('chart');
             if (options.edit) {
-                chartWrapp.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
+                chartWrapper.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role != parseRole(part.role))
                     chartWrapper.addClass('aspect_hide');
+            }
+            if (part.isTemplateRef) {
+                chartWrapper.attr("style", "background-color: #ddedeb; ");
             }
             var chart = $(createSVGElement('svg'));
             chartWrapper.append(chart);

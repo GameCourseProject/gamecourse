@@ -11,7 +11,6 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 visibilityCondition: "{}",
                 visibilityType: "conditional"
             };
-            console.log("here");
             part.rows[0].values.push({ value: $sbviews.defaultPart('text') });
             return part;
         },
@@ -23,6 +22,10 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role != parseRole(part.role))
                     table.addClass('aspect_hide');
+            }
+
+            if (part.isTemplateRef) {
+                tableDiv.attr("style", "background-color: #ddedeb; ");
             }
             /*part.filterBox = {
                 field: 'd',
@@ -90,6 +93,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('th'));
+                    row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.headerRows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);
@@ -124,6 +128,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('td'));
+                    row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.rows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);

@@ -1,4 +1,5 @@
 angular.module('module.views', []);
+//not used
 angular.module('module.views').controller('ViewSettings', function ($state, $stateParams, $smartboards, $element, $compile, $scope) {
     $element.html('Loading...');
     $smartboards.request('views', 'getInfo', { view: $stateParams.view, pageOrTemp: $stateParams.pageOrTemp, course: $scope.course }, function (data, err) {
@@ -202,7 +203,9 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             helper_content.addClass("visible");
             arrow.addClass("closed");
         }
-    })
+    });
+
+    breadcrum.append($("<span id='warning_ref'>The selected view is a reference for a template!</span>"));
 
 
     var reqData = { course: $scope.course };
@@ -230,7 +233,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         $scope.selectedRole = $scope.viewRoles[0].id;
 
         selectViews = function () {
-            const view = $('.view.editing')[0].children[0];
+            const view = $('#viewEditor')[0];
             const targetRole = $("#viewer_role").find(":selected")[0].text;
             $sbviews.findViewsForRole(view, targetRole);
             // if ($state.current.name == 'course.settings.views.edit-role-single') {
@@ -295,7 +298,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             var saveData = $.extend({}, reqData);
             saveData.view = $stateParams.view;
             saveData.pageOrTemp = $stateParams.pageOrTemp;
-            saveData.content = view.get();
+            saveData.content = $rootScope.partsHierarchy;
             console.log("saveEdit", saveData.content);
             html2canvas($("#viewEditor .view.editing"), {
                 onrendered: function (canvas) {
@@ -340,9 +343,12 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
 
                 viewScope.viewBlock = {
                     partType: 'block',
-                    noHeader: true,
-                    children: viewScope.view.children
+                    noHeader: false,
+                    children: viewScope.view.children,
                 };
+                if (viewScope.view.header) {
+                    viewScope.viewBlock.header = viewScope.view.header;
+                }
 
                 var viewBlock = $sbviews.build(viewScope, 'viewBlock');
                 viewBlock.removeClass('block');
@@ -381,6 +387,8 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             watcherDestroy();
             return;
         }
+        console.log(JSON.stringify(initialViewContent));
+        console.log(JSON.stringify(loadedView.get()));
         if (JSON.stringify(initialViewContent) !== JSON.stringify(loadedView.get())) {
             if (confirm("There are unsaved changes. Leave page without saving?")) {
                 watcherDestroy();
@@ -549,7 +557,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         editcontent.append(editbox);
         //editcontent.append(editrow);
         editcontent.append($('<button class="cancel" value="#edit-view" onclick="closeModal(this)" > Cancel </button>'))
-        editcontent.append($('<button class="save_btn" ng-click="submitEditView()" ng-disabled="!isReadyToEdit()" > Save </button>'))
+        editcontent.append($('<button class="save_btn" ng-click="submitEditView()" ng-disabled="!isReadyToEdit(editView.pageOrTemp)" > Save </button>'))
         editpage.append(editcontent);
         editmodal.append(editpage);
 
@@ -618,7 +626,9 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         };
         $scope.useGlobal = function (template) {
             console.log(template);
-            $smartboards.request('views', 'copyGlobalTemplate', { course: $scope.course, template: template }, alertUpdate);
+            const targetRole = $("#viewer_role").find(":selected")[0].text;
+            const roles = $sbviews.buildRolesHierarchyForOneRole(targetRole).map((e) => e.name);
+            $smartboards.request('views', 'copyGlobalTemplate', { course: $scope.course, template: template, roles: roles }, alertUpdate);
         };
         $scope.exportTemplate = function (template) {
             $smartboards.request('views', 'exportTemplate', { course: $scope.course, id: template.id, name: template.name }, function (data, err) {
@@ -739,17 +749,25 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             $compile(editbox)($scope);
             $("#edit-view").show();
 
-            $scope.isReadyToEdit = function () {
+            $scope.isReadyToEdit = function (pageOrTemp) {
                 isValid = function (text) {
                     return (text != "" && text != undefined && text != null)
                 }
                 //validate inputs
-                if (isValid($scope.editView.name) &&
-                    $scope.editView.roleType.length != 0) {
-                    return true;
-                }
-                else {
-                    return false;
+                if (pageOrTemp == "page") {
+                    if (isValid($scope.editView.name)) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                } else {
+                    if (isValid($scope.editView.name) &&
+                        isValid($scope.editView.roleType)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
 
@@ -760,7 +778,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
                     name: $scope.editView.name,
                     id: $scope.editView.id,
                     isEnabled: isEnabled,
-                    roleType: $scope.editView.roleType,
+                    roleType: $scope.editView.roleType || '',
                     viewId: $scope.editView.viewId,
                     theme: $scope.editView.theme,
                     pageOrTemp: $scope.editView.pageOrTemp

@@ -47,10 +47,15 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
                             }, closeFunc: function () {
                                 var newEl = valuePartDef.createElement(scope, part, options);
                                 var data = element.data();
+                                console.log(data);
                                 if (element.hasClass('diff_aspect')) {
-                                    newEl.addClass('aspect_hide');
-                                    newEl.removeClass('diff_aspect');
-                                    $sbviews.findViewToShow(part.viewId);
+                                    newEl.removeClass('aspect_hide');
+                                    newEl.addClass('diff_aspect');
+                                    //$sbviews.findViewToShow(part.viewId);
+                                }
+                                if (element.hasClass('view')) {
+                                    newEl.addClass('view editing');
+                                    //$sbviews.findViewToShow(part.viewId);
                                 }
                                 element.replaceWith(newEl);
                                 element = newEl;
@@ -84,9 +89,16 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
                 element.html(part.value);
             if (options.edit) {
                 element.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
-                if (scope.role != parseRole(part.role))
-                    element.addClass('aspect_hide');
+                if (scope.role != parseRole(part.role)) {
+                    console.log(part);
+                    if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
+                        element.addClass('aspect_hide');
+                }
+                if (part.isTemplateRef) {
+                    element.attr("style", "background-color: #ddedeb; ");
+                }
             }
+
             element.data("scope", scope);
             return element;
         },

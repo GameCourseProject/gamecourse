@@ -11,10 +11,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             viewScope.view = data.view;
             viewScope.viewBlock = {
                 partType: 'block',
-                noHeader: true,
+                noHeader: false,
                 children: viewScope.view.children,
-                role: viewScope.view.role
+                role: viewScope.view.role,
+                parentId: null,
+                id: viewScope.view.id
             };
+            if (viewScope.view.header) {
+                viewScope.viewBlock.header = viewScope.view.header;
+            }
 
             var viewBlock = $sbviews.build(viewScope, 'viewBlock');
             viewBlock.removeClass('block');
@@ -32,6 +37,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.requestEdit = function (view, pageOrTemp, params, func) {
         $rootScope.templateId = view;
+        //console.log(view);
         $smartboards.request('views', 'getEdit', $.extend({ view: view, pageOrTemp: pageOrTemp }, params), function (data, err) {
             if (err) {
                 func(undefined, err);
@@ -39,7 +45,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
             console.log("getEdit", data);
             var viewScope = $rootScope.$new(true);
-            viewScope.view = data.view;
+            viewScope.views = data.view;
             viewScope.fields = data.fields;
 
             var undoStack = [];
@@ -79,44 +85,91 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
             //console.log('getEdit-allFields',allFields);
             computeExpandedFields(viewScope.fields, '', '');
-*/
-            viewScope.viewBlock = {
-                partType: 'block',
-                noHeader: true,
-                children: viewScope.view.children,
-                role: viewScope.view.role,
-                viewId: viewScope.view.viewId
-            };
 
-            $rootScope.partsHierarchy = viewScope.viewBlock;
-            $rootScope.role = viewScope.view.role;
-            $rootScope.roleType = $rootScope.role.includes(">") ? "ROLE_INTERACTION" : "ROLE_SINGLE";
+            
+*/
+
+            $rootScope.partsHierarchy = [];
+            var roleToBlock = {};
+
+            for (let i = 0; i < viewScope.views.length; i++) {
+                //to change role interaction
+                const block = 'viewBlock' + i;
+                roleToBlock[parseRole(viewScope.views[i].role)] = block;
+                // viewScope[block] = {
+                //     partType: viewScope.views[i].partType,
+                //     role: viewScope.views[i].role,
+                //     viewId: viewScope.views[i].viewId,
+                //     parentId: null,
+                //     id: viewScope.views[i].id,
+                // };
+                // if (viewScope.views[i].header) {
+                //     viewScope[block].header = viewScope.views[i].header;
+                // }
+                // if (viewScope.views[i].partType == 'block') {
+                //     viewScope[block].noHeader = false;
+                //     viewScope[block].children = viewScope.views[i].children;
+                // } else if (['text', 'image'].includes(viewScope.views[i].partType)) {
+                //     viewScope[block].value = viewScope.views[i].value;
+                // }
+                viewScope[block] = viewScope.views[i];
+                $rootScope.partsHierarchy.push(viewScope[block]);
+            }
+
+            console.log(viewScope.views);
+            //$rootScope.partsHierarchy = [viewScope.viewBlock];
+            $rootScope.role = viewScope.views[0].role;
+            $rootScope.roleType = viewScope.views[0].role.includes(">") ? "ROLE_INTERACTION" : "ROLE_SINGLE";
             $rootScope.courseRoles = data.courseRoles;
             $rootScope.viewRoles = JSON.parse(angular.toJson(data.viewRoles)); //roles for which there is at least one subview
             $rootScope.rolesHierarchy = data.rolesHierarchy;
             $rootScope.courseId = data.courseId;
 
 
+
             function build() {
-                var element = $sbviews.build(viewScope, 'viewBlock', { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.view });
-                element.removeClass('block');
-                //the out view is always the same aka role = Default
-                element.removeAttr('data-role');
-                element.removeAttr('data-viewId');
-                //element.css('padding-top', 18);
-                element.addClass('view editing');
-                return element;
+                var viewBlock = [];
+                for (let i = 0; i < viewScope.views.length; i++) {
+                    const block = 'viewBlock' + i;
+                    //to change role interaction
+                    var element = $sbviews.build(viewScope, block, { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.views[i] });
+                    //element.removeClass('block');
+                    //element.removeAttr('data-role');
+                    //element.removeAttr('data-viewId');
+                    //element.css('padding-top', 18);
+                    element.addClass('view editing');
+                    // if (viewScope.views[i].isTemplateRef) {
+                    //     //element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the templates that use this one</span>'));
+                    //     element.attr("style", "background-color: #ddedeb; ");
+                    // }
+                    viewBlock.push(element);
+                    viewScope.$watch(block, function (newValue, oldValue) {
+                        if ((newValue != oldValue) && !changing) {
+                            undoStack.push(oldValue);
+                            redoStack.length = 0;
+                        }
+                        changing = false;
+                    }, true);
+                }
+                return viewBlock;
             }
 
             var viewBlock = build();
 
-            viewScope.$watch('viewBlock', function (newValue, oldValue) {
-                if ((newValue != oldValue) && !changing) {
-                    undoStack.push(oldValue);
-                    redoStack.length = 0;
-                }
-                changing = false;
-            }, true);
+            function buildOneBlock(block) {
+                const index = block.slice(-1);
+                var element = $sbviews.build(viewScope, block, { edit: true, editData: { fields: allFields, fieldsTree: data.fields, templates: data.templates }, view: viewScope.views[index] });
+                //element.removeClass('block');
+                //element.removeAttr('data-role');
+                //element.removeAttr('data-viewId');
+                //element.css('padding-top', 18);
+                element.addClass('view editing');
+                // if (viewScope.views[index].isTemplateRef) {
+                //     //element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the templates that use this one</span>'));
+                //     element.attr("style", "background-color: #ddedeb; ");
+                // }
+                return element;
+            }
 
             var view = {
                 scope: viewScope,
@@ -124,28 +177,34 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 courseRoles: $rootScope.courseRoles,
                 viewRoles: $rootScope.viewRoles,
                 get: function () {
-                    return viewScope.view;
+                    return viewScope.views;
                 },
                 undo: function () {
                     if (undoStack.length > 0) {
                         changing = true;
-                        redoStack.push(angular.copy(viewScope.viewBlock));
-                        viewScope.viewBlock = undoStack.pop();
+                        const role = $(".view.editing").not(".aspect_hide")[0].getAttribute('data-role');
+                        const block = roleToBlock[role];
+                        redoStack.push(angular.copy(viewScope[block]));
+                        viewScope[block] = undoStack.pop();
+                        var newView = buildOneBlock(block);
 
-                        var newView = build();
-                        viewBlock.replaceWith(newView);
-                        view.element = viewBlock = newView;
+                        viewBlock[block.slice(-1)].replaceWith(newView);
+                        view.element = viewBlock;
+                        viewBlock[block.slice(-1)] = newView;
                     }
                 },
                 redo: function () {
                     if (redoStack.length > 0) {
                         changing = true;
-                        undoStack.push(angular.copy(viewScope.viewBlock));
-                        viewScope.viewBlock = redoStack.pop();
+                        const role = $(".view.editing").not(".aspect_hide")[0].getAttribute('data-role');
+                        const block = roleToBlock[role];
+                        undoStack.push(angular.copy(viewScope[block]));
+                        viewScope[block] = redoStack.pop();
 
-                        var newView = build();
-                        viewBlock.replaceWith(newView);
-                        view.element = viewBlock = newView;
+                        var newView = buildOneBlock(block);
+                        viewBlock[block.slice(-1)].replaceWith(newView);
+                        view.element = viewBlock;
+                        viewBlock[block.slice(-1)] = newView;
                     }
                 },
                 canUndo: function () {
@@ -178,17 +237,21 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
         var partScope = parentScope.$new(true);
         partScope.part = part;
-        if (part.partType == "templateRef") {//adding background color, border and a warning message if its a template reference
+        // console.log(options);
+        if (part.isTemplateRef) {//adding background color, border and a warning message if its a template reference
             //ToDo: improve the look of the template references
             tempRefOptions = angular.copy(options);
-            tempRefOptions.toolOptions.canSwitch = false;
-            tempRefOptions.toolOptions.noSettings = true;
-            tempRefOptions.toolOptions.canDuplicate = false;
+            tempRefOptions.toolOptions = {};
+            tempRefOptions.toolOptions.canSwitch = true;
+            //tempRefOptions.toolOptions.noSettings = true;
+            //tempRefOptions.toolOptions.canDuplicate = part.parentId == null ? false : true;
             tempRefOptions.toolOptions.canSaveTemplate = false;
-            tempRefOptions.toolOptions.canHaveAspects = false;
-            var element = this.registeredPartType["block"].build(partScope, part, tempRefOptions);
-            element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the original template</span>'));
-            element.attr("style", "padding: 10px; background-color: #ddedeb; ");//#881111
+            tempRefOptions.toolOptions.canDelete = true;
+            tempRefOptions.toolOptions.canHaveAspects = true;
+            partScope.role = parseRole(part.role);
+            var element = this.registeredPartType[part.partType].build(partScope, part, tempRefOptions);
+            //element.prepend($('<span style="color: red; display: table; margin: 5px auto 15px;">Warning: Any changes made to this block will affect the original template</span>'));
+            //element.attr("style", "background-color: #ddedeb; ");//#881111
         }
         else {
             if (this.registeredPartType[part.partType] == undefined) {
@@ -213,8 +276,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         var scope = element.data('scope');
         if (scope == null || scope.part == null)
             return;
-        if (scope.part.partType == "templateRef")
-            scope.part.partType = "block";
+        // if (scope.part.partType == "templateRef")
+        //     scope.part.partType = "block";
         this.registeredPartType[scope.part.partType].destroy(element, scope.part);
         scope.$destroy();
         element.remove();
@@ -466,8 +529,28 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
         if (toolbarOptions.tools.canDelete) {
             toolbar.append($sbviews.createTool('Remove', 'images/delete_icon.svg', function () {
+                var optionsScope = scope.$new();
 
-                toolbarOptions.toolFunctions.remove(part);
+                optionsScope.submitDelete = function () {
+                    toolbarOptions.toolFunctions.remove(part);
+                    optionsScope.closeOverlay();
+                }
+                $sbviews.openOverlay(function (modal, execClose) {
+                    optionsScope.closeOverlay = function () {
+                        execClose();
+                    };
+                    modal.parent().attr("id", "submit_delete_view");
+                    // delete verification modal
+                    modal.attr("class", "verification modal_content");
+                    modal.append($('<button class="close_btn icon" value="#submit_delete_view" ng-click="closeOverlay()"</button>'));
+                    modal.append($('<div class="warning">Are you sure you want to delete this view and all its aspects?</div>'));
+                    modal.append($('<div class="confirmation_btns"><button class="cancel" value="#submit_delete_view" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="submitDelete()"> Delete</button></div>'));
+
+                    $compile(modal)(optionsScope);
+
+                }, function () {
+                    optionsScope.$destroy();
+                });
             }));
         }
 
@@ -566,20 +649,34 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         var newPart;
                         if (value.indexOf('part:') == 0) {
                             newPart = $sbviews.registeredPartType[id].defaultPart();
+                            newPart.role = part.role;
+                            newPart.parentId = part.parentId;
+                            newPart.viewId = part.viewId;
+                            if (part.isTemplateRef)
+                                newPart.isTemplateRef = true;
+                            if (part.id)
+                                newPart.id = part.id;
+                            console.log(newPart);
                             toolbarOptions.toolFunctions.switch(part, newPart);
                             execClose();
                         }
                         else if (value.indexOf('temp:') === 0) {
                             var value = templateList.val();
                             var id = value.substr(5);
-                            templates[id].role = $rootScope.role;
-                            $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
+                            //TODO verify this later (role)
+                            //templates[id].role = $rootScope.role;
+                            $smartboards.request('views', 'getTemplateContent', { id: id }, function (data, err) {
                                 if (err) {
                                     giveMessage(err.description);
                                     return;
                                 }
-                                newPart = data.template;
-                                toolbarOptions.toolFunctions.switch(part, newPart);
+
+                                for (let aspect of data.template) {
+                                    newPart = aspect;
+                                    newPart.id = aspect.id;
+                                    toolbarOptions.toolFunctions.switch(part, newPart);
+                                }
+
                                 execClose();
                             });
                         }
@@ -611,20 +708,26 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         };
 
                         var templatePart = angular.copy(part);
+
                         //$sbviews.changePids(templatePart);
                         optionsScope.template = {
                             name: '',
-                            part: templatePart,
+                            parts: [templatePart],
                             course: $rootScope.course
                         };
 
+
+
                         optionsScope.saveTemplate = function () {
-                            optionsScope.template.part.role = $rootScope.role;
+                            //optionsScope.template.part.role = $rootScope.role;
                             var isbyRef = $('#isRef').is(':checked');
+                            var templateIndex = optionsScope.editData.templates.length;
                             if (isbyRef) {
                                 var templateIndex = optionsScope.editData.templates.length;
-                                optionsScope.template.roleType = "ROLE_SINGLE";
-                                optionsScope.template.role = "Role.Default";
+                                optionsScope.template.roleType = $rootScope.roleType; // "ROLE_SINGLE";
+                                optionsScope.template.role = part.role; //"Role.Default";
+                                optionsScope.template.isRef = true;
+                                optionsScope.template.viewId = part.viewId;
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                     if (err) {
                                         giveMessage(err.description);
@@ -633,21 +736,32 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     execClose();
                                     giveMessage('Template saved as reference!');
                                     optionsScope.template.id = data.templateId;
+                                    optionsScope.template.viewId = data.idView;
                                     optionsScope.editData.templates[templateIndex] = optionsScope.template;
-                                    $smartboards.request('views', 'getTemplateReference', optionsScope.editData.templates[templateIndex], function (data, err) {
+
+                                    $smartboards.request('views', 'getTemplateContent', optionsScope.editData.templates[templateIndex], function (data, err) {
                                         if (err) {
                                             giveMessage(err.description);
                                             return;
                                         }
-                                        newPart = data.template;
-                                        delete data.template.id;
-                                        console.log(newPart);
-                                        toolbarOptions.toolFunctions.switch(part, newPart);
+                                        for (let aspect of data.template) {
+                                            newPart = aspect;
+                                            delete newPart.id;
+                                            newPart.isTemplateRef = true;
+                                            //newPart.id = optionsScope.template.id;
+                                            console.log(newPart);
+                                            toolbarOptions.toolFunctions.switch(part, newPart);
+                                        }
+
                                         execClose();
                                     });
                                 });
                             }
                             else {
+                                var templatePartAsp = $sbviews.getAllPartAspects(part.viewId);
+                                console.log(templatePartAsp);
+                                optionsScope.template.parts = templatePartAsp;
+                                optionsScope.template.isRef = false;
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
                                     if (err) {
                                         giveMessage(err.description);
@@ -655,7 +769,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     }
                                     execClose();
                                     giveMessage('Template saved!');
-                                    optionsScope.editData.templates[optionsScope.template.name] = templatePart;
+                                    optionsScope.template.id = data.templateId;
+                                    optionsScope.template.viewId = data.idView;
+                                    optionsScope.editData.templates[templateIndex] = optionsScope.template;
+                                    console.log(optionsScope.editData.templates[templateIndex]);
                                 });
                             }
 
@@ -705,22 +822,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         return false;
                 }
 
-                function deleteIds(newPart) {
-                    delete newPart.id;
-                    for (var c in newPart.children) {
-                        deleteIds(newPart.children[c]);
-                    }
-                    for (var r in newPart.rows) {
-                        deleteIds(newPart.rows[r]);
-                    }
-                    for (var r in newPart.headerRows) {
-                        deleteIds(newPart.headerRows[r]);
-                    }
-                    for (var c in newPart.values) {
-                        deleteIds(newPart.values[c].value);
-                    }
-                }
-
 
                 var childOptions = $sbviews.editOptions(toolbarOptions, {
                     edit: true, toolOptions: {
@@ -733,39 +834,51 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     toolFunctions: {
                         remove: function (obj) {
                             const el = $('.highlight');
-                            const viewId = el[0].getAttribute('data-viewId');
-                            const parentContent = el[0].parentElement;
-                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
-                            var idx = partParent.children.indexOf(el);
-                            partParent.children.splice(idx, 1);
-                            $sbviews.destroy(el);
-                            if ($(parentContent).children().length == 0)
-                                parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+                            const part = $sbviews.findPart(el[0].getAttribute('data-viewId'), "role." + el[0].getAttribute('data-role'), $rootScope.partsHierarchy);
+                            // const viewId = el[0].getAttribute('data-viewId');
+                            // const role = el[0].getAttribute('data-role');
+                            // const parentContent = el[0].parentElement;
+                            // //el.parent => parentContent.viewId
+                            // const partParent = $sbviews.findPart(el.parent, "role." + role, $rootScope.partsHierarchy);
+                            // var idx = partParent.children.indexOf(el);
+                            // partParent.children.splice(idx, 1);
+                            // $sbviews.destroy(el);
+                            // if ($(parentContent).children().length == 0)
+                            //     parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
                             //$sbviews.notifyChanged(part, options);
-                            $sbviews.findViewToShow(viewId);
+                            //$sbviews.findViewToShow(viewId);
+                            $sbviews.manageViewAndSubviews(part, scope.$parent, $(el[0].parentElement), childOptions, 'remove');
                         },
                         duplicate: function (obj) {
                             const el = $('.highlight');
-                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
-                            var idx = partParent.children.indexOf(el);
-                            var newPart = $.extend(true, {}, el);
-                            //$sbviews.changePids(newPart);
-                            deleteIds(newPart);
-                            delete newPart.viewIndex;
-                            partParent.children.splice(idx, 0, newPart);
-                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                            $(el)[0].before(newPartEl);
+                            const part = $sbviews.findPart(el[0].getAttribute('data-viewId'), "role." + el[0].getAttribute('data-role'), $rootScope.partsHierarchy);
+                            // const role = el[0].getAttribute('data-role');
+                            // const partParent = $sbviews.findPart(el.parent, role, $rootScope.partsHierarchy);
+                            // var idx = partParent.children.indexOf(el);
+                            // var newPart = $.extend(true, {}, el);
+                            // const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                            // newPart.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+                            // //$sbviews.changePids(newPart);
+                            // deleteIds(newPart);
+                            // delete newPart.viewIndex;
+                            // partParent.children.splice(idx, 0, newPart);
+                            // var newPartEl = $sbviews.build(scope, 'partParent.children[' + idx + ']', childOptions);
+                            // $(el)[0].before(newPartEl);
+                            $sbviews.manageViewAndSubviews(part, scope.$parent, $(el[0].parentElement), childOptions, 'duplicate');
                             //$sbviews.notifyChanged(part, options);
                         },
                         switch: function (obj, newPart) {
                             const el = $('.highlight');
-                            const partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
-                            var idx = partParent.children.indexOf(el);
-                            partParent.children.splice(idx, 1, newPart);
-                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                            var oldEl = el;
-                            oldEl.replaceWith(newPartEl);
-                            $sbviews.destroy(oldEl);
+                            const part = $sbviews.findPart(el[0].getAttribute('data-viewId'), "role." + el[0].getAttribute('data-role'), $rootScope.partsHierarchy);
+                            // const role = el[0].getAttribute('data-role');
+                            // const partParent = $sbviews.findPart(el.parent, "role." + role, $rootScope.partsHierarchy);
+                            // var idx = partParent.children.indexOf(el);
+                            // partParent.children.splice(idx, 1, newPart);
+                            // var newPartEl = $sbviews.build(scope, 'partParent.children[' + idx + ']', childOptions);
+                            // var oldEl = el;
+                            // oldEl.replaceWith(newPartEl);
+                            // $sbviews.destroy(oldEl);
+                            $sbviews.manageViewAndSubviews(part, scope.$parent, $(el[0].parentElement), childOptions, 'switch', newPart);
                             //$sbviews.notifyChanged(part, options);
                         }
                     }
@@ -776,8 +889,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     var new_aspect = $rootScope.create_aspect;
 
                     var el = $('.highlight');
+                    const role = el[0].getAttribute('data-role');
                     var parentContent = el[0].parentElement;
-                    var partParent = $sbviews.findParent(part.parent, $rootScope.partsHierarchy);
+                    var partParent = $sbviews.findPart(part.parentId, "role." + role, $rootScope.partsHierarchy);
 
                     // default part
                     if (new_aspect == "new_aspect") {
@@ -788,16 +902,41 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             newAspect = $sbviews.defaultPart([part.partType]);
                             newAspect.viewId = part.viewId;
                             newAspect.role = "role." + new_role_viewer.text;
-                            newAspect.parent = part.parent;
-                            partParent.children.splice(partParent.children.indexOf(part), 0, newAspect);
+                            newAspect.parentId = part.parentId;
+                            newAspect.aspectClass = part.aspectClass;
+                            var newChild;
+                            //root view
+                            if ($rootScope.partsHierarchy.some(asp => asp.viewId == part.viewId)) {
+                                var newOptions = $sbviews.editOptions(childOptions, {
+                                    toolOptions: {
+                                        canSwitch: true,
+                                        canHaveAspects: true
+                                    },
+                                    toolFunctions: {
+                                        switch: function (obj, newPart) {
+                                            $sbviews.manageViewAndSubviews(obj, null, document.getElementById("viewEditor"), newOptions, 'switch', newPart);
+                                        }
+                                    }
+                                });
+                                var viewScope = $rootScope.$new(true);
+                                viewScope.view = newAspect;
+                                $rootScope.partsHierarchy.push(newAspect);
+                                newChild = $sbviews.buildElement(viewScope, newAspect, newOptions);
+                                newChild.addClass('view editing');
+                            } else {
+                                partParent.children.splice(partParent.children.indexOf(part) + 1, 0, newAspect);
+                                var newChild = $sbviews.buildElement(scope.$parent, newAspect, childOptions);
+                            }
 
-                            var newChild = $sbviews.buildElement(scope, newAspect, childOptions);
+
+
                             newChild.addClass("diff_aspect");
                             if (newChild.hasClass('aspect_hide'))
                                 newChild.removeClass('aspect_hide');
 
                             el.addClass("aspect_hide");
                             //$sbviews.notifyChanged(part, options);
+                            //insert after
                             parentContent.insertBefore(newChild.get(0), el[0].nextSibling);
                             newChild.click();
 
@@ -812,9 +951,31 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             var newAspect = Object.assign({}, part);
                             delete newAspect.id;
                             newAspect.role = "role." + new_role_viewer.text;
-                            partParent.children.splice(partParent.children.indexOf(part), 0, newAspect);
+                            newAspect.aspectClass = part.aspectClass;
 
-                            var newChild = $sbviews.buildElement(scope, newAspect, childOptions);
+                            if ($rootScope.partsHierarchy.some(asp => asp.viewId == part.viewId)) {
+                                var newOptions = $sbviews.editOptions(childOptions, {
+                                    toolOptions: {
+                                        canSwitch: true,
+                                        canHaveAspects: true
+                                    },
+                                    toolFunctions: {
+                                        switch: function (obj, newPart) {
+                                            $sbviews.manageViewAndSubviews(obj, null, document.getElementById("viewEditor"), newOptions, 'switch', newPart);
+                                        }
+                                    }
+                                });
+                                newAspect.parentId = null;
+                                var viewScope = $rootScope.$new(true);
+                                viewScope.view = newAspect;
+
+                                $rootScope.partsHierarchy.push(newAspect);
+                                newChild = $sbviews.buildElement(viewScope, newAspect, newOptions);
+                                newChild.addClass('view editing');
+                            } else {
+                                partParent.children.splice(partParent.children.indexOf(part) + 1, 0, newAspect);
+                                var newChild = $sbviews.buildElement(scope.$parent, newAspect, childOptions);
+                            }
                             newChild.addClass("diff_aspect");
                             if (newChild.hasClass('aspect_hide'))
                                 newChild.removeClass('aspect_hide');
@@ -919,6 +1080,46 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         updateAddAspectSection(rolesWithoutAspect);
                 };
 
+                optionsScope.deleteAspect = function () {
+                    var viewer = $("#edit_viewer_select").find(":selected")[0].text;
+                    //TODO
+                    //var user = $("#edit_user_selection").find(":selected")[0].text;
+                    optionsScope.aspect = { viewer: viewer, user: /*user || */ false }
+                    $("#delete-aspect").show();
+
+
+                    optionsScope.submitDelete = function () {
+                        optionsScope.removeAspect();
+                    }
+
+                };
+
+                optionsScope.removeAspect = function () {
+                    const el = $('.highlight');
+                    const viewId = el[0].getAttribute('data-viewId');
+                    const role = $("#edit_viewer_select").find(":selected")[0].text;
+                    const parentContent = el[0].parentElement;
+
+                    const part = $sbviews.findPart(viewId, "role." + role, $rootScope.partsHierarchy);
+                    const partParent = $sbviews.findPart(part.parentId, "role." + role, $rootScope.partsHierarchy);
+
+                    var idx = partParent.children.indexOf(part);
+                    partParent.children.splice(idx, 1);
+
+                    const elToRemove = $($("[data-viewid=" + viewId + "][data-role=" + role + "]").toArray()[0]);
+                    $sbviews.destroy(elToRemove);
+                    if ($(parentContent).children().length == 0)
+                        parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+                    $sbviews.findViewToShow(viewId);
+                    $("#edit_viewer_select option[label='" + role + "']").remove();
+                    $("#delete-aspect").hide();
+                    optionsScope.closeOverlay();
+                };
+
+                optionsScope.isRemoveDisabled = function () {
+                    return $('#edit_viewer_select option').length == 1;
+                };
+
                 $sbviews.openOverlay(function (modal, execClose) {
                     optionsScope.closeOverlay = function () {
                         execClose();
@@ -931,7 +1132,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     modalContent = $("<div class='content'></div>");
 
 
-                    //TODO : add user for role interaction templates
+
                     edit_viewer_selection = $('<div id="edit_viewer_selection"></div>');
                     edit_viewer_selection.append($('<div class="select_label">Viewer: </div>'));
                     edit_viewer_selector = $('<select class="form__input roles_aspect" id="edit_viewer_select" class="form__input"></select>');
@@ -943,8 +1144,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             edit_viewer_selector.append($('<option value="' + item.id + '">' + item.name + '</option>'));
                         }
                     });
-                    //edit_viewer_selector.change(isReadyToSubmit);
                     edit_viewer_selection.append(edit_viewer_selector);
+                    //TODO : add user for role interaction templates
+                    edit_viewer_selection.append($('<button class="delete_icon icon" title="Delete Aspect" ng-disabled="isRemoveDisabled()" ng-click="deleteAspect()"></button>'));
+
+                    //edit_viewer_selector.change(isReadyToSubmit);
+
                     modalContent.append(edit_viewer_selection);
 
                     //add aspect button
@@ -964,16 +1169,27 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                     //aspect_selection.change(isReadyToSubmit);
 
+                    // delete verification modal
+                    delete_modal = $("<div class='modal' id='delete-aspect'></div>");
+                    verification = $("<div class='verification modal_content'></div>");
+                    verification.append($('<button class="close_btn icon" value="#delete-aspect" onclick="closeModal(this)"></button>'));
+                    verification.append($('<div class="warning">Are you sure you want to delete this Aspect?</div>'));
+                    verification.append($('<div ng-if="aspect.user" class="target">Aspect for viewer: {{aspect.viewer}} and user: {{aspect.user}}</div>'));
+                    verification.append($('<div ng-if="!aspect.user" class="target">Aspect for viewer: {{aspect.viewer}}</div>'));
+                    verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-aspect" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="submitDelete()"> Delete</button></div>'))
+                    delete_modal.append(verification);
+                    modalContent.append(delete_modal);
+
                     saveButton = $(document.createElement('button')).text('Save');
                     //saveButton.prop('disabled', true);
                     saveButton.addClass("save_btn");
                     saveButton.click(function () {
-                        var viewer = $("#edit_viewer_selection").find(":selected")[0].text;
+                        var viewer = $("#edit_viewer_select").find(":selected")[0].text;
                         var globalViewer = $("#viewer_role").find(":selected")[0].text;
-                        if (viewer != globalViewer) {
-                            var highlighted = $(".highlight")[0];
-                            $sbviews.findViewToChange(highlighted, viewer);
-                        }
+                        //if (viewer != globalViewer) {
+                        var highlighted = $(".highlight")[0];
+                        $sbviews.findViewToChange(highlighted, viewer, globalViewer);
+                        //}
                         execClose();
                     });
                     modalContent.append(saveButton);
@@ -995,18 +1211,100 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         return toolbar;
     };
 
-    this.findParent = function (parentId, view) {
-        if (view.viewId == parentId)
-            return view;
-        if (view.children.length != 0) {
-            for (viewChild in view.children) {
-                this.findParent(parentId, viewChild);
-            }
+    this.getAllPartAspects = function (viewId) {
+        var aspects = $("[data-viewid=" + viewId + "]").toArray();
+        var aspectsParts = [];
+        console.log(viewId);
+        console.log($rootScope.partsHierarchy);
+        for (let asp of aspects) {
+            let part = this.findPart(viewId, asp.getAttribute('data-role'), $rootScope.partsHierarchy);
+            console.log(part);
+            part.parentId = null;
+            //delete part.viewId;
+            aspectsParts.push(part);
         }
+        return aspectsParts;
+    }
+
+    this.findPart = function (viewId, role, viewAspects) {
+        if (Array.isArray(viewAspects) && viewAspects.length == 1) {
+            //if (viewAspects[0].parentId == null) {
+            //main view
+            if (viewAspects[0].viewId == viewId) {
+                return viewAspects[0];
+            }
+            //only one aspect with children
+            if (viewAspects[0].children && viewAspects[0].children.length != 0) {
+                const viewIdsArray = [...new Set(viewAspects[0].children.map(x => x.viewId))];
+                //console.log(viewIdsArray);
+                //console.log(aspect.children);
+                const aspectChildren = viewIdsArray.map((key) => {
+                    return viewAspects[0].children.reduce(function (result, el) {
+                        if (el.viewId == key)
+                            result.push(el);
+                        return result;
+                    }, []);
+                });
+                //console.log(aspectChildren);
+                for (let aspectsOfChild of aspectChildren) {
+                    if (aspectsOfChild[0].viewId == viewId)
+                        return this.findPart(viewId, role, aspectsOfChild);
+                };
+
+            }
+        } else if (Array.isArray(viewAspects) && viewAspects.length != 1) {
+            for (let aspect of viewAspects) {
+                //console.log(aspect);
+                if (aspect.parentId == null) {
+                    //main view
+                    if (aspect.viewId == viewId && aspect.role == role) {
+                        return aspect;
+                    }
+                }
+
+                if (aspect.children && aspect.children.length != 0) {
+                    const viewIdsArray = [...new Set(aspect.children.map(x => x.viewId))];
+                    //console.log(viewIdsArray);
+                    //console.log(aspect.children);
+                    const aspectChildren = viewIdsArray.map((key) => {
+                        return aspect.children.reduce(function (result, el) {
+                            if (el.viewId == key)
+                                result.push(el);
+                            return result;
+                        }, []);
+                    });
+                    //console.log(aspectChildren);
+                    for (let aspectsOfChild of aspectChildren) {
+                        if (aspectsOfChild[0].viewId == viewId)
+                            return this.findPart(viewId, role, aspectsOfChild);
+                    };
+                } else {
+                    //console.log(aspect);
+                    const rolesForTargetRole = this.buildRolesHierarchyForOneRole(parseRole(role));
+                    for (let roleObj of rolesForTargetRole) {
+                        //console.log(view[0]);
+                        //const view = this.findPart(viewId, role, viewChild);
+                        if (aspect.role == "role." + roleObj.name)
+                            return aspect;
+                    }
+                }
+            }
+        } else {
+            //console.log(viewAspects);
+            //if (viewAspects.parentId == null) {
+            //main view
+            if (viewAspects.viewId == viewId) {
+                return viewAspects;
+            }
+
+            // }
+        }
+
+
     };
 
-
-    //finds the child that we should show after close editing a "diff_aspect" view or after delete
+    //finds the child that we should show after close editing a "diff_aspect" view
+    //not used anymore
     this.findViewToShow = function (childViewId) {
         var currentGlobalViewerRole = $("#viewer_role").find(":selected")[0].text;
         var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
@@ -1026,14 +1324,18 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     //finds the child that we want to show with "diff_aspect"
-    this.findViewToChange = function (elementToHide, roleToEdit) {
+    this.findViewToChange = function (elementToHide, roleToEdit, globalRole) {
         $(elementToHide).addClass('aspect_hide');
+        $(elementToHide).removeClass('diff_aspect');
+        $(elementToHide).click();
         const views = $("[data-viewid=" + elementToHide.getAttribute('data-viewid') + "]").toArray();
         const elementToShow = views.filter((el) => {
             return el.getAttribute('data-role') == roleToEdit;
         });
-        $(elementToShow).addClass('diff_aspect');
+        if (roleToEdit != globalRole)
+            $(elementToShow).addClass('diff_aspect');
         $(elementToShow).removeClass('aspect_hide');
+
     };
 
     //returns the roles that a (sub)view has
@@ -1087,17 +1389,119 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     //when there is no view for this role, we have to look for the next specific role
                     continue
                 }
+
                 for (let v of otherViews) {
                     $(v).addClass('aspect_hide');
                 }
                 $(view).removeClass('aspect_hide');
                 if ($(view).hasClass('diff_aspect')) {
                     $(view).removeClass('diff_aspect');
-                    $(view).click();
                 }
+                if ($(view).hasClass('highlight'))
+                    $(view).click();
                 break
             }
         }
+    }
+
+    this.deleteIds = function (newPart) {
+        delete newPart.id;
+        for (var c in newPart.children) {
+            this.deleteIds(newPart.children[c]);
+        }
+        for (var r in newPart.rows) {
+            this.deleteIds(newPart.rows[r]);
+        }
+        for (var r in newPart.headerRows) {
+            this.deleteIds(newPart.headerRows[r]);
+        }
+        for (var c in newPart.values) {
+            this.deleteIds(newPart.values[c].value);
+        }
+    }
+
+    this.manageViewAndSubviews = function (part, scope, blockContent, childOptions, operation, newPartSwitch = null) {
+
+        //when we want to switch the root
+        if ($rootScope.partsHierarchy.some(asp => asp.viewId == part.viewId) && operation == 'switch') {
+            //var viewAspects = $("[data-viewid=" + part.viewId + "]").toArray();
+            var viewAspect = $('.highlight');
+            //for (let viewChild of viewAspects) {
+            var aspectPart = this.findPart(part.viewId, "role." + viewAspect[0].getAttribute('data-role'), $rootScope.partsHierarchy);
+            var idx = $rootScope.partsHierarchy.indexOf(aspectPart);
+            newPartSwitch.role = "role." + viewAspect[0].getAttribute('data-role');
+            newPartSwitch.parentId = null;
+            var viewScope = $rootScope.$new(true);
+            viewScope.view = newPartSwitch;
+
+            $rootScope.partsHierarchy[idx] = newPartSwitch;
+            //parentPart.children.splice(idx, 1, newPartSwitch);
+            var newPartEl = this.build(viewScope, 'view', childOptions);
+            newPartEl.addClass('view editing');
+            var oldEl = viewAspect; //$('[data-role=' + viewAspect.getAttribute('data-role') + '][data-viewid=' + part.viewId + ']');
+            oldEl.replaceWith(newPartEl);
+            this.destroy(oldEl);
+            //}
+
+            return;
+        }
+
+        const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+        const nextViewId = viewIdsArray[viewIdsArray.length - 1] + 1;
+
+        var viewAspects = $("[data-viewid=" + part.viewId + "]").toArray();
+        const parentPart = this.findPart(part.parentId, part.role, $rootScope.partsHierarchy);
+        // console.log(parentPart);
+        // console.log(viewAspects);
+
+        if (operation == 'switch') {
+            //console.log(newPartSwitch);
+            var viewAspect = $('.highlight')[0];
+
+            if (newPartSwitch.isTemplateRef) {
+                viewAspect = $("[data-viewid=" + part.viewId + "][data-role=" + part.role + "]");
+                //return;
+            }
+
+            //for (let viewChild of viewAspects) {
+            var aspectPart = this.findPart(part.viewId, "role." + viewAspect.getAttribute('data-role'), $rootScope.partsHierarchy);
+            var idx = parentPart.children.indexOf(aspectPart);
+            newPartSwitch.role = aspectPart.role;
+            newPartSwitch.parentId = aspectPart.parentId;
+            parentPart.children.splice(idx, 1, newPartSwitch);
+            var newPartEl = this.build(scope, 'part.children[' + idx + ']', childOptions);
+            var oldEl = $(blockContent.children().get(idx));
+            oldEl.replaceWith(newPartEl);
+            this.destroy(oldEl);
+            return;
+        }
+
+        for (let viewChild of viewAspects) {
+            var aspectPart = this.findPart(part.viewId, "role." + viewChild.getAttribute('data-role'), $rootScope.partsHierarchy);
+            var idx = parentPart.children.indexOf(aspectPart);
+
+            if (operation == 'duplicate') {
+                var newPart = $.extend(true, {}, aspectPart);
+                newPart.viewId = nextViewId;
+                this.deleteIds(newPart);
+                delete newPart.viewIndex;
+                for (let i = 0; i < newPart.children.length; i++) {
+                    newPart.children[i].viewId = (parseInt(newPart.viewId) + i + 1).toString();
+                }
+                parentPart.children.splice(idx, 0, newPart);
+                var newPartEl = this.build(scope, 'part.children[' + idx + ']', childOptions);
+                $(blockContent.children().get(idx)).before(newPartEl);
+            }
+            else if (operation == 'remove') {
+                parentPart.children.splice(idx, 1);
+                this.destroy($(blockContent.children().get(idx)));
+                if (blockContent.children().length == 0)
+                    blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+            }
+
+
+        }
+
     }
 
     this.buildRolesHierarchyForOneRole = function (targetRole) {
@@ -1105,8 +1509,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         for (let role of $rootScope.rolesHierarchy) {
             this.setHierarchy(role, targetRole, hierarchyRoles)
         }
-        // add Default
-        hierarchyRoles.push($rootScope.rolesHierarchy[0]);
+        if (!hierarchyRoles.includes($rootScope.rolesHierarchy[0]))
+            // add Default
+            hierarchyRoles.push($rootScope.rolesHierarchy[0]);
         return hierarchyRoles;
     };
     this.setHierarchy = function (role, targetRole, hierarchyRoles) {
@@ -1157,6 +1562,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         };
 
+
+
         element.on('click', function (e) {
 
             //click only works on the closest div.
@@ -1168,11 +1575,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     return;
                 }
                 element.removeClass('highlight');
-                if (element.hasClass('diff_aspect')) {
-                    element.addClass('aspect_hide');
-                    $sbviews.findViewToShow(part.viewId);
-                    element.removeClass('diff_aspect');
-                }
+                $('#warning_ref').hide();
+                // if (element.hasClass('diff_aspect')) {
+                //     element.addClass('aspect_hide');
+                //     $sbviews.findViewToShow(part.viewId);
+                //     element.removeClass('diff_aspect');
+                // }
                 if (myToolbar != undefined)
                     myToolbar.remove();
                 myToolbar = undefined;
@@ -1220,7 +1628,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
                 }
-                else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view')) { // children of ui-block
+                else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view') || element.hasClass('block')) { // children of ui-block
                     defaultOptions.overlayOptions.allowDataLoop = true;
                     defaultOptions.overlayOptions.allowIf = true;
                     defaultOptions.overlayOptions.allowEvents = true;
@@ -1228,9 +1636,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
                 }
-                if (element.hasClass('view')) {
-                    toolOptions.noSettings = true;
-                }
+                // if (element.hasClass('view')) {
+                //     toolOptions.noSettings = true;
+                // }
+
                 toolbarOptions = $.extend(true, defaultOptions, { tools: toolOptions, toolFunctions: toolFunctions, overlayOptions: overlayOptions }, options);
                 toolbarOptions.editData = editData;
 
@@ -1243,6 +1652,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 // });
                 //if (element.parent().prop("tagName")!="TD")//not highlighting table element because it moves things arround
                 element.addClass('highlight');
+                if (part.isTemplateRef)
+                    $('#warning_ref').show();
 
                 element.append(myToolbar);
                 firstclickdone = true;
@@ -1300,9 +1711,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
     this.setDefaultParamters = function (part) {
         //sets some fields contents to '{}' 
-        if (part.variables === undefined || Array.isArray(part.variables))
+        if (part.variables === undefined || Array.isArray(part.variables) || part.variables === "[]")
             part.variables = {};
-        if (part.events === undefined || Array.isArray(part.events))
+        if (part.events === undefined || Array.isArray(part.events) || part.events === "[]")
             part.events = {};
         if (part.loopData === undefined)
             part.loopData = "{}";

@@ -15,6 +15,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             titlePart.value = 'Header Title';
             part.header.title = titlePart;
 
+
             var imagePart = $sbviews.defaultPart('image');
             imagePart.value = 'images/awards.svg';
             part.header.image = imagePart;
@@ -36,14 +37,38 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                     deleteIds(newPart.values[c].value);
                 }
             }
+
+            function updateViewIds(newPart, newViewId) {
+                newPart.viewId = newViewId;
+                for (var r in newPart.headerRows) {
+                    newViewId = (parseInt(newViewId) + 1).toString();
+                    updateViewIds(newPart.headerRows[r], newViewId);
+                }
+                for (var r in newPart.rows) {
+                    newViewId = (parseInt(newViewId) + 1).toString();
+                    updateViewIds(newPart.rows[r], newViewId);
+                }
+                for (var c in newPart.values) {
+                    newViewId = (parseInt(newViewId) + 1).toString();
+                    updateViewIds(newPart.values[c].value, newViewId);
+                }
+                for (var c in newPart.children) {
+                    newViewId = (parseInt(newViewId) + 1).toString();
+                    updateViewIds(newPart.children[c], newViewId);
+                }
+            }
             $sbviews.setDefaultParamters(part);
             var block = $(document.createElement('div')).addClass('block');
             if (options.edit) {
-                block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId)
-                if (scope.role != parseRole(part.role) && part.parent != null)
+                block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
+                if (scope.role != parseRole(part.role))
                     block.addClass('aspect_hide');
+
             }
+
             if (part.header) {
+                part.header.image.role = part.role;
+                part.header.title.role = part.role;
                 var blockHeader = $(document.createElement('div')).addClass('header');
                 if (part.header.anchor && !options.edit)
                     blockHeader.append('<a name="' + part.header.anchor + '"></a>');
@@ -56,6 +81,10 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
 
             if (part.children.length == 0 && options.edit) {
                 blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+            }
+
+            if (part.isTemplateRef) {
+                blockContent.attr("style", "background-color: #ddedeb; ");
             }
 
             var childOptions;
@@ -156,32 +185,37 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                     },
                     toolFunctions: {
                         remove: function (obj) {
-                            var idx = part.children.indexOf(obj);
-                            part.children.splice(idx, 1);
-                            $sbviews.destroy($(blockContent.children().get(idx)));
-                            if (blockContent.children().length == 0)
-                                blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
+                            // var idx = part.children.indexOf(obj);
+                            // part.children.splice(idx, 1);
+                            // $sbviews.destroy($(blockContent.children().get(idx)));
+                            // if (blockContent.children().length == 0)
+                            //     blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
                             //$sbviews.notifyChanged(part, options);
-                            $sbviews.findViewToShow(obj.viewId);
+                            //$sbviews.findViewToShow(obj.viewId);
+                            $sbviews.manageViewAndSubviews(obj, scope, blockContent, childOptions, 'remove');
                         },
                         duplicate: function (obj) {
-                            var idx = part.children.indexOf(obj);
-                            var newPart = $.extend(true, {}, obj);
-                            //$sbviews.changePids(newPart);
-                            deleteIds(newPart);
-                            delete newPart.viewIndex;
-                            part.children.splice(idx, 0, newPart);
-                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                            $(blockContent.children().get(idx)).before(newPartEl);
+                            // var idx = part.children.indexOf(obj);
+                            // var newPart = $.extend(true, {}, obj);
+                            // const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                            // newPart.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+                            // //$sbviews.changePids(newPart);
+                            // deleteIds(newPart);
+                            // delete newPart.viewIndex;
+                            // part.children.splice(idx, 0, newPart);
+                            // var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                            // $(blockContent.children().get(idx)).before(newPartEl);
+                            $sbviews.manageViewAndSubviews(obj, scope, blockContent, childOptions, 'duplicate');
                             //$sbviews.notifyChanged(part, options);
                         },
                         switch: function (obj, newPart) {
-                            var idx = part.children.indexOf(obj);
-                            part.children.splice(idx, 1, newPart);
-                            var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
-                            var oldEl = $(blockContent.children().get(idx));
-                            oldEl.replaceWith(newPartEl);
-                            $sbviews.destroy(oldEl);
+                            // var idx = part.children.indexOf(obj);
+                            // part.children.splice(idx, 1, newPart);
+                            // var newPartEl = $sbviews.build(scope, 'part.children[' + idx + ']', childOptions);
+                            // var oldEl = $(blockContent.children().get(idx));
+                            // oldEl.replaceWith(newPartEl);
+                            // $sbviews.destroy(oldEl);
+                            $sbviews.manageViewAndSubviews(obj, scope, blockContent, childOptions, 'switch', newPart);
                             //$sbviews.notifyChanged(part, options);
                         }
                     }
@@ -191,17 +225,19 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                     if (o != n) {
                         var header = n;
                         if (header != undefined) {
+                            header.image.role = part.role;
+                            header.title.role = part.role;
                             blockHeader = $(document.createElement('div')).addClass('header');
                             blockHeader.append($sbviews.build(scope, 'part.header.image', $sbviews.editOptions(options, { partType: 'image' })));
                             blockHeader.append($sbviews.build(scope, 'part.header.title', $sbviews.editOptions(options, { partType: 'text' })).addClass('title'));
                             block.prepend(blockHeader);
-                            $sbviews.notifyChanged(part, options);
+                            //$sbviews.notifyChanged(part, options);
                         } else {
                             blockHeader.each(function () {
                                 $sbviews.destroy($(this));
                             });
                             blockHeader.remove();
-                            $sbviews.notifyChanged(part, options);
+                            //$sbviews.notifyChanged(part, options);
                         }
                     }
                 });
@@ -213,7 +249,18 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             block.append(blockContent);
 
             if (options.edit) {
-                $sbviews.bindToolbar(block, scope, part, options, {
+                var newOptions = $sbviews.editOptions(options, {
+                    toolOptions: {
+                        canSwitch: true,
+                        canHaveAspects: true
+                    },
+                    toolFunctions: {
+                        switch: function (obj, newPart) {
+                            $sbviews.manageViewAndSubviews(obj, null, document.getElementById("viewEditor"), newOptions, 'switch', newPart);
+                        }
+                    }
+                });
+                $sbviews.bindToolbar(block, scope, part, $.extend(true, options, newOptions), {
                     layoutEditor: true,
                     overlayOptions: {
                         callbackFunc: function (el, execClose, optionsScope, watch) {
@@ -234,7 +281,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                             /*var pageAnchor = $('<sb-checkbox ng-if="part.header != undefined" sb-checkbox="part.header.anchor" sb-checkbox-label="Enable Page Anchor" sb-checkbox-default="" sb-checkbox-info="Adds a anchor reference to the block. This is used by links to jump directly to this element." sb-checkbox-link="./docs/#PartBlockHeaderPageAnchor"></sb-checkbox>');
                             pageAnchor.append('<sb-input sb-input="part.header.anchor" sb-input-label="Anchor"></sb-input>');
                             watch('part.header.anchor');
-
+            
                             header.children('.content').append(pageAnchor);*/
 
                             partSpecificMenu.append(header);
@@ -356,11 +403,13 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                 if (value.indexOf('part:') == 0) {
                                     newPart = $sbviews.registeredPartType[index].defaultPart();
                                     newPart.role = "role." + $("#viewer_role").find(":selected")[0].text;
-                                    newPart.parent = part.viewId;
-                                    if (part.children.length == 0)
-                                        newPart.viewId = (parseInt(part.viewId) + 1).toString();
-                                    else
-                                        newPart.viewId = (parseInt(part.children[part.children.length - 1].viewId) + 1).toString();
+                                    newPart.parentId = part.id;
+                                    // if (part.children.length == 0)
+                                    //     newPart.viewId = (parseInt(part.viewId) + 1).toString();
+                                    // else {
+                                    const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                                    newPart.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+                                    // }
                                     if (newPart.part == "table") {
                                         newPart.rows[0].values[0].viewId = (parseInt(newPart.viewId) + 1).toString();
                                     }
@@ -370,29 +419,88 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                     var isRef = $('#isRef').is(':checked');
                                     var value = templateList.val();
                                     var id = value.substr(5);
-                                    templates[id].role = scope.$root.role;
+
+                                    //templates[id].role = scope.$root.role;
                                     if (isRef) {
                                         // with reference
                                         console.log("newTemplateRef", templates[id]);
-                                        $smartboards.request('views', 'getTemplateReference', templates[id], function (data, err) {
-                                            if (err) {
-                                                giveMessage(err.description);
-                                                return;
-                                            }
-                                            delete data.template.id;
-                                            console.log("getTemplateReference", data);
-                                            addPart(data.template, true);
-                                        });
-                                    }
-                                    else {
-                                        //without ref
                                         $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
                                             if (err) {
                                                 giveMessage(err.description);
                                                 return;
                                             }
+
+                                            for (let aspect of data.template) {
+                                                delete aspect.id;
+
+                                                aspect.isTemplateRef = true;
+                                                //delete aspect.aspectClass;
+                                                aspect.parentId = part.id;
+                                                aspect.variables = JSON.parse(aspect.variables);
+                                                aspect.events = JSON.parse(aspect.events);
+                                                if (aspect.partType != 'block')
+                                                    delete aspect.children;
+                                                //aspect.viewId = templateViewId;
+                                                console.log("getTemplate by Reference", data);
+                                                //updateViewIds(aspect, templateViewId);
+                                                addPart(aspect, true);
+                                                //data.template.parent = part.viewId;
+                                                // if we use a template that was saved 'as normal'
+                                                //if (data.template.parent == null) {
+                                                //it give all the children, and not the
+                                            }
+
+
+                                            $sbviews.findViewToShow(templates[id].viewId);
+                                            //}
+                                            //if we use a template that was saved as ref
+                                            //else {
+                                            //addPart(data.template, true);
+                                            //}
+
+                                            //addPart(data.template, true);
+                                        });
+                                    }
+                                    else {
+                                        //without ref
+                                        //console.log(templates[id]);
+                                        $smartboards.request('views', 'getTemplateContent', templates[id], function (data, err) {
+                                            if (err) {
+                                                giveMessage(err.description);
+                                                return;
+                                            }
+                                            //delete data.template.id;
                                             console.log("getTemp", data.template);
-                                            addPart(data.template);
+                                            //data.parent = part.viewId;
+                                            var templateViewId;
+                                            if (part.children.length == 0)
+                                                templateViewId = (parseInt(part.viewId) + 1).toString();
+                                            else {
+                                                const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                                                templateViewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+                                            }
+                                            for (let aspect of data.template) {
+                                                delete aspect.id;
+
+                                                aspect.parentId = part.id;
+                                                aspect.variables = JSON.parse(aspect.variables);
+                                                aspect.events = JSON.parse(aspect.events);
+                                                // we want to use as a copy and not as ref
+                                                if (aspect.isTemplateRef)
+                                                    delete aspect.isTemplateRef;
+                                                //aspect.viewId = templateViewId;
+
+                                                const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                                                aspect.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+
+                                                updateViewIds(aspect, aspect.viewId);
+
+                                                //for each aspect??
+                                                addPart(aspect);
+                                            }
+
+
+                                            $sbviews.findViewToShow(templateViewId);
                                         });
                                     }
 

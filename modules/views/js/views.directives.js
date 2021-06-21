@@ -517,10 +517,14 @@ angular
           viewScope.view = view;
           viewScope.viewBlock = {
             partType: "block",
-            noHeader: true,
+            noHeader: false,
             children: viewScope.view.children,
-            role: viewScope.view.role,
+            role: viewScope.view.role
           };
+
+          if (viewScope.view.header) {
+            viewScope.viewBlock.header = viewScope.view.header;
+          }
 
           var viewBlock = $sbviews.build(viewScope, "viewBlock");
           viewBlock.removeClass("block");
