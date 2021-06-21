@@ -691,6 +691,19 @@ function resetUploadImage(id) {
     $(".config_input #text-" + id).text("No file chosen");
 }
 
+// parse role from role.Default to Default or role.Default>role.Default to Default>Defautl
+function parseRole(role) {
+    if (role.includes(">")) {
+        var viewer = role.split(">")[1].split(".")[1];
+        var user = role.split(">")[0].split(".")[1];
+        return user + ">" + viewer;
+    } else {
+        if (role.includes("."))
+            return role.split(".")[1];
+        return role;
+    }
+}
+
 // function moveRow(containerId, oldIdx, newIdx, atributes, item) {
 //     // children[0] - gives tbody; children gives the rows
 //     // cut the first child because the header is inside tbody

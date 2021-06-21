@@ -1,8 +1,8 @@
-angular.module('module.views').run(function($sbviews, $compile) {
+angular.module('module.views').run(function ($sbviews, $compile) {
     var valuePartDef = $sbviews.registeredPartType['text'];
     var imagePartDef = {
         name: 'Image',
-        defaultPart: function() {
+        defaultPart: function () {
             return {
                 partType: 'image',
                 edit: true,
@@ -10,34 +10,45 @@ angular.module('module.views').run(function($sbviews, $compile) {
             };
         },
         //changePids: function(part, change) {},
-        createElement: function(scope, part, options) {
+        createElement: function (scope, part, options) {
             if (options.preview != undefined)
                 return valuePartDef.createElement(scope, part, options);
             var img;
 
             var emptyValue = (part.value === '' || scope.placeholderValue === '');
-            
+
             if (emptyValue) {
                 img = $(document.createElement('div')).attr('class', 'placeholder red');
             } else if (part.edit) {
                 img = $(document.createElement('div')).attr('class', 'placeholder');
             } else //if (part.valueType == 'text') {
                 img = $(document.createElement('img')).attr('src', part.value);
-            
-            
+
+
             var root;
             if (part.link != undefined && !options.edit) {
                 part.link = part.link.replace(/\s/g, '');
-                root = $(document.createElement('a')).attr({href: part.link});
+                root = $(document.createElement('a')).attr({ href: part.link });
             } else {
                 root = $(document.createElement('span'));
             }
             root.append(img);
             root.addClass('image');
+            if (options.edit) {
+                root.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
+                if (scope.role != parseRole(part.role)) {
+                    if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
+                        element.addClass('aspect_hide');
+                }
+            }
+            if (part.isTemplateRef) {
+                root.attr("style", "border-color: #e34309; ");
+            }
+            //TODO: role interaction
             img.addClass('img');
             return root;
         },
-        destroy: function(element) {
+        destroy: function (element) {
         }
     };
     imagePartDef.build = valuePartDef.build;
