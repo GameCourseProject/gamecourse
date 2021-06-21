@@ -29,7 +29,7 @@ class Views extends Module
     {
         $childTabs = array();
         $pages = $this->viewHandler->getPages();
-        $viewTabs=[];
+        $viewTabs = [];
         // foreach ($pages as $pageId => $page) {
         //     $childTabs[] = Settings::buildTabItem($page['name'], 'course.settings.views.view({pageOrTemp:\'page\',view:\'' . $pageId . '\'})', true);
         // }
@@ -330,7 +330,7 @@ class Views extends Module
                                 'index' => $i
                             );
                             $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
-                            $value = $key->accept($visitor)->getValue();
+                            $value = $object->accept($visitor)->getValue();
 
                             $object["sortVariable" . $i] = $value;
                         }
@@ -513,7 +513,7 @@ class Views extends Module
             'previousActivity',
             function ($user) {
                 $id = $this->basicGetterFunction($user, "id")->getValue();
-                $previousActivity = Core::$systemDB->select("course_user", ["id"=>$id], "previousActivity");
+                $previousActivity = Core::$systemDB->select("course_user", ["id" => $id], "previousActivity");
                 return new ValueNode($previousActivity);
             },
             'Returns a string with the timestamp with the second to last action of the GameCourseUser in the system.',
@@ -556,7 +556,7 @@ class Views extends Module
             'studentNumber',
             function ($user) {
                 $id = $this->basicGetterFunction($user, "id")->getValue();
-                $studentNumber = Core::$systemDB->select("game_course_user", ["id"=>$id], "studentNumber");
+                $studentNumber = Core::$systemDB->select("game_course_user", ["id" => $id], "studentNumber");
                 return new ValueNode($studentNumber);
             },
             'Returns a string with the student number of the GameCourseUser.',
@@ -588,7 +588,7 @@ class Views extends Module
             'username',
             function ($user) {
                 $id = $this->basicGetterFunction($user, "id")->getValue();
-                $username = Core::$systemDB->select("auth", ["game_course_user_id"=>$id], "username");
+                $username = Core::$systemDB->select("auth", ["game_course_user_id" => $id], "username");
                 return new ValueNode($username);
             },
             'Returns a string with the username of the GameCourseUser.',
@@ -607,7 +607,6 @@ class Views extends Module
                     return new ValueNode("photos/" . $user["value"]["username"] . ".png");
                 }
                 return new ValueNode("images/no-photo.png");
-                
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
@@ -1139,8 +1138,8 @@ class Views extends Module
             }
         );
 
-        
-        
+
+
         //participations.getResourceViews(user)
         $this->viewHandler->registerFunction(
             'participations',
@@ -1148,16 +1147,14 @@ class Views extends Module
 
             function (int $user) use ($courseId) {
                 $table = "participation";
-                
+
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
                 $likeParams = ["description" => "Lecture % Slides"];
 
                 $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
 
                 return $this->createNode($skillTreeParticipation, "participation", "collection");
-            }
-
-            ,
+            },
             "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.",
             'collection',
             'participation',
@@ -1170,29 +1167,26 @@ class Views extends Module
             'participations',
             'getForumParticipations',
 
-            function (int $user, string $forum, string $thread=null) use ($courseId) {
+            function (int $user, string $forum, string $thread = null) use ($courseId) {
                 $table = "participation";
-                
+
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
-                    
-                    $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [],null, $likeParams);
-                } 
-                else {
+
+                    $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
+                } else {
                     # Name of thread is important for the badge
                     $like = $forum . ", Re: " . $thread . "%";
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
-            }   
+                }
                 return $this->createNode($forumParticipation, "participations", "collection");
-            }
-
-            ,
+            },
             "Returns a collection with all the participations in a specific forum of the Course. The  parameter can be used to find participations for a user or forum:\nuser: id of a GameCourseUser that participated.\n
                 forum: name of a moodle forum to filter participations by.",
             'collection',
@@ -1212,29 +1206,27 @@ class Views extends Module
                 $table = "user_role left join role on user_role.role=role.id";
                 $columns = "user_role.id";
                 $where = ["role.name" => "Teacher", "role.course" => $courseId];
-                
-                $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [],null, null);
+
+                $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [], null, null);
                 $teachers = [];
-                foreach ($evaluators as $evaluator){
+                foreach ($evaluators as $evaluator) {
                     array_push($teachers, $evaluator["id"]);
                 }
                 $table = "participation";
                 $description = "Skill Tree, Re: " . $skill;
                 $orderby = "rating desc";
                 $where = ["user" => $user, "type" => "graded post", "description" => $description, "course" => $courseId];
-                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', $orderby, [], [],null, null);
+                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', $orderby, [], [], null, null);
                 $filteredParticipations = array();
 
                 foreach ($forumParticipation as $participation) {
-                    if (in_array($participation["evaluator"], $teachers) ) {
+                    if (in_array($participation["evaluator"], $teachers)) {
                         array_push($filteredParticipations, $participation);
-			            break;
+                        break;
                     }
                 }
                 return $this->createNode($filteredParticipations, "participations", "collection");
-            }
-
-            ,
+            },
             "Returns a collection with all the skill tree participations for a user in the forums. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated. \nuser: id of a GameCourseUser that participated.",
             'collection',
             'participation',
@@ -1249,10 +1241,10 @@ class Views extends Module
 
             function (int $user, string $type) use ($courseId) {
                 $table = "participation";
-                
+
                 $where = ["user" => $user, "type" => $type, "course" => $courseId];
-                
-                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, 'description', null, [], [],null, null);
+
+                $forumParticipation = Core::$systemDB->selectMultiple($table, $where, 'description', null, [], [], null, null);
 
                 $ranking = 0;
                 if (count($forumParticipation) > 0) {
@@ -1260,9 +1252,7 @@ class Views extends Module
                 }
 
                 return $this->createNode($ranking, "participations", "object");
-            }
-
-            ,
+            },
             "Returns rankings of student awarded rewards.",
             'collection',
             'participation',
@@ -1327,15 +1317,15 @@ class Views extends Module
             } else {
                 $defaultRole = "role.Default";
             }
-            
-            
+
+
             //page or template to insert in db
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course')];
             if (API::getValue('pageOrTemp') == "page") {
                 // Core::$systemDB->insert("view", ["partType" => "block", "parent" => null, "role" => $defaultRole]);
                 $viewId = API::getValue('viewId');
                 //$viewId = Core::$systemDB->select("view_template", ["templateId" => API::getValue('templateId')], "viewId");
-                
+
                 $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');
                 Core::$systemDB->insert("page", $newView);
@@ -1365,7 +1355,7 @@ class Views extends Module
                 $viewId = API::getValue('viewId');
                 //$viewId = Core::$systemDB->select("view_template", ["templateId" => API::getValue('templateId')], "viewId");
                 $newView["viewId"] = $viewId;
-                $newView["isEnabled"] = API::getValue('isEnabled');     
+                $newView["isEnabled"] = API::getValue('isEnabled');
                 Core::$systemDB->update("page", $newView, ['id' => $id]);
             } else {
                 Core::$systemDB->update("template", $newView, ['id' => $id]);
@@ -1574,12 +1564,12 @@ class Views extends Module
                     }
                     Core::$systemDB->delete("view", ["id" => $pageTemp["viewId"]]);
                 }
-             } 
+            }
             // else {
             //     $pageOrTemplates = Core::$systemDB->selectMultiple("page", ["id" => $id]);
             // }
 
-            
+
             Core::$systemDB->delete(API::getValue("pageOrTemp"), ["id" => $id]);
         });
         //export template to a txt file on main project folder, it needs to be moved to a module folder to be used
@@ -1654,7 +1644,7 @@ class Views extends Module
                 $params["user"] = (string)$userId;
             }
             if ($viewerId != -1) {
-                $params['viewer'] = $viewerId; 
+                $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
             }
@@ -1878,16 +1868,18 @@ class Views extends Module
         if (empty($viewSettings)) {
             API::error('Unknown ' . $pgOrTemp . ' ' . $id);
         }
-        
+
         return [
             "courseId" => $courseId, "course" => $course, "viewId" => $id,
             "pageOrTemp" => $pgOrTemp, "viewSettings" => $viewSettings
         ];
     }
-    public static function saveScreensoot($img, $viewId, $pageOrTemplate){
-        file_put_contents("screenshoots/". $pageOrTemplate . "/". $viewId . ".png", $img);
+    public static function saveScreensoot($img, $viewId, $pageOrTemplate)
+    {
+        file_put_contents("screenshoots/" . $pageOrTemplate . "/" . $viewId . ".png", $img);
     }
-    public function is_configurable(){
+    public function is_configurable()
+    {
         return false;
     }
 
