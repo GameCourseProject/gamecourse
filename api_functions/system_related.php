@@ -4,6 +4,7 @@ namespace APIFunctions;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
+use GameCourse\Module;
 
 
 //system settings (theme settings)
