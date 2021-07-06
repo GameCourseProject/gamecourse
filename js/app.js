@@ -5,7 +5,6 @@ app.run(['$rootScope', '$state', function ($rootScope, $state) {
         removeActiveLinks();
         addActiveLinks(toState.name);
         checkNavbarLength();
-
     });
 
 }]);
@@ -22,7 +21,11 @@ function removeActiveLinks() {
 function addActiveLinks(state) {
     var sliced = state.split('.');
     for (var i = 1; i <= sliced.length; i++) {
-        var elementsTo = $(document).find('a[ui-sref="' + sliced.slice(0, i).join('.') + '"]');
+        var elementsTo;
+        if (sliced.slice(0, i).join('.').includes('custom'))
+            elementsTo = $(document).find('a[ui-sref*="' + sliced.slice(0, i).join('.') + '"]');
+        else
+            elementsTo = $(document).find('a[ui-sref="' + sliced.slice(0, i).join('.') + '"]');
         if (elementsTo.length > 0)
             elementsTo.addClass('active');
         elementsTo.addClass('focused');

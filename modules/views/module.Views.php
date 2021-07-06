@@ -1291,7 +1291,7 @@ class Views extends Module
                 'view' => $this->viewHandler->handle($data["viewSettings"], $course, $viewParams)
             ]);
         });
-        //gets list of pages and templates for the views page
+        //gets V of pages and templates for the views page
         API::registerFunction('views', 'listViews', function () {
             API::requireCourseAdminPermission();
             API::requireValues('course');
@@ -1600,14 +1600,11 @@ class Views extends Module
             $id = API::getValue('id');
 
             if (API::getValue("pageOrTemp") == "template") {
-                //TODO
-                $pageOrTemplates = Core::$systemDB->selectMultiple("view_template", ["templateId" => $id]);
-                foreach ($pageOrTemplates as $pageTemp) { //aspect views of pages or template or templateReferences
-                    $aspectView = Core::$systemDB->select("view", ["id" => $pageTemp["viewId"]]);
-                    if ($aspectView["partType"] == "block" && $aspectView["parent"] == null && $aspectView["aspectClass"] != null) {
-                        Core::$systemDB->delete("view", ["aspectClass" => $aspectView["aspectClass"]]);
-                    }
-                    Core::$systemDB->delete("view", ["id" => $pageTemp["viewId"]]);
+                $viewId = Core::$systemDB->select("view_template", ["templateId" => $id], 'viewId');
+                $aspects = Core::$systemDB->selectMultiple("view left join view_parent on viewId=childId", ["viewId" => $viewId]);
+                foreach ($aspects as $aspect) {
+                    //delete this aspect and all its children
+                    $this->viewHandler->deleteViews($aspect);
                 }
             }
             // else {
@@ -1643,11 +1640,9 @@ class Views extends Module
             $viewType = $viewSettings['roleType'];
             API::requireValues('roles');
             $roles = API::getValue('roles');
-            $rolesHierarchy = $course->getRolesHierarchy();
+            $rolesHierarchy = $course->getRolesHierarchy(); // more specific --> less specific
+            // although Default is not the more specific, we need to include it, so it goes as the 'role 0' in the first position
             array_unshift($rolesHierarchy, ["name" => "Default", "id" => "0"]);
-            //$userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
-            // add Default as the last choice
-            // array_push($userRolesHierarchy, "Default");
             if ($viewType == "ROLE_SINGLE") {
                 //print_r($viewSettings);
                 // if (!array_key_exists('role', $info)) {
@@ -1656,10 +1651,10 @@ class Views extends Module
                 //When entering the view editor, starts always with Default
                 $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['viewerRole'], true);
             } else if ($viewType == "ROLE_INTERACTION") {
-                if (!array_key_exists('roleOne', $roles) || !array_key_exists('roleTwo', $roles)) {
-                    API::error('Missing roleOne and/or roleTwo in info');
-                }
-                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['viewerRole'] . '>' . $roles['userRole'], true);
+                // if (!array_key_exists('roleOne', $roles) || !array_key_exists('roleTwo', $roles)) {
+                //     API::error('Missing roleOne and/or roleTwo in info');
+                // }
+                $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['userRole'] . '>' . $roles['viewerRole'], true);
             }
 
             $templates = $this->getTemplates();
@@ -1674,8 +1669,9 @@ class Views extends Module
                 unset($templates[$key]);
             }
             $courseRoles = $course->getRolesData("id,name");
+            //include Default as a role
             array_unshift($courseRoles, ["id" => "0", "name" => "Default"]);
-            $viewRoles = array_values($this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles));
+            $viewRoles = array_values($this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles, $viewType));
             API::response(array('view' => $view, 'courseId' => $courseId, 'fields' => [], 'templates' => $templates, 'courseRoles' => $courseRoles, 'viewRoles' => $viewRoles, 'rolesHierarchy' => $rolesHierarchy));
         });
         //getDictionary

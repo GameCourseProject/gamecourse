@@ -369,15 +369,14 @@ class Course
                 if (is_dir($source . '/' . $file)) {
                     // Recursively calling custom copy function for sub directory  
 
-                    Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);  
-                }  
-                else {  
-                    copy($source . '/' . $file, $destination . '/' . $file);  
-                }  
-            }  
-        }  
-      
-        closedir($dir);  
+                    Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);
+                } else {
+                    copy($source . '/' . $file, $destination . '/' . $file);
+                }
+            }
+        }
+
+        closedir($dir);
     }
 
     public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive)
@@ -400,7 +399,7 @@ class Course
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
         $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
-        
+
 
         //course_user table (add current user)
         $currentUserId = null;
@@ -466,17 +465,17 @@ class Course
                     $p['course'] = $courseId;
                     unset($p['id']);
                     $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    $views = $handler->getViewWithParts($view["id"]);
+                    $views = $handler->getViewWithParts($view["viewId"]);
 
                     $defaultAspectId = null;
-                    if (sizeof($views) > 1) {
-                        Core::$systemDB->insert("aspect_class");
-                        $aspectClass = Core::$systemDB->getLastId();
-                    } else $aspectClass = null;
+                    // if (sizeof($views) > 1) {
+                    //     Core::$systemDB->insert("aspect_class");
+                    //     $aspectClass = Core::$systemDB->getLastId();
+                    // } else $aspectClass = null;
                     //set view
                     foreach ($views as $v) {
                         unset($v["id"]);
-                        $v["aspectClass"] = $aspectClass;
+                        //$v["aspectClass"] = $aspectClass;
                         //need to convert the roles of the aspects to the new roles
                         if ($p["roleType"] == "ROLE_INTERACTION") {
                             $roles = explode(">", $v["role"]);
@@ -516,7 +515,7 @@ class Course
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
                     );
-                    $views = $viewHandler->getViewWithParts($aspect["id"]);
+                    $views = $viewHandler->getViewWithParts($aspect["viewId"]);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
@@ -525,17 +524,17 @@ class Course
                 //import
                 foreach ($tempTemplates as $template) {
                     $aspects = $template["views"];
-                    $aspectClass = null;
-                    if (sizeof($aspects) > 1) {
-                        Core::$systemDB->insert("aspect_class");
-                        $aspectClass = Core::$systemDB->getLastId();
-                    }
+                    //$aspectClass = null;
+                    // if (sizeof($aspects) > 1) {
+                    //     Core::$systemDB->insert("aspect_class");
+                    //     $aspectClass = Core::$systemDB->getLastId();
+                    // }
                     $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
                     $content = null;
 
                     foreach ($aspects as &$aspect) {
-                        $aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                        //$aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
                         $aspect["id"] = Core::$systemDB->getLastId();
                         //print_r($aspect);
                         if ($content) {
@@ -543,11 +542,11 @@ class Course
                         }
                         $viewHandler->updateViewAndChildren($aspect, false, true);
                     }
-                    $existingTemplate = Core::$systemDB->select("page", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
-                    if ($existingTemplate) {
-                        $id = $existingTemplate["id"];
-                        Core::$systemDB->delete("template", ["id" => $id]);
-                    }
+                    // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
+                    // if ($existingTemplate) {
+                    //     $id = $existingTemplate["id"];
+                    //     Core::$systemDB->delete("template", ["id" => $id]);
+                    // }
                     Core::$systemDB->insert("template", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
                     $templateId = Core::$systemDB->getLastId();
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
@@ -954,7 +953,8 @@ class Course
     }
 
 
-    public function upload($file, $filename, $module = null, $subfolder = null){
+    public function upload($file, $filename, $module = null, $subfolder = null)
+    {
         $location = Course::getCourseDataFolder($this->getId());
 
         if ($module) {
@@ -989,10 +989,8 @@ class Course
                 $temp = explode(".", $value);
 
                 $extension = "." . end($temp);
-                $file = array('name' => $value, 'filetype'=> 'file', 'extension' => $extension);
-                array_push($results,$file);
-                
-                
+                $file = array('name' => $value, 'filetype' => 'file', 'extension' => $extension);
+                array_push($results, $file);
             } else if ($value != "." && $value != "..") {
                 $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFolders($path));
                 $results[$value] = $folder;
@@ -1001,7 +999,8 @@ class Course
         return $results;
     }
 
-    public function deleteFile($path) {
+    public function deleteFile($path)
+    {
         $locationFile = Course::getCourseDataFolder($this->getId()) . $path;
         unlink($locationFile);
     }

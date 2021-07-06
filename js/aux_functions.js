@@ -607,15 +607,12 @@ function setClickEvent($scope) {
 
 function setClickOnFiles($scope) {
     document.getElementsByClassName("file").forEach(element => {
-        console.log(element);
         element.onclick = function () {
-            console.log("clickkk");
             // remove border from previous selected
             if ($scope.selectedFile != null)
                 changeBorderColor($scope.selectedFile);
             // first click or when there is another one selected
             else if ($scope.selectedFile == null || $scope.selectedFile != element) {
-                console.log("here");
                 changeBorderColor(element);
                 $scope.selectedFile = element;
             }
@@ -691,15 +688,35 @@ function resetUploadImage(id) {
     $(".config_input #text-" + id).text("No file chosen");
 }
 
-// parse role from role.Default to Default or role.Default>role.Default to Default>Defautl
+// parse role from role.Default to Default or role.Default>role.Default to Default>Default
 function parseRole(role) {
     if (role.includes(">")) {
         var viewer = role.split(">")[1].split(".")[1];
         var user = role.split(">")[0].split(".")[1];
         return user + ">" + viewer;
     } else {
-        if (role.includes("."))
-            return role.split(".")[1];
+        return role.split(".")[1];
+    }
+}
+
+// (un)parse role from Default to role.Default or Default>Default to role.Default>role.Default
+function unparseRole(role) {
+    if (role.includes(">")) {
+        var viewer = "role." + role.split(">")[1];
+        var user = "role." + role.split(">")[0];
+        return user + ">" + viewer;
+    } else {
+        return "role." + role;
+    }
+}
+
+//get viewer in the form role.{role}
+function getViewerFromRole(role) {
+    if (!role.includes("."))
+        role = unparseRole(role);
+    if (role.includes(">")) {
+        return role.split(">")[1];
+    } else {
         return role;
     }
 }

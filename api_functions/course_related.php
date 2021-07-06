@@ -34,27 +34,20 @@ API::registerFunction('core', 'getCourseInfo', function () {
                 $view = Core::$systemDB->select("view", ["id" => $page["viewId"]]);
                 $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $page["viewId"], "course" => $courseId], "id,name,roleType");
 
-                //TODO ROLE INTERACTION
                 if ($template["roleType"] == "ROLE_INTERACTION") {
                     $viewerRole = explode(".", explode(">", $view["role"])[1])[1];
                     $userRole = explode(".", explode(">", $view["role"])[0])[1];
-                    if ($view["aspectClass"] == null) {
-                        if (!empty(Core::$systemDB->select("view", ["parent" => $view["id"]])))
+                    $views = Core::$systemDB->selectMultiple("view", ["viewId" => $view["viewId"]]);
+                    foreach ($views as $v) {
+                        $viewerRole = explode(".", explode(">", $v["role"])[1])[1];
+                        //userRole used for pages like profile - only makes sense to add if the user has info to see about himself
+                        $userRole = explode(".", explode(">", $v["role"])[0])[1];
+                        if ((($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
+                                || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole)))
+                            && !empty(Core::$systemDB->select("view_parent", ["parentId" => $v["id"]]))
+                        ) {
                             Core::addNavigation($page["name"], 'course.customUserPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\',userID:\'' . $user->getId() . '\'})', true);
-                    } else {
-                        $aspect = $view["aspectClass"];
-                        $views = Core::$systemDB->selectMultiple("view", ["aspectClass" => $aspect, "parent" => null]);
-                        foreach ($views as $v) {
-                            $viewerRole = explode(".", explode(">", $v["role"])[1])[1];
-                            //userRole used for pages like profile - only makes sense to add if the user has info to see about himself
-                            $userRole = explode(".", explode(">", $v["role"])[0])[1];
-                            if ((($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
-                                    || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole)))
-                                && !empty(Core::$systemDB->select("view", ["parent" => $v["id"]]))
-                            ) {
-                                Core::addNavigation($page["name"], 'course.customUserPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\',userID:\'' . $user->getId() . '\'})', true);
-                                break;
-                            }
+                            break;
                         }
                     }
                 } else {
@@ -62,7 +55,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
 
                     $views = Core::$systemDB->selectMultiple(
                         "view",
-                        ["viewId" => $view["id"]]
+                        ["viewId" => $view["viewId"]]
                     );
                     foreach ($views as $v) {
                         $viewerRole = explode(".", $v["role"])[1];

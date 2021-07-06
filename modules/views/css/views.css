@@ -349,7 +349,7 @@
   align-self: center;
   padding: 10px;
   margin: 5px;
-  width: 80px;
+  width: 90px;
 }
 
 .view .red {
@@ -497,9 +497,10 @@
   align-items: center;
 }
 
-#viewer_role {
+#viewer_role, #user_role {
   border: 2px solid lightgray;
   border-radius: 5px;
+  margin-right: 8px;
 }
 
 .diff_aspect.highlight {

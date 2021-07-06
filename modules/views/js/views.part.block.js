@@ -61,9 +61,14 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             var block = $(document.createElement('div')).addClass('block');
             if (options.edit) {
                 block.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
-                if (scope.role != parseRole(part.role))
-                    block.addClass('aspect_hide');
-
+                if (scope.role.includes('>')) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                        block.addClass('aspect_hide');
+                    }
+                } else {
+                    if (scope.role != parseRole(part.role))
+                        block.addClass('aspect_hide');
+                }
             }
 
             if (part.header) {
@@ -402,7 +407,13 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                 var newPart = [];
                                 if (value.indexOf('part:') == 0) {
                                     newPart = $sbviews.registeredPartType[index].defaultPart();
-                                    newPart.role = "role." + $("#viewer_role").find(":selected")[0].text;
+                                    const viewer = $("#viewer_role").find(":selected")[0].text;
+                                    var role = viewer;
+                                    if (part.role.includes('>')) {
+                                        const user = $("#user_role").find(":selected")[0].text;
+                                        role = user + '>' + viewer;
+                                    }
+                                    newPart.role = unparseRole(role);
                                     newPart.parentId = part.id;
                                     // if (part.children.length == 0)
                                     //     newPart.viewId = (parseInt(part.viewId) + 1).toString();

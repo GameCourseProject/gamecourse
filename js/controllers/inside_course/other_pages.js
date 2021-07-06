@@ -1,21 +1,21 @@
 // other pages inside a course, except for settings
-app.controller("SpecificCourse", function($scope, $element, $stateParams, $compile) {
+app.controller("SpecificCourse", function ($scope, $element, $stateParams, $compile) {
     $element.append($compile(Builder.createPageBlock({
         image: "images/awards.svg",
         text: "{{courseName}}",
-    }, function(el, info) {}))($scope));
-    $element.one("mousemove", function() {
+    }, function (el, info) { }))($scope));
+    $element.one("mousemove", function () {
         checkNavbarLength();
     });
 });
-app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartboards, $compile, $parse) {
+app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.courseRoles = [];
-    $scope.deleteUser = function(user) {
+    $scope.deleteUser = function (user) {
         $("#action_completed").empty();
         $smartboards.request("course", "removeUser", {
             user_id: user.id,
             course: $scope.course
-        }, function(data, err) {
+        }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -26,7 +26,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         });
     };
     //place initial form of modal to choose how to add a user
-    resetAddUserModal = function() {
+    resetAddUserModal = function () {
         modal = $("#add-user");
         modal.empty();
         modal_content = $("<div class='modal_content'></div>");
@@ -46,21 +46,21 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         $compile(modal)($scope);
     };
     //redo sctions for adding existing user
-    updateSelectUsersSection = function($scope, selectedUser) {
+    updateSelectUsersSection = function ($scope, selectedUser) {
         $scope.selectedUser.find = "";
         $("#selected_users").empty();
         selected = $("#selected_users");
-        jQuery.each(selectedUser, function(index) {
+        jQuery.each(selectedUser, function (index) {
             user = selectedUser[index];
             selected.append($('<div  ng-click="removeUser(' + user.id + ')" class="user_tag">' + user.name + "</div>"));
         });
         selected.append($('<input id="select_system_user" type="text" placeholder="Search.." ng-model="selectedUser.find" ng-change="searchUser()"></input>'));
         $compile(selected)($scope);
     };
-    updateRemainingUsersSection = function($scope, remianingUsers) {
+    updateRemainingUsersSection = function ($scope, remianingUsers) {
         $("#system_users").empty();
         systemUsers = $("#system_users");
-        jQuery.each(remianingUsers, function(index) {
+        jQuery.each(remianingUsers, function (index) {
             user = remianingUsers[index];
             systemUsers.append($('<div class="line"><div>' + user.name + "-" + user.studentNumber + '</div><div class="add_icon_no_outline icon" ng-click="addUser(' + user.id + ')"></div></div>'));
         });
@@ -68,7 +68,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             ($scope);
     };
     //add an existing user
-    $scope.selectUsers = function() {
+    $scope.selectUsers = function () {
         $scope.selectedUser = {};
         $scope.selectedUser.users = [];
         $scope.selectedUser.role = "";
@@ -76,12 +76,12 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         var reqData = {
             course: $scope.course
         };
-        $scope.searchUser = function() {
+        $scope.searchUser = function () {
             filteredUsers = [];
             text = $scope.selectedUser.find;
             if (validateSearch(text)) {
                 //match por name e short
-                jQuery.each($scope.remianingUsers, function(index) {
+                jQuery.each($scope.remianingUsers, function (index) {
                     user = $scope.remianingUsers[index];
                     if (
                         (user.name && user.name.toLowerCase().includes(text.toLowerCase())) || (user.studentNumber && user.studentNumber.toLowerCase().includes(text.toLowerCase()))) {
@@ -93,7 +93,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
                 updateRemainingUsersSection($scope, $scope.remianingUsers);
             }
         };
-        $scope.addUser = function(user_id) {
+        $scope.addUser = function (user_id) {
             user = $scope.remianingUsers.find((el) => el.id == user_id);
             $scope.selectedUser.users.push(user);
             array = $scope.remianingUsers;
@@ -101,11 +101,11 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             array.splice(index, 1);
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
-            $("body").one("mousemove", function() {
+            $("body").one("mousemove", function () {
                 changeElColor(".user_tag", $scope.courseColor);
             });
         };
-        $scope.removeUser = function(user_id) {
+        $scope.removeUser = function (user_id) {
             user = $scope.selectedUser.users.find((el) => el.id == user_id);
             $scope.remianingUsers.push(user);
             array = $scope.selectedUser.users;
@@ -113,11 +113,11 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             array.splice(index, 1);
             updateSelectUsersSection($scope, $scope.selectedUser.users);
             updateRemainingUsersSection($scope, $scope.remianingUsers);
-            $("body").one("mousemove", function() {
+            $("body").one("mousemove", function () {
                 changeElColor(".user_tag", $scope.courseColor);
             });
         };
-        $scope.isReadyToSubmit = function() {
+        $scope.isReadyToSubmit = function () {
             //validate inputs
             if ($scope.selectedUser.users.length != 0 && $scope.selectedUser.role != "") {
                 return true;
@@ -125,13 +125,13 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
                 return false;
             }
         };
-        $scope.submitUsers = function() {
+        $scope.submitUsers = function () {
             var reqData = {
                 course: $scope.course,
                 role: $scope.selectedUser.role,
                 users: $scope.selectedUser.users,
             };
-            $smartboards.request("course", "addUser", reqData, function(data, err) {
+            $smartboards.request("course", "addUser", reqData, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -157,7 +157,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         add_row.append($('<span style="margin-right: 10px;"> Role: </span>'));
         add_role = $('<select id="roles" class="form__input" name="roles" ng-model="selectedUser.role">');
         add_role.append($('<option value="" disabled selected>Select a role</option>'));
-        jQuery.each($scope.courseRoles, function(index) {
+        jQuery.each($scope.courseRoles, function (index) {
             role = $scope.courseRoles[index];
             add_role.append($('<option value="' + role + '">' + role + "</option>"));
         });
@@ -170,7 +170,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         Users.append(content);
         modal.append(Users);
         $compile(modal)($scope);
-        $smartboards.request("course", "notCourseUsers", reqData, function(data, err) {
+        $smartboards.request("course", "notCourseUsers", reqData, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -181,7 +181,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         });
     };
     //create a new user
-    $scope.createUser = function() {
+    $scope.createUser = function () {
         //replace modal content
         modal = $("#add-user");
         modal.empty();
@@ -210,7 +210,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         select = $('<select id="authService" class="form__input" name="authService" ng-model="newUser.userAuthService" onchange="changeSelectTextColor(this);"></select>');
         select.append($('<option value="" disabled selected>Auth Service</option>'));
         optionsAuth = ["fenix", "google", "facebook", "linkedin"];
-        jQuery.each(optionsAuth, function(index) {
+        jQuery.each(optionsAuth, function (index) {
             option = optionsAuth[index];
             select.append($('<option value="' + option + '">' + option + "</option>"));
         });
@@ -231,13 +231,13 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         $scope.newUser.userRoles = [];
         updateRolesAddSection($scope, "#new_box", $scope.courseRoles, $scope.newUser.userRoles);
 
-        $scope.addRole = function() {
+        $scope.addRole = function () {
             selector = $("#roles")[0];
             role = selector.options[selector.selectedIndex].value;
             $scope.newUser.userRoles.push(role);
             updateRolesAddSection($scope, "#new_box", $scope.courseRoles, $scope.newUser.userRoles);
         };
-        $scope.removeRole = function(role) {
+        $scope.removeRole = function (role) {
             array = $scope.newUser.userRoles;
             index = $scope.newUser.userRoles.indexOf(role);
             array.splice(index, 1);
@@ -250,12 +250,12 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         //image preview
         var imageInput = document.getElementById("profile_image");
         var imageDisplayArea = document.getElementById("display_profile_image");
-        imageInput.addEventListener("change", function(e) {
+        imageInput.addEventListener("change", function (e) {
             var file = imageInput.files[0];
             var imageType = /image.*/;
             if (file.type.match(imageType)) {
                 var reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     imageDisplayArea.innerHTML = "";
                     var img = new Image();
                     img.src = reader.result;
@@ -272,8 +272,8 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             }
         });
 
-        $scope.isReadyToSubmit = function() {
-            isValid = function(text) {
+        $scope.isReadyToSubmit = function () {
+            isValid = function (text) {
                 return text != "" && text != undefined && text != null;
             };
             //validate inputs
@@ -284,7 +284,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             }
         };
 
-        $scope.submitUser = function() {
+        $scope.submitUser = function () {
             var reqData = {
                 course: $scope.course,
                 userName: $scope.newUser.userName,
@@ -298,7 +298,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
                 userImage: $scope.newUser.userImage,
                 userHasImage: $scope.newUser.userHasImage,
             };
-            $smartboards.request("course", "createUser", reqData, function(data, err) {
+            $smartboards.request("course", "createUser", reqData, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -313,7 +313,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
     };
 
 
-    updateRolesAddSection = function($scope, box, allRoles, userRoles) {
+    updateRolesAddSection = function ($scope, box, allRoles, userRoles) {
         $("#roles_list").remove();
         $("#add_roles").remove();
         editbox = $(box);
@@ -326,7 +326,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             add_row.append($('<span style="color: lightgray;"> All roles selected </span>'));
         } else {
             add_role = $('<select id="roles" class="form__input" name="roles">');
-            jQuery.each(remianingRoles, function(index) {
+            jQuery.each(remianingRoles, function (index) {
                 role = remianingRoles[index];
                 add_role.append($('<option value="' + role + '">' + role + "</option>"));
             });
@@ -336,7 +336,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
 
         editbox.append(add_row);
         roles_row = $('<div id="roles_list"><span style="margin-right: 10px;">Roles: </span></div>');
-        jQuery.each(userRoles, function(index) {
+        jQuery.each(userRoles, function (index) {
             role = userRoles[index];
             roles_row.append($("<div  ng-click=\"removeRole('" + role + '\')" class="role_tag">' + role + "</div>"));
         });
@@ -344,7 +344,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         $compile(editbox)($scope);
     };
 
-    $scope.modifyUser = function(user) {
+    $scope.modifyUser = function (user) {
         $("#action_completed").empty();
         $("#active_visible_inputs").remove();
         $scope.editUser = {};
@@ -361,14 +361,14 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         $scope.editUser.userHasImage = "false";
         updateRolesAddSection($scope, "#edit_box", $scope.courseRoles, user.roles);
 
-        $scope.addRole = function() {
+        $scope.addRole = function () {
             selector = $("#roles")[0];
             role = selector.options[selector.selectedIndex].value;
             $scope.editUser.userRoles.push(role);
             updateRolesAddSection($scope, "#edit_box", $scope.courseRoles, $scope.editUser.userRoles);
         };
 
-        $scope.removeRole = function(role) {
+        $scope.removeRole = function (role) {
             array = $scope.editUser.userRoles;
             index = $scope.editUser.userRoles.indexOf(role);
             array.splice(index, 1);
@@ -381,20 +381,20 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         imageDisplayArea.innerHTML = "";
         //set initial image
         var profile_image = new Image();
-        profile_image.onload = function() {
+        profile_image.onload = function () {
             imageDisplayArea.appendChild(profile_image);
         };
-        profile_image.onerror = function() {
+        profile_image.onerror = function () {
             $("#edit_display_profile_image").append($("<span>Select a profile image</span>"));
         };
         profile_image.src = "photos/" + user.username + ".png?" + new Date().getTime();
         //set listener for input change
-        imageInput.addEventListener("change", function(e) {
+        imageInput.addEventListener("change", function (e) {
             var file = imageInput.files[0];
             var imageType = /image.*/;
             if (file.type.match(imageType)) {
                 var reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     imageDisplayArea.innerHTML = "";
                     var img = new Image();
                     img.src = reader.result;
@@ -411,8 +411,8 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             }
         });
 
-        $scope.isReadyToEdit = function() {
-            isValid = function(text) {
+        $scope.isReadyToEdit = function () {
+            isValid = function (text) {
                 return text != "" && text != undefined && text != null;
             };
             //validate inputs
@@ -423,7 +423,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             }
         };
 
-        $scope.submitEditUser = function() {
+        $scope.submitEditUser = function () {
             var reqData = {
                 course: $scope.course,
                 userName: $scope.editUser.userName,
@@ -439,7 +439,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
                 userHasImage: $scope.editUser.userHasImage,
             };
 
-            $smartboards.request("course", "editUser", reqData, function(data, err) {
+            $smartboards.request("course", "editUser", reqData, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -453,7 +453,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         };
     };
 
-    $scope.reduceList = function() {
+    $scope.reduceList = function () {
         $("#empty_table").empty();
         $("#users-table").show();
         $scope.users = $scope.allUsers.slice();
@@ -464,16 +464,16 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             $("#users-table").hide();
             $("#empty_table").append($scope.error_msg);
         }
-        $("body").one("mousemove", function() {
+        $("body").one("mousemove", function () {
             changeElColor(".role_tag", $scope.courseColor);
         });
     };
-    $scope.searchList = function() {
+    $scope.searchList = function () {
         filteredUsers = [];
         text = $scope.search;
         if (validateSearch(text)) {
             //match por name e short
-            jQuery.each($scope.users, function(index) {
+            jQuery.each($scope.users, function (index) {
                 user = $scope.users[index];
                 if (
                     (user.name && user.name.toLowerCase().includes(text.toLowerCase())) || (user.nickname && user.nickname.toLowerCase().includes(text.toLowerCase())) || (user.studentNumber && user.studentNumber.toLowerCase().includes(text.toLowerCase()))) {
@@ -486,9 +486,9 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             }
         }
     };
-    $scope.filterList = function() {
+    $scope.filterList = function () {
         activeRoles = [];
-        jQuery.each($scope.courseRoles, function(index) {
+        jQuery.each($scope.courseRoles, function (index) {
             role = $scope.courseRoles[index];
             filtername = "filter" + role;
             if ($scope[filtername] == true) {
@@ -497,7 +497,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         });
         usersList = $scope.users;
         filteredUsers = [];
-        jQuery.each(usersList, function(index) {
+        jQuery.each(usersList, function (index) {
             user = usersList[index];
             found = user.roles.some(
                 (r) => activeRoles.includes(r));
@@ -511,15 +511,15 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         }
     };
     //functions to visually change the "order by" arrows
-    $scope.sortUp = function() {
+    $scope.sortUp = function () {
         document.getElementById("triangle-up").classList.add("checked");
         document.getElementById("triangle-down").classList.remove("checked");
     };
-    $scope.sortDown = function() {
+    $scope.sortDown = function () {
         document.getElementById("triangle-down").classList.add("checked");
         document.getElementById("triangle-up").classList.remove("checked");
     };
-    $scope.orderList = function() {
+    $scope.orderList = function () {
         if ($("input[type=radio]:checked", ".order-by")[0] == undefined) {
             return;
         }
@@ -571,19 +571,19 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
     };
 
 
-    $scope.importUsers = function(replace) {
+    $scope.importUsers = function (replace) {
         $scope.importedUsers = null;
         $scope.replaceUsers = replace;
         var fileInput = document.getElementById("import_user");
         var file = fileInput.files[0];
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             $scope.importedUsers = reader.result;
             $smartboards.request("course", "importUser", {
                 file: $scope.importedUsers,
                 course: $scope.course,
                 replace: $scope.replaceUsers,
-            }, function(data, err) {
+            }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -600,10 +600,10 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         reader.readAsDataURL(file);
     };
 
-    $scope.exportUsers = function() {
+    $scope.exportUsers = function () {
         $smartboards.request("course", "exportUsers", {
             course: $scope.course
-        }, function(data, err) {
+        }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -617,19 +617,18 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
     //sidebar
     $smartboards.request("course", "courseRoles", {
         course: $scope.course
-    }, function(data, err) {
+    }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
         }
         $scope.courseRoles = [];
-        jQuery.each(data.courseRoles, function(index) {
+        jQuery.each(data.courseRoles, function (index) {
             role = data.courseRoles[index];
             $scope.courseRoles.push(role.name);
             filtername = "filter" + role.name;
             $scope[filtername] = true;
         });
-        console.log("finished");
         optionsFilter = $scope.courseRoles;
         optionsOrder = ["Name", "Nickname", "Student Number", "Last Login"];
         sidebarAll = createSidebar(optionsFilter, optionsOrder);
@@ -660,8 +659,8 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         }, {
             class: "action-column",
             content: ""
-        }, ];
-        jQuery.each(header, function(index) {
+        },];
+        jQuery.each(header, function (index) {
             rowHeader.append($("<th class=" + header[index].class + ">" + header[index].content + "</th>"));
         });
         rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");
@@ -732,7 +731,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         select = $('<select id="authService" class="form__input" name="authService" ng-model="editUser.userAuthService"></select>');
         select.append($('<option value="" disabled selected>Auth Service</option>'));
         optionsAuth = ["fenix", "google", "facebook", "linkedin"];
-        jQuery.each(optionsAuth, function(index) {
+        jQuery.each(optionsAuth, function (index) {
             option = optionsAuth[index];
             select.append($('<option value="' + option + '">' + option + "</option>"));
         });
@@ -769,11 +768,11 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         mainContent.append(allUsers);
         $compile(mainContent)($scope);
         //filter vai fazer este pedido com diferentes role definidos
-        getUsers = function() {
+        getUsers = function () {
             $smartboards.request("course", "courseUsers", {
                 course: $scope.course,
                 role: "allRoles"
-            }, function(data, err) {
+            }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -786,13 +785,14 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
                 $scope.lastArrow = "none";
                 $scope.orderList();
                 $scope.reduceList();
-                $("body").one("mousemove", function() {
+                $("body").one("mousemove", function () {
                     changeElColor(".role_tag", $scope.courseColor);
                 });
+                addActiveLinks($state.current.name);
             });
         };
         getUsers();
-        $element.one("mousemove", function() {
+        $element.one("mousemove", function () {
             checkNavbarLength();
         });
     });

@@ -125,8 +125,7 @@ class ViewHandler
                         $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, ['id' => $viewId]));
                         $parents = array_column(Core::$systemDB->selectMultiple("view_parent", ["childId" => $copy["viewId"]], "parentId"), "parentId");
                         $siblings = in_array($viewPart["parentId"], $parents);
-                        print_r($viewIdExists);
-                        if ($viewIdExists && !$siblings) {
+                        if ($viewIdExists && (!$siblings || $viewPart["viewIndex"] != "0")) {
                             Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                             $viewPart["viewId"] = $viewId;
                         } else
@@ -335,7 +334,7 @@ class ViewHandler
         }
     }
 
-    private function deleteViews($view)
+    public function deleteViews($view)
     {
         $children = Core::$systemDB->selectMultiple("view join view_parent on viewId=childId", ["parentId" => $view["id"]], "*");
         if (count($children) > 0) {
@@ -365,6 +364,7 @@ class ViewHandler
         return array_merge(array('role.Default'), $finalParents);
     }
 
+    //deprecated/not used
     //gets views of the class of $anAspectId, with the last matching role of $rolesWanted 
     private function findViews($anAspectId, $type, $rolesWanted)
     {
@@ -697,7 +697,7 @@ class ViewHandler
 
 
     // get roles for which there is (at least) one different (sub)view
-    public function getViewRoles($id, $courseRoles)
+    public function getViewRoles($id, $courseRoles, $roleType = 'ROLE_SINGLE')
     {
 
         $subviewsOfView = Core::$systemDB->selectHierarchy(
@@ -706,32 +706,80 @@ class ViewHandler
             ["viewId" => $id],
             "v.*, vp.parentId"
         );
-        if (empty($subviewsOfView)) {
-            $subviewsOfView = Core::$systemDB->selectMultiple("view", ["id" => $id]);
-            //$subviewsOfView["parentId"] = null;
-        }
-        $subviewsOfView[0]["parentId"] = null;
+        // if (empty($subviewsOfView)) {
+        //     $subviewsOfView = Core::$systemDB->selectMultiple("view", ["id" => $id]);
+        //     //$subviewsOfView["parentId"] = null;
+        // }
+        // $subviewsOfView[0]["parentId"] = null;
 
         $viewRoles = [];
-        foreach ($subviewsOfView as $v) {
-            $viewAspects = Core::$systemDB->selectMultiple(
-                "view",
-                ["viewId" => $v["viewId"]],
-                "id,role as name"
-            );
-            foreach ($viewAspects as &$asp) {
-                $asp["name"] = preg_replace("/\w+\./", "", $asp["name"]);
+        if ($roleType == 'ROLE_SINGLE') {
+            foreach ($subviewsOfView as $v) {
+                $viewAspects = Core::$systemDB->selectMultiple(
+                    "view",
+                    ["viewId" => $v["viewId"]],
+                    "id,role as name"
+                );
+                foreach ($viewAspects as &$asp) {
+                    $asp["name"] = explode(".", $asp["name"])[1]; //preg_replace("/\w+\./", "", $asp["name"]); 
+                }
+                $viewRoles = array_merge($viewRoles, $viewAspects);
             }
-            $viewRoles = array_merge($viewRoles, $viewAspects);
+            //print_r($viewRoles);
+            $roles = array_uintersect($courseRoles, $viewRoles, function ($a, $b) {
+                if ($a["name"] === $b["name"]) {
+                    return 0;
+                }
+                if ($a["name"] > $b["name"]) return 1;
+                return -1;
+            });
+            return $roles;
+        } else {
+            $viewerRoles = [];
+            $userRoles = [];
+            foreach ($subviewsOfView as $v) {
+                $viewAspects = Core::$systemDB->selectMultiple(
+                    "view",
+                    ["viewId" => $v["viewId"]],
+                    "id,role as name"
+                );
+                foreach ($viewAspects as $key => $asp) {
+                    $viewAspects[$key]["viewer"] = explode(".", explode(">", $viewAspects[$key]["name"])[1])[1];
+                    $viewAspects[$key]["user"] = explode(".", explode(">", $viewAspects[$key]["name"])[0])[1];
+                    unset($viewAspects[$key]["name"]);
+                }
+
+                $viewerRoles = array_merge($viewerRoles, $viewAspects);
+                $userRoles = array_merge($userRoles, $viewAspects);
+            }
+
+            foreach ($viewerRoles as $key => $vr) {
+                $viewerRoles[$key]['name'] = $viewerRoles[$key]['viewer'];
+                unset($viewerRoles[$key]['user']);
+                unset($viewerRoles[$key]['viewer']);
+            }
+            foreach ($userRoles as $key => $ur) {
+                $userRoles[$key]['name'] = $userRoles[$key]['user'];
+                unset($userRoles[$key]['user']);
+                unset($userRoles[$key]['viewer']);
+            }
+            $vRoles = array_uintersect($courseRoles, $viewerRoles, function ($a, $b) {
+                if ($a["name"] === $b["name"]) {
+                    return 0;
+                }
+                if ($a["name"] > $b["name"]) return 1;
+                return -1;
+            });
+            $uRoles = array_uintersect($courseRoles, $userRoles, function ($a, $b) {
+                if ($a["name"] === $b["name"]) {
+                    return 0;
+                }
+                if ($a["name"] > $b["name"]) return 1;
+                return -1;
+            });
+
+            return [$uRoles, $vRoles];
         }
-        $roles = array_uintersect($courseRoles, $viewRoles, function ($a, $b) {
-            if ($a["name"] === $b["name"]) {
-                return 0;
-            }
-            if ($a["name"] > $b["name"]) return 1;
-            return -1;
-        });
-        return $roles;
     }
 
 
@@ -742,7 +790,7 @@ class ViewHandler
         $aspect = Core::$systemDB->select(
             "view_template vt join template on templateId=id join view_template vt2 on id=vt2.templateId join view v on v.id=vt2.viewId",
             ["vt.viewId" => $templatRef["id"], "v.partType" => "block", "v.parent" => null],
-            "v.id,v.viewId,vt.templateId,roleType,aspectClass,role,partType"
+            "v.id,v.viewId,vt.templateId,roleType,role,partType"
         );
 
         //deal with roles of different types
@@ -785,7 +833,7 @@ class ViewHandler
         for ($i = 0; $i < count($children); $i++) {
             $child = $children[$i];
             $this->lookAtParameter($child, $organizedView);
-            $organizedView["children"][$i]["aspectClass"] = $organizedView["aspectClass"];
+            //$organizedView["children"][$i]["aspectClass"] = $organizedView["aspectClass"];
             $this->lookAtChildrenWQueries($child["viewId"], $organizedView["children"][$i]);
             if ($child["partType"] == "templateRef") {
                 $this->lookAtTemplateReference($child, $organizedView["children"][$i]);
@@ -794,7 +842,7 @@ class ViewHandler
         $this->lookAtHeader($organizedView);
         $this->lookAtTable($organizedView);
     }
-    //gets aspect view 
+    //gets aspect view - deprecated
     public function getAspect($aspectId)
     {
         $asp = Core::$systemDB->select("aspect_class natural join view", ["id" => $aspectId]);
@@ -804,6 +852,7 @@ class ViewHandler
         // }
         return $asp;
     }
+    //deprecated
     //receives an aspect id and returns all aspects of that aspectClass, if role is specified returns aspect of that role
     public function getAspects($anAspeptId)
     {
