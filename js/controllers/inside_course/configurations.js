@@ -676,6 +676,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         return;
                     }
                     $scope.listingItems.items = data.listingItems.items;
+                    $scope.tiers = data.tiers;
                 });
             });
 
@@ -1070,7 +1071,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 stg = "tier." + atribute;
                 rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
             });
-            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(item)"></div></td>');
+            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
