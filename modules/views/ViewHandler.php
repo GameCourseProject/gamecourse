@@ -108,7 +108,8 @@ class ViewHandler
             //insert/update views
             $copy = $this->makeCleanViewCopy($viewPart);
 
-            if (array_key_exists("id", $viewPart) && !$ignoreIds) { //already in DB, may need update
+            if ((array_key_exists("id", $viewPart) || !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]]))) && !$ignoreIds) { //already in DB, may need update
+                print_r("aqui");
                 Core::$systemDB->update("view", $copy, ["id" => $viewPart["id"]]);
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
@@ -122,7 +123,7 @@ class ViewHandler
                         Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                         $viewPart["viewId"] = $viewId;
                     } else {
-                        $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, ['id' => $viewId]));
+                        $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
                         $parents = array_column(Core::$systemDB->selectMultiple("view_parent", ["childId" => $copy["viewId"]], "parentId"), "parentId");
                         $siblings = in_array($viewPart["parentId"], $parents);
                         if ($viewIdExists && (!$siblings || $viewPart["viewIndex"] != "0")) {

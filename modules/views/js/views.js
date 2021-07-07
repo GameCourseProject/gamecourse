@@ -231,6 +231,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         //$scope.viewRoles = view.viewRoles;
         // $scope.selectedVRole = $scope.viewRoles[0].id;
         $scope.roleType = view.roleType;
+        $scope.viewId = view.viewId;
 
         if (view.roleType == 'ROLE_SINGLE') {
             $scope.viewerRoles = view.viewRoles;
@@ -242,10 +243,16 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             $scope.selectedVRole = $scope.viewRoles[1][0].id;
         }
 
+        console.log($scope.viewerRoles);
+
         selectViews = function () {
-            const views = $("#viewEditor")[0];
+            // const views = $('.view.editing').toArray().map(el => el.children[0]);
+            const views = Array.from(document.getElementsByClassName('view editing'));
             const targetRole = $("#viewer_role").find(":selected")[0].text;
             $sbviews.findViewsForRole(views, targetRole);
+
+            $scope.viewerRoles = $sbviews.getRolesOfView();
+            console.log($scope.viewerRoles);
             // if ($state.current.name == 'course.settings.views.edit-role-single') {
             //     reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text };
             // }

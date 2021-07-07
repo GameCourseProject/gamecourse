@@ -125,6 +125,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             $rootScope.rolesHierarchy = data.rolesHierarchy;
             $rootScope.courseId = data.courseId;
 
+            console.log($rootScope.viewRoles);
             console.log($rootScope.rolesHierarchy);
 
             function build() {
@@ -177,6 +178,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 roleType: $rootScope.roleType,
                 courseRoles: $rootScope.courseRoles,
                 viewRoles: $rootScope.viewRoles,
+                viewId: viewScope.views[0].viewId,
                 get: function () {
                     return viewScope.views;
                 },
@@ -1062,10 +1064,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         //select ???
                         //$("#edit_viewer_select").append($('<option selected value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         if ($("#viewer_role option").filter((idx, option) => {
-                            return option.label == new_viewer.text
+                            return option.text == new_viewer.text
                         }).length == 0) {
+                            console.log(new_viewer);
+                            document.getElementById("viewer_role").append(new Option(new_viewer.text, new_viewer.value));
                             $rootScope.viewRoles.push({ "id": new_viewer.value, "name": new_viewer.text });
-                            document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         }
                     } else {
                         var new_user = $("#user").find(":selected")[0];
@@ -1082,20 +1085,21 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         viewRoles[1].push({ "id": new_viewer.value, "name": new_viewer.text });
 
                         if ($("#user_role option").filter((idx, option) => {
-                            return option.label == new_user.text
+                            return option.text == new_user.text
                         }).length == 0) {
                             $rootScope.viewRoles[0].push({ "id": new_user.value, "name": new_user.text });
                             document.getElementById("user_role").append($('<option value="' + new_user.value + '">' + new_user.text + '</option>'));
                         }
 
                         if ($("#viewer_role option").filter((idx, option) => {
-                            return option.label == new_viewer.text
+                            return option.text == new_viewer.text
                         }).length == 0) {
                             $rootScope.viewRoles[1].push({ "id": new_viewer.value, "name": new_viewer.text });
                             document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         }
                     }
-
+                    console.log($rootScope.viewRoles);
+                    console.log(document.getElementById("viewer_role"));
                     rolesWithoutAspect = getAvailableRoles();
 
                     //add part
@@ -1142,12 +1146,28 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 optionsScope.removeAspect = function () {
                     const el = $('.highlight');
                     const viewId = el[0].getAttribute('data-viewId');
-                    const roleViewer = $("#edit_viewer_select").find(":selected")[0].text;
-                    var role = roleViewer;
+                    const roleViewer = $("#edit_viewer_select").find(":selected")[0];
+                    var role = roleViewer.text;
                     if ($rootScope.roleType == "ROLE_INTERACTION") {
-                        const roleUser = $("#edit_user_selection").find(":selected")[0].text;
-                        role = roleUser + '>' + roleViewer;
+                        const roleUser = $("#edit_user_selection").find(":selected")[0];
+                        role = roleUser.text + '>' + roleViewer.text;
+
+                        $("#edit_user_select option:contains(" + roleUser.text + ")").remove();
+                        viewRoles[0] = viewRoles[0].filter(role => role.name != roleUser.text);
+                        viewRoles[1] = viewRoles[1].filter(role => role.name != roleViewer.text);
+                        $rootScope.viewRoles[0] = $rootScope.viewRoles[0].filter((role) => {
+                            return role.name != roleUser.text;
+                        });
+                        $rootScope.viewRoles[1] = $rootScope.viewRoles[1].filter((role) => {
+                            return role.name != roleViewer.text;
+                        });
+                    } else {
+                        viewRoles = viewRoles.filter(role => role.name != roleViewer.text);
+                        $rootScope.viewRoles = $rootScope.viewRoles.filter((role) => {
+                            return role.name != roleViewer.text;
+                        });
                     }
+                    console.log($rootScope.viewRoles);
                     const parentContent = el[0].parentElement;
 
                     const part = $sbviews.findPart(viewId, unparseRole(role), $rootScope.partsHierarchy);
@@ -1160,10 +1180,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     $sbviews.destroy(elToRemove);
                     if ($(parentContent).children().length == 0)
                         parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
-                    $sbviews.findViewToShow(viewId);
-                    $("#edit_viewer_select option[label='" + roleViewer + "']").remove();
-                    if ($rootScope.roleType == "ROLE_INTERACTION")
-                        $("#edit_user_select option[label='" + roleUser + "']").remove();
+                    $sbviews.findViewToShow(viewId, roleViewer.text);
+                    $("#edit_viewer_select option:contains(" + roleViewer.text + ")").remove();
                     $("#delete-aspect").hide();
                     optionsScope.closeOverlay();
                 };
@@ -1397,23 +1415,27 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     };
 
-    //finds the child that we should show after close editing a "diff_aspect" view
-    this.findViewToShow = function (childViewId) {
+    //finds the child that we should show after delete an aspect
+    this.findViewToShow = function (childViewId, roleViewer) {
         var currentGlobalViewerRole = $("#viewer_role").find(":selected")[0].text;
         var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
         //find the right view to show for the globally selected role
         this.findViewsForRole(otherViews, currentGlobalViewerRole);
+        const rolesToCheck = roleViewer != currentGlobalViewerRole ? [roleViewer, currentGlobalViewerRole] : [roleViewer];
 
-        //remove the aspect if there are no more specific views for it
-        if (($("[data-role=" + currentGlobalViewerRole + "]").toArray().length == 0 || $("[data-role*=>" + currentGlobalViewerRole + "]").toArray().length == 0) && currentGlobalViewerRole != "Default") {
-            const roles = this.buildRolesHierarchyForOneRole(currentGlobalViewerRole);
-            const newRole = roles[roles.length - 2];
-            const newOption = $("#viewer_role option").filter((idx, option) => {
-                return option.label == newRole.name
-            });
-            document.getElementById('viewer_role').value = newOption[0].value;
-            $("#viewer_role option[label='" + currentGlobalViewerRole + "']").remove();
-        }
+        rolesToCheck.forEach(role => {
+            if (($("[data-role=" + role + "]").toArray().length == 0 || $("[data-role*='>" + role + "']").toArray().length == 0) && role != "Default") {
+                const roles = this.buildRolesHierarchyForOneRole(role);
+                console.log(roles);
+                const newRole = roles[1]; // if it was 0, it would be the role itself. we want the next one
+                const newOption = $("#viewer_role option").filter((idx, option) => {
+                    return option.label == newRole.name
+                });
+                document.getElementById('viewer_role').value = newOption[0].value;
+                $("#viewer_role option:contains(" + role + ")").remove();
+            }
+        })
+
     };
 
     //finds the child that we want to show with "diff_aspect"
@@ -1433,9 +1455,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     //returns the roles that a (sub)view has
     this.findRolesOfView = function (viewId) {
+        console.log(viewId);
         const views = $("[data-viewid=" + viewId + "]").toArray();
         if ($rootScope.roleType == 'ROLE_SINGLE') {
             const roles = views.map(x => x.getAttribute('data-role'));
+            console.log(roles);
+            console.log($rootScope.viewRoles);
             const result = $rootScope.viewRoles.filter((el) => {
                 return roles.includes(el.name);
             });
@@ -1457,11 +1482,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     //finds the right views to show for the targetRole
     this.findViewsForRole = function (viewAspects, targetRole) {
+        $(".highlight").click(); // removes the highligh and the toolbar that can be seen as a child
         //if (roletype == ROLE_SINGLE)
-        console.log(viewAspects);
-        if (viewAspects.children) {
-            const children = Array.from(viewAspects.children).filter(el => el.getAttribute('data-viewid') != null);
-            console.log(children);
+
+        if (viewAspects.length == 1 && viewAspects[0].children && Array.from(viewAspects[0].children).length != 0) {
+            const children = Array.from(viewAspects[0].children);
+            //in case is the content of a block
+            if (children.length == 0) {
+                this.findViewsForRole(viewAspects[0].children, targetRole);
+            }
+            // console.log(children);
             const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
             //console.log(viewIdsArray);
             const aspectChildren = viewIdsArray.map((key) => {
@@ -1471,15 +1501,14 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     return result;
                 }, []);
             });
-            console.log(aspectChildren);
-            aspectChildren.forEach(aspect => {
-                this.findViewsForRole(aspect, targetRole);
+
+            // console.log(aspectChildren);
+            aspectChildren.forEach(aspects => {
+                this.findViewsForRole(aspects, targetRole);
             });
-
-
         } else {
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
-            console.log(rolesForTargetRole);
+            // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
             for (let role of rolesForTargetRole) {
                 let otherViews = viewAspects.filter(function (el) {
@@ -1488,12 +1517,13 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 let view = viewAspects.filter(function (el) {
                     return el.getAttribute('data-role') == role.name;
                 });
-                console.log(otherViews);
-                console.log(view);
-                if (otherViews.length == 1 && view.length == 0) {
-                    //when there is a view for other role (and not to default), but not this one
-                    $(otherViews).addClass('aspect_hide');
-                }
+                // console.log(otherViews);
+                // console.log(view);
+                // if (otherViews.length == 1 && view.length == 0) {
+                //     //when there is a view for other role (and not to default), but not this one
+                //     //example: we are looking for a view for role=student, but we only find a view for teacher (??)
+                //     $(otherViews).addClass('aspect_hide');
+                // }
                 if (otherViews.length == viewAspects.length) {
                     //when there is no view for this role, we have to look for the next specific role
                     continue
@@ -1524,8 +1554,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         return aspects;
     }
 
-    this.getPartsHierarchy = function () {
-        return $rootScope.partsHierarchy;
+    this.getRolesOfView = function () {
+        return $rootScope.viewRoles;
     }
 
     this.deleteIds = function (newPart) {
