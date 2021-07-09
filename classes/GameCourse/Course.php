@@ -304,6 +304,7 @@ class Course
 
     public static function deleteCourse($courseId)
     {
+        Course::removeCourseDataFolder(Course::getCourseDataFolder($courseId));
         unset(static::$courses[$courseId]);
         new CronJob("Moodle", API::getValue('course'), null, null, true);
         new CronJob("ClassCheck", API::getValue('course'), null, null, true);
