@@ -185,14 +185,14 @@ class Badges extends Module
         }
     }
 
-    public function readConfigJson($courseId, $tables, $levelIds, $update = false){
+    public function readConfigJson($courseId, $tables, $update = false){
         $tableName = array_keys($tables);
         $i = 0;
         $badgeIds = array();
+        $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
                 if($tableName[$i] == "badges_config"){
-                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if($update && $existingCourse){
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     }else{
@@ -202,7 +202,6 @@ class Badges extends Module
                 } else  if ($tableName[$i] == "badge") {
                     $importId = $entry["id"];
                     unset($entry["id"]);
-                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
@@ -223,7 +222,7 @@ class Badges extends Module
             }
             $i++;
         }
-        return false;
+        return $badgeIds;
     }
 
     public function init()

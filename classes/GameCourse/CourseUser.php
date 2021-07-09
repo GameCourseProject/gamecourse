@@ -128,11 +128,11 @@ class CourseUser extends User
     {
         return Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], $field);
     }
-    //gets data from course_user e game_course_user tables
+    //gets data from course_user and game_course_user tables
     function  getAllData($field = "*")
     {
         return Core::$systemDB->select(
-            "course_user natural join game_course_user u join auth a on a.game_course_user_id=u.id",
+            "course_user cu left join game_course_user u on cu.id=u.id join auth a on a.game_course_user_id=u.id",
             ["course" => $this->course->getId(), "game_course_user_id" => $this->id],
             $field
         );
@@ -176,7 +176,7 @@ class CourseUser extends User
             "role"
         ), "role");
     }
-
+    
     function getUserRolesByHierarchy()
     {
         $courseRoles = $this->course->getRolesHierarchy();

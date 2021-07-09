@@ -466,11 +466,7 @@ class Plugin extends Module
                 $pluginArr["config_google_sheets"] = $gcArray;
             }
         }
-        if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
-            return $pluginArr;
-        } else {
-            return false;
-        }   
+        return $pluginArr;
     }
 
     public function readConfigJson($courseId, $tables, $update=false){

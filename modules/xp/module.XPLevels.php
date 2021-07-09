@@ -337,7 +337,7 @@ class XPLevels extends Module
                 foreach ($table as $entry) {
                     $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if ($update && $existingCourse) {
-                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId, "id" => $entry["id"]]);
                     } else {
                         $entry["course"] = $courseId;
                         $idImported = $entry["id"];
