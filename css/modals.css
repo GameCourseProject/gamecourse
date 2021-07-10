@@ -53,6 +53,10 @@ button {
     margin-bottom: 15px;
 }
 
+.verification .container {
+    text-align: left;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -489,10 +493,18 @@ button {
 #new-view .modal_content .cancel,
 #edit-view .modal_content .cancel,
 #edit-row .modal_content .cancel,
+#edit-course .modal_content .cancel,
 #add-row .modal_content .cancel{
     position: absolute;
     bottom: 0px;
     right: 80;
+    background-color: tomato;
+}
+
+.export.modal_content .cancel{
+    position: absolute;
+    bottom: 0px;
+    right: 100;
     background-color: tomato;
 }
 
@@ -550,13 +562,13 @@ button {
 #editor {
     height: 150px;
     margin-bottom: 30px;
-}
+  }
 
-.ql-formats button {
-    color: #444;
-}
+  .ql-formats button {
+      color: #444;
+  }
 
-#aspects_modal .modal_content .roles_aspect {
+  #aspects_modal .modal_content .roles_aspect {
     width: calc(33%);
     position: relative;
     margin-bottom: 0;

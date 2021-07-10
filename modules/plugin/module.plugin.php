@@ -423,6 +423,27 @@ class Plugin extends Module
         }
     }
 
+    //removes or adds all active cronjobs according to course's active state
+    public function setCourseCronJobs($courseId, $active)
+    {
+        if(!$active){
+            new CronJob("Moodle",  $courseId, null, null, true);
+            new CronJob("ClassCheck", $courseId, null, null, true);
+            new CronJob("GoogleSheets", $courseId, null, null, true);
+        }
+        else {
+            $plugins = $this->moduleConfigJson($courseId);
+            $pluginNames = array_keys($plugins);
+            foreach($pluginNames as $name){
+                $entry = $plugins[$name][0];
+                if($entry["isEnabled"]){
+                    $pluginName = (strcmp($name, "config_google_sheets") !== 0)? "GoogleSheets" : (strcmp($name, "config_moodle") !== 0)? "Moodle" : (strcmp($name, "config_class_check") !== 0)? "ClassCheck" : null;
+                    new CronJob($pluginName,  $courseId, $entry["periodicityNumber"], $entry["periodicityTime"]); 
+                }
+            }
+        }
+    }
+
     public function setupResources()
     {
         parent::addResources('js/');
@@ -466,11 +487,7 @@ class Plugin extends Module
                 $pluginArr["config_google_sheets"] = $gcArray;
             }
         }
-        if ($moodleVarsDB_ || $classCheckDB_ || $googleSheetsDB_) {
-            return $pluginArr;
-        } else {
-            return false;
-        }   
+        return $pluginArr;
     }
 
     public function readConfigJson($courseId, $tables, $update=false){

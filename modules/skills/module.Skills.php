@@ -183,7 +183,7 @@ class Skills extends Module
             }
             $i++;
         }
-        return false;
+        return $skillIds;
     }
     //gets skills that depend on a skill and are required by another skill
     public function getSkillsDependantAndRequired($normalSkill, $superSkill, $restrictions = [], $parent = null)
