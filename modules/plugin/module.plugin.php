@@ -350,7 +350,10 @@ class Plugin extends Module
     }
 
     private function setCronJob($script, $courseId, $vars)
-    {
+    {        
+        if(!Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])){
+            return array("result" => false, "errorMessage" => "Course must be active to enable plugins");
+        }
         if (empty($vars['number']) || empty($vars['time'])) {
             return array("result" => false, "errorMessage" => "Select a periodicity");
         } else {
