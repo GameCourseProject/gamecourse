@@ -55,6 +55,9 @@ class Course
     public function setActiveState($active)
     {
         $this->setData("isActive", $active);
+        $module = ModuleLoader::getModule("plugin");
+        $handler = $module["factory"]();
+        $handler->setCourseCronJobs($this->cid, $active);
     }
     public function setVisibleState($active)
     {
