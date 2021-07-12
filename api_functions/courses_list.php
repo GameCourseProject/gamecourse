@@ -113,21 +113,22 @@ API::registerFunction('core', 'setCoursesActive', function(){
     }
 });
 
-//import courses - check if it's working
+//import courses
 API::registerFunction('core', 'importCourses', function(){
     API::requireAdminPermission();
     API::requireValues('file');
     $file = explode(",", API::getValue('file'));
-    $fileType = explode(";", $file[0]);
     $fileContents = base64_decode($file[1]);
     $replace = API::getValue('replace');
     $nCourses = Course::importCourses($fileContents, $replace);
     API::response(array('nCourses' => $nCourses));
 });
 
-//export courses - check if it's working
+//export courses
 API::registerFunction('core', 'exportCourses', function(){
     API::requireAdminPermission();
-    $courses = Course::exportCourses();
+    $id = API::getValue('id');
+    $options = API::getValue('options');
+    $courses = Course::exportCourses($id, $options);
     API::response(array('courses' => $courses));
 });

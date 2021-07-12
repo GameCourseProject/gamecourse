@@ -53,6 +53,10 @@ button {
     margin-bottom: 15px;
 }
 
+.verification .container {
+    text-align: left;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -215,7 +219,8 @@ button {
     position: relative;
 }
 
-.modal_content .content .inputs .btn {
+.modal_content .content .inputs .btn,
+#aspect .btn {
     display: flex;
     align-items: center;
     padding: 2px 10px;
@@ -237,7 +242,8 @@ button {
     width: calc(35% - 11px);
 }
 
-.modal_content .content .inputs .skills {
+.modal_content .content .inputs .skills,
+.modal_content .content .inputs .roles_aspect {
     width: calc(25%);
     margin-right: 5px;
 }
@@ -327,11 +333,11 @@ button {
 }
 
 #add-user .modal_content select#authService,
-#new-user .modal_content select#authService {
-    color: rgb(106, 106, 106);
-}
-
-#open-item .modal_content select {
+#new-user .modal_content select#authService,
+#open-item .modal_content select,
+#aspects_modal .modal_content select#user,
+#aspects_modal .modal_content select#viewer,
+#aspects_modal .modal_content select#aspect_selection {
     color: rgb(106, 106, 106);
 }
 
@@ -390,6 +396,12 @@ button {
     width: 25px;
     opacity: 0.8;
     margin-left: 10px;
+    background-color: white;
+}
+
+.modal_content .delete_icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
 }
 
 .modal_content .skill_tag {
@@ -479,10 +491,20 @@ button {
 #open-tier .modal_content .cancel,
 #open-item .modal_content .cancel,
 #new-view .modal_content .cancel,
-#edit-view .modal_content .cancel{
+#edit-view .modal_content .cancel,
+#edit-row .modal_content .cancel,
+#edit-course .modal_content .cancel,
+#add-row .modal_content .cancel{
     position: absolute;
     bottom: 0px;
     right: 80;
+    background-color: tomato;
+}
+
+.export.modal_content .cancel{
+    position: absolute;
+    bottom: 0px;
+    right: 100;
     background-color: tomato;
 }
 
@@ -509,7 +531,7 @@ button {
     line-height: 26px;
 }
 
-#dep_row {
+#dep_row, #edit_viewer_selection {
     align-items: center;
     display: flex;
     margin-bottom: 10px;
@@ -519,14 +541,21 @@ button {
     margin-bottom: 12px;
 }
 
-#add_dep {
+#add_dep, #add_asp {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
 }
 
+#dependency span,
+#aspect span {
+    color:white;
+    padding:5px;
+    font-weight:600;
+}
+
 #dependency1,
-#dependency2 {
+#dependency2, #user, #viewer {
     margin-bottom: 0px;
 }
 
@@ -539,3 +568,9 @@ button {
       color: #444;
   }
 
+  #aspects_modal .modal_content .roles_aspect {
+    width: calc(33%);
+    position: relative;
+    margin-bottom: 0;
+    margin-right: 5px;
+}

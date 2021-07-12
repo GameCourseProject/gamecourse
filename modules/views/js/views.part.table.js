@@ -18,7 +18,15 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             $sbviews.setDefaultParamters(part);
             var tableDiv = $(document.createElement('div')).addClass('table');
             var table = $(document.createElement('table'));
+            if (options.edit) {
+                table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
+                if (scope.role != parseRole(part.role))
+                    table.addClass('aspect_hide');
+            }
 
+            if (part.isTemplateRef) {
+                tableDiv.attr("style", "background-color: #ddedeb; ");
+            }
             /*part.filterBox = {
                 field: 'd',
                 options: ['abc', 'def']
@@ -31,7 +39,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         canDelete: false,
                         canSwitch: true,
                         canDuplicate: false,
-                        canSaveTemplate: true
+                        canSaveTemplate: true,
+                        canHaveAspects: true,
                     },
                     toolFunctions: {
                         switch: function (oldPart, newPart) {
@@ -84,6 +93,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('th'));
+                    row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.headerRows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);
@@ -118,6 +128,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                 for (var cidx = 0; cidx < part.columns; cidx++) {
                     var column = {};//part.columns[cidx];
                     var columnEl = $(document.createElement('td'));
+                    row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.rows[' + ridx + '].values[' + cidx + '].value', childOptions));
                     rowEl.append(columnEl);
@@ -514,7 +525,6 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                                 $(tbody.children().get(ridx)).append(buildRowToolbar(part.rows, part.rows[ridx]));
                             }
                             tableDiv.click();
-                            //$('.edit-toolbar').is
                         },
                         layoutEditEnd: function () {
                             checkEmpty(false);
@@ -536,7 +546,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                             filterBox.append($('<div class="sb-component"><label for="mode-select">Mode</label><select id="mode-select" ng-model="part.filterBox.mode"><option value="hide">Hide</option><option value="fade">Fade</option></select></div>'));
                             partSpecificMenu.append(filterBox);
                             partSpecificMenu.append($('<sb-checkbox sb-checkbox="part.sort" sb-checkbox-label="Enable Sort" sb-checkbox-default="true" sb-checkbox-info="Enables sorting of the columns of the table." sb-checkbox-link="./docs/#PartTableSort"></sb-checkbox>'));
-
+        
                             watch('part.sort');
                             watch('part.filterBox');
                             el.children('.partSpecific').after($compile(partSpecificMenu)(optionsScope));*/

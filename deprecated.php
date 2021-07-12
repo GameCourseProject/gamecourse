@@ -18,7 +18,7 @@ Need to be removed if they are no longer needed.
     //print_r($levels);
     $levelsByNum = array_combine(array_column($levels,"number") , $levels);
     $numOldLevels=sizeof($levels);
-    $folder = Course::getCourseLegacyFolder($courseId);
+    $folder = Course::getCourseDataFolder($courseId);
 
     if (API::hasKey('levelList')) {
         $keys = array('title', 'goal');
@@ -267,7 +267,7 @@ $viewHandler->registerFunction('awardsXP', function($userData) {
 /*API::registerFunction('settings', 'courseSkills', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $folder = Course::getCourseLegacyFolder($courseId);
+    $folder = Course::getCourseDataFolder($courseId);
     //For now we only have 1 skill tree per course, if we have more this line needs to change
     $tree = Core::$systemDB->select("skill_tree",["course"=>$courseId]);
     $treeId=$tree["id"];

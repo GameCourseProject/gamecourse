@@ -613,6 +613,28 @@
     background-color: rgba(235, 57, 57, 0.562);
 }
 
+input.database_search {
+    padding: 6px;
+    font-size: 14px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    width: 100%;
+}
+
+#database_filter input {
+    padding: 6px;
+    font-size: 14px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+}
+
+.dataTables_length select {
+    padding: 6px;
+    font-size: 14px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+}
+
 .data-table table tr.notAllActive:hover{
     background-color: rgba(187, 49, 49, 0.562);
 }
@@ -622,3 +644,4 @@
 #view_editor_actions {
     width: 290px;
 }
+

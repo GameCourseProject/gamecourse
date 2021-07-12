@@ -1,6 +1,6 @@
-!/legacy_data/
-/legacy_data/**
-!/legacy_data/defaultData/
+!/course_data/
+/course_data/**
+!/course_data/defaultData/
 photos/ist*
 modules/skills/resources/
 modules/quest/resources/

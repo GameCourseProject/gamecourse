@@ -483,13 +483,14 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
         reader.readAsDataURL(file);	
         
     }
-    $scope.exportCourses = function(){
-        $smartboards.request('core', 'exportCourses', { }, function(data, err) {
+    $scope.exportCourses = function(id = null, options = null){
+        $smartboards.request('core', 'exportCourses', {id: id, options: options}, function(data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
             }
-            download("courses.json", data.courses);
+            var file = "http://localhost/gamecourse/" + data.courses;
+            location.replace(file);
         });
         
     }
@@ -536,14 +537,30 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
 
 
     //--------------------admin version of the page----------
+    //functions
+    $scope.checkCheckboxes = function(id){
+        if($scope.exportOptions[id].awards){
+            $('#users-' + id).prop("checked", true)
+                             .prop("disabled", true)
+                             .attr("title", "Users have to be exported if 'Awards and Participations' is selected.");
+            $scope.exportOptions[id].users = true;
+        }
+        else
+            $('#users-' + id).prop("disabled", false)
+                             .removeAttr("title");
+    };
+
     //sidebar
     optionsFilter = ["Active", "Inactive", "Visible", "Invisible"];
     optionsOrder = ["Name", "Short","# Students", "Year"];
+    optionsExport = [ "awards", "modules"];
+    optionsExportNames = [ "Awards and Participations", "Modules"];
     //start checkboxs checked, tied by the ng-model in each input
     $scope.filterActive=true;
     $scope.filterInactive=true;
     $scope.filterVisible=true;
     $scope.filterInvisible=true;
+    $scope.exportOptions=[];
     sidebarAll = createSidebar( optionsFilter, optionsOrder);
     $compile(sidebarAll)($scope)
 
@@ -560,6 +577,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
               {class: "action-column", content: ""},
               {class: "action-column", content: ""},
               {class: "action-column", content: ""},
+              {class: "action-column", content: ""}
             ];
     jQuery.each(header, function(index){
         rowHeader.append( $("<th class="+ header[index].class + ">" + header[index].content + "</th>"));
@@ -576,8 +594,9 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     rowContent.append('<td class="action-column"><div class="icon duplicate_icon" title="Duplicate" ng-click="duplicateCourse(course)"></div></td>');
     rowContent.append('<td class="action-column"><div class="icon edit_icon" value="#edit-course" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div></td>');
     rowContent.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-{{course.id}}" title="Remove" onclick="openModal(this)"></div></td>');
+    rowContent.append('<td class="action-column"><div class="icon export_icon_no_outline" value="#export-verification-{{course.id}}" title="Export" onclick="openModal(this)"></div></td>');
 
-    //the verification modals
+    //delete verification modal
     modal = $("<div class='modal' id='delete-verification-{{course.id}}'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#delete-verification-{{course.id}}" onclick="closeModal(this)"></button>'));
@@ -586,6 +605,29 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-{{course.id}}" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)">Delete</button></div>'))
     modal.append(verification);
     rowContent.append(modal);
+    
+    //individual export modal
+    exportModal = $("<div class='modal' id='export-verification-{{course.id}}'></div>");
+    exportVerification = $("<div class='export modal_content'></div>");
+    exportVerification.append( $('<button class="close_btn icon" value="#export-verification-{{course.id}}" onclick="closeModal(this)"></button>'));
+    exportVerification.append( $('<div class="title">Export {{course.name}} </div>'));
+    exportVerification.append( $('<div class="warning">Select what to export:</div>'));
+    content = $('<div class="content"></div>');
+    boxTiers = $('<div id="new_box_tier" class= "inputs">');
+    row_inputsTiers = $('<div class= "row_inputs"></div>');
+    detailsTiers = $('<div class="details full config_item"></div>');
+    detailsTiers.append( $("<div><label class='container'><input type='checkbox' ng-change='checkCheckboxes(course.id)' id='users-{{course.id}}' ng-model='exportOptions[course.id].users' ng-init='exportOptions[course.id].users = true' title='Users have to be exported if \"Awards and Participations\" is selected.' disabled><span class='checkmark'>Users</span></label></div>"));
+    jQuery.each(optionsExport, function (index) {
+        detailsTiers.append( $("<div><label class='container'><input type='checkbox' ng-change='checkCheckboxes(course.id)' id='" + optionsExport[index] +"-{{course.id}}' ng-model='exportOptions[course.id]." + optionsExport[index] + "' ng-init='exportOptions[course.id]." + optionsExport[index] + " = true'><span class='checkmark'>" +  optionsExportNames[index] + "</span></label></div>"));
+    });
+    row_inputsTiers.append(detailsTiers);
+    boxTiers.append(row_inputsTiers);
+    content.append(boxTiers);
+    content.append($('<button class="cancel" value="#export-verification-{{course.id}}" onclick="closeModal(this)" > Cancel </button>'));
+    content.append($('<button class="save_btn" ng-click="exportCourses(course.id, exportOptions[course.id])"> Export </button>'));
+    exportVerification.append(content);
+    exportModal.append(exportVerification);
+    rowContent.append(exportModal);
 
     //append table
     table.append(rowHeader);
@@ -602,7 +644,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     action_buttons = $("<div class='action-buttons'></div>");
     action_buttons.append( $("<div class='icon add_icon' title='New' value='#new-course' onclick='openModal(this)' ng-click='createCourse()'></div>"));
     action_buttons.append( $("<div class='icon import_icon' title='Import' value='#import-course' onclick='openModal(this)'></div>"));
-    action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportCourses()'></div>"));
+    action_buttons.append( $("<div class='icon export_icon' title='Export all' ng-click='exportCourses()'></div>"));
     $compile(action_buttons)($scope);
 
     //new course modal
@@ -675,6 +717,7 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     editrow_inputs.append(editcolor_picker_section);
     editbox.append(editrow_inputs);
     editcontent.append(editbox);
+    editcontent.append( $('<button class="cancel" value="#edit-course" onclick="closeModal(this)" > Cancel </button>'))
     editcontent.append( $('<button class="save_btn" ng-click="submitEditCourse()" ng-disabled="!isReadyToEdit()" > Save </button>'))
     editCourse.append(editcontent);
     editmodal.append(editCourse);
@@ -685,9 +728,8 @@ app.controller('Courses', function($element, $scope, $smartboards, $compile, $st
     importModal = $("<div class='modal' id='import-course'></div>");
     verification = $("<div class='verification modal_content'></div>");
     verification.append( $('<button class="close_btn icon" value="#import-course" onclick="closeModal(this)"></button>'));
-    verification.append( $('<div class="warning">Please select a .json file to be imported</div>'));
-    verification.append( $('<div class="target">The seperator must be comma</div>'));
-    verification.append( $('<input class="config_input" type="file" id="import_course" accept=".json">')); //input file
+    verification.append( $('<div class="warning">Please select a zip file to be imported</div>'));
+    verification.append( $('<input class="config_input" type="file" id="import_course" accept=".zip">')); //input file
     verification.append( $('<div class="confirmation_btns"><button ng-click="importCourses(true)">Import Courses (Replace Duplicates)</button><button ng-click="importCourses(false)">Import Courses (Ignore Duplicates)</button></div>'))
     importModal.append(verification);
     allCourses.append(importModal);

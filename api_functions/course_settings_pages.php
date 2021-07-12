@@ -50,7 +50,6 @@ API::registerFunction('settings', 'roles', function() {
 });
 
 //course main setting page
-//not used -> must be integrated on the this course page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'));
@@ -58,11 +57,109 @@ API::registerFunction('settings', 'courseGlobal', function() {
         $globalInfo = array(
             'name' => $course->getName(),
             'theme' => $GLOBALS['theme'],
+            'activeUsers' => count($course->getUsers()),
+            'awards' => $course->getNumAwards(),
+            'participations' => $course->getNumParticipations()
         );
         API::response($globalInfo); 
     }
     else{
         API::error("There is no course with that id: ". API::getValue('course'));
+    }
+});
+
+//gets the data from a database table
+API::registerFunction('settings', 'getTableData', function() {
+    API::requireCourseAdminPermission();
+    $courseId = API::getValue('course');
+    $tableName = API::getValue('table');
+
+    if($tableName != null){
+        $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user",["course"=>$courseId], "t.*, g.name, g.studentNumber");
+        foreach($data as &$d){
+            $exploded =  explode(' ', $d["name"]);
+            $nickname = $exploded[0] . ' ' . end($exploded);
+            $d["name"] = $nickname;
+        }
+        // get columns in order: id , name, studentNumber, (...)
+        $columns = array_keys($data[0]);
+        $lastHalf = array_slice($columns, 1, -2);
+        $lastTwo = array_slice($columns, -2);
+        $orderedColumns = array_merge(array_merge(["id"], $lastTwo), $lastHalf);
+
+        API::response(array("entries" => $data, "columns" => $orderedColumns));
+        
+    }
+});
+
+//deletes a row from a database table
+API::registerFunction('settings', 'deleteTableEntry', function() {
+    API::requireCourseAdminPermission();
+    $courseId = API::getValue('course');
+    $tableName = API::getValue('table');
+
+    if($tableName != null){
+        $row = API::getValue('rowData');
+         // only keep keys that are columns on the target table
+        unset($row['name']);
+        unset($row['studentNumber']);
+
+        Core::$systemDB->delete($tableName, $row);
+    }
+});
+
+//edits or creates a row in a database table
+API::registerFunction('settings', 'submitTableEntry', function() {
+    API::requireCourseAdminPermission();
+    $courseId = API::getValue('course');
+    $tableName = API::getValue('table');
+
+    if($tableName != null){
+        $update = API::getValue('update');
+        $newData = API::getValue('newData');
+        $newData['course'] = $courseId;
+        $newStudentNumber = $newData['studentNumber'];
+
+        $newStudent = Core::$systemDB->select("course_user c join game_course_user g on c.id=g.id", ["course" => $courseId, "studentNumber" => $newStudentNumber], "g.id, name");
+        if (!$newStudent){
+            API::error('There are no students in this course with student number ' . $newStudentNumber, 400);
+        }
+        // only keep keys that are columns on the target table
+        unset($newData['name']);
+        unset($newData['studentNumber']);
+
+        $exploded =  explode(' ', $newStudent["name"]);
+        $nickname = $exploded[0] . ' ' . end($exploded);
+
+        $newData['user'] = $newStudent['id'];
+
+        if($update){
+            $where = API::getValue('rowData');
+            if($newData != null and $where != null){
+                // only keep keys that are columns on the target table
+                unset($where['name']);
+                unset($where['studentNumber']);
+                
+                Core::$systemDB->update($tableName, $newData, $where);
+                $newData['name'] = $nickname;
+                $newData['studentNumber'] = $newStudentNumber;
+                
+                API::response(array("newRecord" =>$newData));
+                
+                
+            }
+        }
+        else {
+            $id = Core::$systemDB->insert($tableName, $newData);
+            $newRecord = Core::$systemDB->select($tableName, ["id" => $id]);
+            $newRecord['name'] = $nickname;
+            $newRecord['studentNumber'] = $newStudentNumber;
+            
+            API::response(array("newRecord" =>$newRecord));
+        }
+    }
+    else{
+        API::error('Table name missing!', 400);
     }
 });
 
@@ -169,7 +266,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
     $course = Course::getCourse($courseId);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
-        $folder = Course::getCourseLegacyFolder($courseId);
+        $folder = Course::getCourseDataFolder($courseId);
 
         if($module != null){
             $moduleInfo = array(

@@ -78,7 +78,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         return changed;
     }
 
-    updateDependenciesAddSection = function ($scope, box, allSkills, addForm) {
+    $scope.updateDependenciesAddSection = function (box, allSkills, addForm) {
         $("#dep_list").remove();
         $("#add_dep").remove();
         editbox = $(box);
@@ -108,9 +108,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             add_skill1.append($('<option value="" disabled selected>Select Skill 1</option>'));
             add_skill2.append($('<option value="" disabled selected>Select Skill 2</option>'));
             jQuery.each(allSkills, function (index) {
-                role = allSkills[index];
-                add_skill1.append($('<option value="' + role + '">' + role + "</option>"));
-                add_skill2.append($('<option value="' + role + '">' + role + "</option>"));
+                skill = allSkills[index];
+                add_skill1.append($('<option value="' + skill + '">' + skill + "</option>"));
+                add_skill2.append($('<option value="' + skill + '">' + skill + "</option>"));
             });
             add_dep.append(add_skill1);
             add_dep.append(add_skill2);
@@ -676,6 +676,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         return;
                     }
                     $scope.listingItems.items = data.listingItems.items;
+                    $scope.tiers = data.tiers;
                 });
             });
 
@@ -750,9 +751,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             } else {
                 allDependencies = skillsForDep;
             }
-            updateDependenciesAddSection($scope, "#new_box", allDependencies, addForm);
+            $scope.updateDependenciesAddSection("#new_box", allDependencies, addForm);
         } else {
-            updateDependenciesAddSection($scope, "#new_box", skillsForDep, addForm);
+            $scope.updateDependenciesAddSection("#new_box", skillsForDep, addForm);
         }
 
 
@@ -1101,7 +1102,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 stg = "tier." + atribute;
                 rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
             });
-            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(item)"></div></td>');
+            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
@@ -1312,7 +1313,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             if (data.module.name == "Skills") {
 
                 //add dependency button
-                box.append($('<div class="half" id="dependency"><button class="btn" ng-click="showDepSection()" ng-disabled="!isAddDepEnabled()"><img class="icon" src="./images/add_icon.svg"/><span style="color:white;padding:5px;font-weight:600;">Add Dependency</span></button></div>'));
+                box.append($('<div class="half" id="dependency"><button class="btn" ng-click="showDepSection()" ng-disabled="!isAddDepEnabled()"><img class="icon" src="./images/add_icon.svg"/><span>Add Dependency</span></button></div>'));
                 //add editor
                 box.append(editor_container);
                 Quill.register("modules/htmlEditButton", htmlEditButton);

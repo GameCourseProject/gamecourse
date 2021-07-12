@@ -20,7 +20,7 @@ class Badges extends Module
 
     private function setupData($courseId)
     {
-        $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId)->getName());
         if (!file_exists($folder . "/badges"))
             mkdir($folder . "/badges");
         if (!file_exists($folder . "/badges" . "/Extra"))
@@ -184,14 +184,14 @@ class Badges extends Module
         }
     }
 
-    public function readConfigJson($courseId, $tables, $levelIds, $update = false){
+    public function readConfigJson($courseId, $tables, $update = false){
         $tableName = array_keys($tables);
         $i = 0;
         $badgeIds = array();
+        $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
                 if($tableName[$i] == "badges_config"){
-                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if($update && $existingCourse){
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     }else{
@@ -201,7 +201,6 @@ class Badges extends Module
                 } else  if ($tableName[$i] == "badge") {
                     $importId = $entry["id"];
                     unset($entry["id"]);
-                    $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
@@ -222,7 +221,7 @@ class Badges extends Module
             }
             $i++;
         }
-        return false;
+        return $badgeIds;
     }
 
     public function init()
@@ -714,7 +713,7 @@ class Badges extends Module
         // API::registerFunction('settings', 'courseBadges', function() {
         //     API::requireCourseAdminPermission();
         //     $courseId=API::getValue('course');
-        //     $folder = Course::getCourseLegacyFolder($courseId);// Course::getCourseLegacyFolder($courseId);
+        //     $folder = Course::getCourseDataFolder($courseId);// Course::getCourseDataFolder($courseId);
         //     $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
             
         //     //set maxreward

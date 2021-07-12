@@ -381,6 +381,14 @@ select:focus {
     width: 100%;
 }
 
+.action-buttons.database {
+    width: auto;
+}
+
+.action-buttons.database :only-child{
+    width: 30px;
+}
+
 
 /* all buttons using images*/
 

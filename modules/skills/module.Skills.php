@@ -183,7 +183,7 @@ class Skills extends Module
             }
             $i++;
         }
-        return false;
+        return $skillIds;
     }
     //gets skills that depend on a skill and are required by another skill
     public function getSkillsDependantAndRequired($normalSkill, $superSkill, $restrictions = [], $parent = null)
@@ -300,7 +300,7 @@ class Skills extends Module
         if ($this->addTables("skills", "skill") || empty(Core::$systemDB->select("skill_tree", ["course" => $courseId]))) {
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
-        $folder = Course::getCourseLegacyFolder($courseId, Course::getCourse($courseId)->getName());
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId)->getName());
         if (!file_exists($folder . "/skills"))
             mkdir($folder . "/skills");
     }
@@ -896,7 +896,7 @@ class Skills extends Module
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');
             $courseId = $this->getParent()->getId();
-            $folder = Course::getCourseLegacyFolder($courseId);
+            $folder = Course::getCourseDataFolder($courseId);
 
             if ($skillName) {
                 $skills = Core::$systemDB->selectMultiple(
@@ -1188,7 +1188,7 @@ class Skills extends Module
     }
 
     public function getDescriptionFromPage($skill, $courseId) {
-        $folder = Course::getCourseLegacyFolder($courseId);
+        $folder = Course::getCourseDataFolder($courseId);
         $description = htmlspecialchars_decode($skill['page']);
         $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/skills/" . str_replace(' ', '', $skill['name']), $description);
         //$page = preg_replace( "/\r|\n/", "", $page );
@@ -1196,7 +1196,7 @@ class Skills extends Module
     }
 
     public function createFolderForSkillResources($skill, $courseId) {
-        $courseFolder = Course::getCourseLegacyFolder($courseId);
+        $courseFolder = Course::getCourseDataFolder($courseId);
         $hasFolder = is_dir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
         if (!$hasFolder) {
             mkdir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
@@ -1223,7 +1223,7 @@ class Skills extends Module
                     "color"=> $skill['color'],
                     "seqId" => $numSkills + 1];
             
-        $folder = Course::getCourseLegacyFolder($courseId);
+        $folder = Course::getCourseDataFolder($courseId);
         $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
         $descriptionPage = @file_get_contents($path);
         if ($descriptionPage === FALSE){
@@ -1307,8 +1307,8 @@ class Skills extends Module
                     "color"=> $skill['color']];
 
         // update description
-        $folder = Course::getCourseLegacyFolder($courseId);
-        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: legacy_data/1-PCM/skills/Director
+        $folder = Course::getCourseDataFolder($courseId);
+        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
         $descriptionPage = @file_get_contents( $path . '.html');
         if ($descriptionPage === FALSE) {
 

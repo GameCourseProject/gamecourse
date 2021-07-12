@@ -12,7 +12,7 @@ class SQLDB
             $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             //echo $e->getMessage();
-            echo("Could not connect to database.\n");
+            echo ("Could not connect to database.\n");
         }
     }
     public function executeQuery($sql)
@@ -176,6 +176,27 @@ class SQLDB
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function selectHierarchy($table, $tableUnion = null, $where = null, $field = '*')
+    {
+        $sql = "WITH RECURSIVE aspects AS (SELECT " . $field . " FROM " . $table;
+        if ($where) {
+            $sql .= " where ";
+            $this->dataToQuery($sql, $where, '||');
+        }
+
+        // if ($group) {
+        //     $sql .= " group by " . $group;
+        // }
+
+        $sql .= " UNION SELECT " . $field . " FROM " . $tableUnion . " JOIN aspects ON aspects.id=vp.parentId)";
+        $sql .= " \nSELECT * from aspects";
+        //array_push($where, $where[0]);
+
+        $sql .= ';';
+        $result = $this->executeQueryWithParams($sql, $where);
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function selectMultipleSegmented($table, $where, $field = "*", $orderBy = null, $group = null)
     {
         $sql = "select " . $field . " from " . $table;
@@ -202,10 +223,11 @@ class SQLDB
 
     public function columnExists($table, $column)
     {
-        $result = $this->executeQuery("show columns from " . $table . " like '". $column. "';");
+        $result = $this->executeQuery("show columns from " . $table . " like '" . $column . "';");
         return $result->fetch()[0];
     }
-    public function tableExists($table){
+    public function tableExists($table)
+    {
         return $this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

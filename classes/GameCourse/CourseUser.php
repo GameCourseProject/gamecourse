@@ -181,10 +181,33 @@ class CourseUser extends User
             "role"
         ), "role");
     }
+
     function setIsActive()
     {
         $active = Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], "isActive");
         Core::$systemDB->update("course_user", ["isActive" => $active? 0 : 1], ["course" => $this->course->getId(), "id" => $this->id]);
+    }
+    
+    function getUserRolesByHierarchy()
+    {
+        $courseRoles = $this->course->getRolesHierarchy();
+        $userRoles = $this->getRolesNames();
+        $hierarchyRoles = array();
+        foreach ($courseRoles as $courseRole) {
+            $this->setHierarchy($courseRole, $userRoles, $hierarchyRoles);
+        }
+        return $hierarchyRoles;
+    }
+
+    public function setHierarchy($role, $userRoles, &$hierarchyRoles)
+    {
+        if (array_key_exists("children", $role)) {
+            foreach ($role["children"] as $child) {
+                $this->setHierarchy($child, $userRoles, $hierarchyRoles);
+            }
+        }
+        if (in_array($role["name"], $userRoles))
+            $hierarchyRoles[] = $role["name"];
     }
 
     //receives array of roles and replaces them in the database
