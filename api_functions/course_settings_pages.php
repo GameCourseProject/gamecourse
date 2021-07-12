@@ -81,11 +81,16 @@ API::registerFunction('settings', 'getTableData', function() {
             $nickname = $exploded[0] . ' ' . end($exploded);
             $d["name"] = $nickname;
         }
+
+        $orderedColumns = null;
         // get columns in order: id , name, studentNumber, (...)
-        $columns = array_keys($data[0]);
-        $lastHalf = array_slice($columns, 1, -2);
-        $lastTwo = array_slice($columns, -2);
-        $orderedColumns = array_merge(array_merge(["id"], $lastTwo), $lastHalf);
+        if($data){
+            $columns = array_keys($data[0]);
+            $lastHalf = array_slice($columns, 1, -2);
+            $lastTwo = array_slice($columns, -2);
+            $orderedColumns = array_merge(array_merge(["id"], $lastTwo), $lastHalf);
+        }
+
 
         API::response(array("entries" => $data, "columns" => $orderedColumns));
         
