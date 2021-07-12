@@ -98,7 +98,7 @@ class Views extends Module
         });
     }
     //auxiliar functions for the expression language functions
-    public function getModuleNameOfAwardOrParticipation($object, $award = true)
+    public function getModuleNameOfAward($object)
     {
         if (array_key_exists("name", $object["value"]))
             return $object["value"]["name"];
@@ -107,10 +107,7 @@ class Views extends Module
             return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
         }
         if ($type == "skill") {
-            if ($award)
-                return $object["value"]["description"];
-            else
-                return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
+            return $object["value"]["description"];
         }
         return null;
     }
@@ -765,7 +762,7 @@ class Views extends Module
                         case 'grade':
                             return new ValueNode('<img class="img" src="images/quiz.svg">');
                         case 'badge':
-                            $name = $this->getModuleNameOfAwardOrParticipation($award);
+                            $name = $this->getModuleNameOfAward($award);
                             if ($name === null)
                                 throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                             $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
@@ -811,7 +808,7 @@ class Views extends Module
             'moduleInstance',
             function ($award) {
                 $this->checkArray($award, "object", "moduleInstance");
-                return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
+                return new ValueNode($this->getModuleNameOfAward($award));
             },
             'Returns a string with the name of the Module instance that provided the award.',
             'string',
@@ -875,11 +872,11 @@ class Views extends Module
         $this->viewHandler->registerLibrary("views", "participations", "This library provides access to information regarding Participations.");
 
         //functions of the participation library
-        //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
+        //participations.getAllParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
         $this->viewHandler->registerFunction(
             'participations',
             'getAllParticipations',
-            function (int $user = null, string $type = null, string $moduleInstance = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null,  bool $activeUser = true, bool $activeItem = true) use ($courseId) {
+            function (int $user = null, string $type = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null,  bool $activeUser = true, bool $activeItem = true) use ($courseId) {
                 $where = [];
                 if ($rating !== null) {
                     $where["rating"] = $rating;
@@ -887,9 +884,9 @@ class Views extends Module
                 if ($evaluator !== null) {
                     $where["evaluator"] = $evaluator;
                 }
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation",  $activeUser, $activeItem);
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation",  $activeUser, $activeItem);
             },
-            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
             'collection',
             'participation',
             'library'
@@ -974,19 +971,6 @@ class Views extends Module
                 return $this->basicGetterFunction($participation, "evaluator");
             },
             'Returns a string with the id of the user that rated the participation.',
-            'string',
-            null,
-            "object",
-            "participation"
-        );
-        //%participation.moduleInstance
-        $this->viewHandler->registerFunction(
-            'participations',
-            'moduleInstance',
-            function ($participation) {
-                return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation, false));
-            },
-            'Returns a string with the name of the Module instance where the user participated.',
             'string',
             null,
             "object",
