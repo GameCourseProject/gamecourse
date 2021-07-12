@@ -113,19 +113,23 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                 return;
             }
 
-            $scope.columns = data.columns;
-            $scope.entries = data.entries;
-            $scope.newData = {};
-            $scope.newRecord = [];
-
             var courseData = createSection(infoSection, $scope.table);
-            courseData.append($compile("<div class='action-buttons database'><div class='icon add_icon' value='#add-row' ng-click='editRecord({})' onclick='openModal(this)'></div></div>")($scope));
-
             var breadcrum = $("<div id='page_history'></div>");
             breadcrum.append($("<div class='go_back icon' ng-click='showGlobalPage()'></div>"));
             breadcrum.append($("<span class='clickable' ng-click='showGlobalPage()'> This Course </span>"));
             infoSection.prepend($compile(breadcrum)($scope));
 
+            if (data.entries.length == 0) {
+                courseData.append($compile("<div class='error_box'><div id='empty_search' class='error_msg'>Table {{table}} is empty</div></div>")($scope));
+                return;
+            }
+
+            courseData.append($compile("<div class='action-buttons database'><div class='icon add_icon' value='#add-row' ng-click='editRecord({})' onclick='openModal(this)'></div></div>")($scope));
+
+            $scope.columns = data.columns;
+            $scope.entries = data.entries;
+            $scope.newData = {};
+            $scope.newRecord = [];
 
             var dataTable = $('<div class="data-table" ></div>');
             var table = $('<table id="database" class="order-column" style="width:100%"></table>');
