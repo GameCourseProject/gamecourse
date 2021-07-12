@@ -8,7 +8,7 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
+    private $logPath = "C:\\xampp\htdocs\gamecourse\modules\profiling\\results.txt";
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
     // colors
@@ -286,7 +286,7 @@ class Profiling extends Module {
 
         // assign new cluster roles to students
         $date = date('Y-m-d H:i:s');
-        $students = $course->getUsersWithRole('Student');
+        $students = $course->getUsersWithRole('Student', true);
 
         foreach ($students as $student){
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $student["id"], "role" => $names[$clusters[$student["id"]]]]);
@@ -375,7 +375,7 @@ class Profiling extends Module {
         
         if(!$current){
             $course = Course::getCourse($courseId);
-            $students = $course->getUsersWithRole('Student');
+            $students = $course->getUsersWithRole('Student', true);
             foreach ($students as $student){
                 $exploded =  explode(' ', $student["name"]);
                 $nickname = $exploded[0] . ' ' . end($exploded);
@@ -388,7 +388,7 @@ class Profiling extends Module {
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"]], "u.name as name, r.name as cluster, p.user as id");
+                $records = Core::$systemDB->selectMultiple("user_profile p left join game_course_user u on p.user = u.id join course_user cu on u.id=cu.id left join role r on p.cluster = r.id", ["p.course" => $courseId, "r.course" => $courseId, "date" => $day["date"], "cu.isActive" => true], "u.name as name, r.name as cluster, p.user as id");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
@@ -411,7 +411,7 @@ class Profiling extends Module {
 
     public function createClusterList($courseId, $names, $assignedClusters){
         $course = Course::getCourse($courseId);
-        $students = $course->getUsersWithRole('Student');
+        $students = $course->getUsersWithRole('Student', true);
         $result = [];
 
         for ($i = 0; $i < count($students); $i++){
@@ -426,7 +426,7 @@ class Profiling extends Module {
 
     public function runProfiler($courseId, $nClusters, $minClusterSize) {
         $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) . " " . strval($nClusters) . " " . strval($minClusterSize) . " > /dev/null &"; //python3
-        exec($cmd);
+        //print_r( $cmd);
     }
     
     public function checkStatus($courseId){

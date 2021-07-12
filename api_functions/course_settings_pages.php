@@ -315,6 +315,20 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
 
 });
 
+//request to change the item's active status
+API::registerFunction('settings', 'activeItem', function() {
+    API::requireCourseAdminPermission();
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId);
+    if($course != null){
+        $module = $course->getModule(API::getValue('module'));
+        if($module != null){
+            $itemId = API::getValue('itemId');
+            $module->activeItem($itemId);
+        }
+    }
+});
+
 //request to save user input on the module configuration page
 API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     API::requireCourseAdminPermission();

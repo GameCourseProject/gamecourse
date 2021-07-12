@@ -497,7 +497,7 @@
                                 "children": [],
                                 "rows": [
                                     {
-                                        "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\").crop(0,2)}",
+                                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
                                         "aspectClass": "32",
                                         "id": "2807",
                                         "role": "role.Default>role.Default",
@@ -1633,7 +1633,7 @@
                                 "rows": [
                                     {
                                         "aspectClass": "32",
-                                        "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\").crop(0,2)}",
+                                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
                                         "id": "3817",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",

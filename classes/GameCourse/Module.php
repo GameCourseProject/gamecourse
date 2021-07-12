@@ -309,7 +309,7 @@ abstract class Module
         return new ValueNode(["type" => $type, "value" => $value]);
     }
     //get award or participations from DB, (moduleInstance can be name or id
-    public function getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate = null, $finalDate = null, $where = [], $object = "award")
+    public function getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate = null, $finalDate = null, $where = [], $object = "award", $activeUser = true, $activeItem = true)
     {
         if ($user !== null) {
             $where["user"] = $this->getUserId($user);
@@ -327,25 +327,35 @@ abstract class Module
             array_push($whereDate, ["date", "<", $date]);
         }
 
+        if ($activeUser){
+            $where["cu.isActive"] = true;
+        }
+
         if ($type !== null) {
             $where["type"] = $type;
             //should only use module instance if the type is specified (so we know if we should use skils or badges)
             if ($moduleInstance !== null && ($type == "badge" || $type == "skill")) {
                 if (is_numeric($moduleInstance)) {
                     $where["moduleInstance"] = $moduleInstance;
-                    $table = $object . " a ";
-                    $field = "*";
                 } else {
                     $where["name"] = $moduleInstance;
-                    $table = $object . " a join " . $type . " m on moduleInstance=m.id";
-                    $field = "a.*,m.name";
                 }
-                $where["a.course"] = $courseId;
-                return (Core::$systemDB->selectMultiple($table, $where, $field, null, [], $whereDate));
+
+                if ($activeItem){
+                    $where["m.isActive"] = true;
+                }
+
+                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user";
+                $field = "a.*,m.name";
             }
         }
-        $where["course"] = $courseId;
-        return Core::$systemDB->selectMultiple($object, $where, "*", null, [], $whereDate);
+        else {
+            $field = "*";
+            $table = $object . " a join course_user cu on cu.id=a.user";
+        }
+
+        $where["a.course"] = $courseId;
+        return Core::$systemDB->selectMultiple($table, $where, $field, null, [], $whereDate);
     }
     //checks if object/collection array is correctly formated, may also check if a parameter belongs to an object
     public function checkArray($array, $type, $functionName, $parameter = null)

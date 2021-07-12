@@ -609,6 +609,10 @@
     margin-left: 7px;
 }
 
+.notAllActive{
+    background-color: rgba(235, 57, 57, 0.562);
+}
+
 input.database_search {
     padding: 6px;
     font-size: 14px;
@@ -630,6 +634,11 @@ input.database_search {
     border: 2px solid lightgrey;
     border-radius: 5px;
 }
+
+.data-table table tr.notAllActive:hover{
+    background-color: rgba(187, 49, 49, 0.562);
+}
+
 /* View Editor */
 
 #view_editor_actions {

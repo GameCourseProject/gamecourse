@@ -159,6 +159,20 @@ API::registerFunction('course', 'addUser', function(){
     }
 });
 
+
+API::registerFunction('course', 'activeUser', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('userId');
+    API::requireValues('course');
+
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId);
+    if($course != null){
+        $courseUser = new CourseUser(API::getValue('userId'), $course);
+        $courseUser->setIsActive();
+    }
+});
+
 API::registerFunction('course', 'importUser', function(){
     API::requireCourseAdminPermission();
     API::requireValues('file');
@@ -224,10 +238,10 @@ API::registerFunction('course', 'courseUsers', function() {
     if($course != null){
         if (API::hasKey('role')){
             if ($role == "allRoles") {
-                $users = $course->getUsers();
+                $users = $course->getUsers(false);
             }
             else{
-                $users = $course->getUsersWithRole($role);
+                $users = $course->getUsersWithRole($role, false);
             }
             
             $usersInfo = [];
@@ -245,7 +259,8 @@ API::registerFunction('course', 'courseUsers', function() {
                     'email' => $user->getEmail(),
                     'lastLogin' => $user->getLastLogin(),
                     'username' => $user->getUsername(),
-                    'authenticationService' => User::getUserAuthenticationService($user->getUsername())
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
+                    'isActive' =>$user->isActive()
                 );
             }
             

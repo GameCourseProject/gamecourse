@@ -123,6 +123,11 @@ class CourseUser extends User
         $lastLogin = $this->getData("lastActivity");
         return parent::lastLoginTimeTostring($lastLogin);
     }
+    public function isActive()
+    {
+        $isActive = $this->getData("isActive");
+        return boolval($isActive);
+    }
     //gets data from course_user table
     function  getData($field = "*")
     {
@@ -175,6 +180,12 @@ class CourseUser extends User
             ["course" => $this->course->getId(), "id" => $this->id],
             "role"
         ), "role");
+    }
+
+    function setIsActive()
+    {
+        $active = Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], "isActive");
+        Core::$systemDB->update("course_user", ["isActive" => $active? 0 : 1], ["course" => $this->course->getId(), "id" => $this->id]);
     }
     
     function getUserRolesByHierarchy()

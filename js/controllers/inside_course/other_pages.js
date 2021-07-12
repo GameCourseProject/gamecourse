@@ -344,6 +344,15 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         $compile(editbox)($scope);
     };
 
+    $scope.activeUser = function(id){
+        $smartboards.request('course', 'activeUser', { course: $scope.course, userId: id }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+        });
+    };
+
     $scope.modifyUser = function(user) {
         $("#action_completed").empty();
         $("#active_visible_inputs").remove();
@@ -615,9 +624,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
 
     mainContent = $("<div id='mainContent'></div>");
     //sidebar
-    $smartboards.request("course", "courseRoles", {
-        course: $scope.course
-    }, function(data, err) {
+    $smartboards.request("course", "courseRoles", { course: $scope.course }, function(data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -655,12 +662,15 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
             class: "",
             content: "Last Login"
         }, {
+            class: "",
+            content: "Active"
+        }, {
             class: "action-column",
             content: ""
         }, {
             class: "action-column",
             content: ""
-        }, ];
+        }];
         jQuery.each(header, function(index) {
             rowHeader.append($("<th class=" + header[index].class + ">" + header[index].content + "</th>"));
         });
@@ -672,6 +682,7 @@ app.controller("CourseUsersss", function($scope, $stateParams, $element, $smartb
         rowContent.append("<td>{{user.major}}</td>");
         rowContent.append("<td>{{user.studentNumber}}</td>");
         rowContent.append("<td>{{user.lastLogin}}</td>");
+        rowContent.append('<td class="check-column"><label class="switch"><input id="active" type="checkbox" ng-model="user.isActive"><span class="slider round" ng-click="activeUser(user.id)"></span></label></td>');
         rowContent.append('<td class="action-column"><div class="icon edit_icon" title="Edit" value="#edit-user" onclick="openModal(this)" ng-click="modifyUser(user)"></div></td>');
         rowContent.append('<td class="action-column"><div class="icon delete_icon" title="Remove" value="#delete-verification-{{user.id}}" onclick="openModal(this)"></div></td>');
         //the verification modals
