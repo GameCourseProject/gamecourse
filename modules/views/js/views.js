@@ -252,7 +252,12 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             $sbviews.findViewsForRole(views, targetRole);
 
             $scope.viewerRoles = $sbviews.getRolesOfView();
-            console.log($scope.viewerRoles);
+
+            $scope.selectedVRole = $scope.viewRoles.filter(r => {
+                return r.name == targetRole;
+            })[0].id;
+
+            //TODO user
             // if ($state.current.name == 'course.settings.views.edit-role-single') {
             //     reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text };
             // }
@@ -278,9 +283,9 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
 
         var dropdownRoles = $('<div class="editor-roles">');
         if ($scope.roleType == 'ROLE_INTERACTION') {
-            dropdownRoles.append($('<div style="margin-right:5px;">User: </div><select id="user_role" onchange="selectViews()" ng-options="role.id as role.name for role in userRoles" ng-model="selectedURole" ng-selected="role.id==selectedURole"></select></div>'));
+            dropdownRoles.append($('<div style="margin-right:5px;">User: </div><select id="user_role" onchange="selectViews()" ng-model="selectedURole"><option ng-repeat="role in userRoles" value="{{role.id}}" ng-selected="role.id==selectedURole">{{role.name}</option></select></div>'));
         }
-        dropdownRoles.append($('<div style="margin-right:5px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-options="role.id as role.name for role in viewerRoles" ng-model="selectedVRole" ng-selected="role.id==selectedVRole"></select></div>'));
+        dropdownRoles.append($('<div style="margin-right:5px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-model="selectedVRole"><option ng-repeat="role in viewerRoles" value="{{role.id}}" ng-selected="role.id==selectedVRole">{{role.name}}</option></select></div>'));
         $compile(dropdownRoles)($scope);
         controlsDiv.append(dropdownRoles);
 
@@ -620,7 +625,6 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
                     }
                 }
                 //validate inputs
-
             }
 
             if (pageOrTemp == "page") {

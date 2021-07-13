@@ -1,7 +1,7 @@
 [
     {
         "role": "role.Student>special.Own",
-        "parent": null,
+        "parentId": null,
         "partType": "block",
         "class": "notifications-container",
         "header": {

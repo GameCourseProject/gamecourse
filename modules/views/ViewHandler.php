@@ -91,7 +91,7 @@ class ViewHandler
                     Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                     $viewPart["viewId"] = $viewId;
                 } else {
-                    $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, ['id' => $viewId]));
+                    $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
                     if ($viewIdExists && $templateName != null) { //we only want to change viewId if we are saving as template
                         Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                         $viewPart["viewId"] = $viewId;
@@ -108,8 +108,7 @@ class ViewHandler
             //insert/update views
             $copy = $this->makeCleanViewCopy($viewPart);
 
-            if ((array_key_exists("id", $viewPart) || !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]]))) && !$ignoreIds) { //already in DB, may need update
-                print_r("aqui");
+            if (array_key_exists("id", $viewPart) && !$ignoreIds) { //already in DB, may need update
                 Core::$systemDB->update("view", $copy, ["id" => $viewPart["id"]]);
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);

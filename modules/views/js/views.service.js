@@ -1066,8 +1066,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         if ($("#viewer_role option").filter((idx, option) => {
                             return option.text == new_viewer.text
                         }).length == 0) {
-                            console.log(new_viewer);
-                            document.getElementById("viewer_role").append(new Option(new_viewer.text, new_viewer.value));
+                            // document.getElementById("viewer_role").append(new Option(new_viewer.text, new_viewer.value));
                             $rootScope.viewRoles.push({ "id": new_viewer.value, "name": new_viewer.text });
                         }
                     } else {
@@ -1095,7 +1094,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             return option.text == new_viewer.text
                         }).length == 0) {
                             $rootScope.viewRoles[1].push({ "id": new_viewer.value, "name": new_viewer.text });
-                            document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
+                            //   document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         }
                     }
                     console.log($rootScope.viewRoles);
@@ -1155,17 +1154,21 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         $("#edit_user_select option:contains(" + roleUser.text + ")").remove();
                         viewRoles[0] = viewRoles[0].filter(role => role.name != roleUser.text);
                         viewRoles[1] = viewRoles[1].filter(role => role.name != roleViewer.text);
-                        $rootScope.viewRoles[0] = $rootScope.viewRoles[0].filter((role) => {
-                            return role.name != roleUser.text;
+                        const requiredIndexU = $rootScope.viewRoles[0].findIndex(el => {
+                            return el.name === roleUser.text;
                         });
-                        $rootScope.viewRoles[1] = $rootScope.viewRoles[1].filter((role) => {
-                            return role.name != roleViewer.text;
+                        $rootScope.viewRoles[0].splice(requiredIndexU, 1);
+
+                        const requiredIndexV = $rootScope.viewRoles[1].findIndex(el => {
+                            return el.name === roleViewer.text;
                         });
+                        $rootScope.viewRoles[1].splice(requiredIndexV, 1);
                     } else {
                         viewRoles = viewRoles.filter(role => role.name != roleViewer.text);
-                        $rootScope.viewRoles = $rootScope.viewRoles.filter((role) => {
-                            return role.name != roleViewer.text;
+                        const requiredIndex = $rootScope.viewRoles.findIndex(el => {
+                            return el.name === roleViewer.text;
                         });
+                        $rootScope.viewRoles.splice(requiredIndex, 1);
                     }
                     console.log($rootScope.viewRoles);
                     const parentContent = el[0].parentElement;
@@ -1432,7 +1435,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     return option.label == newRole.name
                 });
                 document.getElementById('viewer_role').value = newOption[0].value;
-                $("#viewer_role option:contains(" + role + ")").remove();
+                // $("#viewer_role option:contains(" + role + ")").remove();
             }
         })
 
@@ -1455,12 +1458,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     //returns the roles that a (sub)view has
     this.findRolesOfView = function (viewId) {
-        console.log(viewId);
         const views = $("[data-viewid=" + viewId + "]").toArray();
         if ($rootScope.roleType == 'ROLE_SINGLE') {
             const roles = views.map(x => x.getAttribute('data-role'));
-            console.log(roles);
-            console.log($rootScope.viewRoles);
+            // console.log(roles);
+            // console.log($rootScope.viewRoles);
             const result = $rootScope.viewRoles.filter((el) => {
                 return roles.includes(el.name);
             });
