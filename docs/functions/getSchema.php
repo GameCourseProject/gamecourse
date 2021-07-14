@@ -19,7 +19,7 @@ if (array_key_exists('list', $_GET)) {
     echo json_encode(array_column(Core::getCourses(), "id"));
 } else {
     $courseId = (array_key_exists('course', $_GET) ? $_GET['course'] : 1);
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
 
     $modules = array_column(Core::$systemDB->selectMultiple("course_module", ["course" => $courseId, "isEnabled" => true], "moduleId"), "moduleId");
     $enabledLibrariesInfo = $course->getEnabledLibrariesInfo();

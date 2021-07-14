@@ -52,9 +52,9 @@ API::registerFunction('core', 'getUserActiveCourses', function() {
     $coursesId = $user->getCourses();
     $courses=[];
     foreach($coursesId as $cid){
-        $course = Core::getCourse($cid);
+        $course = Core::getCourse($cid, false);
         if ($course["isActive"]){
-            $courses[]=$course;
+            $courses[] = $course;
         }
     }
     array_combine(array_column($courses,'id'), $courses);

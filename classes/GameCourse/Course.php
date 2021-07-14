@@ -365,7 +365,7 @@ class Course
     public static function getCourseDataFolder($courseId, $courseName = null)
     {
         if ($courseName === null) {
-            $courseName = Course::getCourse($courseId)->getName();
+            $courseName = Course::getCourse($courseId, false)->getName();
         }
         $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
         $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
@@ -781,17 +781,23 @@ class Course
                 //users
                 $newIds = [];
                 $users = json_decode(json_encode($course->users), true);
+
                 foreach ($users as $user) {
                     $gcUser =  Core::$systemDB->select("game_course_user", ["studentNumber" => $user["studentNumber"]]);
                     if($gcUser === false){
                         $id = User::addUserToDB($user["name"], $user["username"], $user["authentication_service"], $user["email"], $user["studentNumber"], $user["nickname"], $user["major"], $user["isAdmin"], $user["isActive"]); 
+                        $newCourseUser = true;
                     }
                     else {
                         $id = $gcUser["id"];
+                        $newCourseUser = !Core::$systemDB->select("course_user", ["id" => $id, "course" => $courseObj->cid]);
                     }
+                   
                     $newIds[$user["id"]] = $id;
-                    CourseUser::addCourseUser($courseObj->cid, $id, null);
-                    $courseUser = new CourseUser($id, Course::getCourse($courseObj->cid));
+                    if($newCourseUser)
+                        CourseUser::addCourseUser($courseObj->cid, $id, null);
+
+                    $courseUser = new CourseUser($id, Course::getCourse($courseObj->cid, false));
                     $courseUser->setRoles($user["roles"]);
                 }
 

@@ -20,7 +20,7 @@ API::registerFunction('settings', 'courseTabs', function() {
 API::registerFunction('settings', 'roles', function() {
     API::requireCourseAdminPermission();
     API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    $course = Course::getCourse(API::getValue('course'), false);
     if($course != null){
         if (API::hasKey('updateRoleHierarchy')) {
             
@@ -52,7 +52,7 @@ API::registerFunction('settings', 'roles', function() {
 //course main setting page
 API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $course = Course::getCourse(API::getValue('course'), false);
     if($course != null){
         $globalInfo = array(
             'name' => $course->getName(),
@@ -171,7 +171,7 @@ API::registerFunction('settings', 'submitTableEntry', function() {
 //gets course module's information
 API::registerFunction('settings', 'courseModules', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $course = Course::getCourse(API::getValue('course'), false);
     if($course != null){
         if (API::hasKey('module') && API::hasKey('enabled')) {
             $moduleId = API::getValue('module');
@@ -268,7 +268,7 @@ API::registerFunction('settings', 'courseModules', function() {
 API::registerFunction('settings', 'getModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
         $folder = Course::getCourseDataFolder($courseId);
@@ -324,7 +324,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function() {
 API::registerFunction('settings', 'activeItem', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
         if($module != null){
@@ -337,7 +337,7 @@ API::registerFunction('settings', 'activeItem', function() {
 //request to save user input on the module configuration page
 API::registerFunction('settings', 'saveModuleConfigInfo', function() {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $course = Course::getCourse(API::getValue('course'), false);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
 
@@ -384,7 +384,7 @@ API::registerFunction('settings', 'importItem', function(){
     $module = API::getValue('module');
     $course = API::getValue('course');
 
-    $courseObject = Course::getCourse($course);
+    $courseObject = Course::getCourse($course, false);
     $moduleObject = $courseObject->getModule($module);
     $nItems = $moduleObject->importItems( $course, $fileContents, $replace);
     API::response(array('nItems' => $nItems));
@@ -396,7 +396,7 @@ API::registerFunction('settings', 'exportItem', function(){
     $course = API::getValue('course');
     $module = API::getValue('module');
 
-    $courseObject = Course::getCourse($course);
+    $courseObject = Course::getCourse($course, false);
     $moduleObject = $courseObject->getModule($module);
     [$fileName, $courseItems] = $moduleObject->exportItems($course);
     API::response(array('courseItems' => $courseItems, 'fileName' => $fileName));
@@ -404,7 +404,7 @@ API::registerFunction('settings', 'exportItem', function(){
 
 API::registerFunction('settings', 'saveNewSequence', function(){
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $course = Course::getCourse(API::getValue('course'), false);
     if($course != null){
         $module = $course->getModule(API::getValue('module'));
 
@@ -436,7 +436,7 @@ API::registerFunction('settings', 'upload', function(){
     $fileName = API::getValue('fileName');
     $subfolder = API::getValue('subfolder');
 
-    $courseObject = Course::getCourse($course);
+    $courseObject = Course::getCourse($course, false);
     $result = $courseObject->upload($file, $fileName, $module, $subfolder);
     API::response(array('url' => $result));
 });
@@ -446,7 +446,7 @@ API::registerFunction('settings', 'deleteFile', function(){
     API::requireValues('course', 'path');
     $course = API::getValue('course');
     $path =  API::getValue('path');
-    $courseObject = Course::getCourse($course);
+    $courseObject = Course::getCourse($course, false);
     $courseObject->deleteFile($path);
     http_response_code(201);
     return;

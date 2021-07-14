@@ -300,7 +300,7 @@ class Skills extends Module
         if ($this->addTables("skills", "skill") || empty(Core::$systemDB->select("skill_tree", ["course" => $courseId]))) {
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
-        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId)->getName());
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
         if (!file_exists($folder . "/skills"))
             mkdir($folder . "/skills");
     }
@@ -1559,6 +1559,9 @@ class Skills extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
+        $courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("skills");
+
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
         $has1stLine = false;
@@ -1599,8 +1602,6 @@ class Skills extends Module
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
                     $itemId = Core::$systemDB->select("skill", ["treeId"=> $treeId, "name"=> $item[$nameIndex]], "id");
-                    $courseObject = Course::getCourse($course);
-                    $moduleObject = $courseObject->getModule("skills");
 
                     $skillData = [
                         "tier"=>$item[$tierIndex],
@@ -1627,6 +1628,7 @@ class Skills extends Module
                         }
                     } else {
                         $moduleObject->newSkill($skillData, $course);
+                        $newItemNr++;
                     }
                 }
             }

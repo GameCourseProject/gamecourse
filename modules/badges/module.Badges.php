@@ -20,7 +20,7 @@ class Badges extends Module
 
     private function setupData($courseId)
     {
-        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId)->getName());
+        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
         if (!file_exists($folder . "/badges"))
             mkdir($folder . "/badges");
         if (!file_exists($folder . "/badges" . "/Extra"))
@@ -1132,6 +1132,9 @@ class Badges extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
+        $courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("badges");
+
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
         $has1stLine = false;
@@ -1196,8 +1199,6 @@ class Badges extends Module
                 $maxLevel= empty($item[$description[2]]) ? 1 : (empty($item[$description[3]]) ? 2 : 3);
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
                     $itemId = Core::$systemDB->select("badge", ["course"=> $course, "name"=> $item[$nameIndex]], "id");
-                    $courseObject = Course::getCourse($course);
-                    $moduleObject = $courseObject->getModule("badges");
 
                     $badgeData = [
                         "name"=>$item[$nameIndex],

@@ -15,7 +15,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
     API::requireCoursePermission();
     API::requireValues('course');
     $courseId = API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if ($course != null) {
         //adding other pages to navigation
         $pages = \Modules\Views\ViewHandler::getPagesOfCourse($courseId, true);
@@ -129,7 +129,7 @@ API::registerFunction('course', 'getDataFolders', function () {
     API::requireCoursePermission();
     API::requireValues('course');
     $courseId = API::getValue('course');
-    $courseName = Course::getCourse($courseId)->getName();
+    $courseName = Course::getCourse($courseId, false)->getName();
     $dir = Course::getCourseDataFolder($courseId, $courseName);
     $folders = Course::getDataFolders($dir);
     API::response(array('folders' => $folders));

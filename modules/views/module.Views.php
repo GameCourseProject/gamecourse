@@ -1983,7 +1983,7 @@ class Views extends Module
         $id = API::getValue('view'); //page or template id
         $pgOrTemp = API::getValue('pageOrTemp');
         $courseId = API::getValue('course');
-        $course = Course::getCourse($courseId);
+        $course = Course::getCourse($courseId, false);
 
         if ($pgOrTemp == "page") {
             if (is_numeric($id)) {
