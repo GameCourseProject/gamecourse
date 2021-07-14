@@ -12,7 +12,7 @@ class Settings {
 
     public static function getTabs() {
         if (!static::$tabsInitialized) {
-            $course = Course::getCourse(API::getValue('course'));
+            $course = Course::getCourse(API::getValue('course'), false);
             $enabledModules = $course->getEnabledModules();
             $configTabs=[];
             //$configTabs[]= static::buildTabItem('Students','course.settings.students',true );

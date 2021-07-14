@@ -427,6 +427,9 @@ class XPLevels extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
+        $courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("xp");
+
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
         $has1stLine = false;
@@ -455,9 +458,6 @@ class XPLevels extends Module
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
                     $itemId = Core::$systemDB->select("level", ["course"=> $course, "goal"=> $item[$goalIndex]], "id");
-                    $courseObject = Course::getCourse($course);
-                    $moduleObject = $courseObject->getModule("xp");
-                
 
                     $levelData = [
                         "description"=>$item[$descriptionIndex],
@@ -470,6 +470,7 @@ class XPLevels extends Module
                         }
                     } else {
                         $moduleObject->newLevel($levelData, $course);
+                        $newItemNr++;
                     }
                 }
             }

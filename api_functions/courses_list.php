@@ -24,7 +24,7 @@ API::registerFunction('core', 'getCoursesList', function() {
         
         $courses=[];
         foreach($coursesId as $cid){
-            $course = Core::getCourse($cid);
+            $course = Core::getCourse($cid, false);
             if ($course["isVisible"]){
                 $courses[]=$course;
             }

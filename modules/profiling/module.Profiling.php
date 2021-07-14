@@ -28,7 +28,7 @@ class Profiling extends Module {
         if ($this->addTables("profiling", "profiling_config")){
             Core::$systemDB->insert("profiling_config", ["course" => $courseId]);
         }
-        $course = Course::getCourse($courseId);
+        $course = Course::getCourse($courseId, false);
         $role = $course->getRoleByName("Profiling");
         if (!$role){
             $names = [];
@@ -240,7 +240,7 @@ class Profiling extends Module {
     }
 
     public function processClusterRoles($courseId, $clusters){
-        $course = Course::getCourse($courseId);
+        $course = Course::getCourse($courseId, false);
         $names = [];
         $newRoles = [];
         // see which roles exist in the course to avoid repetition
@@ -380,9 +380,9 @@ class Profiling extends Module {
     public function getClusterHistory($courseId){
         $days = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
         $clusters = [];
-
+        
         if(!$days){
-            $course = Course::getCourse($courseId);
+            $course = Course::getCourse($courseId, false);
             $students = $course->getUsersWithRole('Student', true);
             foreach ($students as $student){
                 $exploded =  explode(' ', $student["name"]);
@@ -423,7 +423,7 @@ class Profiling extends Module {
     }
 
     public function createClusterList($courseId, $names, $assignedClusters){
-        $course = Course::getCourse($courseId);
+        $course = Course::getCourse($courseId, false);
         $students = $course->getUsersWithRole('Student', true);
         $result = [];
 
