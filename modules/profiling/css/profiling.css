@@ -28,9 +28,12 @@
 
 .profiling_button {
     margin-right: 10;
-    opacity: 0.8;
 }
 
+.export_icon.profiling_button, 
+.import_icon.profiling_button{
+    opacity: 0.8;
+}
 
 .highcharts-figure, .highcharts-data-table table {
     min-width: 310px;
