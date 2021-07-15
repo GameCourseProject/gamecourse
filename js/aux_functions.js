@@ -710,10 +710,12 @@ function unparseRole(role) {
     }
 }
 
-//get viewer in the form role.{role}
-function getViewerFromRole(role) {
-    if (!role.includes("."))
-        role = unparseRole(role);
+//get viewer
+function getViewerFromRole(role, parsed = false) {
+    if (!parsed) {
+        if (!role.includes("."))
+            role = unparseRole(role);
+    }
     if (role.includes(">")) {
         return role.split(">")[1];
     } else {

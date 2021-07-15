@@ -333,6 +333,10 @@
   background-color: rgba(255, 0, 0, 0.2);
 }
 
+.view .edit-toolbar .tool.btn.disabled {
+  pointer-events:none;
+}
+
 .view .edit-toolbar.table-toolbar {
   position: inherit;
   width: auto;
@@ -419,6 +423,16 @@
 
 #edit_part .section {
   margin-bottom: 20px;
+}
+
+#edit_part .modal_content .confirmation_btns {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#edit_part .modal_content .confirmation_btns .cancel {
+  background-color: tomato;
+  margin-right: 15px;
 }
 
 .block-edit-overlay {

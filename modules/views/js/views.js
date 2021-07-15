@@ -169,8 +169,8 @@ angular.module('module.views').controller('ViewSettings', function ($state, $sta
 });
 
 angular.module('module.views').controller('ViewEditController', function ($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {
-    var loadedView;
-    var initialViewContent;
+    var savedContent;
+    // var initialViewContent;
 
     var viewEditorWindow = $('<div id="viewEditor"></div>')
     $element.append(viewEditorWindow);
@@ -225,8 +225,8 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             console.log(err.description);
             return;
         }
-        loadedView = view;
-        initialViewContent = angular.copy(view.get());
+        savedContent = angular.copy(view.get());
+        //initialViewContent = angular.copy(view.get());
         $scope.courseRoles = view.courseRoles;
         //$scope.viewRoles = view.viewRoles;
         // $scope.selectedVRole = $scope.viewRoles[0].id;
@@ -248,14 +248,30 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         selectViews = function () {
             // const views = $('.view.editing').toArray().map(el => el.children[0]);
             const views = Array.from(document.getElementsByClassName('view editing'));
-            const targetRole = $("#viewer_role").find(":selected")[0].text;
-            $sbviews.findViewsForRole(views, targetRole);
+            const targetViewerRole = $("#viewer_role").find(":selected")[0].text;
 
-            $scope.viewerRoles = $sbviews.getRolesOfView();
+            $sbviews.findViewsForRole(views, targetViewerRole);
 
-            $scope.selectedVRole = $scope.viewRoles.filter(r => {
-                return r.name == targetRole;
-            })[0].id;
+            if ($scope.roleType == 'ROLE_SINGLE') {
+                $scope.viewerRoles = $sbviews.getRolesOfView();
+                $scope.selectedVRole = $scope.viewRoles.filter(r => {
+                    return r.name == targetViewerRole;
+                })[0].id;
+            } else {
+                const targetUserRole = $("#user_role").find(":selected")[0].text;
+                $scope.userRoles = $sbviews.getRolesOfView()[0];
+                $scope.viewerRoles = $sbviews.getRolesOfView()[1];
+
+                $scope.selectedURole = $scope.viewRoles[0].filter(r => {
+                    return r.name == targetUserRole;
+                })[0].id;
+                $scope.selectedVRole = $scope.viewRoles[1].filter(r => {
+                    return r.name == targetViewerRole;
+                })[0].id;
+            }
+
+
+
 
             //TODO user
             // if ($state.current.name == 'course.settings.views.edit-role-single') {
@@ -283,7 +299,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
 
         var dropdownRoles = $('<div class="editor-roles">');
         if ($scope.roleType == 'ROLE_INTERACTION') {
-            dropdownRoles.append($('<div style="margin-right:5px;">User: </div><select id="user_role" onchange="selectViews()" ng-model="selectedURole"><option ng-repeat="role in userRoles" value="{{role.id}}" ng-selected="role.id==selectedURole">{{role.name}</option></select></div>'));
+            dropdownRoles.append($('<div style="margin-right:5px;">User: </div><select id="user_role" onchange="selectViews()" ng-model="selectedURole"><option ng-repeat="role in userRoles" value="{{role.id}}" ng-selected="role.id==selectedURole">{{role.name}}</option></select></div>'));
         }
         dropdownRoles.append($('<div style="margin-right:5px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-model="selectedVRole"><option ng-repeat="role in viewerRoles" value="{{role.id}}" ng-selected="role.id==selectedVRole">{{role.name}}</option></select></div>'));
         $compile(dropdownRoles)($scope);
@@ -340,8 +356,8 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
                         else {
                             giveMessage('Saved!');
                         }
-                        initialViewContent = angular.copy(saveData.content);
-                        //location.reload();//reloading to prevent bug that kept adding new parts over again
+                        savedContent = angular.copy(saveData.content);
+                        // location.reload();//reloading to prevent bug that kept adding new parts over again
                     });
                 }
             });
@@ -409,13 +425,11 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function ($event, toState, toParams) {
-        if (initialViewContent == undefined || loadedView == undefined) {
+        if (savedContent == undefined) {
             watcherDestroy();
             return;
         }
-        console.log(JSON.stringify(initialViewContent));
-        console.log(JSON.stringify(loadedView.get()));
-        if (JSON.stringify(initialViewContent) !== JSON.stringify(loadedView.get())) {
+        if (JSON.stringify(savedContent) !== JSON.stringify($rootScope.partsHierarchy)) {
             if (confirm("There are unsaved changes. Leave page without saving?")) {
                 watcherDestroy();
                 return;

@@ -310,7 +310,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                             //select part done on a modal
                             var addPartModal = $("<div class='modal' id='add_part'></div>");
                             addPartModalContent = $("<div class='modal_content'></div>");
-                            addPartModalContent.append($('<button class="close_btn icon" value="#add_part" onclick="closeModal(this)"></button>'));
+                            addPartModalContent.append($('<button class="close_btn icon" value="#add_part" onclick="resetModal(this)"></button>'));
                             //addPartModalContent.append($('<div class="title">Add New Part: </div>'));
                             parts_selection = $('<div id="parts_selection"></div>');
                             template_selection = $('<div id="template_selection"></div>');
@@ -503,6 +503,12 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
 
                                                 const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
                                                 aspect.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
+
+                                                //the template we are editing is ROLE_INTERACTION and we are using a ROLE_SINGLE template
+                                                if (part.role.includes('>') && !aspect.role.includes('>')) {
+                                                    //add user Default for every aspect
+                                                    aspect.role = "role.Default>" + aspect.role;
+                                                }
 
                                                 updateViewIds(aspect, aspect.viewId);
 

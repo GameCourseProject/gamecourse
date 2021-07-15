@@ -83,6 +83,11 @@ class ViewHandler
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+                // if we save twice in view editor, to not insert again
+                $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
+                Core::$systemDB->update("view", $copy, ["id" => $id]);
+                $viewPart["id"] = $id;
             } else { //not in DB, insert it
                 Core::$systemDB->insert("view", $copy);
                 $viewId = Core::$systemDB->getLastId();
@@ -108,11 +113,16 @@ class ViewHandler
             //insert/update views
             $copy = $this->makeCleanViewCopy($viewPart);
 
-            if (array_key_exists("id", $viewPart) && !$ignoreIds) { //already in DB, may need update
+            if (array_key_exists("id", $viewPart) && !$ignoreIds) { //already in DB, may need update 
                 Core::$systemDB->update("view", $copy, ["id" => $viewPart["id"]]);
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+                // if we save twice in view editor, to not insert again
+                $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
+                Core::$systemDB->update("view", $copy, ["id" => $id]);
+                $viewPart["id"] = $id;
             } else {
                 if (!isset($viewPart["isTemplateRef"])) { //not in DB, insert it
                     Core::$systemDB->insert("view", $copy);
@@ -313,6 +323,7 @@ class ViewHandler
                             unset($part["id"]);
                             unset($part["parentId"]);
                             unset($part["childId"]);
+                            unset($part["viewIndex"]);
                             Core::$systemDB->update("view", $part, ["id" => $partId]);
                         }
                     }

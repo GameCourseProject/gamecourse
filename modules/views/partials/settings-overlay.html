@@ -1,6 +1,5 @@
 <button class="close_btn icon" value="#edit_part" ng-click="closeOverlay()"></button>
-<div class="title">Edit Part Settings: <div class="warning">All information here will be automatically added to your
-        selected part</div>
+<div class="title">Edit Part Settings:
 </div>
 
 
@@ -98,3 +97,8 @@
         </div>
     </div>
 </sb-menu>
+
+<div class="confirmation_btns">
+    <button class="cancel" value="#edit_part" ng-click="closeOverlay()"> Cancel </button>
+    <button value="#edit_part" ng-click="saveEdit();closeOverlay();"> Save </button>
+</div>

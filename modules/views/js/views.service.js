@@ -152,6 +152,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         changing = false;
                     }, true);
                 }
+                viewBlock[0].click();
                 return viewBlock;
             }
 
@@ -370,6 +371,13 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.createTool = function (title, img, click) {
         div = $("<div class='tool'></div>").addClass('btn').attr('title', title).on('click', function (e) {
+            if (title == 'Edit Layout') {
+                document.getElementsByClassName("tool").forEach(btn => {
+                    if (btn.getAttribute("title") != 'Edit Layout') {
+                        !$(btn).hasClass('disabled') ? $(btn).addClass('disabled') : $(btn).removeClass('disabled');
+                    }
+                });
+            }
             e.stopPropagation();
             var thisArg = this;
             var args = arguments;
@@ -468,6 +476,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
                         //ToDo: drop,keydown,keypress,keyup (these weren't working)
                         var missingEvents = [];
+                        console.log(optionsScope);
                         if (optionsScope.part.events !== undefined) {
                             for (var i in events) {
                                 var event = events[i];
@@ -502,6 +511,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             optionsScope.part.variables[optionsScope.variables.dataKey] = { value: '' };
                             optionsScope.variables.dataKey = '';
                         };
+
+                        optionsScope.saveEdit = function () {
+                            if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                                $timeout(function () {
+                                    objSync(part, optionsScope.part);
+
+                                    optionsScope.$destroy();
+                                    if (options.closeFunc != undefined)
+                                        options.closeFunc();
+                                });
+                            } else {
+                                optionsScope.$destroy();
+                                if (options.closeFunc != undefined)
+                                    options.closeFunc();
+                            }
+                        };
+
                         $timeout(function () {
                             if (options.callbackFunc != undefined)
                                 options.callbackFunc(container.next(), execClose, optionsScope, watch);
@@ -509,19 +535,19 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                     }, function (cancel) {
                         console.log("close settings", optionsScope.part);
-                        if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
-                            $timeout(function () {
-                                objSync(part, optionsScope.part);
+                        // if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                        //     $timeout(function () {
+                        //         objSync(part, optionsScope.part);
 
-                                optionsScope.$destroy();
-                                if (options.closeFunc != undefined)
-                                    options.closeFunc();
-                            });
-                        } else {
-                            optionsScope.$destroy();
-                            if (options.closeFunc != undefined)
-                                options.closeFunc();
-                        }
+                        //         optionsScope.$destroy();
+                        //         if (options.closeFunc != undefined)
+                        //             options.closeFunc();
+                        //     });
+                        // } else {
+                        optionsScope.$destroy();
+                        if (options.closeFunc != undefined)
+                            options.closeFunc();
+                        // }
                     });
                 });
             }));
@@ -1513,12 +1539,24 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
             for (let role of rolesForTargetRole) {
-                let otherViews = viewAspects.filter(function (el) {
-                    return el.getAttribute('data-role') != role.name;
-                });
-                let view = viewAspects.filter(function (el) {
-                    return el.getAttribute('data-role') == role.name;
-                });
+                let otherViews;
+                let view;
+                if ($rootScope.roleType == 'ROLE_SINGLE') {
+                    otherViews = viewAspects.filter(function (el) {
+                        return el.getAttribute('data-role') != role.name;
+                    });
+                    view = viewAspects.filter(function (el) {
+                        return el.getAttribute('data-role') == role.name;
+                    });
+                } else {
+                    otherViews = viewAspects.filter(function (el) {
+                        return getViewerFromRole(el.getAttribute('data-role'), true) != role.name;
+                    });
+                    view = viewAspects.filter(function (el) {
+                        return getViewerFromRole(el.getAttribute('data-role'), true) == role.name;
+                    });
+                }
+
                 // console.log(otherViews);
                 // console.log(view);
                 // if (otherViews.length == 1 && view.length == 0) {
@@ -1867,15 +1905,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
     this.setDefaultParamters = function (part) {
         //sets some fields contents to '{}' 
-        if (part.variables === undefined || Array.isArray(part.variables) || part.variables === "[]")
+        if (part.variables === undefined || Array.isArray(part.variables) || part.variables === "[]" || part.variables === null)
             part.variables = {};
-        if (part.events === undefined || Array.isArray(part.events) || part.events === "[]")
+        if (part.events === undefined || Array.isArray(part.events) || part.events === "[]" || part.events === null)
             part.events = {};
-        if (part.loopData === undefined)
+        if (part.loopData === undefined || part.loopData === null)
             part.loopData = "{}";
-        if (part.visibilityCondition === undefined)
+        if (part.visibilityCondition === undefined || part.visibilityCondition === null)
             part.visibilityCondition = "{}";
-        if (part.visibilityType === undefined)
+        if (part.visibilityType === undefined || part.visibilityType === null)
             part.visibilityType = "conditional";
     };
 
