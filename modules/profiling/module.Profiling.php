@@ -8,7 +8,7 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    private $logPath = "C:\\xampp\htdocs\gamecourse\modules\profiling\\results.txt";
+    private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
     // colors
@@ -406,7 +406,7 @@ class Profiling extends Module {
                     if($record["cluster"] === null){
                         $record["cluster"] = "None";
                     }
-
+   
                     if ($id === false){
                         $clusters[] = array ('id' => $record["id"],'name' => $nickname,  $day["date"] => $record["cluster"]);
                     }
@@ -439,7 +439,7 @@ class Profiling extends Module {
 
     public function runProfiler($courseId, $nClusters, $minClusterSize) {
         $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) . " " . strval($nClusters) . " " . strval($minClusterSize) . " > /dev/null &"; //python3
-        //print_r( $cmd);
+        system($cmd);
     }
     
     public function checkStatus($courseId){

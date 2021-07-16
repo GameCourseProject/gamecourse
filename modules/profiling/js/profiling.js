@@ -372,7 +372,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         rowHeader = $('<thead>');
 
         if ($scope.select.length == 0){
-            console.log($scope.history);
+
             action_buttons.append($("<button id='export_button' class='icon export_icon profiling_button other' value='#export-item' ng-click='exportItem()'></button></div>"));
             action_buttons.append($("<button id='import_button' class='icon import_icon profiling_button other' value='#import-item' onclick='openModal(this)'></button>"));
             action_buttons.append($('<button id="run-button" class="button small" ng-click="runProfiler()">Run</button>'));
