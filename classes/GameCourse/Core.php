@@ -146,9 +146,9 @@ class Core
     {
         static::init(); // make sure its initialized
         if (array_key_exists('user', $_SESSION)) {
-          static::$loggedUser = User::getUserByUsername($_SESSION['username']);
-          $_SESSION['user'] = static::$loggedUser->getId();
-	        return true;
+            static::$loggedUser = User::getUserByUsername($_SESSION['username']);
+            $_SESSION['user'] = static::$loggedUser->getId();
+            return true;
         }
         if (array_key_exists("loginDone", $_SESSION)) {
             $username = $_SESSION['username'];
@@ -254,6 +254,11 @@ class Core
         return static::$navigation;
     }
 
+    public static function setNavigation($navigation)
+    {
+        static::$navigation = $navigation;
+    }
+
     public static function addSettings($text, $ref, $isSRef = false, $restrictAcess = false)
     {
         static::$settings[] = [
@@ -265,6 +270,4 @@ class Core
     {
         return static::$settings;
     }
-
-
 }

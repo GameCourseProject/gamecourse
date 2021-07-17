@@ -17,6 +17,7 @@ function resetModal(element) {
     closeModal(element);
     $('.part_option.focus').removeClass('focus');
     $('#template_selection').hide();
+    $('#warningTemplates').hide();
     $('button:contains("Add Item")').prop('disabled', true);
 }
 

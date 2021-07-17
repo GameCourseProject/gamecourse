@@ -1536,12 +1536,12 @@ class Views extends Module
 
                 $view = Core::$systemDB->select("view", ["viewId" => $viewId, "role" => $role]);
                 $existsTemplateWithViewId = Core::$systemDB->select("view_template", ["viewId" => $viewId]) != null; //templateRef
-                print_r($view);
-                print_r($existsTemplateWithViewId);
+                // print_r($view);
+                // print_r($existsTemplateWithViewId);
                 if ($view == null || $existsTemplateWithViewId) {
-                    print_r("aqui");
+                    // print_r("aqui");
                     foreach ($content as $aspect) {
-                        print_r($aspect);
+                        // print_r($aspect);
                         $aspect["parentId"] = null;
                         if (!isset($aspect["isTemplateRef"])) // (not) used as ref
                             $aspect["viewId"] = null;
@@ -1658,12 +1658,11 @@ class Views extends Module
             }
 
             $templates = $this->getTemplates();
-            if ($viewType == "ROLE_SINGLE")
-                $templates = array_filter($templates, function ($var, $key) {
-                    // returns whether the input integer is even
-                    return $var["roleType"] == "ROLE_SINGLE";
-                }, ARRAY_FILTER_USE_BOTH);
-
+            $templates = array_filter($templates, function ($var, $key) use ($viewType) {
+                // returns whether the input integer is even
+                return $var["roleType"] == $viewType;
+            }, ARRAY_FILTER_USE_BOTH);
+            $templates = array_values($templates);
             //removes the template itself
             if (($key = array_search($viewSettings["viewId"], array_column($templates, 'viewId'))) !== FALSE) {
                 unset($templates[$key]);

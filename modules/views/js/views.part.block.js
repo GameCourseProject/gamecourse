@@ -314,11 +314,16 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                             //addPartModalContent.append($('<div class="title">Add New Part: </div>'));
                             parts_selection = $('<div id="parts_selection"></div>');
                             template_selection = $('<div id="template_selection"></div>');
+                            warningTemplates = $('<span id="warningTemplates">There are no templates!</span>');
                             addPartContent = $("<div class='content'></div>");
                             addPartContent.append(parts_selection);
                             addPartContent.append(template_selection);
+                            addPartContent.append(warningTemplates);
                             addPartModalContent.append(addPartContent);
                             addPartModal.append(addPartModalContent);
+
+                            warningTemplates.hide();
+
 
                             var addPartsDiv = $(document.createElement('div')).addClass('add-parts');
 
@@ -344,6 +349,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                         type = this.getAttribute('value');
                                         $("#partList").val("part:" + type);
                                         template_selection.hide();
+                                        warningTemplates.hide();
                                         addButton.prop('disabled', false);
                                     });
                                 }
@@ -363,8 +369,12 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                 $(this).addClass("focus");
                                 type = this.getAttribute('value');
                                 $("#partList").val("temp:");
-                                template_selection.show();
-                                addButton.prop('disabled', false);
+                                if (templateList[0].children.length != 1) {
+                                    template_selection.show();
+                                    addButton.prop('disabled', false);
+                                } else {
+                                    warningTemplates.show();
+                                }
                             });
                             addPartsDiv.append(partsList);
                             partsList.hide();
@@ -503,12 +513,6 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
 
                                                 const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
                                                 aspect.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
-
-                                                //the template we are editing is ROLE_INTERACTION and we are using a ROLE_SINGLE template
-                                                if (part.role.includes('>') && !aspect.role.includes('>')) {
-                                                    //add user Default for every aspect
-                                                    aspect.role = "role.Default>" + aspect.role;
-                                                }
 
                                                 updateViewIds(aspect, aspect.viewId);
 
