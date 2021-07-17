@@ -122,9 +122,9 @@ class Views extends Module
         return new ValueNode($date);
     }
     //get award or participations from DB
-    public function getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object = "award")
+    public function getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where = [], $object = "award", $activeUser = true, $activeItem = true)
     {
-        $awardParticipation = $this->getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, $object);
+        $awardParticipation = $this->getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, $object, $activeUser, $activeItem);
         return $this->createNode($awardParticipation, $object . "s", "collection");
     }
     //expression lang function, convert string to int
@@ -412,16 +412,16 @@ class Views extends Module
         $this->viewHandler->registerFunction(
             'users',
             'getAllUsers',
-            function (string $role = null, int $courseId = null) use ($course) {
+            function (string $role = null, int $courseId = null, bool $isActive = true) use ($course) {
                 if ($courseId !== null) {
                     $course = new Course($courseId);
                 }
                 if ($role == null)
-                    return $this->createNode($course->getUsers(), 'users', "collection");
+                    return $this->createNode($course->getUsers($isActive), 'users', "collection");
                 else
-                    return $this->createNode($course->getUsersWithRole($role), 'users', "collection");
+                    return $this->createNode($course->getUsersWithRole($role, $isActive), 'users', "collection");
             },
-            "Returns a collection with all users. The optional parameters can be used to find users that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.",
+            "Returns a collection with all users. The optional parameters can be used to find users that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.\nisActive: Return all users (False), or only active users (True). Defaults to True.",
             'collection',
             'user',
             'library'
@@ -737,14 +737,14 @@ class Views extends Module
         $this->viewHandler->registerLibrary("views", "awards", "This library provides access to information regarding Awards.");
 
         //functions of awards library
-        //awards.getAllAwards(user,type,moduleInstance,initialdate,finaldate)
+        //awards.getAllAwards(user,type,moduleInstance,initialdate,finaldate, activeUser, activeItem)
         $this->viewHandler->registerFunction(
             'awards',
             'getAllAwards',
-            function (int $user = null, string $type = null, string $moduleInstance = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate);
+            function (int $user = null, string $type = null, string $moduleInstance = null, string $initialDate = null, string $finalDate = null, bool $activeUser = true, bool $activeItem = true) use ($courseId) {
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, [], "award", $activeUser, $activeItem);
             },
-            "Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
+            "Returns a collection with all the awards in the Course. The optional parameters can be used to find awards that specify a given combination of conditions:\nuser: id of a GameCourseUser.\ntype: Type of the event that led to the award.\nmoduleInstance: Name of an instance of an object from a Module.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
             'collection',
             "award",
             'library'
@@ -875,11 +875,11 @@ class Views extends Module
         $this->viewHandler->registerLibrary("views", "participations", "This library provides access to information regarding Participations.");
 
         //functions of the participation library
-        //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate)
+        //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
         $this->viewHandler->registerFunction(
             'participations',
             'getAllParticipations',
-            function (int $user = null, string $type = null, string $moduleInstance = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+            function (int $user = null, string $type = null, string $moduleInstance = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null,  bool $activeUser = true, bool $activeItem = true) use ($courseId) {
                 $where = [];
                 if ($rating !== null) {
                     $where["rating"] = $rating;
@@ -887,19 +887,19 @@ class Views extends Module
                 if ($evaluator !== null) {
                     $where["evaluator"] = $evaluator;
                 }
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation");
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation",  $activeUser, $activeItem);
             },
-            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
             'collection',
             'participation',
             'library'
         );
 
-        //participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate)
+        //participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
         $this->viewHandler->registerFunction(
             'participations',
             'getParticipations',
-            function (int $user = null, string $type = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+            function (int $user = null, string $type = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null, bool $activeUser = true, bool $activeItem = true) use ($courseId) {
                 $where = [];
                 if ($rating !== null) {
                     $where["rating"] = (int) $rating;
@@ -907,7 +907,7 @@ class Views extends Module
                 if ($evaluator !== null) {
                     $where["evaluator"] = $evaluator;
                 }
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation");
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation", $activeUser, $activeItem);
             },
             "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
             'collection',
@@ -915,11 +915,11 @@ class Views extends Module
             'library'
         );
 
-        //participations.getParticipationsByDescription(user,type,description,rating,evaluator,initialDate,finalDate)
+        //participations.getParticipationsByDescription(user,type,description,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
         $this->viewHandler->registerFunction(
             'participations',
             'getParticipationsByDescription',
-            function (int $user = null, string $type = null, string $desc = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null) use ($courseId) {
+            function (int $user = null, string $type = null, string $desc = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null, bool $activeUser = true, bool $activeItem = true) use ($courseId) {
                 $where = [];
                 if ($rating !== null) {
                     $where["rating"] = (int) $rating;
@@ -930,7 +930,7 @@ class Views extends Module
                 if ($desc !== null) {
                     $where["description"] = $desc;
                 }
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation");
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation", $activeUser, $activeItem);
             },
             "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\ndescription: Description of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.",
             'collection',
@@ -1801,7 +1801,8 @@ class Views extends Module
             $loggedUser = new \GameCourse\CourseUser($loggedUserId, $course);
             if (in_array($role, $loggedUser->getRolesNames()))
                 return $loggedUserId;
-            $users = $course->getUsersWithRole($role);
+            $users = $course->getUsersWithRole($role, false);
+            
             if (count($users) != 0)
                 $uid = $users[0]['id'];
         } else if (strpos($role, 'user.') === 0) {
@@ -1977,7 +1978,7 @@ class Views extends Module
         $id = API::getValue('view'); //page or template id
         $pgOrTemp = API::getValue('pageOrTemp');
         $courseId = API::getValue('course');
-        $course = Course::getCourse($courseId);
+        $course = Course::getCourse($courseId, false);
 
         if ($pgOrTemp == "page") {
             if (is_numeric($id)) {

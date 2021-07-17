@@ -32,7 +32,7 @@ class XPLevels extends Module
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
         $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
-        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true]), "sum(reward)");
+        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
         $value = min($bonusBadgeXP, $maxBonusXP);
         return (is_null($value))? 0 : $value;
     }
@@ -41,19 +41,23 @@ class XPLevels extends Module
         //badges XP (bonus badges have a maximum value of XP)
         $table = "award a join badge b on moduleInstance=b.id";
         $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false]), "sum(reward)");
+        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
         $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
         return $badgeXP;
     }
-    public function calculateSkillXP($userId, $courseId)
+    public function calculateSkillXP($userId, $courseId, $isActive = true)
     {
         //skills XP (skill trees have a maximum value of XP)
         $skillTrees = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]);
         $skillTreeXP = 0;
         foreach ($skillTrees as $tree) {
+            $where = ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]];
+            if ($isActive){
+                $where["isActive"] = true;
+            }
             $fullTreeXP = Core::$systemDB->select(
                 "award a join skill s on moduleInstance=s.id",
-                ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]],
+                $where,
                 "sum(reward)"
             );
             $skillTreeXP += min($fullTreeXP, $tree["maxReward"]);
@@ -337,7 +341,7 @@ class XPLevels extends Module
                 foreach ($table as $entry) {
                     $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
                     if ($update && $existingCourse) {
-                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                        Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId, "id" => $entry["id"]]);
                     } else {
                         $entry["course"] = $courseId;
                         $idImported = $entry["id"];
@@ -423,6 +427,9 @@ class XPLevels extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
+        $courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("xp");
+
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
         $has1stLine = false;
@@ -451,9 +458,6 @@ class XPLevels extends Module
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
                     $itemId = Core::$systemDB->select("level", ["course"=> $course, "goal"=> $item[$goalIndex]], "id");
-                    $courseObject = Course::getCourse($course);
-                    $moduleObject = $courseObject->getModule("xp");
-                
 
                     $levelData = [
                         "description"=>$item[$descriptionIndex],
@@ -466,6 +470,7 @@ class XPLevels extends Module
                         }
                     } else {
                         $moduleObject->newLevel($levelData, $course);
+                        $newItemNr++;
                     }
                 }
             }

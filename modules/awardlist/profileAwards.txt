@@ -65,7 +65,7 @@
                         "parentId": "4023",
                         "viewIndex": "0",
                         "label": null,
-                        "loopData": "{awards.getAllAwards(%user)}",
+                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false)}",
                         "variables": [],
                         "value": null,
                         "class": null,

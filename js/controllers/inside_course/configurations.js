@@ -676,6 +676,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         return;
                     }
                     $scope.listingItems.items = data.listingItems.items;
+                    $scope.tiers = data.tiers;
                 });
             });
 
@@ -918,6 +919,37 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
     }
 
+    $scope.activeItem = function(id){
+        $smartboards.request('settings', 'activeItem', { course: $scope.course, module: $stateParams.module, itemId: id }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if($scope.listingItems.items[0].hasOwnProperty('dependenciesList')){
+                jQuery.each($scope.listingItems.items, function(index){
+                    for (var i = 0; i < $scope.listingItems.items[index].dependenciesList.length; i++){
+
+                        var dep1 = $scope.listingItems.items.findIndex((item) => {
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][0];   
+                        });
+                        var dep2 = $scope.listingItems.items.findIndex((item) => {
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][1];   
+                        });
+
+                        if(dep1 !== -1 && (!$scope.active[$scope.listingItems.items[dep1].name] || !$scope.listingItems.items[dep1].allActive) || dep2 !== -1 && (!$scope.active[$scope.listingItems.items[dep2].name] || !$scope.listingItems.items[dep2].allActive)){
+                            $scope.listingItems.items[index].allActive = false;
+                            break;
+                        }
+                        else {
+                            $scope.listingItems.items[index].allActive = true;
+                        }
+                    }
+                });
+            }
+            
+        });
+    }
+
     $smartboards.request('settings', 'getModuleConfigInfo', { course: $scope.course, module: $stateParams.module }, function (data, err) {
         if (err) {
             giveMessage(err.description);
@@ -1070,7 +1102,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 stg = "tier." + atribute;
                 rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
             });
-            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(item)"></div></td>');
+            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(tier)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
             rowContentTiers.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
@@ -1161,7 +1193,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 rowHeader.append($("<th class='action-column'></th>")); // move down
             }
 
-            rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}'> ></tr>");
+            $scope.active = [];
+            
+            rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}' ng-class=\"{'notAllActive': item.allActive === false}\"></tr>");
             jQuery.each($scope.listingItems.displayAtributes, function (index) {
                 atribute = $scope.listingItems.displayAtributes[index];
                 stg = "item." + atribute;
@@ -1171,6 +1205,8 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     path = $scope.courseFolder + "/badges/";
                     rowContent.append($('<td ng-if="!item.image"><img src="images/no-image.png" class="badges"/></td>'));
                     rowContent.append($('<td ng-if="item.image"><img src="' + path + '{{' + "item.name" + '}}' + "/" + '{{' + stg + '}}" title="{{ ' + stg + '}}" class="badges"/></td>'));
+                } else if (atribute == "isActive") {
+                    rowContent.append($('<td class="check-column"><label class="switch"><input id="active" type="checkbox" ng-init="active[item.name]=item.isActive" ng-model="active[item.name]"><span class="slider round" ng-click="activeItem(item.id)" ></span></label></td>'));
                 } else {
                     rowContent.append($('<td>{{' + stg + '}}</td>'));
                 }
@@ -1181,6 +1217,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 rowContent.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
                 rowContent.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
             }
+            
             //append table
             table.append(rowHeader);
             table.append(rowContent);
@@ -1419,107 +1456,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 });
 
 
-// old version, not used anymore
-/*app.controller('CourseSkillsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
 
-    $scope.replaceData = function (arg) {
-        if (confirm("Are you sure you want to replace all the Skills with the ones on the input box?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, skillsList: arg }, alertUpdate);
-    };
-    $scope.replaceTier = function (arg) {
-        if (confirm("Are you sure you want to replace all the Tiers with the ones on the input box?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, tiersList: arg }, alertUpdate);
-    };
-    $scope.replaceNumber = function (arg) {
-        if (confirm("Are you sure you want to change the Maximum Tree XP?"))
-            $smartboards.request('settings', 'courseSkills', { course: $scope.course, maxReward: arg }, alertUpdate);
-    };
-    $scope.addData = function (arg) { //Currently not being used
-        $smartboards.request('settings', 'courseSkills', { course: $scope.course, newSkillsList: arg }, alertUpdate);
-    };
-    $scope.clearData = function () {
-        clearFillBox($scope);
-    };
-    $scope.clearTier = function () { //clear textarea of the tiers
-        if ($scope.tierList !== "")
-            $scope.tierList = "";
-        else if ("file2" in $scope.data)
-            $scope.tierList = $scope.data.file2;
-    };
-
-    $smartboards.request('settings', 'courseSkills', { course: $scope.course }, function (data, err) {
-        if (err) {
-            giveMessage(err.description);
-            return;
-        }
-        var text = "Skills must be in the following format: tier;name;dep1A+dep1B|dep2A+dep2B;color;XP";
-
-        $scope.data = data;
-        var tabContent = $($element);
-        var configurationSection = createSection(tabContent, 'Manage Skills');
-
-        var configSectionContent = $('<div>', { 'class': 'row' });
-
-        //Display skill Tree info (similar to how it appears on the profile)
-        var dataArea = $('<div>', { 'class': 'column row', style: 'float: left; width: 55%;' });
-
-        var numTiers = Object.keys(data.skillsList).length;
-        for (t in data.skillsList) {
-
-            var tier = data.skillsList[t];
-            var width = 100 / numTiers - 2;
-
-            var tierArea = $('<div>', { class: "block tier column", text: "Tier " + t + ":\t" + tier.reward + " XP", style: 'float: left; width: ' + width + '%;' });
-
-            for (var i = 0; i < tier.skills.length; i++) {
-                var skill = tier.skills[i];
-
-                var skillBlock = $('<div>', { class: "block skill", style: "background-color: " + skill.color + "; color: #ffffff; width: 60px; height:60px" });
-                skillBlock.append('<span style="font-size: 80%;">' + skill.name + '</span>');
-                tierArea.append(skillBlock);
-
-                if ('dependencies' in skill) {
-                    for (var d in skill.dependencies) {
-                        var deps = '<span style="font-size: 70%">';
-                        for (var dElement in skill.dependencies[d]) {
-                            deps += skill.dependencies[d][dElement] + ' + ';
-                        }
-                        deps = deps.slice(0, -2);
-                        deps += '</span><br>';
-                        tierArea.append(deps);
-                    }
-                }
-            }
-            dataArea.append(tierArea);
-        }
-        configSectionContent.append(dataArea);
-
-
-        $scope.newList = data.file;
-        var bigBox = constructTextArea($compile, $scope, "Skill", text, 45);
-
-        $scope.tierList = data.file2;
-        var bigBox2 = constructTextArea($compile, $scope, "Tier", "Tier must be in the following formart: tier;XP",
-            100, "tierList", 5);
-        $scope.maxReward = data.maxReward;
-        var numInput = constructNumberInput($compile, $scope, "Maximum Skill Tree Reward", "maxReward", "Max Reward");
-        //        $('<div>',{'class': 'column', style: 'float: right; width: 100%;',text:"Maximum Skill Tree Reward: "});
-        //numInput.append('<br><input type:"number" style="width: 25%" id="newList" ng-model="maxReward">');
-        //numInput.append('<button class="button small" ng-click="replaceMax(maxReward)">Save Max Reward</button>');
-        //ToDo: add this button (and delete) back after the system stops using TXTs from legacy_folder
-        //If TXT files are used it's difficult to keep them synced w DB and have the Add/Edit functionality
-        //if (name!=="Level")
-        //    bigBox.append('<button class="button small" ng-click="addData(newList)">Add/Edit '+name+'s </button>');
-        //ng-disabled="!isValidString(inviteInfo.id) "
-        // numInput.append('<button class="button small" ng-click="clear'+funName+'()" style="float: right;">Clear/Fill Box</button>');
-        //bigBox.append('</div>');//<button ng-disabled="!isValidString(inviteInfo.id) || !isValidString(inviteInfo.username)" ng-click="createInvite()">Create</button></div>');
-
-        bigBox.append(bigBox2);
-        bigBox.append(numInput);
-        configSectionContent.append(bigBox);
-        configurationSection.append(configSectionContent);
-    });
-});*/
 app.controller('CourseBadgesSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
     //old version, not used, only here for verification
 
@@ -1592,35 +1529,3 @@ app.controller('CourseBadgesSettingsController', function ($scope, $stateParams,
         configurationSection.append(configSectionContent);
     });
 });
-/*app.controller('CourseLevelsSettingsController', function ($scope, $stateParams, $element, $smartboards, $compile, $parse) {
-    //old version, not used
-    $scope.replaceData = function (arg) {
-        if (confirm("Are you sure you want to replace all the Levels with the ones on the input box?"))
-            $smartboards.request('settings', 'courseLevels', { course: $scope.course, levelList: arg }, alertUpdate);
-    };
-    $scope.clearData = function () {
-        clearFillBox($scope);
-    };
-
-    $smartboards.request('settings', 'courseLevels', { course: $scope.course }, function (data, err) {
-        if (err) {
-            giveMessage(err.description);
-            return;
-        }
-
-        var text = "Levels must in ascending order with the following format: title;minimunXP";
-        tabContents = [];
-        console.log(data.levelList);
-        for (var st in data.levelList) {
-            tabContents.push({
-                Level: data.levelList[st].number,
-                Title: data.levelList[st].description,
-                "Minimum XP": data.levelList[st].goal,
-                "": { level: data.levelList[st].id }
-            });
-        }
-        var columns = ["Level", "Title", "Minimum XP"];
-        $scope.newList = data.file;
-        constructConfigPage(data, err, $scope, $element, $compile, "Level", text, tabContents, columns);
-    });
-});*/

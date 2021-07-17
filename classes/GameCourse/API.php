@@ -37,7 +37,7 @@ class API {
     //only allows acess to admins and users of the course
     public static function requireCoursePermission() {
         API::requireValues('course');
-        $courseUser = Course::getCourse(API::getValue('course'))->getLoggedUser();
+        $courseUser = Course::getCourse(API::getValue('course'), false)->getLoggedUser();
         $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
         if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
             API::error('You don\'t have permission acess this course!', 401);
@@ -48,7 +48,7 @@ class API {
     //only allows acess to admins and teachers of the course
     public static function requireCourseAdminPermission() {
         API::requireValues('course');
-        $courseAdmin = Course::getCourse(API::getValue('course'))->getLoggedUser()->hasRole('Teacher');
+        $courseAdmin = Course::getCourse(API::getValue('course'), false)->getLoggedUser()->hasRole('Teacher');
         if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
             API::error('You don\'t have permission to request this!', 401);
             //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));

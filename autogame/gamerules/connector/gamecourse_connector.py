@@ -295,8 +295,8 @@ def calculate_xp(course, target):
 
 
 	# rewards from badges where isExtra = 1
-	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s";
-	cursor.execute(query, (course, "badge", True, target))
+	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and isActive =%s and user=%s;"
+	cursor.execute(query, (course, "badge", True, True,target))
 	badge_xp_extra = cursor.fetchall()
 
 	# if query returns empty set
@@ -311,8 +311,8 @@ def calculate_xp(course, target):
 
 
 	# rewards from badges where isExtra = 0
-	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and user=%s";
-	cursor.execute(query, (course, "badge", False, target))
+	query = "SELECT sum(reward) from award left join badge on award.moduleInstance=badge.id where award.course=%s and type=%s and isExtra =%s and isActive =%s and user=%s;"
+	cursor.execute(query, (course, "badge", False, True, target))
 	badge_xp = cursor.fetchall()
 
 	# if query returns empty set

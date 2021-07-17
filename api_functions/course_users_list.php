@@ -11,7 +11,7 @@ use GameCourse\CourseUser;
 API::registerFunction('course', 'courseRoles', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $roles = $course->getRoles("name");
         API::response(["courseRoles"=> $roles ]);
@@ -27,7 +27,7 @@ API::registerFunction('course', 'removeUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
     $user_id = API::getValue('user_id');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $courseUser = new CourseUser($user_id,$course);
         if ($courseUser->exists()) {
@@ -49,7 +49,7 @@ API::registerFunction('course', 'editUser', function() {
     API::requireValues('userHasImage','userId','userName', 'userStudentNumber', 'userEmail', 'course', 'userRoles', 'userMajor');
 
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $courseUser = new CourseUser(API::getValue('userId'), $course);
         $user = new User(API::getValue('userId'));
@@ -95,7 +95,7 @@ API::registerFunction('course', 'editUser', function() {
 API::registerFunction('course', 'createUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         API::requireValues('userHasImage', 'userMajor', 'userUsername', 'userAuthService','userName', 'userStudentNumber', 'userEmail', 'userRoles');
         $userName = API::getValue('userName');
@@ -134,7 +134,7 @@ API::registerFunction('course', 'createUser', function(){
 API::registerFunction('course', 'addUser', function(){
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         API::requireValues('users', 'role');
         $users = API::getValue('users');
@@ -156,6 +156,20 @@ API::registerFunction('course', 'addUser', function(){
     }
     else{
         API::error("There is no course with that id: ". API::getValue('course'));
+    }
+});
+
+
+API::registerFunction('course', 'activeUser', function(){
+    API::requireCourseAdminPermission();
+    API::requireValues('userId');
+    API::requireValues('course');
+
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId, false);
+    if($course != null){
+        $courseUser = new CourseUser(API::getValue('userId'), $course);
+        $courseUser->setIsActive();
     }
 });
 
@@ -183,7 +197,7 @@ API::registerFunction('course', 'exportUsers', function(){
 API::registerFunction('course', 'notCourseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     if($course != null){
         $courseUsers = $course->getUsers();
         $systemUsers = User::getAllInfo();
@@ -219,15 +233,15 @@ API::registerFunction('course', 'notCourseUsers', function() {
 API::registerFunction('course', 'courseUsers', function() {
     API::requireCourseAdminPermission();
     $courseId=API::getValue('course');
-    $course = Course::getCourse($courseId);
+    $course = Course::getCourse($courseId, false);
     $role=API::getValue('role');
     if($course != null){
         if (API::hasKey('role')){
             if ($role == "allRoles") {
-                $users = $course->getUsers();
+                $users = $course->getUsers(false);
             }
             else{
-                $users = $course->getUsersWithRole($role);
+                $users = $course->getUsersWithRole($role, false);
             }
             
             $usersInfo = [];
@@ -245,7 +259,8 @@ API::registerFunction('course', 'courseUsers', function() {
                     'email' => $user->getEmail(),
                     'lastLogin' => $user->getLastLogin(),
                     'username' => $user->getUsername(),
-                    'authenticationService' => User::getUserAuthenticationService($user->getUsername())
+                    'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
+                    'isActive' =>$user->isActive()
                 );
             }
             

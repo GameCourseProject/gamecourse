@@ -45,7 +45,7 @@ class Charts extends Module {
         $this->registerChart('starPlot', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
             
-            $course = \GameCourse\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course'], false);
             $userXPData = (new \GameCourse\CourseUser($userID, $course))->getXP(); 
             
             $students = $course->getUsersWithRole('Student');  
@@ -79,7 +79,7 @@ class Charts extends Module {
 
         $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course'], false);
             $xpModule = $course->getModule("xp");
             $xp = $xpModule->getUserXP($userID,$params['course']);
             $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
@@ -129,7 +129,7 @@ class Charts extends Module {
 
         $this->registerChart('leaderboardEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -281,7 +281,7 @@ class Charts extends Module {
 
         $this->registerChart('xpWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -322,7 +322,7 @@ class Charts extends Module {
 
         $this->registerChart('badgeWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course']);
+            $course = \GameCourse\Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
             $badgesModule = $course->getModule("badges");

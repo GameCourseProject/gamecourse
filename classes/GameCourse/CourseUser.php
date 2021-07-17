@@ -123,16 +123,21 @@ class CourseUser extends User
         $lastLogin = $this->getData("lastActivity");
         return parent::lastLoginTimeTostring($lastLogin);
     }
+    public function isActive()
+    {
+        $isActive = $this->getData("isActive");
+        return boolval($isActive);
+    }
     //gets data from course_user table
     function  getData($field = "*")
     {
         return Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], $field);
     }
-    //gets data from course_user e game_course_user tables
+    //gets data from course_user and game_course_user tables
     function  getAllData($field = "*")
     {
         return Core::$systemDB->select(
-            "course_user natural join game_course_user u join auth a on a.game_course_user_id=u.id",
+            "course_user cu left join game_course_user u on cu.id=u.id join auth a on a.game_course_user_id=u.id",
             ["course" => $this->course->getId(), "game_course_user_id" => $this->id],
             $field
         );
@@ -177,6 +182,12 @@ class CourseUser extends User
         ), "role");
     }
 
+    function setIsActive()
+    {
+        $active = Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], "isActive");
+        Core::$systemDB->update("course_user", ["isActive" => $active? 0 : 1], ["course" => $this->course->getId(), "id" => $this->id]);
+    }
+    
     function getUserRolesByHierarchy()
     {
         $courseRoles = $this->course->getRolesHierarchy();
