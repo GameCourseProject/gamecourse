@@ -22,7 +22,7 @@ API::registerFunction('settings', 'roles', function () {
     API::requireCourseAdminPermission();
     API::requireValues('course');
     $course = Course::getCourse(API::getValue('course'), false);
-    if($course != null){
+    if ($course != null) {
         if (API::hasKey('updateRoleHierarchy')) {
 
             API::requireValues('hierarchy');
@@ -52,7 +52,7 @@ API::registerFunction('settings', 'roles', function () {
 API::registerFunction('settings', 'courseGlobal', function () {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if($course != null){
+    if ($course != null) {
         $globalInfo = array(
             'name' => $course->getName(),
             'theme' => $GLOBALS['theme'],
@@ -83,7 +83,7 @@ API::registerFunction('settings', 'getTableData', function () {
 
         $orderedColumns = null;
         // get columns in order: id , name, studentNumber, (...)
-        if($data){
+        if ($data) {
             $columns = array_keys($data[0]);
             $lastHalf = array_slice($columns, 1, -2);
             $lastTwo = array_slice($columns, -2);
@@ -166,7 +166,7 @@ API::registerFunction('settings', 'submitTableEntry', function () {
 API::registerFunction('settings', 'courseModules', function () {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if($course != null){
+    if ($course != null) {
         if (API::hasKey('module') && API::hasKey('enabled')) {
             $moduleId = API::getValue('module');
             $modules = ModuleLoader::getModules();
@@ -259,7 +259,7 @@ API::registerFunction('settings', 'getModuleConfigInfo', function () {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $course = Course::getCourse($courseId, false);
-    if($course != null){
+    if ($course != null) {
         $module = $course->getModule(API::getValue('module'));
         $folder = Course::getCourseDataFolder($courseId);
 
@@ -308,13 +308,13 @@ API::registerFunction('settings', 'getModuleConfigInfo', function () {
 });
 
 //request to change the item's active status
-API::registerFunction('settings', 'activeItem', function() {
+API::registerFunction('settings', 'activeItem', function () {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $course = Course::getCourse($courseId, false);
-    if($course != null){
+    if ($course != null) {
         $module = $course->getModule(API::getValue('module'));
-        if($module != null){
+        if ($module != null) {
             $itemId = API::getValue('itemId');
             $module->activeItem($itemId);
         }
@@ -325,7 +325,7 @@ API::registerFunction('settings', 'activeItem', function() {
 API::registerFunction('settings', 'saveModuleConfigInfo', function () {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if($course != null){
+    if ($course != null) {
         $module = $course->getModule(API::getValue('module'));
 
         if ($module != null) {
@@ -388,7 +388,7 @@ API::registerFunction('settings', 'exportItem', function () {
 API::registerFunction('settings', 'saveNewSequence', function () {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if($course != null){
+    if ($course != null) {
         $module = $course->getModule(API::getValue('module'));
 
         if ($module != null) {
@@ -410,11 +410,14 @@ API::registerFunction('settings', 'saveNewSequence', function () {
 
 API::registerFunction('settings', 'saveNewNavigationOrder', function () {
     API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'));
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId);
+    $newNav = API::getValue('nav');
     if ($course != null) {
-        Core::setNavigation(API::getValue('nav'));
-        //TODO 
-        //call function to save in the DB
+        Core::setNavigation($newNav);
+        foreach ($newNav as $key => $nav) {
+            Core::$systemDB->update("page", ["seqId" => $key + 1], ["course" => $courseId, "name" => $nav["text"]]);
+        }
     } else {
         API::error("There is no course with that id: " . API::getValue('course'));
     }

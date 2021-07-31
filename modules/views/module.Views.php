@@ -1323,9 +1323,11 @@ class Views extends Module
             $newView = ["name" => API::getValue('name'), "course" => API::getValue('course')];
             if (API::getValue('pageOrTemp') == "page") {
                 $viewId = API::getValue('viewId');
+                $numberOfPages = count(Core::$systemDB->selectMultiple("page", ["course" => API::getValue('course')]));
 
                 $newView["viewId"] = $viewId;
                 $newView["isEnabled"] = API::getValue('isEnabled');
+                $newView["seqId"] = $numberOfPages + 1;
                 Core::$systemDB->insert("page", $newView);
             } else {
                 //insert default aspect view
@@ -1802,7 +1804,7 @@ class Views extends Module
             if (in_array($role, $loggedUser->getRolesNames()))
                 return $loggedUserId;
             $users = $course->getUsersWithRole($role, false);
-            
+
             if (count($users) != 0)
                 $uid = $users[0]['id'];
         } else if (strpos($role, 'user.') === 0) {

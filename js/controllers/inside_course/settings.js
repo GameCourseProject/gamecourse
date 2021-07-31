@@ -270,13 +270,15 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             navigationSection = $('<div class="data-table"></div>');
             tableNavigation = $('<table id="nav-table"></table>');
             rowHeaderNavigation = $("<tr></tr>");
+            rowHeaderNavigation.append($("<th>Position</th>"));
             rowHeaderNavigation.append($("<th>Page</th>"));
             rowHeaderNavigation.append($("<th class='action-column'></th>")); // move up
             rowHeaderNavigation.append($("<th class='action-column'></th>")); // move down
 
             rowContentNavigation = $("<tr ng-repeat='(i, nav) in navigation'> ></tr>");
-            jQuery.each([1], function (index) {
-                stg = "nav.text";
+            attrs = ["seqId", "text"];
+            jQuery.each(attrs, function (index) {
+                stg = "nav." + attrs[index];
                 rowContentNavigation.append($('<td>{{' + stg + '}}</td>'));
             });
             rowContentNavigation.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
@@ -310,7 +312,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                     return;
                 }
             });
-
+            window.location.reload();
         }
 
     }
@@ -333,6 +335,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                     return;
                 }
             });
+            window.location.reload();
         }
 
     }

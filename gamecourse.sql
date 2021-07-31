@@ -232,6 +232,7 @@ create table page(
 	theme varchar(50),
 	viewId int unsigned,
 	isEnabled boolean default false,
+	seqId int unsigned not null,
 	foreign key(viewId) references view(id) on delete set null,
 	foreign key(course) references course(id) on delete cascade
 );

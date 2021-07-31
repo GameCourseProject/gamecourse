@@ -892,10 +892,10 @@ class ViewHandler
     }
     public static function getPagesOfCourse($courseId, $forNavBar = false, $id = null, $pageName = null)
     {
-        $fields = "course,id,name,theme,viewId,isEnabled";
+        $fields = "course,id,name,theme,viewId,isEnabled,seqId";
         if ($pageName == null && $id == null) {
             if ($forNavBar) {
-                $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId, "isEnabled" => 1], $fields);
+                $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId, "isEnabled" => 1], $fields, "seqId");
             } else {
                 $pages = Core::$systemDB->selectMultiple("page", ['course' => $courseId], $fields);
             }
@@ -931,8 +931,10 @@ class ViewHandler
         //page or template to insert in db
         $newView = ["name" => $name, "course" => $courseId];
         if ($pageOrTemp == "page") {
+            $numberOfPages = count(Core::$systemDB->selectMultiple("page", ["course" => API::getValue('course')]));
             $newView["viewId"] = $viewId;
             $newView['isEnabled'] = $enabled;
+            $newView["seqId"] = $numberOfPages + 1;
             Core::$systemDB->insert("page", $newView);
         } else {
             $newView["roleType"] = $roleType;

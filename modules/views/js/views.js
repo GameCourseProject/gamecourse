@@ -657,7 +657,6 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
             $("#new-view").show();
         };
         $scope.editView = function (id, roleType, name) {
-            console.log(roleType);
             if (roleType == "ROLE_SINGLE")
                 $state.go("course.settings.views.edit-role-single", { pageOrTemp: "template", view: id, name: removeSpacefromName(name) });
             else

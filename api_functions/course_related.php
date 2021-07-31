@@ -46,7 +46,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
                                 || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole)))
                             && !empty(Core::$systemDB->select("view_parent", ["parentId" => $v["id"]]))
                         ) {
-                            Core::addNavigation($page["name"], 'course.customUserPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\',userID:\'' . $user->getId() . '\'})', true);
+                            Core::addNavigation($page["name"], 'course.customUserPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\',userID:\'' . $user->getId() . '\'})', true, $page["seqId"]);
                             break;
                         }
                     }
@@ -60,7 +60,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
                     foreach ($views as $v) {
                         $viewerRole = explode(".", $v["role"])[1];
                         if (($viewerRole == "Default" || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole)))) {
-                            Core::addNavigation($page["name"], 'course.customPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\'})', true);
+                            Core::addNavigation($page["name"], 'course.customPage({name: \'' . $simpleName . '\',id:\'' . $pageId . '\'})', true, $page["seqId"]);
                             break;
                         }
                     }

@@ -241,10 +241,10 @@ class Core
     }
 
     //adds page info for navigation, last 2 args are used to make pages exclusive for teachers or admins
-    public static function addNavigation($text, $ref, $isSRef = false, $class = '', $children = false, $restrictAcess = false)
+    public static function addNavigation($text, $ref, $isSRef = false, $seqId = null, $class = '', $children = false, $restrictAcess = false)
     {
         static::$navigation[] = [
-            'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'class' => $class, 'children' => $children,
+            'text' => $text, ($isSRef ? 'sref' : 'href') => $ref, 'seqId' => $seqId, 'class' => $class, 'children' => $children,
             "restrictAcess" => $restrictAcess
         ];
     }
