@@ -273,7 +273,8 @@ button {
 #new-user .modal_content .form__input,
 #edit-user .modal_content .form__input,
 #add_part .modal_content .form__input,
-#save_as_template .modal_content .form__input {
+#save_as_template .modal_content .form__input,
+#edit-info .modal_content .form__input {
     margin-bottom: 22px;
 }
 
@@ -531,7 +532,7 @@ button {
     line-height: 26px;
 }
 
-#dep_row, #edit_viewer_selection {
+#dep_row, #edit_roles_selection {
     align-items: center;
     display: flex;
     margin-bottom: 10px;

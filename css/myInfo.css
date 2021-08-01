@@ -12,6 +12,17 @@
     margin-top: 10px;
 }
 
+#myInfo .title_container {
+    display: flex;
+    align-items: center;
+}
+
+#myInfo .icon {
+    height: 20px;
+    width: 20px;
+    margin-left: 12px;
+}
+
 #myInfo .info {
     display: flex;
     flex-direction: column;
@@ -39,7 +50,7 @@
     justify-content: flex-start;
 }
 
-#myInfo .profile_image {
+#myInfo .profile_img {
     height: 190px;
     background-color: lightgrey;
     margin-bottom: 10px;
@@ -53,13 +64,13 @@
     align-items: center;
     width: 170px;
 }
-#myInfo .profile_image span {
+#myInfo .profile_img span {
     margin: auto;
     padding: 10px;
     text-align: center;
 }
 
-#myInfo .profile_image  img{
+#myInfo .profile_img  img{
     max-width: inherit;
     max-height: inherit;
 }

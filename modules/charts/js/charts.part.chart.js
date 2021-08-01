@@ -197,8 +197,14 @@ angular.module('module.charts', []).run(function ($sbviews, $compile) {
             var chartWrapper = $(document.createElement('div')).addClass('chart');
             if (options.edit) {
                 chartWrapper.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
-                if (scope.role != parseRole(part.role))
-                    chartWrapper.addClass('aspect_hide');
+                if (scope.role.includes('>')) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                        chartWrapper.addClass('aspect_hide');
+                    }
+                } else {
+                    if (scope.role != parseRole(part.role))
+                        chartWrapper.addClass('aspect_hide');
+                }
             }
             if (part.isTemplateRef) {
                 chartWrapper.attr("style", "background-color: #ddedeb; ");

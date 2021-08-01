@@ -169,8 +169,8 @@ angular.module('module.views').controller('ViewSettings', function ($state, $sta
 });
 
 angular.module('module.views').controller('ViewEditController', function ($rootScope, $state, $stateParams, $smartboards, $sbviews, $element, $compile, $scope) {
-    var loadedView;
-    var initialViewContent;
+    var savedContent;
+    // var initialViewContent;
 
     var viewEditorWindow = $('<div id="viewEditor"></div>')
     $element.append(viewEditorWindow);
@@ -218,7 +218,6 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         //breadcrum.append($("<span class='role_type'>" + $stateParams.roleOne + " - " + $stateParams.roleTwo + "</span>"));
     }
 
-
     $sbviews.requestEdit($stateParams.view, "template", reqData, function (view, err) {
         if (err) {
             viewEditorWindow.html(err);
@@ -226,16 +225,55 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             console.log(err.description);
             return;
         }
-        loadedView = view;
-        initialViewContent = angular.copy(view.get());
+        savedContent = angular.copy(view.get());
+        //initialViewContent = angular.copy(view.get());
         $scope.courseRoles = view.courseRoles;
-        $scope.viewRoles = view.viewRoles;
-        $scope.selectedRole = $scope.viewRoles[0].id;
+        //$scope.viewRoles = view.viewRoles;
+        // $scope.selectedVRole = $scope.viewRoles[0].id;
+        $scope.roleType = view.roleType;
+        $scope.viewId = view.viewId;
+
+        if (view.roleType == 'ROLE_SINGLE') {
+            $scope.viewerRoles = view.viewRoles;
+            $scope.selectedVRole = $scope.viewRoles[0].id;
+        } else {
+            $scope.userRoles = view.viewRoles[0];
+            $scope.viewerRoles = view.viewRoles[1];
+            $scope.selectedURole = $scope.viewRoles[0][0].id;
+            $scope.selectedVRole = $scope.viewRoles[1][0].id;
+        }
+
+        console.log($scope.viewerRoles);
 
         selectViews = function () {
-            const view = $('#viewEditor')[0];
-            const targetRole = $("#viewer_role").find(":selected")[0].text;
-            $sbviews.findViewsForRole(view, targetRole);
+            // const views = $('.view.editing').toArray().map(el => el.children[0]);
+            const views = Array.from(document.getElementsByClassName('view editing'));
+            const targetViewerRole = $("#viewer_role").find(":selected")[0].text;
+
+            $sbviews.findViewsForRole(views, targetViewerRole);
+
+            if ($scope.roleType == 'ROLE_SINGLE') {
+                $scope.viewerRoles = $sbviews.getRolesOfView();
+                $scope.selectedVRole = $scope.viewRoles.filter(r => {
+                    return r.name == targetViewerRole;
+                })[0].id;
+            } else {
+                const targetUserRole = $("#user_role").find(":selected")[0].text;
+                $scope.userRoles = $sbviews.getRolesOfView()[0];
+                $scope.viewerRoles = $sbviews.getRolesOfView()[1];
+
+                $scope.selectedURole = $scope.viewRoles[0].filter(r => {
+                    return r.name == targetUserRole;
+                })[0].id;
+                $scope.selectedVRole = $scope.viewRoles[1].filter(r => {
+                    return r.name == targetViewerRole;
+                })[0].id;
+            }
+
+
+
+
+            //TODO user
             // if ($state.current.name == 'course.settings.views.edit-role-single') {
             //     reqData.roles = { viewerRole: $("#viewer_role").find(":selected")[0].text };
             // }
@@ -259,9 +297,11 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
 
         var controlsDiv = $('<div class="action-buttons" id="view_editor_actions">');
 
-        //TODO : add dropdown for user for role interaction templates // View for: 
-
-        var dropdownRoles = $('<div class="editor-roles"><div style="margin-right:10px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-options="role.id as role.name for role in viewRoles" ng-model="selectedRole" ng-selected="role.id==selectedRole"></select></div>');
+        var dropdownRoles = $('<div class="editor-roles">');
+        if ($scope.roleType == 'ROLE_INTERACTION') {
+            dropdownRoles.append($('<div style="margin-right:5px;">User: </div><select id="user_role" onchange="selectViews()" ng-model="selectedURole"><option ng-repeat="role in userRoles" value="{{role.id}}" ng-selected="role.id==selectedURole">{{role.name}}</option></select></div>'));
+        }
+        dropdownRoles.append($('<div style="margin-right:5px;">View as: </div><select id="viewer_role" onchange="selectViews()" ng-model="selectedVRole"><option ng-repeat="role in viewerRoles" value="{{role.id}}" ng-selected="role.id==selectedVRole">{{role.name}}</option></select></div>'));
         $compile(dropdownRoles)($scope);
         controlsDiv.append(dropdownRoles);
 
@@ -316,8 +356,8 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
                         else {
                             giveMessage('Saved!');
                         }
-                        initialViewContent = angular.copy(saveData.content);
-                        //location.reload();//reloading to prevent bug that kept adding new parts over again
+                        savedContent = angular.copy(saveData.content);
+                        // location.reload();//reloading to prevent bug that kept adding new parts over again
                     });
                 }
             });
@@ -378,18 +418,18 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
         viewEditorWindow.html(view.element);
         viewEditorWindow.prepend(controlsDiv);
         $compile(breadcrum)($scope);
+
+        $scope.roleType == 'ROLE_INTERACTION' ? document.getElementById('view_editor_actions').style.width = '580px' : null;
         viewEditorWindow.prepend(breadcrum);
         viewEditorWindow.prepend(helper);
     });
 
     var watcherDestroy = $rootScope.$on('$stateChangeStart', function ($event, toState, toParams) {
-        if (initialViewContent == undefined || loadedView == undefined) {
+        if (savedContent == undefined) {
             watcherDestroy();
             return;
         }
-        console.log(JSON.stringify(initialViewContent));
-        console.log(JSON.stringify(loadedView.get()));
-        if (JSON.stringify(initialViewContent) !== JSON.stringify(loadedView.get())) {
+        if (JSON.stringify(savedContent) !== JSON.stringify($rootScope.partsHierarchy)) {
             if (confirm("There are unsaved changes. Leave page without saving?")) {
                 watcherDestroy();
                 return;
@@ -412,6 +452,8 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         $scope.pages = Object.values(data.pages);
         $scope.templates = Object.values(data.templates);
         $scope.globals = Object.values(data.globals);
+
+        console.log(data.templates);
 
         //all the information is saved so we can filter it
         $scope.allPages = Object.values(data.pages);
@@ -597,7 +639,6 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
                     }
                 }
                 //validate inputs
-
             }
 
             if (pageOrTemp == "page") {
@@ -804,7 +845,7 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
 });
 
 //controller for pages that are created in the views page
-angular.module('module.views').controller('CustomUserPage', function ($stateParams, $element, $scope, $sbviews) {
+angular.module('module.views').controller('CustomUserPage', function ($state, $stateParams, $element, $scope, $sbviews) {
     changeTitle($stateParams.name, 1);
     $sbviews.request($stateParams.id, { course: $scope.course, user: $stateParams.userID }, function (view, err) {
         if (err) {
@@ -812,9 +853,10 @@ angular.module('module.views').controller('CustomUserPage', function ($statePara
             return;
         }
         $element.append(view.element);
+        addActiveLinks($state.current.name);
     });
 });
-angular.module('module.views').controller('CustomPage', function ($stateParams, $rootScope, $element, $scope, $sbviews, $compile, $state) {
+angular.module('module.views').controller('CustomPage', function ($state, $stateParams, $rootScope, $element, $scope, $sbviews, $compile, $state) {
     changeTitle($stateParams.name, 1);
     $sbviews.request($stateParams.id, { course: $scope.course }, function (view, err) {
         if (err) {
@@ -823,6 +865,7 @@ angular.module('module.views').controller('CustomPage', function ($stateParams, 
             return;
         }
         $element.append(view.element);
+        addActiveLinks($state.current.name);
     });
 });
 angular.module('module.views').config(function ($stateProvider) {
@@ -867,7 +910,7 @@ angular.module('module.views').config(function ($stateProvider) {
         //     }
         // })
         .state('course.settings.views.edit-role-single', {
-            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
+            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit-single',
             views: {
                 'main-view@': {
                     template: '',
@@ -875,7 +918,7 @@ angular.module('module.views').config(function ($stateProvider) {
                 }
             }
         }).state('course.settings.views.edit-role-interaction', {
-            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit',
+            url: '/{pageOrTemp:[A-z]+}/{view:[A-z0-9]+}-{name:[A-z0-9]+}/edit-interaction',
             views: {
                 'main-view@': {
                     template: '',

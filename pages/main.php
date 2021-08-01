@@ -22,7 +22,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
     <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
@@ -50,8 +50,8 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
     <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
-    <script src = "https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-    <script src = "https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
 
 
 
@@ -82,7 +82,7 @@ $user = Core::getLoggedUser();
 
         app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
             $rootScope.loaded = true;
-            
+
             //em caso de entrarmos num curso
             $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                 if ($rootScope.course != course) {
@@ -92,7 +92,9 @@ $user = Core::getLoggedUser();
                     if ($scope.course != undefined) {
                         changeTitle(courseName, 0, false);
                         //na funcao da API devolve o que vai aparecer na navbar
-                        $smartboards.request('core', 'getCourseInfo', {course: $scope.course}, function(data, err) {
+                        $smartboards.request('core', 'getCourseInfo', {
+                            course: $scope.course
+                        }, function(data, err) {
                             if (err) {
                                 giveMessage(err.description);
                                 return;
@@ -114,7 +116,7 @@ $user = Core::getLoggedUser();
                                     beginNavbarResize();
                                     if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                                         var landing = $scope.landingPage.replace(/^\//g, '');
-                                        if (data.landingPageType=="ROLE_SINGLE")
+                                        if (data.landingPageType == "ROLE_SINGLE")
                                             $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
                                         else
                                             $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID + '/' + '<?= $user->getId(); ?>'));
@@ -131,7 +133,7 @@ $user = Core::getLoggedUser();
                     }
                 } else if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
                     var landing = $scope.landingPage.replace(/^\//g, '');
-                    if (data.landingPageType=="ROLE_SINGLE")
+                    if (data.landingPageType == "ROLE_SINGLE")
                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID));
                     else
                         $location.path('courses/' + courseName + '-' + course + (landing.length == 0 ? '' : '/' + landing + '-' + $scope.landingPageID + '/' + '<?= $user->getId(); ?>'));
@@ -177,6 +179,10 @@ $user = Core::getLoggedUser();
             $scope.setNavigation = function(newNav, newSet) {
                 $scope.mainNavigation = newNav;
                 $scope.settingsNavigation = newSet;
+
+                //remove users and settings
+                //to be used in the course settings to change the order of the pages in the navbar
+                $rootScope.navigation = newNav.slice(0, -2);
             };
 
             $scope.setCourse = function(course) {

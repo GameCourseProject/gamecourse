@@ -12,6 +12,15 @@ function closeModal(element) {
     modal.hide();
 }
 
+// function for add_part modal in view editor
+function resetModal(element) {
+    closeModal(element);
+    $('.part_option.focus').removeClass('focus');
+    $('#template_selection').hide();
+    $('#warningTemplates').hide();
+    $('button:contains("Add Item")').prop('disabled', true);
+}
+
 function removeModal(element) {
     id = element.getAttribute('value');
     modal = $(id);

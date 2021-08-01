@@ -20,8 +20,14 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             var table = $(document.createElement('table'));
             if (options.edit) {
                 table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
-                if (scope.role != parseRole(part.role))
-                    table.addClass('aspect_hide');
+                if (scope.role.includes('>')) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                        table.addClass('aspect_hide');
+                    }
+                } else {
+                    if (scope.role != parseRole(part.role))
+                        table.addClass('aspect_hide');
+                }
             }
 
             if (part.isTemplateRef) {

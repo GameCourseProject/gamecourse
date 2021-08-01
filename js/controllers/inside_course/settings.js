@@ -33,31 +33,35 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
     infoSection = $("<div id='configPage'></div>");
     $element.append(infoSection);
 
-    $scope.deleteRecord = function(){
-        $smartboards.request('settings', 'deleteTableEntry', { course: $scope.course, table: $scope.table, rowData: $scope.rowData}, function (data, err) {
+    $scope.$on('$stateChangeSuccess', function (e) {
+        $scope.showGlobalPage(e.targetScope.navigation);
+    });
+
+    $scope.deleteRecord = function () {
+        $smartboards.request('settings', 'deleteTableEntry', { course: $scope.course, table: $scope.table, rowData: $scope.rowData }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
             }
 
             var table = $('#database').DataTable();
-            var index = table.rows().eq(0).filter( function (rowIdx) {
-                return table.cell( rowIdx, 0).data() === $scope.rowData['id'] ? true : false;
+            var index = table.rows().eq(0).filter(function (rowIdx) {
+                return table.cell(rowIdx, 0).data() === $scope.rowData['id'] ? true : false;
             });
 
             table.row(index)
-                 .remove()
-                 .draw(false);
+                .remove()
+                .draw(false);
         });
     };
 
-    $scope.editRecord = function(row){
+    $scope.editRecord = function (row) {
         $scope.rowData = row;
         $scope.newData = Object.assign({}, $scope.rowData);
     }
 
-    $scope.submitRecord = function(update){
-        $smartboards.request('settings', 'submitTableEntry', { course: $scope.course, table: $scope.table, update: update, rowData: $scope.rowData, newData: $scope.newData}, function (data, err) {
+    $scope.submitRecord = function (update) {
+        $smartboards.request('settings', 'submitTableEntry', { course: $scope.course, table: $scope.table, update: update, rowData: $scope.rowData, newData: $scope.newData }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -67,16 +71,16 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             var dataSource = data.newRecord;
             var id = dataSource['id'];
 
-            if(update) {   
-                var index = table.rows().eq(0).filter( function (rowIdx) {
-                    return table.cell( rowIdx, 0).data() === $scope.newData['id'] ? true : false;
-                });   
+            if (update) {
+                var index = table.rows().eq(0).filter(function (rowIdx) {
+                    return table.cell(rowIdx, 0).data() === $scope.newData['id'] ? true : false;
+                });
             }
-            
+
             $scope.newRecord[id] = Object.assign({}, dataSource);
 
-            for (let column in $scope.columns){
-                if(!(["user", "course"].includes($scope.columns[column])))
+            for (let column in $scope.columns) {
+                if (!(["user", "course"].includes($scope.columns[column])))
                     newRow.push(dataSource[$scope.columns[column]]);
             }
 
@@ -86,7 +90,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             newRow.push(editButton);
             newRow.push(deleteButton);
 
-            if(update) {
+            if (update) {
                 // update row
                 table.row(index).data(newRow).draw(false);
             }
@@ -103,8 +107,8 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             $scope.newData = {};
         });
     }
-    
-    $scope.showDatabase = function(table) {
+
+    $scope.showDatabase = function (table) {
         infoSection.empty();
         $scope.table = table;
         $smartboards.request('settings', 'getTableData', { course: $scope.course, table: $scope.table }, function (data, err) {
@@ -143,43 +147,43 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             table.append(rowContent);
             dataTable.append(table);
             courseData.append($compile(dataTable)($scope));
-            
+
             setTimeout(function () {
-                $('#database thead tr').clone(true).appendTo( '#database thead' );
-                $('#database thead tr:eq(1) th:lt(-2)').each( function (i) {
+                $('#database thead tr').clone(true).appendTo('#database thead');
+                $('#database thead tr:eq(1) th:lt(-2)').each(function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type="text" class="database_search" placeholder="Search '+ title +'" />' );
-             
-                    $( 'input', this ).on( 'keyup change', function () {
-                        if ( table.column(i).search() !== this.value ) {
+                    $(this).html('<input type="text" class="database_search" placeholder="Search ' + title + '" />');
+
+                    $('input', this).on('keyup change', function () {
+                        if (table.column(i).search() !== this.value) {
                             table
                                 .column(i)
-                                .search( this.value )
+                                .search(this.value)
                                 .draw();
                         }
-                    } );
-                } );
-                var table = $('#database').DataTable( {
+                    });
+                });
+                var table = $('#database').DataTable({
                     "orderCellsTop": true,
                     "fixedHeader": true,
                     "pagingType": "full_numbers",
                     "columnDefs": [{
                         "targets": [-1, -2],     //remove sorting and searching on action columns        
                         "orderable": false,
-                        "searchable": false 
-                        
+                        "searchable": false
+
                     }]
                 });
 
-              }, 500);
-            
+            }, 500);
+
             //delete verification modal
             modal = $("<div class='modal' id='delete-verification'></div>");
             verification = $("<div class='verification modal_content'></div>");
-            verification.append( $('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
-            verification.append( $('<div class="warning">Are you sure you want to delete this row?</div>'));
-            verification.append( $('<div class="target"></div>'));
-            verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button value="#delete-verification" class="continue" ng-click="deleteRecord()" onclick="closeModal(this)">Delete</button></div>'))
+            verification.append($('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
+            verification.append($('<div class="warning">Are you sure you want to delete this row?</div>'));
+            verification.append($('<div class="target"></div>'));
+            verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button value="#delete-verification" class="continue" ng-click="deleteRecord()" onclick="closeModal(this)">Delete</button></div>'))
             modal.append(verification);
             courseData.append($compile(modal)($scope));
 
@@ -221,12 +225,12 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             addModal.append(addVerification);
             courseData.append($compile(addModal)($scope));
 
-            
+
 
         });
     };
 
-    $scope.showGlobalPage = function() {
+    $scope.showGlobalPage = function (nav) {
         infoSection.empty();
         $smartboards.request('settings', 'courseGlobal', { course: $scope.course }, function (data, err) {
             if (err) {
@@ -235,6 +239,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             }
 
             $scope.data = data;
+            $scope.navigation = nav;
             var courseInfo = createSection(infoSection, 'Info');
 
             databaseModal = $("<div class='modal' id='edit-db'></div>");
@@ -259,10 +264,81 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             panicDiv.append('<button id="edit_db_button" class="button" value="#edit-db" onclick="openModal(this)">View Database</button>');
             courseInfo.append(panicDiv);
 
+            var navigation = createSection(infoSection, 'Navigation');
+
+            navigation.attr('id', 'navigation-config')
+            navigationSection = $('<div class="data-table"></div>');
+            tableNavigation = $('<table id="nav-table"></table>');
+            rowHeaderNavigation = $("<tr></tr>");
+            rowHeaderNavigation.append($("<th>Position</th>"));
+            rowHeaderNavigation.append($("<th>Page</th>"));
+            rowHeaderNavigation.append($("<th class='action-column'></th>")); // move up
+            rowHeaderNavigation.append($("<th class='action-column'></th>")); // move down
+
+            rowContentNavigation = $("<tr ng-repeat='(i, nav) in navigation'> ></tr>");
+            attrs = ["seqId", "text"];
+            jQuery.each(attrs, function (index) {
+                stg = "nav." + attrs[index];
+                rowContentNavigation.append($('<td>{{' + stg + '}}</td>'));
+            });
+            rowContentNavigation.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
+            rowContentNavigation.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
+
+            //append table
+            tableNavigation.append(rowHeaderNavigation);
+            tableNavigation.append(rowContentNavigation);
+            navigationSection.append(tableNavigation);
+            navigation.append(navigationSection);
+            $compile(navigation)($scope);
         });
     };
 
-    $scope.showGlobalPage.call();
+    $scope.moveUp = function (row) {
+        var item = row.nav;
+        var index = parseInt(row.$index);
+        var newIdx = index - 1;
+        var changed = false;
+
+
+        if (newIdx >= 0 && newIdx <= $scope.navigation.length - 1) {
+            $scope.navigation.splice(newIdx, 2, item, $scope.navigation[newIdx]);
+            changed = true;
+        }
+
+        if (changed) {
+            $smartboards.request('settings', 'saveNewNavigationOrder', { course: $scope.course, nav: $scope.navigation }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+            });
+            window.location.reload();
+        }
+
+    }
+
+    $scope.moveDown = function (row) {
+        var item = row.nav;
+        var index = parseInt(row.$index);
+        var newIdx = index + 1;
+        var changed = false;
+
+        if (newIdx >= 0 && newIdx <= $scope.navigation.length - 1) {
+            $scope.navigation.splice(index, 2, $scope.navigation[newIdx], item);
+            changed = true;
+        }
+
+        if (changed) {
+            $smartboards.request('settings', 'saveNewNavigationOrder', { course: $scope.course, nav: $scope.navigation }, function (data, err) {
+                if (err) {
+                    giveMessage(err.description);
+                    return;
+                }
+            });
+            window.location.reload();
+        }
+
+    }
 });
 
 app.controller('CourseSettingsModules', function ($scope, $element, $smartboards, $compile) {
