@@ -1,0 +1,26 @@
+<!-- <svg fill="none" height="45" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="45" xmlns="http://www.w3.org/2000/svg" style="">
+<rect id="backgroundrect" width="100%" height="100%" x="0" y="0" fill="none" stroke="none" style="" class=""/>
+<g class="currentLayer" style=""><title>Layer 1</title><path fill="" fill-opacity="1" stroke="#484848" stroke-opacity="1" stroke-width="2" stroke-dasharray="none" stroke-linejoin="miter" stroke-linecap="butt" stroke-dashoffset="" fill-rule="nonzero" opacity="1" marker-start="" marker-mid="" marker-end="" d="M0.9982860088348389,22.671117782592773 C0.9982860088348389,10.698630332946777 10.695985794067383,1.000932216644287 22.668466567993164,1.000932216644287 C34.64094924926758,1.000932216644287 44.338645935058594,10.698630332946777 44.338645935058594,22.671117782592773 C44.338645935058594,34.643592834472656 34.64094924926758,44.34129333496094 22.668466567993164,44.34129333496094 C10.695985794067383,44.34129333496094 0.9982860088348389,34.643592834472656 0.9982860088348389,22.671117782592773 z" id="svg_8" class=""/>
+<g class=""><path d="M12.291248172521591,28.212677001953125 v3.464550495147705 a2.3097002506256104,2.3097002506256104 0 0 0 2.3097002506256104,2.3097002506256104 h16.16790199279785 a2.3097002506256104,2.3097002506256104 0 0 0 2.3097002506256104,-2.3097002506256104 v-3.464550495147705 " id="svg_1" class="" stroke="#484848" stroke-opacity="1" stroke-width="3"/><polyline points="18.06549820303917,22.43842315673828 22.684900134801865,27.057823181152344 27.304300159215927,22.43842315673828 " id="svg_2" class="" stroke="#484848" stroke-opacity="1" stroke-width="3"/><line x1="22.684900271718018" x2="22.684900271718018" y1="10.889923838924965" y2="27.057824665937346" id="svg_3" class="" stroke="#484848" stroke-width="3"/></g></g></svg> -->
+
+
+<svg width="45" height="45" xmlns="http://www.w3.org/2000/svg">
+
+ <g class="currentLayer">
+  <title>Layer 1</title>
+  <path id="svg_8" d="m0.99829,22.67112c0,-11.97249 9.6977,-21.67019 21.67018,-21.67019c11.97248,0 21.67018,9.6977 21.67018,21.67019c0,11.97247 -9.6977,21.67017 -21.67018,21.67017c-11.97248,0 -21.67018,-9.6977 -21.67018,-21.67017z" fill-rule="nonzero" stroke-width="2" fill="#484848"/>
+  <g id="svg_4">
+   <path fill="none" stroke-width="3" stroke="#ffffff" id="svg_1" d="m12.29125,28.21268l0,3.46455a2.3097,2.3097 0 0 0 2.3097,2.3097l16.1679,0a2.3097,2.3097 0 0 0 2.3097,-2.3097l0,-3.46455"/>
+   <polyline stroke-width="3" stroke="#ffffff" id="svg_2" points="18.06549820303917,22.43842315673828 22.684900134801865,27.057823181152344 27.304300159215927,22.43842315673828 "/>
+   <line stroke-width="3" stroke="#ffffff" id="svg_3" y2="27.05782" y1="10.88992" x2="22.6849" x1="22.6849"/>
+  </g>
+ </g>
+ <g>
+  <title>Layer 2</title>
+  <rect fill="none" y="0" x="0" height="100%" width="100%" id="backgroundrect"/>
+ </g>
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="602" width="802" y="-1" x="-1"/>
+ </g>
+</svg>

@@ -1,0 +1,23 @@
+<div class="navbar">
+
+  <!-- Logo -->
+  <a class="logo" [routerLink]="'/'"></a>
+
+  <!-- User Info -->
+  <div class="user_info">
+    <div *ngIf="user" class="user_id">{{user.username}}</div>
+    <a class="icon" id="user_icon" [style.backgroundImage]="'url(assets/imgs/'+ user.username +'.png)'" [routerLink]="'myInfo'"></a>
+    <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
+  </div>
+
+  <!-- Menu -->
+  <ul class="menu">
+    <li *ngFor="let link of mainNavigation" class="{{link.class}}">
+      <a [routerLink]="link.sref">{{link.text}}</a>
+      <div *ngIf="link.children" class="dropdown-content">
+        <a *ngFor="let sublink of settingsNavigation" [routerLink]="sublink.sref">{{sublink.text}}</a>
+      </div>
+    </li>
+  </ul>
+
+</div>

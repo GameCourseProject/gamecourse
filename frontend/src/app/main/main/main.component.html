@@ -1,0 +1,21 @@
+<app-navbar></app-navbar>
+
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper">
+    <div [routerLink]="'/main-view'">
+      <div *ngIf="!loading" id="mainPage">
+        <div class='title'>Welcome to the GameCourse system</div>
+        <div id='active_courses_list'>
+          <span class="label">Your active courses</span>
+          <span *ngFor="let course of activeCourses"  [routerLink]="'course/id'">{{course.name}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="assets/loader/loader.gif">
+  </div>
+</div>
