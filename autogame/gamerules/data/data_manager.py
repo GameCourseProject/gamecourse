@@ -41,8 +41,8 @@ class DataManager(object):
 			data_location = os.path.join(os.getcwd(), config.rules_folder, "data")	
 
 		if not os.path.exists(data_location):
-			#os.mkdir(data_location)
-			os.system("mkdir " + data_location)
+			os.mkdir(data_location)
+			#os.system("mkdir " + data_location)
 
 		setup_location = os.path.join(data_location, SETUP_FILE)
 		setup = shelve.open(setup_location, writeback=True)

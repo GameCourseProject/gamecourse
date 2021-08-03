@@ -13,7 +13,7 @@
 
 .tabs .tabs-container {
     width: 180px;
-    height: calc(100% - 16px);
+    height: calc(100% - 16px - 20px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -82,7 +82,7 @@
     padding: 80px 55px 35px 70px;
     position: relative;
     width: calc(100% - 305px);
-    height: calc(100% - 115px);
+    height: calc(100% - 115px - 20px);
     overflow: auto;
 }
 
@@ -395,7 +395,7 @@
 }
 
 
-/*satatus bar also used on the views page*/
+/*status bar also used on the views page*/
 
 .status {
     width: 100%;

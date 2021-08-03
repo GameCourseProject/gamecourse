@@ -208,7 +208,7 @@ select:focus {
     margin-right: 0;
 }
 
-.data-table table .action-column {
+.data-table table td.action-column, .data-table table .action-column {
     width: 20px;
 }
 
@@ -281,6 +281,45 @@ select:focus {
     background-image: url(/gamecourse/images/arrow_bottom_icon.svg);
 }
 
+.increase_circle_icon {
+    background-image: url(/gamecourse/images/decrease_circle_icon.png);
+}
+
+.decrease_circle_icon {
+    background-image: url(/gamecourse/images/increase_circle_icon.png);
+}
+
+.configure_circle_icon {
+    background-image: url(/gamecourse/images/config_circle_icon.svg);
+}
+
+.tags_circle_icon {
+    background-image: url(/gamecourse/images/tags_icon.svg);
+}
+
+.collapse_icon {
+    background-image: url(/gamecourse/images/arrow_foward.svg);
+    transform: rotate(-90deg);
+}
+
+.expand_icon {
+    background-image: url(/gamecourse/images/arrow_foward.svg);
+    transform: rotate(90deg);
+}
+
+.delete_circle_icon {
+    background-image: url(/gamecourse/images/add_icon.svg);
+    transform: rotate(45deg);
+}
+
+.return_icon {
+    background-image: url(/gamecourse/images/arrow_foward.svg);
+    transform: rotate(180deg);
+}
+
+.save_icon {
+    background-image: url(/gamecourse/images/save_icon.svg);
+}
 
 /*line of cards structure*/
 

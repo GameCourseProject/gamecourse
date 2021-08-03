@@ -182,13 +182,13 @@ def exclude_worst(logs, last):
 			fix[0].rating = last_quiz
 	
 	return fix
-
+	
 @rule_effect
 def print_info(text):
-        """ 
-        returns the output of a skill and writes the award to database
-        """
-        sys.stderr.write(str(text))
+		""" 
+		returns the output of a skill and writes the award to database
+		"""
+		sys.stderr.write(str(text))
 
 		
 

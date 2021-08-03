@@ -90,5 +90,12 @@ app.config(function($stateProvider){
                 controller: 'CourseRolesSettingsController'
             }
         }
+    }).state('course.settings.rules', {
+        url: '/rules',
+        views : {
+            'tabContent': {
+                controller: 'CourseSettingsRules'
+            }
+        }
     });
 });

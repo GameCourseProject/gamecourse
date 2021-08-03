@@ -60,14 +60,14 @@ def import_functions_from_FuncPaths (fp):
 	return functions
 import_functions_from_FPaths = import_functions_from_FuncPaths
 
-def import_functions_from_rulepath (p):
+def import_functions_from_rulepath (p, info=False):
+	
 	if not isinstance(p,str):
 		raise TypeError("path must be a string")
 	import os
 	p = os.path.abspath(p)
 	if os.path.isfile(p):
 		p = os.path.dirname(p)
-	p = os.path.join(p,"functions")
 	from .func_paths import FPaths
 	functions = {}
 	fpaths = FPaths()
@@ -86,7 +86,6 @@ def import_functions_from_rulepath (p):
 		module_name = entry[:-3]
 
 		mod = imp.load_source(module_name,module_path)
-
 		# import functions from module
 		for name in dir(mod):
 			# skip private names
@@ -102,7 +101,43 @@ def import_functions_from_rulepath (p):
 				obj = rule_effect(obj)
 			functions[name] = obj
 			fpaths.add(module_path,name)
-	return functions, fpaths
+	if not info:
+		return functions, fpaths
+	else:
+		from inspect import signature, getdoc, cleandoc
+		info = []
+		for func in functions:
+			function_info = {}
+			function_info["moduleId"] = "gamerules"
+			function_info["name"] = "gamerules"
+			function_info["keyword"] = func
+			function_info["args"] = []
+
+			func_args = functions[func].__code__.co_varnames[:functions[func].__code__.co_argcount]
+			func_sig = signature(functions[func])
+
+			description = getdoc(functions[func])
+
+			for param in func_sig.parameters.values():
+				argument = {}
+				argument["name"] = param.name
+				if (param.default is param.empty):
+					argument["type"] = None
+					argument["optional"] = "0"
+				else:
+					if param.default != None:
+						argument["type"] = type(param.default).__name__
+					else:
+						argument["type"] = None
+					argument["optional"] = "1"
+
+				function_info["args"].append(argument)
+
+			function_info["description"] = "" if description == None else description.replace("  ", "")
+			info.append(function_info)
+		return functions, fpaths, info
+
+
 
 def import_functions_from_module (module):
 	import inspect

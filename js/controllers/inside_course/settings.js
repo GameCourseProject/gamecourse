@@ -15,6 +15,7 @@ app.controller('CourseSettings', function ($scope, $state, $compile, $smartboard
             tabs.append($compile('<li><a ui-sref="course.settings.global">This Course</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.roles">Roles</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.rules">Rules</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             // tabs.append($compile('<li><a ui-sref="course.settings.about">About</a></li>')($scope));

@@ -22,7 +22,8 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/myInfo.css" />
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
     <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
@@ -52,7 +53,8 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
-
+    <script type="text/javascript" src="js/rules.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 
 
     <!-- Color picker -->
@@ -82,7 +84,7 @@ $user = Core::getLoggedUser();
 
         app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
             $rootScope.loaded = true;
-
+            
             //em caso de entrarmos num curso
             $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                 if ($rootScope.course != course) {
@@ -129,6 +131,7 @@ $user = Core::getLoggedUser();
                             $scope.landingPage = data.landingPage;
                             $scope.landingPageID = data.landingPageID;
                             $scope.setNavigation([], []);
+                            $scope.ruleSystemLastRun = data.ruleSystemLastRun;
                         });
                     }
                 } else if (gotoLandingPage && $scope.landingPage != undefined && $scope.landingPage != '') {
@@ -248,7 +251,7 @@ $user = Core::getLoggedUser();
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 </head>
 
-<body ng-controller="SmartBoard">
+<body ng-controller="SmartBoard" class="body-footer-fix">
     <div class="navbar">
         <a class="logo" ui-sref="home"></a>
         <div class="user_info">
@@ -302,6 +305,8 @@ $user = Core::getLoggedUser();
             <img src="images/loader.gif">
         </div>
     </div>
+    <div ng-if="course" class="navfooter">
+        <div class="lastrun">Last Run: {{ruleSystemLastRun}}</div>
+    </div>
 </body>
-
 </html>
