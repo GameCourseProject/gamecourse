@@ -853,7 +853,7 @@ angular.module('module.views').controller('CustomUserPage', function ($state, $s
             return;
         }
         $element.append(view.element);
-        addActiveLinks($state.current.name);
+        addActiveLinks($state.current.name, $stateParams.name);
     });
 });
 angular.module('module.views').controller('CustomPage', function ($state, $stateParams, $rootScope, $element, $scope, $sbviews, $compile, $state) {
@@ -865,7 +865,7 @@ angular.module('module.views').controller('CustomPage', function ($state, $state
             return;
         }
         $element.append(view.element);
-        addActiveLinks($state.current.name);
+        addActiveLinks($state.current.name, $stateParams.name);
     });
 });
 angular.module('module.views').config(function ($stateProvider) {

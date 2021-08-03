@@ -3,7 +3,7 @@ var app = angular.module('smartBoard', ['ui.router', 'oc.lazyLoad']);
 app.run(['$rootScope', '$state', function ($rootScope, $state) {
     $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
         removeActiveLinks();
-        addActiveLinks(toState.name);
+        addActiveLinks(toState.name, toParams.name);
         checkNavbarLength();
     });
 
@@ -18,12 +18,12 @@ function removeActiveLinks() {
         elementsFromNav.removeClass('focused');
 }
 
-function addActiveLinks(state) {
+function addActiveLinks(state, pageName = null) {
     var sliced = state.split('.');
     for (var i = 1; i <= sliced.length; i++) {
         var elementsTo;
         if (sliced.slice(0, i).join('.').includes('custom'))
-            elementsTo = $(document).find('a[ui-sref*="' + sliced.slice(0, i).join('.') + '"]');
+            elementsTo = $(document).find('a[ui-sref*="' + pageName + '"]');
         else
             elementsTo = $(document).find('a[ui-sref="' + sliced.slice(0, i).join('.') + '"]');
         if (elementsTo.length > 0)
