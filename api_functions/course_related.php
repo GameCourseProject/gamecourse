@@ -79,7 +79,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
 
         if ($isAdmin) {
             Core::addNavigation("Users", 'course.users', true);
-            Core::addNavigation('Course Settings', 'course.settings', true, 'dropdown', true);
+            Core::addNavigation('Course Settings', 'course.settings', true, null, 'dropdown', true);
             Core::addSettings('This Course', 'course.settings.global', true);
             Core::addSettings('Roles', 'course.settings.roles', true);
             Core::addSettings('Modules', 'course.settings.modules', true);
