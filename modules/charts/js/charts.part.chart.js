@@ -205,6 +205,10 @@ angular.module('module.charts', []).run(function ($sbviews, $compile) {
                     if (scope.role != parseRole(part.role))
                         chartWrapper.addClass('aspect_hide');
                 }
+                if (part.class === null || part.class === undefined)
+                    part.class = 'chart';
+                else if (!part.class.includes('chart'))
+                    part.class += '; chart';
             }
             if (part.isTemplateRef) {
                 chartWrapper.attr("style", "background-color: #ddedeb; ");

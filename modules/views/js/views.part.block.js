@@ -69,6 +69,10 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                     if (scope.role != parseRole(part.role))
                         block.addClass('aspect_hide');
                 }
+                if (part.class === null || part.class === undefined)
+                    part.class = 'block';
+                else if (!part.class.includes('block'))
+                    part.class += '; block';
             }
 
             if (part.header) {
@@ -431,8 +435,9 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
                                     const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
                                     newPart.viewId = (viewIdsArray[viewIdsArray.length - 1] + 1).toString();
                                     // }
-                                    if (newPart.part == "table") {
-                                        newPart.rows[0].values[0].viewId = (parseInt(newPart.viewId) + 1).toString();
+                                    if (newPart.partType == "table") {
+                                        newPart.rows[0].values[0].value.viewId = (parseInt(newPart.viewId) + 1).toString();
+                                        newPart.rows[0].values[0].value.role = part.role;
                                     }
                                     addPart(newPart);
                                 }
