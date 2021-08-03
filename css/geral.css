@@ -567,7 +567,7 @@ input:checked+.slider:before {
 /* Image picker */
 
 /* Style the tab */
-.tab {
+#image-picker .tab {
     float: left;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
@@ -576,7 +576,7 @@ input:checked+.slider:before {
 }
 
 /* Style the buttons inside the tab */
-.tab button {
+#image-picker .tab button {
     display: block;
     background-color: inherit;
     color: black;
@@ -594,17 +594,17 @@ input:checked+.slider:before {
 
 
 /* Change background color of buttons on hover */
-.tab button:hover {
+#image-picker .tab button:hover {
     background-color: #ddd;
 }
 
 /* Create an active/current "tab button" class */
-.tab button.active {
+#image-picker .tab button.active {
     background-color: #ccc;
 }
 
 /* Style the tab content */
-.tabcontent {
+#image-picker .tabcontent {
     float: left;
     padding: 0px 12px;
     border: 1px solid #ccc;
@@ -613,17 +613,17 @@ input:checked+.slider:before {
     height: 300px;
 }
 
-.picker {
+#image-picker .picker {
     margin-top: 20px;
 }
 
-#img-upload-picker {
+#image-picker #img-upload-picker {
     cursor: pointer;
     height: 100px;
     width: 100px;
 }
 
-.grid {
+#image-picker .grid {
     display: grid;
     grid-template-columns: auto auto auto; 
     padding: 20px 0px;
@@ -633,18 +633,18 @@ input:checked+.slider:before {
     grid-column-gap: 5px;
 }
 
-.top_browser {
+#image-picker .top_browser {
     display: flex;
     flex-direction: row;
     align-items: center;
     margin-top: 15px;
 }
 
-#delete {
+#image-picker #delete {
     position: absolute;
 }
 
-#back {
+#image-picker #back {
     background-image: url(/gamecourse/images/arrow_back.svg);
     width: 15px;
     height: 15px;
@@ -652,7 +652,7 @@ input:checked+.slider:before {
     margin: 0 5px;
 }
 
-.square {
+#image-picker .square {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -660,26 +660,26 @@ input:checked+.slider:before {
     height: 30px; */
 }
 
-.file {
+#image-picker .file {
     border: 2px solid;
     border-color: white;
 }
 
-.folder {
+#image-picker .folder {
     cursor: pointer;
 }
-.square span {
+#image-picker .square span {
     padding-top: 5px;
     font-size: 12px;
 }
 
-.path {
+#image-picker .path {
     width: 90%;
     border: 2px solid lightgray;
     border-radius: 5px;
 }
 
-#browse-path {
+#image-picker #browse-path {
     padding: 5px 10px;
     font-size: 12px;
 }

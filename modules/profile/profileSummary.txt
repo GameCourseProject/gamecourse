@@ -1,6 +1,5 @@
 [
     {
-        "aspectClass": "32",
         "id": "2783",
         "role": "role.Default>role.Default",
         "partType": "block",
@@ -19,7 +18,6 @@
         "info": null,
         "children": [
             {
-                "aspectClass": "32",
                 "id": "2784",
                 "role": "role.Default>role.Default",
                 "partType": "block",
@@ -42,7 +40,6 @@
                 "info": null,
                 "children": [
                     {
-                        "aspectClass": "32",
                         "id": "2785",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -61,7 +58,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2786",
                                 "role": "role.Default>role.Default",
                                 "partType": "table",
@@ -81,7 +77,6 @@
                                 "children": [],
                                 "rows": [
                                     {
-                                        "aspectClass": "32",
                                         "id": "2787",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -101,7 +96,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2788",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -123,7 +117,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2789",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -150,7 +143,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "2790",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -170,7 +162,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2791",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -192,7 +183,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2792",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -215,7 +205,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "2793",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -235,7 +224,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2794",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -257,7 +245,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2795",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -280,7 +267,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "2796",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -300,7 +286,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2797",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -322,7 +307,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2798",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -345,7 +329,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "2799",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -365,7 +348,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2800",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -387,7 +369,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2801",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -416,7 +397,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2803",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -436,7 +416,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2804",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -458,7 +437,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2805",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -477,7 +455,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2806",
                                 "role": "role.Default>role.Default",
                                 "partType": "table",
@@ -498,7 +475,6 @@
                                 "rows": [
                                     {
                                         "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
-                                        "aspectClass": "32",
                                         "id": "2807",
                                         "role": "role.Default>role.Default",
                                         "partType": "row",
@@ -517,7 +493,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2808",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -539,7 +514,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2809",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -561,7 +535,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "2810",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -590,7 +563,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2812",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -610,7 +582,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2813",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -632,7 +603,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2814",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -651,7 +621,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2815",
                                 "role": "role.Default>role.Default",
                                 "partType": "chart",
@@ -703,7 +672,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2817",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -723,7 +691,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2818",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -745,7 +712,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2819",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -764,7 +730,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2820",
                                 "role": "role.Default>role.Default",
                                 "partType": "chart",
@@ -789,7 +754,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2822",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -809,7 +773,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2823",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -831,7 +794,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2824",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -850,7 +812,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2825",
                                 "role": "role.Default>role.Default",
                                 "partType": "chart",
@@ -875,7 +836,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2827",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -895,7 +855,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2828",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -917,7 +876,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2829",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -936,7 +894,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2830",
                                 "role": "role.Default>role.Default",
                                 "partType": "chart",
@@ -961,7 +918,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2832",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -981,7 +937,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2833",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -1003,7 +958,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "2834",
                         "role": "role.Default>role.Default",
                         "partType": "block",
@@ -1022,7 +976,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "2835",
                                 "role": "role.Default>role.Default",
                                 "partType": "chart",
@@ -1047,7 +1000,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "2837",
                                 "role": "role.Default>role.Default",
                                 "partType": "image",
@@ -1067,7 +1019,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "2838",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
@@ -1091,7 +1042,6 @@
                 ],
                 "header": {
                     "image": {
-                        "aspectClass": "32",
                         "id": "2840",
                         "role": "role.Default>role.Default",
                         "partType": "image",
@@ -1111,7 +1061,6 @@
                         "children": []
                     },
                     "title": {
-                        "aspectClass": "32",
                         "id": "2841",
                         "role": "role.Default>role.Default",
                         "partType": "text",
@@ -1135,7 +1084,6 @@
         ]
     },
     {
-        "aspectClass": "32",
         "id": "3793",
         "role": "role.Student>role.Default",
         "partType": "block",
@@ -1154,7 +1102,6 @@
         "info": null,
         "children": [
             {
-                "aspectClass": "32",
                 "id": "3794",
                 "role": "role.Student>role.Default",
                 "partType": "block",
@@ -1177,7 +1124,6 @@
                 "info": null,
                 "children": [
                     {
-                        "aspectClass": "32",
                         "id": "3795",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -1196,7 +1142,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3796",
                                 "role": "role.Student>role.Default",
                                 "partType": "table",
@@ -1216,7 +1161,6 @@
                                 "children": [],
                                 "rows": [
                                     {
-                                        "aspectClass": "32",
                                         "id": "3797",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",
@@ -1236,7 +1180,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3798",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1258,7 +1201,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3799",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1285,7 +1227,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "3800",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",
@@ -1305,7 +1246,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3801",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1327,7 +1267,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3802",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1350,7 +1289,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "3803",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",
@@ -1370,7 +1308,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3804",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1392,7 +1329,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3805",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1415,7 +1351,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "3806",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",
@@ -1435,7 +1370,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3807",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1457,7 +1391,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3808",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1480,7 +1413,6 @@
                                         ]
                                     },
                                     {
-                                        "aspectClass": "32",
                                         "id": "3809",
                                         "role": "role.Student>role.Default",
                                         "partType": "row",
@@ -1500,7 +1432,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3810",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1522,7 +1453,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3811",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1551,7 +1481,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3813",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -1571,7 +1500,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3814",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -1593,7 +1521,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3815",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -1612,7 +1539,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3816",
                                 "role": "role.Student>role.Default",
                                 "partType": "table",
@@ -1632,7 +1558,6 @@
                                 "loopData": "{}",
                                 "rows": [
                                     {
-                                        "aspectClass": "32",
                                         "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
                                         "id": "3817",
                                         "role": "role.Student>role.Default",
@@ -1652,7 +1577,6 @@
                                         "values": [
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3818",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1674,7 +1598,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3819",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1696,7 +1619,6 @@
                                             },
                                             {
                                                 "value": {
-                                                    "aspectClass": "32",
                                                     "id": "3820",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -1725,7 +1647,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3822",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -1745,7 +1666,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3823",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -1767,7 +1687,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3824",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -1786,7 +1705,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3825",
                                 "role": "role.Student>role.Default",
                                 "partType": "chart",
@@ -1838,7 +1756,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3827",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -1858,7 +1775,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3828",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -1880,7 +1796,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3829",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -1899,7 +1814,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3830",
                                 "role": "role.Student>role.Default",
                                 "partType": "chart",
@@ -1924,7 +1838,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3832",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -1944,7 +1857,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3833",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -1966,7 +1878,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3834",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -1985,7 +1896,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3835",
                                 "role": "role.Student>role.Default",
                                 "partType": "chart",
@@ -2010,7 +1920,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3837",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -2030,7 +1939,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3838",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -2052,7 +1960,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3839",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -2071,7 +1978,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3840",
                                 "role": "role.Student>role.Default",
                                 "partType": "chart",
@@ -2096,7 +2002,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3842",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -2116,7 +2021,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3843",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -2138,7 +2042,6 @@
                         }
                     },
                     {
-                        "aspectClass": "32",
                         "id": "3844",
                         "role": "role.Student>role.Default",
                         "partType": "block",
@@ -2157,7 +2060,6 @@
                         "info": null,
                         "children": [
                             {
-                                "aspectClass": "32",
                                 "id": "3845",
                                 "role": "role.Student>role.Default",
                                 "partType": "chart",
@@ -2182,7 +2084,6 @@
                         ],
                         "header": {
                             "image": {
-                                "aspectClass": "32",
                                 "id": "3847",
                                 "role": "role.Student>role.Default",
                                 "partType": "image",
@@ -2202,7 +2103,6 @@
                                 "children": []
                             },
                             "title": {
-                                "aspectClass": "32",
                                 "id": "3848",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
@@ -2226,7 +2126,6 @@
                 ],
                 "header": {
                     "image": {
-                        "aspectClass": "32",
                         "id": "3850",
                         "role": "role.Student>role.Default",
                         "partType": "image",
@@ -2246,7 +2145,6 @@
                         "children": []
                     },
                     "title": {
-                        "aspectClass": "32",
                         "id": "3851",
                         "role": "role.Student>role.Default",
                         "partType": "text",

@@ -1,7 +1,6 @@
 [
   {
     "id": "4036",
-    "aspectClass": null,
     "role": "role.Default>role.Default",
     "partType": "block",
     "parentId": null,
@@ -20,7 +19,6 @@
     "children": [
       {
         "id": "4037",
-        "aspectClass": null,
         "role": "role.Default>role.Default",
         "partType": "block",
         "parentId": "4036",
@@ -39,7 +37,6 @@
         "children": [
           {
             "id": "4038",
-            "aspectClass": null,
             "role": "role.Default>role.Default",
             "partType": "table",
             "parentId": "4037",
@@ -59,7 +56,6 @@
             "rows": [
               {
                 "id": "4044",
-                "aspectClass": null,
                 "role": "role.Default>role.Default",
                 "partType": "row",
                 "parentId": "4038",
@@ -79,7 +75,6 @@
                   {
                     "value": {
                       "id": "4045",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4044",
@@ -101,7 +96,6 @@
                   {
                     "value": {
                       "id": "4046",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4044",
@@ -123,7 +117,6 @@
                   {
                     "value": {
                       "id": "4047",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "block",
                       "parentId": "4044",
@@ -141,7 +134,6 @@
                       "info": null,
                       "children": [
                         {
-                          "aspectClass": null,
                           "id": "4049",
                           "role": "role.Default>role.Default",
                           "partType": "text",
@@ -161,7 +153,6 @@
                           "children": []
                         },
                         {
-                          "aspectClass": null,
                           "id": "4050",
                           "role": "role.Default>role.Default",
                           "partType": "text",
@@ -186,7 +177,6 @@
                   {
                     "value": {
                       "id": "4048",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4044",
@@ -211,7 +201,6 @@
             "headerRows": [
               {
                 "id": "4039",
-                "aspectClass": null,
                 "role": "role.Default>role.Default",
                 "partType": "headerRow",
                 "parentId": "4038",
@@ -231,7 +220,6 @@
                   {
                     "value": {
                       "id": "4040",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4039",
@@ -253,7 +241,6 @@
                   {
                     "value": {
                       "id": "4041",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4039",
@@ -275,7 +262,6 @@
                   {
                     "value": {
                       "id": "4042",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4039",
@@ -297,7 +283,6 @@
                   {
                     "value": {
                       "id": "4043",
-                      "aspectClass": null,
                       "role": "role.Default>role.Default",
                       "partType": "text",
                       "parentId": "4039",
@@ -325,7 +310,6 @@
         "header": {
           "image": {
             "id": "4050",
-            "aspectClass": null,
             "role": "role.Default>role.Default",
             "partType": "image",
             "parentId": "4049",
@@ -345,7 +329,6 @@
           },
           "title": {
             "id": "4051",
-            "aspectClass": null,
             "role": "role.Default>role.Default",
             "partType": "text",
             "parentId": "4049",
