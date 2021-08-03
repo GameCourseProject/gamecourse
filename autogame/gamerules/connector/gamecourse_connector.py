@@ -939,13 +939,12 @@ def call_gamecourse(course, library, function, args):
 							ll_course = int(log["course"])
 							ll_desc = log["description"]
 							ll_type = log["type"]
-							ll_moduleInstance = log["moduleInstance"]
 							ll_post = log["post"]
 							ll_date = log["date"]
 							ll_rating = None if log["rating"] is None else int(log["rating"])
 							ll_evaluator = None if log["evaluator"] is None else int(log["evaluator"])
 							
-							logline = LogLine(ll_id,ll_user,ll_course,ll_desc,ll_type,ll_moduleInstance,ll_post,ll_date,ll_rating,ll_evaluator)
+							logline = LogLine(ll_id,ll_user,ll_course,ll_desc,ll_type,ll_post,ll_date,ll_rating,ll_evaluator)
 							participations.append(logline)
 							
 						result = participations

@@ -296,7 +296,6 @@ class GoogleSheets
                                     //         "course" => $this->courseId,
                                     //         "description" => $info,
                                     //         "type" =>  $action,
-                                    //         "moduleInstance" => "badges",
                                     //         "evaluator" => $profId
                                     //     )
                                     // );
@@ -309,7 +308,6 @@ class GoogleSheets
                                                 "course" => $this->courseId,
                                                 "description" => $info,
                                                 "type" =>  $action,
-                                                "moduleInstance" => "badges",
                                                 "evaluator" => $profId
                                             ),
                                             array(
@@ -332,7 +330,6 @@ class GoogleSheets
                                     //         "course" => $this->courseId,
                                     //         "description" => "",
                                     //         "type" =>  $action,
-                                    //         "moduleInstance" => "badges",
                                     //         "evaluator" => $profId
                                     //     )
                                     // );
@@ -350,7 +347,6 @@ class GoogleSheets
                                     //         "description" => "",
                                     //         "post" => $info,
                                     //         "type" =>  $action,
-                                    //         "moduleInstance" => "badges",
                                     //         "evaluator" => $profId
                                     //     )
                                     // );
@@ -366,7 +362,6 @@ class GoogleSheets
                                     //         "course" => $this->courseId,
                                     //         "description" => "",
                                     //         "type" =>  $action,
-                                    //         "moduleInstance" => "badges",
                                     //         "evaluator" => $profId
                                     //     )
                                     // );
