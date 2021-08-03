@@ -47,6 +47,10 @@ angular.module('module.views').run(function ($sbviews, $compile) {
                             element.addClass('aspect_hide');
                     }
                 }
+                if (part.class === null || part.class === undefined)
+                    part.class = 'image';
+                else if (!part.class.includes('image'))
+                    part.class += '; image';
             }
             if (part.isTemplateRef) {
                 root.attr("style", "border-color: #e34309; ");

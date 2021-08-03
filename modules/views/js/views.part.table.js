@@ -28,6 +28,11 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     if (scope.role != parseRole(part.role))
                         table.addClass('aspect_hide');
                 }
+
+                if (part.class === null || part.class === undefined)
+                    part.class = 'table';
+                else if (!part.class.includes('table'))
+                    part.class += '; table';
             }
 
             if (part.isTemplateRef) {
@@ -83,7 +88,8 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         allowEvents: true,
                         allowVariables: true,
                         allowStyle: true,
-                        allowClass: true
+                        allowClass: true,
+                        allowId: true
                     }
                 });
             }
@@ -246,20 +252,28 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
 
                     part.columns++;
                     $($(thead.children().get(0)).children().get(idx)).before(buildColumnToolbar(idx));
+                    const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                    let nextViewId = viewIdsArray[viewIdsArray.length - 1] + 1;
 
                     for (var rid = 0; rid < part.headerRows.length; ++rid) {
                         var newPart = $sbviews.defaultPart('text');
+                        newPart.role = part.role;
+                        newPart.viewId = nextViewId.toString();
                         part.headerRows[rid].values.splice(idx, 0, { value: newPart });
                         var newPartEl = $sbviews.buildElement(scope, newPart, childOptions);
                         var th = $(document.createElement('th')).append(newPartEl);
                         $($(thead.children().get(rid + 1)).children().get(idx)).before(th);
+                        nextViewId++;
                     }
                     for (var rid = 0; rid < part.rows.length; ++rid) {
                         var newPart = $sbviews.defaultPart('text');
+                        newPart.role = part.role;
+                        newPart.viewId = nextViewId.toString();
                         part.rows[rid].values.splice(idx, 0, { value: newPart });
                         var newPartEl = $sbviews.buildElement(scope, newPart, childOptions);
                         var td = $(document.createElement('td')).append(newPartEl);
                         $($(tbody.children().get(rid)).children().get(idx)).before(td);
+                        nextViewId++;
                     }
 
                     //$sbviews.notifyChanged(part, options);
@@ -288,11 +302,16 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     var row = { values: [], loopData: "{}", visibilityCondition: "{}" };
                     var newRowEl = $(document.createElement('tr'));
                     $sbviews.applyCommonFeatures(scope, row, rowEl, $.extend({ disableEvents: true }, options));
+                    const viewIdsArray = Array.from(document.querySelectorAll('[data-viewid]')).map(x => parseInt(x.getAttribute('data-viewid'))).sort();
+                    let nextViewId = viewIdsArray[viewIdsArray.length - 1] + 1;
                     for (var cid = 0; cid < part.columns; cid++) {
                         var newPart = $sbviews.defaultPart('text');
+                        newPart.role = part.role;
+                        newPart.viewId = nextViewId.toString();;
                         row.values.push({ value: newPart });
                         $sbviews.setDefaultParamters(row);
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, newPart, childOptions)));
+                        nextViewId++;
                     }
                     newRowEl.append(buildRowToolbar(container, row, header));
 
@@ -421,6 +440,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                         notifiedPart: part,
                         overlayOptions: {
                             allowStyle: true,
+                            allowId: true,
                             allowClass: true,
                             allowDataLoop: true,
                             allowEvents: true,

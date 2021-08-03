@@ -21,6 +21,12 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
 
             if (options.edit) {
                 var optionsDivEl;
+
+                if (part.class === null || part.class === undefined)
+                    part.class = 'value';
+                else if (!part.class.includes('value'))
+                    part.class += '; value';
+
                 function buildOptions(optionsScope, watch) {
 
                     var optionsDiv = $('<sb-menu sb-menu-title="Content"><div ng-include="\'' + $rootScope.modulesDir + '/views/partials/value-settings.html\'"></div></sb-menu>');
@@ -47,7 +53,6 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
                             }, closeFunc: function () {
                                 var newEl = valuePartDef.createElement(scope, part, options);
                                 var data = element.data();
-                                console.log(data);
                                 if (element.hasClass('diff_aspect')) {
                                     newEl.removeClass('aspect_hide');
                                     newEl.addClass('diff_aspect');
