@@ -1,6 +1,5 @@
 [
     {
-        "aspectClass": "58",
         "id": "4021",
         "role": "role.Default>role.Default",
         "partType": "block",
@@ -20,7 +19,6 @@
         "children": []
     },
     {
-        "aspectClass": "58",
         "id": "4022",
         "role": "role.Student>role.Default",
         "partType": "block",
@@ -39,7 +37,6 @@
         "info": null,
         "children": [
             {
-                "aspectClass": "58",
                 "id": "4023",
                 "role": "role.Student>role.Default",
                 "partType": "block",
@@ -58,7 +55,6 @@
                 "info": null,
                 "children": [
                     {
-                        "aspectClass": "58",
                         "id": "4024",
                         "role": "role.Student>role.Default",
                         "partType": "table",
@@ -78,7 +74,6 @@
                         "children": [],
                         "rows": [
                             {
-                                "aspectClass": "58",
                                 "id": "4029",
                                 "role": "role.Student>role.Default",
                                 "partType": "row",
@@ -98,7 +93,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4030",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -120,7 +114,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4031",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -142,7 +135,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4032",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -167,7 +159,6 @@
                         ],
                         "headerRows": [
                             {
-                                "aspectClass": "58",
                                 "id": "4025",
                                 "role": "role.Student>role.Default",
                                 "partType": "headerRow",
@@ -187,7 +178,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4026",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -209,7 +199,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4027",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -231,7 +220,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "58",
                                             "id": "4028",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -259,7 +247,6 @@
                 ],
                 "header": {
                     "image": {
-                        "aspectClass": "58",
                         "id": "4034",
                         "role": "role.Student>role.Default",
                         "partType": "image",
@@ -279,7 +266,6 @@
                         "children": []
                     },
                     "title": {
-                        "aspectClass": "58",
                         "id": "4035",
                         "role": "role.Student>role.Default",
                         "partType": "text",

@@ -1,6 +1,5 @@
 [
     {
-        "aspectClass": "33",
         "id": "2901",
         "role": "role.Default>role.Default",
         "partType": "block",
@@ -19,7 +18,6 @@
         "info": null,
         "children": [
             {
-                "aspectClass": "33",
                 "id": "2902",
                 "role": "role.Default>role.Default",
                 "partType": "block",
@@ -48,7 +46,6 @@
                 "info": null,
                 "children": [
                     {
-                        "aspectClass": "33",
                         "id": "2903",
                         "role": "role.Default>role.Default",
                         "partType": "table",
@@ -69,7 +66,6 @@
                         "rows": [
                             {
                                 "loopData": "{}",
-                                "aspectClass": "33",
                                 "id": "2908",
                                 "role": "role.Default>role.Default",
                                 "partType": "row",
@@ -88,7 +84,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2909",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
@@ -110,7 +105,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2910",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
@@ -132,7 +126,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2911",
                                             "role": "role.Default>role.Default",
                                             "partType": "block",
@@ -151,7 +144,6 @@
                                             "info": null,
                                             "children": [
                                                 {
-                                                    "aspectClass": "33",
                                                     "id": "2912",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -171,7 +163,6 @@
                                                     "children": []
                                                 },
                                                 {
-                                                    "aspectClass": "33",
                                                     "id": "2913",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
@@ -198,7 +189,6 @@
                         ],
                         "headerRows": [
                             {
-                                "aspectClass": "33",
                                 "id": "2904",
                                 "role": "role.Default>role.Default",
                                 "partType": "headerRow",
@@ -218,7 +208,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2905",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
@@ -240,7 +229,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2906",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
@@ -262,7 +250,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "2907",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
@@ -290,7 +277,6 @@
                 ],
                 "header": {
                     "image": {
-                        "aspectClass": "33",
                         "id": "2915",
                         "role": "role.Default>role.Default",
                         "partType": "image",
@@ -310,7 +296,6 @@
                         "children": []
                     },
                     "title": {
-                        "aspectClass": "33",
                         "id": "2916",
                         "role": "role.Default>role.Default",
                         "partType": "text",
@@ -334,7 +319,6 @@
         ]
     },
     {
-        "aspectClass": "33",
         "id": "3866",
         "role": "role.Student>role.Default",
         "partType": "block",
@@ -353,7 +337,6 @@
         "info": null,
         "children": [
             {
-                "aspectClass": "33",
                 "id": "3867",
                 "role": "role.Student>role.Default",
                 "partType": "block",
@@ -382,7 +365,6 @@
                 "info": null,
                 "children": [
                     {
-                        "aspectClass": "33",
                         "id": "3868",
                         "role": "role.Student>role.Default",
                         "partType": "table",
@@ -402,7 +384,6 @@
                         "children": [],
                         "rows": [
                             {
-                                "aspectClass": "33",
                                 "loopData": "{awards.getAllAwards(%user, null, null, null,null, false).sort(\"descending\",\"date\")}",
                                 "id": "3873",
                                 "role": "role.Student>role.Default",
@@ -422,7 +403,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3874",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -444,7 +424,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3875",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -466,7 +445,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3876",
                                             "role": "role.Student>role.Default",
                                             "partType": "block",
@@ -485,7 +463,6 @@
                                             "info": null,
                                             "children": [
                                                 {
-                                                    "aspectClass": "33",
                                                     "id": "3877",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -505,7 +482,6 @@
                                                     "children": []
                                                 },
                                                 {
-                                                    "aspectClass": "33",
                                                     "id": "3878",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
@@ -532,7 +508,6 @@
                         ],
                         "headerRows": [
                             {
-                                "aspectClass": "33",
                                 "id": "3869",
                                 "role": "role.Student>role.Default",
                                 "partType": "headerRow",
@@ -552,7 +527,6 @@
                                 "values": [
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3870",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -574,7 +548,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3871",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -596,7 +569,6 @@
                                     },
                                     {
                                         "value": {
-                                            "aspectClass": "33",
                                             "id": "3872",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
@@ -624,7 +596,6 @@
                 ],
                 "header": {
                     "image": {
-                        "aspectClass": "33",
                         "id": "3880",
                         "role": "role.Student>role.Default",
                         "partType": "image",
@@ -644,7 +615,6 @@
                         "children": []
                     },
                     "title": {
-                        "aspectClass": "33",
                         "id": "3881",
                         "role": "role.Student>role.Default",
                         "partType": "text",
