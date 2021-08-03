@@ -95,9 +95,9 @@ API::registerFunction('core', 'getCourseInfo', function () {
         foreach ($navPages as $nav) {
             if ($nav["restrictAcess"] === true && !$isAdmin) {
                 unset($navPages[array_search($nav, $navPages)]);
-            } else if (!in_array($nav["text"], $pageNames) && $nav["text"] !== "Users" && $nav["text"] !== "Course Settings") {
-                unset($navPages[array_search($nav, $navPages)]);
-            } else if ($nav["text"] == 'QR' && !$courseUser->hasRole("Teacher")) {
+            }
+            //removes pages that were on nav bar and now we have to take them off
+            else if (!in_array($nav["text"], $pageNames) && $nav["text"] !== "Users" && $nav["text"] !== "Course Settings") {
                 unset($navPages[array_search($nav, $navPages)]);
             }
         }
