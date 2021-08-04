@@ -98,7 +98,7 @@ class Views extends Module
         });
     }
     //auxiliar functions for the expression language functions
-    public function getModuleNameOfAwardOrParticipation($object, $award = true)
+    public function getModuleNameOfAward($object)
     {
         if (array_key_exists("name", $object["value"]))
             return $object["value"]["name"];
@@ -107,10 +107,7 @@ class Views extends Module
             return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
         }
         if ($type == "skill") {
-            if ($award)
-                return $object["value"]["description"];
-            else
-                return Core::$systemDB->select($type, ["id" => $object["value"]["moduleInstance"]], "name");
+            return $object["value"]["description"];
         }
         return null;
     }
@@ -765,7 +762,7 @@ class Views extends Module
                         case 'grade':
                             return new ValueNode('<img class="img" src="images/quiz.svg">');
                         case 'badge':
-                            $name = $this->getModuleNameOfAwardOrParticipation($award);
+                            $name = $this->getModuleNameOfAward($award);
                             if ($name === null)
                                 throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                             $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
@@ -811,7 +808,7 @@ class Views extends Module
             'moduleInstance',
             function ($award) {
                 $this->checkArray($award, "object", "moduleInstance");
-                return new ValueNode($this->getModuleNameOfAwardOrParticipation($award));
+                return new ValueNode($this->getModuleNameOfAward($award));
             },
             'Returns a string with the name of the Module instance that provided the award.',
             'string',
@@ -875,11 +872,11 @@ class Views extends Module
         $this->viewHandler->registerLibrary("views", "participations", "This library provides access to information regarding Participations.");
 
         //functions of the participation library
-        //participations.getAllParticipations(user,type,moduleInstance,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
+        //participations.getAllParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
         $this->viewHandler->registerFunction(
             'participations',
             'getAllParticipations',
-            function (int $user = null, string $type = null, string $moduleInstance = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null,  bool $activeUser = true, bool $activeItem = true) use ($courseId) {
+            function (int $user = null, string $type = null, int $rating = null, int $evaluator = null, string $initialDate = null, string $finalDate = null,  bool $activeUser = true, bool $activeItem = true) use ($courseId) {
                 $where = [];
                 if ($rating !== null) {
                     $where["rating"] = $rating;
@@ -887,9 +884,9 @@ class Views extends Module
                 if ($evaluator !== null) {
                     $where["evaluator"] = $evaluator;
                 }
-                return $this->getAwardOrParticipationAux($courseId, $user, $type, $moduleInstance, $initialDate, $finalDate, $where, "participation",  $activeUser, $activeItem);
+                return $this->getAwardOrParticipationAux($courseId, $user, $type, null, $initialDate, $finalDate, $where, "participation",  $activeUser, $activeItem);
             },
-            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nmoduleInstance: Name of an instance of an object from a Module. Note that moduleInstance only needs a value if type is badge or skill.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
+            "Returns a collection with all the participations in the Course. The optional parameters can be used to find participations that specify a given combination of conditions:\nuser: id of a GameCourseUser that participated.\ntype: Type of participation.\nrating: Rate given to the participation.\nevaluator: id of a GameCourseUser that rated the participation.\ninitialDate: Start of a time interval in DD/MM/YYYY format.\nfinalDate: End of a time interval in DD/MM/YYYY format.\nactiveUser: return data regarding active users only (true), or regarding all users(false).\nactiveItem: return data regarding active items only (true), or regarding all items (false).",
             'collection',
             'participation',
             'library'
@@ -938,6 +935,36 @@ class Views extends Module
             'library'
         );
 
+        //participations.getPeerGrades(user,rating)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getPeerGrades',
+            function (int $user = null, int $rating = null, int $evaluator = null, bool $activeUser = true, bool $activeItem = true) use ($courseId) {
+                $where = [];
+                $type = "peergraded post";
+                $peerGrades = [];
+                if ($evaluator !== null) {
+                    $where["evaluator"] = (int) $evaluator;
+                }
+                if ($rating !== null) {
+                    $where["rating"] = (int) $rating;
+                }
+                $allPeergradedPosts = $this->getAwardOrParticipation($courseId, $user, $type, null, null, null, $where, "participation", $activeUser, $activeItem);
+                    foreach ($allPeergradedPosts as $peergradedPost) {
+                        $post = $peergradedPost["post"];
+                        // see if there's a corresponding graded post for this peergrade
+                        $gradedPost = Core::$systemDB->selectMultiple("participation", ["type" => "graded post", "post" => $post], '*'); 
+                        if (sizeof($gradedPost) > 0) {
+                            array_push($peerGrades, $peergradedPost);
+                        }
+                    }
+                return $this->createNode($peerGrades, "participations", "collection");
+            },
+            "Returns a collection with all the valid peer graded posts (participations) in this Course. A peergrade is considered valid if the the post it refers to has already been graded by a professor. The optional parameters can be used to find peergraded posts that specify a given combination of conditions:\nuser: id of a GameCourseUser that authored the post being peergraded.\nrating: Rate given to the peergraded post.\nevaluator: id of a GameCourse user that rated/graded the post.",
+            'collection',
+            'participation',
+            'library'
+        );
 
         //%participation.date
         $this->viewHandler->registerFunction(
@@ -974,19 +1001,6 @@ class Views extends Module
                 return $this->basicGetterFunction($participation, "evaluator");
             },
             'Returns a string with the id of the user that rated the participation.',
-            'string',
-            null,
-            "object",
-            "participation"
-        );
-        //%participation.moduleInstance
-        $this->viewHandler->registerFunction(
-            'participations',
-            'moduleInstance',
-            function ($participation) {
-                return new ValueNode($this->getModuleNameOfAwardOrParticipation($participation, false));
-            },
-            'Returns a string with the name of the Module instance where the user participated.',
             'string',
             null,
             "object",
@@ -1138,8 +1152,8 @@ class Views extends Module
             }
         );
 
-
-
+        
+        
         //participations.getResourceViews(user)
         $this->viewHandler->registerFunction(
             'participations',
@@ -1147,7 +1161,7 @@ class Views extends Module
 
             function (int $user) use ($courseId) {
                 $table = "participation";
-
+                
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
                 $likeParams = ["description" => "Lecture % Slides"];
 
@@ -1169,14 +1183,14 @@ class Views extends Module
 
             function (int $user, string $forum, string $thread = null) use ($courseId) {
                 $table = "participation";
-
+                
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
-
+                    
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
                 } else {
                     # Name of thread is important for the badge
@@ -1184,7 +1198,7 @@ class Views extends Module
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
-                }
+            }   
                 return $this->createNode($forumParticipation, "participations", "collection");
             },
             "Returns a collection with all the participations in a specific forum of the Course. The  parameter can be used to find participations for a user or forum:\nuser: id of a GameCourseUser that participated.\n
@@ -1206,7 +1220,7 @@ class Views extends Module
                 $table = "user_role left join role on user_role.role=role.id";
                 $columns = "user_role.id";
                 $where = ["role.name" => "Teacher", "role.course" => $courseId];
-
+                
                 $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [], null, null);
                 $teachers = [];
                 foreach ($evaluators as $evaluator) {
@@ -1222,7 +1236,7 @@ class Views extends Module
                 foreach ($forumParticipation as $participation) {
                     if (in_array($participation["evaluator"], $teachers)) {
                         array_push($filteredParticipations, $participation);
-                        break;
+			            break;
                     }
                 }
                 return $this->createNode($filteredParticipations, "participations", "collection");
@@ -1241,16 +1255,13 @@ class Views extends Module
 
             function (int $user, string $type) use ($courseId) {
                 $table = "participation";
-
                 $where = ["user" => $user, "type" => $type, "course" => $courseId];
-
                 $forumParticipation = Core::$systemDB->selectMultiple($table, $where, 'description', null, [], [], null, null);
 
                 $ranking = 0;
                 if (count($forumParticipation) > 0) {
                     $ranking = 4 - intval($forumParticipation[0]['description']);
                 }
-
                 return $this->createNode($ranking, "participations", "object");
             },
             "Returns rankings of student awarded rewards.",

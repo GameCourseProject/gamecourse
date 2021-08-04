@@ -99,6 +99,12 @@ class SQLDB
         $this->executeQueryWithParams($sql, $where);
     }
 
+    public function deleteAll($table)
+    {
+        $sql = "delete from " . $table . ";";
+        $this->executeQuery($sql);
+    }
+
     public function update($table, $data, $where = null, $whereNot = [], $whereCompare = [])
     {
         //example: update user set name="Example", email="a@a.a" where id=80000;

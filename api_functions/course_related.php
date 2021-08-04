@@ -7,6 +7,7 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\User;
 use GameCourse\CourseUser;
+use GameCourse\RuleSystem;
 
 
 
@@ -24,6 +25,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
         $user = Core::getLoggedUser();
         $courseUser = $course->getLoggedUser();
         $courseUser->refreshActivity();
+        $ruleSystem = new RuleSystem($course);
 
         foreach ($pages as $pageId => $page) {
             // adding pages to the navbar according to their role
@@ -83,6 +85,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
             Core::addSettings('This Course', 'course.settings.global', true);
             Core::addSettings('Roles', 'course.settings.roles', true);
             Core::addSettings('Modules', 'course.settings.modules', true);
+            Core::addSettings('Rules', 'course.settings.rules', true);
             //se views tiver active
             if (in_array("views", $course->getEnabledModules()))
                 Core::addSettings('Views', 'course.settings.views', true);
@@ -110,7 +113,8 @@ API::registerFunction('core', 'getCourseInfo', function () {
             'courseName' => $course->getName(),
             'courseColor' => $course->getData("color"),
             'resources' => $course->getModulesResources(),
-            'user' => $user
+            'user' => $user,
+            'ruleSystemLastRun' => $ruleSystem->getLastRunDate()
         ));
     } else {
         API::error("There is no course with that id: " . $courseId);

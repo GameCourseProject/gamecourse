@@ -308,8 +308,8 @@ abstract class Module
         }
         return new ValueNode(["type" => $type, "value" => $value]);
     }
-    //get award or participations from DB, (moduleInstance can be name or id
-    public function getAwardOrParticipation($courseId, $user, $type, $moduleInstance, $initialDate = null, $finalDate = null, $where = [], $object = "award", $activeUser = true, $activeItem = true)
+    //get award or participations from DB, moduleInstance can be name or id
+    public function getAwardOrParticipation($courseId, $user, $type, $moduleInstance = null, $initialDate = null, $finalDate = null, $where = [], $object = "award", $activeUser = true, $activeItem = true)
     {
         if ($user !== null) {
             $where["user"] = $this->getUserId($user);
@@ -334,7 +334,7 @@ abstract class Module
         if ($type !== null) {
             $where["type"] = $type;
             //should only use module instance if the type is specified (so we know if we should use skils or badges)
-            if ($moduleInstance !== null && ($type == "badge" || $type == "skill")) {
+            if ($moduleInstance !== null && $object == "award" && ($type == "badge" || $type == "skill")) {
                 if (is_numeric($moduleInstance)) {
                     $where["moduleInstance"] = $moduleInstance;
                 } else {

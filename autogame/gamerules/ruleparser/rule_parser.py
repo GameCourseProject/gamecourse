@@ -21,6 +21,7 @@ from .aux_functions import rm_blank_end
 from .aux_functions import validate_block_args
 from .aux_functions import validate_named_block_args
 
+import re
 
 ### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
 ### %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ###
@@ -61,7 +62,9 @@ def parse_file(fpath):
 
 	with open(fpath, 'r') as f:
 		text = f.read()
-	list_rules = parse_list_rules(text,fpath)		
+	# remove tags line before parsing
+	new_text = re.sub('\ntags:.+\n', '\n', text)
+	list_rules = parse_list_rules(new_text,fpath)		
 
 	return list_rules
 
@@ -86,7 +89,11 @@ def parse_list_rules(text="", fpath=""):
 			pos = parse_comment(text, pos)
 			continue
 		rule, pos, line = parse_rule(text,pos,fpath,line)
-		list_rules.append(rule)
+		if rule == None: 
+			## Case where rule is ignored because it is inactive
+			continue
+		else:
+			list_rules.append(rule)
 		
 	return list_rules
 
@@ -105,6 +112,7 @@ def parse_rule(text="", pos=0, fpath="", line=1):
 	precs = Block([],fpath,line)	# preconditions block
 	acts = Block([],fpath,line)		# actions block
 	start_line = line
+	inactive = False				# whether a rule is inactive or not
 
 	## All rule-definitions start with the keyword 'rule' at the beggining
 	## of the line (excluding blank-space)
@@ -122,6 +130,9 @@ def parse_rule(text="", pos=0, fpath="", line=1):
 	## Parse Name
 	name, pos = parse_name(text,pos)
 	if text[pos-1] == "\n": line += 1
+	if is_next("INACTIVE",text,pos):
+		inactive = True
+	
 	## Parse Description if there is any
 	desc, pos, line = parse_description(text,pos,line)
 	## Parse Preconditions & Actions
@@ -131,7 +142,11 @@ def parse_rule(text="", pos=0, fpath="", line=1):
 		if is_next("then",text,pos):
 			acts, pos, line = parse_actions(text,pos,fpath,line)
 
-	return Rule(name,desc,precs,acts,fpath,start_line), pos, line
+	if inactive:
+		return None, pos, line
+	else:
+		return Rule(name,desc,precs,acts,fpath,start_line), pos, line
+
 
 def parse_preconditions(text="", pos=0, fpath="", line=1):
 	"""

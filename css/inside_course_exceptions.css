@@ -8,7 +8,7 @@
     margin-top: 20px;
 }
 .smaller_window .page {
-    height: calc(100vh - 67px - 25px);
+    height: calc(100vh - 67px - 25px - 40px);
 }
 
 .section .content .action-buttons {
@@ -17,4 +17,27 @@
     z-index: 1;
     padding-left: 30px;
     right: 0;
+}
+
+.action-buttons.rules-actions {
+    width: 228px ;
+}
+
+.action-buttons.general-rule-actions {
+    width: 225px ;
+    text-align: right;
+    right: 0px;
+}
+
+.action-buttons.general-rule-actions .icon {
+    width: 40px;
+    height: 40px;
+}
+
+.rule-header {
+    margin-bottom: 80px;
+}
+
+.data-table.rule-listing {
+    margin-top: 40px;
 }
