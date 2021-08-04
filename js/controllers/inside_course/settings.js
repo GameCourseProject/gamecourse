@@ -265,32 +265,35 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             panicDiv.append('<button id="edit_db_button" class="button" value="#edit-db" onclick="openModal(this)">View Database</button>');
             courseInfo.append(panicDiv);
 
-            var navigation = createSection(infoSection, 'Navigation');
+            if ($scope.navigation.length > 0) {
 
-            navigation.attr('id', 'navigation-config')
-            navigationSection = $('<div class="data-table"></div>');
-            tableNavigation = $('<table id="nav-table"></table>');
-            rowHeaderNavigation = $("<tr></tr>");
-            rowHeaderNavigation.append($("<th>Position</th>"));
-            rowHeaderNavigation.append($("<th>Page</th>"));
-            rowHeaderNavigation.append($("<th class='action-column'></th>")); // move up
-            rowHeaderNavigation.append($("<th class='action-column'></th>")); // move down
+                var navigation = createSection(infoSection, 'Navigation');
 
-            rowContentNavigation = $("<tr ng-repeat='(i, nav) in navigation'> ></tr>");
-            attrs = ["seqId", "text"];
-            jQuery.each(attrs, function (index) {
-                stg = "nav." + attrs[index];
-                rowContentNavigation.append($('<td>{{' + stg + '}}</td>'));
-            });
-            rowContentNavigation.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
-            rowContentNavigation.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
+                navigation.attr('id', 'navigation-config')
+                navigationSection = $('<div class="data-table"></div>');
+                tableNavigation = $('<table id="nav-table"></table>');
+                rowHeaderNavigation = $("<tr></tr>");
+                rowHeaderNavigation.append($("<th>Position</th>"));
+                rowHeaderNavigation.append($("<th>Page</th>"));
+                rowHeaderNavigation.append($("<th class='action-column'></th>")); // move up
+                rowHeaderNavigation.append($("<th class='action-column'></th>")); // move down
 
-            //append table
-            tableNavigation.append(rowHeaderNavigation);
-            tableNavigation.append(rowContentNavigation);
-            navigationSection.append(tableNavigation);
-            navigation.append(navigationSection);
-            $compile(navigation)($scope);
+                rowContentNavigation = $("<tr ng-repeat='(i, nav) in navigation'> ></tr>");
+                attrs = ["seqId", "text"];
+                jQuery.each(attrs, function (index) {
+                    stg = "nav." + attrs[index];
+                    rowContentNavigation.append($('<td>{{' + stg + '}}</td>'));
+                });
+                rowContentNavigation.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
+                rowContentNavigation.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
+
+                //append table
+                tableNavigation.append(rowHeaderNavigation);
+                tableNavigation.append(rowContentNavigation);
+                navigationSection.append(tableNavigation);
+                navigation.append(navigationSection);
+                $compile(navigation)($scope);
+            }
         });
     };
 
