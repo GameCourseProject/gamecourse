@@ -546,7 +546,6 @@ class Course
                         ["templateId" => $t["id"]]
                     );
                     $views = $viewHandler->getViewWithParts($aspect["viewId"]);
-                    $views = $viewHandler->getViewWithParts($aspect["id"]);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
