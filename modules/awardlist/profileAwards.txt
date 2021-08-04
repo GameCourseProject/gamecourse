@@ -1,6 +1,7 @@
 [
     {
         "id": "4021",
+        "viewId": "4021",
         "role": "role.Default>role.Default",
         "partType": "block",
         "parentId": null,
@@ -20,6 +21,7 @@
     },
     {
         "id": "4022",
+        "viewId": "4021",
         "role": "role.Student>role.Default",
         "partType": "block",
         "parentId": null,
@@ -38,6 +40,7 @@
         "children": [
             {
                 "id": "4023",
+                "viewId": "4023",
                 "role": "role.Student>role.Default",
                 "partType": "block",
                 "parentId": "4022",
@@ -56,6 +59,7 @@
                 "children": [
                     {
                         "id": "4024",
+                        "viewId": "4024",
                         "role": "role.Student>role.Default",
                         "partType": "table",
                         "parentId": "4023",
@@ -75,6 +79,7 @@
                         "rows": [
                             {
                                 "id": "4029",
+                                "viewId": "4029",
                                 "role": "role.Student>role.Default",
                                 "partType": "row",
                                 "parentId": "4024",
@@ -94,6 +99,7 @@
                                     {
                                         "value": {
                                             "id": "4030",
+                                            "viewId": "4030",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4029",
@@ -115,6 +121,7 @@
                                     {
                                         "value": {
                                             "id": "4031",
+                                            "viewId": "4031",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4029",
@@ -136,6 +143,7 @@
                                     {
                                         "value": {
                                             "id": "4032",
+                                            "viewId": "4032",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4029",
@@ -160,6 +168,7 @@
                         "headerRows": [
                             {
                                 "id": "4025",
+                                "viewId": "4025",
                                 "role": "role.Student>role.Default",
                                 "partType": "headerRow",
                                 "parentId": "4024",
@@ -179,6 +188,7 @@
                                     {
                                         "value": {
                                             "id": "4026",
+                                            "viewId": "4026",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4025",
@@ -200,6 +210,7 @@
                                     {
                                         "value": {
                                             "id": "4027",
+                                            "viewId": "4027",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4025",
@@ -221,6 +232,7 @@
                                     {
                                         "value": {
                                             "id": "4028",
+                                            "viewId": "4028",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "4025",
@@ -248,6 +260,7 @@
                 "header": {
                     "image": {
                         "id": "4034",
+                        "viewId": "4034",
                         "role": "role.Student>role.Default",
                         "partType": "image",
                         "parentId": "4033",
@@ -267,6 +280,7 @@
                     },
                     "title": {
                         "id": "4035",
+                        "viewId": "4035",
                         "role": "role.Student>role.Default",
                         "partType": "text",
                         "parentId": "4033",
