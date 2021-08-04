@@ -219,6 +219,7 @@ create table view(
 	variables varchar(500),
 	value varchar(200),
 	class varchar(50),
+	cssId varchar(50),
 	style varchar(200),
 	link varchar(100),
 	visibilityCondition varchar(200),
