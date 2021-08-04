@@ -1,6 +1,7 @@
 [
   {
     "id": "1412",
+    "viewId": "1412",
     "role": "role.Default",
     "partType": "block",
     "parentId": null,
@@ -19,6 +20,7 @@
     "children": [
       {
         "id": "1413",
+        "viewId": "1413",
         "role": "role.Default",
         "partType": "block",
         "parentId": "1412",
@@ -37,6 +39,7 @@
         "children": [
           {
             "id": "1414",
+            "viewId": "1413",
             "role": "role.Default",
             "partType": "block",
             "parentId": "1413",
@@ -70,6 +73,7 @@
             "children": [
               {
                 "id": "1415",
+                "viewId": "1415",
                 "role": "role.Default",
                 "partType": "block",
                 "parentId": "1414",
@@ -88,6 +92,7 @@
                 "children": [
                   {
                     "id": "1416",
+                    "viewId": "1416",
                     "role": "role.Default",
                     "partType": "block",
                     "parentId": "1415",
@@ -106,6 +111,7 @@
                     "children": [
                       {
                         "id": "1417",
+                        "viewId": "1417",
                         "role": "role.Default",
                         "partType": "image",
                         "parentId": "1416",
@@ -125,6 +131,7 @@
                       },
                       {
                         "id": "1418",
+                        "viewId": "1418",
                         "role": "role.Default",
                         "partType": "image",
                         "parentId": "1416",
@@ -148,6 +155,7 @@
               },
               {
                 "id": "1419",
+                "viewId": "1419",
                 "role": "role.Default",
                 "partType": "block",
                 "parentId": "1414",
@@ -166,6 +174,7 @@
                 "children": [
                   {
                     "id": "1420",
+                    "viewId": "1420",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1419",
@@ -185,6 +194,7 @@
                   },
                   {
                     "id": "1421",
+                    "viewId": "1421",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1419",
@@ -204,6 +214,7 @@
                   },
                   {
                     "id": "1422",
+                    "viewId": "1421",
                     "role": "role.Default",
                     "partType": "block",
                     "parentId": "1419",
@@ -222,6 +233,7 @@
                     "children": [
                       {
                         "id": "1423",
+                        "viewId": "1423",
                         "role": "role.Default",
                         "partType": "text",
                         "parentId": "1422",
@@ -241,6 +253,7 @@
                       },
                       {
                         "id": "1424",
+                        "viewId": "1423",
                         "role": "role.Default",
                         "partType": "text",
                         "parentId": "1422",
@@ -260,6 +273,7 @@
                       },
                       {
                         "id": "1425",
+                        "viewId": "1425",
                         "role": "role.Default",
                         "partType": "text",
                         "parentId": "1422",
@@ -283,6 +297,7 @@
               },
               {
                 "id": "1426",
+                "viewId": "1426",
                 "role": "role.Default",
                 "partType": "block",
                 "parentId": "1414",
@@ -301,6 +316,7 @@
                 "children": [
                   {
                     "id": "1427",
+                    "viewId": "1427",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1426",
@@ -320,6 +336,7 @@
                   },
                   {
                     "id": "1428",
+                    "viewId": "1428",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1426",
@@ -339,6 +356,7 @@
                   },
                   {
                     "id": "1429",
+                    "viewId": "1429",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1426",
@@ -360,6 +378,7 @@
               },
               {
                 "id": "1430",
+                "viewId": "1430",
                 "role": "role.Default",
                 "partType": "block",
                 "parentId": "1414",
@@ -378,6 +397,7 @@
                 "children": [
                   {
                     "id": "1431",
+                    "viewId": "1431",
                     "role": "role.Default",
                     "partType": "text",
                     "parentId": "1430",
@@ -397,6 +417,7 @@
                   },
                   {
                     "id": "1432",
+                    "viewId": "1432",
                     "role": "role.Default",
                     "partType": "block",
                     "parentId": "1430",
@@ -419,6 +440,7 @@
                     "children": [
                       {
                         "id": "1433",
+                        "viewId": "1433",
                         "role": "role.Default",
                         "partType": "text",
                         "parentId": "1432",
@@ -438,6 +460,7 @@
                       },
                       {
                         "id": "1434",
+                        "viewId": "1434",
                         "role": "role.Default",
                         "partType": "image",
                         "parentId": "1432",
@@ -459,6 +482,7 @@
                       },
                       {
                         "id": "1435",
+                        "viewId": "1435",
                         "role": "role.Default",
                         "partType": "text",
                         "parentId": "1432",
@@ -486,6 +510,7 @@
         "header": {
           "image": {
             "id": "1437",
+            "viewId": "1437",
             "role": "role.Default",
             "partType": "image",
             "parentId": "1436",
@@ -505,6 +530,7 @@
           },
           "title": {
             "id": "1438",
+            "viewId": "1438",
             "role": "role.Default",
             "partType": "text",
             "parentId": "1436",
