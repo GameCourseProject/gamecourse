@@ -6,7 +6,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 func(undefined, err);
                 return;
             }
-            console.log(data);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.viewBlock = {
@@ -116,7 +115,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 $rootScope.partsHierarchy.push(viewScope[block]);
             }
 
-            console.log(viewScope.views);
             //$rootScope.partsHierarchy = [viewScope.viewBlock];
             $rootScope.role = viewScope.views[0].role;
             $rootScope.roleType = viewScope.views[0].role.includes(">") ? "ROLE_INTERACTION" : "ROLE_SINGLE";
@@ -124,9 +122,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             $rootScope.viewRoles = JSON.parse(angular.toJson(data.viewRoles)); //roles for which there is at least one subview
             $rootScope.rolesHierarchy = data.rolesHierarchy;
             $rootScope.courseId = data.courseId;
-
-            console.log($rootScope.viewRoles);
-            console.log($rootScope.rolesHierarchy);
 
             function build() {
                 var viewBlock = [];
@@ -476,7 +471,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
                         //ToDo: drop,keydown,keypress,keyup (these weren't working)
                         var missingEvents = [];
-                        console.log(optionsScope);
                         if (optionsScope.part.events !== undefined) {
                             for (var i in events) {
                                 var event = events[i];
@@ -690,7 +684,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 newPart.isTemplateRef = true;
                             if (part.id)
                                 newPart.id = part.id;
-                            console.log(newPart);
+                            // console.log(newPart);
                             toolbarOptions.toolFunctions.switch(part, newPart);
                             execClose();
                         }
@@ -783,7 +777,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                             delete newPart.id;
                                             newPart.isTemplateRef = true;
                                             //newPart.id = optionsScope.template.id;
-                                            console.log(newPart);
+                                            // console.log(newPart);
                                             toolbarOptions.toolFunctions.switch(part, newPart);
                                         }
 
@@ -793,7 +787,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             }
                             else {
                                 var templatePartAsp = $sbviews.getAllPartAspects(part.viewId);
-                                console.log(templatePartAsp);
                                 optionsScope.template.parts = templatePartAsp;
                                 optionsScope.template.isRef = false;
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
@@ -806,7 +799,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     optionsScope.template.id = data.templateId;
                                     optionsScope.template.viewId = data.idView;
                                     optionsScope.editData.templates[templateIndex] = optionsScope.template;
-                                    console.log(optionsScope.editData.templates[templateIndex]);
                                 });
                             }
 
@@ -1123,8 +1115,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             //   document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         }
                     }
-                    console.log($rootScope.viewRoles);
-                    console.log(document.getElementById("viewer_role"));
                     rolesWithoutAspect = getAvailableRoles();
 
                     //add part
@@ -1196,7 +1186,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         });
                         $rootScope.viewRoles.splice(requiredIndex, 1);
                     }
-                    console.log($rootScope.viewRoles);
+                    //     console.log($rootScope.viewRoles);
                     const parentContent = el[0].parentElement;
 
                     const part = $sbviews.findPart(viewId, unparseRole(role), $rootScope.partsHierarchy);
@@ -1455,7 +1445,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         rolesToCheck.forEach(role => {
             if (($("[data-role=" + role + "]").toArray().length == 0 || $("[data-role*='>" + role + "']").toArray().length == 0) && role != "Default") {
                 const roles = this.buildRolesHierarchyForOneRole(role);
-                console.log(roles);
+                //console.log(roles);
                 const newRole = roles[1]; // if it was 0, it would be the role itself. we want the next one
                 const newOption = $("#viewer_role option").filter((idx, option) => {
                     return option.label == newRole.name
@@ -1802,6 +1792,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 var defaultOptions = {
                     layoutEditor: false,
                     overlayOptions: {
+                        allowId: true,
                         allowClass: true,
                         allowStyle: true,
                         allowDirective: true
@@ -1821,6 +1812,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowEvents = true;
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
+                    defaultOptions.overlayOptions.allowId = true;
                 }
                 else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view') || element.hasClass('block')) { // children of ui-block
                     defaultOptions.overlayOptions.allowDataLoop = true;
@@ -1829,6 +1821,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowVariables = true;
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
+                    defaultOptions.overlayOptions.allowId = true;
                 }
                 // if (element.hasClass('view')) {
                 //     toolOptions.noSettings = true;
