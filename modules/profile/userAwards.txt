@@ -1,6 +1,7 @@
 [
     {
         "id": "2901",
+        "viewId": "2901",
         "role": "role.Default>role.Default",
         "partType": "block",
         "parentId": null,
@@ -19,6 +20,7 @@
         "children": [
             {
                 "id": "2902",
+                "viewId": "2902",
                 "role": "role.Default>role.Default",
                 "partType": "block",
                 "parentId": "2901",
@@ -47,6 +49,7 @@
                 "children": [
                     {
                         "id": "2903",
+                        "viewId": "2903",
                         "role": "role.Default>role.Default",
                         "partType": "table",
                         "parentId": "2902",
@@ -67,6 +70,7 @@
                             {
                                 "loopData": "{}",
                                 "id": "2908",
+                                "viewId": "2908",
                                 "role": "role.Default>role.Default",
                                 "partType": "row",
                                 "parentId": "2903",
@@ -85,6 +89,7 @@
                                     {
                                         "value": {
                                             "id": "2909",
+                                            "viewId": "2909",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
                                             "parentId": "2908",
@@ -106,6 +111,7 @@
                                     {
                                         "value": {
                                             "id": "2910",
+                                            "viewId": "2910",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
                                             "parentId": "2908",
@@ -127,6 +133,7 @@
                                     {
                                         "value": {
                                             "id": "2911",
+                                            "viewId": "2911",
                                             "role": "role.Default>role.Default",
                                             "partType": "block",
                                             "parentId": "2908",
@@ -145,6 +152,7 @@
                                             "children": [
                                                 {
                                                     "id": "2912",
+                                                    "viewId": "2912",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
                                                     "parentId": "2911",
@@ -164,6 +172,7 @@
                                                 },
                                                 {
                                                     "id": "2913",
+                                                    "viewId": "2913",
                                                     "role": "role.Default>role.Default",
                                                     "partType": "text",
                                                     "parentId": "2911",
@@ -190,6 +199,7 @@
                         "headerRows": [
                             {
                                 "id": "2904",
+                                "viewId": "2904",
                                 "role": "role.Default>role.Default",
                                 "partType": "headerRow",
                                 "parentId": "2903",
@@ -209,6 +219,7 @@
                                     {
                                         "value": {
                                             "id": "2905",
+                                            "viewId": "2905",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
                                             "parentId": "2904",
@@ -230,6 +241,7 @@
                                     {
                                         "value": {
                                             "id": "2906",
+                                            "viewId": "2906",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
                                             "parentId": "2904",
@@ -251,6 +263,7 @@
                                     {
                                         "value": {
                                             "id": "2907",
+                                            "viewId": "2907",
                                             "role": "role.Default>role.Default",
                                             "partType": "text",
                                             "parentId": "2904",
@@ -278,6 +291,7 @@
                 "header": {
                     "image": {
                         "id": "2915",
+                        "viewId": "2915",
                         "role": "role.Default>role.Default",
                         "partType": "image",
                         "parentId": "2914",
@@ -297,6 +311,7 @@
                     },
                     "title": {
                         "id": "2916",
+                        "viewId": "2916",
                         "role": "role.Default>role.Default",
                         "partType": "text",
                         "parentId": "2914",
@@ -320,6 +335,7 @@
     },
     {
         "id": "3866",
+        "viewId": "2901",
         "role": "role.Student>role.Default",
         "partType": "block",
         "parentId": null,
@@ -338,6 +354,7 @@
         "children": [
             {
                 "id": "3867",
+                "viewId": "3867",
                 "role": "role.Student>role.Default",
                 "partType": "block",
                 "parentId": "3866",
@@ -366,6 +383,7 @@
                 "children": [
                     {
                         "id": "3868",
+                        "viewId": "3868",
                         "role": "role.Student>role.Default",
                         "partType": "table",
                         "parentId": "3867",
@@ -386,6 +404,7 @@
                             {
                                 "loopData": "{awards.getAllAwards(%user, null, null, null,null, false).sort(\"descending\",\"date\")}",
                                 "id": "3873",
+                                "viewId": "3873",
                                 "role": "role.Student>role.Default",
                                 "partType": "row",
                                 "parentId": "3868",
@@ -404,6 +423,7 @@
                                     {
                                         "value": {
                                             "id": "3874",
+                                            "viewId": "3874",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "3873",
@@ -425,6 +445,7 @@
                                     {
                                         "value": {
                                             "id": "3875",
+                                            "viewId": "3875",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "3873",
@@ -446,6 +467,7 @@
                                     {
                                         "value": {
                                             "id": "3876",
+                                            "viewId": "3876",
                                             "role": "role.Student>role.Default",
                                             "partType": "block",
                                             "parentId": "3873",
@@ -464,6 +486,7 @@
                                             "children": [
                                                 {
                                                     "id": "3877",
+                                                    "viewId": "3877",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
                                                     "parentId": "3876",
@@ -483,6 +506,7 @@
                                                 },
                                                 {
                                                     "id": "3878",
+                                                    "viewId": "3878",
                                                     "role": "role.Student>role.Default",
                                                     "partType": "text",
                                                     "parentId": "3876",
@@ -509,6 +533,7 @@
                         "headerRows": [
                             {
                                 "id": "3869",
+                                "viewId": "3869",
                                 "role": "role.Student>role.Default",
                                 "partType": "headerRow",
                                 "parentId": "3868",
@@ -528,6 +553,7 @@
                                     {
                                         "value": {
                                             "id": "3870",
+                                            "viewId": "3870",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "3869",
@@ -549,6 +575,7 @@
                                     {
                                         "value": {
                                             "id": "3871",
+                                            "viewId": "3871",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "3869",
@@ -570,6 +597,7 @@
                                     {
                                         "value": {
                                             "id": "3872",
+                                            "viewId": "3872",
                                             "role": "role.Student>role.Default",
                                             "partType": "text",
                                             "parentId": "3869",
@@ -597,6 +625,7 @@
                 "header": {
                     "image": {
                         "id": "3880",
+                        "viewId": "3880",
                         "role": "role.Student>role.Default",
                         "partType": "image",
                         "parentId": "3879",
@@ -616,6 +645,7 @@
                     },
                     "title": {
                         "id": "3881",
+                        "viewId": "3881",
                         "role": "role.Student>role.Default",
                         "partType": "text",
                         "parentId": "3879",
