@@ -24,9 +24,9 @@ class RuleSystem
     {
         $this->course = $course;
         $this->courseId = $course->getId();
-        $this->rulesdir = $this->course->getCourseLegacyFolder($this->courseId) . "/rules/";
-        $this->ruletestpath = $this->course->getCourseLegacyFolder($this->courseId) . "/rule-tests/rule.txt";
-        $this->ruletestoutput = $this->course->getCourseLegacyFolder($this->courseId) . "/rule-tests/rule-test-output.txt";
+        $this->rulesdir = $this->course->getCourseDataFolder($this->courseId) . "/rules/";
+        $this->ruletestpath = $this->course->getCourseDataFolder($this->courseId) . "/rule-tests/rule.txt";
+        $this->ruletestoutput = $this->course->getCourseDataFolder($this->courseId) . "/rule-tests/rule-test-output.txt";
         $this->metadatadir = "/var/www/html/gamecourse/autogame/config/config_" . strval($this->courseId) . ".txt";
         $this->availableModules = ModuleLoader::getModules();
     }
@@ -93,6 +93,7 @@ class RuleSystem
         $cmd = "python3 /var/www/html/gamecourse/autogame/get_functions.py " . strval($this->courseId);
         $output = null;
         exec($cmd, $output);
+        $funcs = array();
         if ($output != null && sizeof($output) > 0) { 
             $funcs = json_decode($output[0]);
         }
@@ -261,9 +262,11 @@ class RuleSystem
             foreach ($lines as $line) {
                 $vals = explode(":", $line);
                 $val = array();
-                $val["var"] = $vals[0];
-                $val["val"] = $vals[1];
-                array_push($vars, $val);
+                if (sizeof($vals) == 2) { 
+                    $val["var"] = $vals[0];
+                    $val["val"] = $vals[1];
+                    array_push($vars, $val);
+                }
             }
         } 
         return $vars;
