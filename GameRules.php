@@ -15,64 +15,95 @@ use GameCourse\ModuleLoader;
 class GameRules{
 
 	private $courseId;
-
 	private $host = "127.0.0.1";
 	private $port = "8004";
-	private $logFile = "/var/www/html/gamecourse/course_data/GR_log_";
+	private $logFile = "/var/www/html/gamecourse/autogame/logs/log_course_";
 	private $autogamePath = "/var/www/html/gamecourse/autogame/run_autogame.py";
+	private $all = False;
+	private $targets = null;
+	private $rulePath;
+	private $testMode = False;
 
-	public function __construct($courseId)
+
+	public function __construct($courseId, $all, $targets, $testMode=False)
     {
         $this->courseId = $courseId;
+		$this->rulePath = "/var/www/html/gamecourse/" . Course::getCourseDataFolder($courseId);
+		if ($all) {
+			$this->all = True;
+		}
+		else {
+			if ($targets != null) {
+				$this->targets = $targets;
+			}
+		}
+		if ($testMode) {
+			$this->autogamePath = "/var/www/html/gamecourse/autogame/run_autogame_test.py";
+			$this->testMode = True;
+		}
     }
-
 
 	static function noConnectionsHandler ($errno, $errstr, $errfile, $errline) {
 		Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
 	}
 
-
 	public function logGameRules($result) {
 		date_default_timezone_set("Europe/Lisbon");
-		$sep = "-----------------------------------------------------------------------\n";
-		$date = "  Date:\t" . date("d-m-Y") . " " . date("H:i:s") . "\n\n";
-		$end = "\n\n\n";
-		file_put_contents($this->logFile, $sep, FILE_APPEND);
-		file_put_contents($this->logFile, $date, FILE_APPEND);
-		file_put_contents($this->logFile, $sep, FILE_APPEND);
-		file_put_contents($this->logFile, $result, FILE_APPEND);
-		file_put_contents($this->logFile, $end, FILE_APPEND);
+		$sep = "\n\n\n=======================================\n";
+		$date = date("Y-m-d H:i:s") ." : php : ERROR \n";
+		$error = "=======================================\n" . $result . "\n";
+		file_put_contents($this->logFile, $sep . $date . $error, FILE_APPEND);
 	}
 
+	public function checkCourseExists() {
+		$result = Core::$systemDB->selectMultiple("autogame", ["course" => $this->courseId]);
+		$courseExists = empty($result) ? false : true;
+    	return $courseExists;
+	}
 
 	public function checkAutoGameRunning() {
-
 		$result = Core::$systemDB->selectMultiple("autogame", ["course" => $this->courseId], "isRunning");
 		$courseRunning = $result[0]["isRunning"];
-
     	return $courseRunning;
 	}
-
-
 
 	public function checkServerSocket() {
 		// course = 0 is restricted for the autogame socket
     	$socketOpen = Core::$systemDB->selectMultiple("autogame", ["course" => 0], "isRunning");
-
     	return $socketOpen[0]["isRunning"];
 	}
 
+	public function resetServerSocket() {
+		Core::$systemDB->update("autogame", ["isRunning" => 0], ["course" => 0]);
+	}
 
 	public function callAutogame() {
-		$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." >> /var/www/html/gamecourse/autogame/gr_log.txt &";
+		if ($this->all) { 
+			// if running for all targets
+			$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" all >> /var/www/html/gamecourse/autogame/test_log.txt &";
+		}
+		else {
+			if ($this->targets != null) {
+				// running for certain user-specified targets
+				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" " . $this->targets . " >> /var/www/html/gamecourse/autogame/test_log.txt &";
+			}
+			else {
+				// running normally with resort to the participations table
+				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" >> /var/www/html/gamecourse/autogame/test_log.txt &";
+			}
+			
+		}
+
 	    $output = system($cmd);
-	    // log later
+		// TO DO change path
+		$txt = file_get_contents($this->rulePath . "/rule-tests/rule-test-output.txt");
+		return $txt;
+	    // TODO log later
 	}
 
 	public function setServerSocketRunning() {
 		Core::$systemDB->update("autogame", ["isRunning" => (int)1 ], ["course" => 0]);
 	}
-
 
     public function startServerSocket(){
 
@@ -80,27 +111,21 @@ class GameRules{
 	    	$socket = stream_socket_server($server, $errno, $errstr) or die("Could not create socket\n");
 
 		if (!$socket) {
-
 		    echo "Error: Could not create server socket";
 		} 
 		
 		else {
 			# command that calls python script - output is supressed by latter part of the command
 	    	$this->setServerSocketRunning();
-	    	$this->callAutogame();
-
+	    	$out = $this->callAutogame();
 		    while (True) {
-
 				try {
 			        $conn = stream_socket_accept($socket);
-
 					if (!$conn){
 						$error= "Could not accept connections on stream_socket_accept in startServerSocket().";
 						$this->logGameRules($error);
-
 						return;
 					}
-
 
 			        $msg = fgets($conn);
 
@@ -134,7 +159,7 @@ class GameRules{
 			            
 			            $course = Course::getCourse(intval($courseNr));
 					
-			   	    $viewHandler = $course->getModule('views')->getViewHandler();
+			   	    	$viewHandler = $course->getModule('views')->getViewHandler();
 					
 					
 
@@ -190,7 +215,7 @@ class GameRules{
 				}
 
 		    }
-
+			return $out;
 		}
 
 	echo($errstr);
@@ -200,24 +225,39 @@ class GameRules{
 	public function run()
     {
 	// sets a custom error handler for correcting database inconsistencies
-	//set_error_handler("GameRules::noConnectionsHandler");
- 	
+	// set_error_handler("GameRules::noConnectionsHandler");
 	// set logfile path
 	$this->logFile .= $this->courseId . ".txt";
+
+		if (!($this->checkCourseExists())) {
+			echo("ERROR: The course given does not exist.");
+			return;
+		}
 	
 	    if ($this->checkAutoGameRunning()) {
+			echo("ERROR: Autogame for the given course id is already running.");
 	    	return;
 	    }
 
 	    if ($this->checkServerSocket()) {
-
-	    	$this->callAutogame();
-	    } 
+			if (fsockopen($this->host, $this->port)) {
+	    		$out = $this->callAutogame();
+			}
+			else {
+				$this->resetServerSocket();
+				$out = $this->startServerSocket();
+			}
+	    }
 
 	    else {
-	    	$this->startServerSocket();
+	    	$out = $this->startServerSocket();
 	    }
-	
+
+		if ($this->testMode) {
+			$txt = file_get_contents($this->rulePath . "/rule-tests/rule-test-output.txt");
+			return $txt;
+		}
+
     }
 
 

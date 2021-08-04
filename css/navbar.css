@@ -118,3 +118,37 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+
+/* footer config */
+.navfooter {
+  width: 100%;
+  font-size: 13px;
+  text-align: center;
+  border-top: 4px solid grey;
+  clear: both;
+  position: relative;
+  bottom: 0;
+  height: 40px;
+  color: grey;
+}
+
+html {
+  height: 100%;
+}
+
+.body-footer-fix {
+  display: table;
+  width: 100%;
+  min-height:100%;
+  margin:0;
+}
+
+.lastrun {
+  border-top: 2px solid lightgrey;
+  padding-top: 1em;
+}
+
+body > .navfooter {
+  display: table-row;
+}

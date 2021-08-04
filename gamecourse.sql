@@ -26,6 +26,7 @@ drop table if exists award_participation;
 drop table if exists participation;
 drop table if exists notification;
 drop table if exists award;
+drop table if exists award_test;
 drop table if exists dictionary_function;
 drop table if exists dictionary_variable;
 drop table if exists dictionary_library;
@@ -164,6 +165,18 @@ create table award(
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
+create table award_test(
+	id 		int unsigned auto_increment primary key,
+	user 	int unsigned not null,
+	course 	int unsigned not null,
+	description varchar(100) not null,
+	type varchar(50) not null, #(ex:grade,skills, labs,quiz,presentation,bonus)
+	moduleInstance int unsigned ,#id of badge/skill (will be null for other types)
+	reward int unsigned default 0,
+	date timestamp default CURRENT_TIMESTAMP,
+    foreign key(user, course) references course_user(id, course) on delete cascade
+);
+
 create table notification(
 	id int unsigned auto_increment primary key,
 	award int unsigned not null,
@@ -171,13 +184,12 @@ create table notification(
 	foreign key(award) references award(id) on delete cascade
 );
 
-create table participation(#for now this is just used for badges
+create table participation(
 	id 		int unsigned auto_increment primary key,
 	user 	int unsigned not null,
 	course 	int unsigned not null,
 	description varchar(500) not null,
 	type 	varchar(50) not null, #(ex:grade,skill,badge, lab,quiz,presentation,bonus)
-	moduleInstance VARCHAR(200) ,#id of badge/skill (will be null for other types)
 	post 	varchar(255),
 	date timestamp,
 	rating int,
@@ -186,7 +198,7 @@ create table participation(#for now this is just used for badges
     foreign key(user, course) references course_user(id, course) on delete cascade
 );
 
-create table award_participation(#this table may be pointless if participations havent got more than 1 award
+create table award_participation(
 	award int unsigned,
 	participation int unsigned,
 	primary key (award,participation),
@@ -253,8 +265,9 @@ create table view_template(
 
 create table autogame(#table used for gamerules related info
 	course 	int unsigned not null primary key,
-	date timestamp default CURRENT_TIMESTAMP,
-	isRunning boolean default false, #?
+	startedRunning timestamp default CURRENT_TIMESTAMP,
+	finishedRunning timestamp default CURRENT_TIMESTAMP,
+	isRunning boolean default false, 
 	foreign key(course) references course(id) on delete cascade
 );
 

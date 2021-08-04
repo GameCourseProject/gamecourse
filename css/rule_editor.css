@@ -1,0 +1,812 @@
+/* ------ Top nav ------ */
+
+#top-nav {
+    width: 100%;
+    display: block;
+    margin-bottom: 2em;
+    height: 2.5em;
+}
+
+#return-button {
+    width: 30px;
+    height: 30px;
+    display: block;
+    float: left;
+}
+
+#button-container {
+    float: right;
+    width: 20%;
+    position: relative;
+    right: 4em;
+    text-align: right;
+}
+
+#save-rule-button, #cancel-rule-button {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+
+.rule-header-editor {
+    margin-bottom: 50px;
+}
+
+.rule-container {
+    width: 100%;
+ }
+
+.rule-container input, .rule-container textarea {
+    width: 95%;
+    height: 2.4em;
+    margin: 0.7em;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    padding: 7px;
+    color: #333;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    flex: 3;
+    resize: vertical;
+}
+
+.rule-container textarea:active, .rule-container textarea:focus {
+    outline: none !important;
+}
+
+#clauses-container {
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+}
+
+#rule-description {
+    width: 95%;
+    height: 5em;
+    line-height: 1.5em;
+    padding: 0.6em;
+    margin: 0.7em;
+    word-break: break-word;
+}
+
+
+#rule-when, #rule-then {
+    width: 95%;
+    height: 8vh;
+    line-height: 1.5em;;
+    padding: 0.6em;
+    margin: 0.7em;
+    word-break: break-word;
+} 
+
+#rule-when {
+    padding: 0;
+}
+
+#rule-functions-buttons {
+    width: 96%;
+    display: flex;
+    margin: 1.2em 0.5em 0.8em 0.5em;
+}
+
+.rule-functions-button {
+    background-color: #07a;
+}
+
+#rule-functions-buttons button {
+    flex-grow: 1;
+    margin: 0 0.3em 0 0.3em;
+} 
+
+#rule-functions, #rule-metadata, #rule-variables, #preview-functions {
+    width: inherit;
+    line-height: 1.5em;
+    /*padding: 0.8em;*/
+    margin: 0.7em;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    color: #333;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    flex: 1;
+}
+
+#rule-functions, #rule-metadata, #rule-variables {
+    min-height: 28vh;
+    overflow-y: scroll;
+}
+
+#rule-when-help, #rule-then-help {
+    display:none;
+}
+
+#preview-functions {
+    width: 97%;
+    line-height: 1.5em;
+    padding: 0.8em;
+    margin: 0.7em;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    color: #333;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    flex: 1;
+    min-height: 30vh;
+    overflow-y: scroll;
+    resize: vertical;
+}
+
+#rule-functions ul, #rule-metadata ul, #rule-variable ul, #preview-functions ul {
+    padding-inline-start: 0px;
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+}
+
+
+.preview-request-li {
+    list-style-type: none;
+    margin-left: 0.4em;
+    color: #905;
+}
+
+.preview-response-li {
+    margin-left: 1.6em;
+    list-style-type: none;
+}
+
+.divider.rule-divider {
+    margin-bottom: 1.4em;
+    margin-top: 1.6em;
+}
+
+.rule-section {
+    width: 96%;
+    left: 2%;
+    position: relative;
+}
+
+.rule-part-box {
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+
+hr.divider-strong {
+    border-top: 1px solid #999;
+    margin-top: 4em;
+    margin-bottom: 4em;
+}
+
+.rule-section .title {
+    font-weight: bold;
+    font-size : 1.2em;
+}
+
+
+#rule-tags {
+    width: 25%;
+    display: inline-block;
+    height: 2.4em;
+} 
+
+#tags-list {
+    width: 70%;
+    display: inline-block;
+}
+
+.rule-tag {
+    display: inline-block;
+    text-transform: uppercase;
+    background-color: #565656;
+    color: white;
+    padding: 0.7em;
+    border-radius: 1.2em;
+    font-size: 1.0em;
+    margin-left: 1em;
+    vertical-align: middle;
+    opacity: 0.9;
+}
+
+.rule-tag-preview {
+    display: inline-block;
+    text-transform: uppercase;
+    background-color: #565656;
+    color: white;
+    padding: 0.6em;
+    border-radius: 1em;
+    font-size: 0.8em;
+    margin-left: 0.4em;
+    opacity: 0.9;
+    margin-bottom: 0.3em;
+}
+
+.tag-text {
+    display: inline-block;
+    height: 1em;
+    margin-right: 0.4em;
+    vertical-align: middle;
+}
+
+.delete-tag {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.3em;
+    background-size: auto 1.3em;
+    background-repeat: no-repeat;
+    margin-right: 0.1em;
+    vertical-align: middle;
+}
+
+
+
+/* Autocomplete Tags */
+
+.ui-autocomplete  {
+    position:relative;
+    width: 18%;
+}
+
+/*.ui-autocomplete .ui-menu-item{
+    font-size: 16px;
+    border-bottom: 1px dotted #efefef;
+    line-height: 20px;
+  }*/
+
+.ui-autocomplete .ui-menu-item-wrapper {
+    /*border-bottom: 1px solid #909090;
+    border-left: 1px solid #909090;
+    border-right: 1px solid #909090;*/
+    border-bottom: 2px solid lightgrey;
+    border-top: 2px solid lightgrey;
+    border-left: 2px solid lightgrey;
+    border-top: 0;
+    margin-right: -20px;
+}
+  
+  /* clauses */
+.rule-left-box {
+    width: 74%;
+  }
+
+.rule-right-box {
+    width: 26%;
+    padding-left: 2em;
+    border-left: 1px solid #999;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#right-part-box {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#clauses-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+
+
+#rule-settings-modal .modal_content {
+    width: 800px;
+}
+
+.config-section {
+    margin: 20px 0 20px 0;
+}
+
+.config-section .form__input {
+    width: 50%;
+    margin: 1em 0 1em 0;
+}
+
+.config-section button {
+    margin: 1em 0 1em 0;
+}
+
+.config-section h3, .help-modal-content h3 {
+    border-bottom: 1px solid #afafaf;
+    padding-bottom: 0.2em;
+    margin-block-start: 0;
+}
+
+.metadata-icons {
+    width: 90px !important;
+}
+
+#search-input {
+    width: 80%;
+}
+
+
+/* - Toolbox Styles - */
+
+#func-info-when, #func-info-then {
+    margin-top: 1em;
+}
+
+#func-info-args {
+    margin: 1em 0 0 0;
+    padding-bottom: 1em;
+    border-bottom: 1px solid lightgrey;
+    
+}
+
+.arg-list-item strong {
+    color: chocolate;
+}
+
+.lib-list-item, .func-list-item, .gcfunc-list-item, .metadata-list-item, .variables-list-item {
+    list-style-type: none;
+    line-height: 2.2em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-bottom: 1px solid lightgrey;
+    font-size: 0.8em;
+}
+
+.metadata-list-item:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+.arg-list-item {
+    list-style-type: square;
+    font-style: italic;
+    padding-left: 10px;
+    list-style-position: inside;
+}
+
+.function-description {
+    margin: 0 1em 0 1em 0;
+    font-size: 14px;
+    text-align: justify;
+    white-space:pre-wrap;
+    color: #454545;
+    max-height: 35vh;
+    overflow-y: scroll;
+    padding: 0.9em;
+}
+
+.optional {
+    font-weight: bold;
+    color: chocolate;
+    font-style: normal;
+}
+
+#preview-button-wrapper {
+    display: flex;
+    text-align: center;
+} 
+
+#vars-table {
+    margin-top: 3em;
+} 
+
+
+.icon {
+    width: 30px;
+    height: 30px;
+    float: right;
+    display: block;
+    opacity: 0.8;
+}
+
+
+/* --------- Tooltip ---------*/
+
+.help-icon {
+    background-image: url(/gamecourse/images/help_icon_round.svg);
+    background-size: 1.2em;
+    width: 1.3em;
+    height: 1.3em;
+    margin-left: 10px;
+    display: inline-block;
+    opacity: 0.8;
+    background-repeat: space;
+}
+
+.info-icon {
+    background-image: url(/gamecourse/images/info_round.svg);
+    background-size: 1.2em;
+    width: 1.3em;
+    height: 1.3em;
+    margin-left: 10px;
+    display: inline-block;
+    opacity: 0.8;
+    float: right;
+    background-repeat: space;
+}
+
+h3 .help-icon, .title .info-icon {
+    float: right;
+} 
+
+.help-tooltip {
+    background-color: #434343;
+    border: 1px solid white;
+    opacity: 0.95;
+    color: white;
+    padding: 0.7em;
+}
+
+.arguments-div {
+    margin: 0.2em 1em 0.2em 1em;
+}
+
+
+.tags-table {
+    margin-bottom: 3em;
+}
+
+.save_button {
+    margin-top: 3em !important;
+    float: right;
+}
+
+.tags-table td {
+    border: 0px;
+    width: 41%;
+    height: 3.9em;
+    border-bottom: 2px solid gray;
+}
+
+.tags-table td input {
+    width: 80%;
+    height: 2em;
+}
+
+.tags-table .form__input {
+    margin-bottom: 0 !important;
+}
+
+
+.blue {
+    color: #07a;
+}
+
+.red {
+    color: #905;
+}
+
+
+/* Tabs Jquery Ui */
+
+
+#rulesystem-settings-tabs { 
+    padding: 0px; 
+} 
+
+#rulesystem-settings-tabs ul { 
+    margin-bottom: 1.8em;
+} 
+
+#rulesystem-settings-tabs .ui-tabs-nav { 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border-radius: 0px; 
+} 
+
+#rulesystem-settings-tabs .ui-tabs-panel { 
+    margin: 0em 1em 0em 1em; 
+}
+
+.ui-tabs .ui-tabs-panel {
+    padding: 0em;
+}
+
+#rulesystem-settings-tabs .ui-tabs-nav .ui-state-default a { 
+    color: #292929;
+} 
+#rulesystem-settings-tabs .ui-tabs-nav .ui-state-active a { 
+    color: #005d92;
+}
+#rulesystem-settings-tabs .ui-state-active, .ui-widget-content .ui-state-active,
+ .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active,
+  .ui-button.ui-state-active:hover a { 
+    background: transparent;
+    color: #005d92;
+    border: 1px solid #787878;
+    border-bottom: 0px;
+}
+
+.ui-widget.ui-widget-content {
+    border: 0px;
+}
+
+#metadata-table td {
+    border: 0px;
+    width: 41%;
+    height: 3.9em;
+    border-bottom: 2px solid gray;
+}
+
+#metadata-table td input {
+    margin: 5px 0px 5px 0px;
+    width: 80%;
+    height: 2em;
+}
+
+.metadata-var-item {
+    text-align: left;
+}
+
+.settings-desc {
+    display: block;
+    width: 100%;
+    margin: 0 0 0.8em 0;
+}
+
+.editor-icon {
+    margin-left: 1em;
+    margin-right: 0.5em;
+    height: 1.2em;
+    width: 1.2em;
+}
+
+.response-collection-ul {
+    margin-left: 2em;
+}
+
+.response-collection-li {
+    margin-left: 1em;
+    color: #07a;
+    list-style-type: square;
+}
+
+.response-collection-item {
+    margin-left: 2.5em;
+    list-style-type: square;
+}
+
+.response-collection-ul, .preview-response-li {
+    border-bottom: 1px solid lightgrey;
+}
+
+.request-li {
+    color: #905;
+    margin-top: 0.5em;
+}
+
+.response-single-li {
+    padding-left: 1em;
+}
+
+.response-index-li {
+    color: #07a;
+    padding-left: 1em;
+}
+
+.response-item-li {
+    padding-left: 2.5em;
+}
+
+.settings-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    text-align: right;
+    margin-top: 2.2em;
+}
+
+.help-modal-content-span {
+    display: block;
+    text-align: justify;
+    margin-top: 1em !important;
+    margin-bottom: 2em !important;
+}
+
+
+
+
+
+/* Settings > Targets : Select Targets */
+
+#targets-list {
+    display: flex;
+    margin-bottom: 2em;
+}
+
+
+.rule-targets {
+    display: inline-block;
+    text-transform: uppercase;
+    background-color: #999;
+    color: white;
+    padding: 0.5em 0 0.5em 0.8em;
+    border-radius: 1em;
+    font-size: 1em;
+    margin-right: 1em;
+    vertical-align: middle;
+    opacity: 0.9;
+}
+
+.target-text {
+    display: inline-block;
+    height: 1em;
+    margin-right: 0.4em;
+    vertical-align: middle;
+}
+
+.delete-target {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.3em !important;
+    background-size: auto 1.2em;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+
+/* Edit / Add Rule > Toolbox > Functions */
+
+#typing-help {
+    color: #656565;
+    padding: 1em;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+#typing-help p {
+    margin-bottom: 1.2em;
+}
+
+/* Edit / Add Rule > Toolbox > Info Modal */
+
+.hpink {
+    font-weight: bold;
+    color: #905;
+}
+
+.hblue {
+    font-weight: bold;
+    color: #07a;
+}
+
+.hlink {
+    color: #07a;
+    font-weight: bold;
+}
+
+
+/* Edit / Add Rule > Preview */
+
+.preview-buttons-container {
+    width: 50%;
+    display: inline-block;
+    text-align: right;
+}
+
+.preview-buttons-container button {
+    display: inline-block;
+    margin-top: 2em 0em 2em 2em;
+}
+
+#preview-box {
+    margin-top: 3em;
+}
+
+#preview-box .title {
+    display: inline-block;
+    width: 50%;
+}
+
+
+
+
+.page .content .section .description {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: gray;
+  }
+
+.page .content .section .title{
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+
+
+.accordion {
+    margin: 0 auto;
+    border-top: 2px solid grey;
+    font-size: 14px;
+  }
+  
+  .accordion-header,
+  .accordion-body {
+    background: white;
+  }
+
+  .accordion-body li {
+      list-style-type: none;
+  }
+  
+  .accordion-header {
+    padding: 15px 40px 15px 15px;
+    cursor: pointer;
+    transition: all .3s;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  .accordion__item {
+    border-bottom: 2px solid grey;
+  }
+  
+  .accordion-body {
+    background: white;
+    color: #353535;
+    display: none;
+  }
+  
+  .accordion-body__contents {
+    padding: 0 15px 15px 45px;
+  }
+  
+  .line {
+    width: 15px;
+    margin-top: 9px;
+    margin-right: 15px;
+    margin-left: 15px;
+    float: left;
+    position: relative;
+    border-top: 2px solid black;
+  }
+  
+  .accordion__item > .accordion-header:after {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 14px solid grey;
+    cursor: pointer;
+    position: relative;
+    content: "";
+    float: right;
+    transition: .3s all;
+    transform: rotate(0deg);
+    right: -25px;
+  }
+  
+  .accordion__item.active > .accordion-header:after {
+    transform: rotate(-180deg);
+  }
+
+
+.rule-name {
+    display: block;
+    padding-top: 0.4em;
+    height: 2.5em;
+    line-height: 2.5em;
+}
+
+td.action-column div {
+    margin-right: 1em;
+}
+
+
+td .rule-description {
+    width: 60%;
+    padding-top: 0.3em;
+    display: none;
+}
+
+p.rule-description {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+
+#new-section-error {
+    color: red;
+    margin-bottom: 1em;
+    display: block;
+} 

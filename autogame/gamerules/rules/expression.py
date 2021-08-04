@@ -4,6 +4,7 @@
 from .stmt import Statement
 from ..errors import RuleError
 from .. import validate as _validate
+import sys
 
 class Expression (Statement):
 	"""
