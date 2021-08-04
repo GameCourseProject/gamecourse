@@ -437,51 +437,51 @@ class Course
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
         $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
-        
 
-                //course_user table (add current user)
-                $currentUserId = null;
-                if (Core::getLoggedUser()) {
-                    $currentUserId = Core::getLoggedUser()->getId();
-                    Core::$systemDB->insert("course_user", ["id" => $currentUserId, "course" => $courseId]);
+
+        //course_user table (add current user)
+        $currentUserId = null;
+        if (Core::getLoggedUser()) {
+            $currentUserId = Core::getLoggedUser()->getId();
+            Core::$systemDB->insert("course_user", ["id" => $currentUserId, "course" => $courseId]);
+        }
+
+        if ($copyFrom !== null) {
+            $copyFromCourse = Course::getCourse($copyFrom);
+            $copyDataFolder = Course::getCourseDataFolder($copyFrom);
+            Course::copyCourseDataFolder($copyDataFolder, $dataFolder);
+
+            //course table
+            $keys = ['defaultLandingPage', "roleHierarchy", "theme"];
+            $fromCourseData = $copyFromCourse->getData(); //Core::$systemDB->select("course",["id"=>$fromId]);
+            $newData = [];
+            foreach ($keys as $key)
+                $newData[$key] = $fromCourseData[$key];
+            Core::$systemDB->update("course", $newData, ["id" => $courseId]);
+
+            //copy content of tables to new course
+            $oldRoles = Course::copyCourseContent("role", $copyFrom, $courseId, true);
+            $oldRolesById = array_combine(array_column($oldRoles, "id"), $oldRoles);
+            $oldRolesByName = array_combine(array_column($oldRoles, "name"), $oldRoles);
+            $newRoles = Core::$systemDB->selectMultiple("role", ["course" => $courseId]);
+            $newRolesByName = array_combine(array_column($newRoles, "name"), $newRoles);
+            $newRoleOfOldId = function ($id) use ($newRolesByName, $oldRolesByName) {
+                //return $newRolesByName[$oldRolesById[$id]["name"]]["id"];
+                return $newRolesByName[$oldRolesByName[$id]["name"]]["id"];
+            };
+            Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $newRolesByName["Teacher"]["id"]]);
+
+            //modules
+            Course::copyCourseContent("course_module", $copyFrom, $courseId);
+            $enabledModules = $copyFromCourse->getEnabledModules();
+            foreach ($enabledModules as $moduleName) {
+                $module = ModuleLoader::getModule($moduleName);
+                $handler = $module["factory"]();
+                if ($handler->is_configurable() && $moduleName != "awardList") {
+                    $moduleArray = $handler->moduleConfigJson($copyFrom);
+                    $result = $handler->readConfigJson($courseId, $moduleArray, false);
                 }
-        
-                if ($copyFrom !== null) {
-                    $copyFromCourse = Course::getCourse($copyFrom);
-                    $copyDataFolder = Course::getCourseDataFolder($copyFrom);
-                    Course::copyCourseDataFolder($copyDataFolder, $dataFolder);
-        
-                    //course table
-                    $keys = ['defaultLandingPage', "roleHierarchy", "theme"];
-                    $fromCourseData = $copyFromCourse->getData(); //Core::$systemDB->select("course",["id"=>$fromId]);
-                    $newData = [];
-                    foreach ($keys as $key)
-                        $newData[$key] = $fromCourseData[$key];
-                    Core::$systemDB->update("course", $newData, ["id" => $courseId]);
-        
-                    //copy content of tables to new course
-                    $oldRoles = Course::copyCourseContent("role", $copyFrom, $courseId, true);
-                    $oldRolesById = array_combine(array_column($oldRoles, "id"), $oldRoles);
-                    $oldRolesByName = array_combine(array_column($oldRoles, "name"), $oldRoles);
-                    $newRoles = Core::$systemDB->selectMultiple("role", ["course" => $courseId]);
-                    $newRolesByName = array_combine(array_column($newRoles, "name"), $newRoles);
-                    $newRoleOfOldId = function ($id) use ($newRolesByName, $oldRolesByName) {
-                        //return $newRolesByName[$oldRolesById[$id]["name"]]["id"];
-                        return $newRolesByName[$oldRolesByName[$id]["name"]]["id"];
-                    };
-                    Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $newRolesByName["Teacher"]["id"]]);
-        
-                    //modules
-                    Course::copyCourseContent("course_module", $copyFrom, $courseId);
-                    $enabledModules = $copyFromCourse->getEnabledModules();
-                    foreach ($enabledModules as $moduleName) {
-                        $module = ModuleLoader::getModule($moduleName);
-                        $handler = $module["factory"]();
-                        if ($handler->is_configurable() && $moduleName != "awardList") {
-                            $moduleArray = $handler->moduleConfigJson($copyFrom);
-                            $result = $handler->readConfigJson($courseId, $moduleArray, false);
-                        }
-                    }
+            }
 
             //pages and views data
             if (in_array("views", $enabledModules)) {
@@ -583,7 +583,6 @@ class Course
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
                 }
             }
-           
         } else {
             $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
             if ($currentUserId) {
@@ -595,22 +594,22 @@ class Course
             }
         }
 
-	// insert line in AutoGame table
-	Core::$systemDB->insert("autogame", ["course" => $courseId]);
-    $rulesfolder = join("/", array($dataFolder, "rules"));
-    $gcBase = "/var/www/html/gamecourse";
-    $functionsFolder = $gcBase . "/autogame/imported-functions/" . $courseId;
-    $functionsFileDefault = $gcBase . "/autogame/imported-functions/defaults.py";
-    $defaultFunctionsFile = $functionsFolder . "/defaults.py";
-    $metadataFile = $gcBase . "/autogame/config/config_" . $courseId . ".txt";
-    
-    mkdir($rulesfolder);
-    mkdir($functionsFolder);
-    $defaults = file_get_contents($functionsFileDefault);
-    file_put_contents($defaultFunctionsFile, $defaults);
-    file_put_contents($metadataFile, "");
-    
-    return $course;
+        // insert line in AutoGame table
+        Core::$systemDB->insert("autogame", ["course" => $courseId]);
+        $rulesfolder = join("/", array($dataFolder, "rules"));
+        $gcBase = "/var/www/html/gamecourse";
+        $functionsFolder = $gcBase . "/autogame/imported-functions/" . $courseId;
+        $functionsFileDefault = $gcBase . "/autogame/imported-functions/defaults.py";
+        $defaultFunctionsFile = $functionsFolder . "/defaults.py";
+        $metadataFile = $gcBase . "/autogame/config/config_" . $courseId . ".txt";
+
+        mkdir($rulesfolder);
+        mkdir($functionsFolder);
+        $defaults = file_get_contents($functionsFileDefault);
+        file_put_contents($defaultFunctionsFile, $defaults);
+        file_put_contents($metadataFile, "");
+
+        return $course;
     }
 
     public static function exportCourses($id = null, $options = null)
@@ -840,17 +839,17 @@ class Course
                 //pages
                 foreach ($course->page as $page) {
                     $aspects = json_decode(json_encode($page->views), true);
-                    $aspectClass = null;
-                    if (sizeof($aspects) > 1) {
-                        Core::$systemDB->insert("aspect_class");
-                        $aspectClass = Core::$systemDB->getLastId();
-                    }
+                    // $aspectClass = null;
+                    // if (sizeof($aspects) > 1) {
+                    //     Core::$systemDB->insert("aspect_class");
+                    //     $aspectClass = Core::$systemDB->getLastId();
+                    // }
                     $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
                     $content = null;
 
                     foreach ($aspects as $key => &$aspect) {
-                        $aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                        // $aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
                         $aspect["id"] = Core::$systemDB->getLastId();
                         if ($content) {
                             $aspect["children"][] = $content;
@@ -867,28 +866,28 @@ class Course
                 //templates
                 foreach ($course->template as $template) {
                     $aspects = json_decode(json_encode($template->views), true);
-                    $aspectClass = null;
-                    if (sizeof($aspects) > 1) {
-                        Core::$systemDB->insert("aspect_class");
-                        $aspectClass = Core::$systemDB->getLastId();
-                    }
+                    // $aspectClass = null;
+                    // if (sizeof($aspects) > 1) {
+                    //     Core::$systemDB->insert("aspect_class");
+                    //     $aspectClass = Core::$systemDB->getLastId();
+                    // }
                     $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
                     $content = null;
 
                     foreach ($aspects as &$aspect) {
-                        $aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                        // $aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
                         $aspect["id"] = Core::$systemDB->getLastId();
                         if ($content) {
                             $aspect["children"][] = $content;
                         }
                         $viewHandler->updateViewAndChildren($aspect, false, true);
                     }
-                    $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
-                    if ($existingTemplate) {
-                        $id = $existingTemplate["id"];
-                        Core::$systemDB->delete("template", ["id" => $id]);
-                    }
+                    // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
+                    // if ($existingTemplate) {
+                    //     $id = $existingTemplate["id"];
+                    //     Core::$systemDB->delete("template", ["id" => $id]);
+                    // }
                     Core::$systemDB->insert("template", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
                     $templateId = Core::$systemDB->getLastId();
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
@@ -966,17 +965,17 @@ class Course
                     //templates
                     foreach ($course->template as $template) {
                         $aspects = json_decode(json_encode($template->views), true);
-                        $aspectClass = null;
-                        if (sizeof($aspects) > 1) {
-                            Core::$systemDB->insert("aspect_class");
-                            $aspectClass = Core::$systemDB->getLastId();
-                        }
+                        // $aspectClass = null;
+                        // if (sizeof($aspects) > 1) {
+                        //     Core::$systemDB->insert("aspect_class");
+                        //     $aspectClass = Core::$systemDB->getLastId();
+                        // }
                         $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
                         $content = null;
 
                         foreach ($aspects as &$aspect) {
-                            $aspect["aspectClass"] = $aspectClass;
-                            Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
+                            // $aspect["aspectClass"] = $aspectClass;
+                            Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
                             $aspect["id"] = Core::$systemDB->getLastId();
                             //print_r($aspect);
                             if ($content) {
@@ -1000,7 +999,7 @@ class Course
         unlink($path);
         return $newCourse;
     }
-  
+
 
     public function getEnabledLibraries()
     {
@@ -1126,14 +1125,14 @@ class Course
         return Core::$systemDB->selectMultiple("page", ["course" => $this->cid, 'isEnabled' => 1], 'name');
     }
 
-    public static function newExternalData($courseId, $all = False, $targets = null, $test=False){
+    public static function newExternalData($courseId, $all = False, $targets = null, $test = False)
+    {
         if ($test) { // Test exec
             if ($all) {
                 // run for all targets
                 $gr = new GameRules($courseId, True, null, True);
                 $res = $gr->run();
-            }
-            else {
+            } else {
                 if ($targets) {
                     // run for selected targets
                     $gr = new GameRules($courseId, False, $targets, True);
@@ -1141,20 +1140,17 @@ class Course
                 }
             }
             return $res;
-        }
-        else { // Normal GameRules exec
+        } else { // Normal GameRules exec
             if ($all) {
                 // run for all targets
                 $gr = new GameRules($courseId, True, null);
                 $gr->run();
-            }
-            else {
+            } else {
                 if ($targets) {
                     // run for selected targets
                     $gr = new GameRules($courseId, False, $targets);
                     $gr->run();
-                }
-                else {
+                } else {
                     // run normally
                     $gr = new GameRules($courseId, False, null);
                     $gr->run();
