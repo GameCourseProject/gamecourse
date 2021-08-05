@@ -1,15 +1,16 @@
-app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $compile) {
+app.controller('HomePage', function ($element, $scope, $timeout, $smartboards, $compile) {
     $scope.setNavigation([], []);
-    $timeout(function() {
+    $timeout(function () {
         $scope.defaultNavigation();
-        $timeout(function() {
+        $timeout(function () {
             addActiveLinks('home');
             beginNavbarResize();
         });
     });
     changeTitle('', 0, false);
+    $('#css-file').remove();
 
-    $smartboards.request('core', 'getUserActiveCourses', {}, function(data, err) {
+    $smartboards.request('core', 'getUserActiveCourses', {}, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -22,12 +23,12 @@ app.controller('HomePage', function($element, $scope, $timeout, $smartboards, $c
 
         //$("#user_icon").addClass("bold");
         mainPage = $("<div id='mainPage'></div>");
-        
+
         title = $("<div class='title'>Welcome to the GameCourse system</div>");
         informationbox = $("<div id='active_courses_list'></div>");
         informationbox.append($('<span class="label">Your active courses</span>'))
         informationbox.append('<span ng-repeat="(i, course) in userActiveCourses"  ui-sref="course({courseName:course.nameUrl, course: course.id})">{{course.name}}</span>');
-        
+
         mainPage.append(title);
         mainPage.append(informationbox);
         $element.append(mainPage);

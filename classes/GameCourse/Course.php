@@ -1209,4 +1209,47 @@ class Course
         $locationFile = Course::getCourseDataFolder($this->getId()) . $path;
         unlink($locationFile);
     }
+
+    public function createStyleFile()
+    {
+        $location = Course::getCourseDataFolder($this->getId()) . '/css';
+        if (!file_exists($location))
+            mkdir($location);
+
+        $locationFile = $location . '/' . str_replace(' ', '', $this->getName()) . '.css';
+        $response = 0;
+
+        $result = file_put_contents($locationFile, '');
+        if ($result !== false) {
+            $response = $locationFile;
+        }
+        return $response;
+    }
+
+    public function getStyleFile()
+    {
+        $location = Course::getCourseDataFolder($this->getId()) . '/css';
+        if (file_exists($location)) {
+            $locationFile = $location . '/' . str_replace(' ', '', $this->getName()) . '.css';
+            if (file_exists($locationFile))
+                return [file_get_contents($locationFile), $locationFile];
+            else
+                return false;
+        }
+
+        return false;
+    }
+
+    public function updateStyleFile($content)
+    {
+        $locationFile = Course::getCourseDataFolder($this->getId()) . '/css' . '/' . str_replace(' ', '', $this->getName()) . '.css';
+        $response = 0;
+
+        $result = file_put_contents($locationFile, $content);
+        if ($result !== false) {
+            $response = $locationFile;
+        }
+
+        return $response;
+    }
 }

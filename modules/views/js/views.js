@@ -453,7 +453,6 @@ angular.module('module.views').controller('ViewsList', function ($smartboards, $
         $scope.templates = Object.values(data.templates);
         $scope.globals = Object.values(data.globals);
 
-        console.log(data.templates);
 
         //all the information is saved so we can filter it
         $scope.allPages = Object.values(data.pages);

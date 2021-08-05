@@ -23,7 +23,9 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/mainpage.css" />
     <link rel="stylesheet" type="text/css" href="css/inside_course_exceptions.css" />
     <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" href="css/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="css/mdn-like.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
@@ -51,6 +53,8 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
     <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
+    <script type="text/javascript" src="js/codemirror.js"></script>
+    <script type="text/javascript" src="js/css.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
     <script type="text/javascript" src="js/rules.js"></script>
@@ -84,7 +88,7 @@ $user = Core::getLoggedUser();
 
         app.controller('SmartBoard', function($location, $rootScope, $scope, $smartboards, $timeout, $urlRouter) {
             $rootScope.loaded = true;
-            
+
             //em caso de entrarmos num curso
             $rootScope.toCourse = function(courseName, course, reloadState, gotoLandingPage) {
                 if ($rootScope.course != course) {
@@ -309,4 +313,5 @@ $user = Core::getLoggedUser();
         <div class="lastrun">Last Run: {{ruleSystemLastRun}}</div>
     </div>
 </body>
+
 </html>

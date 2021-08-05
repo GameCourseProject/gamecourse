@@ -93,8 +93,15 @@ class ViewHandler
                 $viewId = Core::$systemDB->getLastId();
                 $viewPart["id"] = $viewId;
                 if (!isset($copy["viewId"])) {
-                    Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
-                    $viewPart["viewId"] = $viewId;
+                    $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $viewId], '*', null, [['id', $viewId]]));
+                    if ($viewIdExists) {
+                        $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                        Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $viewId]);
+                        $viewPart["viewId"] = $lastViewId;
+                    } else {
+                        Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
+                        $viewPart["viewId"] = $viewId;
+                    }
                 } else {
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
                     if ($viewIdExists && $templateName != null) { //we only want to change viewId if we are saving as template
@@ -129,8 +136,15 @@ class ViewHandler
                     $viewId = Core::$systemDB->getLastId();
                     $viewPart["id"] = $viewId;
                     if (!isset($copy["viewId"])) {
-                        Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
-                        $viewPart["viewId"] = $viewId;
+                        $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $viewId], '*', null, [['id', $viewId]]));
+                        if ($viewIdExists) {
+                            $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                            Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $viewId]);
+                            $viewPart["viewId"] = $lastViewId;
+                        } else {
+                            Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
+                            $viewPart["viewId"] = $viewId;
+                        }
                     } else {
                         $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
                         $parents = array_column(Core::$systemDB->selectMultiple("view_parent", ["childId" => $copy["viewId"]], "parentId"), "parentId");
@@ -268,7 +282,7 @@ class ViewHandler
             if (!$basicUpdate) {
                 foreach ($children as $deleted) {
                     //Core::$systemDB->delete("view", ["id" => $deleted["id"]]);
-                    $this->deleteViews($deleted);
+                    $this->deleteViews($deleted, true);
                 }
             }
         }
@@ -281,12 +295,16 @@ class ViewHandler
                     ]);
                     $headerId = Core::$systemDB->getLastId();
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $headerId], '*', null, [['id', $headerId]]));
-                    if ($viewIdExists)
-                        Core::$systemDB->update("view", ["viewId" => $header['viewId']], ["id" => $headerId]);
-                    else
-                        Core::$systemDB->update("view", ["viewId" => $$headerId], ["id" => $headerId]);
+                    if ($viewIdExists) {
+                        $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                        Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $headerId]);
+                        $headerViewId = $lastViewId;
+                    } else {
+                        Core::$systemDB->update("view", ["viewId" => $headerId], ['id' => $headerId]);
+                        $headerViewId = $headerId;
+                    }
 
-                    Core::$systemDB->insert("view_parent", ["parentId" => $viewPart["id"], "childId" => $headerId]);
+                    Core::$systemDB->insert("view_parent", ["parentId" => $viewPart["id"], "childId" => $headerViewId]);
 
                     $headerPart = [
                         "role" => $viewPart["role"], "parentId" => $headerId, "viewIndex" => 0
@@ -344,14 +362,14 @@ class ViewHandler
         }
     }
 
-    public function deleteViews($view)
+    public function deleteViews($view, $isRoot = false)
     {
         $children = Core::$systemDB->selectMultiple("view join view_parent on viewId=childId", ["parentId" => $view["id"]], "*");
         if (count($children) > 0) {
             foreach ($children as $child)
                 $this->deleteViews($child);
         }
-        $isTemplateRef = !empty(Core::$systemDB->select("view_template", ["viewId" => $view["viewId"]]));
+        $isTemplateRef = !empty(Core::$systemDB->select("view_template", ["viewId" => $view["viewId"]])) && !$isRoot;
         if (!$isTemplateRef)
             Core::$systemDB->delete("view", ["id" => $view["id"]]);
         Core::$systemDB->delete("view_parent", ["childId" => $view["viewId"], "parentId" => $view["parentId"]]);

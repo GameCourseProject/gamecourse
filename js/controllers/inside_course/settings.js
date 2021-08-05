@@ -34,7 +34,16 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
     infoSection = $("<div id='configPage'></div>");
     $element.append(infoSection);
 
+
+
     $scope.$on('$stateChangeSuccess', function (e) {
+        $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            $scope.styleFile = data.styleFile;
+        });
         $scope.showGlobalPage(e.targetScope.navigation);
     });
 
@@ -294,8 +303,75 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                 navigation.append(navigationSection);
                 $compile(navigation)($scope);
             }
+
+            if ($scope.data.viewsModuleEnabled) {
+                var styling = createSection(infoSection, 'Styling');
+                var createDiv = $('<div>');
+
+                if ($scope.styleFile === false) {
+                    createDiv.append('<button id="create_style_button" class="button" ng-click="createStyleFile()">Create Style File</button>');
+                    styling.append(createDiv);
+                } else {
+                    action_button = $("<div class='action-buttons' style='width:140px;'></div>");
+                    action_button.append($('<button class="button" title="Save" ng-click="saveStyleFile()"> Save Changes </button>'));
+
+                    createDiv.append('<textarea type="text" id="style-file" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Write your style here...">' + $scope.styleFile + '</textarea>')
+
+                    styling.append(action_button);
+                    styling.append(createDiv);
+
+                    var cssCodeMirror = CodeMirror.fromTextArea(document.getElementById("style-file"), {
+                        lineNumbers: true, styleActiveLine: true, mode: "css", value: $scope.styleFile
+                    });
+
+                    cssCodeMirror.setOption("theme", "mdn-like");
+                    $scope.cssCodeMirror = cssCodeMirror;
+
+                }
+
+                $compile(styling)($scope);
+
+            }
+
+
         });
     };
+
+    $scope.createStyleFile = function () {
+        $smartboards.request('settings', 'createStyleFile', { course: $scope.course }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if (data.url) {
+                $('#create_style_button').hide();
+            }
+        });
+    }
+
+    $scope.saveStyleFile = function () {
+        $scope.styleFile = $scope.cssCodeMirror.getValue();
+        $smartboards.request('settings', 'updateStyleFile', { course: $scope.course, content: $scope.styleFile }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if (data.url !== 0) {
+                giveMessage('Saved!');
+                if ($scope.styleFile != '') {
+                    if (!$('#css-file')[0])
+                        $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+                    else
+                        $('#css-file').attr('href', data.url);
+                } else {
+                    $('#css-file').remove();
+
+                }
+            } else {
+                giveMessage('Something went wrong!');
+            }
+        });
+    }
 
     $scope.moveUp = function (row) {
         var item = row.nav;

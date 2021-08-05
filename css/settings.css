@@ -394,6 +394,18 @@
     width: 30px;
 }
 
+#style-file {
+    width: 100%;
+    height: 10em;
+    line-height: 1.5em;
+    padding: 0.6em;
+    margin: 0.7em;
+    word-break: break-word;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    resize: vertical;
+    font-family: 'Courier New', monospace;
+}
 
 /*status bar also used on the views page*/
 

@@ -950,14 +950,14 @@ class Views extends Module
                     $where["rating"] = (int) $rating;
                 }
                 $allPeergradedPosts = $this->getAwardOrParticipation($courseId, $user, $type, null, null, null, $where, "participation", $activeUser, $activeItem);
-                    foreach ($allPeergradedPosts as $peergradedPost) {
-                        $post = $peergradedPost["post"];
-                        // see if there's a corresponding graded post for this peergrade
-                        $gradedPost = Core::$systemDB->selectMultiple("participation", ["type" => "graded post", "post" => $post], '*'); 
-                        if (sizeof($gradedPost) > 0) {
-                            array_push($peerGrades, $peergradedPost);
-                        }
+                foreach ($allPeergradedPosts as $peergradedPost) {
+                    $post = $peergradedPost["post"];
+                    // see if there's a corresponding graded post for this peergrade
+                    $gradedPost = Core::$systemDB->selectMultiple("participation", ["type" => "graded post", "post" => $post], '*');
+                    if (sizeof($gradedPost) > 0) {
+                        array_push($peerGrades, $peergradedPost);
                     }
+                }
                 return $this->createNode($peerGrades, "participations", "collection");
             },
             "Returns a collection with all the valid peer graded posts (participations) in this Course. A peergrade is considered valid if the the post it refers to has already been graded by a professor. The optional parameters can be used to find peergraded posts that specify a given combination of conditions:\nuser: id of a GameCourseUser that authored the post being peergraded.\nrating: Rate given to the peergraded post.\nevaluator: id of a GameCourse user that rated/graded the post.",
@@ -1152,8 +1152,8 @@ class Views extends Module
             }
         );
 
-        
-        
+
+
         //participations.getResourceViews(user)
         $this->viewHandler->registerFunction(
             'participations',
@@ -1161,7 +1161,7 @@ class Views extends Module
 
             function (int $user) use ($courseId) {
                 $table = "participation";
-                
+
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
                 $likeParams = ["description" => "Lecture % Slides"];
 
@@ -1183,14 +1183,14 @@ class Views extends Module
 
             function (int $user, string $forum, string $thread = null) use ($courseId) {
                 $table = "participation";
-                
+
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
-                    
+
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
                 } else {
                     # Name of thread is important for the badge
@@ -1198,7 +1198,7 @@ class Views extends Module
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
-            }   
+                }
                 return $this->createNode($forumParticipation, "participations", "collection");
             },
             "Returns a collection with all the participations in a specific forum of the Course. The  parameter can be used to find participations for a user or forum:\nuser: id of a GameCourseUser that participated.\n
@@ -1220,7 +1220,7 @@ class Views extends Module
                 $table = "user_role left join role on user_role.role=role.id";
                 $columns = "user_role.id";
                 $where = ["role.name" => "Teacher", "role.course" => $courseId];
-                
+
                 $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [], null, null);
                 $teachers = [];
                 foreach ($evaluators as $evaluator) {
@@ -1236,7 +1236,7 @@ class Views extends Module
                 foreach ($forumParticipation as $participation) {
                     if (in_array($participation["evaluator"], $teachers)) {
                         array_push($filteredParticipations, $participation);
-			            break;
+                        break;
                     }
                 }
                 return $this->createNode($filteredParticipations, "participations", "collection");
@@ -1617,7 +1617,7 @@ class Views extends Module
                 $aspects = Core::$systemDB->selectMultiple("view left join view_parent on viewId=childId", ["viewId" => $viewId]);
                 foreach ($aspects as $aspect) {
                     //delete this aspect and all its children
-                    $this->viewHandler->deleteViews($aspect);
+                    $this->viewHandler->deleteViews($aspect, true);
                 }
             }
             // else {
