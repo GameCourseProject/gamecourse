@@ -1,6 +1,7 @@
 [
     {
         "id": "2933",
+        "viewId": "2933",
         "role": "role.Default>role.Default",
         "partType": "block",
         "parentId": null,
@@ -19,6 +20,7 @@
         "children": [
             {
                 "id": "2934",
+                "viewId": "2934",
                 "role": "role.Default>role.Default",
                 "partType": "block",
                 "parentId": "2933",
@@ -37,6 +39,7 @@
                 "children": [
                     {
                         "id": "2935",
+                        "viewId": "2935",
                         "role": "role.Default>role.Default",
                         "partType": "block",
                         "parentId": "2934",
@@ -55,6 +58,7 @@
                         "children": [
                             {
                                 "id": "2936",
+                                "viewId": "2936",
                                 "role": "role.Default>role.Default",
                                 "partType": "text",
                                 "parentId": "2935",
@@ -74,6 +78,7 @@
                             },
                             {
                                 "id": "2937",
+                                "viewId": "2937",
                                 "role": "role.Default>role.Default",
                                 "partType": "block",
                                 "parentId": "2935",
@@ -92,6 +97,7 @@
                                 "children": [
                                     {
                                         "id": "2938",
+                                        "viewId": "2938",
                                         "role": "role.Default>role.Default",
                                         "partType": "block",
                                         "parentId": "2937",
@@ -114,6 +120,7 @@
                                         "children": [
                                             {
                                                 "id": "2939",
+                                                "viewId": "2939",
                                                 "role": "role.Default>role.Default",
                                                 "partType": "text",
                                                 "parentId": "2938",
@@ -133,6 +140,7 @@
                                             },
                                             {
                                                 "id": "2940",
+                                                "viewId": "2940",
                                                 "role": "role.Default>role.Default",
                                                 "partType": "text",
                                                 "parentId": "2938",
@@ -154,6 +162,7 @@
                                     },
                                     {
                                         "id": "2941",
+                                        "viewId": "2941",
                                         "role": "role.Default>role.Default",
                                         "partType": "block",
                                         "parentId": "2937",
@@ -172,6 +181,7 @@
                                         "children": [
                                             {
                                                 "id": "2942",
+                                                "viewId": "2942",
                                                 "role": "role.Default>role.Default",
                                                 "partType": "text",
                                                 "parentId": "2941",
@@ -199,6 +209,7 @@
                 "header": {
                     "image": {
                         "id": "2944",
+                        "viewId": "2944",
                         "role": "role.Default>role.Default",
                         "partType": "image",
                         "parentId": "2943",
@@ -218,6 +229,7 @@
                     },
                     "title": {
                         "id": "2945",
+                        "viewId": "2945",
                         "role": "role.Default>role.Default",
                         "partType": "text",
                         "parentId": "2943",
@@ -241,6 +253,7 @@
     },
     {
         "id": "3852",
+        "viewId": "2933",
         "role": "role.Student>role.Default",
         "partType": "block",
         "parentId": null,
@@ -259,6 +272,7 @@
         "children": [
             {
                 "id": "3853",
+                "viewId": "3853",
                 "role": "role.Student>role.Default",
                 "partType": "block",
                 "parentId": "3852",
@@ -277,6 +291,7 @@
                 "children": [
                     {
                         "id": "3854",
+                        "viewId": "3854",
                         "role": "role.Student>role.Default",
                         "partType": "block",
                         "parentId": "3853",
@@ -295,6 +310,7 @@
                         "children": [
                             {
                                 "id": "3855",
+                                "viewId": "3855",
                                 "role": "role.Student>role.Default",
                                 "partType": "text",
                                 "parentId": "3854",
@@ -314,6 +330,7 @@
                             },
                             {
                                 "id": "3856",
+                                "viewId": "3856",
                                 "role": "role.Student>role.Default",
                                 "partType": "block",
                                 "parentId": "3854",
@@ -332,6 +349,7 @@
                                 "children": [
                                     {
                                         "id": "3857",
+                                        "viewId": "3857",
                                         "role": "role.Student>role.Default",
                                         "partType": "block",
                                         "parentId": "3856",
@@ -354,6 +372,7 @@
                                         "children": [
                                             {
                                                 "id": "3858",
+                                                "viewId": "3858",
                                                 "role": "role.Student>role.Default",
                                                 "partType": "text",
                                                 "parentId": "3857",
@@ -373,6 +392,7 @@
                                             },
                                             {
                                                 "id": "3859",
+                                                "viewId": "3859",
                                                 "role": "role.Student>role.Default",
                                                 "partType": "text",
                                                 "parentId": "3857",
@@ -394,6 +414,7 @@
                                     },
                                     {
                                         "id": "3860",
+                                        "viewId": "3860",
                                         "role": "role.Student>role.Default",
                                         "partType": "block",
                                         "parentId": "3856",
@@ -412,6 +433,7 @@
                                         "children": [
                                             {
                                                 "id": "3861",
+                                                "viewId": "3861",
                                                 "role": "role.Student>role.Default",
                                                 "partType": "text",
                                                 "parentId": "3860",
@@ -439,6 +461,7 @@
                 "header": {
                     "image": {
                         "id": "3863",
+                        "viewId": "3863",
                         "role": "role.Student>role.Default",
                         "partType": "image",
                         "parentId": "3862",
@@ -458,6 +481,7 @@
                     },
                     "title": {
                         "id": "3864",
+                        "viewId": "3864",
                         "role": "role.Student>role.Default",
                         "partType": "text",
                         "parentId": "3862",
@@ -480,3 +504,5 @@
         ]
     }
 ]
+
+ 
