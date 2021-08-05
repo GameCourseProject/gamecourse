@@ -53,3 +53,19 @@ function alertUpdate(data, err) {
     location.reload();
 
 }
+
+function alertUpdateNoReload(data, err) {
+    // updates without reloading
+    if (err) {
+        giveMessage(err.description);
+        return;
+    }
+    if (data && data.updatedData != undefined && Object.keys(data.updatedData).length > 0) {
+        var output = "";
+        for (var i in data.updatedData) {
+            output += data.updatedData[i] + '\n';
+        }
+        giveMessage(output);
+    }
+
+}

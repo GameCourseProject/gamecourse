@@ -826,7 +826,7 @@ class ViewHandler
         for ($i = 0; $i < count($children[$parent]); $i++) {
             $child = $children[$parent][$i];
             $this->lookAtParameter($child, $organizedView);
-            $this->lookAtChildren($child['viewId'], $children, $organizedView["children"][$i]);
+            $this->lookAtChildren($child['id'], $children, $organizedView["children"][$i]);
             if ($child["partType"] == "templateRef") {
                 $this->lookAtTemplateReference($child, $organizedView["children"][$i]);
             }

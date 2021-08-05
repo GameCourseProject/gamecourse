@@ -1723,7 +1723,7 @@ private function skillCompletedBy($skill, $courseId) {
         $rule["module"] = "skills";
         $filename = $rs->getFilename("skills");
         if ($filename == null) {
-            $filename = $rs->createNewRuleFile("Skills", 1);
+            $filename = $rs->createNewRuleFile("skills", 1);
             $rs->fixPrecedences();
         }
         $rule["rulefile"] = $filename;
