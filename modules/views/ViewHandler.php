@@ -280,13 +280,12 @@ class ViewHandler
                         "partType" => "header", "role" => $viewPart["role"]
                     ]);
                     $headerId = Core::$systemDB->getLastId();
-                    Core::$systemDB->update(
-                        "view",
-                        [
-                            "viewId" => $headerId
-                        ],
-                        ["id" => $headerId]
-                    );
+                    $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $headerId], '*', null, [['id', $headerId]]));
+                    if ($viewIdExists)
+                        Core::$systemDB->update("view", ["viewId" => $header['viewId']], ["id" => $headerId]);
+                    else
+                        Core::$systemDB->update("view", ["viewId" => $$headerId], ["id" => $headerId]);
+
                     Core::$systemDB->insert("view_parent", ["parentId" => $viewPart["id"], "childId" => $headerId]);
 
                     $headerPart = [
