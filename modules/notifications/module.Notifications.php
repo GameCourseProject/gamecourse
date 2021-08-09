@@ -135,10 +135,11 @@ class Notifications extends Module
         // });
 
         if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
-            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'));
+            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), true);
     }
 
-    public function is_configurable(){
+    public function is_configurable()
+    {
         return false;
     }
 

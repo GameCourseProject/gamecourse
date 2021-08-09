@@ -1711,6 +1711,7 @@ class Views extends Module
         try { //ToDo: for preview viewer should be the current user if they have the role
             $viewerId = $this->getUserIdWithRole($course, $viewerRole);
             $params = ['course' => (string)$courseId];
+            //print_r("test");
 
             if ($userRole !== null) { //if view has role interaction
                 $userId = $this->getUserIdWithRole($course, $userRole);
@@ -1723,6 +1724,7 @@ class Views extends Module
                 $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
+                //print_r("here");
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1754,13 +1756,33 @@ class Views extends Module
         $viewCopy = $viewContent;
         try {
             foreach ($viewCopy as $aspect) {
-                $this->viewHandler->parseView($aspect);
-                if ($viewType == "ROLE_SINGLE") {
-                    //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
-                    //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
-                    $this->testView($course, $courseId, $testDone, $aspect, "role.Default");
-                } else if ($viewType == "ROLE_INTERACTION") {
-                    $this->testView($course, $courseId, $testDone, $aspect, $roles['roleTwo'], $roles['roleOne']);
+                if ($saving) {
+                    $this->viewHandler->parseView($aspect);
+                    if ($viewType == "ROLE_SINGLE") {
+                        //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
+                        //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
+                        $this->testView($course, $courseId, $testDone, $aspect, $aspect['role']);
+                    } else if ($viewType == "ROLE_INTERACTION") {
+                        $viewer = explode(">", $aspect['role'])[1];
+                        $user = explode(">", $aspect['role'])[0];
+                        $this->testView($course, $courseId, $testDone, $aspect, $viewer, $user);
+                    }
+                } else {
+                    if ($viewType == "ROLE_SINGLE") {
+                        if ($aspect['role'] == 'role.' . $roles['viewerRole']) {
+                            //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
+                            //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
+                            $this->viewHandler->parseView($aspect);
+                            $this->testView($course, $courseId, $testDone, $aspect, $aspect['role']);
+                        }
+                    } else if ($viewType == "ROLE_INTERACTION") {
+                        $viewer = explode(">", $aspect['role'])[1];
+                        $user = explode(">", $aspect['role'])[0];
+                        if ($viewer == 'role.' . $roles['viewerRole'] && $user == 'role.' . $roles['userRole']) {
+                            $this->viewHandler->parseView($aspect);
+                            $this->testView($course, $courseId, $testDone, $aspect, $viewer, $user);
+                        }
+                    }
                 }
             }
         } catch (\Exception $e) {
@@ -1798,7 +1820,21 @@ class Views extends Module
             API::error($errorMsg);
         }
         if (!$saving) {
-            API::response(array('view' => $viewCopy));
+            $viewParams = [
+                'course' => (string)$data["courseId"],
+                'viewer' => $roles['viewerRole']
+            ];
+
+            if ($viewType == "ROLE_SINGLE") {
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole']);
+            } else if ($viewType == "ROLE_INTERACTION") {
+                $viewParams['user'] = $roles['userRole'];
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole'] . '>' . $roles['userRole']);
+            }
+
+            $this->viewHandler->parseView($userView);
+            $this->viewHandler->processView($userView, $viewParams);
+            API::response(array('view' => $userView));
         }
         return;
     }
@@ -1917,16 +1953,16 @@ class Views extends Module
     }
 
     //receives the template name, its encoded contents, and puts it in the database
-    public function setTemplate($name, $template)
+    public function setTemplate($name, $template, $fromModule = false)
     {
         $aspects = json_decode($template, true);
 
         $roleType = $this->viewHandler->getRoleType($aspects[0]["role"]);
-        if ($roleType == "ROLE_INTERACTION") {
-            $defaultRole = "role.Default>role.Default";
-        } else {
-            $defaultRole = "role.Default";
-        }
+        // if ($roleType == "ROLE_INTERACTION") {
+        //     $defaultRole = "role.Default>role.Default";
+        // } else {
+        //     $defaultRole = "role.Default";
+        // }
         //$aspectClass = null;
         //comentar este if - todos os templates devem ter aspect class
         // if (sizeof($aspects) > 1) {
@@ -1942,14 +1978,17 @@ class Views extends Module
         // $viewId = Core::$systemDB->getLastId();
         // Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
 
-        $this->setTemplateHelper($aspects, $defaultRole, $this->getCourseId(), $name, $roleType);
+        $this->setTemplateHelper($aspects, $this->getCourseId(), $name, $roleType, $fromModule);
     }
     //inserts data into template and view_template tables
-    function setTemplateHelper($aspects, $defaultRole, $courseId, $name, $roleType, $content = null)
+    function setTemplateHelper($aspects, $courseId, $name, $roleType, $fromModule = false)
     {
 
         Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
+
+        if ($fromModule)
+            Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
         //print_r($aspects);
         foreach ($aspects as &$aspect) {
             //print_r($aspect);
@@ -1977,7 +2016,10 @@ class Views extends Module
             //         $this->viewHandler->updateViewAndChildren($aspect["children"][$key], false, true);
             //     }
             // }
-            $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
+            if ($fromModule)
+                $this->viewHandler->updateViewAndChildren($aspect, false, true);
+            else
+                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }
 
         $viewId = Core::$systemDB->select("view_template", ["templateId" => $templateId], "viewId");

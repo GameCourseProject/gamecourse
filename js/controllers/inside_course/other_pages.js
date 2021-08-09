@@ -7,20 +7,16 @@ app.controller("SpecificCourse", function ($scope, $element, $stateParams, $comp
     $element.one("mousemove", function () {
         checkNavbarLength();
     });
-    console.log($('#css-file')[0]);
 
     $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
         }
+        $('#css-file').remove();
         if (data.url && data.styleFile != '') {
-            if (!$('#css-file')[0])
-                $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
-            else
-                $('#css-file').attr('href', data.url);
-        } else {
-            $('#css-file').remove();
+            $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+
         }
     });
 

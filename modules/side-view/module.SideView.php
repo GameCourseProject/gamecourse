@@ -25,7 +25,7 @@ class SideView extends Module {
         // ));
 
         if (!$viewsModule->templateExists(self::SIDE_VIEW_TEMPLATE)) {
-            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'));
+            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), true);
         }
         
     }
@@ -52,4 +52,3 @@ ModuleLoader::registerModule(array(
         return new SideView();
     }
 ));
-?>

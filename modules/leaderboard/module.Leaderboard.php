@@ -23,7 +23,7 @@ class Leaderboard extends Module {
         //$viewHandler->createPageOrTemplateIfNew('Leaderboard',"page","ROLE_SINGLE");
         
         if (!$viewsModule->templateExists(self::LEADERBOARD_TEMPLATE_NAME)) {
-            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'));
+            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), true);
         }
     }
 
@@ -52,4 +52,3 @@ ModuleLoader::registerModule(array(
         return new Leaderboard();
     }
 ));
-?>

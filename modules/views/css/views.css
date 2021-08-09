@@ -6,6 +6,14 @@
   padding: 80px 55px 35px;
 }
 
+#viewPreview {
+  /* styles for inside view editor*/
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 80px 55px 35px;
+}
+
 .preview {
   margin-top: 4px;
 }
@@ -147,7 +155,7 @@
   border-radius: 5px;
   padding: 20px;
   display: block;
-  background-color: unset;
+  /* background-color: unset; */
   flex-grow: 1;
 }
 

@@ -26,10 +26,10 @@ class Skills extends Module
         parent::addResources('js/');
         parent::addResources('css/skills.css');
         parent::addResources('css/skill-page.css');
-    
     }
 
-    public function moduleConfigJson($courseId){
+    public function moduleConfigJson($courseId)
+    {
         $skillModuleArr = array();
         $skillTreeArray = array();
         $skillTierArray = array();
@@ -99,9 +99,9 @@ class Skills extends Module
             $skillModuleArr["skill_dependency"] = $skillDependencyArray;
         }
 
-        if($skillModuleArr){
+        if ($skillModuleArr) {
             return $skillModuleArr;
-        }else{
+        } else {
             return false;
         }
     }
@@ -117,23 +117,23 @@ class Skills extends Module
         $i = 0;
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                if($tableName[$i] == "skill_tree"){
+                if ($tableName[$i] == "skill_tree") {
                     $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
-                    if($update && $existingCourse){
+                    if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], ["maxReward" => $entry["maxReward"]], ["course" => $existingCourse]);
                         $updatedTreeId = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "id");
                         $skillTreeIds[$entry["id"]] = $updatedTreeId;
-                    }else{
+                    } else {
                         $idImport = $entry["id"];
                         unset($entry["id"]);
                         $entry["course"] = $courseId;
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                         $skillTreeIds[$idImport] = $newId;
                     }
-                }else if($tableName[$i] == "skill_tier"){
+                } else if ($tableName[$i] == "skill_tier") {
                     $existingCourse = Core::$systemDB->select("skill_tier", ["treeId" => $skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
                     if ($update && $existingCourse) {
-                        Core::$systemDB->update($tableName[$i], ["reward"=>$entry["reward"]], ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                        Core::$systemDB->update($tableName[$i], ["reward" => $entry["reward"]], ["treeId" => $skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
                     } else {
                         $treeIdImport = $entry["treeId"]; //old tree id
                         $entry["treeId"] = $skillTreeIds[$treeIdImport]; //new tree id
@@ -142,8 +142,8 @@ class Skills extends Module
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                         $skillTierIds[$tierIdImport] = $newId;
                     }
-                }else if($tableName[$i] == "skill"){
-                    $existingSkill = Core::$systemDB->select("skill", ["treeId" =>$skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
+                } else if ($tableName[$i] == "skill") {
+                    $existingSkill = Core::$systemDB->select("skill", ["treeId" => $skillTreeIds[$entry["treeId"]], "tier" => $entry["tier"]]);
                     if ($update && $existingSkill) {
                         $newTreeId = $skillTreeIds[$entry["treeId"]];
                         $newTierId = $entry["tier"];
@@ -159,7 +159,7 @@ class Skills extends Module
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                         $skillIds[$idImport] = $newId;
                     }
-                }else if($tableName[$i] == "dependency"){
+                } else if ($tableName[$i] == "dependency") {
                     if (!$update) {
                         $idImport = $entry["id"];
                         unset($entry["id"]);
@@ -170,8 +170,8 @@ class Skills extends Module
 
                         $dependencyIds[$idImport] = $newId;
                     }
-                }else if($tableName[$i] == "skill_dependency"){
-                    if(!$update){
+                } else if ($tableName[$i] == "skill_dependency") {
+                    if (!$update) {
                         $entry["dependencyId"] = $dependencyIds[$entry["dependencyId"]];
                         if ($entry["isTier"]) //depends on a tier (wildcard)
                             $entry["normalSkillId"] = $skillTierIds[$entry["normalSkillId"]];
@@ -237,63 +237,64 @@ class Skills extends Module
     //
 
     //check if skill has been completed by the user
-public function isSkillCompleted($skill, $user, $courseId)
-{
-    if (is_array($skill)) //$skill can be object or id
-        $skillId = $skill["value"]["id"];
-    else $skillId = $skill;
-    $award = $this->getAwardOrParticipation($courseId, $user, "skill", (int) $skillId, null, null, [], "award", false, false);
-    return (!empty($award));
-}
-//check if skill is unlocked to the user
-public function isSkillUnlocked($skill, $user, $courseId, $isActive = true)
-{
-    $dependency = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["value"]["id"]]);
-    $skillName = $skill["value"]["name"];
-    //goes through all dependencies to check if they unlock the skill
-    $unlocked = true;
-    foreach ($dependency as $dep) {
+    public function isSkillCompleted($skill, $user, $courseId)
+    {
+        if (is_array($skill)) //$skill can be object or id
+            $skillId = $skill["value"]["id"];
+        else $skillId = $skill;
+        $award = $this->getAwardOrParticipation($courseId, $user, "skill", (int) $skillId, null, null, [], "award", false, false);
+        return (!empty($award));
+    }
+    //check if skill is unlocked to the user
+    public function isSkillUnlocked($skill, $user, $courseId, $isActive = true)
+    {
+        $dependency = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["value"]["id"]]);
+        $skillName = $skill["value"]["name"];
+        //goes through all dependencies to check if they unlock the skill
         $unlocked = true;
-        $dependencySkill = Core::$systemDB->selectMultiple("skill_dependency left join skill on normalSkillId = skill.id", ["dependencyId" => $dep["id"]]);
-        foreach ($dependencySkill as $depSkill) {
-            if (!($depSkill["isTier"])) {
-                if (!$this->isSkillCompleted($depSkill["normalSkillId"], $user, $courseId) or ($isActive and !$depSkill["isActive"])){
-                    $unlocked = false;
-                    break;
-                }
-            }
-            else if ($depSkill["isTier"]){
-                // if it depends on a tier, check every skill from that tier
-                $tierName = Core::$systemDB->select("skill_tier", ["id" => $depSkill["normalSkillId"]], "tier");
-                $where = ["tier" => $tierName, "t.course" => $courseId];
-                if ($isActive)
-                    $where["isActive"] = true;
-                $tierSkills = Core::$systemDB->selectMultiple("skill s join skill_tree t on s.treeId = t.id", $where, "s.id");
-                foreach($tierSkills as $tierSkill){
-                    //if one skill from tier is completed AND the super skill is completed or there are wildcards to use
-                    if ($this->isSkillCompleted($tierSkill["id"], $user, $courseId) and $this->getAvailableWildcards($skillName, $tierName, $user, $courseId)){ 
-                        $unlocked = true;
+        foreach ($dependency as $dep) {
+            $unlocked = true;
+            $dependencySkill = Core::$systemDB->selectMultiple("skill_dependency left join skill on normalSkillId = skill.id", ["dependencyId" => $dep["id"]]);
+            foreach ($dependencySkill as $depSkill) {
+                if (!($depSkill["isTier"])) {
+                    if (!$this->isSkillCompleted($depSkill["normalSkillId"], $user, $courseId) or ($isActive and !$depSkill["isActive"])) {
+                        $unlocked = false;
                         break;
                     }
-                    $unlocked = false;
+                } else if ($depSkill["isTier"]) {
+                    // if it depends on a tier, check every skill from that tier
+                    $tierName = Core::$systemDB->select("skill_tier", ["id" => $depSkill["normalSkillId"]], "tier");
+                    $where = ["tier" => $tierName, "t.course" => $courseId];
+                    if ($isActive)
+                        $where["isActive"] = true;
+                    $tierSkills = Core::$systemDB->selectMultiple("skill s join skill_tree t on s.treeId = t.id", $where, "s.id");
+                    foreach ($tierSkills as $tierSkill) {
+                        //if one skill from tier is completed AND the super skill is completed or there are wildcards to use
+                        if ($this->isSkillCompleted($tierSkill["id"], $user, $courseId) and $this->getAvailableWildcards($skillName, $tierName, $user, $courseId)) {
+                            $unlocked = true;
+                            break;
+                        }
+                        $unlocked = false;
+                    }
                 }
             }
+            if ($unlocked) {
+                break;
+            }
         }
-        if ($unlocked) {
-            break;
-        }
+        return ($unlocked);
     }
-    return ($unlocked);
-}
 
-//returns students who completed a skill
-private function skillCompletedBy($skill, $courseId) {
-    $students = Core::$systemDB->selectMultiple(
-        "award a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id", 
-        ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
-        "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive");
-    return $students;
-}
+    //returns students who completed a skill
+    private function skillCompletedBy($skill, $courseId)
+    {
+        $students = Core::$systemDB->selectMultiple(
+            "award a left join game_course_user u on a.user = u.id left join course_user c on u.id = c.id",
+            ["a.course" => $courseId, "type" => "skill", "moduleInstance" => $skill],
+            "u.id, a.course, lastActivity, previousActivity, name, email, major, nickname, studentNumber, isAdmin, isActive"
+        );
+        return $students;
+    }
 
     //adds skills tables and data folder if they dont exist
     private function setupData($courseId)
@@ -372,7 +373,7 @@ private function skillCompletedBy($skill, $courseId) {
                     else
                         $skillWhere["tier"] = $tier;
                 }
-                if ($isActive){
+                if ($isActive) {
                     $skillWhere["isActive"] = true;
                 }
                 //if there are dependencies arguments we do more complex selects
@@ -416,7 +417,7 @@ private function skillCompletedBy($skill, $courseId) {
                     else
                         $skillWhere["tier"] = $tier;
                 }
-                if ($isActive){
+                if ($isActive) {
                     $skillWhere["isActive"] = true;
                 }
                 //if there are dependencies arguments we do more complex selects
@@ -490,7 +491,7 @@ private function skillCompletedBy($skill, $courseId) {
                     Core::$systemDB->selectMultiple(
                         "skill_tier",
                         ["treeId" => $tree["value"]["id"]],
-                         "*", 
+                        "*",
                         "seqId asc"
                     ),
                     'skillTrees',
@@ -510,12 +511,14 @@ private function skillCompletedBy($skill, $courseId) {
             'skills',
             function ($tier, bool $isActive = true) {
                 $this->checkArray($tier, "object", "skills");
-                
-                $where = ["s.treeId" => $tier["value"]["treeId"],
-                            "t.treeId" => $tier["value"]["treeId"],
-                            "s.tier" => $tier["value"]["tier"]];
-                
-                if($isActive){
+
+                $where = [
+                    "s.treeId" => $tier["value"]["treeId"],
+                    "t.treeId" => $tier["value"]["treeId"],
+                    "s.tier" => $tier["value"]["tier"]
+                ];
+
+                if ($isActive) {
                     $where["s.isActive"] = true;
                 }
                 $skills = Core::$systemDB->selectMultiple(
@@ -596,7 +599,6 @@ private function skillCompletedBy($skill, $courseId) {
                 $tierName = $arg["value"]["tier"];
                 $course = $arg["value"]["parent"]["value"]["course"];
                 return new ValueNode($this->getUsedWildcards($tierName, $user,  $course));
-                
             },
             'Returns a string with the number of wildcards from this tier that have been used by a user.',
             'string',
@@ -612,7 +614,6 @@ private function skillCompletedBy($skill, $courseId) {
                 $tierName = $arg["value"]["tier"];
                 $course = $arg["value"]["parent"]["value"]["course"];
                 return new ValueNode($this->tierHasWildcards($tierName,  $course));
-                
             },
             'Returns a bool that indicates if a tier has wildcards (i.e. if other skills depend on this tier).',
             'boolean',
@@ -694,7 +695,7 @@ private function skillCompletedBy($skill, $courseId) {
             function ($skill, $user) use ($courseId) {
                 $this->checkArray($skill, "object", "getPost()");
                 $userId = $this->getUserId($user);
-                
+
                 $columns = "award left join award_participation on award.id=award_participation.award left join participation on award_participation.participation=participation.id";
                 $post = Core::$systemDB->select(
                     $columns,
@@ -704,8 +705,7 @@ private function skillCompletedBy($skill, $courseId) {
 
                 if (!empty($post)) {
                     $postURL = "https://pcm.rnl.tecnico.ulisboa.pt/moodle/" . $post;
-                }
-                else {
+                } else {
                     $postURL = $post;
                 }
                 return new ValueNode($postURL);
@@ -821,8 +821,8 @@ private function skillCompletedBy($skill, $courseId) {
                     ["dependencyId" => $dep["value"]["id"], "isTier" => true],
                     "t.*"
                 );
-                if (!empty($tiers)){
-                    foreach($tiers as &$tier){
+                if (!empty($tiers)) {
+                    foreach ($tiers as &$tier) {
                         $tier["name"] = $tier["tier"];
                         array_push($depSkills, $tier);
                     }
@@ -887,11 +887,11 @@ private function skillCompletedBy($skill, $courseId) {
         );
 
         if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE)) {
-            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'));
+            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), true);
         }
 
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
-        //    $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'),$this->getId());
+        //    $viewsModule->setTemplate(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'),$this->getId(), true);
 
         API::registerFunction('skills', 'page', function () {
             API::requireValues('skillName');
@@ -924,52 +924,52 @@ private function skillCompletedBy($skill, $courseId) {
             }
             API::error('Skill ' . $skillName . ' not found.', 404);
         });
-
     }
 
     //returns array with all dependencies of a skill
-    public function getSkillDependencies($skillId){
+    public function getSkillDependencies($skillId)
+    {
         $depArray = [];
         $allActive = true;
-        $dependencyIDs = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skillId],"id");
+        $dependencyIDs = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillId], "id");
 
-        foreach ($dependencyIDs as $id){
-            $individualDeps = Core::$systemDB->selectMultiple("skill_dependency",["dependencyId"=>$id["id"]]);
-            foreach ($individualDeps as $dep){
-                if($dep["isTier"]){
-                    $name = Core::$systemDB->select("skill_tier",["id" => $dep["normalSkillId"]], "tier");
-                }
-                else {
-                    $data = Core::$systemDB->select("skill",["id" => $dep["normalSkillId"]], "name, isActive");
+        foreach ($dependencyIDs as $id) {
+            $individualDeps = Core::$systemDB->selectMultiple("skill_dependency", ["dependencyId" => $id["id"]]);
+            foreach ($individualDeps as $dep) {
+                if ($dep["isTier"]) {
+                    $name = Core::$systemDB->select("skill_tier", ["id" => $dep["normalSkillId"]], "tier");
+                } else {
+                    $data = Core::$systemDB->select("skill", ["id" => $dep["normalSkillId"]], "name, isActive");
                     $name = $data['name'];
-                    if(!$data['isActive']){
+                    if (!$data['isActive']) {
                         $allActive = false;
                     }
                 }
                 array_push($depArray, $name);
-            } 
-        }   
+            }
+        }
         return array('dependencies' => $depArray, 'allActive' => $allActive);
     }
 
-    public function getSkills($courseId){
+    public function getSkills($courseId)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        $tiers = Core::$systemDB->selectMultiple("skill_tier",["treeId"=>$treeId],"*", "seqId");
+        $tiers = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $treeId], "*", "seqId");
         $skillsArray = array();
 
-        foreach($tiers as &$tier) {
-            $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier["tier"]],"id,name,page,color,tier,seqId,isActive", "seqId");
-            foreach($skillsInTier as &$skill){
+        foreach ($tiers as &$tier) {
+            $skillsInTier = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $tier["tier"]], "id,name,page,color,tier,seqId,isActive", "seqId");
+            foreach ($skillsInTier as &$skill) {
                 //information to match needing fields
                 $skill['xp'] = $tier["reward"];
                 $skill['dependencies'] = '';
                 $skill['allActive'] = true;
                 $skill['isActive'] = boolval($skill["isActive"]);
-                if (!empty(Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]]))) {
+                if (!empty(Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["id"]]))) {
                     $dependencyData = $this->getSkillDependencies($skill["id"]);
                     $dependencies = $dependencyData['dependencies'];
                     $skill['allActive'] = $dependencyData['allActive'];
-                    for ($i=0; $i < sizeof($dependencies); $i++){
+                    for ($i = 0; $i < sizeof($dependencies); $i++) {
                         $skill['dependencies'] .= $dependencies[$i] .  " + ";
                         if ($i % 2 !== 0 && sizeof($dependencies) > 2) {
                             $skill['dependencies'] = substr_replace($skill['dependencies'], ' | ', -3, -1);
@@ -982,7 +982,6 @@ private function skillCompletedBy($skill, $courseId) {
 
                 unset($skill["page"]);
                 array_push($skillsArray, $skill);
-
             }
         }
         return $skillsArray;
@@ -1002,7 +1001,7 @@ private function skillCompletedBy($skill, $courseId) {
     //             $skill["dependencies"] = '';
     //             if (!empty(Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]]))) {
     //                 $dependencies = getSkillDependencies($skill["id"]);
-    
+
     //                 for ($i=0; $i < sizeof($dependencies); $i++){
     //                     $skill['dependencies'] .= $dependencies[$i] .  " + ";
     //                     if ($i % 2 !== 0 && sizeof($dependencies) > 2) {
@@ -1015,13 +1014,14 @@ private function skillCompletedBy($skill, $courseId) {
 
     //         }
     //     }
-        
+
     //     return $skillsArray;
     // }
 
-    public function getAvailableWildcards($skill, $tier, $user, $course){
-	//this works because only one insertion is made in award_wildcard
-	//on the first time that a skill rule is triggered
+    public function getAvailableWildcards($skill, $tier, $user, $course)
+    {
+        //this works because only one insertion is made in award_wildcard
+        //on the first time that a skill rule is triggered
         $completedWildcards = Core::$systemDB->selectMultiple(
             "award a left join skill s on a.moduleInstance = s.id left join skill_tier t on s.tier = t.tier and t.treeId = s.treeId",
             ["a.user" => $user, "t.tier" => $tier, "a.course" => $course],
@@ -1029,8 +1029,8 @@ private function skillCompletedBy($skill, $courseId) {
         );
 
         $usedWildcards = $this->getUsedWildcards($tier, $user, $course);
-	
-	$isCompleted = Core::$systemDB->selectMultiple(
+
+        $isCompleted = Core::$systemDB->selectMultiple(
             "award a left join skill s on a.moduleInstance = s.id",
             ["a.user" => $user, "a.course" => $course, "s.name" => $skill]
         );
@@ -1038,7 +1038,8 @@ private function skillCompletedBy($skill, $courseId) {
         return (($usedWildcards < $completedWildcards[0]["numCompleted"]) or !empty($isCompleted));
     }
 
-    public function getUsedWildcards($tier, $user, $course){
+    public function getUsedWildcards($tier, $user, $course)
+    {
 
         $usedWildcards = Core::$systemDB->selectMultiple(
             "award_wildcard w left join award a on w.awardId = a.id left join skill_tier t on w.tierId = t.id",
@@ -1049,7 +1050,8 @@ private function skillCompletedBy($skill, $courseId) {
         return $usedWildcards[0]["numUsed"];
     }
 
-    public function tierHasWildcards($tier, $course){
+    public function tierHasWildcards($tier, $course)
+    {
         $tierSkills = Core::$systemDB->selectMultiple(
             "skill_dependency d left join skill_tier t on d.normalSkillId = t.id left join skill_tree s on t.treeId=s.id",
             ["course" => $course, "t.tier" => $tier, "d.isTier" => true],
@@ -1059,13 +1061,15 @@ private function skillCompletedBy($skill, $courseId) {
         return $tierSkills[0]["numWild"] > 0;
     }
 
-    public function getNumberOfSkillsInTier($treeId, $tier){
-        $skills = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $tier]);
+    public function getNumberOfSkillsInTier($treeId, $tier)
+    {
+        $skills = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $tier]);
 
         return sizeof($skills);
     }
 
-    public function getTiers($courseId, $withXP = false) {
+    public function getTiers($courseId, $withXP = false)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
         $tiers = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $treeId], "tier,reward,seqId", "seqId");
         if ($withXP) {
@@ -1074,121 +1078,137 @@ private function skillCompletedBy($skill, $courseId) {
         return array_column($tiers, 'tier');
     }
 
-    public function changeSeqId($courseId, $itemId, $oldSeq, $nextSeq, $tierOrSkill) {
+    public function changeSeqId($courseId, $itemId, $oldSeq, $nextSeq, $tierOrSkill)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
         if ($tierOrSkill == "tier") {
-                // if this tier will be the first one
-                if ($nextSeq + 1 == 1) {
-                    $skillsInTier = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, "tier" => $itemId]);
-                    foreach($skillsInTier as $skill) {
-                        $dependencies = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skill["id"]], "id");
-                        if(!empty($dependencies)) {
-                            foreach($dependencies as $dep) {
-                                Core::$systemDB->delete("dependency", ["id" => $dep["id"]]);
-                            }
+            // if this tier will be the first one
+            if ($nextSeq + 1 == 1) {
+                $skillsInTier = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $itemId]);
+                foreach ($skillsInTier as $skill) {
+                    $dependencies = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["id"]], "id");
+                    if (!empty($dependencies)) {
+                        foreach ($dependencies as $dep) {
+                            Core::$systemDB->delete("dependency", ["id" => $dep["id"]]);
                         }
-                    }   
+                    }
                 }
+            }
             Core::$systemDB->update("skill_tier", ["seqId" => $oldSeq + 1], ["seqId" => $nextSeq + 1, "treeId" => $treeId]);
             Core::$systemDB->update("skill_tier", ["seqId" => $nextSeq + 1], ["seqId" => $oldSeq + 1, "tier" => $itemId, "treeId" => $treeId]);
         } else {
-            $tier = Core::$systemDB->select("skill", ["treeId" => $treeId, "id"=> $itemId], "tier");
+            $tier = Core::$systemDB->select("skill", ["treeId" => $treeId, "id" => $itemId], "tier");
             Core::$systemDB->update("skill", ["seqId" => $oldSeq + 1], ["seqId" => $nextSeq + 1, "treeId" => $treeId, "tier" => $tier]);
             Core::$systemDB->update("skill", ["seqId" => $nextSeq + 1], ["seqId" => $oldSeq + 1, "id" => $itemId, "treeId" => $treeId]);
         }
     }
-    
-    public function activeItem($itemId){
+
+    public function activeItem($itemId)
+    {
         $active = Core::$systemDB->select("skill", ["id" => $itemId], "isActive");
-        Core::$systemDB->update("skill", ["isActive" => $active? 0 : 1], ["id" => $itemId]);
+        Core::$systemDB->update("skill", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
         //ToDo: ADD RULE MANIPULATION HERE
     }
 
-    public function is_configurable(){
+    public function is_configurable()
+    {
         return true;
     }
 
-    public function saveMaxReward($max, $courseId){
-        Core::$systemDB->update("skill_tree",["maxReward"=>$max],["course"=>$courseId]);
+    public function saveMaxReward($max, $courseId)
+    {
+        Core::$systemDB->update("skill_tree", ["maxReward" => $max], ["course" => $courseId]);
     }
-    public function getMaxReward($courseId){
-        return Core::$systemDB->select("skill_tree",["course"=>$courseId], "maxReward");
+    public function getMaxReward($courseId)
+    {
+        return Core::$systemDB->select("skill_tree", ["course" => $courseId], "maxReward");
     }
 
-    public function has_general_inputs (){ return true; }
-    public function get_general_inputs ($courseId){
+    public function has_general_inputs()
+    {
+        return true;
+    }
+    public function get_general_inputs($courseId)
+    {
 
-        $input = array('name' => "Max Skill Tree Reward", 'id'=> 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
+        $input = array('name' => "Max Skill Tree Reward", 'id' => 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId)));
         return [$input];
     }
 
-    public function save_general_inputs($generalInputs,$courseId){
+    public function save_general_inputs($generalInputs, $courseId)
+    {
         $maxVal = $generalInputs["maxReward"];
         $this->saveMaxReward($maxVal, $courseId);
     }
 
-    public function newTier($tier, $courseId){
+    public function newTier($tier, $courseId)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
         $numTiers =  sizeof(Core::$systemDB->selectMultiple("skill_tier"));
 
-        $tierData = ["tier"=> $tier["tier"],
-                    "treeId"=>$treeId,
-                    "reward"=>$tier['reward'],
-                    "seqId"=>$numTiers + 1];
+        $tierData = [
+            "tier" => $tier["tier"],
+            "treeId" => $treeId,
+            "reward" => $tier['reward'],
+            "seqId" => $numTiers + 1
+        ];
 
-        Core::$systemDB->insert("skill_tier",$tierData);
+        Core::$systemDB->insert("skill_tier", $tierData);
     }
 
-    public function editTier($tier, $courseId){
+    public function editTier($tier, $courseId)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
 
-        $tierData = ["tier"=>$tier['tier'],
-                    "treeId"=>$treeId,
-                    "reward"=>intval($tier['reward'])];
+        $tierData = [
+            "tier" => $tier['tier'],
+            "treeId" => $treeId,
+            "reward" => intval($tier['reward'])
+        ];
 
-        Core::$systemDB->update("skill_tier",$tierData, ["treeId" => $treeId, "tier" => $tier["id"]]);
-                
+        Core::$systemDB->update("skill_tier", $tierData, ["treeId" => $treeId, "tier" => $tier["id"]]);
     }
 
-    public function deleteTier($tier, $courseId){
+    public function deleteTier($tier, $courseId)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        
+
         $tierSkills = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $tier["id"]]);
         if (empty($tierSkills))
             Core::$systemDB->delete("skill_tier", ["treeId" => $treeId, "tier" => $tier['id']]);
         else
-            echo "This tier has skills. Please delete them first or change their tier.";   
-        
+            echo "This tier has skills. Please delete them first or change their tier.";
     }
 
 
-    public function get_tiers_items($courseId) {
+    public function get_tiers_items($courseId)
+    {
         //tenho de dar header
-        $header = ['Tier', 'XP'] ;
+        $header = ['Tier', 'XP'];
         $displayAtributes = ['tier', 'reward'];
         // items (pela mesma ordem do header)
         $items = $this->getTiers($courseId, true);
         //argumentos para add/edit
         $allAtributes = [
-            array('name' => "Tier", 'id'=> 'tier', 'type' => "text", 'options' => ""),
-            array('name' => "XP", 'id'=> 'reward', 'type' => "number", 'options' => "")
+            array('name' => "Tier", 'id' => 'tier', 'type' => "text", 'options' => ""),
+            array('name' => "XP", 'id' => 'reward', 'type' => "number", 'options' => "")
         ];
-        return array( 'listName'=> 'Tiers', 'itemName'=> 'Tier','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
+        return array('listName' => 'Tiers', 'itemName' => 'Tier', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }
 
-    public function save_tiers($actiontype, $item, $courseId){
-        if($actiontype == 'new'){
+    public function save_tiers($actiontype, $item, $courseId)
+    {
+        if ($actiontype == 'new') {
             $this->newTier($item, $courseId);
-        }
-        elseif ($actiontype == 'edit'){
+        } elseif ($actiontype == 'edit') {
             $this->editTier($item, $courseId);
-
-        }elseif($actiontype == 'delete'){
+        } elseif ($actiontype == 'delete') {
             $this->deleteTier($item, $courseId);
         }
     }
 
-    public function getDescriptionFromPage($skill, $courseId) {
+    public function getDescriptionFromPage($skill, $courseId)
+    {
         $folder = Course::getCourseDataFolder($courseId);
         $description = htmlspecialchars_decode($skill['page']);
         $description = str_replace("\"" . str_replace(' ', '',  $skill['name']), "\"" . $folder . "/skills/" . str_replace(' ', '', $skill['name']), $description);
@@ -1196,7 +1216,8 @@ private function skillCompletedBy($skill, $courseId) {
         return $description;
     }
 
-    public function createFolderForSkillResources($skill, $courseId) {
+    public function createFolderForSkillResources($skill, $courseId)
+    {
         $courseFolder = Course::getCourseDataFolder($courseId);
         $hasFolder = is_dir($courseFolder . "/skills/" . str_replace(' ', '',  $skill));
         if (!$hasFolder) {
@@ -1204,7 +1225,8 @@ private function skillCompletedBy($skill, $courseId) {
         }
     }
 
-    public function insertHeadHtml(&$htmlDom, $skillName) {
+    public function insertHeadHtml(&$htmlDom, $skillName)
+    {
         $htmlTag = $htmlDom->getElementsByTagName('html')->item(0);
         $bodyTag = $htmlDom->getElementsByTagName('body')->item(0);
 
@@ -1214,20 +1236,23 @@ private function skillCompletedBy($skill, $courseId) {
         $htmlTag->insertBefore($headNode, $bodyTag);
     }
 
-    public function newSkill($skill, $courseId){
+    public function newSkill($skill, $courseId)
+    {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
 
         $numSkills = $this->getNumberOfSkillsInTier($treeId, $skill["tier"]);
-        $skillData = ["name"=>$skill['name'],
-                    "treeId"=>$treeId,
-                    "tier"=>$skill['tier'],
-                    "color"=> $skill['color'],
-                    "seqId" => $numSkills + 1];
-            
+        $skillData = [
+            "name" => $skill['name'],
+            "treeId" => $treeId,
+            "tier" => $skill['tier'],
+            "color" => $skill['color'],
+            "seqId" => $numSkills + 1
+        ];
+
         $folder = Course::getCourseDataFolder($courseId);
         $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
         $descriptionPage = @file_get_contents($path);
-        if ($descriptionPage === FALSE){
+        if ($descriptionPage === FALSE) {
             if (array_key_exists("description", $skill)) {
                 $htmlDom = new DOMDocument;
                 $htmlDom->preserveWhiteSpace = false;
@@ -1236,7 +1261,7 @@ private function skillCompletedBy($skill, $courseId) {
                 $this->insertHeadHtml($htmlDom, $skill['name']);
                 $htmlDom->formatOutput = true;
                 $imageTags = $htmlDom->getElementsByTagName('img');
-                foreach($imageTags as $imageTag){
+                foreach ($imageTags as $imageTag) {
                     //Get the src attribute of the image.
                     $imgSrc = $imageTag->getAttribute('src');
                     $exploded = explode("/", $imgSrc);
@@ -1257,42 +1282,40 @@ private function skillCompletedBy($skill, $courseId) {
             //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
             //return null;
         }
-    
-        Core::$systemDB->insert("skill",$skillData);
+
+        Core::$systemDB->insert("skill", $skillData);
         $skillId = Core::$systemDB->getLastId();
         $dependencyList = array();
         if ($skill["dependencies"] != "") {
             $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
 
             foreach ($pairDep as $dep) {
-                Core::$systemDB->insert("dependency",[
-                    "superSkillId"=>$skillId
+                Core::$systemDB->insert("dependency", [
+                    "superSkillId" => $skillId
                 ]);
                 $dependencyId = Core::$systemDB->getLastId();
 
                 $dependencies = explode("+", str_replace(" + ", "+", $dep));
                 $dependency = [];
-                foreach($dependencies as $d) {
+                foreach ($dependencies as $d) {
                     $isTier = false;
                     $normalSkillId = Core::$systemDB->select("skill", ["name" => trim($d)], "id");
-                    if(empty($normalSkillId)){
+                    if (empty($normalSkillId)) {
                         $skillTierId = Core::$systemDB->select("skill_tier", ["tier" => trim($d)], "id");
-                        if(!empty($skillTierId)){
-                            Core::$systemDB->insert("skill_dependency",[
+                        if (!empty($skillTierId)) {
+                            Core::$systemDB->insert("skill_dependency", [
                                 "dependencyId" => $dependencyId,
-                                "normalSkillId"=>$skillTierId,
+                                "normalSkillId" => $skillTierId,
                                 "isTier" => true
                             ]);
                             $isTier = true;
-                        }
-                        else {
+                        } else {
                             echo "The skill " . $d . " does not exist";
                         }
-                    }
-                    else {
-                        Core::$systemDB->insert("skill_dependency",[
+                    } else {
+                        Core::$systemDB->insert("skill_dependency", [
                             "dependencyId" => $dependencyId,
-                            "normalSkillId"=>$normalSkillId
+                            "normalSkillId" => $normalSkillId
                         ]);
                     }
                     $dependencySkill = array('name' => $d, 'isTier' => $isTier);
@@ -1309,37 +1332,39 @@ private function skillCompletedBy($skill, $courseId) {
         $this->generateSkillRule($course, $skill['name'], $dependencyList);
     }
 
-    public function editSkill($skill, $courseId){
-        
-        $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        $originalSkill = Core::$systemDB->selectMultiple("skill",["treeId"=>$treeId, 'id'=>$skill['id']],"*", "name")[0];
+    public function editSkill($skill, $courseId)
+    {
 
-        $skillData = ["name"=>$skill['name'],
-                    "treeId"=>$treeId,
-                    "tier"=>$skill['tier'],
-                    "color"=> $skill['color']];
+        $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
+        $originalSkill = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, 'id' => $skill['id']], "*", "name")[0];
+
+        $skillData = [
+            "name" => $skill['name'],
+            "treeId" => $treeId,
+            "tier" => $skill['tier'],
+            "color" => $skill['color']
+        ];
 
         // update description
         $folder = Course::getCourseDataFolder($courseId);
         $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
-        $descriptionPage = @file_get_contents( $path . '.html');
+        $descriptionPage = @file_get_contents($path . '.html');
         if ($descriptionPage === FALSE) {
 
             // update image folder if exists
             $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
-            if (file_exists($oldDir)){
-                if (!file_exists($path)){
+            if (file_exists($oldDir)) {
+                if (!file_exists($path)) {
                     // if there are no new images simply rename old folder
                     rename($oldDir, $path);
-                }
-                else {
+                } else {
                     // if we have new and old images, copy each image from old folder to the new one
                     if ($dh = opendir($oldDir)) {
                         // ignore hidden files and directories
-                        $ignore = array( 'cgi-bin', '.', '..','._' );
+                        $ignore = array('cgi-bin', '.', '..', '._');
                         while (($file = readdir($dh)) !== false) {
                             if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
-                                copy($oldDir . '/' . $file , $path . '/' . $file);
+                                copy($oldDir . '/' . $file, $path . '/' . $file);
                             }
                         }
                         closedir($dh);
@@ -1353,7 +1378,7 @@ private function skillCompletedBy($skill, $courseId) {
                 $this->insertHeadHtml($htmlDom, $skill['name']);
                 $htmlDom->formatOutput = true;
                 $imageTags = $htmlDom->getElementsByTagName('img');
-                foreach($imageTags as $imageTag){
+                foreach ($imageTags as $imageTag) {
                     //Get the src attribute of the image.
                     $imgSrc = $imageTag->getAttribute('src');
                     $exploded = explode("/", $imgSrc);
@@ -1363,15 +1388,14 @@ private function skillCompletedBy($skill, $courseId) {
                 $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             } else {
                 $htmlDom = new DOMDocument;
-                
+
                 $htmlDom->preserveWhiteSpace = false;
                 $htmlDom->loadHTML($skill['description']);
-    
+
                 $this->insertHeadHtml($htmlDom, $skill['name']);
                 $htmlDom->formatOutput = true;
                 $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             }
-
         } else {
             $htmlDom = new DOMDocument;
             $htmlDom->preserveWhiteSpace = false;
@@ -1389,140 +1413,133 @@ private function skillCompletedBy($skill, $courseId) {
         $descriptionPage = substr($descriptionPage, $start, $end - $start);
 
         $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
-        
 
-        Core::$systemDB->update("skill",$skillData,["id"=>$skill["id"]]);
+
+        Core::$systemDB->update("skill", $skillData, ["id" => $skill["id"]]);
         $skillId = $originalSkill["id"];
 
-        $dependencyIds = Core::$systemDB->selectMultiple("dependency",["superSkillId"=>$skillId], "id");
+        $dependencyIds = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skillId], "id");
         if ($skill["dependencies"] != "") {
             $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
 
             $numOfDep = count($dependencyIds);
             $numOfNewDep =  count($pairDep);
 
-            if ($numOfDep > $numOfNewDep){
+            if ($numOfDep > $numOfNewDep) {
                 //delete original dependencies
-                Core::$systemDB->delete("dependency",["superSkillId"=>$skillId]);
+                Core::$systemDB->delete("dependency", ["superSkillId" => $skillId]);
 
                 //create new ones
                 foreach ($pairDep as $dep) {
-                    Core::$systemDB->insert("dependency", ["superSkillId"=>$skillId]);
+                    Core::$systemDB->insert("dependency", ["superSkillId" => $skillId]);
                     $dependencyId = Core::$systemDB->getLastId();
-    
+
                     $dependencies = explode("+", str_replace(" + ", "+", $dep));
-                    foreach($dependencies as $d) {
+                    foreach ($dependencies as $d) {
                         $normalSkillId = Core::$systemDB->select("skill", ["name" => trim($d)], "id");
-                        if(empty($normalSkillId)){
+                        if (empty($normalSkillId)) {
                             $skillTierId = Core::$systemDB->select("skill_tier", ["tier" => trim($d)], "id");
-                            if(!empty($skillTierId)){
-                                Core::$systemDB->insert("skill_dependency",[
+                            if (!empty($skillTierId)) {
+                                Core::$systemDB->insert("skill_dependency", [
                                     "dependencyId" => $dependencyId,
-                                    "normalSkillId"=>$skillTierId,
+                                    "normalSkillId" => $skillTierId,
                                     "isTier" => true
                                 ]);
-                            }
-                            else {
+                            } else {
                                 echo "The skill " . $d . " does not exist";
                             }
-                        }
-                        else {
-                            Core::$systemDB->insert("skill_dependency",[
+                        } else {
+                            Core::$systemDB->insert("skill_dependency", [
                                 "dependencyId" => $dependencyId,
-                                "normalSkillId"=>$normalSkillId
+                                "normalSkillId" => $normalSkillId
                             ]);
                         }
                     }
                 }
-            }
-            else {
-                for ($i = 0; $i < $numOfNewDep; $i++){
+            } else {
+                for ($i = 0; $i < $numOfNewDep; $i++) {
                     $dependencies = explode("+", str_replace(" + ", "+", $pairDep[$i]));
 
-                    if ($i + 1 > $numOfDep){
-                        Core::$systemDB->insert("dependency", ["superSkillId"=>$skillId]);
+                    if ($i + 1 > $numOfDep) {
+                        Core::$systemDB->insert("dependency", ["superSkillId" => $skillId]);
                         $dependencyId = Core::$systemDB->getLastId();
-                        foreach($dependencies as $d) {
+                        foreach ($dependencies as $d) {
                             $normalSkillId = Core::$systemDB->select("skill", ["name" => trim($d)], "id");
-                            if(empty($normalSkillId)){
+                            if (empty($normalSkillId)) {
                                 $skillTierId = Core::$systemDB->select("skill_tier", ["tier" => trim($d)], "id");
-                                if(!empty($skillTierId)){
-                                    Core::$systemDB->insert("skill_dependency",[
+                                if (!empty($skillTierId)) {
+                                    Core::$systemDB->insert("skill_dependency", [
                                         "dependencyId" => $dependencyId,
-                                        "normalSkillId"=>$skillTierId,
+                                        "normalSkillId" => $skillTierId,
                                         "isTier" => true
                                     ]);
-                                }
-                                else {
+                                } else {
                                     echo "The skill " . $d . " does not exist";
                                 }
-                            }
-                            else {
-                                Core::$systemDB->insert("skill_dependency",[
+                            } else {
+                                Core::$systemDB->insert("skill_dependency", [
                                     "dependencyId" => $dependencyId,
-                                    "normalSkillId"=>$normalSkillId
+                                    "normalSkillId" => $normalSkillId
+                                ]);
+                            }
+                        }
+                    } else {
+                        $originalDepID = $dependencyIds[$i]["id"];
+                        Core::$systemDB->delete("skill_dependency", ["dependencyId" => $originalDepID]);
+                        foreach ($dependencies as $d) {
+                            $normalSkillId = Core::$systemDB->select("skill", ["name" => trim($d)], "id");
+                            if (empty($normalSkillId)) {
+                                $skillTierId = Core::$systemDB->select("skill_tier", ["tier" => trim($d)], "id");
+                                if (!empty($skillTierId)) {
+                                    Core::$systemDB->insert("skill_dependency", [
+                                        "dependencyId" => $originalDepID,
+                                        "normalSkillId" => $skillTierId,
+                                        "isTier" => true
+                                    ]);
+                                } else {
+                                    echo "The skill " . $d . " does not exist";
+                                }
+                            } else {
+                                Core::$systemDB->insert("skill_dependency", [
+                                    "dependencyId" => $originalDepID,
+                                    "normalSkillId" => $normalSkillId
                                 ]);
                             }
                         }
                     }
-                    else {
-                        $originalDepID = $dependencyIds[$i]["id"];
-                        Core::$systemDB->delete("skill_dependency",["dependencyId"=>$originalDepID]);
-                        foreach($dependencies as $d) {
-                            $normalSkillId = Core::$systemDB->select("skill", ["name" => trim($d)], "id");
-                            if(empty($normalSkillId)){
-                                $skillTierId = Core::$systemDB->select("skill_tier", ["tier" => trim($d)], "id");
-                                if(!empty($skillTierId)){
-                                    Core::$systemDB->insert("skill_dependency",[
-                                        "dependencyId" => $originalDepID,
-                                        "normalSkillId"=>$skillTierId,
-                                        "isTier" => true
-                                    ]);
-                                }
-                                else {
-                                    echo "The skill " . $d . " does not exist";
-                                }
-                            }
-                            else {
-                                Core::$systemDB->insert("skill_dependency",[
-                                    "dependencyId" => $originalDepID,
-                                    "normalSkillId"=>$normalSkillId
-                                ]);
-                            }
-                        }
-                    } 
                 }
             }
-        }
-        else if (!empty($dependencyIds) and $skill["dependencies"] == "") { 
+        } else if (!empty($dependencyIds) and $skill["dependencies"] == "") {
             //delete dependencies
-            Core::$systemDB->delete("dependency",["superSkillId"=>$skillId]);
+            Core::$systemDB->delete("dependency", ["superSkillId" => $skillId]);
         }
     }
-    public function deleteSkill($skill, $courseId){
+    public function deleteSkill($skill, $courseId)
+    {
         $hasDep = Core::$systemDB->selectMultiple("skill_dependency", ["normalSkillId" => $skill["id"], "isTier" => false]);
         if (!empty($hasDep)) {
             echo "This skill is a dependency of others skills. You must remove them first.";
             return null;
         }
         $skillInfo = Core::$systemDB->select("skill left join skill_tree on skill.treeId=skill_tree.id", ["skill.id" => $skill["id"], "course" => $courseId], "name, tier, treeId");
-        Core::$systemDB->delete("skill",["id"=>$skill['id']]);
+        Core::$systemDB->delete("skill", ["id" => $skill['id']]);
 
         $course = Course::getCourse($courseId);
         $tierSeqId = Core::$systemDB->select("skill_tier", ["tier" => $skillInfo['tier'], "treeId" => $skillInfo['treeId']], "seqId");
         $this->deleteGeneratedRule($course, $skillInfo['name']);
     }
 
-    public function transformStringToList($skillDependencyString) {
+    public function transformStringToList($skillDependencyString)
+    {
         $skillDependencyArray = [];
         if ($skillDependencyString != "") {
-            
+
             if (strpos($skillDependencyString, '|')) {
                 $pairDep = explode("|", str_replace(" | ", "|", $skillDependencyString));
                 foreach ($pairDep as $dep) {
                     $newDep = [];
                     $dependencies = explode("+", str_replace(" + ", "+", $dep));
-                    foreach($dependencies as $d) {
+                    foreach ($dependencies as $d) {
                         $newDep[] = trim($d);
                     }
                     $skillDependencyArray[] = $newDep;
@@ -1530,7 +1547,7 @@ private function skillCompletedBy($skill, $courseId) {
             } else {
                 $newDep = [];
                 $dependencies = explode("+", str_replace(" + ", "+", $skillDependencyString));
-                foreach($dependencies as $d) {
+                foreach ($dependencies as $d) {
                     $newDep[] = trim($d);
                 }
                 $skillDependencyArray[] = $newDep;
@@ -1538,44 +1555,48 @@ private function skillCompletedBy($skill, $courseId) {
         }
         return $skillDependencyArray;
     }
-    
+
     public function dropTables($moduleName)
     {
         parent::dropTables($moduleName);
     }
-    
-    public function has_listing_items() { return  true; }
-    public function get_listing_items($courseId){
+
+    public function has_listing_items()
+    {
+        return  true;
+    }
+    public function get_listing_items($courseId)
+    {
         //tenho de dar header
-        $header = ['Tier', 'Name', 'Dependencies', 'Color', 'XP', 'Active'] ;
+        $header = ['Tier', 'Name', 'Dependencies', 'Color', 'XP', 'Active'];
         $displayAtributes = ['tier', 'name', 'dependencies', 'color', 'xp', 'isActive'];
         // items (pela mesma ordem do header)
         $items = $this->getSkills($courseId);
         //argumentos para add/edit
         $allAtributes = [
-            array('name' => "Tier", 'id'=> 'tier', 'type' => "select", 'options' => $this->getTiers($courseId)),
-            array('name' => "Name", 'id'=> 'name', 'type' => "text", 'options' => ""),
-            array('name' => "Dependencies", 'id'=> 'dependencies', 'type' => "button", 'options' => ""),
-            array('name' => "DependenciesList", 'id'=> 'dependenciesList', 'type' => "", 'options' => ""),
-            array('name' => "Color", 'id'=> 'color', 'type' => "color", 'options'=>"", 'current_val' => ""),
-            array('name' => "Description", 'id'=> 'description', 'type' => "editor", 'options' => "")
+            array('name' => "Tier", 'id' => 'tier', 'type' => "select", 'options' => $this->getTiers($courseId)),
+            array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
+            array('name' => "Dependencies", 'id' => 'dependencies', 'type' => "button", 'options' => ""),
+            array('name' => "DependenciesList", 'id' => 'dependenciesList', 'type' => "", 'options' => ""),
+            array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
+            array('name' => "Description", 'id' => 'description', 'type' => "editor", 'options' => "")
         ];
-        return array( 'listName'=> 'Skills', 'itemName'=> 'Skill','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
+        return array('listName' => 'Skills', 'itemName' => 'Skill', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }
 
-    public function save_listing_item ($actiontype, $listingItem, $courseId){
-        if($actiontype == 'new'){
+    public function save_listing_item($actiontype, $listingItem, $courseId)
+    {
+        if ($actiontype == 'new') {
             $this->newSkill($listingItem, $courseId);
-        }
-        elseif ($actiontype == 'edit'){
+        } elseif ($actiontype == 'edit') {
             $this->editSkill($listingItem, $courseId);
-
-        }elseif($actiontype == 'delete'){
+        } elseif ($actiontype == 'delete') {
             $this->deleteSkill($listingItem, $courseId);
         }
     }
 
-    public static function importItems($course, $fileData, $replace = true){
+    public static function importItems($course, $fileData, $replace = true)
+    {
         $courseObject = Course::getCourse($course, false);
         $moduleObject = $courseObject->getModule("skills");
 
@@ -1593,7 +1614,8 @@ private function skillCompletedBy($skill, $courseId) {
             $lines[0] = trim($lines[0]);
             $firstLine = explode(";", $lines[0]);
             $firstLine = array_map('trim', $firstLine);
-            if (in_array("tier", $firstLine)
+            if (
+                in_array("tier", $firstLine)
                 && in_array("name", $firstLine) && in_array("dependencies", $firstLine)
                 && in_array("color", $firstLine) && in_array("xp", $firstLine)
             ) {
@@ -1609,8 +1631,8 @@ private function skillCompletedBy($skill, $courseId) {
             $line = trim($line);
             $item = explode(";", $line);
             $item = array_map('trim', $item);
-            if (count($item) > 1){
-                if (!$has1stLine){
+            if (count($item) > 1) {
+                if (!$has1stLine) {
                     $tierIndex = 0;
                     $nameIndex = 1;
                     $dependenciesIndex = 2;
@@ -1618,27 +1640,27 @@ private function skillCompletedBy($skill, $courseId) {
                     $xpIndex = 4;
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    $itemId = Core::$systemDB->select("skill", ["treeId"=> $treeId, "name"=> $item[$nameIndex]], "id");
+                    $itemId = Core::$systemDB->select("skill", ["treeId" => $treeId, "name" => $item[$nameIndex]], "id");
 
                     $skillData = [
-                        "tier"=>$item[$tierIndex],
-                        "name"=>$item[$nameIndex],
-                        "dependencies"=>$item[$dependenciesIndex],
-                        "dependenciesList"=>(new self)->transformStringToList($item[$dependenciesIndex]),
-                        "color"=>$item[$colorIndex],
-                        "xp"=>$item[$xpIndex],
-                        "treeId"=>$treeId
-                        ];
-                    $tierData = [
-                        "tier"=>$item[$tierIndex],
-                        "reward"=>$item[$xpIndex],
-                        "treeId"=>$treeId
+                        "tier" => $item[$tierIndex],
+                        "name" => $item[$nameIndex],
+                        "dependencies" => $item[$dependenciesIndex],
+                        "dependenciesList" => (new self)->transformStringToList($item[$dependenciesIndex]),
+                        "color" => $item[$colorIndex],
+                        "xp" => $item[$xpIndex],
+                        "treeId" => $treeId
                     ];
-                    $tierExists = Core::$systemDB->select("skill_tier", ["treeId"=> $treeId, "tier"=> $item[$tierIndex]]);
+                    $tierData = [
+                        "tier" => $item[$tierIndex],
+                        "reward" => $item[$xpIndex],
+                        "treeId" => $treeId
+                    ];
+                    $tierExists = Core::$systemDB->select("skill_tier", ["treeId" => $treeId, "tier" => $item[$tierIndex]]);
                     if (empty($tierExists)) {
                         $moduleObject->newTier($tierData, $course);
                     }
-                    if ($itemId){
+                    if ($itemId) {
                         if ($replace) {
                             $skillData["id"] = $itemId;
                             $moduleObject->editSkill($skillData, $course);
@@ -1654,8 +1676,9 @@ private function skillCompletedBy($skill, $courseId) {
         return $newItemNr;
     }
 
-    public function exportItems($course) {
-        $courseInfo = Core::$systemDB->select("course", ["id"=>$course]);
+    public function exportItems($course)
+    {
+        $courseInfo = Core::$systemDB->select("course", ["id" => $course]);
         $listOfSkills = $this->getSkills($course);
         $file = "";
         $i = 0;
@@ -1685,7 +1708,8 @@ private function skillCompletedBy($skill, $courseId) {
     }
 
     // skills and rules
-    public function generateSkillRule($course, $skillName, $dependencies = null) {
+    public function generateSkillRule($course, $skillName, $dependencies = null)
+    {
         $rs = new RuleSystem($course);
 
         if (sizeof($dependencies) == 0) {
@@ -1702,7 +1726,7 @@ private function skillCompletedBy($skill, $courseId) {
             $linesDependencies = "";
             $conditiontxt = array();
             $nrdependencies = sizeof($dependencies);
-            
+
             foreach ($dependencies as $dependency) {
                 $deptxt = "combo" . strval($nrdependencies) . " = rule_unlocked(" . $dependency[0]['name'] . ", target) and rule_unlocked(" . $dependency[1]['name'] . ", target)\n\t\t";
                 $linesDependencies .= $deptxt;
@@ -1733,14 +1757,15 @@ private function skillCompletedBy($skill, $courseId) {
             $rs->addRule($txt, null, $rule);
     }
 
-    public function deleteGeneratedRule($course, $skillName) {
+    public function deleteGeneratedRule($course, $skillName)
+    {
         $rs = new RuleSystem($course);
         $rule = array();
 
         $rule["name"] = $skillName;
         $rule["rulefile"] = $rs->getFilename("skills");
         $position = $rs->getRulePosition($rule);
-        
+
         if ($position !== false)
             $rs->removeRule($rule, $position);
     }
