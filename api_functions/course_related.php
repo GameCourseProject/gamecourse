@@ -33,7 +33,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
 
             if (!in_array($page["name"], $navNames)) {
                 $simpleName = str_replace(' ', '', $page["name"]);
-                $view = Core::$systemDB->select("view", ["id" => $page["viewId"]]);
+                $view = Core::$systemDB->select("view", ["viewId" => $page["viewId"]]);
                 $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $page["viewId"], "course" => $courseId], "id,name,roleType");
 
                 if ($template["roleType"] == "ROLE_INTERACTION") {

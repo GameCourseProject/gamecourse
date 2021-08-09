@@ -25,9 +25,9 @@ class Profile extends Module {
         //$viewHandler->createPageOrTemplateIfNew('Profile',"page","ROLE_INTERACTION");
 
         if (!$viewsModule->templateExists(self::STUDENT_SUMMARY_TEMPLATE))
-            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'));
+            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), true);
         if (!$viewsModule->templateExists(self::STUDENT_AWARD_LIST))
-            $viewsModule->setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'));
+            $viewsModule->setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), true);
        
     }
 
@@ -56,4 +56,3 @@ ModuleLoader::registerModule(array(
         return new Profile();
     }
 ));
-?>

@@ -39,7 +39,7 @@
         "children": [
           {
             "id": "1414",
-            "viewId": "1413",
+            "viewId": "1414",
             "role": "role.Default",
             "partType": "block",
             "parentId": "1413",

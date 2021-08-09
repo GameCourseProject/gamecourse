@@ -464,7 +464,7 @@ class Quest extends Module {
         $viewsModule = $this->getParent()->getModule('views');
         if ($viewsModule != null) {
             if (!$viewsModule->templateExists('Quest Announce - by quest'))
-                $viewsModule->setTemplate('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId());
+                $viewsModule->setTemplate('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId(), true);
         }
     }
 
@@ -567,4 +567,3 @@ ModuleLoader::registerModule(array(
         return new Quest();
     }
 ));
-?>

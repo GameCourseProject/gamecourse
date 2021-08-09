@@ -950,14 +950,14 @@ class Views extends Module
                     $where["rating"] = (int) $rating;
                 }
                 $allPeergradedPosts = $this->getAwardOrParticipation($courseId, $user, $type, null, null, null, $where, "participation", $activeUser, $activeItem);
-                    foreach ($allPeergradedPosts as $peergradedPost) {
-                        $post = $peergradedPost["post"];
-                        // see if there's a corresponding graded post for this peergrade
-                        $gradedPost = Core::$systemDB->selectMultiple("participation", ["type" => "graded post", "post" => $post], '*'); 
-                        if (sizeof($gradedPost) > 0) {
-                            array_push($peerGrades, $peergradedPost);
-                        }
+                foreach ($allPeergradedPosts as $peergradedPost) {
+                    $post = $peergradedPost["post"];
+                    // see if there's a corresponding graded post for this peergrade
+                    $gradedPost = Core::$systemDB->selectMultiple("participation", ["type" => "graded post", "post" => $post], '*');
+                    if (sizeof($gradedPost) > 0) {
+                        array_push($peerGrades, $peergradedPost);
                     }
+                }
                 return $this->createNode($peerGrades, "participations", "collection");
             },
             "Returns a collection with all the valid peer graded posts (participations) in this Course. A peergrade is considered valid if the the post it refers to has already been graded by a professor. The optional parameters can be used to find peergraded posts that specify a given combination of conditions:\nuser: id of a GameCourseUser that authored the post being peergraded.\nrating: Rate given to the peergraded post.\nevaluator: id of a GameCourse user that rated/graded the post.",
@@ -1152,8 +1152,8 @@ class Views extends Module
             }
         );
 
-        
-        
+
+
         //participations.getResourceViews(user)
         $this->viewHandler->registerFunction(
             'participations',
@@ -1161,7 +1161,7 @@ class Views extends Module
 
             function (int $user) use ($courseId) {
                 $table = "participation";
-                
+
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
                 $likeParams = ["description" => "Lecture % Slides"];
 
@@ -1183,14 +1183,14 @@ class Views extends Module
 
             function (int $user, string $forum, string $thread = null) use ($courseId) {
                 $table = "participation";
-                
+
                 if ($thread == null) {
                     # if the name of the thread is not relevant
                     # aka, if users are rewarded for creating posts + comments
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $like = $forum . ",%";
                     $likeParams = ["description" => $like];
-                    
+
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
                 } else {
                     # Name of thread is important for the badge
@@ -1198,7 +1198,7 @@ class Views extends Module
                     $where = ["user" => $user, "type" => "graded post", "course" => $courseId];
                     $likeParams = ["description" => $like];
                     $forumParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], null, $likeParams);
-            }   
+                }
                 return $this->createNode($forumParticipation, "participations", "collection");
             },
             "Returns a collection with all the participations in a specific forum of the Course. The  parameter can be used to find participations for a user or forum:\nuser: id of a GameCourseUser that participated.\n
@@ -1220,7 +1220,7 @@ class Views extends Module
                 $table = "user_role left join role on user_role.role=role.id";
                 $columns = "user_role.id";
                 $where = ["role.name" => "Teacher", "role.course" => $courseId];
-                
+
                 $evaluators = Core::$systemDB->selectMultiple($table, $where, $columns, null, [], [], null, null);
                 $teachers = [];
                 foreach ($evaluators as $evaluator) {
@@ -1236,7 +1236,7 @@ class Views extends Module
                 foreach ($forumParticipation as $participation) {
                     if (in_array($participation["evaluator"], $teachers)) {
                         array_push($filteredParticipations, $participation);
-			            break;
+                        break;
                     }
                 }
                 return $this->createNode($filteredParticipations, "participations", "collection");
@@ -1617,7 +1617,7 @@ class Views extends Module
                 $aspects = Core::$systemDB->selectMultiple("view left join view_parent on viewId=childId", ["viewId" => $viewId]);
                 foreach ($aspects as $aspect) {
                     //delete this aspect and all its children
-                    $this->viewHandler->deleteViews($aspect);
+                    $this->viewHandler->deleteViews($aspect, true);
                 }
             }
             // else {
@@ -1711,6 +1711,7 @@ class Views extends Module
         try { //ToDo: for preview viewer should be the current user if they have the role
             $viewerId = $this->getUserIdWithRole($course, $viewerRole);
             $params = ['course' => (string)$courseId];
+            //print_r("test");
 
             if ($userRole !== null) { //if view has role interaction
                 $userId = $this->getUserIdWithRole($course, $userRole);
@@ -1723,6 +1724,7 @@ class Views extends Module
                 $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
+                //print_r("here");
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1754,13 +1756,33 @@ class Views extends Module
         $viewCopy = $viewContent;
         try {
             foreach ($viewCopy as $aspect) {
-                $this->viewHandler->parseView($aspect);
-                if ($viewType == "ROLE_SINGLE") {
-                    //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
-                    //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
-                    $this->testView($course, $courseId, $testDone, $aspect, "role.Default");
-                } else if ($viewType == "ROLE_INTERACTION") {
-                    $this->testView($course, $courseId, $testDone, $aspect, $roles['roleTwo'], $roles['roleOne']);
+                if ($saving) {
+                    $this->viewHandler->parseView($aspect);
+                    if ($viewType == "ROLE_SINGLE") {
+                        //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
+                        //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
+                        $this->testView($course, $courseId, $testDone, $aspect, $aspect['role']);
+                    } else if ($viewType == "ROLE_INTERACTION") {
+                        $viewer = explode(">", $aspect['role'])[1];
+                        $user = explode(">", $aspect['role'])[0];
+                        $this->testView($course, $courseId, $testDone, $aspect, $viewer, $user);
+                    }
+                } else {
+                    if ($viewType == "ROLE_SINGLE") {
+                        if ($aspect['role'] == 'role.' . $roles['viewerRole']) {
+                            //TODO: change this to be the role selected by user (that is presented on the edit tollbar)
+                            //$this->testView($course, $courseId, $testDone, $viewCopy, $roles['viewerRole']);
+                            $this->viewHandler->parseView($aspect);
+                            $this->testView($course, $courseId, $testDone, $aspect, $aspect['role']);
+                        }
+                    } else if ($viewType == "ROLE_INTERACTION") {
+                        $viewer = explode(">", $aspect['role'])[1];
+                        $user = explode(">", $aspect['role'])[0];
+                        if ($viewer == 'role.' . $roles['viewerRole'] && $user == 'role.' . $roles['userRole']) {
+                            $this->viewHandler->parseView($aspect);
+                            $this->testView($course, $courseId, $testDone, $aspect, $viewer, $user);
+                        }
+                    }
                 }
             }
         } catch (\Exception $e) {
@@ -1798,7 +1820,21 @@ class Views extends Module
             API::error($errorMsg);
         }
         if (!$saving) {
-            API::response(array('view' => $viewCopy));
+            $viewParams = [
+                'course' => (string)$data["courseId"],
+                'viewer' => $roles['viewerRole']
+            ];
+
+            if ($viewType == "ROLE_SINGLE") {
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole']);
+            } else if ($viewType == "ROLE_INTERACTION") {
+                $viewParams['user'] = $roles['userRole'];
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole'] . '>' . $roles['userRole']);
+            }
+
+            $this->viewHandler->parseView($userView);
+            $this->viewHandler->processView($userView, $viewParams);
+            API::response(array('view' => $userView));
         }
         return;
     }
@@ -1917,16 +1953,16 @@ class Views extends Module
     }
 
     //receives the template name, its encoded contents, and puts it in the database
-    public function setTemplate($name, $template)
+    public function setTemplate($name, $template, $fromModule = false)
     {
         $aspects = json_decode($template, true);
 
         $roleType = $this->viewHandler->getRoleType($aspects[0]["role"]);
-        if ($roleType == "ROLE_INTERACTION") {
-            $defaultRole = "role.Default>role.Default";
-        } else {
-            $defaultRole = "role.Default";
-        }
+        // if ($roleType == "ROLE_INTERACTION") {
+        //     $defaultRole = "role.Default>role.Default";
+        // } else {
+        //     $defaultRole = "role.Default";
+        // }
         //$aspectClass = null;
         //comentar este if - todos os templates devem ter aspect class
         // if (sizeof($aspects) > 1) {
@@ -1942,14 +1978,17 @@ class Views extends Module
         // $viewId = Core::$systemDB->getLastId();
         // Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
 
-        $this->setTemplateHelper($aspects, $defaultRole, $this->getCourseId(), $name, $roleType);
+        $this->setTemplateHelper($aspects, $this->getCourseId(), $name, $roleType, $fromModule);
     }
     //inserts data into template and view_template tables
-    function setTemplateHelper($aspects, $defaultRole, $courseId, $name, $roleType, $content = null)
+    function setTemplateHelper($aspects, $courseId, $name, $roleType, $fromModule = false)
     {
 
         Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
+
+        if ($fromModule)
+            Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
         //print_r($aspects);
         foreach ($aspects as &$aspect) {
             //print_r($aspect);
@@ -1977,7 +2016,10 @@ class Views extends Module
             //         $this->viewHandler->updateViewAndChildren($aspect["children"][$key], false, true);
             //     }
             // }
-            $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
+            if ($fromModule)
+                $this->viewHandler->updateViewAndChildren($aspect, false, true);
+            else
+                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }
 
         $viewId = Core::$systemDB->select("view_template", ["templateId" => $templateId], "viewId");

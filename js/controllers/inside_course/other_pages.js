@@ -1,5 +1,5 @@
 // other pages inside a course, except for settings
-app.controller("SpecificCourse", function ($scope, $element, $stateParams, $compile) {
+app.controller("SpecificCourse", function ($scope, $element, $stateParams, $compile, $smartboards) {
     $element.append($compile(Builder.createPageBlock({
         image: "images/awards.svg",
         text: "{{courseName}}",
@@ -7,6 +7,20 @@ app.controller("SpecificCourse", function ($scope, $element, $stateParams, $comp
     $element.one("mousemove", function () {
         checkNavbarLength();
     });
+
+    $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
+        if (err) {
+            giveMessage(err.description);
+            return;
+        }
+        $('#css-file').remove();
+        if (data.url && data.styleFile != '') {
+            $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+
+        }
+    });
+
+
 });
 app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element, $smartboards, $compile, $parse) {
     $scope.courseRoles = [];
@@ -345,7 +359,7 @@ app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element
     };
 
 
-    $scope.activeUser = function(id){
+    $scope.activeUser = function (id) {
         $smartboards.request('course', 'activeUser', { course: $scope.course, userId: id }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
@@ -354,7 +368,7 @@ app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element
         });
     };
 
-    $scope.modifyUser = function(user) {
+    $scope.modifyUser = function (user) {
         $("#action_completed").empty();
         $("#active_visible_inputs").remove();
         $scope.editUser = {};
@@ -625,7 +639,7 @@ app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element
 
     mainContent = $("<div id='mainContent'></div>");
     //sidebar
-    $smartboards.request("course", "courseRoles", { course: $scope.course }, function(data, err) {
+    $smartboards.request("course", "courseRoles", { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
             return;
@@ -671,7 +685,7 @@ app.controller("CourseUsersss", function ($scope, $state, $stateParams, $element
             class: "action-column",
             content: ""
         }];
-        jQuery.each(header, function(index) {
+        jQuery.each(header, function (index) {
             rowHeader.append($("<th class=" + header[index].class + ">" + header[index].content + "</th>"));
         });
         rowContent = $("<tr ng-repeat='(i, user) in users' id='user-{{user.id}}'> ></tr>");

@@ -24,18 +24,43 @@ app.controller('CourseSettings', function ($scope, $state, $compile, $smartboard
             updateTabTitle($state.current.name, $state.params);
         });
     });
+
+    $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
+        if (err) {
+            giveMessage(err.description);
+            return;
+        }
+        $('#css-file').remove();
+        if (data.url && data.styleFile != '') {
+            $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+        }
+    });
+
     $scope.$emit('refreshTabs');
     $scope.$on('$destroy', refreshTabsBind);
 });
 
 
-app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards, $compile) {
+app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards, $compile, $timeout) {
 
     infoSection = $("<div id='configPage'></div>");
     $element.append(infoSection);
 
+
+
     $scope.$on('$stateChangeSuccess', function (e) {
-        $scope.showGlobalPage(e.targetScope.navigation);
+        $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            $scope.styleFile = data.styleFile;
+            $('#css-file').remove();
+            if (data.url && data.styleFile != '') {
+                $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+            }
+            $scope.showGlobalPage(e.targetScope.navigation);
+        });
     });
 
     $scope.deleteRecord = function () {
@@ -294,8 +319,94 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
                 navigation.append(navigationSection);
                 $compile(navigation)($scope);
             }
+
+            if ($scope.data.viewsModuleEnabled) {
+                var styling = createSection(infoSection, 'Styling');
+
+                if ($scope.styleFile === false) {
+                    $scope.content = '';
+                } else {
+                    $scope.content = $scope.styleFile;
+                }
+
+                var newDiv = $('<div>');
+                newDiv.append('<button id="create_style_button" class="button" ng-click="createStyleFile()">Create Style File</button>');
+                styling.append(newDiv);
+
+                var editDiv = $('<div id="edit-css-file"></div>');
+                action_button = $("<div id='save-change-css' class='action-buttons' style='width:140px;'></div>");
+                action_button.append($('<button class="button" title="Save" ng-click="saveStyleFile()"> Save Changes </button>'));
+
+
+                editDiv.append('<textarea type="text" id="style-file" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Write your style here...">' + $scope.content + '</textarea>')
+
+                styling.append(action_button);
+                styling.append(editDiv);
+
+                var cssCodeMirror = CodeMirror.fromTextArea(document.getElementById("style-file"), {
+                    lineNumbers: true, styleActiveLine: true, mode: "css", value: $scope.content, autohint: true,
+                    lineWrapping: true, theme: "mdn-like"
+                });
+
+                cssCodeMirror.on("keyup", function (cm, event) {
+                    cm.showHint(CodeMirror.hint.css);
+                });
+
+                $scope.cssCodeMirror = cssCodeMirror;
+
+                if ($scope.styleFile === false) {
+                    $('#create_style_button').show();
+                    $('#edit-css-file').hide();
+                    $('#save-change-css').hide();
+                } else {
+                    $('#create_style_button').hide();
+                    $('#edit-css-file').show();
+                    $('#save-change-css').show();
+                }
+
+
+
+                $compile(styling)($scope);
+
+
+            }
+
+
         });
     };
+
+    $scope.createStyleFile = function () {
+        $smartboards.request('settings', 'createStyleFile', { course: $scope.course }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if (data.url) {
+                $('#create_style_button').hide();
+                $('#edit-css-file').show();
+                $('#save-change-css').show();
+            }
+        });
+    }
+
+    $scope.saveStyleFile = function () {
+        $scope.styleFile = $scope.cssCodeMirror.getValue();
+        $smartboards.request('settings', 'updateStyleFile', { course: $scope.course, content: $scope.styleFile }, function (data, err) {
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+            if (data.url !== 0) {
+                giveMessage('Saved!');
+                $('#css-file').remove();
+                if ($scope.styleFile != '') {
+                    $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + data.url + '">');
+                }
+            } else {
+                giveMessage('Something went wrong!');
+            }
+        });
+    }
 
     $scope.moveUp = function (row) {
         var item = row.nav;

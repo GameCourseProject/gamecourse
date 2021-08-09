@@ -1,12 +1,11 @@
-
 <div class="sidebar">
     <div class="tab search" id="find-tab">
         <input type="text" placeholder="Search.." name="search">
-        <button class="magnifying-glass" id="search-btn"></button> 
+        <button class="magnifying-glass" id="search-btn"></button>
     </div>
     <div class="tabgroup">
-        <div class="tab selected" id="tab-views" >Views</div>
-        <div class="tab" id="tab-parts" >View Part Types</div>
+        <div class="tab selected" id="tab-views">Views</div>
+        <div class="tab" id="tab-parts">View Part Types</div>
         <div class="tab" id="tab-exp-language">Expression Language</div>
         <div class="tab" id="tab-config">Part Configuration</div>
     </div>
@@ -14,45 +13,45 @@
 <div class="content">
     <div class="section visible" id="views">
         <p>Views allow control over what is displayed
-        in the system’s pages. The admins of the course are able to edit its views.</p>
+            in the system’s pages. The admins of the course are able to edit its views.</p>
         <h2><span lang=EN-US>Aspects</span></h2>
-    
+
         <p class=MsoNormal><span lang=EN-US>The Aspects are specializations of the
-        views for specific roles or users. This allows for the possibility of having multiple
-        versions of a page that can be displayed according to the roles of the users viewing
-        the page or the user associated with the page.</span></p>
-    
+                views for specific roles or users. This allows for the possibility of having multiple
+                versions of a page that can be displayed according to the roles of the users viewing
+                the page or the user associated with the page.</span></p>
+
         <h2><span lang=EN-US>Aspect Types</span></h2>
         <div class="subsection">
             <p>There are two types of aspect for views:</p>
             <ul>
                 <li><code>Role - Single</code><span> - view that can show
-        a different aspect according to the viewer’s role</span></li>
+                        a different aspect according to the viewer’s role</span></li>
                 <li><code>Role - Interaction</code><span> - view that can
-        show a different aspect according to the roles of the viewer and the user
-        associated with the page</span></li>
+                        show a different aspect according to the roles of the viewer and the user
+                        associated with the page</span></li>
             </ul>
         </div>
         <h2>Pages</h2>
         <div class="subsection">
             <p>Pages an be created on the views tab by
-        clicking the ‘Create New Page’ button writing its name and choosing an aspect
-        type. Pages of Role-Single type will be automatically added to the navigation
-        bar. </p>
+                clicking the ‘Create New Page’ button writing its name and choosing an aspect
+                type. Pages of Role-Single type will be automatically added to the navigation
+                bar. </p>
         </div>
     </div>
-    
+
     <div class="section" id="view-parts">
         <p class=MsoNormal><span lang=EN-US>A view is constituted of other views which
-    may be called view parts. New parts can be added to any block by pressing the
-    ‘edit layout’ button on its toolbar and then selecting a part from the drop down
-    menu at the end of the block, they can then be rearranged in the desired order.
-    View parts can have a few different types.</span></p>
+                may be called view parts. New parts can be added to any block by pressing the
+                ‘edit layout’ button on its toolbar and then selecting a part from the drop down
+                menu at the end of the block, they can then be rearranged in the desired order.
+                View parts can have a few different types.</span></p>
         <a name="PartText"></a>
         <h2>Part - Text</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This part displays text using expressions
-    to show the output</span></p>
+                    to show the output</span></p>
         </div>
         <h2>Part - Image</h2>
         <div class="subsection">
@@ -62,7 +61,7 @@
         <h2>Part - Block</h2>
         <div class="subsection">
             <p>This part is a view that can contain other views and may
-    have a header</p>
+                have a header</p>
             <a name="PartBlockHeader"></a>
             <h3>Header</h3>
             <div class="subsection">
@@ -72,202 +71,224 @@
         <a name="PartTable"></a>
         <h2>Part - Table</h2>
         <div class="subsection">
-            <p>This part is a table with columns and rows. The row and column options appear after pressing the ‘edit layout’
-    button on the table part.</p>
+            <p>This part is a table with columns and rows. The row and column options appear after pressing the ‘edit
+                layout’
+                button on the table part.</p>
         </div>
         <a name="Templates"></a>
         <h2>Templates</h2>
         <div class="subsection">
             <p>Templates are parts of views that are saved
-    and can be reused. They can be created in two different ways, while editing a
-    view by pressing the ‘Save Template’ button on the toolbar of any of its parts,
-    or by going to the view page in the settings and pressing ‘Create New
-    Template’.</p>
+                and can be reused. They can be created in two different ways, while editing a
+                view by pressing the ‘Save Template’ button on the toolbar of any of its parts,
+                or by going to the view page in the settings and pressing ‘Create New
+                Template’.</p>
             <p class=MsoNormal><span lang=EN-US>The templates can be used by copy, which
-    can be done in the same drop-down menu used to add a new part to a block. This
-    way the contents of the template are copied to the current view. </span></p>
+                    can be done in the same drop-down menu used to add a new part to a block. This
+                    way the contents of the template are copied to the current view. </span></p>
 
-    <p class=MsoNormal><span lang=EN-US>They can also be used by reference by using
-    the ‘Add Template Reference’ drop-down menu. Templates by reference are
-    connected to the original template and any changes made to it will affect the
-    original.</span></p>
+            <p class=MsoNormal><span lang=EN-US>They can also be used by reference by using
+                    the ‘Add Template Reference’ drop-down menu. Templates by reference are
+                    connected to the original template and any changes made to it will affect the
+                    original.</span></p>
         </div>
     </div>
     <div class="section" id="expression-language">
         <p class=MsoNormal><span lang=EN-US>GameCourse has its own language and
-    vocabulary to allow users to personalize views and interact with the database,
-    this is used in the settings of the individual view parts. It is very similar
-    to a programming language. The language has multiple libraries, some of which
-    only became available with the activation of specific modules, the functions
-    defined in those libraries can return values, objects (a data structure
-    containing values) and collections (a data structure containing any number of
-    objects).</span></p>
+                vocabulary to allow users to personalize views and interact with the database,
+                this is used in the settings of the individual view parts. It is very similar
+                to a programming language. The language has multiple libraries, some of which
+                only became available with the activation of specific modules, the functions
+                defined in those libraries can return values, objects (a data structure
+                containing values) and collections (a data structure containing any number of
+                objects).</span></p>
         <p class=MsoNormal><span lang=EN-US><span>An example of an expression is </span><code>Hello
     {users.getUser(%viewer).name}!</code><span> which would be evaluated as ’Hello John!’,
-    for example, if the name of the user was John. In this language anything typed
-    outside of the curly brackets is accepted as text with the exception of names
-    starting with </span><code>%</code><span> (percentage) which return the value of a variable, to escape this case use
-    </span><code>%%</code><span>. When you want to evaluate something, it should be placed inside curly
-    brackets, for example, </span><code>{2*3}</code><span>. To access the name of the user as we
-    demonstrated in the first example, we use </span><code>{users.getUser(%viewer).name}</code>
-    <span>which will fetch the user with the id </span><code>%viewer</code><span> (which is evaluated as the
-    id of the user that is logged in the application) and then returns the name of
-    that user.</span></span></p>
+                    for example, if the name of the user was John. In this language anything typed
+                    outside of the curly brackets is accepted as text with the exception of names
+                    starting with </span><code>%</code><span> (percentage) which return the value of a variable, to
+                    escape this case use
+                </span><code>%%</code><span>. When you want to evaluate something, it should be placed inside curly
+                    brackets, for example, </span><code>{2*3}</code><span>. To access the name of the user as we
+                    demonstrated in the first example, we use </span><code>{users.getUser(%viewer).name}</code>
+                <span>which will fetch the user with the id </span><code>%viewer</code><span> (which is evaluated as the
+                    id of the user that is logged in the application) and then returns the name of
+                    that user.</span></span></p>
         <h2>Operations and Functions</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>
-                <span>As in many other languages the expressions provide the simple mathematics operators for addition </span><code>+</code><span>, subtraction </span><code>-</code><span>, multiplication </span><code>*</code>
-                <span>, division </span><code>/</code><span> and mod </span><code>%</code>
-                <span>. It also provides logic and bitwise operators, and </span><code>&amp;&amp;</code><span> (bitwise </span><code>&amp;</code><span>), or </span><code>||</code>
-                <span>(bitwise </span><code>|</code><span>), negation </span><code>!</code><span> (bitwise </span></span>
-            <code><span lang=EN-US style='font-family:"Cambria Math",serif'>&#8764;</span></code>
-            <span lang=EN-US>)and bitwise xor </span><code><span lang=EN-US>ˆ</span></code>
-    <span lang=EN-US><span>. It is
-    also possible to call functions defined in GameCourse from the expressions. A
-    function call starts with the library that provides that behavior or a
-    collection/object belonging to one of those libraries and is followed by a dot
-    </span><code>.</code><span> and an arbitrary number of letters, A through z. Arguments of the
-    function are enclosed in parenthesis </span><code>()</code><span> and need to be comma </span><code>,</code>
-    <span>separated, if there are no arguments the parenthesis are not necessary.</span></span></p>
+                    <span>As in many other languages the expressions provide the simple mathematics operators for
+                        addition </span><code>+</code><span>, subtraction </span><code>-</code><span>, multiplication
+                    </span><code>*</code>
+                    <span>, division </span><code>/</code><span> and mod </span><code>%</code>
+                    <span>. It also provides logic and bitwise operators, and </span><code>&amp;&amp;</code><span>
+                        (bitwise </span><code>&amp;</code><span>), or </span><code>||</code>
+                    <span>(bitwise </span><code>|</code><span>), negation </span><code>!</code><span> (bitwise
+                    </span></span>
+                <code><span lang=EN-US style='font-family:"Cambria Math",serif'>&#8764;</span></code>
+                <span lang=EN-US>)and bitwise xor </span><code><span lang=EN-US>ˆ</span></code>
+                <span lang=EN-US><span>. It is
+                        also possible to call functions defined in GameCourse from the expressions. A
+                        function call starts with the library that provides that behavior or a
+                        collection/object belonging to one of those libraries and is followed by a dot
+                    </span><code>.</code><span> and an arbitrary number of letters, A through z. Arguments of the
+                        function are enclosed in parenthesis </span><code>()</code><span> and need to be comma
+                    </span><code>,</code>
+                    <span>separated, if there are no arguments the parenthesis are not necessary.</span></span>
+            </p>
             <p class=MsoNormal><span lang=EN-US>The libraries available by default are
-    system are actions, awards, courses, participations, system and users. There
-    are also some functions not associated with any library that can be used over
-    objects or collections.</span></p>
+                    system are actions, awards, courses, participations, system and users. There
+                    are also some functions not associated with any library that can be used over
+                    objects or collections.</span></p>
 
-    <p class=MsoNormal><span lang=EN-US>There are also 3 other libraries which can
-    be available if their respective modules are enabled, which are badges,
-    skillTrees and xp. </span></p>
+            <p class=MsoNormal><span lang=EN-US>There are also 3 other libraries which can
+                    be available if their respective modules are enabled, which are badges,
+                    skillTrees and xp. </span></p>
 
-    <p class=MsoNormal><span lang=EN-US>Other functions may be added by registering
-    them in a module.</span></p>
-    <p class=MsoNormal><span lang=EN-US><span>The available functions according to the
-    enabled modules can be found in the </span><a href="./functions">Functions page</a>.</span></p>
+            <p class=MsoNormal><span lang=EN-US>Other functions may be added by registering
+                    them in a module.</span></p>
+            <p class=MsoNormal><span lang=EN-US><span>The available functions according to the
+                        enabled modules can be found in the </span><a href="./functions">Functions page</a>.</span></p>
         </div>
         <a name="ViewsExpressionVariables"></a>
         <h2>Variables</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US><span>Variables are used by the expressions to
-    allow an easier creation of expressions without having to write very long
-    expressions to access certain fields. A variable starts with a % (percentage
-    symbol) and is followed by an arbitrary number of letters, A through z. It is
-    possible to call functions over variables, for example is we have a variable </span><b>%item</b><span>
-    containing an user object we can call functions of the users library such as </span><b>%item.username</b>.</span></p>
+                        allow an easier creation of expressions without having to write very long
+                        expressions to access certain fields. A variable starts with a % (percentage
+                        symbol) and is followed by an arbitrary number of letters, A through z. It is
+                        possible to call functions over variables, for example is we have a variable
+                    </span><b>%item</b><span>
+                        containing an user object we can call functions of the users library such as
+                    </span><b>%item.username</b>.</span></p>
 
             <p class=MsoNormal><span lang=EN-US>GameCourse has already defined some
-            built-in meta variables:</span></p>
+                    built-in meta variables:</span></p>
             <ul>
                 <li><code>%course</code><span> - Represents the course that the
-    user is manipulating;</span></li>
+                        user is manipulating;</span></li>
                 <li><code>%user</code><span> - Represents the user associated to
-    the page which is being displayed;</span></li>
+                        the page which is being displayed;</span></li>
                 <li><code>%viewer</code><span> - Represents the user that is
-    currently logged in watching the page;</span></li>
-            </ul>  
-    <p class=MsoNormal><span lang=EN-US>And when the Loop Data field is used there
-    is also:</span></p><ul>
+                        currently logged in watching the page;</span></li>
+            </ul>
+            <p class=MsoNormal><span lang=EN-US>And when the Loop Data field is used there
+                    is also:</span></p>
+            <ul>
                 <li><code>%index</code><span> - Represents the current index while
-    iterating a collection;</span></li>
+                        iterating a collection;</span></li>
                 <li><code> %item</code><span> - Represents the object that is
-    currently being iterated in that view;</span></li>
+                        currently being iterated in that view;</span></li>
             </ul>
         </div>
     </div>
     <div class="section" id="part-configuration">
         <p class=MsoNormal><span lang=EN-US>The settings of each part include multiple
-            field, most of them receive expressions of the Expression Language which will
-            have a green square if they are correctly formatted and red if not. However,
-            they can have a green square and still cause errors which will be reported when
-            attempting to save the view.</span></p>
+                field, most of them receive expressions of the Expression Language which will
+                have a green square if they are correctly formatted and red if not. However,
+                they can have a green square and still cause errors which will be reported when
+                attempting to save the view.</span></p>
         <a name="ViewsLoop"></a>
         <h2>DOM Manipulations - Loop Data</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US><span>This field is used to get data from the
-    database that will be accessible with the %item variable. If the expression
-    produces a collection, then it will be looped through. The objects provided by
-    the expression can be accessed in the current view part or any of its children
-    with <B>%item</b> variable and its index in the collection will be on </span><b>%index</b>.</span></p>
+                        database that will be accessible with the %item variable. If the expression
+                        produces a collection, then it will be looped through. The objects provided by
+                        the expression can be accessed in the current view part or any of its children
+                        with <B>%item</b> variable and its index in the collection will be on
+                    </span><b>%index</b>.</span></p>
             <h3>Example</h3>
             <div class="subsection">
                 <p>For example, to configure a list of badges: </p>
                 <img src="./pages/plugins/loop.png">
-            <p class=MsoNormal><span lang=EN-US>In this case the element will be repeated
-    for each badge and the variable %item will have the object of the current
-    badge.</span></p>
+                <p class=MsoNormal><span lang=EN-US>In this case the element will be repeated
+                        for each badge and the variable %item will have the object of the current
+                        badge.</span></p>
             </div>
         </div>
         <a name="ViewsVariables"></a>
         <h2><span lang=EN-US>Variables</span></h2>
-    <p class=MsoNormal><span lang=EN-US>This section allows for the creation of new
-    variables, by first writing their name and pressing ‘Add’ and then writing an
-    expression for its value. To delete a variable, press the ‘Remove’ button. The
-    variables can be used in the current view part and any of its children.</span></p>
-            <h3>Example</h3>
-                <div class="subsection">
-                    <p><span>For example, to define a variable </span><b>%userXP</b><span> containing the XP of the user in </span><b>%item</b>: </p>
+        <p class=MsoNormal><span lang=EN-US>This section allows for the creation of new
+                variables, by first writing their name and pressing ‘Add’ and then writing an
+                expression for its value. To delete a variable, press the ‘Remove’ button. The
+                variables can be used in the current view part and any of its children.</span></p>
+        <h3>Example</h3>
+        <div class="subsection">
+            <p><span>For example, to define a variable </span><b>%userXP</b><span> containing the XP of the user in
+                </span><b>%item</b>: </p>
             <img src="./pages/plugins/variables.png">
-            </div>
+        </div>
         <a name="ViewsContent"></a>
         <h2><span lang=EN-US>Content</span></h2>
-    <p class=MsoNormal><span lang=EN-US>This section exists for blocks, text and
-    image parts. In blocks it simply has a checkmark to enable the header which
-    will add an image and text to the beginning of the block.</span></p>
+        <p class=MsoNormal><span lang=EN-US>This section exists for blocks, text and
+                image parts. In blocks it simply has a checkmark to enable the header which
+                will add an image and text to the beginning of the block.</span></p>
 
-    <p class=MsoNormal><span lang=EN-US>In the other types of view parts this
-    section has the Expression that defines what is showed by that part. There is
-    also the possibility of making the text/image clickable to a specific link by
-    enabling the link and defining a url.</span></p>
-            <h3>Example</h3>
-                <div class="subsection">
-                <p>For example, if %user was 10000 and %userData was the user object for that %user who's name was "Example Name": </p>
-            
+        <p class=MsoNormal><span lang=EN-US>In the other types of view parts this
+                section has the Expression that defines what is showed by that part. There is
+                also the possibility of making the text/image clickable to a specific link by
+                enabling the link and defining a url.</span></p>
+        <h3>Example</h3>
+        <div class="subsection">
+            <p>For example, if %user was 10000 and %userData was the user object for that %user who's name was "Example
+                Name": </p>
+
             <img src="./pages/plugins/content.png">
             <p>This expression would write "Example Name - 10000" </p>
-            </div>
+        </div>
         <a name="ViewsVisibility"></a>
         <h2><span lang=EN-US>Visibility</span></h2>
-    <p class=MsoNormal><span lang=EN-US>In this area the visibility of an element
-    can be set as either ‘Visible’- the element is shown normally, ‘Invisible’- the
-    element is rendered but hidden and can be made visible again using events, or
-    ‘Visible by condition’ – the element id only rendered if the condition
-    expression evaluates to true.</span></p>
-            <h3>Example</h3>
-                <div class="subsection">
-                    <p><span>For example, given a skill object </span><b>%item</b><span>, if the </span><b>%user</b><span> as completed the skill then the view part will be rendered:</span></p>
+        <p class=MsoNormal><span lang=EN-US>In this area the visibility of an element
+                can be set as either ‘Visible’- the element is shown normally, ‘Invisible’- the
+                element is rendered but hidden and can be made visible again using events, or
+                ‘Visible by condition’ – the element id only rendered if the condition
+                expression evaluates to true.</span></p>
+        <h3>Example</h3>
+        <div class="subsection">
+            <p><span>For example, given a skill object </span><b>%item</b><span>, if the </span><b>%user</b><span> as
+                    completed the skill then the view part will be rendered:</span></p>
             <img src="./pages/plugins/visibility.png">
-            </div>
+        </div>
         <a name="ViewsStyleMiscStyle"></a>
         <h2>Styling/Misc - Style</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This field receives CSS code specifying the
-    style of the element, the expression language may be used here if necessary.</span></p>
+                    style of the element, the expression language may be used here if necessary.</span></p>
+        </div>
+        <a name="ViewsStyleMiscID"></a>
+        <h2>Styling/Misc - ID</h2>
+        <div class="subsection">
+            <p class=MsoNormal><span lang=EN-US>This field defines the id of the html
+                    element, this could be useful if the is already some css code defined for that
+                    element.</span></p>
         </div>
         <a name="ViewsStyleMiscClass"></a>
         <h2>Styling/Misc - Class</h2>
         <div class="subsection">
             <p class=MsoNormal><span lang=EN-US>This field defines the class of the html
-    element, this could be useful if the is already some css code defined for that
-    class.</span></p>
+                    element, this could be useful if the is already some css code defined for that
+                    class.</span></p>
         </div>
         <a name="ViewsStyleMiscLabel"></a>
         <h2>Styling/Misc – Label</h2>
         <div class="subsection">
-    <p class=MsoNormal><span lang=EN-US>The label field is in events that affect
-    other parts of the page and identify them by the label.</span></p>
+            <p class=MsoNormal><span lang=EN-US>The label field is in events that affect
+                    other parts of the page and identify them by the label.</span></p>
         </div>
         <a name="ViewsStyleMiscEvents"></a>
         <h2>Styling/Misc - Events</h2>
         <div class="subsection">
-    <p class=MsoNormal><span lang=EN-US><span>This area is where events can be selected
-    and the actions that they trigger can be defined using the expression language.
-    The events fields are the only places where the </span><b>actions</b><span> library is to be used.</span></span></p>
+            <p class=MsoNormal><span lang=EN-US><span>This area is where events can be selected
+                        and the actions that they trigger can be defined using the expression language.
+                        The events fields are the only places where the </span><b>actions</b><span> library is to be
+                        used.</span></span></p>
             <h3>Example</h3>
-                <div class="subsection">
-                    <p>For example, to go to the Leaderboard page when the user clicks on the element:</p>
-        
-            <img src="./pages/plugins/events.png">
+            <div class="subsection">
+                <p>For example, to go to the Leaderboard page when the user clicks on the element:</p>
+
+                <img src="./pages/plugins/events.png">
             </div>
         </div>
-    
+
     </div>
 </div>
-

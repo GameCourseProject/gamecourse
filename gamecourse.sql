@@ -219,6 +219,7 @@ create table view(
 	variables varchar(500),
 	value varchar(200),
 	class varchar(50),
+	cssId varchar(50),
 	style varchar(200),
 	link varchar(100),
 	visibilityCondition varchar(200),
@@ -245,7 +246,7 @@ create table page(
 	viewId int unsigned,
 	isEnabled boolean default false,
 	seqId int unsigned not null,
-	foreign key(viewId) references view(id) on delete set null,
+	#foreign key(viewId) references view(id) on delete set null,
 	foreign key(course) references course(id) on delete cascade
 );
 create table template(

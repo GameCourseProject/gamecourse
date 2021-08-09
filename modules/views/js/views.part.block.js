@@ -88,7 +88,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
 
             var blockContent = $(document.createElement('div')).addClass('content');
 
-            if (part.children.length == 0 && options.edit) {
+            if (!part.children && options.edit) {
                 blockContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
             }
 

@@ -6,7 +6,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 func(undefined, err);
                 return;
             }
-            console.log(data);
             var viewScope = $rootScope.$new(true);
             viewScope.view = data.view;
             viewScope.viewBlock = {
@@ -15,7 +14,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 children: viewScope.view.children,
                 role: viewScope.view.role,
                 parentId: null,
-                id: viewScope.view.id
+                id: viewScope.view.id,
+                class: viewScope.view.class,
+                cssId: viewScope.view.cssId
             };
             if (viewScope.view.header) {
                 viewScope.viewBlock.header = viewScope.view.header;
@@ -116,7 +117,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 $rootScope.partsHierarchy.push(viewScope[block]);
             }
 
-            console.log(viewScope.views);
             //$rootScope.partsHierarchy = [viewScope.viewBlock];
             $rootScope.role = viewScope.views[0].role;
             $rootScope.roleType = viewScope.views[0].role.includes(">") ? "ROLE_INTERACTION" : "ROLE_SINGLE";
@@ -124,9 +124,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             $rootScope.viewRoles = JSON.parse(angular.toJson(data.viewRoles)); //roles for which there is at least one subview
             $rootScope.rolesHierarchy = data.rolesHierarchy;
             $rootScope.courseId = data.courseId;
-
-            console.log($rootScope.viewRoles);
-            console.log($rootScope.rolesHierarchy);
 
             function build() {
                 var viewBlock = [];
@@ -314,8 +311,18 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
         if (options.edit)
             return;
-        if (part.class !== undefined)
-            element.addClass(part.class);
+
+        if (part.class !== undefined) {
+            if (part.class.includes(';')) {
+                $.each(part.class.split(';'), function (i, item) {
+                    element.addClass(item);
+                });
+            } else
+                element.addClass(part.class);
+        }
+        if (part.cssId !== undefined) {
+            element.attr('id', part.cssId);
+        }
         if (part.style !== undefined)
             element.attr('style', part.style);
         if (part.label !== undefined)
@@ -476,7 +483,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
                         //ToDo: drop,keydown,keypress,keyup (these weren't working)
                         var missingEvents = [];
-                        console.log(optionsScope);
                         if (optionsScope.part.events !== undefined) {
                             for (var i in events) {
                                 var event = events[i];
@@ -690,7 +696,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 newPart.isTemplateRef = true;
                             if (part.id)
                                 newPart.id = part.id;
-                            console.log(newPart);
+                            // console.log(newPart);
                             toolbarOptions.toolFunctions.switch(part, newPart);
                             execClose();
                         }
@@ -783,7 +789,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                             delete newPart.id;
                                             newPart.isTemplateRef = true;
                                             //newPart.id = optionsScope.template.id;
-                                            console.log(newPart);
+                                            // console.log(newPart);
                                             toolbarOptions.toolFunctions.switch(part, newPart);
                                         }
 
@@ -793,7 +799,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             }
                             else {
                                 var templatePartAsp = $sbviews.getAllPartAspects(part.viewId);
-                                console.log(templatePartAsp);
                                 optionsScope.template.parts = templatePartAsp;
                                 optionsScope.template.isRef = false;
                                 $smartboards.request('views', 'saveTemplate', optionsScope.template, function (data, err) {
@@ -806,7 +811,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     optionsScope.template.id = data.templateId;
                                     optionsScope.template.viewId = data.idView;
                                     optionsScope.editData.templates[templateIndex] = optionsScope.template;
-                                    console.log(optionsScope.editData.templates[templateIndex]);
                                 });
                             }
 
@@ -937,7 +941,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     var el = $('.highlight');
                     const role = unparseRole(el[0].getAttribute('data-role'));
                     var parentContent = el[0].parentElement;
-                    var partParent = $sbviews.findPart(part.parentId, getViewerFromRole(role), $rootScope.partsHierarchy);
+                    var partParent = $sbviews.findPart(part.parentId, getViewerFromRole(role), $rootScope.partsHierarchy, true);
+                    // console.log(partParent);
 
                     // default part
                     if (new_aspect == "new_aspect") {
@@ -1123,8 +1128,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             //   document.getElementById("viewer_role").append($('<option value="' + new_viewer.value + '">' + new_viewer.text + '</option>'));
                         }
                     }
-                    console.log($rootScope.viewRoles);
-                    console.log(document.getElementById("viewer_role"));
                     rolesWithoutAspect = getAvailableRoles();
 
                     //add part
@@ -1173,34 +1176,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     const viewId = el[0].getAttribute('data-viewId');
                     const roleViewer = $("#edit_viewer_select").find(":selected")[0];
                     var role = roleViewer.text;
-                    if ($rootScope.roleType == "ROLE_INTERACTION") {
-                        const roleUser = $("#edit_user_selection").find(":selected")[0];
-                        role = roleUser.text + '>' + roleViewer.text;
 
-                        $("#edit_user_select option:contains(" + roleUser.text + ")").remove();
-                        viewRoles[0] = viewRoles[0].filter(role => role.name != roleUser.text);
-                        viewRoles[1] = viewRoles[1].filter(role => role.name != roleViewer.text);
-                        const requiredIndexU = $rootScope.viewRoles[0].findIndex(el => {
-                            return el.name === roleUser.text;
-                        });
-                        $rootScope.viewRoles[0].splice(requiredIndexU, 1);
-
-                        const requiredIndexV = $rootScope.viewRoles[1].findIndex(el => {
-                            return el.name === roleViewer.text;
-                        });
-                        $rootScope.viewRoles[1].splice(requiredIndexV, 1);
-                    } else {
-                        viewRoles = viewRoles.filter(role => role.name != roleViewer.text);
-                        const requiredIndex = $rootScope.viewRoles.findIndex(el => {
-                            return el.name === roleViewer.text;
-                        });
-                        $rootScope.viewRoles.splice(requiredIndex, 1);
-                    }
-                    console.log($rootScope.viewRoles);
                     const parentContent = el[0].parentElement;
 
                     const part = $sbviews.findPart(viewId, unparseRole(role), $rootScope.partsHierarchy);
-                    const partParent = $sbviews.findPart(part.parentId, unparseRole(role), $rootScope.partsHierarchy);
+                    const partParent = $sbviews.findPart(part.parentId, unparseRole(role), $rootScope.partsHierarchy, true);
 
                     var idx = partParent.children.indexOf(part);
                     partParent.children.splice(idx, 1);
@@ -1209,8 +1189,60 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     $sbviews.destroy(elToRemove);
                     if ($(parentContent).children().length == 0)
                         parentContent.append($(document.createElement('div')).text('(No Children)').addClass('red no-children'));
-                    $sbviews.findViewToShow(viewId, roleViewer.text);
-                    $("#edit_viewer_select option:contains(" + roleViewer.text + ")").remove();
+
+                    if ($rootScope.roleType == 'ROLE_INTERACTION') {
+                        [userRoles, viewerRoles] = $sbviews.findRolesOfHierarchy($rootScope.roleType, $rootScope.partsHierarchy);
+                    } else {
+                        viewerRoles = $sbviews.findRolesOfHierarchy($rootScope.roleType, $rootScope.partsHierarchy);
+                    }
+
+
+
+                    if ($rootScope.roleType == "ROLE_INTERACTION") {
+                        if (!viewerRoles.map(el => el.name).includes(roleViewer.text)) {
+                            viewRoles[1] = viewRoles[1].filter(role => role.name != roleViewer.text);
+                            const requiredIndexV = $rootScope.viewRoles[1].findIndex(el => {
+                                return el.name === roleViewer.text;
+                            });
+                            $rootScope.viewRoles[1].splice(requiredIndexV, 1);
+                            $("#edit_viewer_select option:contains(" + roleViewer.text + ")").remove();
+                        }
+                        const roleUser = $("#edit_user_selection").find(":selected")[0];
+                        role = roleUser.text + '>' + roleViewer.text;
+
+                        if (!userRoles.map(el => el.name).includes(roleUser.text)) {
+                            //$("#edit_user_select option:contains(" + roleUser.text + ")").remove();
+                            viewRoles[0] = viewRoles[0].filter(role => role.name != roleUser.text);
+
+                            const requiredIndexU = $rootScope.viewRoles[0].findIndex(el => {
+                                return el.name === roleUser.text;
+                            });
+                            $rootScope.viewRoles[0].splice(requiredIndexU, 1);
+
+                            //not sure 
+                            $("#edit_user_select option:contains(" + roleUser.text + ")").remove();
+                        }
+                        // set to Default ??
+                        $("#user_role option[value='0']").attr('selected', 'selected');
+
+                    } else {
+                        if (!viewerRoles.map(el => el.name).includes(roleViewer.text)) {
+                            viewRoles = viewRoles.filter(role => role.name != roleViewer.text);
+                            const requiredIndex = $rootScope.viewRoles.findIndex(el => {
+                                return el.name === roleViewer.text;
+                            });
+                            $rootScope.viewRoles.splice(requiredIndex, 1);
+                            $("#edit_viewer_select option:contains(" + roleViewer.text + ")").remove();
+                        }
+                    }
+
+
+                    const roles = $sbviews.buildRolesHierarchyForOneRole(roleViewer.text);
+                    const newRole = roles[1];
+                    $("#viewer_role option[value=" + newRole.id + "]").attr('selected', 'selected');
+                    $("#viewer_role").trigger("onchange");
+
+
                     $("#delete-aspect").hide();
                     optionsScope.closeOverlay();
                 };
@@ -1346,12 +1378,14 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         return aspectsParts;
     }
 
-    //role argument is the viewer role
-    this.findPart = function (viewId, role, viewAspects) {
+    //role argument is the viewer role; viewId = id if parent, viewId = viewId if we looking for that part
+    this.findPart = function (viewId, role, viewAspects, isParent = false) {
         if (Array.isArray(viewAspects) && viewAspects.length == 1) {
             //if (viewAspects[0].parentId == null) {
-            //main view
-            if (viewAspects[0].viewId == viewId) {
+            if (isParent && viewAspects[0].id == viewId) {
+                return viewAspects[0];
+            }
+            else if (!isParent && viewAspects[0].viewId == viewId) {
                 return viewAspects[0];
             }
             //only one aspect with children
@@ -1367,36 +1401,45 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     }, []);
                 });
                 //console.log(aspectChildren);
+
                 for (let aspectsOfChild of aspectChildren) {
-                    if (aspectsOfChild[0].viewId == viewId)
-                        return this.findPart(viewId, role, aspectsOfChild);
+                    // if (aspectsOfChild[0].viewId == viewId)
+                    aspect = this.findPart(viewId, role, aspectsOfChild, isParent);
+                    if (aspect !== false) {
+                        return aspect;
+                    }
                 };
 
             }
         } else if (Array.isArray(viewAspects) && viewAspects.length != 1) {
             for (let aspect of viewAspects) {
-                //console.log(aspect);
-                if (aspect.parentId == null) {
-
+                if ((isParent && aspect.id == viewId) || (!isParent && aspect.viewId == viewId)) {
                     if ($rootScope.roleType == 'ROLE_SINGLE') {
                         //main view
-                        if (aspect.viewId == viewId && aspect.role == role) {
+                        if (aspect.role == role) {
                             return aspect;
                         }
+                        // else if (!isParent && aspect.viewId == viewId && aspect.role == role) {
+                        //     console.log("entra aqui");
+                        //     return aspect;
+                        // }
                     } else {
                         const viewer = aspect.role.split('>')[1];
                         const user = aspect.role.split('>')[0];
                         const globalUser = $("#user_role").find(":selected")[0].text;
-                        if (aspect.viewId == viewId && viewer == role && globalUser == user) {
+                        if (viewer == role && globalUser == user) {
                             return aspect;
                         }
+                        // else if (!isParent && aspect.viewId == viewId && viewer == role && globalUser == user) {
+                        //     return aspect;
+                        // }
                     }
                 }
 
-                if (aspect.children && aspect.children.length != 0) {
+                else if (aspect.children && aspect.children.length != 0) {
                     const viewIdsArray = [...new Set(aspect.children.map(x => x.viewId))];
-                    //console.log(viewIdsArray);
-                    //console.log(aspect.children);
+                    // console.log(viewIdsArray);
+                    // console.log(aspect.children);
                     const aspectChildren = viewIdsArray.map((key) => {
                         return aspect.children.reduce(function (result, el) {
                             if (el.viewId == key)
@@ -1405,10 +1448,17 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         }, []);
                     });
                     //console.log(aspectChildren);
+                    let found = false;
                     for (let aspectsOfChild of aspectChildren) {
-                        if (aspectsOfChild[0].viewId == viewId)
-                            return this.findPart(viewId, role, aspectsOfChild);
+                        // if (aspectsOfChild[0].viewId == viewId)
+                        aspect = this.findPart(viewId, role, aspectsOfChild, isParent);
+                        if (aspect !== false) {
+                            found = true;
+                            break;
+                        }
                     };
+                    if (found)
+                        return aspect;
                 } else {
                     //console.log(aspect);
                     const rolesForTargetRole = this.buildRolesHierarchyForOneRole(parseRole(role));
@@ -1434,17 +1484,21 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         } else {
 
             //main view
-            if (viewAspects.viewId == viewId) {
+            if (isParent && viewAspects.id == viewId) {
+                return viewAspects;
+            }
+            else if (!isParent && viewAspects.viewId == viewId) {
                 return viewAspects;
             }
 
             // }
         }
+        return false;
 
 
     };
 
-    //finds the child that we should show after delete an aspect
+    //finds the child that we should show
     this.findViewToShow = function (childViewId, roleViewer) {
         var currentGlobalViewerRole = $("#viewer_role").find(":selected")[0].text;
         var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
@@ -1455,7 +1509,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         rolesToCheck.forEach(role => {
             if (($("[data-role=" + role + "]").toArray().length == 0 || $("[data-role*='>" + role + "']").toArray().length == 0) && role != "Default") {
                 const roles = this.buildRolesHierarchyForOneRole(role);
-                console.log(roles);
+                //console.log(roles);
                 const newRole = roles[1]; // if it was 0, it would be the role itself. we want the next one
                 const newOption = $("#viewer_role option").filter((idx, option) => {
                     return option.label == newRole.name
@@ -1508,33 +1562,112 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     };
 
+    //returns the roles that a hierarchy has
+    this.findRolesOfHierarchy = function (roleType, viewAspects, viewerRoles = [], userRoles = []) {
+        if (roleType == 'ROLE_SINGLE') {
+            for (v of viewAspects) {
+                if (v.children && v.children.length != 0) {
+                    newRoles = this.findRolesOfHierarchy(roleType, v.children, viewerRoles);
+                    viewerRoles = viewerRoles.concat(newRoles);
+                }
+                roles = this.findRolesOfView(v.viewId);
+                viewerRoles = viewerRoles.concat(roles);
+
+                //return viewerRoles;
+            }
+            return viewerRoles.filter((el, i) => viewerRoles.indexOf(el) === i);
+        } else {
+
+            for (v of viewAspects) {
+                if (v.children && v.children.length != 0) {
+                    [newURoles, newVRoles] = this.findRolesOfHierarchy(roleType, v.children, viewerRoles, userRoles);
+                    viewerRoles = viewerRoles.concat(newVRoles);
+                    userRoles = userRoles.concat(newURoles);
+                }
+                [uRoles, vRoles] = this.findRolesOfView(v.viewId);
+                viewerRoles = viewerRoles.concat(vRoles);
+                userRoles = userRoles.concat(uRoles);
+
+            }
+            return [userRoles.filter((el, i) => userRoles.indexOf(el) === i), viewerRoles.filter((el, i) => viewerRoles.indexOf(el) === i)];
+        }
+    };
+
     //finds the right views to show for the targetRole
     this.findViewsForRole = function (viewAspects, targetRole) {
         $(".highlight").click(); // removes the highligh and the toolbar that can be seen as a child
         //if (roletype == ROLE_SINGLE)
+        // console.log(viewAspects);
 
-        if (viewAspects.length == 1 && viewAspects[0].children && Array.from(viewAspects[0].children).length != 0) {
-            const children = Array.from(viewAspects[0].children);
-            //in case is the content of a block
-            if (children.length == 0) {
-                this.findViewsForRole(viewAspects[0].children, targetRole);
+        if (Array.from(viewAspects).some(el => $(el).hasClass('content'))) {
+            const components = Array.from(viewAspects);
+            for (component of components) {
+                const children = Array.from(component.children);
+                const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
+                //console.log(viewIdsArray);
+                const aspectChildren = viewIdsArray.map((key) => {
+                    return children.reduce(function (result, el) {
+                        if (el.getAttribute('data-viewid') == key)
+                            result.push(el);
+                        return result;
+                    }, []);
+                });
+
+                // console.log(aspectChildren);
+                aspectChildren.forEach(aspects => {
+                    this.findViewsForRole(aspects, targetRole);
+                });
             }
-            // console.log(children);
-            const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
-            //console.log(viewIdsArray);
-            const aspectChildren = viewIdsArray.map((key) => {
-                return children.reduce(function (result, el) {
-                    if (el.getAttribute('data-viewid') == key)
-                        result.push(el);
-                    return result;
-                }, []);
-            });
 
-            // console.log(aspectChildren);
-            aspectChildren.forEach(aspects => {
-                this.findViewsForRole(aspects, targetRole);
-            });
-        } else {
+        }
+
+        //if there is only one aspect available
+        if (viewAspects.length == 1 && viewAspects[0].getAttribute('data-role') == targetRole) {
+            $(viewAspects[0]).removeClass('aspect_hide');
+            if ($(viewAspects[0]).hasClass('diff_aspect')) {
+                $(viewAspects[0]).removeClass('diff_aspect');
+            }
+            // if ($(view).hasClass('highlight'))
+            //     $(view).click();
+        }
+
+        if (viewAspects.length == 1 && viewAspects[0].children && Array.from(viewAspects[0].children).length != 0 && !$(viewAspects[0]).hasClass('image')) {
+            const children = Array.from(viewAspects[0].children);
+            //in case is the content of a block (with or w/o header)
+            if (children.some(el => $(el).hasClass('header'))) {
+                $.each(children, (idx, el) => {
+                    this.findViewsForRole([el], targetRole);
+                })
+            } else if (children.some(el => $(el).hasClass('content'))) {
+                this.findViewsForRole(viewAspects[0].children, targetRole);
+            } else {
+                // console.log(children);
+                const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
+                //console.log(viewIdsArray);
+                const aspectChildren = viewIdsArray.map((key) => {
+                    return children.reduce(function (result, el) {
+                        if (el.getAttribute('data-viewid') == key)
+                            result.push(el);
+                        return result;
+                    }, []);
+                });
+
+                // console.log(aspectChildren);
+                aspectChildren.forEach(aspects => {
+                    this.findViewsForRole(aspects, targetRole);
+                });
+            }
+
+
+        }
+        else if (viewAspects.length == 1 && viewAspects[0].getAttribute('data-role') == "Default") {
+            $(viewAspects[0]).removeClass('aspect_hide');
+            if ($(viewAspects[0]).hasClass('diff_aspect')) {
+                $(viewAspects[0]).removeClass('diff_aspect');
+            }
+        }
+
+        else {
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
@@ -1644,7 +1777,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         const nextViewId = viewIdsArray[viewIdsArray.length - 1] + 1;
 
         var viewAspects = $("[data-viewid=" + part.viewId + "]").toArray();
-        const parentPart = this.findPart(part.parentId, getViewerFromRole(part.role), $rootScope.partsHierarchy);
+        const parentPart = this.findPart(part.parentId, getViewerFromRole(part.role), $rootScope.partsHierarchy, true);
         // console.log(parentPart);
         // console.log(viewAspects);
 
@@ -1802,6 +1935,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 var defaultOptions = {
                     layoutEditor: false,
                     overlayOptions: {
+                        allowId: true,
                         allowClass: true,
                         allowStyle: true,
                         allowDirective: true
@@ -1821,6 +1955,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowEvents = true;
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
+                    defaultOptions.overlayOptions.allowId = true;
                 }
                 else if (element.parent().parent().hasClass('block') || element.parent().parent().hasClass('view') || element.hasClass('block')) { // children of ui-block
                     defaultOptions.overlayOptions.allowDataLoop = true;
@@ -1829,6 +1964,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     defaultOptions.overlayOptions.allowVariables = true;
                     defaultOptions.overlayOptions.allowStyle = true;
                     defaultOptions.overlayOptions.allowClass = true;
+                    defaultOptions.overlayOptions.allowId = true;
                 }
                 // if (element.hasClass('view')) {
                 //     toolOptions.noSettings = true;
