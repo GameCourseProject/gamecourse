@@ -282,7 +282,7 @@ class User
         $file = "";
         $i = 0;
         $len = count($listOfUsers);
-        $file .= "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
+        $file .= "name,email,nickname,studentNumber,major,isAdmin,isActive,username,auth\n";
         foreach ($listOfUsers as $user) {
             $u = new User($user["id"]);
             $username = $u->getUsername();
