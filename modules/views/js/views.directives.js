@@ -178,7 +178,7 @@ angular
       scope: true,
       transclude: true,
       link: function ($scope, element, attrs) {
-        $scope.elid = "ex-" + ++uid;
+        $scope.elid = attrs.sbExpression.split(".")[1];
 
         CodeAssistant.fields = $scope.editData.fieldsTree;
         $scope.ca = CodeAssistant;

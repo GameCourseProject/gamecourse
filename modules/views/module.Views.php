@@ -20,9 +20,10 @@ class Views extends Module
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
         parent::addResources('js/views.part.text.js');
-        parent::addResources('Expression/GameCourseExpression.js');
+        // parent::addResources('Expression/GameCourseExpression.js');
         parent::addResources('js/');
         parent::addResources('css/views.css');
+        parent::addResources('css/src/views.less');
     }
 
     public function initSettingsTabs()
@@ -1693,8 +1694,8 @@ class Views extends Module
             $courseId = API::getValue('course');
             //get course libraries
             $course = new Course($courseId);
-
-            API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
+            //API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
+            API::response(array('libraries' => $course->getEnabledLibrariesInfo(), 'functions' => $course->getAllFunctionsForEditor(), 'variables' => $course->getEnabledVariables()));
         });
         //save the view being edited
         API::registerFunction('views', 'saveEdit', function () {

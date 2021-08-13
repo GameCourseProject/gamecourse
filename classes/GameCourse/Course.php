@@ -1095,6 +1095,22 @@ class Course
         return $res;
     }
 
+    public function getAllFunctionsForEditor()
+    {
+        $res = Core::$systemDB->selectMultipleSegmented(
+            "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
+            "returnType != 'null'",
+            "moduleId, name, keyword, libraryId, refersToType, refersToName, returnType, dictionary_function.description as description, args",
+            "keyword"
+        );
+
+        foreach ($res as $index => $row) {
+            $res[$index]["args"] = json_decode($res[$index]["args"]);
+        }
+
+        return $res;
+    }
+
     public function checkFunctionReturnLoop($functions)
     {
         $f = $functions;

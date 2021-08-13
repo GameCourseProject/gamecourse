@@ -119,7 +119,7 @@
                         "label": null,
                         "loopData": "{}",
                         "variables": [],
-                        "value": "{%item.parentId.renderPicture(%item.number)}",
+                        "value": "{%item.parent.renderPicture(%item.number)}",
                         "class": null,
                         "style": null,
                         "link": null,

@@ -930,15 +930,16 @@ angular.module('module.views').config(function ($stateProvider) {
                 controller: 'ViewsList'
             }
         }
-    }).state('course.settings.views.view', {
-        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
-        views: {
-            'tabContent@course.settings': {
-                template: 'abc',
-                controller: 'ViewSettings'
-            }
-        }
     })
+        // .state('course.settings.views.view', {
+        //     url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
+        //     views: {
+        //         'tabContent@course.settings': {
+        //             template: 'abc',
+        //             controller: 'ViewSettings'
+        //         }
+        //     }
+        // })
         // .state('course.settings.views.view.edit-single', {
         //     url: '/edit',
         //     views: {
