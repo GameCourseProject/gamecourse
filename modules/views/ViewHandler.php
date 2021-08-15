@@ -372,7 +372,8 @@ class ViewHandler
         $isTemplateRef = !empty(Core::$systemDB->select("view_template", ["viewId" => $view["viewId"]])) && !$isRoot;
         if (!$isTemplateRef)
             Core::$systemDB->delete("view", ["id" => $view["id"]]);
-        Core::$systemDB->delete("view_parent", ["childId" => $view["viewId"], "parentId" => $view["parentId"]]);
+        if (!$isRoot)
+            Core::$systemDB->delete("view_parent", ["childId" => $view["viewId"], "parentId" => $view["parentId"]]);
     }
 
     //Find parent roles given a role like 'role.1'

@@ -469,7 +469,7 @@ class Badges extends Module
         $viewHandler->registerFunction(
             'badges',
             'currLevel',
-            function ($badge, $user) {
+            function ($badge, int $user) {
                 $this->checkArray($badge, "object", 'currLevel');
                 $levelNum = $this->getLevelNum($badge, $user);
                 return $this->getLevel($levelNum, $badge);
@@ -519,21 +519,21 @@ class Badges extends Module
             'badge'
         );
 
-        //%badge.badgeProgression(user)
+        //badges.badgeProgression(badge,user)
         $viewHandler->registerFunction(
             'badges',
             'badgeProgression',
 
-            function ($badge, $user) {
+            function ($badge, int $user) {
 
                 $badgeParticipation = $this->getBadgeProgression($badge, $user);
                 return $this->createNode($badgeParticipation, 'badges', 'collection');
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that badge.',
-            'object',
-            null,
-            'object',
-            'badge'
+            'collection',
+            'badge',
+            'library',
+            null
         );
 
         //%badgeProgression.post

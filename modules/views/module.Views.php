@@ -1810,6 +1810,15 @@ class Views extends Module
             foreach ($viewContent as $aspect) {
                 $this->viewHandler->updateViewAndChildren($aspect);
             }
+            $aspects = Core::$systemDB->selectMultiple("view", ["viewId" => $viewContent[0]["viewId"]]);
+            //it means that some (whole) aspect has been deleted
+            if (count($aspects) > count($viewContent)) {
+                $rolesSaved = array_column($viewContent, 'role');
+                foreach ($aspects as $asp) {
+                    if (!in_array($asp['role'], $rolesSaved))
+                        $this->viewHandler->deleteViews($asp, true);
+                }
+            }
             $errorMsg = "Saved, but skipping test (no users in role to test or special role";
         } else {
             $errorMsg = "Previewing of Views for Roles with no users or Special Roles is not implemented.";

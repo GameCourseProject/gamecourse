@@ -178,7 +178,11 @@ angular
       scope: true,
       transclude: true,
       link: function ($scope, element, attrs) {
-        $scope.elid = attrs.sbExpression.split(".")[1];
+        $scope.elid = attrs.sbExpression.split(".")[1].replace(/\[[a-z]*\]/g, '');
+        if ($scope.elid.includes('events'))
+          $scope.elid += "." + attrs.sbExpressionLabel;
+        else if ($scope.elid.includes('variables'))
+          $scope.elid += "." + attrs.sbExpressionLabel.slice(1);
 
         CodeAssistant.fields = $scope.editData.fieldsTree;
         $scope.ca = CodeAssistant;
@@ -443,12 +447,12 @@ angular
           });
         };
 
-        $scope.testExpression(parsedValue($scope));
+        //$scope.testExpression(parsedValue($scope));
 
-        $scope.$watch(attrs.sbExpression, function (newValue, oldValue) {
-          if (newValue == oldValue) return;
-          $scope.testExpression(newValue);
-        });
+        // $scope.$watch(attrs.sbExpression, function (newValue, oldValue) {
+        //   if (newValue == oldValue) return;
+        //   $scope.testExpression(newValue);
+        // });
       },
       template:
         '<div class="sb-expression">' +
