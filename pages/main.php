@@ -54,10 +54,13 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/d3-star-plot-0.0.3.min.js"></script>
     <script type="text/javascript" src="js/tooltip.js"></script>
     <script type="text/javascript" src="js/state_manager_undo_redo.js"></script>
+    <!-- Code Mirror -->
     <script type="text/javascript" src="js/codemirror.js"></script>
     <script type="text/javascript" src="js/css.js"></script>
     <script type="text/javascript" src="js/show-hint.js"></script>
     <script type="text/javascript" src="js/css-hint.js"></script>
+    <script type="text/javascript" src="js/placeholder.js"></script>
+
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>
     <script type="text/javascript" src="js/rules.js"></script>

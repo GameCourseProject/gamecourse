@@ -692,7 +692,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             var eventCodeMirror = CodeMirror.fromTextArea(document.getElementById(eventOrVar), {
                                 lineNumbers: true, styleActiveLine: true, autohint: true, lineWrapping: true,
-                                theme: "mdn-like", value: $("#" + eventOrVar).val()
+                                theme: "mdn-like", value: $("#" + eventOrVar).val(), placeholder: "Expression"
                             });
 
 
@@ -731,7 +731,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                                 var loopCodeMirror = CodeMirror.fromTextArea(document.getElementById("loopData"), {
                                     lineNumbers: true, styleActiveLine: true, autohint: true, lineWrapping: true,
-                                    theme: "mdn-like", value: $("#loopData").val()
+                                    theme: "mdn-like", value: $("#loopData").val(), placeholder: "Expression"
                                 });
 
 
@@ -762,7 +762,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                                 var contentCodeMirror = CodeMirror.fromTextArea(document.getElementById("value"), {
                                     lineNumbers: true, styleActiveLine: true, autohint: true, lineWrapping: true,
-                                    theme: "mdn-like", value: $("#value").val()
+                                    theme: "mdn-like", value: $("#value").val(), placeholder: "Expression"
                                 });
 
                                 // contentCodeMirror.on("change", function (cm, event) {
