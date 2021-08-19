@@ -342,7 +342,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             html2canvas($("#viewEditor .view.editing"), {
                 onrendered: function (canvas) {
                     var img = canvas.toDataURL();
-                    saveData.sreenshoot = img;
+                    saveData.screenshoot = img;
                     $smartboards.request('views', 'saveEdit', saveData, function (data, err) {
                         btnSave.prop('disabled', false);
                         if (err) {

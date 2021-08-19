@@ -505,6 +505,12 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         return;
                     }
                     $scope.listingItems.items = data.listingItems.items;
+                    $scope.tiers = data.tiers;
+                    if ($scope.module.name == "Skills") {
+                        $("#treeDisplay").remove();
+                        var configurationSection = createSection(configPage, 'Skill Tree', "treeDisplay");
+                        $scope.displayTree(configurationSection);
+                    }
                 });
             });
 
@@ -677,6 +683,11 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     }
                     $scope.listingItems.items = data.listingItems.items;
                     $scope.tiers = data.tiers;
+                    if ($scope.module.name == "Skills") {
+                        $("#treeDisplay").remove();
+                        var configurationSection = createSection(configPage, 'Skill Tree', "treeDisplay");
+                        $scope.displayTree(configurationSection);
+                    }
                 });
             });
 
@@ -785,6 +796,13 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                         return;
                     }
                     $scope.listingItems.items = data.listingItems.items;
+                    $scope.tiers = data.tiers;
+                    if ($scope.module.name == "Skills") {
+                        $("#treeDisplay").remove();
+                        var configurationSection = createSection(configPage, 'Skill Tree', "treeDisplay");
+                        $scope.displayTree(configurationSection);
+                    }
+
                 });
             });
 
@@ -919,24 +937,24 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
     }
 
-    $scope.activeItem = function(id){
+    $scope.activeItem = function (id) {
         $smartboards.request('settings', 'activeItem', { course: $scope.course, module: $stateParams.module, itemId: id }, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
             }
-            if($scope.listingItems.items[0].hasOwnProperty('dependenciesList')){
-                jQuery.each($scope.listingItems.items, function(index){
-                    for (var i = 0; i < $scope.listingItems.items[index].dependenciesList.length; i++){
+            if ($scope.listingItems.items[0].hasOwnProperty('dependenciesList')) {
+                jQuery.each($scope.listingItems.items, function (index) {
+                    for (var i = 0; i < $scope.listingItems.items[index].dependenciesList.length; i++) {
 
                         var dep1 = $scope.listingItems.items.findIndex((item) => {
-                            return item.name === $scope.listingItems.items[index].dependenciesList[i][0];   
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][0];
                         });
                         var dep2 = $scope.listingItems.items.findIndex((item) => {
-                            return item.name === $scope.listingItems.items[index].dependenciesList[i][1];   
+                            return item.name === $scope.listingItems.items[index].dependenciesList[i][1];
                         });
 
-                        if(dep1 !== -1 && (!$scope.active[$scope.listingItems.items[dep1].name] || !$scope.listingItems.items[dep1].allActive) || dep2 !== -1 && (!$scope.active[$scope.listingItems.items[dep2].name] || !$scope.listingItems.items[dep2].allActive)){
+                        if (dep1 !== -1 && (!$scope.active[$scope.listingItems.items[dep1].name] || !$scope.listingItems.items[dep1].allActive) || dep2 !== -1 && (!$scope.active[$scope.listingItems.items[dep2].name] || !$scope.listingItems.items[dep2].allActive)) {
                             $scope.listingItems.items[index].allActive = false;
                             break;
                         }
@@ -946,7 +964,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                     }
                 });
             }
-            
+
         });
     }
 
@@ -967,6 +985,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         $compile(header)($scope);
         configPage.append(header);
 
+        if (data.module.name == "Skills") {
+            $scope.tiers = data.tiers;
+        }
 
 
         //general inputs section
@@ -1079,94 +1100,6 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         }
 
 
-        if (data.module.name == "Skills") {
-            $scope.tiers = data.tiers;
-
-            allTiers = createSection(configPage, $scope.tiers.listName);
-            allTiers.attr('id', 'allTiers')
-            allTiersSection = $('<div class="data-table"></div>');
-            tableTiers = $('<table id="tier-table"></table>');
-            rowHeaderTiers = $("<tr></tr>");
-            jQuery.each($scope.tiers.header, function (index) {
-                header = $scope.tiers.header[index];
-                rowHeaderTiers.append($("<th>" + header + "</th>"));
-            });
-            rowHeaderTiers.append($("<th class='action-column'></th>")); // edit
-            rowHeaderTiers.append($("<th class='action-column'></th>")); // delete
-            rowHeaderTiers.append($("<th class='action-column'></th>")); // move up
-            rowHeaderTiers.append($("<th class='action-column'></th>")); // move down
-
-            rowContentTiers = $("<tr ng-repeat='(i, tier) in tiers.items' id='tier-{{tier.tier}}'> ></tr>");
-            jQuery.each($scope.tiers.displayAtributes, function (index) {
-                atribute = $scope.tiers.displayAtributes[index];
-                stg = "tier." + atribute;
-                rowContentTiers.append($('<td>{{' + stg + '}}</td>'));
-            });
-            rowContentTiers.append('<td class="action-column"><div class="icon edit_icon" value="#open-tier" onclick="openModal(this)" ng-click="editItem(tier)"></div></td>');
-            rowContentTiers.append('<td class="action-column"><div class="icon delete_icon" value="#delete-verification-tier" onclick="openModal(this)" ng-click="deleteItem(tier)"></div></td>');
-            rowContentTiers.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
-            rowContentTiers.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
-
-            //append table
-            tableTiers.append(rowHeaderTiers);
-            tableTiers.append(rowContentTiers);
-            allTiersSection.append(tableTiers);
-            allTiers.append(allTiersSection);
-            $compile(allTiers)($scope);
-
-            //add and edit tier modal
-            modalTiers = $("<div class='modal' id='open-tier'></div>");
-            open_itemTiers = $("<div class='modal_content'></div>");
-            open_itemTiers.append($('<button class="close_btn icon" value="#open-tier" onclick="closeModal(this)"></button>'));
-            open_itemTiers.append($('<div class="title" id="open_tier_action"></div>'));
-            contentTiers = $('<div class="content">');
-            boxTiers = $('<div id="new_box_tier" class= "inputs">');
-            row_inputsTiers = $('<div class= "row_inputs"></div>');
-
-            detailsTiers = $('<div class="details full config_item"></div>');
-            jQuery.each($scope.tiers.allAtributes, function (index) {
-                atribute = $scope.tiers.allAtributes[index];
-                switch (atribute.type) {
-                    case 'text':
-                        detailsTiers.append($('<div class="half"><div class="container"><input type="text" class="form__input" placeholder="' + atribute.name + '" ng-model="openTier.' + atribute.id + '"/> <label for="' + atribute.id + '" class="form__label">' + atribute.name + '</label></div></div>'))
-                        break;
-                    case 'number':
-                        detailsTiers.append($('<div class="half"><div class="container"><input type="number" class="form__input"  ng-model="openTier.' + atribute.id + '"/> <label for="' + atribute.id + '" class="form__label number_label">' + atribute.name + '</label></div></div>'))
-                        break;
-                }
-            });
-            row_inputsTiers.append(detailsTiers);
-            boxTiers.append(row_inputsTiers);
-            contentTiers.append(boxTiers);
-            contentTiers.append($('<button class="cancel" value="#open-tier" onclick="closeModal(this)" > Cancel </button>'))
-            contentTiers.append($('<button class="save_btn" value="#open-tier" onclick="closeModal(this)" ng-click="submitItem()"> Save </button>'))
-            open_itemTiers.append(contentTiers);
-            modalTiers.append(open_itemTiers);
-            $compile(modalTiers)($scope);
-            allTiers.append(modalTiers);
-
-
-            //delete verification modal
-            deletemodal = $("<div class='modal' id='delete-verification-tier'></div>");
-            verification = $("<div class='verification modal_content'></div>");
-            verification.append($('<button class="close_btn icon" value="#delete-verification-tier" onclick="closeModal(this)"></button>'));
-            verification.append($('<div class="warning">Are you sure you want to delete?</div>'));
-            verification.append($('<div class="target" id="delete_tier_info"></div>'));
-            verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification-tier" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="confirmDelete()"> Delete</button></div>'))
-            deletemodal.append(verification);
-            rowContentTiers.append(deletemodal);
-
-
-            //success section
-            allTiers.append($("<div class='success_box'><div id='action_completed' class='success_msg'></div></div>"));
-
-            action_buttonsTier = $("<div class='action-buttons' style='width:30px;'></div>");
-            action_buttonsTier.append($("<div class='icon add_icon' value='#open-tier' onclick='openModal(this)' ng-click='addItem()'></div>"));
-            allTiers.append($compile(action_buttonsTier)($scope));
-
-        }
-
-
         //personalized configuration Section
         if (data.personalizedConfig.length != 0) {
             functionName = data.personalizedConfig;
@@ -1194,7 +1127,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             }
 
             $scope.active = [];
-            
+
             rowContent = $("<tr ng-repeat='(i, item) in listingItems.items' id='item-{{item.id}}' ng-class=\"{'notAllActive': item.allActive === false}\"></tr>");
             jQuery.each($scope.listingItems.displayAtributes, function (index) {
                 atribute = $scope.listingItems.displayAtributes[index];
@@ -1217,7 +1150,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 rowContent.append('<td class="action-column"><div class="icon up_icon" title="Move up" ng-click="moveUp(this)"></div></td>');
                 rowContent.append('<td class="action-column"><div class="icon down_icon" title="Move down" ng-click="moveDown(this)"></div></td>');
             }
-            
+
             //append table
             table.append(rowHeader);
             table.append(rowContent);
@@ -1385,7 +1318,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             verification.append($('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
             verification.append($('<div class="warning">Are you sure you want to delete</div>'));
             verification.append($('<div class="target" id="delete_action_info"></div>'));
-            verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="confirmDelete()"> Delete</button></div>'))
+            verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button class="continue" onclick="closeModal(this)" ng-click="confirmDelete()"> Delete</button></div>'))
             deletemodal.append(verification);
             rowContent.append(deletemodal);
 
@@ -1400,19 +1333,18 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             allItems.append($compile(action_buttons)($scope));
         }
 
-        if (data.module.name == "Skills") {
-            var configurationSection = createSection(configPage, 'Skill Tree');
+        $scope.displayTree = function (configurationSection) {
 
             var configSectionContent = $('<div>', { 'class': 'row' });
 
             //Display skill Tree info (similar to how it appears on the profile)
             var dataArea = $('<div>', { 'class': 'row', style: 'float: left; width: 100%;' });
 
-            var numTiers = data.tiers.items.length;
-            for (t in data.tiers.items) {
-                var tier = data.tiers.items[t];
+            var numTiers = $scope.tiers.items.length;
+            for (t in $scope.tiers.items) {
+                var tier = $scope.tiers.items[t];
 
-                var skills = data.listingItems.items.filter(function (el) {
+                var skills = $scope.listingItems.items.filter(function (el) {
                     return el.tier == tier.tier;
                 });
                 skills.sort(function (a, b) {
@@ -1448,6 +1380,11 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
             configSectionContent.append(dataArea);
             configurationSection.append(configSectionContent);
             $compile(configurationSection)($scope);
+        }
+
+        if (data.module.name == "Skills") {
+            var configurationSection = createSection(configPage, 'Skill Tree', "treeDisplay");
+            $scope.displayTree(configurationSection);
         }
     });
 

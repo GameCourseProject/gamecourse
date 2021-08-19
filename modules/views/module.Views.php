@@ -1705,6 +1705,47 @@ class Views extends Module
         API::registerFunction('views', 'previewEdit', function () {
             $this->saveOrPreview(false);
         });
+
+        API::registerFunction('views', 'testExpression', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('course');
+            $course = Course::getCourse(API::getValue('course'));
+            if ($course != null) {
+                if (API::hasKey('expression')) {
+                    $expression = API::getValue('expression');
+                    $views = $course->getModule('views');
+                    $res = null;
+
+                    if ($views != null) {
+                        $viewHandler = $views->getViewHandler();
+
+                        $viewHandler->parseSelf($expression);
+                        $visitor = new EvaluateVisitor(['course' => (string)API::getValue('course')], $viewHandler);
+                        $expression = $expression->accept($visitor)->getValue();
+                        $objtype = getType($expression);
+
+                        if ($objtype == "bool") {
+                            $res = $expression;
+                        } else if ($objtype == "string") {
+                            $res = $expression;
+                        } else if ($objtype == "object") {
+                            $res = $expression;
+                        } else if ($objtype == "integer") {
+                            $res = $expression;
+                        } else if ($objtype == "array") {
+                            if ($expression["type"] == "collection") {
+                                $res = json_encode($expression["value"]);
+                            }
+                        } else {
+                            $res = get_object_vars($expression);
+                        }
+                        API::response($res);
+                    }
+                }
+            } else {
+                API::error("There is no course with that id: " . API::getValue('course'));
+            }
+        });
     }
     //tests view parsing and processing
     function testView($course, $courseId, &$testDone, &$view, $viewerRole, $userRole = null)
@@ -1800,7 +1841,7 @@ class Views extends Module
             }
         }
         if ($saving) {
-            API::requireValues('sreenshoot',/*,'pageOrTemp', */ 'view');
+            API::requireValues('screenshoot',/*,'pageOrTemp', */ 'view');
             //$pageOrTemplate = API::getValue('pageOrTemp');
             $viewId = API::getValue('view');
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('sreenshoot')));

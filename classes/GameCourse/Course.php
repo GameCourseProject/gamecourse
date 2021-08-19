@@ -1100,7 +1100,7 @@ class Course
         $res = Core::$systemDB->selectMultipleSegmented(
             "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
             null,
-            "moduleId, name, keyword, libraryId, refersToType, refersToName, returnType, dictionary_function.description as description, args",
+            "moduleId, name, keyword, libraryId, refersToType, returnName, refersToName, returnType, dictionary_function.description as description, args",
             "keyword"
         );
 
