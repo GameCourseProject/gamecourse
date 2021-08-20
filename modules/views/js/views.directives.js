@@ -43,7 +43,7 @@ angular
         $scope.info = attrs.sbCheckboxInfo;
         $scope.link = attrs.sbCheckboxLink;
 
-        $scope.elid = "cb-" + ++uid;
+        $scope.elid = "cb-" + attrs.sbCheckbox.split(".")[1];
       },
       template:
         '<div class="sb-checkbox">\n<input id="{{elid}}" type="checkbox" ng-checked="isChecked()" ng-click="toggle()">\n<label for="{{elid}}">{{label}}</label>\n<a ng-href="{{link}}" target="_blank">\n<img ng-if="value != undefined" title="{{value}}" class="info" src="images/info.svg"></a>\n<div class="content" ng-if="isChecked()" ng-transclude></div></div>',
@@ -178,7 +178,11 @@ angular
       scope: true,
       transclude: true,
       link: function ($scope, element, attrs) {
-        $scope.elid = "ex-" + ++uid;
+        $scope.elid = attrs.sbExpression.split(".")[1].replace(/\[[a-z]*\]/g, '');
+        if ($scope.elid.includes('events'))
+          $scope.elid += "." + attrs.sbExpressionLabel;
+        else if ($scope.elid.includes('variables'))
+          $scope.elid += "." + attrs.sbExpressionLabel.slice(1);
 
         CodeAssistant.fields = $scope.editData.fieldsTree;
         $scope.ca = CodeAssistant;
@@ -443,12 +447,12 @@ angular
           });
         };
 
-        $scope.testExpression(parsedValue($scope));
+        //$scope.testExpression(parsedValue($scope));
 
-        $scope.$watch(attrs.sbExpression, function (newValue, oldValue) {
-          if (newValue == oldValue) return;
-          $scope.testExpression(newValue);
-        });
+        // $scope.$watch(attrs.sbExpression, function (newValue, oldValue) {
+        //   if (newValue == oldValue) return;
+        //   $scope.testExpression(newValue);
+        // });
       },
       template:
         '<div class="sb-expression">' +

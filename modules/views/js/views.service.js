@@ -365,10 +365,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             execClose(true);
         });
 
-        overlay.mousedown(function (event) {
-            if (event.target == this)
-                execClose();
-        });
+        // overlay.mousedown(function (event) {
+        //     if (event.target == this)
+        //         execClose();
+        // });
 
         //$('#wrapper').hide();
         if (callbackFunc != undefined)
@@ -465,20 +465,914 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     }
                     $sbviews.openOverlay(function (modal, execClose) {
                         optionsScope.closeOverlay = function () {
-                            execClose();
+                            execClose(true);
                         };
                         modal.parent().attr("id", "edit_part");
                         var scopeToConfig = optionsScope;
                         $smartboards.request('views', 'getDictionary', { course: $rootScope.course }, function (data, err) {
-                            scopeToConfig.dictionary = data;
+                            //scopeToConfig.dictionary = data;
+                            scopeToConfig.libraries = data.libraries;
+                            scopeToConfig.variables = data.variables;
+                            scopeToConfig.functions = data.functions;
+
+                            scopeToConfig.curr_libraries = data.libraries;
+                            scopeToConfig.curr_functions = {};
+                            scopeToConfig.curr_variables = {};
+                            scopeToConfig.hierarchyLoops = [];
+                            scopeToConfig.preview_function = {};
+                            console.log(data);
                         });
-                        var container = $('<div ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
-                        $compile(container)(optionsScope);
+
+                        var container = $('<div id="edit-container">');
+                        var edit_container = $('<div class="settings-overlay" ng-include="\'' + $rootScope.modulesDir + '/views/partials/settings-overlay.html\'">');
+                        $compile(edit_container)(optionsScope);
+
+                        // --------- TOP SECTION ---------
+                        rightbox = $('<div class="help-right-box">');
+                        topbox = $('<div id="help-box">');
+
+                        // --------- EXPRESSION SECTION ---------
+                        expression = $('<div style="margin-bottom:0.5rem;"><span style="font-size: 16px;font-weight: 500;">Helper</span></div>');
+                        expressionInput = $('<div id="expression-functions"></div>');
+                        typing_help = $('<div id="typing-help"\
+                        <span><strong>Tips</strong> </span>\
+                        <div class="icon editor-icon collapse_icon" style="float: right;margin-top: -4px;" title="Toggle" ng-click="toggleTipsSection($event)"></div>\
+                        <div id="preview-tips">\
+                        <p>Type any of the following modules/variables for Expression Language (EL) suggestions.</p>\
+                        <p>To use Expression Language, use {} around the expression.</p>\
+                        <p>For variables, use % behind its name.</p>\
+                        <p style="color: tomato;">For Loop Data, Visibility and Events you must write only inside {}.</p>\
+                        <p>For visibility, you must write a condition, for example, using boolean functions (<object>.isActive) or comparing 2 expressions (%item.number > %badgeLevel.number).</p>\
+                        <p>To preview expressions, click the button below. If your expression has content besides EL, please select <strong>only</strong> the part that is EL, including {}.</p>\
+                        <p>More information about the GameCourse Expression Language dictionary is located <a href="docs" class="hlink">here</a>.</p></div></div>');
+                        expressionList = $('<ul></ul>');
+                        expressionLibs = $('<li ng-repeat="lib in curr_libraries" ng-if="lib.moduleId != null" class="lib-list-item">{{lib.name}}</li>');
+                        expressionFuncs = $('<li ng-repeat="func in curr_functions" class="func-list-item">{{func.keyword}}</li>');
+                        expressionVars = $('<li ng-repeat="var in curr_variables" class="var-list-item">{{var.name}}</li>');
+                        functionDesc = $('<div id="func-info" style="display:none;">\
+                            <div ng-if="!isEmptyObject(active_func.args)" class="arguments-div">Arguments:\
+                            <ul id="func-info-args"><li ng-repeat="arg in active_func.args" class="arg-list-item"><strong>{{arg.name}}</strong>\
+                            <span ng-if="arg.type != \'\'"><strong>:</strong> {{arg.type}}</span>\
+                            <span ng-if="arg.optional != \'1\'" class="optional">*</span></li></ul></div>\
+                            <div ng-if="active_func.returnType != \'\'" class="return-div">Return Type:\
+                            <span>{{active_func.returnType}}</span></div>\
+                            <div ng-if="active_func.keyword == \'parent\'" class="return-div">Return Object:\
+                            <span>{{active_func.returnName}}</span></div>\
+                            <div class="function-description" ng>{{active_func.description}}</div></div>');
+                        varDesc = $('<div id="var-info" style="display:none;">\
+                            <div ng-if="active_var.returnType != \'\'" class="return-div">Return Type:\
+                            <span>{{active_var.returnType}}</span></div>\
+                            <div ng-if="active_var.name == \'%item\'" class="return-div">Return Object:\
+                            <span>{{active_var.returnName}}</span></div>\
+                            <div ng-if="active_var.returnValue" class="return-div">Return Value:\
+                            <span>{{active_var.returnValue}}</span></div>\
+                            <div ng-if="active_var.library == null" class="var-warning">\
+                            Be careful using this variable. It was defined in a loop data of a outer view.\nAlso, check if it has any attributes or functions by typing a ".".</div></div>');
+
+                        expressionList.append(expressionLibs, expressionFuncs, expressionVars);
+
+                        expressionInput.append(typing_help, expressionList, functionDesc, varDesc);
+                        topbox.append(expression, expressionInput);
+                        rightbox.append(topbox);
+
+
+                        // --------- BOTTOM SECTION ---------
+                        bottombox = $('<div class="preview-box">');
+
+                        // --------- PREVIEW SECTION ---------
+
+                        //preview = $('<div class="preview-title"><span>Preview Section</span></div>');
+
+                        previewbutton = $('<button id="preview-exp-button" ng-click="previewExpression()">Preview Expression</button>');
+
+
+                        bottombox.append(previewbutton);
+                        rightbox.append(bottombox);
+                        $compile(rightbox)(optionsScope);
+
+                        previewModal = $("<div class='modal' id='open-preview' value='#open-preview'></div>");
+                        open_preview = $("<div class='modal_content'></div>");
+                        open_preview.append($('<button class="close_btn icon" id="close" value="#open-preview" onclick="closeModal(this);"></button>'));
+                        open_preview.append($('<div class="title">Preview Expression</div>'));
+                        content = $('<div class="content">');
+                        previewbox = $('<div id="preview-expressions"></div>');
+                        previewboxlist = $('<ul></ul>');
+                        previewboxlist.append('<li class="request-li">> {{preview_function.expr}}</li>\
+                        <span ng-if="preview_function.response_array != null">\
+                        <li class="response-index-li">Preview finished with no errors. {{preview_function.response_array.length}} line(s) retrieved.</li>\
+                        <span ng-if="preview_function.response_array" ng-repeat="line in preview_function.response_array">\
+                        <li class="response-index-li">[{{$index}}]:</li><li class="response-item-li">\
+                        <span ng-repeat="(key,value) in line">{{key}} : {{value}}<span ng-show="!$last">, </span></span>\
+                        </li></span></span>\
+                        <span ng-if="preview_function.response"><li class="response-single-li">{{preview_function.response}}</li>');
+
+                        previewbox.append(previewboxlist);
+                        content.append(previewbox);
+                        open_preview.append(content);
+                        previewModal.append(open_preview);
+                        $compile(previewModal)(optionsScope);
+
+
+                        var confirmation_btns = $('<div class="confirmation_btns"><button class="cancel" value="#edit_part" ng-click="closeOverlay()"> Cancel </button><button value="#edit_part" ng-click="saveEdit();"> Save </button></div>');
+                        $compile(confirmation_btns)(optionsScope);
+
+                        container.append(edit_container, rightbox);
                         modal.append(container);
+                        modal.append(previewModal);
+                        modal.append(confirmation_btns);
                         modal.on('mouseenter', function () {
                             //this ensures that when visibility is not conditional, the field will be disabled
                             optionsScope.toggleVisCondition();
                         });
+
+                        optionsScope.isEmptyObject = function (obj) {
+                            return angular.equals({}, obj) || angular.equals(null, obj);
+                        };
+
+                        optionsScope.toggleTipsSection = function ($event) {
+
+                            target = $event.target;
+                            selector = "#preview-tips";
+                            var state = $(selector).css("display");
+
+                            if (state == 'block') {
+                                $(selector).css("display", "none");
+                                target.classList.remove("collapse_icon");
+                                target.classList.add("expand_icon");
+                            }
+                            else if (state == 'none') {
+                                $(selector).css("display", "block");
+                                target.classList.remove("expand_icon");
+                                target.classList.add("collapse_icon");
+                            }
+
+                        }
+
+                        optionsScope.previewExpression = function () {
+
+                            if (optionsScope.focused) {
+                                const cm = optionsScope.focused;
+                                const textArea = cm.getTextArea().getAttribute("id");
+                                var value = cm.getValue();
+                                selection = { start: cm.getCursor(true), end: cm.getCursor(false) };
+                                if (selection.start.ch != selection.end.ch) {
+                                    value = cm.getSelection();
+                                    optionsScope.active_func = {};
+                                }
+                                //expressions = value.match(/{[^{}]*}/g);
+
+
+                                // for (expr of expressions) {
+                                //     valueWithoutArgs = expr.replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').split(".");
+                                //     console.log(valueWithoutArgs);
+
+                                //     if (valueWithoutArgs.startsWith("%")) {
+
+                                //     }
+                                if (value.includes("%")) {
+                                    //WHEN IT HAS VARS, WE HAVE TO CALCULATE THEIR VALUES, maybe not worth it
+                                    giveMessage('Expressions with variables cannot be tested, you have to preview the whole view');
+                                } else {
+                                    openModal(document.getElementById('open-preview'));
+                                    if (!optionsScope.isEmptyObject(optionsScope.active_func)) {
+                                        func = optionsScope.active_func["keyword"];
+                                        funclib = optionsScope.active_func["name"];
+                                        args = optionsScope.curr_args;
+                                        return_type = optionsScope.active_func["returnType"];
+                                    } else {
+                                        funclib = value.split(".")[0].replace(/[{}]/g, '');
+                                        func = value.split(".")[1].replace(/[{}]/g, '');;
+                                        funcName = func.replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '');
+                                        args_part = func.split("(");
+                                        args = args_part[args_part.length - 1].split(")");
+                                        args = args[0].split(",");
+                                        return_type = optionsScope.functions.filter(el => el["keyword"] == funcName && el["moduleId"] == funclib)[0]["returnType"];
+                                    }
+
+                                    request = { "expr": value.replace(/[{}]/g, ''), "func": func, "funclib": funclib, "args": args, "returnType": return_type };
+
+                                    $smartboards.request('views', 'testExpression', { course: $rootScope.course, expression: value }, function (data, err) {
+                                        if (err) {
+                                            giveMessage('Something is wrong with your expression... :( Try again!');
+                                            return;
+                                        }
+
+                                        if (textArea == "loopData") {
+                                            request["response_array"] = JSON.parse(data);
+                                            request["response"] = null;
+                                            //request["preview_type"] = "function";
+                                        }
+                                        else {
+                                            request["response_array"] = null;
+                                            request["response"] = data;
+                                            //request["preview_type"] = "function";
+                                        }
+
+                                        optionsScope.preview_function = request;
+                                        // openModal(document.getElementById("open-preview"));
+                                    });
+                                    // }
+                                }
+
+                            } else {
+                                giveMessage('Select one of the to see its preview!');
+                            }
+
+
+                        }
+
+                        optionsScope.getAvailableVariables = function (thisPart, allVars = []) {
+
+                            if (thisPart.parentId != null) {
+                                partParent = $sbviews.findPart(thisPart.parentId, getViewerFromRole(thisPart.role), $rootScope.partsHierarchy, true);
+                                newVariables = optionsScope.getAvailableVariables(partParent, allVars);
+                                if (Object.keys(newVariables).length != 0) {
+                                    for (var key in newVariables) {
+                                        allVars.push([key, newVariables[key]]);
+                                    }
+                                }
+                            }
+                            vars = thisPart.variables;
+                            if (Object.keys(vars).length != 0) {
+                                for (var key in vars) {
+                                    allVars.push([key, vars[key]]);
+                                }
+                            }
+
+                            if (thisPart.loopData != "{}") {
+                                var itemReturnName;
+                                if (!thisPart.loopData.startsWith("{%")) {
+                                    itemReturnName = optionsScope.functions.filter(el => el["keyword"] == thisPart.loopData.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').split(".")[1])[0]["returnName"];
+                                } else {
+                                    itemReturnName = allVars.filter(el => {
+                                        if (!Array.isArray(el) && thisPart.loopData.replace(/[{}]/g, '').includes(el["name"]))
+                                            return el;
+                                    })[0]["returnName"];
+                                }
+                                optionsScope.$apply(optionsScope.itemReturnName = itemReturnName);
+                                optionsScope.$apply(optionsScope.hierarchyLoops.push({ "viewId": thisPart.viewId, "returnName": itemReturnName }));
+                            }
+
+
+                            allVars.forEach((el) => {
+                                if (Array.isArray(el) && el[1]["value"]) {
+
+                                    const value = el[1]["value"];
+                                    var returnName = null;
+                                    //even if there are more than 1 function with the same name, it will return the same type
+                                    const func = optionsScope.functions.filter(el => el["keyword"] == value.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').split(".")[1])[0];
+                                    if (value.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').includes(".")) {
+                                        returnName = func["returnName"];
+                                    } else if (value.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').includes("%")) {
+                                        returnName = optionsScope.itemReturnName;
+                                    }
+                                    const newEl = { 'library': null, 'name': "%" + el[0], 'returnType': func ? func["returnType"] : value == "%item" ? "object" : '', 'returnName': returnName, 'returnValue': value.replace(/[{}]/g, '') };
+                                    if (!Object.values(allVars).some(element => element['name'] == "%" + el[0]))
+                                        allVars.push(newEl);
+                                }
+                            });;
+                            return allVars.filter((el, i) => allVars.indexOf(el) === i && !Array.isArray(el));
+                        }
+
+                        optionsScope.getOptions = function (el, list) {
+                            const options = {
+                                hint: function () {
+                                    var cur = el.getCursor();
+                                    var curLine = el.getLine(cur.line);
+                                    var start = cur.ch;
+                                    var end = start;
+                                    while (end < curLine.length && /[\w$]/.test(curLine.charAt(end))) ++end;
+                                    while (start && /[%\w$]/.test(curLine.charAt(start - 1))) --start;
+                                    var curWord = start !== end && curLine.slice(start, end);
+                                    var regex = new RegExp('^' + curWord, 'i');
+                                    var completion = {
+                                        list: (!curWord ? [] : list.filter(function (item) {
+                                            return item.match(regex);
+                                        })).sort(),
+                                        from: CodeMirror.Pos(cur.line, start),
+                                        to: CodeMirror.Pos(cur.line, end)
+                                    };
+                                    if (completion) {
+                                        CodeMirror.on(completion, 'pick', function (selectedItem) {
+                                            var cursor = el.doc.getCursor();
+                                            var replaceChar = '';
+                                            if (!optionsScope.isEmptyObject(optionsScope.curr_functions)) {
+                                                var hasArgs = !optionsScope.isEmptyObject(optionsScope.curr_functions.filter(el => el['keyword'] == selectedItem)[0].args);
+                                                if (hasArgs)
+                                                    replaceChar = "(";
+                                            } else if (!optionsScope.isEmptyObject(optionsScope.curr_libraries)) {
+                                                replaceChar = ".";
+                                            }
+
+                                            el.doc.replaceRange(replaceChar, cursor);
+                                            // optionsScope.checkSuggestions(el, true);
+                                        })
+                                    }
+                                    return completion;
+                                }
+                                , completeSingle: false,
+
+                            };
+                            return options;
+                        }
+
+                        optionsScope.available = function (id, module = '', variable = "") {
+
+                            if (id == 'loopData') {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["moduleId"] != null && el["name"] != 'actions' && el["name"] != 'system';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return (module != '' ? (module == "!=" ? el["moduleId"] != null : el["moduleId"] == null) : 1) && el["name"] != "system" && el["returnType"] == 'collection' && el["refersToType"] == optionsScope.currentReturnType;
+                                    })
+                                }
+                            }
+                            else if (id == 'value') {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["moduleId"] != null && el["name"] != 'actions';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return (module != '' ? (module == "!=" ? el["moduleId"] != null : el["moduleId"] == null) : 1) &&
+                                            (variable != "" && el["refersToName"] ? el["refersToName"] == variable : 1) &&
+                                            el["refersToType"] == optionsScope.currentReturnType;
+                                    })
+                                }
+                            } else if (id == 'link') {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["name"] == 'actions';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return (module != '' ? (module == "!=" ? el["moduleId"] != null : el["moduleId"] == null) : 1) &&
+                                            (variable != "" && el["refersToName"] ? el["refersToName"] == variable : 1) &&
+                                            el["refersToType"] == optionsScope.currentReturnType;
+                                    })
+                                }
+
+                            } else if (id.includes('events')) {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["name"] == 'actions';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return el["name"] == 'actions';
+                                    })
+                                }
+                            } else if (id.includes('variables')) {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["moduleId"] != null && el["name"] != 'actions';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return (module != '' ? (module == "!=" ? el["moduleId"] != null : el["moduleId"] == null) : 1) &&
+                                            (variable != "" && el["refersToName"] ? el["refersToName"] == variable : 1) &&
+                                            el["refersToType"] == optionsScope.currentReturnType;
+                                    })
+                                }
+                            } else if (id == "visibilityCondition") {
+                                return {
+                                    'lib': optionsScope.libraries.filter(el => {
+                                        return el["moduleId"] != null && el["name"] != 'actions';
+                                    }),
+                                    'func': optionsScope.functions.filter(el => {
+                                        return (module != '' ? (module == "!=" ? el["moduleId"] != null : el["moduleId"] == null) : 1) &&
+                                            (variable != "" && el["refersToName"] ? el["refersToName"] == variable : 1) &&
+                                            el["refersToType"] == optionsScope.currentReturnType;
+                                    })
+                                }
+                            }
+
+                        };
+
+                        optionsScope.getCondition = function (function_typed) {
+                            const hypothesis = ["==", ">=", "<=", "!=", "<", ">"];
+                            for (cond of hypothesis) {
+                                if (function_typed.includes(cond))
+                                    return cond;
+                            }
+                            return false;
+                        }
+
+                        optionsScope.buildCodeMirrorBox = function (id) {
+
+
+                            var boxCodeMirror = CodeMirror.fromTextArea(document.getElementById(id), {
+                                lineNumbers: false, styleActiveLine: true, autohint: true, lineWrapping: true,
+                                theme: "mdn-like", value: $("#" + id).val(), placeholder: "Expression"
+                            });
+
+
+                            boxCodeMirror.on("focus", function (cm, event) {
+                                if (id.includes('events'))
+                                    optionsScope.$apply(optionsScope.curr_variables = {});
+                                //$('#preview-exp-button').attr("disabled", false);
+                            });
+
+                            boxCodeMirror.on("blur", function (cm, event) {
+                                optionsScope.$apply(optionsScope.focused = cm);
+                            });
+
+                            // eventCodeMirror.on("cursorActivity", function (cm, event) {
+                            //     optionsScope.checkSuggestions(cm, true);
+                            // });
+
+                            boxCodeMirror.on("keyup", function (cm, event) {
+                                //$("#typing-help").hide();
+
+                                if (event.keyCode === 13) { //enter 
+                                    optionsScope.checkSuggestions(cm, true);
+                                    //$(".CodeMirror-hint-active").click();
+                                }
+
+                                else if (!(event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40)) {
+                                    // checks if arrow keys were not pressed - causes errors
+                                    // this simple check solves errors with selection on autocomplete
+                                    optionsScope.checkSuggestions(cm);
+                                }
+                            });
+
+                        }
+
+                        optionsScope.buildCodeMirrorBoxes = function () {
+
+                            optionsScope.$apply(optionsScope.currentReturnType = null);
+
+                            if (optionsScope.part.partType != 'text') {
+                                // --------- LOOP DATA EDITOR ---------
+                                optionsScope.buildCodeMirrorBox('loopData');
+                            }
+                            if (optionsScope.part.partType != 'table' && optionsScope.part.partType != 'block') {
+                                // --------- CONTENT EDITOR ---------
+
+                                optionsScope.buildCodeMirrorBox('value');
+                            }
+                            // --------- EVENTS EDITOR(S) ---------
+                            if (!optionsScope.isEmptyObject(optionsScope.part.events)) {
+                                for (event in optionsScope.part.events) {
+                                    optionsScope.buildCodeMirrorBox("events." + event);
+                                }
+                            }
+                            // --------- VARIABLES EDITOR(S) ---------
+                            if (!optionsScope.isEmptyObject(optionsScope.part.variables)) {
+                                for (variable in optionsScope.part.variables) {
+                                    optionsScope.buildCodeMirrorBox("variables." + variable);
+                                }
+                            }
+                            // --------- VISIBILITY EDITOR(S) ---------
+                            if (optionsScope.part.visibilityType == 'conditional') {
+                                optionsScope.buildCodeMirrorBox('visibilityCondition');
+                            }
+                            // --------- LINK EDITOR(S) ---------
+                            if (optionsScope.part.link != null) {
+                                optionsScope.buildCodeMirrorBox('link');
+                            }
+
+                        }
+
+                        optionsScope.checkSuggestions = function (cm, fromClick = false) {
+                            optionsScope.$apply(optionsScope.hierarchyLoops = []);
+                            let textArea = cm.getTextArea().getAttribute("id");
+                            var hierarchyVars = optionsScope.getAvailableVariables(part);
+                            var varlist = angular.copy(optionsScope.variables);
+                            varlist.forEach(el => {
+                                if (el["name"] == "%item")
+                                    el["returnName"] = optionsScope.itemReturnName;
+                            });
+
+                            var line = cm.doc.getCursor().line;
+                            ch = cm.doc.getCursor().ch;
+                            textBefore = cm.doc.getLine(line).substr(0, ch);
+
+                            //variables
+                            if (textBefore.match(/{%[A-Za-z0-9]*$/)) {
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#func-info").hide();
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                                optionsScope.$apply(optionsScope.active_func = {});
+                                optionsScope.$apply(optionsScope.curr_functions = {});
+                                optionsScope.$apply(optionsScope.curr_variables = varlist.concat(hierarchyVars));
+                                optionsScope.$apply(optionsScope.curr_libraries = {});
+                                gccomp = textBefore.split("{");
+                                var_typed = gccomp[gccomp.length - 1];
+
+                                if (var_typed != "") {
+                                    optionsScope.$apply(optionsScope.curr_variables = optionsScope.curr_variables.filter(el => el["name"].startsWith(var_typed)));
+                                    if (optionsScope.curr_variables.length == 1 && optionsScope.curr_variables[0]["name"] == var_typed) {
+                                        optionsScope.$apply(optionsScope.active_var = optionsScope.curr_variables[0]);
+                                        $("#var-info").show();
+                                        $(".var-list-item").css("font-weight", "bold");
+                                        $(".var-list-item").css("color", "#905");
+                                    }
+
+                                }
+
+                                // var options = optionsScope.getOptions(cm, varlist.concat(hierarchyVars).map(el => el["name"]));
+                                // cm.showHint(options);
+                                if (fromClick) {
+                                    //give no options to remove the hints since the user has selected an options
+                                    // needed because it kept the option(s) in the suggestions
+                                    var options = optionsScope.getOptions(cm, []);
+                                    cm.showHint(options);
+                                } else {
+                                    var options = optionsScope.getOptions(cm, varlist.concat(hierarchyVars).map(el => el["name"]));
+                                    cm.showHint(options);
+                                }
+
+                            }
+                            //libraries
+                            if (textBefore.match(/{[A-Za-z]*$/)) {
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#func-info").hide();
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                                optionsScope.$apply(optionsScope.active_func = {});
+                                optionsScope.$apply(optionsScope.curr_functions = {});
+                                optionsScope.$apply(optionsScope.curr_variables = {});
+                                optionsScope.$apply(optionsScope.curr_libraries = optionsScope.available(textArea).lib);
+                                gccomp = textBefore.split("{");
+                                module_typed = gccomp[gccomp.length - 1];
+
+                                if (module_typed != "") {
+                                    optionsScope.$apply(optionsScope.curr_libraries = optionsScope.curr_libraries.filter(el => el["name"].startsWith(module_typed)));
+                                } else {
+                                    //$("#typing-help").show();
+                                    if (!textArea.includes('events'))
+                                        optionsScope.$apply(optionsScope.curr_variables = varlist.concat(hierarchyVars));
+                                }
+
+
+                                var options = optionsScope.getOptions(cm, optionsScope.available(textArea).lib.map(value => value["name"]));
+                                cm.showHint(options);
+
+                            }
+                            //functions for libraries or over other functions
+                            if (textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+$/g)) {
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#func-info").hide();
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                                optionsScope.$apply(optionsScope.curr_libraries = {});
+                                optionsScope.$apply(optionsScope.curr_variables = {});
+                                gcfunc = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                function_typed = gcfunc[gcfunc.length - 1];
+                                functionWithArgs = textBefore.match(new RegExp("" + gcfunc[gcfunc.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                if (functionWithArgs)
+                                    function_typed = functionWithArgs[0];
+                                func_module = gcfunc[0].split("{")[1];
+                                lastfunction = gcfunc[gcfunc.length - 2];//.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '');
+
+                                if ((/*!function_typed.endsWith(")") &&*/ gcfunc.length == 2)) // if we only have written the module/library
+                                    optionsScope.$apply(optionsScope.currentReturnType = 'library');
+                                else if (gcfunc.length > 2) {
+                                    let object = optionsScope.functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"] == lastfunction)[0];
+                                    optionsScope.$apply(optionsScope.currentReturnType = object["returnType"]);
+                                }
+
+                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea).func);
+
+                                if (function_typed != "") {
+                                    var func = optionsScope.curr_functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
+                                    if (function_typed.endsWith("(")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"].startsWith(function_typed.replace(/[\(]/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/[\(]/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (func.length > 0 && optionsScope.isEmptyObject(func[0].args)) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"].startsWith(function_typed)));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            optionsScope.$apply(optionsScope.currentReturnType = optionsScope.active_func["returnType"]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (function_typed.includes("(") && !function_typed.includes(")") || function_typed.endsWith(")")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"].startsWith(function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                            if (function_typed.endsWith(")")) {
+                                                args_part = function_typed.split("(");
+                                                args = args_part[args_part.length - 1].split(")");
+                                                func_args = args[0].split(",");
+
+                                                new_args = [];
+
+                                                func_args.forEach(function (el) {
+                                                    arg = el.replace(/^\"+|\"+$/g, '');
+                                                    argn = arg.replace(/^\'+|\'+$/g, '');
+                                                    new_args.push(argn);
+                                                });
+                                                console.log(new_args);
+                                                optionsScope.$apply(optionsScope.curr_args = new_args);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => (el["name"] == func_module || el["name"] == null) && el["keyword"].startsWith(function_typed)));
+                                    }
+                                }
+                                else {
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["name"] == func_module || el["name"] == null));
+                                }
+
+                                // funclist = funclist.filter(el => el["moduleId"] != null && el["name"] == func_module && el["refersToType"] == optionsScope.currentReturnType);
+                                // funclist = funclist.map(value => value["keyword"]);
+
+                                // let replaceChar = '';
+                                // if (optionsScope.active_func == optionsScope.curr_functions[0] && optionsScope.curr_functions.length == 1) {
+                                //     var hasArgs = !optionsScope.isEmptyObject(optionsScope.active_func.args);
+                                //     if (hasArgs)
+                                //         replaceChar = "(";
+                                // }
+                                if (fromClick) {
+                                    //give no options to remove the hints since the user has selected an options
+                                    // needed because it kept the option(s) in the suggestions
+                                    var options = optionsScope.getOptions(cm, []);
+                                    cm.showHint(options);
+                                } else {
+                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea).func.filter(el => el["name"] == func_module || el["name"] == null).map(value => value["keyword"]));
+                                    cm.showHint(options);
+                                }
+
+
+
+                            }
+                            //props and functions of vars
+                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+$/)) {
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#func-info").hide();
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                                optionsScope.$apply(optionsScope.curr_libraries = {});
+                                optionsScope.$apply(optionsScope.curr_variables = {});
+                                gcvar = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                function_typed = gcvar[gcvar.length - 1];
+                                functionWithArgs = textBefore.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                if (functionWithArgs)
+                                    function_typed = functionWithArgs[0];
+                                var_typed = gcvar[0].split("{")[1];
+                                lastobject = gcvar[gcvar.length - 2];//.replace(/\([0-9A-Za-z,"'_ %]*\)?/g, '');
+
+                                let variable = varlist.concat(hierarchyVars).filter(el => el["name"] == var_typed)[0]; // %{var} 
+                                let object = variable; // %{var}.(...) ; variable over which the function will be applied
+                                if (gcvar.length > 2) { // when user writes like %item.parent. (...)
+                                    object = optionsScope.functions.filter(el => (el["name"] == variable["returnName"] || el["name"] == null) && el["keyword"] == lastobject)[0];
+                                }
+
+
+                                if (object["keyword"] == "parent") {
+                                    //if item, length = 2 and we will want the last on the list, if parent, we want the second but last
+                                    // for item -> optionsScope.hierarchyLoops.length; parent -> optionsScope.hierarchyLoops.length - 1....
+                                    bias = gcvar.length - 1;
+                                    object["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"];
+                                }
+                                optionsScope.$apply(optionsScope.currentReturnType = object["returnType"]);
+                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+
+                                if (function_typed != "") {
+                                    var func = optionsScope.curr_functions.filter(el => el["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
+                                    if (function_typed.endsWith("(")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed.replace(/[\(]/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/[\(]/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (func.length > 0 && optionsScope.isEmptyObject(func[0].args)) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed)));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed) {
+
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            if (function_typed == "parent") {
+                                                //here parent is the function and not the object
+                                                bias = gcvar.length;
+                                                optionsScope.$apply(optionsScope.active_func["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"]);
+                                            }
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (function_typed.includes("(") && !function_typed.includes(")") || function_typed.endsWith(")")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                            if (function_typed.endsWith(")")) {
+                                                args_part = function_typed.split("(");
+                                                args = args_part[args_part.length - 1].split(")");
+                                                func_args = args[0].split(",");
+
+                                                new_args = [];
+
+                                                func_args.forEach(function (el) {
+                                                    arg = el.replace(/^\"+|\"+$/g, '');
+                                                    argn = arg.replace(/^\'+|\'+$/g, '');
+                                                    new_args.push(argn);
+                                                });
+                                                console.log(new_args);
+                                                optionsScope.$apply(optionsScope.curr_args = new_args);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed)));
+                                    }
+                                }
+                                else {
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                }
+                                //removes parent when there is no more hierarchy
+                                if (gcvar.length > optionsScope.hierarchyLoops.length) {
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"] != "parent"));
+                                }
+                                // funclist = angular.copy(optionsScope.functions);
+                                // funclist = funclist.filter(el => el["refersToType"] == optionsScope.currentReturnType && (variable["returnName"] != "" ? el["refersToName"] == variable["returnName"] : 1));
+                                // funclist = funclist.map(value => value["keyword"]);
+                                //let replaceChar = '';
+                                //if (optionsScope.active_func == optionsScope.curr_functions[0] && optionsScope.curr_functions.length == 1) {
+
+                                // console.log(hasArgs);
+
+                                //}
+                                if (fromClick) {
+                                    //give no options to remove the hints since the user has selected an options
+                                    // needed because it kept the option(s) in the suggestions
+                                    var options = optionsScope.getOptions(cm, []);
+                                    cm.showHint(options);
+                                } else {
+                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.map(value => value["keyword"]));
+                                    cm.showHint(options);
+                                }
+
+                            }
+
+                            //visibility condition
+                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+ ?[<=>!]{1,2} ?%?[A-Za-z0-9]*(\.?[A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+$/)) {
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#func-info").hide();
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                                optionsScope.$apply(optionsScope.curr_libraries = {});
+                                optionsScope.$apply(optionsScope.curr_variables = {});
+
+                                var gccond = optionsScope.getCondition(textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
+
+                                optionsScope.$apply(optionsScope.curr_variables = varlist.concat(hierarchyVars));
+                                optionsScope.$apply(optionsScope.curr_functions = {});
+                                //get last var to give suggestions
+                                gcvar = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split(gccond)[1].split("."); // does not include args
+                                function_typed = "";
+                                if (gcvar.length > 1) {
+                                    function_typed = gcvar[gcvar.length - 1];
+                                    functionWithArgs = textBefore.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                    if (functionWithArgs)
+                                        function_typed = functionWithArgs[0];
+                                }
+
+                                var_typed = gcvar[0];
+
+                                lastobject = gcvar[gcvar.length - 2];//.replace(/\([0-9A-Za-z,"'_ %]*\)?/g, '');
+
+                                if (gcvar.length > 1) {
+                                    let variable = varlist.concat(hierarchyVars).filter(el => el["name"] == var_typed)[0]; // %{var} 
+                                    var object = variable; // %{var}.(...) ; variable over which the function will be applied
+                                    if (gcvar.length > 2) { // when user writes like %item.parent. (...)
+                                        object = optionsScope.functions.filter(el => (el["name"] == variable["returnName"] || el["name"] == null) && el["keyword"] == lastobject)[0];
+                                    }
+
+
+                                    if (object["keyword"] == "parent") {
+                                        //if item, length = 2 and we will want the last on the list, if parent, we want the second but last
+                                        // for item -> optionsScope.hierarchyLoops.length; parent -> optionsScope.hierarchyLoops.length - 1....
+                                        bias = gcvar.length - 1;
+                                        object["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"];
+                                    }
+                                    optionsScope.$apply(optionsScope.currentReturnType = object["returnType"]);
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                    optionsScope.$apply(optionsScope.curr_variables = {});
+                                }
+                                if (function_typed != "") {
+                                    var func = optionsScope.curr_functions.filter(el => el["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
+                                    if (function_typed.endsWith("(")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed.replace(/[\(]/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/[\(]/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (func.length > 0 && optionsScope.isEmptyObject(func[0].args)) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed)));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed) {
+
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            if (function_typed == "parent") {
+                                                //here parent is the function and not the object
+                                                bias = gcvar.length;
+                                                optionsScope.$apply(optionsScope.active_func["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"]);
+                                            }
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    } else if (function_typed.includes("(") && !function_typed.includes(")") || function_typed.endsWith(")")) {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''))));
+                                        if (optionsScope.curr_functions[0]["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '')) {
+                                            optionsScope.$apply(optionsScope.curr_functions = [optionsScope.curr_functions[0]]);
+                                            optionsScope.$apply(optionsScope.active_func = optionsScope.curr_functions[0]);
+                                            $("#func-info").show();
+                                            $(".func-list-item").css("font-weight", "bold");
+                                            $(".func-list-item").css("color", "#905");
+                                        }
+                                    }
+                                    else {
+                                        optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"].startsWith(function_typed)));
+                                    }
+                                }
+                                //function == ""
+                                else if (gcvar.length > 1) {
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                }
+                                //variable
+                                else {
+                                    optionsScope.$apply(optionsScope.curr_variables = optionsScope.curr_variables.filter(el => el["name"].startsWith(var_typed)));
+                                    if (optionsScope.curr_variables.length == 1 && optionsScope.curr_variables[0]["name"] == var_typed) {
+                                        optionsScope.$apply(optionsScope.active_var = optionsScope.curr_variables[0]);
+                                        $("#var-info").show();
+                                        $(".var-list-item").css("font-weight", "bold");
+                                        $(".var-list-item").css("color", "#905");
+                                    }
+                                }
+                                //removes parent when there is no more hierarchy
+                                if (gcvar.length > optionsScope.hierarchyLoops.length) {
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.curr_functions.filter(el => el["keyword"] != "parent"));
+                                }
+
+                                if (fromClick) {
+                                    //give no options to remove the hints since the user has selected an options
+                                    // needed because it kept the option(s) in the suggestions
+                                    var options = optionsScope.getOptions(cm, []);
+                                    cm.showHint(options);
+                                } else {
+                                    if (gcvar.length > 1) {
+                                        var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.map(value => value["keyword"]));
+                                        cm.showHint(options);
+                                    } else {
+                                        var options = optionsScope.getOptions(cm, varlist.concat(hierarchyVars).map(el => el["name"]));
+                                        cm.showHint(options);
+                                    }
+                                }
+
+                            }
+
+                            if (!textBefore.match(/{[A-Za-z]*\.*[A-Za-z]*\(*[A-Za-z,]*\)*.*}*$/)) {
+                                //$("#typing-help").show();
+                                optionsScope.$apply(optionsScope.curr_functions = {});
+                                optionsScope.$apply(optionsScope.curr_variables = {});
+                                // optionsScope.$apply(optionsScope.currentReturnType = null);
+                                $("#func-info").hide();
+                                $(".func-list-item").css("font-weight", "normal");
+                                $(".func-list-item").css("color", "#333");
+                                $("#var-info").hide();
+                                $(".var-list-item").css("font-weight", "normal");
+                                $(".var-list-item").css("color", "#333");
+                            }
+
+                        }
+
+
+
+
                         // Events
                         var events = ['click', 'dblclick', 'mouseover', 'mouseout', 'mouseup', 'wheel', 'drag'];
                         //ToDo: drop,keydown,keypress,keyup (these weren't working)
@@ -500,13 +1394,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         optionsScope.addEvent = function () {
                             var eventType = optionsScope.events.eventToAdd;
                             optionsScope.missingEvents.splice(optionsScope.missingEvents.indexOf(eventType), 1);
-                            optionsScope.part.events[eventType] = '';
+                            optionsScope.part.events[eventType] = '{}';
+                            $timeout(function () {
+                                optionsScope.buildCodeMirrorBox("events." + eventType);
+                            }, 50);
+
                         };
 
                         optionsScope.addEventToMissing = function (type) {
                             optionsScope.missingEvents.push(type);
                         };
-
 
                         // Variables
                         optionsScope.variables = {
@@ -516,45 +1413,110 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         optionsScope.addVariable = function () {
                             optionsScope.part.variables[optionsScope.variables.dataKey] = { value: '' };
                             optionsScope.variables.dataKey = '';
+                            $timeout(function () {
+                                optionsScope.buildCodeMirrorBox("variables." + dataKey);
+                            }, 50);
                         };
 
                         optionsScope.saveEdit = function () {
-                            if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
-                                $timeout(function () {
-                                    objSync(part, optionsScope.part);
+                            var errorMsg = "Loop data, Visibility and Events must be between {} !";
+                            var shouldSave = true;
 
-                                    optionsScope.$destroy();
+                            let codeMirrors = document.getElementsByClassName('CodeMirror');
+                            for (code of codeMirrors) {
+                                const cm = $(code)[0].CodeMirror;
+                                const value = cm.getValue();
+                                textArea = cm.getTextArea().getAttribute("id");
+                                if (textArea == 'loopData') {
+                                    if (!(value.startsWith("{") && value.endsWith("}"))) {
+                                        giveMessage(errorMsg);
+                                        shouldSave = false;
+                                    } else
+                                        optionsScope.loopData = value;
+                                }
+                                else if (textArea == 'value')
+                                    optionsScope.value = value;
+                                else if (textArea.includes('events')) {
+                                    let eventType = textArea.split(".")[1];
+                                    if (!(value.startsWith("{") && value.endsWith("}"))) {
+                                        giveMessage(errorMsg);
+                                        shouldSave = false;
+                                    } else
+                                        optionsScope.part.events[eventType] = value;
+
+                                } else if (textArea.includes('variables')) {
+                                    let variable = textArea.split(".")[1];
+                                    optionsScope.part.variables[variable] = value;
+                                } else if (textArea == 'link') {
+                                    optionsScope.link = value;
+                                } else if (textArea == 'visibilityCondition') {
+                                    if (!(value.startsWith("{") && value.endsWith("}"))) {
+                                        giveMessage(errorMsg);
+                                        shouldSave = false;
+                                    } else
+                                        optionsScope.visibilityCondition = value;
+                                }
+                            }
+                            if (shouldSave) {
+                                if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                                    $timeout(function () {
+                                        objSync(part, optionsScope.part);
+                                        optionsScope.closeOverlay();
+                                        if (options.closeFunc != undefined)
+                                            options.closeFunc();
+                                        giveMessage('Saved!');
+                                    });
+                                } else {
+                                    optionsScope.closeOverlay();
                                     if (options.closeFunc != undefined)
                                         options.closeFunc();
-                                });
-                            } else {
-                                optionsScope.$destroy();
-                                if (options.closeFunc != undefined)
-                                    options.closeFunc();
+                                    giveMessage('You have made no changes!');
+                                }
+
                             }
+
                         };
 
                         $timeout(function () {
                             if (options.callbackFunc != undefined)
-                                options.callbackFunc(container.next(), execClose, optionsScope, watch);
+                                options.callbackFunc(edit_container.next(), execClose, optionsScope, watch);
+
                         }, 50);
 
-                    }, function (cancel) {
-                        console.log("close settings", optionsScope.part);
-                        // if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
-                        //     $timeout(function () {
-                        //         objSync(part, optionsScope.part);
+                        $timeout(function () {
+                            optionsScope.buildCodeMirrorBoxes();
+                        }, 250);
 
-                        //         optionsScope.$destroy();
-                        //         if (options.closeFunc != undefined)
-                        //             options.closeFunc();
-                        //     });
-                        // } else {
-                        optionsScope.$destroy();
-                        if (options.closeFunc != undefined)
-                            options.closeFunc();
-                        // }
-                    });
+                        $timeout(function () {
+                            if (optionsScope.part.partType == "image" || optionsScope.part.partType == "text") {
+                                $("#cb-link").on("change", function () {
+                                    if ($("#cb-link").is(":checked")) {
+                                        optionsScope.buildCodeMirrorBox("link");
+                                    }
+                                });
+                            }
+                        }, 150);
+
+                    }
+                        //     , function (cancel) {
+                        //         console.log("close settings", optionsScope.part);
+                        //         // if (JSON.stringify(optionsScope.part) !== JSON.stringify(part)) {
+                        //         //     $timeout(function () {
+                        //         //         objSync(part, optionsScope.part);
+
+                        //         //         optionsScope.$destroy();
+                        //         //         if (options.closeFunc != undefined)
+                        //         //             options.closeFunc();
+                        //         //     });
+                        //         // } else {
+                        //             optionsScope.$destroy();
+                        //             if (options.closeFunc != undefined)
+                        //                 options.closeFunc();
+                        //         }
+
+
+                        //     }
+                    );
                 });
             }));
         }
@@ -1180,10 +2142,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     const parentContent = el[0].parentElement;
 
                     const part = $sbviews.findPart(viewId, unparseRole(role), $rootScope.partsHierarchy);
-                    const partParent = $sbviews.findPart(part.parentId, unparseRole(role), $rootScope.partsHierarchy, true);
+                    if ($rootScope.partsHierarchy.indexOf(part) == -1) { // if it is not one 'main view'
+                        const partParent = $sbviews.findPart(part.parentId, unparseRole(role), $rootScope.partsHierarchy, true);
+                        var idx = partParent.children.indexOf(part);
+                        partParent.children.splice(idx, 1);
+                    } else {
+                        var idx = $rootScope.partsHierarchy.indexOf(part);
+                        $rootScope.partsHierarchy.splice(idx, 1);
+                    }
 
-                    var idx = partParent.children.indexOf(part);
-                    partParent.children.splice(idx, 1);
 
                     const elToRemove = $($("[data-viewid=" + viewId + "][data-role=" + role + "]").toArray()[0]);
                     $sbviews.destroy(elToRemove);
@@ -1482,8 +2449,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 }
             }
         } else {
-
-            //main view
+            console.log("aqui");
             if (isParent && viewAspects.id == viewId) {
                 return viewAspects;
             }
@@ -1491,7 +2457,6 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 return viewAspects;
             }
 
-            // }
         }
         return false;
 

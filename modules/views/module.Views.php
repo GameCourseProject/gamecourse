@@ -20,9 +20,10 @@ class Views extends Module
         parent::addResources('js/views.js');
         parent::addResources('js/views.service.js');
         parent::addResources('js/views.part.text.js');
-        parent::addResources('Expression/GameCourseExpression.js');
+        // parent::addResources('Expression/GameCourseExpression.js');
         parent::addResources('js/');
         parent::addResources('css/views.css');
+        parent::addResources('css/src/views.less');
     }
 
     public function initSettingsTabs()
@@ -1693,8 +1694,8 @@ class Views extends Module
             $courseId = API::getValue('course');
             //get course libraries
             $course = new Course($courseId);
-
-            API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
+            //API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
+            API::response(array('libraries' => $course->getEnabledLibrariesInfo(), 'functions' => $course->getAllFunctionsForEditor(), 'variables' => $course->getEnabledVariables()));
         });
         //save the view being edited
         API::registerFunction('views', 'saveEdit', function () {
@@ -1703,6 +1704,47 @@ class Views extends Module
         //gets data to show preview of the view being edited
         API::registerFunction('views', 'previewEdit', function () {
             $this->saveOrPreview(false);
+        });
+
+        API::registerFunction('views', 'testExpression', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('course');
+            $course = Course::getCourse(API::getValue('course'));
+            if ($course != null) {
+                if (API::hasKey('expression')) {
+                    $expression = API::getValue('expression');
+                    $views = $course->getModule('views');
+                    $res = null;
+
+                    if ($views != null) {
+                        $viewHandler = $views->getViewHandler();
+
+                        $viewHandler->parseSelf($expression);
+                        $visitor = new EvaluateVisitor(['course' => (string)API::getValue('course')], $viewHandler);
+                        $expression = $expression->accept($visitor)->getValue();
+                        $objtype = getType($expression);
+
+                        if ($objtype == "bool") {
+                            $res = $expression;
+                        } else if ($objtype == "string") {
+                            $res = $expression;
+                        } else if ($objtype == "object") {
+                            $res = $expression;
+                        } else if ($objtype == "integer") {
+                            $res = $expression;
+                        } else if ($objtype == "array") {
+                            if ($expression["type"] == "collection") {
+                                $res = json_encode($expression["value"]);
+                            }
+                        } else {
+                            $res = get_object_vars($expression);
+                        }
+                        API::response($res);
+                    }
+                }
+            } else {
+                API::error("There is no course with that id: " . API::getValue('course'));
+            }
         });
     }
     //tests view parsing and processing
@@ -1799,7 +1841,7 @@ class Views extends Module
             }
         }
         if ($saving) {
-            API::requireValues('sreenshoot',/*,'pageOrTemp', */ 'view');
+            API::requireValues('screenshoot',/*,'pageOrTemp', */ 'view');
             //$pageOrTemplate = API::getValue('pageOrTemp');
             $viewId = API::getValue('view');
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('sreenshoot')));
@@ -1808,6 +1850,15 @@ class Views extends Module
             //print_r($viewContent);
             foreach ($viewContent as $aspect) {
                 $this->viewHandler->updateViewAndChildren($aspect);
+            }
+            $aspects = Core::$systemDB->selectMultiple("view", ["viewId" => $viewContent[0]["viewId"]]);
+            //it means that some (whole) aspect has been deleted
+            if (count($aspects) > count($viewContent)) {
+                $rolesSaved = array_column($viewContent, 'role');
+                foreach ($aspects as $asp) {
+                    if (!in_array($asp['role'], $rolesSaved))
+                        $this->viewHandler->deleteViews($asp, true);
+                }
             }
             $errorMsg = "Saved, but skipping test (no users in role to test or special role";
         } else {

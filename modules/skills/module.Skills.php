@@ -1561,6 +1561,15 @@ class Skills extends Module
         parent::dropTables($moduleName);
     }
 
+    public function has_personalized_config()
+    {
+        return true;
+    }
+    public function get_personalized_function()
+    {
+        return "skillsPersonalizedConfig";
+    }
+
     public function has_listing_items()
     {
         return  true;

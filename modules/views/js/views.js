@@ -342,7 +342,7 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             html2canvas($("#viewEditor .view.editing"), {
                 onrendered: function (canvas) {
                     var img = canvas.toDataURL();
-                    saveData.sreenshoot = img;
+                    saveData.screenshoot = img;
                     $smartboards.request('views', 'saveEdit', saveData, function (data, err) {
                         btnSave.prop('disabled', false);
                         if (err) {
@@ -930,15 +930,16 @@ angular.module('module.views').config(function ($stateProvider) {
                 controller: 'ViewsList'
             }
         }
-    }).state('course.settings.views.view', {
-        url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
-        views: {
-            'tabContent@course.settings': {
-                template: 'abc',
-                controller: 'ViewSettings'
-            }
-        }
     })
+        // .state('course.settings.views.view', {
+        //     url: '/{pageOrTemp:(?:template|page)}/{view:[A-z0-9]+}-{name:[A-z0-9]+}',
+        //     views: {
+        //         'tabContent@course.settings': {
+        //             template: 'abc',
+        //             controller: 'ViewSettings'
+        //         }
+        //     }
+        // })
         // .state('course.settings.views.view.edit-single', {
         //     url: '/edit',
         //     views: {
