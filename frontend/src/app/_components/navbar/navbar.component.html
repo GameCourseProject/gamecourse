@@ -13,7 +13,7 @@
   <!-- Menu -->
   <ul class="menu">
     <li *ngFor="let link of mainNavigation" class="{{link.class}}">
-      <a [routerLink]="link.sref">{{link.text}}</a>
+      <a [routerLink]="link.sref" [routerLinkActive]="'active focused'">{{link.text}}</a>
       <div *ngIf="link.children" class="dropdown-content">
         <a *ngFor="let sublink of settingsNavigation" [routerLink]="sublink.sref">{{sublink.text}}</a>
       </div>

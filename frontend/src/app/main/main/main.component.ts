@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import {Course} from "../../_domain/Course";
+import {ApiHttpService} from "../../_services/api-http.service";
+import {ApiEndpointsService} from "../../_services/api-endpoints.service";
 
 @Component({
   selector: 'app-main',
@@ -9,20 +12,27 @@ export class MainComponent implements OnInit {
 
   loading = true;
 
-  activeCourses; // TODO: get actual courses
+  activeCourses: Course[]; // TODO: get actual active courses
 
-  constructor() { }
+  constructor(
+    private apiHttpService: ApiHttpService,
+    private apiEndpointsService: ApiEndpointsService
+  ) { }
 
   ngOnInit(): void {
     setTimeout(() => {
       this.getUserActiveCourses();
       this.loading = false;
-    }, 800);
+    }, 800); // FIXME: remove timeout
+
+    this.apiHttpService
+      .get(this.apiEndpointsService.getCoursesEndpoint())
+      .subscribe(res => console.log(res));
   }
 
   getUserActiveCourses(): any {
     this.activeCourses = [
-      {name: 'Multimedia Content Production'}
+      new Course({id: 1, name: 'Multimedia Content Production'})
     ];
   }
 
