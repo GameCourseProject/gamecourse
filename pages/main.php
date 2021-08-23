@@ -28,6 +28,7 @@ $user = Core::getLoggedUser();
     <link rel="stylesheet" type="text/css" href="css/show-hint.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="css/rule_editor.css" />
 
     <script type="text/javascript" src="js/html2canvas.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -60,6 +61,9 @@ $user = Core::getLoggedUser();
     <script type="text/javascript" src="js/show-hint.js"></script>
     <script type="text/javascript" src="js/css-hint.js"></script>
     <script type="text/javascript" src="js/placeholder.js"></script>
+    <script type="text/javascript" src="js/rules.js"></script>
+    <script type="text/javascript" src="js/python.js"></script>
+
 
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.10.25/api/row().show().js"></script>

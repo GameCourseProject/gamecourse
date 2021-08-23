@@ -15,19 +15,9 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             return;
         }
 
-        $('head').append('<link rel="stylesheet" type="text/css" href="css/rule_editor.css" />');
-        $('head').append('<script type="text/javascript" src="js/rules.js"></script>');
-        $('head').append('<script src="js/codemirror.js"></script>');
-        $('head').append('<link rel="stylesheet" href="css/codemirror.css">');
-        $('head').append('<link rel="stylesheet" href="css/mdn-like.css">');
-        $('head').append('<link rel="stylesheet" href="css/base16-light.css">');
-        $('head').append('<link rel="stylesheet" href="css/show-hint.css">');
-        $('head').append('<script type="text/javascript" src="js/python.js"></script>');
-        $('head').append('<script type="text/javascript" src="js/show-hint.js"></script>');
         
         var first_run = true;
         $scope.gamerules_funcs = data.funcs;
-        console.log($scope.gamerules_funcs);
 
 
         // -------------- GENERAL FUNCS --------------
@@ -350,7 +340,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     element.editing = false;
                 });
                   
-                $scope.target_role = "Student"; // TO DO
+                $scope.target_role = "Student"; 
 
                 if (first_run) {
                     $scope.openSettingsModal($scope);
@@ -448,7 +438,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 });
 
                 $scope.metadata = $scope.metadata_edit;
-                console.log($scope.metadata);
             }
 
 
@@ -581,9 +570,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 first_run = false;
                 $( ".help-icon" ).tooltip({
                     // start tooltip for the help bubbles
-                    classes: {
-                      "ui-tooltip": "help-tooltip"
-                    },
+                    classes: { "ui-tooltip": "help-tooltip"},
                     track: true
                 });
 
@@ -606,7 +593,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                         return false;
                     }
                     });
-
                 } );
 
             }
@@ -846,7 +832,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             $scope.tags_save = angular.copy($scope.tags);
             $scope.selected_targets = [];
             
-            
             console.log(data.rules);
 
             search = $("<div class='search'><button class='magnifying-glass' id='search-btn'></button><input ng-change='searchInput()' type='text' id='search-input' placeholder='Search' name='search' ng-model='search'></div>")
@@ -961,7 +946,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     return;
                 }
                 $scope.libraries = data;
-                console.log(data);
             });
 
             $smartboards.request('settings', 'ruleEditorActions', {course: $scope.course, getFunctions: true}, function(data, err) {
@@ -970,7 +954,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     return;
                 }
                 $scope.functions = data;
-                console.log(data);
             });
 
             $scope.isEmptyObject = function(obj) {
@@ -1240,7 +1223,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 $("#func-info-then").hide();
               });
               
-              
 
               whenCodeMirror.on("keyup", function (cm, event) {
                 var liblist = angular.copy($scope.libraries);
@@ -1256,9 +1238,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     textBefore = whenCodeMirror.doc.getLine(line).substr(0, ch);
                     
                     if (textBefore.match(/GC\..*$/)) {
-                        console.log("1");
                         if (textBefore.match(/GC\.[A-Za-z]*$/)) {
-                            console.log("2");
                             $scope.$apply($scope.curr_functions_when = {});
                             $(".func-list-item").css("font-weight", "normal");
                             $("#func-info-when").hide();
@@ -1284,20 +1264,28 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                     while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
                                     var curWord = start !== end && curLine.slice(start, end);
                                     var regex = new RegExp('^' + curWord, 'i');
-                                    return {
+                                    var completion = {
                                         list: (!curWord ? [] : liblist.filter(function(item) {
                                             return item.match(regex);
                                         })).sort(),
                                         from: CodeMirror.Pos(cur.line, start),
                                         to: CodeMirror.Pos(cur.line, end)
+                                    };
+
+                                    if (completion) {
+                                        CodeMirror.on(completion, "pick", function() {
+                                            var cursor = whenCodeMirror.doc.getCursor();
+                                            whenCodeMirror.doc.replaceRange(".", cursor);
+                                        });
                                     }
+                                    return completion;
                                 }
                             , completeSingle: false};
                             cm.showHint(options);
+                            
                         }
 
                         if (textBefore.match(/GC\.[A-Za-z]+\.[A-Za-z]*\(*$/)) {
-                            console.log("3");
                             $scope.$apply($scope.curr_functions_when = {});
                             $(".func-list-item").css("font-weight", "normal");
                             $("#func-info-when").hide();
@@ -1307,7 +1295,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                             gcfunc = textBefore.split(".");
                             function_typed = gcfunc[gcfunc.length-1];
                             func_module = gcfunc[gcfunc.length-2];
-                            //console.log(function_typed);
 
                             if (function_typed != "") {
                                 if (function_typed.endsWith("(")) {
@@ -1343,16 +1330,26 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                     while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
                                     var curWord = start !== end && curLine.slice(start, end);
                                     var regex = new RegExp('^' + curWord, 'i');
-                                    return {
+
+                                    var completion = {
                                         list: (!curWord ? [] : funclist.filter(function(item) {
                                             return item.match(regex);
                                         })).sort(),
                                         from: CodeMirror.Pos(cur.line, start),
                                         to: CodeMirror.Pos(cur.line, end)
+                                    };
+
+                                    if (completion) {
+                                        CodeMirror.on(completion, "pick", function() {
+                                            var cursor = whenCodeMirror.doc.getCursor();
+                                            whenCodeMirror.doc.replaceRange("(", cursor);
+                                        });
                                     }
+                                    return completion;
                                 }
                             , completeSingle: false};
                             cm.showHint(options);
+                            
                         }
 
                         if (textBefore.match(/GC\.[A-Za-z]+\.[A-Za-z]+\([0-9A-Za-z,"'_ ]*\).*$/)) {
@@ -1369,12 +1366,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                 argn = arg.replace(/^\'+|\'+$/g, '');
                                 new_args.push(argn);
                             });
-                            console.log(new_args);
-                            console.log("---------------");
                             $scope.$apply($scope.curr_args = new_args);
-                            console.log("~~~~~~~");
-                            console.log($scope.curr_args);
-                            console.log("~~~~~~~");
                         }
 
                         if (!textBefore.match(/GC\.*[A-Za-z]*\.*[A-Za-z]*\(*[A-Za-z,]*\)*.*$/)) {
@@ -1409,7 +1401,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                     }
                                     else if (typed.match(/[A-Za-z_]+\([A-Za-z0-9, _"']*$/)) {
                                         typed_func = typed.split("(");
-                                        console.log($scope.curr_functions_when);
                                         $scope.$apply($scope.curr_functions_when = $scope.curr_functions_when.filter(el => el.keyword.startsWith(typed_func[0])));
                                         $scope.$apply($scope.active_func_when = $scope.curr_functions_when[0]);
                                         $("#func-info-when").show();
@@ -1446,13 +1437,21 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                 while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
                                 var curWord = start !== end && curLine.slice(start, end);
                                 var regex = new RegExp('^' + curWord, 'i');
-                                return {
+                                var completion = {
                                     list: (!curWord ? [] : grfunclist.filter(function(item) {
                                         return item.match(regex);
                                     })).sort(),
                                     from: CodeMirror.Pos(cur.line, start),
                                     to: CodeMirror.Pos(cur.line, end)
+                                };
+
+                                if (completion) {
+                                    CodeMirror.on(completion, "pick", function() {
+                                        var cursor = whenCodeMirror.doc.getCursor();
+                                        whenCodeMirror.doc.replaceRange("(", cursor);
+                                    });
                                 }
+                                return completion;
                             }
                         , completeSingle: false};
                         cm.showHint(options);
@@ -1535,13 +1534,22 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                             while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
                             var curWord = start !== end && curLine.slice(start, end);
                             var regex = new RegExp('^' + curWord, 'i');
-                            return {
+                            var completion = {
                                 list: (!curWord ? [] : gr_funclist.filter(function(item) {
                                     return item.match(regex);
                                 })).sort(),
                                 from: CodeMirror.Pos(cur.line, start),
                                 to: CodeMirror.Pos(cur.line, end)
+                            };  
+                            
+                            if (completion) {
+                                CodeMirror.on(completion, "pick", function() {
+                                    var cursor = thenCodeMirror.doc.getCursor();
+                                    thenCodeMirror.doc.replaceRange("(", cursor);
+                                });
                             }
+                            return completion;
+                        
                         }
                     , completeSingle: false};
                     cm.showHint(options);
@@ -1669,9 +1677,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             }
 
             $scope.previewRule = function() {
-                // get code from boxes
                 var test_rule = {};
-
                 test_rule.name = $('#rule-name').val();
                 test_rule.description = $('#rule-description').val();
                 test_rule.tags = $scope.rule.tags;
@@ -1683,29 +1689,20 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 $smartboards.request('settings', 'ruleEditorActions', {course: $scope.course, previewRule: true, rule: test_rule}, function(data, err) {
                     if (err) {
                         giveMessage(err.description);
-                        console.log("if");
-
                     }
                     else {
-                        console.log("else");
-                        console.log(data);
-
                         if (data.error != "" && data.error != null) { // error occurred
-                            console.log("err");
                             request["response_array"] = null;
                             request["response"] = data.error;
                             request["preview_type"] = "rule";
                         }
                         else {
-                            console.log("good");
-                            console.log(data.result);
                             request["response_array"] = data.result;
                             request["response"] = null;
                             request["preview_type"] = "rule";
                         }
                         
                         $scope.preview_history.push(request);
-                        console.log($scope.preview_history);
                     }
                 });
             }

@@ -16,7 +16,7 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->executeQuery($sql);
     $courseId = 1;
     $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
-    \GameCourse\Course::createCourseDataFolder($courseId, $courseName);
+    $dataFolder = \GameCourse\Course::createCourseDataFolder($courseId, $courseName);
     $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
 
     $db->insert("game_course_user", [
@@ -32,7 +32,19 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $db->insert("user_role", ["id" => 1, "course" => $courseId, "role" => $roleId]);
     // insert line in AutoGame table
     $db->insert("autogame", ["course" => $courseId]);	
-        
+
+    // prep autogame
+    $rulesfolder = join("/", array($dataFolder, "rules"));
+    $functionsFolder = "autogame/imported-functions/" . $courseId;
+    $functionsFileDefault = "autogame/imported-functions/defaults.py";
+    $defaultFunctionsFile = "/defaults.py";
+    $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+    mkdir($rulesfolder);
+    mkdir($functionsFolder);
+    $defaults = file_get_contents($functionsFileDefault);
+    file_put_contents($defaultFunctionsFile, $defaults);
+    file_put_contents($metadataFile, "");
+
     file_put_contents('setup.done', '');
 
     unset($_SESSION['user']); // if the user was logged and the config folder was destroyed..
