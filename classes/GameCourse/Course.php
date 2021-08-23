@@ -596,12 +596,10 @@ class Course
         // insert line in AutoGame table
         Core::$systemDB->insert("autogame", ["course" => $courseId]);
         $rulesfolder = join("/", array($dataFolder, "rules"));
-        $gcBase = "/var/www/html/gamecourse";
-        $functionsFolder = $gcBase . "/autogame/imported-functions/" . $courseId;
-        $functionsFileDefault = $gcBase . "/autogame/imported-functions/defaults.py";
-        $defaultFunctionsFile = $functionsFolder . "/defaults.py";
-        $metadataFile = $gcBase . "/autogame/config/config_" . $courseId . ".txt";
-
+        $functionsFolder = "autogame/imported-functions/" . $courseId;
+        $functionsFileDefault = "autogame/imported-functions/defaults.py";
+        $defaultFunctionsFile = "/defaults.py";
+        $metadataFile = "autogame/config/config_" . $courseId . ".txt";
         mkdir($rulesfolder);
         mkdir($functionsFolder);
         $defaults = file_get_contents($functionsFileDefault);
@@ -1085,22 +1083,6 @@ class Course
             "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
             "refersToType='library' and returnType != 'null'",
             "moduleId, name, keyword, libraryId, refersToType, refersToName, returnType, dictionary_function.description as description, args",
-            "keyword"
-        );
-
-        foreach ($res as $index => $row) {
-            $res[$index]["args"] = json_decode($res[$index]["args"]);
-        }
-
-        return $res;
-    }
-
-    public function getAllFunctionsForEditor()
-    {
-        $res = Core::$systemDB->selectMultipleSegmented(
-            "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
-            null,
-            "moduleId, name, keyword, libraryId, refersToType, returnName, refersToName, returnType, dictionary_function.description as description, args",
             "keyword"
         );
 

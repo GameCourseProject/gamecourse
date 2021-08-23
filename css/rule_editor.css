@@ -581,6 +581,7 @@ h3 .help-icon, .title .info-icon {
 .response-index-li {
     color: #07a;
     padding-left: 1em;
+    list-style-type: none;
 }
 
 .response-item-li {
