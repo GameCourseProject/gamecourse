@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Fakers\FakeCourseNameProvider;
+use App\Providers\Fakers\FakeCourseNameProvider;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

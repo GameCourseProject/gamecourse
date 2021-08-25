@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SetupController extends Controller
 {
@@ -15,38 +16,45 @@ class SetupController extends Controller
         $teacherId = $request->teacherId;
         $teacherUsername = $request->teacherUsername;
 
-        Artisan::call('db:wipe');
-        Artisan::call('migrate:refresh', ['--path' => 'database/migrations/2021_08_21_220603_setup.php']);
+        if (!$courseName) return 'Missing info - course name';
+        if (!$courseColor) return 'Missing info - course color';
+        if (!$teacherId) return 'Missing info - teacher ID';
+        if (!$teacherUsername) return 'Missing info - teacher username';
 
-        DB::table('courses')->insert([
+        // Clean DB & create tables
+        Artisan::call('migrate:fresh', ['--path' => 'database/migrations/setup']);
+
+        // Init DB
+        $courseID = DB::table('courses')->insertGetId([
             'name' => $courseName,
             'color' => $courseColor
         ]);
 
-        $courseID = DB::table('courses')
-            ->select('id')
-            ->where('name', '=', $courseName)
-            ->first()
-            ->id;
+        $roleID = DB::table('roles')->insertGetId([
+            'name' => 'Teacher',
+            'course' => $courseID
+        ]);
 
-        // TODO: create course data folder
+        DB::table('roles')->insert([
+            ['name' => 'Student', 'course' => $courseID],
+            ['name' => 'Watcher', 'course' => $courseID],
+        ]);
 
-        // TODO: insert basic course data
+        $roles = [["name" => "Teacher"], ["name" => "Student"], ["name" => "Watcher"]];
+        DB::table('courses')
+            ->where('id', $courseID)
+            ->update([
+                'role_hierarchy' => json_encode($roles)
+            ]);
 
-        DB::table('game_course_users')->insert([
+        $userID = DB::table('users')->insertGetId([
             'name' => 'Teacher',
             'student_number' => $teacherId,
             'is_admin' => true
         ]);
 
-        $userID = DB::table('game_course_users')
-            ->select('id')
-            ->where('student_number', '=', $teacherId)
-            ->first()
-            ->id;
-
         DB::table('auth')->insert([
-            'game_course_user_id' => $userID,
+            'user_id' => $userID,
             'username' => $teacherUsername,
             'authentication_service' => 'fenix'
         ]);
@@ -56,17 +64,22 @@ class SetupController extends Controller
             'course' => $courseID
         ]);
 
-//        DB::table('user_roles')->insert([
-//            'id' => $userID,
-//            'course' => $courseID,
-//            'role' => 1 // TODO: roleID
-//        ]);
+        DB::table('user_roles')->insert([
+            'id' => $userID,
+            'course' => $courseID,
+            'role' => $roleID
+        ]);
 
         DB::table('autogame')->insert([
             'course' => $courseID,
         ]);
 
-        file_put_contents('setup.done', '');
+        Storage::disk('local')->put('setup.done', '');
+
+        sleep(5);
+        DB::table('courses')->where('id', $courseID)->update([
+            'name' => 'changed',
+        ]);
 
         return 'Setup done!';
     }
