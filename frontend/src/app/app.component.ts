@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-root',
@@ -8,12 +7,6 @@ import {Router} from "@angular/router";
 export class AppComponent {
   title = 'gamecourse-v2';
 
-  noNavbar = ['/login', '/setup'];
-
-  constructor(public router: Router) {
-  }
-
-  hasNavbar(url: string): boolean {
-    return !this.noNavbar.includes(url);
+  constructor() {
   }
 }

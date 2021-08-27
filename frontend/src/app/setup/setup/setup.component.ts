@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {ApiHttpService} from "../../_services/api-http.service";
-import {ApiEndpointsService} from "../../_services/api-endpoints.service";
+import {ApiHttpService} from "../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-setup',
@@ -14,9 +15,9 @@ export class SetupComponent implements OnInit {
 
   constructor(
     private apiHttpService: ApiHttpService,
-    private apiEndpointsService: ApiEndpointsService,
     private fb: FormBuilder
-  ) { }
+  ) {
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -31,12 +32,10 @@ export class SetupComponent implements OnInit {
     if (this.form.valid) {
       const formData = this.form.getRawValue();
 
-      this.apiHttpService
-        .post(this.apiEndpointsService.getSetupEndpoint(), formData)
-        .subscribe(
-          res => console.log(res),
-          error => console.log(error)
-        );
+      this.apiHttpService.doSetup(formData).subscribe(
+        res => console.log(res),
+        error => console.error(error)
+      );
     }
   }
 }

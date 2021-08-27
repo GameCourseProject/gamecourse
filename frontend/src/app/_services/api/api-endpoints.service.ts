@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {UrlBuilder} from "../_utils/url-builder";
-import {QueryStringParameters} from "../_utils/query-string-parameters";
+import {UrlBuilder} from "../../_utils/url-builder";
+import {QueryStringParameters} from "../../_utils/query-string-parameters";
 
 @Injectable({
   providedIn: 'root'
@@ -13,36 +13,30 @@ export class ApiEndpointsService {
   constructor() { }
 
 
-  /*** --------------------------------------------- ***/
-  /*** --------------- Course related -------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getSetupEndpoint(): string {
-    return this.createUrl('setup');
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** --------------- Course related -------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getCoursesEndpoint(): string {
-    return this.createUrl('courses');
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ---------------- URL creator ---------------- ***/
-  /*** --------------------------------------------- ***/
-
-  // e.g. https://domain.com/api/news
-  private createUrl(action: string): string {
+  /**
+   * Create simple URL.
+   * @example 'https://domain.com/api/news'
+   *
+   * @param action
+   *
+   * @return string
+   */
+  public createUrl(action: string): string {
     const urlBuilder: UrlBuilder = new UrlBuilder(this.API_ENDPOINT, action);
     return urlBuilder.toString();
   }
 
-  // e.g. https://domain.com/api/productlist?countrycode=en&postalcode=12345
-  private createUrlWithQueryParameters(
+
+  /**
+   * Create URL with query parameters.
+   * @example 'https://domain.com/api/productlist?countrycode=en&postalcode=12345'
+   *
+   * @param action
+   * @param queryStringHandler
+   *
+   * @return string
+   */
+  public createUrlWithQueryParameters(
     action: string,
     queryStringHandler?: (queryStringParameters: QueryStringParameters) => void
   ): string {
@@ -56,8 +50,17 @@ export class ApiEndpointsService {
     return urlBuilder.toString();
   }
 
-  // e.g. https://domain.com/api/data/12/67
-  private createUrlWithPathVariables(action: string, pathVariables: any[] = []): string {
+
+  /**
+   * Create URL with path variables.
+   * @example 'https://domain.com/api/data/12/67'
+   *
+   * @param action
+   * @param pathVariables
+   *
+   * @return string
+   */
+  public createUrlWithPathVariables(action: string, pathVariables: any[] = []): string {
     let encodedPathVariablesUrl: string = '';
 
     // Push extra path variables
