@@ -164,6 +164,63 @@ class ModuleXPSetupTest extends TestCase
         $this->assertEquals($expectedUserXp, $userXp);
     }
 
+    public function testSetupDataMultipleCallsSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1, "roleHierarchy" => json_encode([["name" => "Student"]])]);
+
+        $user1 = Core::$systemDB->insert("game_course_user", ["name" => "Noël Miller", "email" => "noel_m@gmail", "studentNumber" => "12122", "nickname" => "Noël Miller", "major" => "MEIC-A", "isAdmin" => 0, "isActive" => 1]);
+        $user2 = Core::$systemDB->insert("game_course_user", ["name" => "Ana Rita Gonçalves", "email" => "ana.goncalves@hotmail.com", "studentNumber" => "10001", "nickname" => "Ana G", "major" =>  "MEIC-A", "isAdmin" => 1, "isActive" => 0]);
+        $user3 = Core::$systemDB->insert("game_course_user", ["name" => "Marcus Notø", "email" => "marcus.n.hansen@gmail", "studentNumber" => "1101036", "nickname" => "Marcus Notø", "major" =>  "MEEC", "isAdmin" => 1, "isActive" => 0]);
+        $user4 = Core::$systemDB->insert("game_course_user", ["name" => "Simão Patrício", "email" => "simpat98@gmail.com", "studentNumber" => "97046", "nickname" => "", "major" => "MEIC-A", "isAdmin" => 0, "isActive" => 0]);
+        $user5 = Core::$systemDB->insert("game_course_user", ["name" => "Sabri M'Barki", "email" => "sabri.m.barki@efrei.net", "studentNumber" => "100956", "nickname" => "Sabri M'Barki", "major" =>  "MEIC-T", "isAdmin" => 1, "isActive" => 1]);
+        
+        Core::$systemDB->insert("auth", ["game_course_user_id" => $user1, "username" => "ist112122", "authentication_service" => "fenix"]);
+        Core::$systemDB->insert("auth", ["game_course_user_id" => $user2, "username" => "ist110001", "authentication_service" => "fenix"]);
+        Core::$systemDB->insert("auth", ["game_course_user_id" => $user3, "username" => "ist11101036", "authentication_service" => "fenix"]);
+        Core::$systemDB->insert("auth", ["game_course_user_id" => $user4, "username" => "ist197046", "authentication_service" => "fenix"]);
+        Core::$systemDB->insert("auth", ["game_course_user_id" => $user5, "username" => "ist1100956", "authentication_service" => "fenix"]);
+
+        Core::$systemDB->insert("course_user", ["id" => $user1, "course" => $courseId]);
+        Core::$systemDB->insert("course_user", ["id" => $user2, "course" => $courseId]);
+        Core::$systemDB->insert("course_user", ["id" => $user3, "course" => $courseId]);
+        Core::$systemDB->insert("course_user", ["id" => $user4, "course" => $courseId]);
+        Core::$systemDB->insert("course_user", ["id" => $user5, "course" => $courseId]);
+
+        $student = Core::$systemDB->insert("role", ["name" => "Student", "course" => $courseId]);
+        Core::$systemDB->insert("user_role", ["id" => $user1, "course" => $courseId, "role" => $student]);
+        Core::$systemDB->insert("user_role", ["id" => $user2, "course" => $courseId, "role" => $student]);
+        Core::$systemDB->insert("user_role", ["id" => $user3, "course" => $courseId, "role" => $student]);
+        Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
+
+
+        //When
+        $this->xp->setupData($courseId);
+        $this->xp->setupData($courseId);
+
+        //Then
+        $table1 = Core::$systemDB->executeQuery("show tables like 'level';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like 'user_xp';")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->assertCount(1, $table1);
+        $this->assertCount(1, $table2);
+
+        $levels = Core::$systemDB->selectMultiple("level", ["course" => $courseId]);
+        $expectedLevels = array(
+            array("id" => $levels[0]["id"], "course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL")
+        );
+        $this->assertEquals($expectedLevels, $levels);
+
+        $userXp = Core::$systemDB->selectMultiple("user_xp", ["course" => $courseId]);
+        $expectedUserXp = array(
+            array("course" => $courseId, "xp" => 0, "level" => $levels[0]["id"], "user" => $user1),
+            array("course" => $courseId, "xp" => 0, "level" => $levels[0]["id"], "user" => $user2),
+            array("course" => $courseId, "xp" => 0, "level" => $levels[0]["id"], "user" => $user3),
+            array("course" => $courseId, "xp" => 0, "level" => $levels[0]["id"], "user" => $user5)
+        );
+        $this->assertEquals($expectedUserXp, $userXp);
+    }
+
     public function testSetupDataExistingTablesSuccess(){
         
         //Given
