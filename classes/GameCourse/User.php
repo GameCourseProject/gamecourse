@@ -354,8 +354,9 @@ class User
                     $authIndex = 8;
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    $userId = Core::$systemDB->select("auth", ["username"=> $user[$usernameIndex], "authentication_service"=> $user[$authIndex]], "id");
-                    if ($userId){
+                    $authId = Core::$systemDB->select("auth", ["username"=> $user[$usernameIndex], "authentication_service"=> $user[$authIndex]], "id");
+                    $userId = Core::$systemDB->select("game_course_user", ["studentNumber"=> $user[$studentNumberIndex]], "id");
+                    if ($userId || $authId){
                         if ($replace) {
                             $userToUpdate = User::getUserByUsername($user[$usernameIndex]);
                             $userToUpdate->editUser($user[$nameIndex], $user[$usernameIndex], $user[$authIndex], $user[$emailIndex], $user[$studentNumberIndex], $user[$nicknameIndex], $user[$majorIndex], $user[$isAdminIndex], $user[$isActiveIndex]);

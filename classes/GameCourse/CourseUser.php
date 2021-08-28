@@ -7,7 +7,7 @@ class CourseUser extends User
     //$id is in User
     private $course; //course object
 
-    function __construct($id, $course)
+    function __construct($id, Course $course)
     {
         parent::__construct($id);
         $this->course = $course;
@@ -23,7 +23,7 @@ class CourseUser extends User
 
     public static function addCourseUser($courseId, $id, $roleId = null)
     {
-        $id = Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id]);
+        Core::$systemDB->insert("course_user", ["course" => $courseId, "id" => $id]);
         if ($roleId) {
             Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $id, "role" => $roleId]);
         }
@@ -247,7 +247,8 @@ class CourseUser extends User
         $currRoles = $this->getRolesNames();
         $courseRoles = $this->course->getRolesData();
         $rolesByName = array_combine(array_column($courseRoles, "name"), $courseRoles);
-        if (!in_array($role, $currRoles)) {
+        if (!in_array($role, $currRoles) and array_key_exists($role, $rolesByName)) {
+
             Core::$systemDB->insert("user_role", ["course" => $this->course->getId(), "id" => $this->id, "role" => $rolesByName[$role]["id"]]);
             return true;
         }

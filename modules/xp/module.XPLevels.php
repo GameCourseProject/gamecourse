@@ -1,4 +1,5 @@
 <?php
+namespace Modules\XP;
 
 use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
@@ -9,8 +10,6 @@ use GameCourse\Course;
 
 class XPLevels extends Module
 {
-
-    //const LEVEL_TABLE = "level left join badge_has_level on levelId=id";
     
     public function setupResources() {
         parent::addResources('js/');
@@ -132,12 +131,7 @@ class XPLevels extends Module
         return Core::$systemDB->select("level", ["id" => $level]);
     }
 
-    public function init()
-    {
-
-        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-        $course = $this->getParent();
-        $courseId = $course->getId();
+    public function setupData($courseId){
         $this->addTables("xp", "level");
 
         //create level zero
@@ -146,12 +140,22 @@ class XPLevels extends Module
             $levelZero = Core::$systemDB->insert("level", ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
 
         //create first entry for every user of the course so that we only have to update later
+        $course = new Course($courseId);
         $students = $course->getUsersWithRole("Student");
         foreach ($students as $student){
             $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
             if(!$entry)
                 Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
         }
+    }
+
+    public function init()
+    {
+
+        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
+        $course = $this->getParent();
+        $courseId = $course->getId();
+        $this->setupData($courseId);
 
         $viewHandler->registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
 

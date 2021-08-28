@@ -31,8 +31,8 @@ class SQLDB
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute($data);
         } catch (\PDOException $e) {
-            echo "<br>" . $sql . "<br>" . $e->getMessage() . "<br>";
-            print_r(array_values($data));
+            //echo "<br>" . $sql . "<br>" . $e->getMessage() . "<br>";
+            //print_r(array_values($data));
             throw new \PDOException($e);
         }
         return $stmt;
@@ -104,7 +104,7 @@ class SQLDB
         $sql = "delete from " . $table . ";";
         $this->executeQuery($sql);
     }
-
+    
     public function update($table, $data, $where = null, $whereNot = [], $whereCompare = [])
     {
         //example: update user set name="Example", email="a@a.a" where id=80000;
