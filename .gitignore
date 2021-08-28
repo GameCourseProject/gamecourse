@@ -6,3 +6,4 @@ modules/skills/resources/
 modules/quest/resources/
 cache/
 /nbproject/private/
+/setup.done
