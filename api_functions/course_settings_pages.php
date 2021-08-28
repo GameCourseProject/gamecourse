@@ -25,13 +25,13 @@ API::registerFunction('settings', 'roles', function () {
     $course = Course::getCourse(API::getValue('course'), false);
     if ($course != null) {
         if (API::hasKey('updateRoleHierarchy')) {
-
+            
             API::requireValues('hierarchy');
             API::requireValues('roles');
-
+            
             $hierarchy = API::getValue('hierarchy');
             $newRoles = API::getValue('roles');
-
+            
             $course->setRoles($newRoles);
             $course->setRolesHierarchy($hierarchy);
             http_response_code(201);
@@ -39,45 +39,45 @@ API::registerFunction('settings', 'roles', function () {
             $globalInfo = array(
                 'pages' => $course->getAvailablePages(),
                 'roles' => array_column($course->getRoles("name"), "name"),
-                'roles_obj' => $course->getRoles('id, name, landingPage'), //
+                'roles_obj' => $course->getRoles('id, name, landingPage'),
                 'rolesHierarchy' => $course->getRolesHierarchy(),
             );
             API::response($globalInfo);
         }
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 });
 
 //course main setting page
-API::registerFunction('settings', 'courseGlobal', function () {
+API::registerFunction('settings', 'courseGlobal', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if ($course != null) {
+    if($course != null){
         $globalInfo = array(
             'name' => $course->getName(),
             'theme' => $GLOBALS['theme'],
             'activeUsers' => count($course->getUsers()),
             'awards' => $course->getNumAwards(),
-            'participations' => $course->getNumParticipations(),
-            'viewsModuleEnabled' => in_array('views', $course->getEnabledModules())
+            'participations' => $course->getNumParticipations()
         );
-        API::response($globalInfo);
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        API::response($globalInfo); 
+    }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
     }
 });
 
-
 //gets the data from a database table
-API::registerFunction('settings', 'getTableData', function () {
+API::registerFunction('settings', 'getTableData', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $tableName = API::getValue('table');
 
-    if ($tableName != null) {
-        $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user", ["course" => $courseId], "t.*, g.name, g.studentNumber");
-        foreach ($data as &$d) {
+    if($tableName != null){
+        $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user",["course"=>$courseId], "t.*, g.name, g.studentNumber");
+        foreach($data as &$d){
             $exploded =  explode(' ', $d["name"]);
             $nickname = $exploded[0] . ' ' . end($exploded);
             $d["name"] = $nickname;
@@ -85,7 +85,7 @@ API::registerFunction('settings', 'getTableData', function () {
 
         $orderedColumns = null;
         // get columns in order: id , name, studentNumber, (...)
-        if ($data) {
+        if($data){
             $columns = array_keys($data[0]);
             $lastHalf = array_slice($columns, 1, -2);
             $lastTwo = array_slice($columns, -2);
@@ -98,14 +98,14 @@ API::registerFunction('settings', 'getTableData', function () {
 });
 
 //deletes a row from a database table
-API::registerFunction('settings', 'deleteTableEntry', function () {
+API::registerFunction('settings', 'deleteTableEntry', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $tableName = API::getValue('table');
 
-    if ($tableName != null) {
+    if($tableName != null){
         $row = API::getValue('rowData');
-        // only keep keys that are columns on the target table
+         // only keep keys that are columns on the target table
         unset($row['name']);
         unset($row['studentNumber']);
 
@@ -114,19 +114,19 @@ API::registerFunction('settings', 'deleteTableEntry', function () {
 });
 
 //edits or creates a row in a database table
-API::registerFunction('settings', 'submitTableEntry', function () {
+API::registerFunction('settings', 'submitTableEntry', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $tableName = API::getValue('table');
 
-    if ($tableName != null) {
+    if($tableName != null){
         $update = API::getValue('update');
         $newData = API::getValue('newData');
         $newData['course'] = $courseId;
         $newStudentNumber = $newData['studentNumber'];
 
         $newStudent = Core::$systemDB->select("course_user c join game_course_user g on c.id=g.id", ["course" => $courseId, "studentNumber" => $newStudentNumber], "g.id, name");
-        if (!$newStudent) {
+        if (!$newStudent){
             API::error('There are no students in this course with student number ' . $newStudentNumber, 400);
         }
         // only keep keys that are columns on the target table
@@ -138,122 +138,141 @@ API::registerFunction('settings', 'submitTableEntry', function () {
 
         $newData['user'] = $newStudent['id'];
 
-        if ($update) {
+        if($update){
             $where = API::getValue('rowData');
-            if ($newData != null and $where != null) {
+            if($newData != null and $where != null){
                 // only keep keys that are columns on the target table
                 unset($where['name']);
                 unset($where['studentNumber']);
-
+                
                 Core::$systemDB->update($tableName, $newData, $where);
                 $newData['name'] = $nickname;
                 $newData['studentNumber'] = $newStudentNumber;
-
-                API::response(array("newRecord" => $newData));
+                
+                API::response(array("newRecord" => $newData));     
             }
-        } else {
+        }
+        else {
             $id = Core::$systemDB->insert($tableName, $newData);
             $newRecord = Core::$systemDB->select($tableName, ["id" => $id]);
             $newRecord['name'] = $nickname;
             $newRecord['studentNumber'] = $newStudentNumber;
-
+            
             API::response(array("newRecord" => $newRecord));
         }
-    } else {
+    }
+    else{
         API::error('Table name missing!', 400);
     }
 });
 
+API::registerFunction('settings', 'saveCourseModule', function() {
+    API::requireCourseAdminPermission();
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId, false);
+    if($course != null){
+        
+        $toEnable = API::getValue('enabled');
+        $moduleId = API::getValue('module');
+        $modules = ModuleLoader::getModules();
+        $module = ModuleLoader::getModule($moduleId);
+        if ($module == null) {
+            API::error('Unknown module!', 400);
+            http_response_code(400);
+        } 
+        else {
+            $moduleObject = $module['factory']();
+            $moduleEnabled = Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled");
+            if ($moduleEnabled && !$toEnable) {//disabling module
+                $modules = $course->getModules();
+                foreach ($modules as $mod) {
+                    $dependencies = $mod->getDependencies();
+                    foreach ($dependencies as $dependency) {
+                        if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
+                            API::error('Must disable all modules that depend on this one first.');
+                    }
+                }
+
+                if (Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1], "count(*)") == 1) {
+                    //only drop the tables of the module data if this is the last course where it is enabled
+                    $moduleObject->dropTables($moduleId); //deletes tables associated with the module
+                } else {
+                    $moduleObject->deleteDataRows($courseId);
+                }
+            } else if(!$moduleEnabled && $toEnable) {//enabling module
+                foreach ($module['dependencies'] as $dependency) {
+                    if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
+                        API::error('Must enable all dependencies first.');
+                }
+            }
+            if ($moduleEnabled != $toEnable) {
+                $course->setModuleEnabled($moduleId, !$moduleEnabled);
+            }
+            http_response_code(201);
+        }
+    }
+    else {
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+}); 
+
 //gets course module's information
-API::registerFunction('settings', 'courseModules', function () {
+API::registerFunction('settings', 'courseModules', function() {
     API::requireCourseAdminPermission();
     $course = Course::getCourse(API::getValue('course'), false);
-    if ($course != null) {
-        if (API::hasKey('module') && API::hasKey('enabled')) {
-            $moduleId = API::getValue('module');
-            $modules = ModuleLoader::getModules();
-            $module = ModuleLoader::getModule($moduleId);
-            if ($module == null) {
-                API::error('Unknown module!', 400);
-                http_response_code(400);
-            } else {
-                $moduleObject = $module['factory']();
-                $moduleEnabled = (in_array($module["id"], $course->getEnabledModules()));
-                if ($moduleEnabled && !API::getValue('enabled')) { //disabling module
-                    $modules = $course->getModules();
-                    foreach ($modules as $mod) {
-                        $dependencies = $mod->getDependencies();
-                        foreach ($dependencies as $dependency) {
-                            if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
-                                API::error('Must disable all modules that depend on this one first.');
-                        }
-                    }
-
-                    if (Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1], "count(*)") == 1) {
-                        //only drop the tables of the module data if this is the last course where it is enabled
-                        $moduleObject->dropTables($moduleId); //deletes tables associated with the module
-                    } else {
-                        $moduleObject->deleteDataRows(API::getValue('course'));
-                    }
-                } else if (!$moduleEnabled && API::getValue('enabled')) { //enabling module
-                    foreach ($module['dependencies'] as $dependency) {
-                        if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
-                            API::error('Must enable all dependencies first.');
-                    }
-                }
-                if ($moduleEnabled != API::getValue('enabled')) {
-                    $course->setModuleEnabled($moduleId, !$moduleEnabled);
-                }
-                http_response_code(201);
+    if($course != null){
+        
+        $allModules = ModuleLoader::getModules();
+        $enabledModules = $course->getEnabledModules();
+    
+        $modulesArr = [];
+        foreach ($allModules as $module) {            
+            
+            if (in_array($module['id'], $enabledModules)){
+                $moduleInfo = ModuleLoader::getModule($module['id']);
+                $moduleObj = $moduleInfo['factory']();
+                $module['hasConfiguration'] = $moduleObj->is_configurable();
+                $module['enabled'] = true;
             }
-        } else {
-            $allModules = ModuleLoader::getModules();
-            $enabledModules = $course->getEnabledModules();
-
-            $modulesArr = [];
-            foreach ($allModules as $module) {
-
-                if (in_array($module['id'], $enabledModules)) {
-                    $moduleInfo = ModuleLoader::getModule($module['id']);
-                    $moduleObj = $moduleInfo['factory']();
-                    $module['hasConfiguration'] = $moduleObj->is_configurable();
-                    $module['enabled'] = true;
-                } else {
-                    $module['hasConfiguration'] = false;
-                    $module['enabled'] = false;
-                }
-
-                $dependencies = [];
-                $canBeEnabled = true;
-                foreach ($module['dependencies'] as $dependency) {
-                    if ($dependency['mode'] != 'optional') {
-                        if (in_array($dependency['id'], $enabledModules)) {
-                            $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
-                        } else {
-                            $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
-                            $canBeEnabled = false;
-                        }
-                    }
-                }
-
-                $mod = array(
-                    'id' => $module['id'],
-                    'name' => $module['name'],
-                    'dir' => $module['dir'],
-                    'version' => $module['version'],
-                    'enabled' => $module['enabled'],
-                    'canBeEnabled' => $canBeEnabled,
-                    'dependencies' => $dependencies,
-                    'description' => $module['description'],
-                    'hasConfiguration' => $module['hasConfiguration']
-                );
-                $modulesArr[] = $mod;
+            else{
+                $module['hasConfiguration'] = false;
+                $module['enabled'] = false;
             }
-            API::response($modulesArr);
+
+            $dependencies = [];
+            $canBeEnabled = true;
+            foreach($module['dependencies'] as $dependency){
+                if ($dependency['mode'] != 'optional'){
+                    if(in_array($dependency['id'], $enabledModules)){
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => true);
+                    }
+                    else{
+                        $dependencies[] = array('id' => $dependency['id'], 'enabled' => false);
+                        $canBeEnabled = false;
+                    } 
+                }
+            }
+
+            $mod = array(
+                'id' => $module['id'],
+                'name' => $module['name'],
+                'dir' => $module['dir'],
+                'version' => $module['version'],
+                'enabled' => $module['enabled'],
+                'canBeEnabled' => $canBeEnabled,
+                'dependencies' => $dependencies,
+                'description' => $module['description'],
+                'hasConfiguration' => $module['hasConfiguration']
+            );
+            $modulesArr[] = $mod;
         }
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        API::response($modulesArr);
+        
     }
+    else{
+        API::error("There is no course with that id: ". API::getValue('course'));
+    }
+    
 });
 
 //gets module information for the configuration page
@@ -310,13 +329,13 @@ API::registerFunction('settings', 'getModuleConfigInfo', function () {
 });
 
 //request to change the item's active status
-API::registerFunction('settings', 'activeItem', function () {
+API::registerFunction('settings', 'activeItem', function() {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $course = Course::getCourse($courseId, false);
-    if ($course != null) {
+    if($course != null){
         $module = $course->getModule(API::getValue('module'));
-        if ($module != null) {
+        if($module != null){
             $itemId = API::getValue('itemId');
             $module->activeItem($itemId);
         }
@@ -359,7 +378,7 @@ API::registerFunction('settings', 'saveModuleConfigInfo', function () {
     }
 });
 
-API::registerFunction('settings', 'importItem', function () {
+API::registerFunction('settings', 'importItem', function(){
     API::requireAdminPermission();
     API::requireValues('file');
 
@@ -371,11 +390,11 @@ API::registerFunction('settings', 'importItem', function () {
 
     $courseObject = Course::getCourse($course, false);
     $moduleObject = $courseObject->getModule($module);
-    $nItems = $moduleObject->importItems($course, $fileContents, $replace);
+    $nItems = $moduleObject->importItems( $course, $fileContents, $replace);
     API::response(array('nItems' => $nItems));
 });
 
-API::registerFunction('settings', 'exportItem', function () {
+API::registerFunction('settings', 'exportItem', function(){
     API::requireCourseAdminPermission();
     API::requireValues('course');
     $course = API::getValue('course');
@@ -410,7 +429,7 @@ API::registerFunction('settings', 'saveNewSequence', function () {
     }
 });
 
-API::registerFunction('settings', 'saveNewNavigationOrder', function () {
+API::registerFunction('settings', 'saveNewNavigationOrder', function(){
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');
     $course = Course::getCourse($courseId);

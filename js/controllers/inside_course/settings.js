@@ -15,7 +15,7 @@ app.controller('CourseSettings', function ($scope, $state, $compile, $smartboard
             tabs.append($compile('<li><a ui-sref="course.settings.global">This Course</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.roles">Roles</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.rules">Rules</a></li>')($scope));
+            tabs.append($compile('<li><a ui-sref="course.settings.rules">Rules</a></li>')($scope));	
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             // tabs.append($compile('<li><a ui-sref="course.settings.about">About</a></li>')($scope));
@@ -24,7 +24,7 @@ app.controller('CourseSettings', function ($scope, $state, $compile, $smartboard
             updateTabTitle($state.current.name, $state.params);
         });
     });
-
+    
     $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
         if (err) {
             giveMessage(err.description);
@@ -46,7 +46,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
     infoSection = $("<div id='configPage'></div>");
     $element.append(infoSection);
 
-
+    
 
     $scope.$on('$stateChangeSuccess', function (e) {
         $smartboards.request('settings', 'getStyleFile', { course: $scope.course }, function (data, err) {
@@ -63,31 +63,31 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
         });
     });
 
-    $scope.deleteRecord = function () {
-        $smartboards.request('settings', 'deleteTableEntry', { course: $scope.course, table: $scope.table, rowData: $scope.rowData }, function (data, err) {
+    $scope.deleteRecord = function(){
+        $smartboards.request('settings', 'deleteTableEntry', { course: $scope.course, table: $scope.table, rowData: $scope.rowData}, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
             }
 
             var table = $('#database').DataTable();
-            var index = table.rows().eq(0).filter(function (rowIdx) {
-                return table.cell(rowIdx, 0).data() === $scope.rowData['id'] ? true : false;
+            var index = table.rows().eq(0).filter( function (rowIdx) {
+                return table.cell( rowIdx, 0).data() === $scope.rowData['id'] ? true : false;
             });
 
             table.row(index)
-                .remove()
-                .draw(false);
+                 .remove()
+                 .draw(false);
         });
     };
 
-    $scope.editRecord = function (row) {
+    $scope.editRecord = function(row){
         $scope.rowData = row;
         $scope.newData = Object.assign({}, $scope.rowData);
     }
 
-    $scope.submitRecord = function (update) {
-        $smartboards.request('settings', 'submitTableEntry', { course: $scope.course, table: $scope.table, update: update, rowData: $scope.rowData, newData: $scope.newData }, function (data, err) {
+    $scope.submitRecord = function(update){
+        $smartboards.request('settings', 'submitTableEntry', { course: $scope.course, table: $scope.table, update: update, rowData: $scope.rowData, newData: $scope.newData}, function (data, err) {
             if (err) {
                 giveMessage(err.description);
                 return;
@@ -97,16 +97,16 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             var dataSource = data.newRecord;
             var id = dataSource['id'];
 
-            if (update) {
-                var index = table.rows().eq(0).filter(function (rowIdx) {
-                    return table.cell(rowIdx, 0).data() === $scope.newData['id'] ? true : false;
-                });
+            if(update) {   
+                var index = table.rows().eq(0).filter( function (rowIdx) {
+                    return table.cell( rowIdx, 0).data() === $scope.newData['id'] ? true : false;
+                });   
             }
-
+            
             $scope.newRecord[id] = Object.assign({}, dataSource);
 
-            for (let column in $scope.columns) {
-                if (!(["user", "course"].includes($scope.columns[column])))
+            for (let column in $scope.columns){
+                if(!(["user", "course"].includes($scope.columns[column])))
                     newRow.push(dataSource[$scope.columns[column]]);
             }
 
@@ -116,7 +116,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             newRow.push(editButton);
             newRow.push(deleteButton);
 
-            if (update) {
+            if(update) {
                 // update row
                 table.row(index).data(newRow).draw(false);
             }
@@ -133,8 +133,8 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             $scope.newData = {};
         });
     }
-
-    $scope.showDatabase = function (table) {
+    
+    $scope.showDatabase = function(table) {
         infoSection.empty();
         $scope.table = table;
         $smartboards.request('settings', 'getTableData', { course: $scope.course, table: $scope.table }, function (data, err) {
@@ -173,43 +173,43 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             table.append(rowContent);
             dataTable.append(table);
             courseData.append($compile(dataTable)($scope));
-
+            
             setTimeout(function () {
-                $('#database thead tr').clone(true).appendTo('#database thead');
-                $('#database thead tr:eq(1) th:lt(-2)').each(function (i) {
+                $('#database thead tr').clone(true).appendTo( '#database thead' );
+                $('#database thead tr:eq(1) th:lt(-2)').each( function (i) {
                     var title = $(this).text();
-                    $(this).html('<input type="text" class="database_search" placeholder="Search ' + title + '" />');
-
-                    $('input', this).on('keyup change', function () {
-                        if (table.column(i).search() !== this.value) {
+                    $(this).html( '<input type="text" class="database_search" placeholder="Search '+ title +'" />' );
+             
+                    $( 'input', this ).on( 'keyup change', function () {
+                        if ( table.column(i).search() !== this.value ) {
                             table
                                 .column(i)
-                                .search(this.value)
+                                .search( this.value )
                                 .draw();
                         }
-                    });
-                });
-                var table = $('#database').DataTable({
+                    } );
+                } );
+                var table = $('#database').DataTable( {
                     "orderCellsTop": true,
                     "fixedHeader": true,
                     "pagingType": "full_numbers",
                     "columnDefs": [{
                         "targets": [-1, -2],     //remove sorting and searching on action columns        
                         "orderable": false,
-                        "searchable": false
-
+                        "searchable": false 
+                        
                     }]
                 });
 
-            }, 500);
-
+              }, 500);
+            
             //delete verification modal
             modal = $("<div class='modal' id='delete-verification'></div>");
             verification = $("<div class='verification modal_content'></div>");
-            verification.append($('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
-            verification.append($('<div class="warning">Are you sure you want to delete this row?</div>'));
-            verification.append($('<div class="target"></div>'));
-            verification.append($('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button value="#delete-verification" class="continue" ng-click="deleteRecord()" onclick="closeModal(this)">Delete</button></div>'))
+            verification.append( $('<button class="close_btn icon" value="#delete-verification" onclick="closeModal(this)"></button>'));
+            verification.append( $('<div class="warning">Are you sure you want to delete this row?</div>'));
+            verification.append( $('<div class="target"></div>'));
+            verification.append( $('<div class="confirmation_btns"><button class="cancel" value="#delete-verification" onclick="closeModal(this)">Cancel</button><button value="#delete-verification" class="continue" ng-click="deleteRecord()" onclick="closeModal(this)">Delete</button></div>'))
             modal.append(verification);
             courseData.append($compile(modal)($scope));
 
@@ -251,7 +251,7 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
             addModal.append(addVerification);
             courseData.append($compile(addModal)($scope));
 
-
+            
 
         });
     };
@@ -458,40 +458,9 @@ app.controller('CourseSettingsGlobal', function ($scope, $element, $smartboards,
 
 app.controller('CourseSettingsModules', function ($scope, $element, $smartboards, $compile) {
 
-    $scope.reduceList = function () {
-        $("#empty_search").empty();
-        $scope.modules = $scope.allModules;
-        filteredModules = [];
-        text = $scope.search;
-        if (validateSearch(text)) {
-            //match por name e short
-            jQuery.each($scope.modules, function (index) {
-                module_obj = $scope.modules[index];
-                if (module_obj.name.toLowerCase().includes(text.toLowerCase())
-                    || module_obj.description.toLowerCase().includes(text.toLowerCase())) {
-                    filteredModules.push(module_obj);
-                }
-            });
-            if (filteredModules.length == 0) {
-                $("#courses-table").hide();
-                $("#empty_search").append("No matches found");
-            }
-            $scope.modules = filteredModules;
-        }
-
-    }
     $scope.openModule = function (module) {
         $scope.module_open = {};
-        $scope.module_open.id = module.id;
-        $scope.module_open.name = module.name;
-        $scope.module_open.description = module.description;
-        $scope.module_open.dir = module.dir;
-        $scope.module_open.version = module.version;
-        $scope.module_open.enabled = module.enabled;
-        $scope.module_open.dependencies = module.dependencies;
-        $scope.module_open.hasConfiguration = module.hasConfiguration;
-        $scope.module_open.canBeEnabled = module.canBeEnabled;
-
+        Object.assign($scope.module_open, module);
 
         $scope.needsToBeSaved = function () {
             if ($scope.module_open.enabled != module.enabled) {
@@ -502,19 +471,25 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
         }
 
         $scope.saveModule = function () {
-
-            $smartboards.request('settings', 'courseModules', { course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled }, alertUpdate);
+            $smartboards.request('settings', 'saveCourseModule', { course: $scope.course, module: $scope.module_open.id, enabled: $scope.module_open.enabled }, alertUpdate);
         }
     }
 
+    $smartboards.request('settings', 'courseModules', { course: $scope.course }, function (data, err) {
+        if (err) {
+            giveMessage(err.description);
+            return;
+        }
+
+        $scope.modules = data;
+    });
+
 
     var tabContent = $($element);
-
-    search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-change='reduceList()' ng-model='search' ><button class='magnifying-glass' id='search-btn' ng-click='reduceList()'></button>  </div>")
-
+    search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-model='search' ><button class='magnifying-glass' id='search-btn'></button>  </div>")
 
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules" value="#view-module" onclick="openModal(this)" ng-click="openModule(module)"></div> ')
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0" ng-click="openModule(module)"></div> ')
     module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text">{{module.description}}</div>'));
@@ -522,13 +497,10 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     module_card.append($('<div ng-if="module.enabled == true" class="status enable">Enabled <div class="background"></div></div>'));
     modules.append(module_card);
     //error section
-    modules.append($("<div class='error_box'><div id='empty_search' class='error_msg'></div></div>"));
+    modules.append($("<div class='error_box'><div id='empty_search' class='error_msg' ng-if='mdls.length === 0'>No matches found</div></div>"));
 
-
-    $compile(modules)($scope);
-    $compile(search)($scope);
-    tabContent.append(search);
-    tabContent.append(modules);
+    tabContent.append($compile(search)($scope));
+    tabContent.append($compile(modules)($scope));
 
     //modal for details of the module
     modal = $("<div class='modal' style='' id='view-module'></div>");
@@ -564,77 +536,6 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     $compile(modal)($scope);
     $element.append(modal);
 
-
-
-    $smartboards.request('settings', 'courseModules', { course: $scope.course }, function (data, err) {
-        if (err) {
-            giveMessage(err.description);
-            return;
-        }
-
-        $scope.modules = data;
-        $scope.allModules = data.slice();
-
-
-
-
-        var tabContent = $($element);
-        $scope.data = data;
-
-        // // Modules
-        // var columns = ['c1', {field:'c2', constructor: function(content) {
-        //     if(typeof content === 'string' || content instanceof String)
-        //         return content;
-        //     else {
-        //         var state = $('<span>')
-        //             .append($('<span>', {text: content.state ? 'Enabled ' : 'Disabled ' , 'class': content.state ? 'on' : 'off'}));
-        //         var stateButton = $('<button>', {text: !content.state ? 'Enable' : 'Disable', 'class':'button small'});
-        //         stateButton.click(function() {
-        //             $(this).prop('disabled', true);
-        //             $smartboards.request('settings', 'courseModules', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
-        //                 if (err) {
-        //                     alert(err.description);
-        //                     return;
-        //                 }
-        //                 location.reload();
-        //             });
-        //         });
-        //         if (content.state || canEnable)
-        //             state.append(stateButton);
-        //         return state;
-
-        //     }
-        // }}];
-
-        // var modulesSection = createSection(tabContent, 'Modules');
-        // modulesSection.attr('id', 'modules');
-        // var modules = $scope.data.modules;
-        // for(var i in modules) {
-        //     var module = modules[i];
-        //     var dependencies = [];
-        //     var canEnable = true;
-        //     for (var d in module.dependencies) {
-        //         var dependency = module.dependencies[d];
-        //         var dependencyEnabled = modules[dependency.id].enabled;
-        //         if (dependency.mode != 'optional') {
-        //             if (!dependencyEnabled)
-        //                 canEnable = false;
-        //             dependencies.push('<span class="color: ' + (dependencyEnabled ? 'on' : 'off') + '">' + dependency.id + '</span>');
-        //         }
-        //     }
-        //     dependencies = dependencies.join(', ');
-        //     if (dependencies == '')
-        //         dependencies = 'None';
-        //     var table = Builder.buildTable([
-        //         { c1:'Name:', c2: module.name},
-        //         { c1:'Version:', c2: module.version},
-        //         { c1:'Path:', c2: module.dir},
-        //         { c1:'State:', c2: {state: module.enabled, id: module.id, canEnable: canEnable}},
-        //         { c1:'Dependencies:', c2: dependencies}
-        //     ], columns);
-        //     modulesSection.append(table);
-        // }
-    });
 });
 
 //pagina dos roles
