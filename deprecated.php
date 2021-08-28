@@ -478,3 +478,61 @@ $viewHandler->registerFunction('awardsXP', function($userData) {
         constructConfigPage(data, err, $scope, $element, $compile, "Level", text, tabContents, columns);
     });
 });*/
+
+//////////////////////////////////////////////////////////////////////////////
+///     Removed from inside_course > settings.js
+//////////////////////////////////////////////////////////////////////////////
+
+        // in controller 'CourseSettingsModules'
+        // var columns = ['c1', {field:'c2', constructor: function(content) {
+        //     if(typeof content === 'string' || content instanceof String)
+        //         return content;
+        //     else {
+        //         var state = $('<span>')
+        //             .append($('<span>', {text: content.state ? 'Enabled ' : 'Disabled ' , 'class': content.state ? 'on' : 'off'}));
+        //         var stateButton = $('<button>', {text: !content.state ? 'Enable' : 'Disable', 'class':'button small'});
+        //         stateButton.click(function() {
+        //             $(this).prop('disabled', true);
+        //             $smartboards.request('settings', 'courseModules', {course: $scope.course, module: content.id, enabled: !content.state}, function(data, err) {
+        //                 if (err) {
+        //                     alert(err.description);
+        //                     return;
+        //                 }
+        //                 location.reload();
+        //             });
+        //         });
+        //         if (content.state || canEnable)
+        //             state.append(stateButton);
+        //         return state;
+
+        //     }
+        // }}];
+
+        // var modulesSection = createSection(tabContent, 'Modules');
+        // modulesSection.attr('id', 'modules');
+        // var modules = $scope.data.modules;
+        // for(var i in modules) {
+        //     var module = modules[i];
+        //     var dependencies = [];
+        //     var canEnable = true;
+        //     for (var d in module.dependencies) {
+        //         var dependency = module.dependencies[d];
+        //         var dependencyEnabled = modules[dependency.id].enabled;
+        //         if (dependency.mode != 'optional') {
+        //             if (!dependencyEnabled)
+        //                 canEnable = false;
+        //             dependencies.push('<span class="color: ' + (dependencyEnabled ? 'on' : 'off') + '">' + dependency.id + '</span>');
+        //         }
+        //     }
+        //     dependencies = dependencies.join(', ');
+        //     if (dependencies == '')
+        //         dependencies = 'None';
+        //     var table = Builder.buildTable([
+        //         { c1:'Name:', c2: module.name},
+        //         { c1:'Version:', c2: module.version},
+        //         { c1:'Path:', c2: module.dir},
+        //         { c1:'State:', c2: {state: module.enabled, id: module.id, canEnable: canEnable}},
+        //         { c1:'Dependencies:', c2: dependencies}
+        //     ], columns);
+        //     modulesSection.append(table);
+        // }
