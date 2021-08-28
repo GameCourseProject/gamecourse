@@ -1,4 +1,5 @@
 <?php
+
 include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
@@ -165,7 +166,7 @@ function testPhotoDownload()
                 $GLOBALS['lg_1'] = ["warning", "<strong style='color:#F7941D; '>Warning:</strong> Username '" . $username . "' does not exist."];
             } else {
 
-                if (file_exists("photos/" . $id . ".png")) {
+                if (file_exists("photos/" . $username . ".png")) {
 
                     // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Photo was created.</h3>";
                     $GLOBALS['lg_1'] =  ["success", "<strong style='color:green'>Success:</strong> Photo was created."];
@@ -577,8 +578,8 @@ function testUserImport()
         $GLOBALS['u_1'] = ["fail", "<strong style='color:red'>Fail:</strong> Users not exported."];
         $GLOBALS['fail']++;
     }
-    $usersCSV .= "\nJoão Bernardo,,,98765,0,1,jb@gmail.pt,google\n";
-    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,0,1,olivia.nog@gmail.com,google\n";
+    $usersCSV .= "\nJoão Bernardo,,,98765,T,0,1,jb@gmail.pt,google\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,A,0,1,olivia.nog@gmail.com,google\n";
     User::importUsers($usersCSV, false);
 
     $user1Id = Core::$systemDB->select("game_course_user", [
@@ -586,6 +587,7 @@ function testUserImport()
         "email" => "",
         "nickname" => "",
         "studentNumber" => "98765",
+        "major" => "T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -595,6 +597,7 @@ function testUserImport()
         "email" => "olivia.nogueira@mail.pt",
         "nickname" => "",
         "studentNumber" => "56789",
+        "major" => "A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -618,9 +621,9 @@ function testUserImport()
         // echo "<h3 style='font-weight: normal'><strong style='color:red'>Fail:</strong> Users were not correctly imported - not created.</h3>";
     }
     //does not update users
-    $usersCSV = "name,email,nickname,studentNumber,isAdmin,isActive,username,auth\n";
-    $usersCSV .= "Joaquim Duarte,,,98765,0,1,jb@gmail.pt,google\n";
-    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,1,1,olivia.nog@gmail.com,google\n";
+    $usersCSV = "name,email,nickname,studentNumber,major,isAdmin,isActive,username,auth\n";
+    $usersCSV .= "Joaquim Duarte,,,98765,A,0,1,jb@gmail.pt,google\n";
+    $usersCSV .= "Olivia Nogueira,olivia.nogueira@mail.pt,,56789,T,1,1,olivia.nog@gmail.com,google\n";
 
     User::importUsers($usersCSV, false);
 
@@ -760,13 +763,14 @@ function testCourseUserImport($course)
 {
     // echo "<h2>Import/Export Course Users</h2>";
     Core::$systemDB->delete("game_course_user", ["studentNumber" => "77777"]);
-    $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, "T", 0, 1);
+    $id = User::addUserToDB("Hugo Sousa", "ist11111", "fenix", "hugo@mail.com", "77777",  null, "MEIC-T", 0, 1);
     $courseUser = new CourseUser($id, new Course($course));
     $roleId = Core::$systemDB->select("role", ["course" => $course, "name" => "student"], "id");
     $courseUser->addCourseUserToDB($roleId);
     $csvCourseUsers = CourseUser::exportCourseUsers($course);
     file_put_contents("courseUsersCSVTesteUnit.csv", $csvCourseUsers);
     $usersCSV = file_get_contents("courseUsersCSVTesteUnit.csv");
+
     if ($usersCSV) {
         // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users exported.</h3>";
         $GLOBALS['cou_1'] = ["success", "<strong style='color:green'>Success:</strong>  Course Users exported."];
@@ -782,13 +786,12 @@ function testCourseUserImport($course)
     $usersCSV .= "Joaquim Duarte,,,98765,0,1,MEIC-A,Student,jb@gmail.pt,linkedin\n";
     $usersCSV .= "Mónica Trindade,,,55555,0,1,MEIC-T,Student,m.trindade@mail.com,google\n";
     file_put_contents("courseUsersCSVTesteUnit.csv", $usersCSV);
-
     CourseUser::importCourseUsers($usersCSV, $course, false);
 
     $user1Id = Core::$systemDB->select("game_course_user", [
         "name" => "Joaquim Duarte",
         "studentNumber" => "98765",
-        "major" => "MEIC-T",
+        "major" => "MEIC-A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -800,7 +803,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
-        "major" => "MEIC-A",
+        "major" => "MEIC-T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -819,6 +822,7 @@ function testCourseUserImport($course)
         "id" => $user3Id,
         "course" => $course
     ]);
+
     if ($courseUser1Id && $courseUser2Id && $courseUser3Id) {
         // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Course Users imported - created and updated (not replaced).</h3>";
         $GLOBALS['cou_2'] = ["success", "<strong style='color:green'>Success:</strong>  Course Users imported - created and updated (not replaced)."];
@@ -846,7 +850,7 @@ function testCourseUserImport($course)
         "name" => "Hugo Sousa Silva",
         "email" => "hugo@mail.com",
         "studentNumber" => "77777",
-        "major" => "MEIC-T",
+        "major" => "MEIC-A",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
@@ -857,7 +861,7 @@ function testCourseUserImport($course)
     $user3Id = Core::$systemDB->select("game_course_user", [
         "name" => "Mónica Trindade",
         "studentNumber" => "55555",
-        "major" => "MEIC-A",
+        "major" => "MEIC-T",
         "isAdmin" => "0",
         "isActive" => "1"
     ], "id");
