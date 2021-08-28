@@ -122,6 +122,56 @@ class ModuleProfilingSetupTest extends TestCase
 
     }
 
+    public function testSetupDataTwoCoursesSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1, "roleHierarchy" => json_encode([["name" => "Student"]]) ]);
+        Core::$systemDB->insert("role", ["name" => "Student", "course" => $courseId]);
+
+        $courseId2 = Core::$systemDB->insert("course", ["name" => "Software Testing and Validation", "short" => "STV", "year" => "2018-2019", "color" => "#c180d1", "isActive" => 1, "isVisible" => 1, "roleHierarchy" => json_encode([["name" => "Student"]]) ]);
+        Core::$systemDB->insert("role", ["name" => "Student", "course" => $courseId2]);
+
+        //When
+        $this->profiling->setupData($courseId);
+        $this->profiling->setupData($courseId2);
+
+        //Then
+        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->assertCount(1, $table1);
+        $this->assertCount(1, $table2);
+        $this->assertCount(1, $table3);
+
+        $profilingRows = Core::$systemDB->selectMultiple("profiling_config");
+        $expectedProfilingRows = array(
+            array("course" => $courseId, "lastRun" => null),
+            array("course" => $courseId2, "lastRun" => null)
+        );
+        $this->assertEquals($expectedProfilingRows, $profilingRows);
+
+        $newRoles = Core::$systemDB->selectMultiple("role", ["name" => "Profiling"]);
+        $expectedNewRoles = array(
+            array("id" => $newRoles[0]["id"], "name" => "Profiling", "course" => $courseId, "landingPage" => null),
+            array("id" => $newRoles[1]["id"], "name" => "Profiling", "course" => $courseId2, "landingPage" => null)
+        );
+        $this->assertEquals($expectedNewRoles, $newRoles);
+
+        $newHierarchy1 = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
+        $newHierarchy2 = json_decode(Core::$systemDB->select("course", ["id" => $courseId2], "roleHierarchy"));
+        
+        $expectedProfilingRole = new stdClass;
+        $expectedProfilingRole->name = 'Profiling';
+        $expectedStudentRole = new stdClass;
+        $expectedStudentRole->name = 'Student';
+        $expectedStudentRole->children = array($expectedProfilingRole);
+        $expectedHierarchy = array($expectedStudentRole);
+
+        $this->assertEquals($expectedHierarchy, $newHierarchy1);
+        $this->assertEquals($expectedHierarchy, $newHierarchy2);
+    }
+
     public function testSetupDataExixtingTablesSuccess(){
         
         //Given
@@ -215,6 +265,46 @@ class ModuleProfilingSetupTest extends TestCase
         $newRole = Core::$systemDB->select("role", ["course" => $courseId, "name" => "Profiling"]);
         $expectedNewRole = array("id" => $profilingId, "name" => "Profiling", "course" => $courseId, "landingPage" => null);
         $this->assertEquals($expectedNewRole, $newRole);
+
+    }
+
+    public function testSetupDataMultipleCallsSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1, "roleHierarchy" => json_encode([["name" => "Student"]]) ]);
+        Core::$systemDB->insert("role", ["name" => "Student", "course" => $courseId]);
+
+        //When
+        $this->profiling->setupData($courseId);
+        $this->profiling->setupData($courseId);
+
+        //Then
+        $table1 = Core::$systemDB->executeQuery("show tables like 'profiling_config';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like 'user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like 'saved_user_profile';")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->assertCount(1, $table1);
+        $this->assertCount(1, $table2);
+        $this->assertCount(1, $table3);
+
+        $profilingRow = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
+        $expectedProfilingRow = array("course" => $courseId, "lastRun" => null);
+        $this->assertEquals($expectedProfilingRow, $profilingRow);
+
+        $newRole = Core::$systemDB->select("role", ["course" => $courseId, "name" => "Profiling"]);
+        $expectedNewRole = array("id" => $newRole["id"], "name" => "Profiling", "course" => $courseId, "landingPage" => null);
+        $this->assertEquals($expectedNewRole, $newRole);
+
+        $newHierarchy = json_decode(Core::$systemDB->select("course", ["id" => $courseId], "roleHierarchy"));
+        
+        $expectedProfilingRole = new stdClass;
+        $expectedProfilingRole->name = 'Profiling';
+        $expectedStudentRole = new stdClass;
+        $expectedStudentRole->name = 'Student';
+        $expectedStudentRole->children = array($expectedProfilingRole);
+        $expectedHierarchy = array($expectedStudentRole);
+
+        $this->assertEquals($expectedHierarchy, $newHierarchy);
 
     }
 
