@@ -15,8 +15,8 @@ class ModuleLoader {
     }
 
     public static function registerModule($module) {
-        if (static::$loadingModuleDir == null)
-            die('Not expecting to load a module.');
+        /*if (static::$loadingModuleDir == null)
+            die('Not expecting to load a module.');*/
 
         static::requireProp($module, 'id');
         static::requireProp($module, 'name');

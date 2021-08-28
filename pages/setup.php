@@ -19,20 +19,20 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     $dataFolder = \GameCourse\Course::createCourseDataFolder($courseId, $courseName);
     $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
 
-    $db->insert("game_course_user", [
+    $userId = $db->insert("game_course_user", [
         "studentNumber" => $teacherId,
         "name" => "Teacher",
         "isAdmin" => true
     ]);
-    $db->insert("auth", ["id" => 1, "game_course_user_id" => 1, "username" => $teacherUsername, "authentication_service" => "fenix"]);
+    $db->insert("auth", ["id" => 1, "game_course_user_id" => $userId, "username" => $teacherUsername, "authentication_service" => "fenix"]);
     $db->insert("course_user", [
-        "id" => 1,
+        "id" => $userId,
         "course" => $courseId,
     ]);
-    $db->insert("user_role", ["id" => 1, "course" => $courseId, "role" => $roleId]);
+    $db->insert("user_role", ["id" => $userId, "course" => $courseId, "role" => $roleId]);
     // insert line in AutoGame table
     $db->insert("autogame", ["course" => $courseId]);	
-
+    
     // prep autogame
     $rulesfolder = join("/", array($dataFolder, "rules"));
     $functionsFolder = "autogame/imported-functions/" . $courseId;
