@@ -62,6 +62,7 @@ create table auth(
 	game_course_user_id int unsigned not null,
 	username varchar(50),
 	authentication_service enum ('fenix','google','facebook','linkedin'),
+	unique key(username, authentication_service),
 	foreign key(game_course_user_id) references game_course_user(id) on delete cascade
 );
 
@@ -84,7 +85,7 @@ create table course_user
    	course  int unsigned,
     lastActivity timestamp NULL,
     previousActivity timestamp NULL,
-	  isActive boolean not null default true,
+	isActive boolean not null default true,
     primary key(id, course),
     foreign key(id) references game_course_user(id) on delete cascade,
     foreign key(course) references course(id) on delete cascade
@@ -95,7 +96,6 @@ create table role(
 	name varchar(50) not null,
 	landingPage varchar(100) default '',
 	course int unsigned not null,
-	#isCourseAdmin boolean default false,
 	foreign key(course) references course(id) on delete cascade
 );
 create table user_role(
