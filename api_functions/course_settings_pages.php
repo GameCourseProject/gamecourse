@@ -60,7 +60,8 @@ API::registerFunction('settings', 'courseGlobal', function() {
             'theme' => $GLOBALS['theme'],
             'activeUsers' => count($course->getUsers()),
             'awards' => $course->getNumAwards(),
-            'participations' => $course->getNumParticipations()
+            'participations' => $course->getNumParticipations(),
+            'viewsModuleEnabled' => in_array('views', $course->getEnabledModules())
         );
         API::response($globalInfo); 
     }
