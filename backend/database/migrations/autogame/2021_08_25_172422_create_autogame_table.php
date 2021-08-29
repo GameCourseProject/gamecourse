@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateAutogameTable extends Migration
@@ -14,7 +15,7 @@ class CreateAutogameTable extends Migration
     public function up()
     {
         Schema::create('autogame', function (Blueprint $table) {
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
             $table->timestamp('started_running')
                 ->useCurrent();
@@ -26,8 +27,8 @@ class CreateAutogameTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->primary('course');
-            $table->foreign('course')
+            $table->primary('course_id');
+            $table->foreign('course_id')
                 ->references('id')
                 ->on('courses')
                 ->onDelete('cascade');

@@ -14,22 +14,22 @@ class CreateUserRolesTable extends Migration
     public function up()
     {
         Schema::create('user_roles', function (Blueprint $table) {
-            $table->foreignId('id')
+            $table->foreignId('user_id')
                 ->nullable(false);
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
-            $table->foreignId('role')
+            $table->foreignId('role_id')
                 ->nullable(false);
             $table->timestamp('created_at')
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->primary(['id', 'course', 'role']);
-            $table->foreign(['id', 'course'])
-                ->references(['id', 'course'])
+            $table->primary(['user_id', 'course_id', 'role_id']);
+            $table->foreign(['user_id', 'course_id'])
+                ->references(['user_id', 'course_id'])
                 ->on('course_users')
                 ->onDelete('cascade');
-            $table->foreign('role')
+            $table->foreign('role_id')
                 ->references('id')
                 ->on('roles')
                 ->onDelete('cascade');

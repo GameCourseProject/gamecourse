@@ -10,13 +10,21 @@ class Course extends Model
     use HasFactory;
 
 
-    public static function getCourseDataFolder($courseId, $courseName = null): string
+    /**
+     * Get course data folder name.
+     *
+     * @param int $courseId
+     * @param string|null $courseName
+     *
+     * @return string
+     */
+    public static function getCourseDataFolder(int $courseId, string $courseName = null): string
     {
         if ($courseName === null) {
             $courseName = Course::find($courseId)->name;
         }
 
-        $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
+        $courseName = iconv('UTF-8', 'ASCII//TRANSLIT', $courseName);
 
         return env('COURSE_DATA_FOLDER', 'course_data') . '/' . $courseId . '-' . $courseName;
     }

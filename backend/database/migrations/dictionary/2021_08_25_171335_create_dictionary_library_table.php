@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateDictionaryLibraryTable extends Migration
@@ -15,7 +16,7 @@ class CreateDictionaryLibraryTable extends Migration
     {
         Schema::create('dictionary_library', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('module')
+            $table->foreignId('module_id')
                 ->nullable(false);
             $table->string('name', 50)
                 ->nullable(false);
@@ -24,7 +25,7 @@ class CreateDictionaryLibraryTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign('module')
+            $table->foreign('module_id')
                 ->references('id')
                 ->on('modules')
                 ->onDelete('cascade');

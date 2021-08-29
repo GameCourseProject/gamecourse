@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateAwardsTable extends Migration
@@ -15,9 +16,9 @@ class CreateAwardsTable extends Migration
     {
         Schema::create('awards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user')
+            $table->foreignId('user_id')
                 ->nullable(false);
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
             $table->string('description', 100)
                 ->nullable(false);
@@ -32,8 +33,8 @@ class CreateAwardsTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign(['user', 'course'])
-                ->references(['id', 'course'])
+            $table->foreign(['user_id', 'course_id'])
+                ->references(['user_id', 'course_id'])
                 ->on('course_users')
                 ->onDelete('cascade');
         });

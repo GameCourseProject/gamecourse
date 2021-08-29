@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreatePagesTable extends Migration
@@ -15,7 +16,7 @@ class CreatePagesTable extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
             $table->string('name', 50)
                 ->nullable(false);
@@ -29,7 +30,7 @@ class CreatePagesTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign('course')
+            $table->foreign('course_id')
                 ->references('id')
                 ->on('courses')
                 ->onDelete('cascade');

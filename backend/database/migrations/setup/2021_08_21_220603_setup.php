@@ -33,7 +33,7 @@ class Setup extends Migration
 
         Artisan::call('migrate', ['--path' => 'database/migrations/notifications']);
 
-        Artisan::call('migrate', ['--path' => 'database/migrations/participations']);
+        Artisan::call('migrate', ['--path' => 'database/migrations/participations']); // FIXME: estou aqui
         Artisan::call('migrate', ['--path' => 'database/migrations/awards/participations']);
 
         Artisan::call('migrate', ['--path' => 'database/migrations/views']);
@@ -46,7 +46,7 @@ class Setup extends Migration
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::table('autogame')->insert([
-            'course' => 0,
+            'course_id' => 0,
             'is_running' => false
         ]);
         DB::statement('SET FOREIGN_KEY_CHECKS=1');

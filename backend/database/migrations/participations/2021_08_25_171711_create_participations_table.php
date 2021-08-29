@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateParticipationsTable extends Migration
@@ -15,9 +16,9 @@ class CreateParticipationsTable extends Migration
     {
         Schema::create('participations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user')
+            $table->foreignId('user_id')
                 ->nullable(false);
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
             $table->string('description', 500)
                 ->nullable(false);
@@ -26,17 +27,17 @@ class CreateParticipationsTable extends Migration
             $table->string('post', 255);
             $table->timestamp('date');
             $table->integer('rating');
-            $table->foreignId('evaluator');
+            $table->foreignId('evaluator_id');
             $table->timestamp('created_at')
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign(['evaluator', 'course'])
-                ->references(['id', 'course'])
+            $table->foreign(['evaluator_id', 'course_id'])
+                ->references(['user_id', 'course_id'])
                 ->on('course_users')
                 ->onDelete('cascade');
-            $table->foreign(['user', 'course'])
-                ->references(['id', 'course'])
+            $table->foreign(['user_id', 'course_id'])
+                ->references(['user_id', 'course_id'])
                 ->on('course_users')
                 ->onDelete('cascade');
         });

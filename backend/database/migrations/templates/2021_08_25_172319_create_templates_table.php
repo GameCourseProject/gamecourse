@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateTemplatesTable extends Migration
@@ -19,7 +20,7 @@ class CreateTemplatesTable extends Migration
                 ->nullable(false);
             $table->enum('role_type', ['ROLE_SINGLE','ROLE_INTERACTION'])
                 ->default('ROLE_SINGLE');
-            $table->foreignId('course')
+            $table->foreignId('course_id')
                 ->nullable(false);
             $table->boolean('is_global')
                 ->default(false);
@@ -27,7 +28,7 @@ class CreateTemplatesTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign('course')
+            $table->foreign('course_id')
                 ->references('id')
                 ->on('courses')
                 ->onDelete('cascade');

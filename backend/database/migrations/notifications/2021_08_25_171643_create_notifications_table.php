@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateNotificationsTable extends Migration
@@ -15,7 +16,7 @@ class CreateNotificationsTable extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('award')
+            $table->foreignId('award_id')
                 ->nullable(false);
             $table->boolean('checked')
                 ->default(false);
@@ -23,7 +24,7 @@ class CreateNotificationsTable extends Migration
                 ->useCurrent();
             $table->timestamp('updated_at')
                 ->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            $table->foreign('award')
+            $table->foreign('award_id')
                 ->references('id')
                 ->on('awards')
                 ->onDelete('cascade');

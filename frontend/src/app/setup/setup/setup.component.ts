@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ApiHttpService} from "../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+import {throwError} from "rxjs";
 import {Router} from "@angular/router";
 
 @Component({
@@ -12,10 +12,12 @@ import {Router} from "@angular/router";
 export class SetupComponent implements OnInit {
 
   form: FormGroup;
+  loading: boolean;
 
   constructor(
     private apiHttpService: ApiHttpService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
   }
 
@@ -30,11 +32,16 @@ export class SetupComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
+      this.loading = true;
       const formData = this.form.getRawValue();
 
       this.apiHttpService.doSetup(formData).subscribe(
-        res => console.log(res),
-        error => console.error(error)
+        res => {
+          this.loading = false;
+          this.router.navigate(['/']);
+          console.log(res)
+        },
+        error => throwError(error)
       );
     }
   }

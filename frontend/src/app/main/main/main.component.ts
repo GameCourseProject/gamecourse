@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {Course} from "../../_domain/Course";
 import {ApiHttpService} from "../../_services/api/api-http.service";
+import {throwError} from "rxjs";
 
 @Component({
   selector: 'app-main',
@@ -11,29 +12,24 @@ export class MainComponent implements OnInit {
 
   loading = true;
 
-  activeCourses: Course[]; // TODO: get actual active courses
+  activeCourses: Course[];
 
-  constructor(
-    private apiHttpService: ApiHttpService
-  ) {
-
+  constructor(private apiHttpService: ApiHttpService) {
   }
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.getUserActiveCourses();
-      this.loading = false;
-    }, 800); // FIXME: remove timeout
-
-    // this.apiHttpService
-    //   .get(this.apiEndpointsService.getCoursesEndpoint())
-    //   .subscribe(res => console.log(res));
+    this.getUserActiveCourses();
   }
 
-  getUserActiveCourses(): any {
-    this.activeCourses = [
-      new Course({id: 1, name: 'Multimedia Content Production'})
-    ];
+  getUserActiveCourses(): void {
+    this.apiHttpService.getAllUserActiveCourses(1) // FIXME: get actual ID
+      .subscribe(
+        res => {
+          this.activeCourses = res;
+          this.loading = false;
+        },
+        error => throwError(error)
+      )
   }
 
 }

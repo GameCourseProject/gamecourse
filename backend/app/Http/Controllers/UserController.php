@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class CourseController extends Controller
+class UserController extends Controller
 {
 
     /**
-     * Get all courses.
+     * Get all user courses.
      *
      * @param Request $request
      *
@@ -18,15 +18,20 @@ class CourseController extends Controller
      */
     public function getAllCourses(Request $request): Collection
     {
+        $userID = $request->route('id');
+
         $conditions = [];
 
         if ($request->exists('active')) {
             $active = filter_var($request->get('active'), FILTER_VALIDATE_BOOLEAN);
-            array_push($conditions, ['is_active', '=', $active]);
+            array_push($conditions, ['course_users.is_active', '=', $active]);
         }
 
-        return DB::table('courses')
+        return DB::table('course_users')
+            ->join('courses', 'courses.id', '=', 'course_users.course_id')
+            ->where('user_id', $userID)
             ->where($conditions)
+            ->select('courses.*')
             ->orderBy('name')
             ->get();
     }
