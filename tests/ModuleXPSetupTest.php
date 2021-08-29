@@ -24,8 +24,8 @@ class ModuleXPSetupTest extends TestCase
     }
 
     protected function tearDown():void {
-        Core::$systemDB->delete("course", [], null, [["id", 0]]);
-        Core::$systemDB->delete("game_course_user", [], null, [["id", 0]]);
+        Core::$systemDB->deleteAll("course");
+        Core::$systemDB->deleteAll("game_course_user");
         Core::$systemDB->executeQuery(
             "drop table if exists user_xp; 
             drop table if exists level;"

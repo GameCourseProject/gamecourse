@@ -17,8 +17,7 @@ class UserClassTest extends TestCase
     }
 
     protected function tearDown():void {
-        //Core::$systemDB->delete("game_course_user", [], null, [["id", 1]]);
-        Core::$systemDB->delete("game_course_user", [], null, [["id", 0]]);
+        Core::$systemDB->deleteAll("game_course_user");
     }
     
     //Data Providers
