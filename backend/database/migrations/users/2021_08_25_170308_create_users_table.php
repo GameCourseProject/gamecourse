@@ -20,7 +20,8 @@ class CreateUsersTable extends Migration
                 ->nullable(false);
             $table->string('email', 255);
             $table->string('major', 8);
-            $table->string('nickname', 50);
+            $table->string('nickname', 50)
+                ->nullable(true);
             $table->integer('student_number')
                 ->unique();
             $table->boolean('is_admin')

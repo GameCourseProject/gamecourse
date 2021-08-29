@@ -18,7 +18,8 @@ class CreateCoursesTable extends Migration
             $table->id();
             $table->string('name', 100);
             $table->string('short', 20);
-            $table->string('color', 7);
+            $table->string('color', 7)
+                ->nullable(true);
             $table->string('year', 10);
             $table->string('default_landing_page', 100)
                 ->default('');
@@ -26,8 +27,10 @@ class CreateCoursesTable extends Migration
                 ->default(true);
             $table->boolean('is_visible')
                 ->default(true);
-            $table->text('role_hierarchy');
-            $table->string('theme', 50);
+            $table->text('role_hierarchy')
+                ->nullable(true);
+            $table->string('theme', 50)
+                ->nullable(true);
             $table->timestamp('created_at')
                 ->useCurrent();
             $table->timestamp('updated_at')
