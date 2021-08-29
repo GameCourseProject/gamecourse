@@ -1,5 +1,7 @@
 <?php
 
+namespace Modules\Badges;
+
 use GameCourse\Core;
 use Modules\Views\Expression\ValueNode;
 use GameCourse\Module;
@@ -18,8 +20,12 @@ class Badges extends Module
         parent::addResources('css/badges.css');
     }
 
-    private function setupData($courseId)
+    public function setupData($courseId)
     {
+        if ($this->addTables("badges", "badge") || empty(Core::$systemDB->select("badges_config", ["course" => $courseId]))) {
+            Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId]);
+        }
+
         $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
         if (!file_exists($folder . "/badges"))
             mkdir($folder . "/badges");
@@ -229,9 +235,7 @@ class Badges extends Module
 
     public function init()
     {
-        if ($this->addTables("badges", "badge") || empty(Core::$systemDB->select("badges_config", ["course" => $this->getCourseId()]))) {
-            Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $this->getCourseId()]);
-        }
+
         $courseId = $this->getParent()->getId();
         $this->setupData($courseId);
         $viewsModule = $this->getParent()->getModule('views');

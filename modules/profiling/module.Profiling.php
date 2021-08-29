@@ -34,9 +34,7 @@ class Profiling extends Module {
 
     public function setupData($courseId){
         
-        $this->addTables("profiling", "profiling_config");
-        $profilingConfig = Core::$systemDB->select("profiling_config", ["course" => $courseId]);
-        if(empty($profilingConfig))
+        if ($this->addTables("profiling", "profiling_config") || empty(Core::$systemDB->select("profiling_config", ["course" => $courseId])))
             Core::$systemDB->insert("profiling_config", ["course" => $courseId]);
         
         $course = Course::getCourse($courseId, false);

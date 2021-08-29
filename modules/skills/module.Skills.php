@@ -1,5 +1,7 @@
 <?php
 
+namespace Modules\Skills;
+
 use GameCourse\API;
 use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
@@ -297,7 +299,7 @@ class Skills extends Module
     }
 
     //adds skills tables and data folder if they dont exist
-    private function setupData($courseId)
+    public function setupData($courseId)
     {
         if ($this->addTables("skills", "skill") || empty(Core::$systemDB->select("skill_tree", ["course" => $courseId]))) {
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
