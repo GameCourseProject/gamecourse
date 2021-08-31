@@ -69,8 +69,8 @@ class Course
     }
 
     public function getUsers($active = true)
-    {   
-        if (!$active){
+    {
+        if (!$active) {
             $where = ["course" => $this->cid];
         } else {
             $where = ["course" => $this->cid, "c.isActive" => true];
@@ -83,8 +83,8 @@ class Course
 
     //receives name of role and gets all the course_users w that role
     public function getUsersWithRole($role, $active = true)
-    {   
-        if (!$active){
+    {
+        if (!$active) {
             $where = ["r.course" => $this->cid, "r.name" => $role];
         } else {
             $where = ["r.course" => $this->cid, "r.name" => $role, "cu.isActive" => true];
@@ -100,10 +100,9 @@ class Course
     //receives id of role and gets all the course_users w that role
     public function getUsersWithRoleId($role, $active = true)
     {
-        if (!$active){
+        if (!$active) {
             $where = ["r.course" => $this->cid, "role" => $role];
-        }
-        else {
+        } else {
             $where = ["r.course" => $this->cid, "role" => $role, "c.isActive" => true];
         }
         return Core::$systemDB->selectMultiple(
@@ -120,7 +119,7 @@ class Course
 
     public function getUsersNames($active = false)
     {
-        if(!$active){
+        if (!$active) {
             $where = ["course" => $this->cid];
         } else {
             $where = ["course" => $this->cid, "c.isActive" => true];
@@ -227,7 +226,7 @@ class Course
         $rolesByName = array_combine(array_column($roles, "name"), $roles);
 
         $hierarchy = json_decode(Core::$systemDB->select("course", ["id" => $this->cid], "roleHierarchy"), true);
-        if(!empty($hierarchy)){
+        if (!empty($hierarchy)) {
             foreach ($hierarchy as &$role) {
                 $this->setHierarchyId($role, $rolesByName);
             }
@@ -303,7 +302,7 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
-       if ($enabled) {
+        if ($enabled) {
             $enabled = 1;
         } else {
             $enabled = 0;
@@ -392,20 +391,20 @@ class Course
         $dir = opendir($source);
         if (!file_exists($destination))
             mkdir($destination);
-            
-            while ($file = readdir($dir)) {
-                if (($file != '.') && ($file != '..')) {
-                    if (is_dir($source . '/' . $file)) {
-                        // Recursively calling custom copy function for sub directory  
-    
-                        Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);  
-                    } else {  
-                        copy($source . '/' . $file, $destination . '/' . $file);  
-                    }  
-                }  
-            }  
 
-        closedir($dir);  
+        while ($file = readdir($dir)) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($source . '/' . $file)) {
+                    // Recursively calling custom copy function for sub directory  
+
+                    Course::copyCourseDataFolder($source . '/' . $file, $destination . '/' . $file);
+                } else {
+                    copy($source . '/' . $file, $destination . '/' . $file);
+                }
+            }
+        }
+
+        closedir($dir);
     }
 
     public static function removeCourseDataFolder($target)
@@ -419,7 +418,7 @@ class Course
                 unlink($file);
             }
         }
-        rmdir($target);  
+        rmdir($target);
     }
 
     public function editCourse($courseName, $courseShort, $courseYear, $courseColor, $courseIsVisible, $courseIsActive)
@@ -445,7 +444,7 @@ class Course
         $course = new Course($courseId);
         static::$courses[$courseId] = $course;
         $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
-        
+
 
         //course_user table (add current user)
         $currentUserId = null;
@@ -592,7 +591,7 @@ class Course
             }
         } else {
             $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
-            if($currentUserId){
+            if ($currentUserId) {
                 Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $teacherRoleId]);
             }
             $modules = Core::$systemDB->selectMultiple("module");
@@ -601,25 +600,25 @@ class Course
             }
         }
 
-       // insert line in AutoGame table
-       Core::$systemDB->insert("autogame", ["course" => $courseId]);
-       $rulesfolder = join("/", array($dataFolder, "rules"));
-       $functionsFolder = "autogame/imported-functions/" . $courseId;
-       $functionsFileDefault = "autogame/imported-functions/defaults.py";
-       $defaultFunctionsFile = "/defaults.py";
-       $metadataFile = "autogame/config/config_" . $courseId . ".txt";
-       mkdir($rulesfolder);
-       mkdir($functionsFolder);
-       $defaults = file_get_contents($functionsFileDefault);
-       file_put_contents($defaultFunctionsFile, $defaults);
-       file_put_contents($metadataFile, "");
-        
+        // insert line in AutoGame table
+        Core::$systemDB->insert("autogame", ["course" => $courseId]);
+        $rulesfolder = join("/", array($dataFolder, "rules"));
+        $functionsFolder = "autogame/imported-functions/" . $courseId;
+        $functionsFileDefault = "autogame/imported-functions/defaults.py";
+        $defaultFunctionsFile = "/defaults.py";
+        $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+        mkdir($rulesfolder);
+        mkdir($functionsFolder);
+        $defaults = file_get_contents($functionsFileDefault);
+        file_put_contents($defaultFunctionsFile, $defaults);
+        file_put_contents($metadataFile, "");
+
         return $course;
     }
 
     public static function exportCourses($id = null, $options = null)
     {
-        if(!is_null($id)){
+        if (!is_null($id)) {
             $allCourses = Core::$systemDB->selectMultiple("course", ["id" => $id]);
         } else {
             $allCourses = Core::$systemDB->selectMultiple("course");
@@ -630,10 +629,10 @@ class Course
 
         if ($zip->open($zipName, (\ZipArchive::CREATE | \ZipArchive::OVERWRITE)) !== true)
             die("Failed to create archive\n");
-        
+
         foreach ($allCourses as $course) {
             $tempArr = array("courseId" => $course["id"], "color" => $course["color"], "name" => $course["name"], "short" =>  $course["short"], "year" => $course["year"], "isActive" => $course["isActive"], "isVisible" => $course["isVisible"]);
-            
+
             $tempArr["page"] = [];
             $tempArr["template"] = [];
             $tempArr["modulesEnabled"] = [];
@@ -652,7 +651,7 @@ class Course
 
                 $zip->addEmptyDir($courseIdName);
                 $rootPath = realpath($dataFolder);
-                
+
                 $files = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator($rootPath)
                 );
@@ -671,7 +670,7 @@ class Course
                         }
                     }
                 }
-                
+
                 //modules
                 $tempModulesEnabled = Core::$systemDB->selectMultiple("course_module", ["course" => $course["id"], "isEnabled" => 1], "moduleId", "moduleId desc");
                 $modulesArr = array();
@@ -691,7 +690,7 @@ class Course
                         $modulesArr[$mod["moduleId"]] = false;
                     }
                 }
-                
+
                 //pages
                 $pages = Core::$systemDB->selectMultiple("page", ["course" => $course["id"]]);
                 $tempPages = array();
@@ -700,7 +699,7 @@ class Course
                     unset($p['id']);
                     $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
                     $views = $viewHandler->getViewWithParts($view["id"]);
-                
+
                     $arrPage = array("roleType" => $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "views" => $views);
                     array_push($tempPages, $arrPage);
                 }
@@ -722,27 +721,27 @@ class Course
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
                 }
-                
+
                 $tempArr["page"] = $tempPages;
                 $tempArr["template"] = $tempTemplates;
-                $tempArr["modulesEnabled"] = $modulesArr;            
+                $tempArr["modulesEnabled"] = $modulesArr;
             }
-            if(!is_null($options) and $options["users"]){
+            if (!is_null($options) and $options["users"]) {
                 $users = Core::$systemDB->selectMultiple("game_course_user g join course_user u on g.id = u.id join auth a on a.game_course_user_id = u.id", ["course" => $course["id"]], "g.*, a.username, a.authentication_service");
-                foreach($users as &$user){
+                foreach ($users as &$user) {
                     $roles = $roles = Core::$systemDB->selectMultiple("user_role ur join role r on ur.role = r.id", ["ur.id" => $user["id"], "ur.course" => $course["id"]]);
                     $rolesArr = [];
-                    foreach($roles as $role){
+                    foreach ($roles as $role) {
                         array_push($rolesArr, $role["name"]);
                     }
                     $user["roles"] = $rolesArr;
                 }
                 $tempArr["users"] = $users;
             }
-            if(!is_null($options) and $options["awards"]){
+            if (!is_null($options) and $options["awards"]) {
                 $participations = Core::$systemDB->selectMultiple("participation", ["course" => $course["id"]]);
                 $tempArr["participations"] = $participations;
-            
+
                 $awards = Core::$systemDB->selectMultiple("award", ["course" => $course["id"]]);
                 $tempArr["awards"] = $awards;
             }
@@ -765,7 +764,7 @@ class Course
         $zip = new \ZipArchive;
         if ($zip->open($path) !== true)
             die("Failed to create archive\n");
-        
+
         $fileData = json_decode($zip->getFromName("courses.json"));
 
         foreach ($fileData as $course) {
@@ -777,7 +776,7 @@ class Course
                 $toFolder = Course::getCourseDataFolder($courseObj->cid, $course->name);
                 $fromFolder = $course->courseId . "-" . $course->name;
 
-                for($i = 0; $i < $zip->numFiles; $i++) {
+                for ($i = 0; $i < $zip->numFiles; $i++) {
                     $name = $zip->getNameIndex($i);
                     // Skip files not in $fromFolder
                     if (strpos($name, "{$fromFolder}/") !== 0) continue;
@@ -793,16 +792,16 @@ class Course
 
                 foreach ($users as $user) {
                     $gcUser =  Core::$systemDB->select("game_course_user", ["studentNumber" => $user["studentNumber"]]);
-                    if($gcUser === false){
-                        $id = User::addUserToDB($user["name"], $user["username"], $user["authentication_service"], $user["email"], $user["studentNumber"], $user["nickname"], $user["major"], $user["isAdmin"], $user["isActive"]); 
+                    if ($gcUser === false) {
+                        $id = User::addUserToDB($user["name"], $user["username"], $user["authentication_service"], $user["email"], $user["studentNumber"], $user["nickname"], $user["major"], $user["isAdmin"], $user["isActive"]);
                         $newCourseUser = true;
                     } else {
                         $id = $gcUser["id"];
                         $newCourseUser = !Core::$systemDB->select("course_user", ["id" => $id, "course" => $courseObj->cid]);
                     }
-                   
+
                     $newIds[$user["id"]] = $id;
-                    if($newCourseUser)
+                    if ($newCourseUser)
                         CourseUser::addCourseUser($courseObj->cid, $id, null);
 
                     $courseUser = new CourseUser($id, Course::getCourse($courseObj->cid, false));
@@ -813,7 +812,7 @@ class Course
                 $participations = json_decode(json_encode($course->participations), true);
                 foreach ($participations as &$participation) {
                     $participation["user"] = $newIds[$participation["user"]];
-                    if (!is_null($participation["evaluator"])){
+                    if (!is_null($participation["evaluator"])) {
                         $participation["evaluator"] = $newIds[$participation["evaluator"]];
                     }
                     $participation["course"] = $courseObj->cid;
@@ -824,11 +823,11 @@ class Course
                 $modulesArray = json_decode(json_encode($course->modulesEnabled), true);
                 $moduleNames = array_keys($modulesArray);
                 $newModuleInstances = array();
-                
+
                 foreach ($moduleNames as $moduleName) {
                     Core::$systemDB->update("course_module", ["isEnabled" => 1], ["course" => $courseObj->cid, "moduleId" => $moduleName]);
                     $module = ModuleLoader::getModule($moduleName);
-                    if($modulesArray[$moduleName]){
+                    if ($modulesArray[$moduleName]) {
                         $handler = $module["factory"]();
                         $newModuleInstances[$moduleName] = $handler->readConfigJson($courseObj->cid, $modulesArray[$moduleName], false);
                     }
@@ -880,19 +879,19 @@ class Course
                     $content = null;
 
                     foreach ($aspects as &$aspect) {
-                         // $aspect["aspectClass"] = $aspectClass;
-                         Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
-                         $aspect["id"] = Core::$systemDB->getLastId();
-                         if ($content) {
-                             $aspect["children"][] = $content;
-                         }
-                         $viewHandler->updateViewAndChildren($aspect, false, true);
-                     }
-                     // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
-                     // if ($existingTemplate) {
-                     //     $id = $existingTemplate["id"];
-                     //     Core::$systemDB->delete("template", ["id" => $id]);
-                     // }
+                        // $aspect["aspectClass"] = $aspectClass;
+                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
+                        $aspect["id"] = Core::$systemDB->getLastId();
+                        if ($content) {
+                            $aspect["children"][] = $content;
+                        }
+                        $viewHandler->updateViewAndChildren($aspect, false, true);
+                    }
+                    // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
+                    // if ($existingTemplate) {
+                    //     $id = $existingTemplate["id"];
+                    //     Core::$systemDB->delete("template", ["id" => $id]);
+                    // }
                     Core::$systemDB->insert("template", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
                     $templateId = Core::$systemDB->getLastId();
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
@@ -903,15 +902,14 @@ class Course
                 foreach ($awards as &$award) {
                     $award["user"] = $newIds[$award["user"]];
                     $award["course"] = $courseObj->cid;
-                    if($award["type"] == "badge")
+                    if ($award["type"] == "badge")
                         $award["moduleInstance"] = $newModuleInstances["badges"][$award["moduleInstance"]];
-                    else if($award["type"] == "skill")
+                    else if ($award["type"] == "skill")
                         $award["moduleInstance"] = $newModuleInstances["skills"][$award["moduleInstance"]];
                     Core::$systemDB->insert("award", $award);
                 }
-
             } else {
-                if ($replace){
+                if ($replace) {
                     $id = Core::$systemDB->select("course", ["name" => $course->name, "year" => $course->year], "id");
                     $courseEdit = new Course($id);
                     $courseEdit->editCourse($course->name, $course->short, $course->year, $course->color, $course->isVisible, $course->isActive);
@@ -936,7 +934,7 @@ class Course
                     // if (!$courseObjEdit->getModule("views")) {
                     //     ModuleLoader::initModules($courseEdit);
                     // }
-                    
+
                     $viewModule = ModuleLoader::getModule("views");
                     $handler = $viewModule["factory"]();
                     $viewHandler = new ViewHandler($handler);
@@ -998,14 +996,14 @@ class Course
                         $templateId = Core::$systemDB->getLastId();
                         Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
                     }
-                }               
+                }
             }
         }
         $zip->close();
-        unlink($path); 
+        unlink($path);
         return $newCourse;
     }
-  
+
 
     public function getEnabledLibraries()
     {
@@ -1102,6 +1100,22 @@ class Course
         return $res;
     }
 
+    public function getAllFunctionsForEditor()
+    {
+        $res = Core::$systemDB->selectMultipleSegmented(
+            "dictionary_library right join dictionary_function on libraryId = dictionary_library.id",
+            null,
+            "moduleId, name, keyword, libraryId, refersToType, returnName, refersToName, returnType, dictionary_function.description as description, args",
+            "keyword"
+        );
+
+        foreach ($res as $index => $row) {
+            $res[$index]["args"] = json_decode($res[$index]["args"]);
+        }
+
+        return $res;
+    }
+
     public function checkFunctionReturnLoop($functions)
     {
         $f = $functions;
@@ -1131,7 +1145,7 @@ class Course
         return Core::$systemDB->selectMultiple("page", ["course" => $this->cid, 'isEnabled' => 1], 'name');
     }
 
-public static function newExternalData($courseId, $all = False, $targets = null, $test = False)
+    public static function newExternalData($courseId, $all = False, $targets = null, $test = False)
     {
         if ($test) { // Test exec
             if ($all) {
@@ -1199,7 +1213,7 @@ public static function newExternalData($courseId, $all = False, $targets = null,
             $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
             if (!is_dir($path)) {
                 $temp = explode(".", $value);
-                
+
                 $extension = "." . end($temp);
                 $file = array('name' => $value, 'filetype' => 'file', 'extension' => $extension);
                 array_push($results, $file);
@@ -1207,7 +1221,7 @@ public static function newExternalData($courseId, $all = False, $targets = null,
                 $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFolders($path));
                 $results[$value] = $folder;
             }
-        }  
+        }
         return $results;
     }
 
