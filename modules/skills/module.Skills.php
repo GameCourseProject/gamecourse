@@ -2,7 +2,6 @@
 
 namespace Modules\Skills;
 
-use DOMDocument;
 use GameCourse\API;
 use GameCourse\Module;
 use Modules\Views\Expression\ValueNode;
