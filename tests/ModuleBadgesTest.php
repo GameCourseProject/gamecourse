@@ -108,6 +108,63 @@ class ModuleBadgesTest extends TestCase
         );
     }
 
+    public function editBadgeSuccessProvider(){
+        return array(
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //same data
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'desc3' => "make fifty posts", 'xp3' => 0, 'image' => null, "count1" => 0, "count2" => 0, "count3" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0),
+                  array("number" => 3, "goal" => 0, "description" => "make fifty posts", "reward" => 0)]),         //add level
+                  
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'image' => null, "count1" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0)]),       //remove level
+
+            array(["name" => "Post Lord", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //change name
+
+            array(["name" => "Post Master", "description" => "Post something new in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change description
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 1, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isExtra
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 0, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isCount
+                  
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 0, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isPost
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 1, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isPoint
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => "badge2.png", "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change image
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 20, "count2" => 30],
+                  [array("number" => 1, "goal" => 20, "description" => "make twenty posts", "reward" => 0),
+                  array("number" => 2, "goal" => 30, "description" => "make thirty posts", "reward" => 0)]),        //change level goal
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "post twenty times", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "post twenty times", "reward" => 0),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //change level description
+
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 110, 'desc2' => "make thirty posts", 'xp2' => 110, 'image' => null, "count1" => 0, "count2" => 0],
+                  [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 110),
+                  array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 110)]),      //change level reward + isBragging
+
+        );
+    }
+
     public function invalidImportFileProvider(){
         return array(
             array(""),                                                                                              //empty file
@@ -497,6 +554,278 @@ class ModuleBadgesTest extends TestCase
         $this->assertEmpty($badges);
     }
 
+    /**
+     * @dataProvider editBadgeSuccessProvider
+     */
+    public function testEditBadgeSuccess($badgeInfo, $expectedNewLevels){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        
+        $badge1 = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        $badge2 = Core::$systemDB->insert("badge", ["name" => "Post Master", "course" => $courseId, "description" => "Post something in the forums", "maxLevel" => 2, "isExtra" => 0, "isBragging" => 1, "isCount" => 1, "isPost" => 1, "isPoint" => 0, "isActive" => 1]);
+        
+        $badge1L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+        Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0]);
+        Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0]);
+
+        $badgeInfo["id"] = $badge2;
+        foreach($expectedNewLevels as &$expectedNewLevel){
+            $expectedNewLevel["badgeId"] = $badge2;
+        }
+
+        //When
+        $result = $this->badges->editBadge($badgeInfo, $courseId);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        foreach($levels as &$level){
+            unset($level["id"]);
+        }
+
+        $expectedBadges = array(
+            array("id" => $badge1, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+            array("id" => $badge2,  "course" => $courseId, "maxLevel" => count($expectedNewLevels), "name" => $badgeInfo["name"], "description" => $badgeInfo["description"], "isActive" => 1, "isCount" => $badgeInfo["countBased"], "isPost" => $badgeInfo["postBased"], "isPoint" => $badgeInfo["pointBased"], "isExtra" => $badgeInfo["extra"], "isBragging" => ($badgeInfo['xp1'] == 0) ? 1 : 0, "image" => $badgeInfo["image"]), 
+        );
+        $expectedLevels = array(
+            array("badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals(array_merge($expectedLevels, $expectedNewLevels), $levels);
+        $this->assertEquals($expectedBadges, $badges);
+
+    }
+
+    public function testEditBadgeInexistingBadge(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        
+        $badge1 = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+
+        $badge1L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+
+        $badgeInfo = array("id" => $badge1 + 2, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
+        
+        //When
+        $result = $this->badges->editBadge($badgeInfo, $courseId);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge1, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+        );
+        $expectedLevels = array(
+            array("id" => $badge1L1, "badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badge1L2, "badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badge1L3, "badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testEditBadgeEmptyStrings(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        
+        $badge1 = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        
+        $badge1L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+
+        $badgeInfo = array("id" => $badge1, "name" => "", "description" => "", "extra" => 0, "countBased" => 0, "postBased" => 0, "pointBased" => 0, 'desc1' => "", 'xp1' => 0, 'desc2' => "", 'xp2' => 0, 'image' => "", "count1" => 0, "count2" => 0);
+       
+        //When
+        $result = $this->badges->editBadge($badgeInfo, $courseId);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        foreach($levels as &$level){
+            unset($level["id"]);
+        }
+
+        $expectedBadges = array(
+            array("id" => $badge1, "name" => "", "course" => $courseId, "description" => "", "maxLevel" => 1, "isExtra" => 0, "isBragging" => 1, "isCount" => 0, "isPost" => 0, "isPoint" => 0, "isActive" => 1, "image" => "")
+        );
+        $expectedLevels = array(
+            array("badgeId" => $badge1, "number" => 1, "goal" => 0, "description" => "", "reward" => 0)
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testEditBadgeWrongCourse(){
+        
+        //Given
+        $course1 = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        $badge1 = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $course1, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        $badge1L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+
+        $course2 = Core::$systemDB->insert("course", ["name" => "Forensics Cyber-Security", "short" => "FCS", "year" => "2020-2021", "color" => "#329da8", "isActive" => 1, "isVisible" => 1]);
+        $badge2 = Core::$systemDB->insert("badge", [ "maxLevel" => 1, "name" => "Lab Master", "course" => $course2, "description" => "Get the top grade in labs", "isBragging" => 1, "isCount" => 1, "isPost" => 0, "isPoint" => 0]);
+        $badge2L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 1, "goal" => 1, "description" => "level 1", "reward" => 100]);
+        
+        $badgeInfo = array("id" => $badge1, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
+        
+        //When
+        $result = $this->badges->editBadge($badgeInfo, $course2);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge1, "name" => "Class Annotator", "course" => $course1, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+            array("isActive" => 1, "isExtra" => 0, "image" => null, "id" => $badge2, "maxLevel" => 1, "name" => "Lab Master", "course" => $course2, "description" => "Get the top grade in labs", "isBragging" => 1, "isCount" => 1, "isPost" => 0, "isPoint" => 0)
+        );
+        $expectedLevels = array(
+            array("id" => $badge1L1, "badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badge1L2, "badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badge1L3, "badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+            array("id" => $badge2L1, "badgeId" => $badge2, "number" => 1, "goal" => 1, "description" => "level 1", "reward" => 100),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testActiveItemActivateSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        $badge = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 0]);
+        $badgeL1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badgeL2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+        
+        //When
+        $this->badges->activeItem($badge);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+        );
+        $expectedLevels = array(
+            array("id" => $badgeL1, "badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badgeL2, "badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badgeL3, "badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testActiveItemDeactivateSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        $badge = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        $badgeL1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badgeL2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+        
+        //When
+        $this->badges->activeItem($badge);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 0, "image" => null),
+        );
+        $expectedLevels = array(
+            array("id" => $badgeL1, "badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badgeL2, "badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badgeL3, "badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testActiveItemInexistingBadge(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        $badge = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        $badgeL1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badgeL2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+        
+        //When
+        $this->badges->activeItem($badge + 1);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+        );
+        $expectedLevels = array(
+            array("id" => $badgeL1, "badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badgeL2, "badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badgeL3, "badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    public function testActiveItemNullBadge(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
+        $badge = Core::$systemDB->insert("badge", ["name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1]);
+        $badgeL1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300]);
+        $badgeL2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
+        $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
+        
+        //When
+        $this->badges->activeItem(null);
+
+        //Then
+        $badges = Core::$systemDB->selectMultiple("badge", []);
+        $levels = Core::$systemDB->selectMultiple("badge_level", []);
+
+        $expectedBadges = array(
+            array("id" => $badge, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
+        );
+        $expectedLevels = array(
+            array("id" => $badgeL1, "badgeId" => $badge, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
+            array("id" => $badgeL2, "badgeId" => $badge, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300),
+            array("id" => $badgeL3, "badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300),
+        );
+
+        $this->assertEquals($expectedLevels, $levels);
+        $this->assertEquals($expectedBadges, $badges);
+    }
+
+    /**
+     * @depends testNewBadgeSuccess
+     */
     public function testImportItemsNoHeaderNoReplaceSuccess(){
         
         //Given
@@ -585,6 +914,9 @@ class ModuleBadgesTest extends TestCase
         $this->assertEquals($expectedLevels, $levels);
     }
 
+    /**
+     * @depends testNewBadgeSuccess
+     */
     public function testImportItemsWithHeaderNoReplaceSuccess(){
         
         //Given
@@ -626,6 +958,9 @@ class ModuleBadgesTest extends TestCase
         $this->assertEquals($expectedLevels, $levels);
     }
 
+    /**
+     * @depends testEditBadgeSuccess
+     */
     public function testImportItemsReplaceSuccess(){
         
         //Given

@@ -719,28 +719,51 @@ class Badges extends Module
     }
     public static function editBadge($achievement, $courseId)
     {
-        $originalBadge = Core::$systemDB->selectMultiple("badge", ["course" => $courseId, 'id' => $achievement['id']], "*", "name")[0];
+        $originalBadge = Core::$systemDB->select("badge", ["course" => $courseId, 'id' => $achievement['id']], "*");
 
-        $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
-        $badgeData = [
-            "maxLevel" => $maxLevel, "name" => $achievement['name'],
-            "course" => $courseId, "description" => $achievement['description'],
-            "isExtra" => ($achievement['extra']) ? 1 : 0,
-            "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
-            "isCount" => ($achievement['countBased']) ? 1 : 0,
-            "isPost" => ($achievement['postBased']) ? 1 : 0,
-            "isPoint" => ($achievement['pointBased']) ? 1 : 0
-        ];
-        if (array_key_exists("image", $achievement)) {
-            $badgeData["image"] = $achievement['image'];
-        }
-        Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
-
-        if ($originalBadge["maxLevel"] <= $maxLevel) {
-            for ($i = 1; $i <= $maxLevel; $i++) {
-
-                if ($i > $originalBadge["maxLevel"]) {
-                    //if they are new levels they need to be inserted and not updated
+        if(!empty($originalBadge)){
+            $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
+            $badgeData = [
+                "maxLevel" => $maxLevel, "name" => $achievement['name'],
+                "course" => $courseId, "description" => $achievement['description'],
+                "isExtra" => ($achievement['extra']) ? 1 : 0,
+                "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
+                "isCount" => ($achievement['countBased']) ? 1 : 0,
+                "isPost" => ($achievement['postBased']) ? 1 : 0,
+                "isPoint" => ($achievement['pointBased']) ? 1 : 0
+            ];
+            if (array_key_exists("image", $achievement)) {
+                $badgeData["image"] = $achievement['image'];
+            }
+            Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
+    
+            if ($originalBadge["maxLevel"] <= $maxLevel) {
+                for ($i = 1; $i <= $maxLevel; $i++) {
+    
+                    if ($i > $originalBadge["maxLevel"]) {
+                        //if they are new levels they need to be inserted and not updated
+                        Core::$systemDB->insert("badge_level", [
+                            "badgeId" => $achievement['id'],
+                            "number" => $i,
+                            "goal" => $achievement['count' . $i],
+                            "description" => $achievement['desc' . $i],
+                            "reward" => abs($achievement['xp' . $i])
+                        ]);
+                    } else {
+                        Core::$systemDB->update("badge_level", [
+                            "badgeId" => $achievement['id'],
+                            "number" => $i,
+                            "goal" => $achievement['count' . $i],
+                            "description" => $achievement['desc' . $i],
+                            "reward" => abs($achievement['xp' . $i])
+                        ], ["number" => $i, "badgeId" => $achievement['id']]);
+                    }
+                }
+            } else {
+                //deletes original badge levels
+                Core::$systemDB->delete("badge_level", ["badgeId" => $originalBadge['id']]);
+                //creates new ones
+                for ($i = 1; $i <= $maxLevel; $i++) {
                     Core::$systemDB->insert("badge_level", [
                         "badgeId" => $achievement['id'],
                         "number" => $i,
@@ -748,30 +771,9 @@ class Badges extends Module
                         "description" => $achievement['desc' . $i],
                         "reward" => abs($achievement['xp' . $i])
                     ]);
-                } else {
-                    Core::$systemDB->update("badge_level", [
-                        "badgeId" => $achievement['id'],
-                        "number" => $i,
-                        "goal" => $achievement['count' . $i],
-                        "description" => $achievement['desc' . $i],
-                        "reward" => abs($achievement['xp' . $i])
-                    ], ["number" => $i, "badgeId" => $achievement['id']]);
                 }
             }
-        } else {
-            //deletes original badge levels
-            Core::$systemDB->delete("badge_level", ["badgeId" => $originalBadge['id']]);
-            //creates new ones
-            for ($i = 1; $i <= $maxLevel; $i++) {
-                Core::$systemDB->insert("badge_level", [
-                    "badgeId" => $achievement['id'],
-                    "number" => $i,
-                    "goal" => $achievement['count' . $i],
-                    "description" => $achievement['desc' . $i],
-                    "reward" => abs($achievement['xp' . $i])
-                ]);
-            }
-        }
+        } 
     }
     public function deleteBadge($badge)
     {
@@ -894,8 +896,10 @@ class Badges extends Module
     public function activeItem($itemId)
     {
         $active = Core::$systemDB->select("badge", ["id" => $itemId], "isActive");
-        Core::$systemDB->update("badge", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
-        //ToDo: ADD RULE MANIPULATION HERE
+        if(!is_null($active)){
+            Core::$systemDB->update("badge", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
+            //ToDo: ADD RULE MANIPULATION HERE
+        }
     }
 
     public function update_module($compatibleVersions)
