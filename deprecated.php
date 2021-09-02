@@ -536,3 +536,197 @@ $viewHandler->registerFunction('awardsXP', function($userData) {
         //     ], columns);
         //     modulesSection.append(table);
         // }
+
+        /*$badgeCache = array();
+        $viewHandler->registerFunction("badges",'userBadgesCache', function() use (&$badgeCache) {
+            $course = $this->getParent();
+            $courseId=$course->getId();
+            
+            //if updates become very regular maybe cacheId could just use de day of the update
+            $updated = Core::$systemDB->select("course",["id"=>$courseId],"lastUpdate");
+            $updated = strtotime($updated);
+            $cacheId = "badges" . $courseId . '-' . $updated;
+            list($hasCache, $cacheValue) = CacheSystem::get($cacheId);  
+            if ($hasCache) {
+                $badgeCache = $cacheValue;
+                return new Modules\Views\Expression\ValueNode('');
+            }
+
+            $students = $course->getUsersWithRole('Student');
+            $studentsBadges = array();
+            $studentsUsernames = array();
+            
+            $studentsById= array_combine(array_column($students, "id"), $students);
+            foreach ($students as $student) {
+                $studentsUsernames[$student['id']] = $student['username'];
+                $studentsNames[$student['id']] = $student['name'];
+                $studentsCampus[$student['id']] = $student["campus"];
+            }
+            
+            $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId]);
+            $badgeCache = array();
+            $badgeCacheClean = array();
+            foreach ($badges as $badge) {
+                $badgeCache[$badge['name']] = array();
+                $badgeCacheClean[$badge['name']] = array();
+                $badgeProgressCount = array();
+                $badgeLevel = array();
+                $badgeStudents = Core::$systemDB->selectMultiple("user_badge",
+                                                    ["course"=>$courseId,"name"=>$badge['name']]);
+                for ($i = 0; $i < $badge['maxLvl']; ++$i) {
+                    $badgeCache[$badge['name']][$i] = array();
+                    $badgeCacheClean[$badge['name']][$i] = array();
+                    foreach ($badgeStudents as $studentBadge) {
+                        $id = $studentBadge['student'];
+            
+                        if (!array_key_exists($id, $badgeLevel)) // cache
+                            $badgeLevel[$id] = $studentBadge['level'];
+                        
+                        if (!array_key_exists($id, $badgeProgressCount)) // cache
+                            $badgeProgressCount[$id] = $studentBadge['progress'];
+
+                        if ($badgeLevel[$id] > $i) {
+                            $timestamp = strtotime(Core::$systemDB->select("badge_level_time",
+                                    ["badgeName"=>$badge['name'], "student"=> $id, "course"=>$courseId, "badgeLevel"=>$i+1],"badgeLvlTime"));
+                            $badgeCache[$badge['name']][$i][] = array(
+                                'id' => $id,
+                                'name' => $studentsNames[$id],
+                                'campus' => $studentsCampus[$id],
+                                'username' => $studentsUsernames[$id],
+                                'progress' => $badgeProgressCount[$id],
+                                'timestamp' => $timestamp,
+                                'when' => date('d-M-Y', $timestamp)
+                            );
+                        }
+                    }
+                    usort($badgeCache[$badge['name']][$i], function ($v1, $v2) {
+                        return $v1['timestamp'] - $v2['timestamp'];
+                    });
+                    $badgeCacheClean[$badge['name']][$i] = $badgeCache[$badge['name']][$i];
+                }
+            }
+            CacheSystem::store($cacheId, $badgeCacheClean);
+            return new Modules\Views\Expression\ValueNode('');
+        });
+
+        $viewHandler->registerFunction('userBadgesCacheGet', function($badgeName, $badgeLevel) use (&$badgeCache) {
+            return new \Modules\Views\Expression\ValueNode($badgeCache[$badgeName][$badgeLevel]);
+        });
+
+        $viewHandler->registerFunction('userBadgesCacheDoesntHave', function($badgeName, $badgeLevel) use (&$badgeCache) {
+            return new \Modules\Views\Expression\ValueNode(count($badgeCache[$badgeName][$badgeLevel]) == 0);
+        });
+
+        $viewHandler->registerFunction('indicator', function($indicator) {
+            return new Modules\Views\Expression\ValueNode($indicator['indicatorText'] . ((!array_key_exists('quality', $indicator) || $indicator['quality'] == 0)? ' ' : ' (' . $indicator['quality'] . ')'));
+        });
+        */
+
+//////////////////////////////////////////////////////////////////////////////
+///     Removed from module.badges inside init()
+//////////////////////////////////////////////////////////////////////////////
+
+    //add API request to list of requests
+    //update list of badges for course, from the badges configuration page
+    // API::registerFunction('settings', 'courseBadges', function() {
+    //     API::requireCourseAdminPermission();
+    //     $courseId=API::getValue('course');
+    //     $folder = Course::getCourseDataFolder($courseId);// Course::getCourseDataFolder($courseId);
+    //     $badges = Core::$systemDB->selectMultiple("badge",["course"=>$courseId],"*", "name");
+
+    //     //set maxreward
+    //     if (API::hasKey('maxReward')){
+    //         $max=API::getValue('maxReward');
+    //         Core::$systemDB->update("badges_config",["maxBonusReward"=>$max],["course"=>$courseId]);
+    //         API::response(["updatedData"=>["Max Reward set to ".$max] ] );
+    //         return;
+    //     }
+    //     //set badges
+    //     if (API::hasKey('badgesList')) {
+    //         $keys = ['name', 'description', 'desc1', 'desc2', 'desc3', 'xp1', 'xp2', 'xp3', 
+    //             'countBased', 'postBased', 'pointBased','count1', 'count2', 'count3'];
+    //         $achievements = preg_split('/[\r]?\n/', API::getValue('badgesList'), -1, PREG_SPLIT_NO_EMPTY);
+
+    //         $badgesToDelete = array_column($badges,'name');
+    //         $badgesInDB = array_combine($badgesToDelete,$badges);
+    //         $totalLevels = 0;
+    //         $updatedData=[];
+
+    //         foreach($achievements as &$achievement) {
+    //             $splitInfo =preg_split('/;/', $achievement);
+    //             if (sizeOf($splitInfo) != sizeOf($keys)) {
+    //                 echo "Badges information was incorrectly formatted";
+    //                 return null;
+    //             }
+    //             $achievement = array_combine($keys, $splitInfo);
+    //             $maxLevel= empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
+    //             //if badge doesn't exit, add it to DB
+    //             $badgeData = ["maxLevel"=>$maxLevel,"name"=>$achievement['name'],
+    //                         "course"=>$courseId,"description"=>$achievement['description'],
+    //                         "isExtra"=> ($achievement['xp1'] < 0),
+    //                         "isBragging"=>($achievement['xp1'] == 0),
+    //                         "isCount"=>($achievement['countBased'] == 'True'),
+    //                         "isPost"=>($achievement['postBased'] == 'True'),
+    //                         "isPoint"=>($achievement['pointBased'] == 'True')];
+    //             if (!array_key_exists($achievement['name'],$badgesInDB)){
+    //             //if (empty(Core::$systemDB->select("badge",["name"=>$achievement['name'],"course"=>$courseId]))){
+    //                 Core::$systemDB->insert("badge",$badgeData);
+    //                 $badgeId=Core::$systemDB->getLastId();
+    //                 for ($i=1;$i<=$maxLevel;$i++){
+    //                     Core::$systemDB->insert("level",["number"=>$i,"course"=>$courseId,
+    //                                             "description"=>$achievement['desc'.$i],
+    //                                             "goal"=>$achievement['count'.$i]]);
+    //                     $levelId=Core::$systemDB->getLastId();
+    //                     Core::$systemDB->insert("badge_has_level",["badgeId"=>$badgeId,"levelId"=>$levelId,
+    //                                             "reward"=>abs($achievement['xp'.$i])]);
+    //                 }  
+    //                 $updatedData[]= "New badge: ".$achievement["name"];
+    //             }else{
+    //                 Core::$systemDB->update("badge",$badgeData,["course"=>$courseId,"name"=>$achievement["name"]]);
+    //                 $badge = $badgesInDB[$achievement['name']];
+    //                 for ($i=1;$i<=$badge["maxLevel"];$i++){
+    //                     $badgeLevel = Core::$systemDB->select("badge_has_level join level on id=levelId",
+    //                             ["number"=>$i,"course"=>$courseId, "badgeId"=>$badge['id']]);
+
+    //                     Core::$systemDB->update("level",["description"=>$achievement['desc'.$i],
+    //                                             "goal"=>$achievement['count'.$i]],["id"=>$badgeLevel['id']]);
+
+    //                     Core::$systemDB->update("badge_has_level",["reward"=>abs($achievement['xp'.$i])],
+    //                             ["levelId"=>$badgeLevel['id'],"badgeId"=>$badge['id']]);
+    //                 }
+    //                 //ToDo: consider cases where maxLevel changes -> fixed on new version of code
+    //                 unset($badgesToDelete[array_search($achievement['name'], $badgesToDelete)]);
+    //             }
+    //             $totalLevels += $maxLevel; 
+    //         }
+    //         foreach ($badgesToDelete as $badgeToDelete){
+    //             $badge = $badgesInDB[$badgeToDelete];
+    //             $badgeLevels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId",
+    //                             ["course"=>$courseId, "badgeId"=>$badge['id']],"id");
+    //             foreach($badgeLevels as $level){
+    //                 Core::$systemDB->delete("level",["id"=>$level['id']]);
+    //             }
+    //             Core::$systemDB->delete("badge",["id"=>$badge['id']]);
+    //             $updatedData[]= "Deleted badge: ".$badgeToDelete;
+    //         }
+    //         //Core::$systemDB->update("course",["numBadges"=>$totalLevels],["id"=>$courseId]);
+
+    //         file_put_contents($folder . '/achievements.txt',API::getValue('badgesList'));
+    //         API::response(["updatedData"=>$updatedData ]);
+    //         return;
+    //     }
+
+    //     foreach($badges as &$badge){
+    //         //$levels = Core::$systemDB->selectMultiple("badge_level",["course"=>$courseId, "badgeName"=>$badge["name"]],"*","level");
+    //         $levels = Core::$systemDB->selectMultiple("badge_has_level join level on id=levelId",
+    //                             ["course"=>$courseId, "badgeId"=>$badge['id']]);
+
+    //         foreach ($levels as $level){
+    //             $badge["levels"][]=$level;
+    //         }
+    //     }
+
+    //     $file = @file_get_contents($folder . '/achievements.txt');
+    //     if ($file===FALSE){$file="";}
+    //     API::response(array('badgesList' => $badges, "file"=>$file, "maxReward"=>Core::$systemDB->select("badges_config",["course"=>$courseId],"maxBonusReward")));
+    // });
