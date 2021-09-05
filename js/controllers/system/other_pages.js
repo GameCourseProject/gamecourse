@@ -12,7 +12,7 @@ app.controller('MyInfo', function ($element, $scope, $smartboards, $compile, $st
 
         myInfo = $("<div id='myInfo'></div>");
         title = $("<div class='title_container'><div class='title'>My Information</div><span class='edit_icon icon' title='Edit' value='#edit-info' onclick='openModal(this)' ng-click='modifyUser(user)'></span></div>");
-        subtitle = $("<div class='warning'>If some of the following information is not right please contact your Teacher to fix it.</div>");
+        //subtitle = $("<div class='warning'>If some of the following information is not right please contact your Teacher to fix it.</div>");
         informationbox = $("<div class='information_box'></div>");
         image = $('<div class="profile_img"></div>');
 
@@ -75,7 +75,7 @@ app.controller('MyInfo', function ($element, $scope, $smartboards, $compile, $st
 
         myInfo.append(title);
         myInfo.append(informationbox);
-        myInfo.append(subtitle);
+        // myInfo.append(subtitle);
         myInfo.append(editmodal);
         $compile(myInfo)($scope);
         $element.append(myInfo);
