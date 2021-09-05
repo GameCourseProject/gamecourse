@@ -721,7 +721,7 @@ class Badges extends Module
     {
         $originalBadge = Core::$systemDB->select("badge", ["course" => $courseId, 'id' => $achievement['id']], "*");
 
-        if(!empty($originalBadge)){
+        if (!empty($originalBadge)) {
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
             $badgeData = [
                 "maxLevel" => $maxLevel, "name" => $achievement['name'],
@@ -736,10 +736,10 @@ class Badges extends Module
                 $badgeData["image"] = $achievement['image'];
             }
             Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
-    
+
             if ($originalBadge["maxLevel"] <= $maxLevel) {
                 for ($i = 1; $i <= $maxLevel; $i++) {
-    
+
                     if ($i > $originalBadge["maxLevel"]) {
                         //if they are new levels they need to be inserted and not updated
                         Core::$systemDB->insert("badge_level", [
@@ -773,7 +773,7 @@ class Badges extends Module
                     ]);
                 }
             }
-        } 
+        }
     }
     public function deleteBadge($badge)
     {
@@ -830,19 +830,19 @@ class Badges extends Module
         $maxVal = $generalInputs["maxReward"];
         $this->saveMaxReward($maxVal, $courseId);
 
-        $extraImg = $generalInputs["extraImg"];
+        $extraImg = $generalInputs["extra"];
         if ($extraImg != "") {
             $this->saveGeneralImages('imageExtra', $extraImg, $courseId);
         }
-        $braggingImg = $generalInputs["braggingImg"];
+        $braggingImg = $generalInputs["bragging"];
         if ($braggingImg != "") {
             $this->saveGeneralImages('imageBragging', $braggingImg, $courseId);
         }
-        $imageL2 = $generalInputs["imgL2"];
+        $imageL2 = $generalInputs["level2"];
         if ($imageL2 != "") {
             $this->saveGeneralImages('imageLevel2', $imageL2, $courseId);
         }
-        $imageL3 = $generalInputs["imgL3"];
+        $imageL3 = $generalInputs["level3"];
         if ($imageL3 != "") {
             $this->saveGeneralImages('imageLevel3', $imageL3, $courseId);
         }
@@ -896,7 +896,7 @@ class Badges extends Module
     public function activeItem($itemId)
     {
         $active = Core::$systemDB->select("badge", ["id" => $itemId], "isActive");
-        if(!is_null($active)){
+        if (!is_null($active)) {
             Core::$systemDB->update("badge", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
             //ToDo: ADD RULE MANIPULATION HERE
         }
@@ -1050,7 +1050,7 @@ class Badges extends Module
 
                     if ($isPoint) {
                         $file .= $level["goal"];
-                    } 
+                    }
                 } else {
                     $file .= ";;;";
                 }

@@ -160,36 +160,45 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
     $scope.saveChosenImage = function () {
         const imageUploaded = document.getElementById("img-upload-picker");
+        const file = document.getElementById("div-upload-picker");
 
-        if (imageUploaded.src != "" && imageUploaded.style.borderColor == "rgb(0, 112, 249)") {
+        if (imageUploaded.src != "" && file.style.borderColor == "rgb(0, 112, 249)") {
             if ($scope.module.name == "Skills") {
                 $scope.insertToEditor(imageUploaded.src);
             } else {
                 document.getElementById("img-" + $scope.selectedInput).src = imageUploaded.src;
-                hideIfNeed($scope.selectedInput);
-                filename = $(".config_input #text-upload-picker").innerHTML;
+                hideIfNeed("img-" + $scope.selectedInput);
+                filename = $(".config_input #text-upload-picker")[0].innerHTML;
                 $(".config_input #text-" + $scope.selectedInput).text(filename);
+                $scope.inputs[$scope.selectedInput] = filename;
+                if ($scope.selectedInput == "badge") {
+                    $scope.buildMergeImages($scope.uploadFile, filename.split(".")[0]);
+                }
             }
             //resetUploadImage("img-upload-picker");
         } else {
-            document.getElementsByClassName("square-image").forEach(element => {
+            //get from browse
+            document.getElementsByClassName("square file").forEach(element => {
                 if ($(element).css("borderColor") == "rgb(0, 112, 249)") {
                     // get the name of the file
                     var filename = element.children[1].innerHTML;
+                    var src = element.children[0].src;
                     if ($scope.module.name == "Skills") {
-                        $scope.insertToEditor(imageUploaded.src);
+                        $scope.insertToEditor(src);
                     } else {
-                        document.getElementById("img-" + $scope.selectedInput).src = imageUploaded.src;
-                        hideIfNeed($scope.selectedInput);
+                        document.getElementById("img-" + $scope.selectedInput).src = src;
+                        hideIfNeed("img-" + $scope.selectedInput);
                         $(".config_input #text-" + $scope.selectedInput).text(filename);
+                        $scope.inputs[$scope.selectedInput] = filename;
                     }
-
                     if ($scope.selectedInput == "badge") {
-                        $scope.buildMergeImages($scope.uploadFile, filename.split(".")[0]);
+                        $scope.buildMergeImages(src, filename.split(".")[0]);
                     }
                 }
             });
+
         }
+
     }
 
 
@@ -274,11 +283,12 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         const isExtra = $scope.openItem.extra;
         const isBragging = $scope.openItem.xp1 == 0;
         // initialInputs to get the values that are saved in the DB
-        const extraImg = $scope.initialInputs["extraImg"];
-        const braggingImg = $scope.initialInputs["extraImg"];
+        const extraImg = $scope.initialInputs["extra"];
+        const braggingImg = $scope.initialInputs["bragging"];
 
         var fileExtra = $scope.courseFolder + '/badges/Extra/' + extraImg;
         var fileBragging = $scope.courseFolder + '/badges/Bragging/' + braggingImg;
+        $scope.openItem.image = filename + ".png";
         // upload image for level 1
         if (isExtra) {
             layersL1 = [file, fileExtra];
@@ -303,7 +313,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 ));
         }
         else {
-            $smartboards.request('settings', 'upload', { course: $scope.course, newFile: $scope.uploadFile, fileName: filename + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
+            $smartboards.request('settings', 'upload', { course: $scope.course, newFile: file, fileName: filename + '-1.png', module: $scope.module.name, subfolder: $scope.openItem.name }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
                     return;
@@ -314,7 +324,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         hideIfNeed('img-badge-l1');
 
         if ($scope.openItem.desc2 != "") {
-            const imgL2 = $scope.initialInputs["imgL2"];
+            const imgL2 = $scope.initialInputs["level2"];
             var fileLevel2 = $scope.courseFolder + '/badges/Level2/' + imgL2;
 
             // create and upload image for level 2
@@ -333,7 +343,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
         }
 
         if ($scope.openItem.desc3 != "") {
-            const imgL3 = $scope.initialInputs["imgL3"];
+            const imgL3 = $scope.initialInputs["level3"];
             var fileLevel3 = $scope.courseFolder + '/badges/Level3/' + imgL3;
             // create and upload image for level 3 
             layersL3 = isExtra ? [file, fileExtra, fileLevel3] : isBragging ? [file, fileBragging, fileLevel3] : [file, fileLevel3];
@@ -494,6 +504,7 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
                 }
 
             }
+            console.log($scope.openItem);
             $smartboards.request('settings', 'saveModuleConfigInfo', { course: $scope.course, module: $stateParams.module, listingItems: $scope.openItem ? $scope.openItem : $scope.openTier, action_type: 'new' }, function (data, err) {
                 if (err) {
                     giveMessage(err.description);
@@ -551,7 +562,9 @@ app.controller('ConfigurationController', function ($scope, $stateParams, $eleme
 
                 } else if (atribute["type"] == "image") {
                     //module badges
+                    console.log($scope.openItem);
                     if ($scope.openItem[atribute.id] != "") {
+
                         document.getElementById("img-badge").src = $scope.courseFolder + "/badges/" + removeSpacefromName($scope.openItem.name) + "/" + $scope.openItem[atribute.id];
                         $("#img-badge").show();
 

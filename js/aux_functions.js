@@ -446,7 +446,7 @@ function buildImagePicker($scope, $compile) {
     modal_picker_content.append(browse);
     modal_picker_content.append($('<button id="delete" value="#delete-verification-file" style="left:60px;bottom:10px;" > Delete </button>'));
     modal_picker_content.append($('<button class="cancel_btn" style="right:105px;bottom:10px;" value="#image-picker" onclick="closeModal(this)" > Cancel </button>'));
-    modal_picker_content.append($('<button class="save_btn" id="save-picker" style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Select </button>'))
+    modal_picker_content.append($('<button class="save_btn" id="save-picker" disabled style="right:15px;bottom:10px;" value="#image-picker" onclick="closeModal(this);" ng-click="saveChosenImage()"> Select </button>'))
     modal_picker.append(modal_picker_content);
 
     //delete verification modal
@@ -521,7 +521,7 @@ function openTab(evt, tabName) {
 function openImagePicker($scope, $smartboards) {
 
     //const imageUploaded = document.getElementById("img-upload-picker");
-
+    $scope.selectedFile = null;
     const modal = document.getElementById("image-picker");
     openModal(modal);
     document.getElementById("defaultOpen").click();
@@ -555,8 +555,8 @@ function openImagePicker($scope, $smartboards) {
     }
 
     // //save file
-    // document.getElementById("save-picker").onclick = function () {
-    //     closeModal(this);
+    // document.getElementById("save-picker").onchange = function () {
+
     //     if (imageUploaded.src != "")
     //         resetUploadImage('img-upload-picker');
     //     //saveImage($scope, $smartboards, itemId);
@@ -582,6 +582,7 @@ function openImagePicker($scope, $smartboards) {
             setClickEvent($scope);
             setClickOnFiles($scope);
         }
+        $scope.selectedFile = null;
     }
 
     // folder click
@@ -623,6 +624,7 @@ function confirmDelete($scope, $smartboards) {
 function setClickEvent($scope) {
     document.getElementsByClassName("folder").forEach(element => {
         element.onclick = function () {
+            $scope.selectedFile = null;
             browseContainer = populateBrowseFolders($scope, element.getAttribute("value"));
             $("#browse").append(browseContainer);
             setClickEvent($scope);
@@ -638,7 +640,7 @@ function setClickOnFiles($scope) {
             if ($scope.selectedFile != null)
                 changeBorderColor($scope.selectedFile);
             // first click or when there is another one selected
-            else if ($scope.selectedFile == null || $scope.selectedFile != element) {
+            if ($scope.selectedFile == null || $scope.selectedFile != element) {
                 changeBorderColor(element);
                 $scope.selectedFile = element;
             }
@@ -654,9 +656,11 @@ function changeBorderColor(element) {
     if ($(element).css("borderColor") == "rgb(255, 255, 255)") {
         element.style.borderColor = "#0070f9";
         $(document.getElementById("delete")).show();
+        document.getElementById("save-picker").removeAttribute("disabled");
     } else {
         element.style.borderColor = "rgb(255, 255, 255)";
         $(document.getElementById("delete")).hide();
+        document.getElementById("save-picker").setAttribute("disabled", true);
     }
 }
 
