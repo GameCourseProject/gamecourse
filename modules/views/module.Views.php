@@ -23,7 +23,7 @@ class Views extends Module
         // parent::addResources('Expression/GameCourseExpression.js');
         parent::addResources('js/');
         parent::addResources('css/views.css');
-        // parent::addResources('css/src/views.less');
+        parent::addResources('css/src/views.less');
     }
 
     public function initSettingsTabs()
