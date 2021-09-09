@@ -14,11 +14,13 @@ use GameCourse\ModuleLoader;
 
 class GameRules{
 
+	const ROOT_FOLDER = "/var/www/html/gamecourse/";
+
 	private $courseId;
 	private $host = "127.0.0.1";
 	private $port = "8004";
-	private $logFile = "/var/www/html/gamecourse/autogame/logs/log_course_";
-	private $autogamePath = "/var/www/html/gamecourse/autogame/run_autogame.py";
+	private $logFile = self::ROOT_FOLDER . "autogame/logs/log_course_";
+	private $autogamePath = self::ROOT_FOLDER . "autogame/run_autogame.py";
 	private $all = False;
 	private $targets = null;
 	private $rulePath;
@@ -28,7 +30,7 @@ class GameRules{
 	public function __construct($courseId, $all, $targets, $testMode=False)
     {
         $this->courseId = $courseId;
-		$this->rulePath = "/var/www/html/gamecourse/" . Course::getCourseDataFolder($courseId);
+		$this->rulePath = self::ROOT_FOLDER . Course::getCourseDataFolder($courseId);
 		if ($all) {
 			$this->all = True;
 		}
@@ -38,7 +40,7 @@ class GameRules{
 			}
 		}
 		if ($testMode) {
-			$this->autogamePath = "/var/www/html/gamecourse/autogame/run_autogame_test.py";
+			$this->autogamePath = self::ROOT_FOLDER . "autogame/run_autogame_test.py";
 			$this->testMode = True;
 		}
     }
@@ -80,23 +82,27 @@ class GameRules{
 	public function callAutogame() {
 		if ($this->all) { 
 			// if running for all targets
-			$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" all >> /var/www/html/gamecourse/autogame/test_log.txt &";
+			$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" all >> " . self::ROOT_FOLDER . "autogame/test_log.txt &";
 		}
 		else {
 			if ($this->targets != null) {
 				// running for certain user-specified targets
-				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" " . $this->targets . " >> /var/www/html/gamecourse/autogame/test_log.txt &";
+				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" " . $this->targets . " >> " . self::ROOT_FOLDER . "autogame/test_log.txt &";
 			}
 			else {
 				// running normally with resort to the participations table
-				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" >> /var/www/html/gamecourse/autogame/test_log.txt &";
+				$cmd = "python3 ". $this->autogamePath . " " . strval($this->courseId) ." \"" . $this->rulePath . "\" >> " . self::ROOT_FOLDER . "autogame/test_log.txt &";
 			}
 			
 		}
 
 	    $output = system($cmd);
-		// TO DO change path
-		$txt = file_get_contents($this->rulePath . "/rule-tests/rule-test-output.txt");
+		if (file_exists($this->rulePath . "/rule-tests/rule-test-output.txt")) {
+			$txt = file_get_contents($this->rulePath . "/rule-tests/rule-test-output.txt");
+		}
+		else {
+			$txt = null;
+		}
 		return $txt;
 	    // TODO log later
 	}

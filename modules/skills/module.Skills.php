@@ -1331,7 +1331,6 @@ class Skills extends Module
         // create rule
         $tiers = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $treeId], "*", "seqId");
         $course = Course::getCourse($courseId, false);
-        //$this->generateSkillRule($course, $skill['name'], $skill['isWildcard'], $dependencyList);
         $this->generateSkillRule($course, $skill['name'], $dependencyList);
     }
 
@@ -1723,16 +1722,13 @@ class Skills extends Module
     public function generateSkillRule($course, $skillName, $dependencies = null)
     {
         $rs = new RuleSystem($course);
+        $template = file_get_contents($rs->getTemplateRulePath());
+        $newRule = str_replace("$", $skillName, $template);
 
         if (sizeof($dependencies) == 0) {
-            $template = file_get_contents($rs->getTemplateRulePath());
-            $newRule = str_replace("$", $skillName, $template);
             $txt = str_replace("\t\t%\n", "", $newRule);
         }
-        // if there is more than one dependency
         else if (sizeof($dependencies) > 0) {
-            $template = file_get_contents($rs->getTemplateRulePath());
-            $newRule = str_replace("$", $skillName, $template);
             $ruletxt = explode("%", $newRule);
 
             $linesDependencies = "";
@@ -1754,6 +1750,7 @@ class Skills extends Module
             array_splice($ruletxt, 1, 0, $linesDependencies);
             $txt = implode("", $ruletxt);
         }
+
         // add generated
         $rule = array();
         $rule["module"] = "skills";
@@ -1763,12 +1760,66 @@ class Skills extends Module
             $rs->fixPrecedences();
         }
         $rule["rulefile"] = $filename;
-        if (sizeof($dependencies) == 0) // if is wilcard will be added to top
+        if (sizeof($dependencies) == 0) { // if is wilcard will be added to top
             $rs->addRule($txt, 0, $rule);
-        else // add to end
+        }
+        else { // add to end
             $rs->addRule($txt, null, $rule);
+        }
     }
 
+    public function generateWildcardRule($course, $skillName, $dependencies = ["Doppleganger", "Alien Invasions"])
+    {
+        $rs = new RuleSystem($course);
+        $template = file_get_contents($rs->getTemplateWildcardRulePath());
+        $tierName = "Wildcard";
+        $newRule = str_replace("$", $skillName, $template);
+        $newRuleAll = str_replace("~", $tierName, $newRule);
+
+        $ruletxt = explode("%", $newRuleAll);
+
+        $skillLines = array();
+        $skillsBoolList = array();
+        $condsLines = array();
+        $condsLineLines = array();
+
+        foreach ($dependencies as $i => $dependency) {
+            # skill dependencies
+            $skillLine = "skill" . strval($i + 1) . ' = rule_unlocked("' . $dependency . '", target)';
+            array_push($skillLines, $skillLine);
+            array_push($skillsBoolList, "skill" . strval($i + 1));
+            array_push($condsLines, "cond" . strval($i + 1) . " = skill" . strval($i + 1) . " and wildcard");
+            array_push($condsLineLines, "cond" . strval($i + 1));
+        }
+
+        $skillLine = implode("\n\t\t", $skillLines);
+
+        $bools = implode(" and ", $skillsBoolList);
+        $lineBools = "skill_based = " . $bools . "\n\t\t";
+
+        $conds = implode("\n\t\t", $condsLines);
+        $condsLine = implode(" or ", $condsLineLines);
+        $allConds = "\n\t\t" . "skill_based or " . $condsLine . "\n";
+
+        array_splice($ruletxt, 1, 0, $skillLine);
+        array_splice($ruletxt, 3, 0, $conds);
+        array_splice($ruletxt, 3, 0, $lineBools);
+        array_splice($ruletxt, 5, 0, $allConds);
+
+        $txt = implode("", $ruletxt);
+
+        // add generated
+        $rule = array();
+        $rule["module"] = "skills";
+        $filename = $rs->getFilename("skills");
+        if ($filename == null) {
+            $filename = $rs->createNewRuleFile("skills", 1);
+            $rs->fixPrecedences();
+        }
+        $rule["rulefile"] = $filename;
+        $rs->addRule($txt, 0, $rule);
+    }
+    
     public function deleteGeneratedRule($course, $skillName)
     {
         $rs = new RuleSystem($course);

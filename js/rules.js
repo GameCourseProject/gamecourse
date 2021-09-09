@@ -14,11 +14,9 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             giveMessage(err.description);
             return;
         }
-
         
         var first_run = true;
         $scope.gamerules_funcs = data.funcs;
-
 
         // -------------- GENERAL FUNCS --------------
 
@@ -50,29 +48,13 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             return this;
         }
 
-
-        // -------------- TEMP -------------- TO DO
-
-        $scope.getRsState = function() {
-
-            $smartboards.request('settings', 'getRuleSystemState', {course: $scope.course, getRuleSystemState: true}, function(data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.rs_state = data.rsState;
-            });
-        }
-
-        $scope.refreshState = function() {
-
-            $smartboards.request('settings', 'getRuleSystemState', {course: $scope.course, refreshState: true}, function(data, err) {
-                if (err) {
-                    giveMessage(err.description);
-                    return;
-                }
-                $scope.rs_state = data.rsState;
-            });
+        $scope.notifyError = function(msg) {
+            errormodal = $("<div class='modal' id='rule-error-modal' style='display:block;'></div>");
+            verification = $("<div class='verification modal_content'></div>");
+            verification.append($('<button class="close_btn icon" value="#delete-verification" ng-click="closeModal(this)"></button>'));
+            verification.append($('<div class="warning">'+ msg +'</div>'));
+            errormodal.append(verification);
+            tabContent.append($compile(errormodal)($scope));
         }
 
 
@@ -97,10 +79,12 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
         $scope.searchInput = function () {
             var value = $("#search-input").val();
             $scope.rules = angular.copy($scope.rules_save);
-
             $scope.rules.forEach(function (element) {
                 element.rules = element.rules.filter(el => el["name"].includes(value) || el["name"].toLowerCase().includes(value));
             });
+            if (value != "") {
+                $scope.rules = $scope.rules.filter(el => el["rules"].length > 0);
+            }
             // TO DO check if pos is correct after filtering
         }
 
@@ -134,6 +118,9 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 section = {};
                 $input = $("#new-section-val").val();
                 $name = $input.trim();
+                $name = $name.replace(/#|-|_/gi, function (x) {return "";}); // strip other symbols
+                $name = $name.replace(/\s\s+/g, ' '); // strip double spaces
+                
                 prec = $scope.rules.length + 1;
 
                 section.id = $name.toLowerCase();
@@ -149,7 +136,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     }
                 }
                 
-                if ($name != "" && !found_module) { // TO DO : input sanitization
+                if ($name != "" && !found_module) {  // if not empty and module does not exist
                     $smartboards.request('settings', 'ruleGeneralActions', {course: $scope.course, newSection: true, sectionName: section.id, sectionPrecedence : prec}, alertUpdateNoReload);    
                     $scope.rules.push(section);
                     $("#new-section-modal").hide();
@@ -158,7 +145,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     $("#new-section-val").val("");
                     $("#new-section-error").text("Name must not be empty");
                 }
-                else if (found_module) { // if module doesn't exist
+                else if (found_module) { // if module exists
                     $("#new-section-val").val("");
                     $("#new-section-error").text("Section already exists");
                 }
@@ -219,17 +206,32 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     module.rules.forEach(function(rule) {
                         rule.tags.forEach(function(tag) {
                             if (tag.name == name) {
+                                tag.name = $scope.tags[$index].name;
                                 tag.color = $scope.tags[$index].color;
                             }
                         });
                     });
                 });
             }
+
+            $scope.addNewTag = function () {
+                // adding a new tag through edit tags modal
+                tag = {};
+                tag.editing = true;
+                tag.name = "";
+                tag.color = "#8a8a8a";
+                $scope.tags.push(tag);
+            }
             
-            $scope.saveTags = function () {
+            $scope.saveTags = function (rules) {
+
+                // swap tags with changes
+                $smartboards.request('settings', 'ruleGeneralActions', {course: $scope.course, swapTags: true, rules: $scope.rules}, function(data, err) {
+                });
+
                 $smartboards.request('settings', 'ruleGeneralActions', {course: $scope.course, submitTagsEdit: true, tags: $scope.tags}, function(data, err) {
                 });
-                $scope.listRules(); 
+                $scope.listRules();
             }
 
             $scope.closeTagsModal = function () {
@@ -237,14 +239,14 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 $scope.closeModal();
             }
 
-
             $scope.openTagsModal = function() {
-                //new tags modal
+                // open list of edit tags
                 edit_tags_modal = $("<div class='modal' id='tags-modal' style='display:block;'></div>");
                 verification = $("<div class='modal_content'></div>");
                 verification.append($('<button class="close_btn icon" value="#tags-modal" ng-click="closeTagsModal()"></button>'));
-                verification.append($('<div class="title" id="open_tier_action">Edit Tags: </div>'));
+                verification.append($('<div class="title" id="modal-title">Edit Tags:</div>'));
                 content = $('<div class="content data-table tags-table"></div>');
+                action_buttons = $("<div class='icon-placement'><div class='icon add_icon' title='Add New Tag' value='#add-new-tag' ng-click='addNewTag(this)'></div></div>");
 
                 var table = $('<table>');
                 rowHeader = $("<tr class='tableheader'></tr>");
@@ -257,12 +259,12 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 row_content.append("<td class='ng-binding'><div class='icon delete_icon' title='Delete Tag' ng-click='deleteTag($event, $index)'></div> <div ng-if='tag.editing' class='icon save_icon' title='Save Tag' ng-click='saveTag($event, $index, tag)'></div><div ng-if='!tag.editing' class='icon edit_icon' title='Edit Tag' ng-click='editTag($event, $index, tag)'></div></td>");
 
                 table.append($(row_content));
+                content.append(action_buttons);
                 content.append(table);
-                content.append($('<button class="save_button save-tags-settings" ng-click="saveTags()">Save</button>'));
+                content.append($('<button class="save_button save-tags-settings" ng-click="saveTags(tags)">Save</button>'));
                 verification.append(content);
                 edit_tags_modal.append(verification);
                 tabContent.append($compile(edit_tags_modal)($scope));
-                
             }
 
             $scope.openTagsModal();
@@ -370,17 +372,17 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
             // -------------- SETTINGS : RULE SYSTEM --------------
 
-            $scope.runAllTargets = function() {
-                /*$smartboards.request('settings', 'runRuleSystem', {course: $scope.course, runAllTargets: true}, function(data, err) {
+            $scope.runAllTargets = function() { // TO DO
+                $smartboards.request('settings', 'runRuleSystem', {course: $scope.course, runAllTargets: true}, function(data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
                     }
-                });*/ // TESTS
+                });
             }
 
             $scope.runSelectedTargets = function() { // TO DO
-                /*var selected_targets = [];
+                var selected_targets = [];
                 targets = angular.copy($scope.selected_targets.sort());
                 targets = targets.map(el => el.id);
                 targets.forEach(function(el){
@@ -394,11 +396,20 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                         giveMessage(err.description);
                         return;
                     }
-                });*/ // TESTS
+                });
                 
             }
 
             $scope.runRuleSystem = function () {
+                // TO DO : Summon rs here
+                $smartboards.request('settings', 'ruleSystemSettings', {course: $scope.course, getAutoGameStatus: true, getMetadataVars: false}, function(data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.autogame_status = data.autogameStatus;
+                    $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
+                });
             }
 
             $scope.deleteTarget = function (target, $index) {
@@ -440,32 +451,78 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 $scope.metadata = $scope.metadata_edit;
             }
 
+            $scope.refreshRuleSystemStatus = function () {
+                // refreshes the rule system status indicator in the settings modal
+                $smartboards.request('settings', 'ruleSystemSettings', {course: $scope.course, getAutoGameStatus: true, getMetadataVars: true}, function(data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.autogame_status = data.autogameStatus;
+                    $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
+                });
+            }
+
 
 
             $scope.openSettingsModal = function($scope) {
 
                 $scope.metadata_edit = angular.copy($scope.metadata);
+                $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
 
-                //new tags modal
+                $smartboards.request('settings', 'ruleSystemSettings', {course: $scope.course, getLogs: true}, function(data, err) {
+                    if (err) {
+                        giveMessage(err.description);
+                        return;
+                    }
+                    $scope.logs = data.logs;
+                });
+
+
                 rule_settings_modal = $("<div class='modal' id='rule-settings-modal' style='display:block;'></div>");
                 verification = $("<div class='modal_content'></div>");
                 verification.append($('<button class="close_btn icon" value="#rule-settings-modal" ng-click="closeSettingsModal(this)"></button>'));
                 verification.append($('<div class="title" id="open_tier_action">Rule System Settings </div>'));
                 content = $('<div class="content"></div>');
 
-                /* Socket table */
                 tabs_container = $('<div id="rulesystem-settings-tabs"></div>');
                 tabs_nav = $('<ul></ul>');
-                tab_one_nav = $('<li><a href="#tab-1"><span>Communication</span></a></li>');
-                tab_two_nav = $('<li><a href="#tab-2"><span>Variables</span></a></li>');
-                tab_three_nav = $('<li><a href="#tab-3"><span>Targets</span></a></li>');
-                tab_four_nav = $('<li><a href="#tab-4"><span>General</span></a></li>');
+                
+                tab_one_nav = $('<li><a href="#tab-1"><span>General</span></a></li>');
+                tab_two_nav = $('<li><a href="#tab-2"><span>Status</span></a></li>');
+                tab_three_nav = $('<li><a href="#tab-3"><span>Variables</span></a></li>');
                 tab_one = $('<div id="tab-1">');
                 tab_two = $('<div id="tab-2">');
                 tab_three = $('<div id="tab-3">');
-                tab_four = $('<div id="tab-4">');
+
+                // Tab 1 - General Tab ----------------------------------------------------------
 
                 tab_one_section = $('<div class="config-section"></div>');
+                tab_one_section.append($('<h3>Run</h3><span class="settings-desc">Run the rulesystem manually if it is not already running.</span>'));
+                run_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runRuleSystem()" title="Runs RuleSystem for available targets">Run Rule System</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                tab_one_section.append(run_button);
+                tab_one.append(tab_one_section);
+
+                tab_one_section = $('<div class="config-section"></div>');
+                tab_one_section.append($("<h3>All Targets</h3><span>Run Rule System for all existing course targets (all users with the {{target_role}} type role).</span><br>"));
+                run_all_targets_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runAllTargets()" title="Runs RuleSystem for all course targets">Run All Targets</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                
+                tab_one_section.append(run_all_targets_button);
+                tab_one.append(tab_one_section);
+
+                tab_one_section = $('<div class="config-section"></div>');
+                ruletargetsh3 = $("<h3>Select Targets</h3><span>Select targets to run the Rule System for. Type a Student's name in the box below and click enter to select.</span><br>");
+                ruletargetsinput = $('<div class="run-left"><input type="text" id="rulesystem-targets" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Type student name here"></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                ruletargetslist = $('<div id="targets-list"></div>');
+                ruletargetslist.append('<div class="rule-targets" ng-repeat="target in selected_targets"><span class="target-text">{{target.id}} - {{target.name}}</span><span class="delete-target delete_icon" ng-click="deleteTarget(target,$index)"></span></div>');
+                run_targets_button = $('<button id="run-all-targets-button" class="button" ng-click="runSelectedTargets()" title="Runs RuleSystem for selected targets">Run Selected Targets</button>');
+                
+                tab_one_section.append(ruletargetsh3, ruletargetsinput, ruletargetslist, run_targets_button);
+                tab_one.append(tab_one_section);
+
+                // Tab 2 - Status Tab ----------------------------------------------------------
+
+                tab_two_section = $('<div class="config-section"></div>');
                 socketdesc = $("<h3>Socket Communication <div class='help-icon' title='Communication in GameRules components is done through sockets. This table shows the state of the two sockets that communicate with each other for retrieving information.'></div></h3>");
                 content_table = $('<div class="content data-table socket-table"></div>');
                 var table = $('<table id="autogame-table" style="margin-bottom: 3em;">');
@@ -480,93 +537,55 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 row_content.append("<td class='ng-binding'>{{row.finishedRunning}}</td>");
                 row_content.append("<td class='ng-binding'>{{row.isRunning}}</td>");
 
+                log_title = $("<h3>Log File</h3>");
+                log_box = $("<div id='log-records'><div id='log-text'>{{logs}}</div></div>");
+
                 table.append($(row_content));
                 content_table.append(table);
-                tab_one_section.append(socketdesc,content_table);
+                tab_two_section.append(socketdesc,content_table, log_title, log_box);
 
                 reset_socket = $('<button id="reset-socket-button" class="button" ng-click="resetSocket()" style="background-color: tomato;" title="Sets the Socket as non-running">Reset Socket</button>');
                 reset_course = $('<button id="reset-course-button" class="save_btn button" ng-click="resetCourse()" style="background-color: tomato;" title="Sets the Course as non-running">Reset Course</button>');
 
-                tab_one.append(tab_one_section, reset_socket, reset_course);
+                tab_two.append(tab_two_section, reset_socket, reset_course);
 
-                
-                //save_button_2 = $('<div class="settings-wrapper"><button class="save-settings" ng-click="saveSettings()">Save Settings</button></div>');
-                
-                // Metadata Vars table
+                // Tab 3 - Metadata Vars tab ----------------------------------------------------------
 
                 content_table = $('<div class="content data-table vars-table"></div>');
                 action_buttons = $("<div class='icon add_icon' title='Add New Variable' value='#add-variable' ng-click='addNewVariable(this)'></div>");
 
-                tab_two_section = $('<div class="config-section"></div>');
+                tab_three_section = $('<div class="config-section"></div>');
                 var table = $('<table id="metadata-table" style="margin-bottom: 3em;">'); 
                 metadata_header = $("<tr class='tableheader'></tr>");
                 metadata_header.append("<th class='name-column'>Variable Name</th><th>Value</th><th>Actions</th>");
                 table.append(metadata_header);
 
                 metadata = $("<tr ng-repeat='var in metadata_edit'>");
-                
                 metadata.append("<td class='ng-binding name-column'><span ng-if='!var.editing'>{{var.var}}</span><input ng-if='var.editing' type='text' id='var-name' class='form__input ng-pristine ng-valid ng-empty ng-touched' placeholder='Variable Name' value={{var.var}}></td>");
                 metadata.append("<td class='ng-binding'><span ng-if='!var.editing'>{{var.val}}</span><input ng-if='var.editing' type='text' id='var-value' class='form__input ng-pristine ng-valid ng-empty ng-touched' placeholder='Variable Value' value={{var.val}}></td>");
                 metadata.append("<td class='action-column metadata-icons'><div class='icon delete_icon' title='Remove Variable' ng-click='deleteVariable($event, var, $index)'></div><div ng-if='!var.editing' class='icon edit_icon' title='Edit Variable' ng-click='editVariable($event, var, $index)'></div><div ng-if='var.editing' class='icon save_icon' title='Save Variable' ng-click='saveVariable($event, var, $index)'></div></td>");
                 
                 metadata_buttons = $('<div class="settings-wrapper"><button class="cancel" value="#delete-verification" ng-click="closeModal(this);resetMetadata()">Cancel</button><button class="save-settings" ng-click="saveVariablesToFile();closeModal(this)">Save Settings</button></div>');
 
-
                 table.append($(metadata));
                 content_table.append(table);
-                tab_two_section.append($('<h3>Metadata <div class="help-icon" title="In this section you can define variables to be used when creating rules for the rulesystem. Some example variables would be number_of_classes, max_xp, etc."></div></h3><span class="settings-desc">Add or edit metadata variables to be used in the RuleSystem rules.</span>'));
-                tab_two_section.append(action_buttons);
-                tab_two_section.append(content_table);
+                tab_three_section.append($('<h3>Metadata <div class="help-icon" title="In this section you can define variables to be used when creating rules for the rulesystem. Some example variables would be number_of_classes, max_xp, etc."></div></h3><span class="settings-desc">Add or edit metadata variables to be used in the RuleSystem rules.</span>'));
+                tab_three_section.append(action_buttons);
+                tab_three_section.append(content_table);
 
+                tab_three.append(tab_three_section, metadata_buttons);
 
-                tab_two.append(tab_two_section, metadata_buttons);
+                // Build Modal ----------------------------------------------------------
 
-
-                // Running Mode // Targets
-                
-                //tab_three_section = $('<div class="config-section"></div>');
-                //tab_three_section.append($("<h3>Targets <div class='help-icon' title='Targets are the entities over which the Rule System runs. In a class setting the targets should be the students, since they are the system entities that will be given rewards.'></div></h3><span>Set target role eligible for the RuleSystem:</span><br>"));
-                //role_select = $('<select id="target-roles" class="form__input" name="roles">');
-                //role_select.append($('<option ng-repeat="role in available_roles" value=role.name>{{role.name}}</option>'));
-                //tab_three_section.append(role_select);
-                //tab_three.append(tab_three_section);
-
-                tab_three_section = $('<div class="config-section"></div>');
-                tab_three_section.append($("<h3>All Targets</h3><span>Run Rule System for all existing course targets (all users with the {{target_role}} type role).</span><br>"));
-                run_all_targets_button = $('<button id="run-all-targets-button" class="button" ng-click="runAllTargets()" title="Runs RuleSystem for all course targets">Run All Targets</button>');
-                
-                tab_three_section.append(run_all_targets_button);
-                tab_three.append(tab_three_section);
-
-                tab_three_section = $('<div class="config-section"></div>');
-                ruletargetsh3 = $("<h3>Select Targets</h3><span>Select targets to run the Rule System for. Type a Student's name in the box below and click enter to select.</span><br>");
-                ruletargetsinput = $('<input type="text" id="rulesystem-targets" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Type student name here">');
-                ruletargetslist = $('<div id="targets-list"></div>');
-                ruletargetslist.append('<div class="rule-targets" ng-repeat="target in selected_targets"><span class="target-text">{{target.id}} - {{target.name}}</span><span class="delete-target delete_icon" ng-click="deleteTarget(target,$index)"></span></div>');
-                run_targets_button = $('<button id="run-all-targets-button" class="button" ng-click="runSelectedTargets()" title="Runs RuleSystem for selected targets">Run Selected Targets</button>');
-                
-                tab_three_section.append(ruletargetsh3, ruletargetsinput, ruletargetslist, run_targets_button);
-                tab_three.append(tab_three_section);
-
-                //tab_three.append(save_button_2); // optional, just for case where role for target is choosable
-
-                // General
-            
-                tab_four_section = $('<div class="config-section"></div>');
-                tab_four_section.append($('<h3>Run</h3><span class="settings-desc">Run the rulesystem manually if it is not already running.</span>'));
-                run_button = $('<button id="run-all-targets-button" class="button" ng-click="runRuleSystem()" title="Runs RuleSystem for available targets">Run Rule System</button>');
-                tab_four_section.append(run_button);
-                tab_four.append(tab_four_section);
-
-                tabs_nav.append(tab_four_nav, tab_one_nav, tab_two_nav, tab_three_nav); 
-                tabs_container.append(tabs_nav, tab_four, tab_one, tab_two, tab_three);
-
+                tabs_nav.append(tab_one_nav, tab_two_nav, tab_three_nav); 
+                tabs_container.append(tabs_nav, tab_one, tab_two, tab_three);
                 content.append(tabs_container);
-
                 verification.append(content);
                 rule_settings_modal.append(verification);
                 tabContent.append($compile(rule_settings_modal)($scope));
                 
+
+
                 first_run = false;
                 $( ".help-icon" ).tooltip({
                     // start tooltip for the help bubbles
@@ -597,7 +616,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
             }
 
-
             $scope.resetSocket = function() {
                 $smartboards.request('settings', 'ruleSystemSettings', {course: $scope.course, resetSocket: true}, function(data, err) {
                     if (err) {
@@ -622,7 +640,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     $scope.autogame_status = data.autogameStatus;
                 });
             }
-
         }
         
 
@@ -760,7 +777,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
         }
 
-       // edit rule TO DO move here
 
         // duplicating a rule
         $scope.duplicateRule = function($event, item, pos, mod) {
@@ -832,7 +848,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             $scope.tags_save = angular.copy($scope.tags);
             $scope.selected_targets = [];
             
-            console.log(data.rules);
 
             search = $("<div class='search'><button class='magnifying-glass' id='search-btn'></button><input ng-change='searchInput()' type='text' id='search-input' placeholder='Search' name='search' ng-model='search'></div>")
             $compile(search)($scope);
@@ -967,7 +982,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             topnav.append($compile(back)($scope));
             buttoncontainer = $('<div id="button-container"></div>');
             cancel = $('<button id="cancel-rule-button" class="button" ng-click="listRules()">Cancel</button>');
-            save = $('<button id="save-rule-button" class="button" ng-click="submitRule()">Save</button>'); // TO DO
+            save = $('<button id="save-rule-button" class="button" ng-click="submitRule()">Save</button>');
             buttoncontainer.append($compile(cancel)($scope), $compile(save)($scope));
             topnav.append(buttoncontainer);
             tabContent.append(topnav);
@@ -1044,8 +1059,8 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             rfunctionsulwhen = $('<ul id="rule-when-help"></ul>');
             rfunctionsulthen = $('<ul id="rule-then-help"></ul>');
             rfunctionslibs = $('<li ng-repeat="lib in curr_libraries_when" ng-if="lib.moduleId != null" class="lib-list-item">{{lib.name}}</li><li ng-repeat="func in curr_functions_when" ng-if="func.moduleId != null" class="func-list-item">{{func.keyword}}</li>');
-            functiondescwhen = $('<div id="func-info-when" style="display:none;"><div ng-if="!isEmptyObject(active_func_when.args)" class="arguments-div">Arguments:<ul id="func-info-args"><li ng-repeat="arg in active_func_when.args" class="arg-list-item"><strong>{{arg.name}}</strong><span ng-if="arg.type != \'\'"><strong>:</strong> {{arg.type}}</span><span ng-if="arg.optional != \'1\'" class="optional">*</span></li></ul></div><div class="function-description" ng>{{active_func_when.description}}</div></div>'); // TO DO check if this is ok
-            functiondescthen = $('<div id="func-info-then" ng-if="!isEmptyObject(active_func_then)" style="display:none;"><div ng-if="!isEmptyObject(active_func_then.args)" class="arguments-div">Arguments:<ul id="func-info-args"><li ng-repeat="arg in active_func_then.args" class="arg-list-item"><strong>{{arg.name}}</strong><span ng-if="arg.optional == \'1\'">{{arg.type}}</span><span ng-if="arg.optional != \'1\'" class="optional">*</span></li></ul></div><div class="function-description" ng>{{active_func_then.description}}</div></div>'); // TO DO check if this is ok
+            functiondescwhen = $('<div id="func-info-when" style="display:none;"><div ng-if="!isEmptyObject(active_func_when.args)" class="arguments-div">Arguments:<ul id="func-info-args"><li ng-repeat="arg in active_func_when.args" class="arg-list-item"><strong>{{arg.name}}</strong><span ng-if="arg.type != \'\'"><strong>:</strong> {{arg.type}}</span><span ng-if="arg.optional != \'1\'" class="optional">*</span></li></ul></div><div class="function-description" ng>{{active_func_when.description}}</div></div>');
+            functiondescthen = $('<div id="func-info-then" ng-if="!isEmptyObject(active_func_then)" style="display:none;"><div ng-if="!isEmptyObject(active_func_then.args)" class="arguments-div">Arguments:<ul id="func-info-args"><li ng-repeat="arg in active_func_then.args" class="arg-list-item"><strong>{{arg.name}}</strong><span ng-if="arg.optional == \'1\'">{{arg.type}}</span><span ng-if="arg.optional != \'1\'" class="optional">*</span></li></ul></div><div class="function-description" ng>{{active_func_then.description}}</div></div>');
             rfunctionsgc = $('<li ng-repeat="func in curr_functions_then" class="gcfunc-list-item">{{func.keyword}}</li>');
 
                 // --------- METADATA SECTION ---------
@@ -1222,6 +1237,11 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 $("#rule-when-help").show();
                 $("#func-info-then").hide();
               });
+
+              whenCodeMirror.on("blur", function (cm, event) {
+                // when the editor stops being selected
+                $("#preview-function-button").removeClass("preview-active-button");
+            });
               
 
               whenCodeMirror.on("keyup", function (cm, event) {
@@ -1229,6 +1249,8 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 var funclist = angular.copy($scope.functions);
                 liblist = liblist.filter(el => el["moduleId"]);
                 liblist = liblist.map(value => value["name"]);
+
+                $("#preview-function-button").removeClass("preview-active-button");
 
                 if ( !(event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40)) { 
                     // checks if arrow keys were not pressed - causes errors
@@ -1367,6 +1389,9 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                                 new_args.push(argn);
                             });
                             $scope.$apply($scope.curr_args = new_args);
+
+                            $("#preview-function-button").addClass("preview-active-button");
+
                         }
 
                         if (!textBefore.match(/GC\.*[A-Za-z]*\.*[A-Za-z]*\(*[A-Za-z,]*\)*.*$/)) {
@@ -1557,14 +1582,20 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             });
 
 
-            $scope.submitRule = function () { // TO DO check if this works
-                // get new vals and update scope
-                $scope.rule.name = $('#rule-name').val();
+            $scope.submitRule = function () { 
+                // submit rule being created or edited
+
+                $scope.rule.name = $('#rule-name').val().trim();
                 $scope.rule.description = $('#rule-description').val();
 
-                $scope.rule.when = $('#rule-when').val();
-                $scope.rule.then = $('#rule-then').val();
+                if ($scope.rule.name == "") {
+                    $scope.notifyError("Rule Name cannot be empty!");
+                    return;
+                }
 
+                $scope.rule.when = whenCodeMirror.getValue("\n");
+                $scope.rule.then = thenCodeMirror.getValue("\n");
+                
                 if (add) {
                     $scope.rules[pos].rules.unshift($scope.rule);
                     $smartboards.request('settings', 'ruleEditorActions', {course: $scope.course, submitRule: true, rule: $scope.rule, add: true, index: $scope.index}, function(data, err) {
@@ -1595,7 +1626,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 }
                 removeElement($scope.rule.tags, tag);
             }
-            
 
             // tag autocomplete configuration
             $(function() {
@@ -1677,8 +1707,13 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             }
 
             $scope.previewRule = function() {
+                rule_name = $('#rule-name').val();
+                if (rule_name.trim() == "") {
+                    rule_name = "Test Rule";
+                }
+                
                 var test_rule = {};
-                test_rule.name = $('#rule-name').val();
+                test_rule.name = rule_name;
                 test_rule.description = $('#rule-description').val();
                 test_rule.tags = $scope.rule.tags;
                 test_rule.active = true; // set as active, otherwise the rule won't run
