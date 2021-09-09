@@ -5,13 +5,15 @@ import {RouterModule} from "@angular/router";
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import {FormsModule} from "@angular/forms";
+import { NoAccessComponent } from './no-access/no-access.component';
 
 
 @NgModule({
   declarations: [
     NavbarComponent,
     PageNotFoundComponent,
-    SidebarComponent
+    SidebarComponent,
+    NoAccessComponent
   ],
     exports: [
         NavbarComponent,

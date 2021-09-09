@@ -60,10 +60,7 @@ export class ApiHttpService {
 
     this.http.post(url, formData, this.httpOptions)
       .pipe( map((res: any) => res['redirectURL']) )
-      .subscribe(url => {
-        console.log(url); // FIXME: remove
-        window.open(url,"_self")
-      });
+      .subscribe(url => window.open(url,"_self"));
   }
 
   public checkLogin(): Observable<boolean> {

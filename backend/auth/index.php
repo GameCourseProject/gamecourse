@@ -9,8 +9,8 @@ use GameCourse\Core;
 use Modules\Plugin\GoogleSheets;
 
 Core::denyCLI();
-if (!Core::requireSetup(false))
-    header('Location: http://localhost:4200/'); // TODO: change for deploy
+if (Core::requireSetup(false))
+    header('Location: ' . URL . '/setup');
 
 if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_GET)) {
     $receivedCourse = $_GET["state"];
@@ -32,5 +32,5 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
     } else {
         Core::performLogin("fenix");
     }
-    header('Location: http://localhost:4200/'); // TODO: change for deploy
+    header('Location: ' . URL);
 }

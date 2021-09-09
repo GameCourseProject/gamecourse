@@ -26,10 +26,16 @@ export class LoginComponent implements OnInit {
         if (isLoggedIn) this.router.navigate(['/main']);
       },
       error => {
-        if (error.status === 401) this.router.navigate(['/no-access']) // TODO: create page
+        if (error.status === 401) {
+          this.router.navigate(['/no-access'])
+        }
+
+        if (error.status === 409) {
+          this.router.navigate(['/setup'])
+        }
 
         // TODO: alert
-        console.error(error.message)
+        console.error(error)
       });
   }
 

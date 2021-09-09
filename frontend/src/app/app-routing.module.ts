@@ -4,6 +4,7 @@ import {PageNotFoundComponent} from "./_components/page-not-found/page-not-found
 import {SetupGuard} from "./_guards/setup.guard";
 import {LoginGuard} from "./_guards/login.guard";
 import {RedirectIfLoggedInGuard} from "./_guards/redirect-if-logged-in.guard";
+import {NoAccessComponent} from "./_components/no-access/no-access.component";
 
 const routes: Routes = [
   {
@@ -44,6 +45,7 @@ const routes: Routes = [
   },
   { path: '', redirectTo: 'main', pathMatch: 'full' },
   { path: '404', component: PageNotFoundComponent},
+  { path: 'no-access', component: NoAccessComponent},
   { path: '**', redirectTo: '404', pathMatch: 'full' }
 ];
 

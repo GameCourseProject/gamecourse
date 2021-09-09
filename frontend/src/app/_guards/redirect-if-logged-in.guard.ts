@@ -9,7 +9,7 @@ import {
   UrlSegment,
   UrlTree
 } from '@angular/router';
-import {Observable, throwError} from 'rxjs';
+import {Observable, of, throwError} from 'rxjs';
 import {catchError, map} from "rxjs/operators";
 import {ApiHttpService} from "../_services/api/api-http.service";
 
@@ -49,7 +49,17 @@ export class RedirectIfLoggedInGuard implements CanActivate, CanLoad {
         },
         error => true
       ),
-      catchError(error => throwError(error))
+      catchError(error => {
+        if (error.status === 401) {
+          return of(this.router.parseUrl('/no-access'));
+        }
+
+        if (error.status === 409) {
+          return of(this.router.parseUrl('/setup'));
+        }
+
+        return throwError(error);
+      })
     );
   }
 }

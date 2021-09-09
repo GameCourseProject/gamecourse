@@ -63,15 +63,11 @@ class Core
 
     public static function requireSetup($performSetup = true)
     {
-        $setup = file_exists('setup.done');
-        if (!$setup && $performSetup) {
-            $setupOkay = (include 'pages/setup.php');
-            if ($setupOkay == 'setup-done') {
-                return true;
-            } else
-                exit;
+        $needsSetup = !file_exists('setup.done');
+        if ($needsSetup && $performSetup) {
+            API::error('GameCourse is not yet setup.', 409);
         }
-        return $setup;
+        return $needsSetup;
     }
 
     public static function requireLogin($performLogin = true)
@@ -92,7 +88,7 @@ class Core
             return $isLoggedIn;
 
         $client = null;
-        if (!$isLoggedIn && $performLogin && Core::requireSetup()) {
+        if (!$isLoggedIn && $performLogin && !Core::requireSetup()) {
             $loginType = htmlspecialchars($_POST['loginType']);
             $_SESSION['type'] = $loginType;
             if ($loginType == "google") {
@@ -180,6 +176,7 @@ class Core
                 }
                 return true;
             } else if ($redirect) {
+                $_SESSION = [];
                 API::error('Access denied.', 401);
             }
         }

@@ -9,7 +9,7 @@ import {
   UrlSegment,
   UrlTree
 } from '@angular/router';
-import {Observable, throwError} from 'rxjs';
+import {Observable, of, throwError} from 'rxjs';
 import {ApiHttpService} from "../_services/api/api-http.service";
 import {catchError, map} from "rxjs/operators";
 
@@ -48,16 +48,22 @@ export class LoginGuard implements CanActivate, CanLoad {
           }
         },
         error => {
-          if (error.status === 401) {
-            return this.router.parseUrl('/no-access');
-          }
-
           // TODO: alert
-          console.error(error.message)
+          console.error(error)
           return false;
         }
       ),
-      catchError(error => throwError(error))
+      catchError(error => {
+        if (error.status === 401) {
+          return of(this.router.parseUrl('/no-access'));
+        }
+
+        if (error.status === 409) {
+          return of(this.router.parseUrl('/setup'));
+        }
+
+        return throwError(error)
+      })
     );
   }
 }

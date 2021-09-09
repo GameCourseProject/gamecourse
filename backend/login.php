@@ -2,9 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-header("Access-Control-Allow-Origin: http://localhost:4200"); // TODO: change for deploy
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
+require_once 'cors.php';
 
 include 'classes/ClassLoader.class.php';
 
@@ -17,7 +15,7 @@ if (array_key_exists("logout", $_GET)) {
 
 Core::denyCLI();
 $isLoggedIn = Core::requireLogin();
-//Core::requireSetup();
+Core::requireSetup();
 Core::init();
 $hasAccess = Core::checkAccess();
 
