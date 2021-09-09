@@ -24,8 +24,6 @@ tree_awards = read_tree()
 #   - check if dictionary only contains terms that are active for a given course id
 #
 
-DATABASE = "gamecourse"
-
 
 def get_credentials():
 	# -----------------------------------------------------------
@@ -33,11 +31,11 @@ def get_credentials():
 	# -----------------------------------------------------------
 	with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'credentials.txt'), 'r') as f:
 		data = f.readlines()
-		un = data[0].strip('\n')
-		if len(data) == 2:
-			pw = data[1].strip('\n')
-			return (un, pw)
-		return (un, '')
+		if len(data) == 3:
+			db = data[0].strip('\n')
+			un = data[1].strip('\n')
+			pw = data[2].strip('\n')
+			return (db, un, pw)
 
 
 def get_dictionary():
@@ -45,12 +43,11 @@ def get_dictionary():
 	# Pulls all GameCourse dictionary terms from the database.
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+
 	# keyword must be queried first so it serves as key for a dictionary
 	query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s;"
 	course = (config.course,)
@@ -69,12 +66,11 @@ def get_student_numbers(course):
 	# Returns the student numbers of all active targets
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+
 	query = "SELECT id, studentNumber FROM game_course_user;"
 
 	cursor.execute(query)
@@ -96,12 +92,11 @@ def course_exists(course):
 	# Checks course exists and is active
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+	
 	query = "SELECT isActive FROM course WHERE id = %s;"
 	args = (course,)
 
@@ -120,12 +115,11 @@ def check_dictionary(library, function):
 	# Checks if a function exists in the gamecourse dictionary
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+
 	query = "SELECT keyword, moduleId FROM dictionary WHERE course = %s and library=%s and keyword = %s;"
 	args = (config.course, library, function)
 
@@ -145,9 +139,9 @@ def get_targets(course, timestamp=None, all_targets=False):
 	Returns targets for running rules (students)
 	"""
 
-	(username, password) = get_credentials()
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
 
 	# query that joins roles with participations
@@ -187,12 +181,11 @@ def delete_awards(course):
 	# Deletes all awards of a given course
 	# -----------------------------------------------------------
 	
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+
 	query = "DELETE FROM award where course = %s;"
 
 	cursor.execute(query, (course,))
@@ -207,12 +200,11 @@ def count_awards(course):
 	# Deletes all awards of a given course
 	# -----------------------------------------------------------
 	
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+
 	query = "SELECT count(*) FROM award where course = %s;"
 
 	cursor.execute(query, (course,))
@@ -229,11 +221,9 @@ def calculate_xp(course, target):
 	# Insert current XP values into user_xp table
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
 
 	# get max values for each type of award
@@ -341,12 +331,11 @@ def autogame_init(course):
 	# Pulls gamerules related info for a given course
 	# -----------------------------------------------------------
 	
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
+	
 	query = "SELECT * FROM autogame where course = %s;"
 
 	cursor.execute(query, (course,))
@@ -384,11 +373,9 @@ def autogame_terminate(course, start_date, finish_date):
 	# and notifies server to close the socket
 	# -----------------------------------------------------------
 	
-	(username, password) = get_credentials()
-
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-	
+	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
 
 	if not config.test_mode:
@@ -432,12 +419,10 @@ def clear_badge_progression(target):
 	# the rule system runs.
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
-
-	course = config.course
-	
+	(database, username, password) = get_credentials()
 	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
 
 	cursor = cnx.cursor(prepared=True)
 
@@ -455,7 +440,10 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	# Is also responsible for creating indicators.
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
 	typeof = "badge"
@@ -467,10 +455,6 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	else:
 		awards_table = "awards"
 
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-
-	cursor = cnx.cursor(prepared=True)
 	query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
 
 	badge_name = badge + "%"
@@ -601,10 +585,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 	typeof = "skill"
 
 	if not config.test_mode:
+		(database, username, password) = get_credentials()
 		cnx = mysql.connector.connect(user=username, password=password,
-		host='localhost', database=DATABASE)
-		
+		host='localhost', database=database)
 		cursor = cnx.cursor(prepared=True)
+
 		query = "SELECT * FROM award where user = %s AND course = %s AND description=%s AND type=%s;"
 		cursor.execute(query, (target, course, skill, typeof))
 		table = cursor.fetchall()
@@ -689,7 +674,10 @@ def award_prize(target, reward_name, xp, contributions=None):
 	# skill. Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
 	typeof = "bonus"
@@ -700,10 +688,6 @@ def award_prize(target, reward_name, xp, contributions=None):
 	else:
 		awards_table = "awards"
 
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-	
-	cursor = cnx.cursor(prepared=True)
 	query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
 
 	cursor.execute(query, (target, course, reward_name, typeof))
@@ -731,14 +715,13 @@ def award_grade(target, item, contributions=None, extra=None):
 	# skill. Will not retract effects, but will not award twice
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
 	
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-	cursor = cnx.cursor(prepared=True)
-
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
@@ -841,14 +824,12 @@ def get_campus(target):
 	# Returns the campus of a target user
 	# -----------------------------------------------------------
 
-	(username, password) = get_credentials()
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
-
-	cnx = mysql.connector.connect(user=username, password=password,
-	host='localhost', database=DATABASE)
-	
-	cursor = cnx.cursor(prepared=True)
 	query = "select major from course_user left join game_course_user on course_user.id=game_course_user.id where course = %s and course_user.id = %s;"
 
 	cursor.execute(query, (course, target))

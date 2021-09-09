@@ -52,14 +52,10 @@ if __name__ == "__main__":
 	#error = ""
 	all_targets = False
 	targets_list = None
-	with open('logloglog.txt','a') as f:
-		f.write("start????\n")
 
 	# Process Arguments
 	# cli prompt: python3 run_autogame.py [courseId] [rule_path] [all/targets]
 	if len(sys.argv) >= 4:
-		with open('logloglog.txt','a') as f:
-			f.write("1\n")
 		if course_exists(sys.argv[1]):
 			course = sys.argv[1]
 			config.course = course
@@ -67,15 +63,11 @@ if __name__ == "__main__":
 			rulespath = sys.argv[2]
 			config.rules_folder = os.path.join(rulespath, RULES_TESTS_FOLDER)
 			output_file = os.path.join(config.rules_folder, "rule-test-output.txt")
-			with open('logloglog.txt','a') as f:
-				f.write("2\n")
 
 		else:
 			sys.exit("ERROR: Course passed is not active or does not exist.")
 		if sys.argv[3] == "all":
 			all_targets = True
-			with open('logloglog.txt','a') as f:
-				f.write("3\n")
 		else:
 			targets_list = sys.argv[3].strip("[]").split(",")
 	else:
@@ -93,39 +85,26 @@ if __name__ == "__main__":
 		# Read and set Metadata
 		METADATA = get_config_metadata(course)
 		scope, logs = {"METADATA" : METADATA, "null": None}, {}
-		
-		with open('logloglog.txt','a') as f:
-			f.write("4\n")
 
 		try:
 			rs = RuleSystem(path, AUTOSAVE)
 
-			with open('logloglog.txt','a') as f:
-				f.write("5\n")
 			# Process targets
 			if targets_list != None:
 				# if targets were passed in cli
 				students = {}
 				for target in targets_list:
 					students[target] = 1
-					with open('logloglog.txt','a') as f:
-					f.write("5a\n")
 			else:
 				# get targets
 				students = get_targets(course, None, all_targets)
-				with open('logloglog.txt','a') as f:
-					f.write("5b\n")
 			
-			with open('logloglog.txt','a') as f:
-				f.write("6\n")
 			# Import custom course functions
 			functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
 			functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
 
 			try:
 				rs_output = rs.fire(students,logs,scope)
-				with open('logloglog.txt','a') as f:
-					f.write("7\n")
 
 			except Exception as e:
 				logging.exception('Exception raised when firing rulesystem.\n\n\n')

@@ -552,6 +552,11 @@ API::registerFunction('settings', 'ruleGeneralActions', function () {
                 $tags = API::getValue('tags');
                 $rs->editTags($tags);
             }
+        } else if (API::hasKey('swapTags')) {
+            if (API::hasKey('rules')) {
+                $rules = API::getValue('rules');
+                $txt = $rs->swapTags($rules);
+            }
         } else if (API::hasKey('deleteTag')) {
             if (API::hasKey('tag')) {
                 $tag = API::getValue('tag');
@@ -594,6 +599,12 @@ API::registerFunction('settings', 'ruleGeneralActions', function () {
                 'autogameMetadata' => $metadata
             );
             API::response($data);
+        } else if (API::hasKey('getAutoGameStatus') && !API::hasKey('getMetadataVars')) {
+            $autogame = $rs->getAutoGameStatus();
+            $data = array(
+                'autogameStatus' => $autogame
+            );
+            API::response($data);
         } else if (API::hasKey('resetSocket')) {
             $res = $rs->resetSocketStatus();
             $autogame = $rs->getAutoGameStatus();
@@ -616,7 +627,6 @@ API::registerFunction('settings', 'ruleGeneralActions', function () {
         API::error("There is no course with that id: " . API::getValue('course'));
     }
 });
-
 
 // RuleSystem Settings Actions: actions performed in the settings menu of the rule system
 API::registerFunction('settings', 'ruleSystemSettings', function () {
@@ -651,6 +661,12 @@ API::registerFunction('settings', 'ruleSystemSettings', function () {
                 'autogameStatus' => $autogame
             );
             API::response($data);
+        } else if (API::hasKey('getLogs')) {
+            $logs = $rs->getLogs();
+            $data = array(
+                'logs' => $logs
+            );
+            API::response($data);
         } else if (API::hasKey('getAvailableRoles')) {
             $roles = $course->getRoles();
             $data = array(
@@ -679,17 +695,6 @@ API::registerFunction('settings', 'ruleSystemSettings', function () {
         API::error("There is no course with that id: " . API::getValue('course'));
     }
 });
-
-
-
-
-
-
-
-
-
-
-
 
 // Rule Section Actions: actions perfomed over sections in the rule list UI
 API::registerFunction('settings', 'ruleSectionActions', function () {
@@ -735,7 +740,6 @@ API::registerFunction('settings', 'ruleSectionActions', function () {
         API::error("There is no course with that id: " . API::getValue('course'));
     }
 });
-
 
 // Rule Actions: actions perfomed over rules in the rule list UI
 API::registerFunction('settings', 'ruleSpecificActions', function () {
@@ -867,18 +871,22 @@ API::registerFunction('settings', 'ruleEditorActions', function () {
 
             // write rule to file
             $rs->writeTestRule($res);
-            // args: [course] [all_targets] [targets] [test_mode]
-            $resError = Course::newExternalData(API::getValue('course'), True, null, True);
-            // get results
-            $res = Core::$systemDB->selectMultiple("award_test", null, "*");
-            if ($resError != null) {
-                $data = array("result" => null, "error" => $resError);
-            } else {
-                $data = array("result" => $res, "error" => null);
+            try {
+                // args: [course] [all_targets] [targets] [test_mode]
+                $resError = Course::newExternalData(API::getValue('course'), True, null, True);
+                // get results
+                $res = Core::$systemDB->selectMultiple("award_test", null, "*");
+                if ($resError != null) {
+                    $data = array("result" => null, "error" => $resError);
+                }
+                else {
+                    $data = array("result" => $res, "error" => null);
+                }
+            }
+            catch (\Exception $e) {
             }
             $rs->clearRuleOutput(); // clear output
             Core::$systemDB->deleteAll("award_test"); // clear DB
-            $rs->writeTestRule(''); // clear test file
 
             //$data = array("result" => array(), "error" => null);
             API::response($data);
@@ -889,7 +897,6 @@ API::registerFunction('settings', 'ruleEditorActions', function () {
         API::error("There is no course with that id: " . API::getValue('course'));
     }
 });
-
 
 API::registerFunction('settings', 'runRuleSystem', function () {
     API::requireCourseAdminPermission();
@@ -904,35 +911,6 @@ API::registerFunction('settings', 'runRuleSystem', function () {
             Course::newExternalData(API::getValue('course'), True); // TO DO
         } else if (API::hasKey('runAllTargets')) {
             Course::newExternalData(API::getValue('course'), True);
-        } else {
-        }
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
-    }
-});
-
-
-
-// - - - - - - - Temp Rules - - - - - - - 
-
-API::registerFunction('settings', 'getRuleSystemState', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
-
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-
-        if (API::hasKey('getRuleSystemState')) {
-            $result = $rs->getStatus();
-            $res = array("rsState" => $result);
-            API::response($res);
-        } else if (API::hasKey('runAllTargets')) {
-            Course::newExternalData(API::getValue('course'), True);
-        } else if (API::hasKey('refreshState')) {
-            $result = $rs->getStatus();
-            $res = array("rsState" => $result);
-            API::response($res);
         } else {
         }
     } else {
