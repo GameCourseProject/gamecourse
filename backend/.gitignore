@@ -11,6 +11,7 @@
 *.launch
 .settings/
 *.sublime-workspace
+/nbproject
 
 # IDE - VSCode
 .vscode/*
@@ -23,8 +24,16 @@
 # misc
 npm-debug.log
 yarn-error.log
-/setup.done
 
 # System Files
 .DS_Store
 Thumbs.db
+
+# GameCourse
+/course_data/
+photos/ist*
+modules/skills/resources/
+modules/quest/resources/
+cache/
+/nbproject/private/
+/setup.done
