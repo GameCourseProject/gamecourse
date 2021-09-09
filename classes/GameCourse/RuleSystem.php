@@ -283,7 +283,10 @@ class RuleSystem
     }
 
     public function getLogs() {
-        $log = file_get_contents($this->logsfile);
+        $log = "Error: Log file does not exist.";
+        if (file_exists($this->logsfile)) {
+            $log = file_get_contents($this->logsfile);
+        }
         return $log;
     }
 
