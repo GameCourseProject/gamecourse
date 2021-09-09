@@ -1,0 +1,36 @@
+<div class="sidebar">
+
+  <!-- Search -->
+  <div class="search">
+    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchInput" (ngModelChange)="onSearch.emit(searchInput)">
+    <button class="magnifying-glass" id="search-btn" (click)="onSearch.emit(searchInput)"></button>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter">
+    <div class="title">Filter</div>
+    <label class="container" *ngFor="let filter of filters; let i = index">
+      {{filter}}
+      <input type="checkbox" [checked]="true" id="filter-{{filter}}" [(ngModel)]="filtersInput[i].state" (ngModelChange)="onFilterChange.emit(filtersInput[i])">
+      <span class="checkmark"></span>
+    </label>
+  </div>
+
+
+  <!-- Order by -->
+  <div class="order-by">
+    <div class="title">Order by</div>
+    <label class="container" *ngFor="let order of orderBy; let first = first">
+      {{order}}
+      <input type="radio" [checked]="first" name="radio" id="order-{{order}}" (click)="orderInput = order; onOrderChange.emit({orderBy: orderInput, sort: sortInput})">
+      <span class="checkmark"></span>
+    </label>
+
+    <!-- Sort -->
+    <div class="sort">
+      <div class="triangle icon" [ngClass]="{'checked': sortInput === 1}" id="triangle-up" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
+      <div class="triangle icon" [ngClass]="{'checked': sortInput === -1}" id="triangle-down" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
+    </div>
+  </div>
+
+</div>

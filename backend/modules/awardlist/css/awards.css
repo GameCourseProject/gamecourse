@@ -1,0 +1,82 @@
+.awards-table table {
+    border-spacing: 0;
+    width: 100%;
+    background-color: #cfcfcf;
+}
+
+.awards-table table th {
+    background-color: #ffffff;
+    padding: 8px 6px;
+    text-align: center;
+    outline: 0;
+    cursor: pointer;
+}
+
+.awards-table table th.sorter-false {
+    background-image: none;
+    cursor: default;
+}
+
+.awards-table table th:nth-child(1) {
+    width: 100px;
+}
+
+.awards-table table th:nth-child(2) {
+    width: 100px;
+}
+
+.awards-table table th:nth-child(3) {
+    min-width: 150px;
+}
+
+.awards-table table th:nth-child(4) {
+    width: 150px;
+}
+
+.awards-table table td:nth-child(1),
+.awards-table table td:nth-child(2),
+.awards-table table td:nth-child(4) {
+    text-align: center;
+}
+
+.awards-table table td:nth-child(3) {
+    text-align: left;
+    font-weight: 600;
+    margin: 5px;
+}
+
+.awards-table table td:nth-child(3) .block {
+    padding: 5px !important;
+}
+
+.awards-table table td:nth-child(3) .value .img {
+    width: 32px;
+    height: 32px;
+}
+
+.awards-table table tr {
+    transition: all 0.3s ease;
+}
+
+.awards-table table tr{
+    background-color: #ffffff;
+}
+
+.awards-table table tr:hover {
+    background-color: #c9c9c9;
+    cursor: pointer;
+}
+
+.awards-table table tr.selected {
+    background-color: #8c8c8c;
+    color: #e6e6e6;
+}
+
+.awards-table table tr.selected:hover {
+    background-color: #808080;
+}
+
+ul~table th {
+    background: #EFEFEF !important;
+    color: #EFEFEF !important;
+}

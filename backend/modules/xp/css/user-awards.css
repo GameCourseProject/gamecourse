@@ -1,0 +1,70 @@
+.award-list {
+  border: 2px solid #d9d9d9;
+}
+
+.award-list>.content {
+  padding: 0px;
+}
+
+.award-list>.content>div {
+  width: 100%;
+}
+
+.award-list table {
+  border-spacing: 0;
+  width: 100%;
+  text-align: center;
+  padding: 0px;
+  background-color: #cfcfcf;
+}
+
+.award-list table .img {
+  height: 32px;
+  width: 32px;
+}
+
+.award-list table thead tr {
+  background-color: #ffffff;
+}
+
+.award-list table thead tr th {
+  padding: 4px;
+}
+
+@media all and (min-width: 700px) {
+  .award-list table thead tr th:first-child {
+    width: 100px;
+  }
+
+  .award-list table th:nth-child(2) {
+    width: 100px;
+  }
+}
+
+.award-list table tbody tr {
+  background-color: #ffffff;
+}
+
+
+.award-list table td:nth-child(2) {
+  white-space: nowrap;
+  padding: 8px;
+}
+
+.award-list table td:nth-child(3) {
+  font-weight: bold;
+  text-align: left;
+}
+
+.award-list table td:nth-child(3) .block {
+  padding: 5px !important;
+}
+
+.award-list table td:nth-child(3) .block .content {
+  align-items: center !important;
+}
+
+.award-list table td:nth-child(3) .block .content .value img {
+  width: 32px;
+  height: 32px;
+}

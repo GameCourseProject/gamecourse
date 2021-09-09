@@ -6,19 +6,37 @@ import {SetupGuard} from "./_guards/setup.guard";
 const routes: Routes = [
   {
     path: 'login',
-    loadChildren: () => import('./login/login.module').then(mod => mod.LoginModule),
+    loadChildren: () => import('./_views/login/login.module').then(mod => mod.LoginModule),
     canLoad: [SetupGuard],
     canActivate: [SetupGuard]
   },
   {
     path: 'setup',
-    loadChildren: () => import('./setup/setup.module').then(mod => mod.SetupModule),
+    loadChildren: () => import('./_views/setup/setup.module').then(mod => mod.SetupModule),
     canLoad: [SetupGuard],
     canActivate: [SetupGuard]
   },
   {
     path: 'main',
-    loadChildren: () => import('./main/main.module').then(mod => mod.MainModule),
+    loadChildren: () => import('./_views/main/main.module').then(mod => mod.MainModule),
+    canLoad: [SetupGuard],
+    canActivate: [SetupGuard]
+  },
+  {
+    path: 'courses',
+    loadChildren: () => import('./_views/courses/courses.module').then(mod => mod.CoursesModule),
+    canLoad: [SetupGuard],
+    canActivate: [SetupGuard]
+  },
+  {
+    path: 'users',
+    loadChildren: () => import('./_views/users/users.module').then(mod => mod.UsersModule),
+    canLoad: [SetupGuard],
+    canActivate: [SetupGuard]
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./_views/settings/settings.module').then(mod => mod.SettingsModule),
     canLoad: [SetupGuard],
     canActivate: [SetupGuard]
   },

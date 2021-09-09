@@ -1,0 +1,18 @@
+<div class="sb-component">
+</div>
+<sb-expression id= "visContent" sb-expression="part.value"  sb-expression-link="./docs/#ViewsContent" sb-expression-info="Define the contents of the view using the expression language"></sb-expression>
+<div class="value-filtered-fields" ng-if="part.valueType == 'field' && (filteredResults.length != 1 || filteredResults[0].field !== part.value.field)">
+    <div ng-repeat="result in filteredResults" ng-click="part.value.field = result.field">
+        <div class="field">{{result.field}}</div><div class="description">{{result.desc}}</div><div class="example">{{result.example}}</div>
+    </div>
+</div>
+<div ng-repeat="(context, keys) in contexts">
+    {{context}}
+    <select ng-options="key for key in keys track by key" ng-model="part.value.context[context]"></select>
+</div>
+<sb-checkbox ng-if="part.valueType == 'field'" sb-checkbox="part.value.format" sb-checkbox-label="Enable Format" sb-checkbox-default="'%v'">
+    <sb-input sb-input="part.value.format" sb-input-label="Format"></sb-input>
+</sb-checkbox>
+<sb-checkbox sb-checkbox="part.link" sb-checkbox-label="Enable Link" sb-checkbox-default="">
+    <sb-expression sb-expression="part.link" sb-expression-label="Link"></sb-expression>
+</sb-checkbox>

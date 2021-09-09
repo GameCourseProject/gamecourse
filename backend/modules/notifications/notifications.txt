@@ -1,0 +1,106 @@
+[
+    {
+        "role": "role.Student>special.Own",
+        "parentId": null,
+        "partType": "block",
+        "class": "notifications-container",
+        "header": {
+            "title": {
+                "role": "role.Student>special.Own",
+                "partType": "text",
+                "value": "Notifications",
+                "info": null
+            },
+            "image": {
+                "role": "role.Student>special.Own",
+                "partType": "image",
+                "value": "images\/awards.svg",
+                "info": null
+            }
+        },
+        "children": [
+            {
+                "role": "role.Student>special.Own",
+                "class": "notification-outside",
+                "partType": "block",
+                "children": [
+                    {
+                        "role": "role.Student>special.Own",
+                        "class": "notification",
+                        "partType": "block",
+                        "header": {
+                            "title": {
+                                "role": "role.Student>special.Own",
+                                "partType": "text",
+                                "value": "You unlocked: {%notification.name} {%notification.level}",
+                                "info": null
+                            },
+                            "image": {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "badges\/{$urlify(%notification.name)}-{%notification.level}.png",
+                                "info": null
+                            }
+                        },
+                        "children": [
+                            {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images\/close.svg",
+                                "info": null,
+                                "class": "close",
+                                "events": {
+                                    "click": "removeNotification(this.notificationId)"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "role": "role.Student>special.Own",
+                        "partType": "block",
+                        "header": {
+                            "title": {
+                                "role": "role.Student>special.Own",
+                                "partType": "text",
+                                "value": "You unlocked: {%notification.name}",
+                                "info": null
+                            },
+                            "image": {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images\/skills.svg",
+                                "info": null,
+                                "style": "background-color: {skillname=%notification.name].color}"
+                            }
+                        },
+                        "children": [
+                            {
+                                "role": "role.Student>special.Own",
+                                "partType": "image",
+                                "value": "images/close.svg",
+                                "info": null,
+                                "class": "close",
+                                "events": {
+                                    "click": "removeNotification(this.notificationId)"
+                                }
+                            }
+                        ],
+                        "class": "notification"
+                    }
+                ],
+                "loopdata": "{$getNotifications(%user).sort(\"ascending\")}",
+                "variables": {
+                    "notification": {
+                        "value": "{%notification.awardDate}"
+                    },
+                    "notificationId": {
+                        "value": "{%notification}"
+                    },
+                    "course": {
+                        "value": "{%course}"
+                    }
+                }
+            }
+        ]
+    }
+]

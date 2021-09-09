@@ -7,7 +7,7 @@
   <div class="user_info">
     <div *ngIf="user" class="user_id">{{user.username}}</div>
     <a class="icon" id="user_icon" [style.backgroundImage]="'url(assets/imgs/'+ user.username +'.png)'" [routerLink]="'myInfo'"></a>
-    <a class="icon" id="user_exit" href="?logout" target="_parent"></a>
+    <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 
   <!-- Menu -->

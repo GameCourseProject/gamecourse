@@ -1,15 +1,30 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
 /node_modules
-/public/hot
-/public/storage
-/storage/*.key
-/vendor
-.env
-.env.backup
-.phpunit.result.cache
-docker-compose.override.yml
-Homestead.json
-Homestead.yaml
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# misc
 npm-debug.log
 yarn-error.log
-/.idea
-/.vscode
+/setup.done
+
+# System Files
+.DS_Store
+Thumbs.db

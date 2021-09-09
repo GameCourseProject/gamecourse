@@ -1,0 +1,225 @@
+<app-navbar></app-navbar>
+
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper">
+
+    <!-- Sidebar -->
+    <app-sidebar
+      [filters]="['Active', 'Inactive', 'Visible', 'Invisible']"
+      [orderBy]="['Name', 'Short', '# Students', 'Year']"
+      (onSearch)="onSearch($event)"
+      (onFilterChange)="onFilterChange($event)"
+      (onOrderChange)="onOrderChange($event)">
+    </app-sidebar>
+
+    <!-- Main Content -->
+    <div id="mainContent">
+
+      <!-- Action buttons -->
+      <div class="action-buttons ">
+        <div class="icon add_icon" title="New" value="#new-course" onclick="openModal(this)" ng-click="createCourse()"></div>
+        <div class="icon import_icon" title="Import" value="#import-course" onclick="openModal(this)"></div>
+        <div class="icon export_icon" title="Export all" ng-click="exportCourses()"></div>
+      </div>
+
+      <!-- Courses Table -->
+      <div id="allCourses" *ngIf="!loading">
+        <div class="data-table">
+
+          <!-- Header -->
+          <table id="courses-table">
+            <thead>
+              <tr>
+                <th class="first-column"></th>
+                <th class="name-column">Name</th>
+                <th >Short</th>
+                <th ># Students</th>
+                <th >Year</th>
+                <th class="check-column">Active</th>
+                <th class="check-column">Visible</th>
+                <th class="action-column"></th>
+                <th class="action-column"></th>
+                <th class="action-column"></th>
+                <th class="action-column"></th>
+              </tr>
+            </thead>
+
+            <!-- Body -->
+            <tbody>
+              <tr *ngFor="let course of userCourses">
+                <td class="first-column">
+                  <div class="profile-icon">
+                    <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
+                    <div class="frame" [ngStyle]="{'borderColor': course.color}" style="border: 1px solid"></div>
+                  </div>
+                </td>
+                <td class="name-column" [routerLink]=""><span>{{course.name}}</span></td>
+                <td class="ng-binding">{{course.short}}</td>
+                <td class="ng-binding">{{course.numberOfStudents}}</td>
+                <td class="ng-binding">{{course.year}}</td>
+                <td class="check-column">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="course.isActive" (change)="toggleActive(course.id)">
+                    <span class="slider round"></span>
+                  </label>
+                </td>
+                <td class="check-column">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="course.isVisible">
+                    <span ng-click="makeVisible(course.id)" class="slider round"></span>
+                  </label>
+                </td>
+                <td class="action-column">
+                  <div class="icon duplicate_icon" title="Duplicate" ng-click="duplicateCourse(course)"></div>
+                </td>
+                <td class="action-column">
+                  <div class="icon edit_icon" value="#edit-course" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div>
+                </td>
+                <td class="action-column">
+                  <div class="icon delete_icon" value="#delete-verification-1" title="Remove" onclick="openModal(this)"></div>
+                </td>
+                <td class="action-column">
+                  <div class="icon export_icon_no_outline" value="#export-verification-1" title="Export" onclick="openModal(this)"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      <!-- Success box -->
+<!--      <div class="success_box">-->
+<!--        <div id="action_completed" class="success_msg"></div>-->
+<!--      </div>-->
+
+      <!-- Error box -->
+<!--      <div class="error_box">-->
+<!--        <div id="empty_table" class="error_msg"></div>-->
+<!--      </div>-->
+
+<!--      <div class="modal" id="new-course">-->
+<!--        <div class="modal_content">-->
+<!--          <button class="close_btn icon" value="#new-course" onclick="closeModal(this)"></button>-->
+<!--          <div class="title">New Course: </div>-->
+<!--          <div class="content">-->
+<!--            <div class="inputs">-->
+<!--              <div class="name full"><input type="text" class="form__input  ng-pristine ng-untouched ng-valid ng-empty" id="name" placeholder="Name *" ng-model="newCourse.courseName"> <label for="name" class="form__label">Name</label></div>-->
+<!--              <div class="row_inputs">-->
+<!--                <div class="short_name half"><input type="text" class="form__input ng-pristine ng-untouched ng-valid ng-empty" id="short_name" placeholder="Short Name *" ng-model="newCourse.courseShort"><label for="sort_name" class="form__label">Short Name</label></div>-->
+<!--                <div class="year half right">-->
+<!--                  <input list="years" class="form__input ng-pristine ng-untouched ng-valid ng-empty" id="year" placeholder="Year *" ng-model="newCourse.courseYear"><label for="year" class="form__label">Year</label>-->
+<!--                  <datalist id="years">-->
+<!--                    <option value="2016-2017"></option>-->
+<!--                    <option value="2017-2018"></option>-->
+<!--                    <option value="2018-2019"></option>-->
+<!--                    <option value="2019-2020"></option>-->
+<!--                    <option value="2020-2021"></option>-->
+<!--                    <option value="2021-2022"></option>-->
+<!--                    <option value="2022-2023"></option>-->
+<!--                    <option value="2023-2024"></option>-->
+<!--                    <option value="2024-2025"></option>-->
+<!--                    <option value="2025-2026"></option>-->
+<!--                    <option value="2026-2027"></option>-->
+<!--                  </datalist>-->
+<!--                </div>-->
+<!--                <div class="color_picker half">-->
+<!--                  <input type="text" class="form__input pickr ng-pristine ng-untouched ng-valid ng-empty" id="new_pickr" placeholder="Color *" ng-model="newCourse.courseColor"><label for="color" class="form__label">Color</label>-->
+<!--                  <div id="color-sample">-->
+<!--                    <div class="box" style="background-color: white;"></div>-->
+<!--                    <div class="frame" style="border: 1px solid lightgray"></div>-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--              <div class="row">-->
+<!--                <div class="on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" ng-model="newCourse.courseIsActive" class="ng-pristine ng-untouched ng-valid ng-empty"><span class="slider round"></span></label></div>-->
+<!--                <div class="on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" ng-model="newCourse.courseIsVisible" class="ng-pristine ng-untouched ng-valid ng-empty"><span class="slider round"></span></label></div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <button class="save_btn" ng-click="submitCourse()" ng-disabled="!isReadyToSubmit()" disabled="disabled"> Save </button>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="modal" id="edit-course">-->
+<!--        <div class="modal_content">-->
+<!--          <button class="close_btn icon" value="#edit-course" onclick="closeModal(this)"></button>-->
+<!--          <div class="title">Edit Course: </div>-->
+<!--          <div class="content">-->
+<!--            <div class="inputs" id="edit_box">-->
+<!--              <div class="name full"><input type="text" class="form__input  ng-pristine ng-untouched ng-valid ng-empty" id="name" placeholder="Name *" ng-model="editCourse.courseName"> <label for="name" class="form__label">Name</label></div>-->
+<!--              <div class="row_inputs">-->
+<!--                <div class="short_name half"><input type="text" class="form__input ng-pristine ng-untouched ng-valid ng-empty" id="short_name" placeholder="Short Name *" ng-model="editCourse.courseShort"><label for="sort_name" class="form__label">Short Name</label></div>-->
+<!--                <div class="year half right">-->
+<!--                  <input list="years" class="form__input ng-pristine ng-untouched ng-valid ng-empty" id="year" placeholder="Year *" ng-model="editCourse.courseYear"><label for="year" class="form__label">Year</label>-->
+<!--                  <datalist id="years">-->
+<!--                    <option value="2016-2017"></option>-->
+<!--                    <option value="2017-2018"></option>-->
+<!--                    <option value="2018-2019"></option>-->
+<!--                    <option value="2019-2020"></option>-->
+<!--                    <option value="2020-2021"></option>-->
+<!--                    <option value="2021-2022"></option>-->
+<!--                    <option value="2022-2023"></option>-->
+<!--                    <option value="2023-2024"></option>-->
+<!--                    <option value="2024-2025"></option>-->
+<!--                    <option value="2025-2026"></option>-->
+<!--                    <option value="2026-2027"></option>-->
+<!--                  </datalist>-->
+<!--                </div>-->
+<!--                <div class="color_picker half">-->
+<!--                  <input type="text" class="form__input pickr ng-pristine ng-untouched ng-valid ng-empty" id="edit_pickr" placeholder="Color *" ng-model="editCourse.courseColor"><label for="color" class="form__label">Color</label>-->
+<!--                  <div id="edit-color-sample">-->
+<!--                    <div class="box" style="background-color: white;"></div>-->
+<!--                    <div class="frame" style="border: 1px solid lightgray"></div>-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <button class="cancel" value="#edit-course" onclick="closeModal(this)"> Cancel </button><button class="save_btn" ng-click="submitEditCourse()" ng-disabled="!isReadyToEdit()" disabled="disabled"> Save </button>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="modal" id="import-course">-->
+<!--        <div class="verification modal_content">-->
+<!--          <button class="close_btn icon" value="#import-course" onclick="closeModal(this)"></button>-->
+<!--          <div class="warning">Please select a zip file to be imported</div>-->
+<!--          <input class="config_input" type="file" id="import_course" accept=".zip">-->
+<!--          <div class="confirmation_btns"><button ng-click="importCourses(true)">Import Courses (Replace Duplicates)</button><button ng-click="importCourses(false)">Import Courses (Ignore Duplicates)</button></div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="modal" id="delete-verification-1">-->
+<!--        <div class="verification modal_content">-->
+<!--          <button class="close_btn icon" value="#delete-verification-1" onclick="closeModal(this)"></button>-->
+<!--          <div class="warning">Are you sure you want to delete the Course?</div>-->
+<!--          <div class="target ng-binding">Test Course</div>-->
+<!--          <div class="confirmation_btns"><button class="cancel" value="#delete-verification-1" onclick="closeModal(this)">Cancel</button><button class="continue" ng-click="deleteCourse(course)">Delete</button></div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="modal" id="export-verification-1">-->
+<!--        <div class="export modal_content">-->
+<!--          <button class="close_btn icon" value="#export-verification-1" onclick="closeModal(this)"></button>-->
+<!--          <div class="title ng-binding">Export Test Course </div>-->
+<!--          <div class="warning">Select what to export:</div>-->
+<!--          <div class="content">-->
+<!--            <div id="new_box_tier" class="inputs">-->
+<!--              <div class="row_inputs">-->
+<!--                <div class="details full config_item">-->
+<!--                  <div><label class="container"><input type="checkbox" ng-change="checkCheckboxes(course.id)" id="users-1" ng-model="exportOptions[course.id].users" ng-init="exportOptions[course.id].users = true" title="Users have to be exported if &quot;Awards and Participations&quot; is selected." disabled="" class="ng-pristine ng-untouched ng-valid ng-not-empty"><span class="checkmark">Users</span></label></div>-->
+<!--                  <div><label class="container"><input type="checkbox" ng-change="checkCheckboxes(course.id)" id="awards-1" ng-model="exportOptions[course.id].awards" ng-init="exportOptions[course.id].awards = true" class="ng-pristine ng-untouched ng-valid ng-not-empty"><span class="checkmark">Awards and Participations</span></label></div>-->
+<!--                  <div><label class="container"><input type="checkbox" ng-change="checkCheckboxes(course.id)" id="modules-1" ng-model="exportOptions[course.id].modules" ng-init="exportOptions[course.id].modules = true" class="ng-pristine ng-untouched ng-valid ng-not-empty"><span class="checkmark">Modules</span></label></div>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <button class="cancel" value="#export-verification-1" onclick="closeModal(this)"> Cancel </button><button class="save_btn" ng-click="exportCourses(course.id, exportOptions[course.id])"> Export </button>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+    </div>
+
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading || loadingAction" id="page-loading">
+    <img src="../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>

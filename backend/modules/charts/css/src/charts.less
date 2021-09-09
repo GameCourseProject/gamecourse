@@ -1,0 +1,80 @@
+.view {
+  .chart {
+    position: relative;
+  }
+}
+
+.chart-line {
+  .axis {
+    font-size: 70%;
+    path, line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+
+      &.rule {
+        stroke: #aaa;
+      }
+    }
+  }
+
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+}
+
+.chart-bar {
+  rect {
+    shape-rendering: crispEdges;
+    fill: #a33c30;
+
+    &.highlighted {
+      fill: steelblue;
+    }
+
+    &.normal {
+    }
+  }
+
+  .axis {
+    font-size: 70%;
+    path, line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+
+      &.rule {
+        stroke: #aaa;
+      }
+    }
+  }
+}
+
+.chart-star {
+  g.user {
+    .star-path {
+      stroke: #00BB00;
+      stroke-width: 2px;
+      fill: #00BB00;
+      fill-opacity: 0.6;
+    }
+  }
+
+  g.average {
+    .star-path {
+      stroke: #0000BB;
+      stroke-width: 2px;
+      fill: #0000BB;
+      fill-opacity: 0.6;
+    }
+  }
+
+  .star-axis {
+    stroke: #000;
+    stroke-width: 2px;
+    stroke-dasharray: 6 2;
+    stroke-opacity: 0.4;
+  }
+}

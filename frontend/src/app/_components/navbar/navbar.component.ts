@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {ApiHttpService} from "../../_services/api/api-http.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +15,10 @@ export class NavbarComponent implements OnInit {
   mainNavigation = [];
   settingsNavigation = [];
 
-  constructor() { }
+  constructor(
+    private api: ApiHttpService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.initNavigations();
@@ -22,7 +27,7 @@ export class NavbarComponent implements OnInit {
   initNavigations(): void {
     this.mainNavigation = [
       {
-        sref: '',
+        sref: '/main',
         image: 'images/leaderboard.svg',
         text: 'Main Page',
         class: ''
@@ -60,7 +65,15 @@ export class NavbarComponent implements OnInit {
   }
 
   logout(): void {
-    // TODO
+    this.api.logout().subscribe(
+      isLoggedIn => {
+        if (!isLoggedIn) this.router.navigate(['/login'])
+      },
+      error => {
+        // TODO: alert
+        console.error(error.message)
+      }
+    )
   }
 
 }

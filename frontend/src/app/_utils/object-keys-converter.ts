@@ -1,10 +1,7 @@
 /**
  * This class converts an object with snake_case keys to
  * an object with camelCase keys, and vice-versa:
- * @example {"snake_case": 1} -> {"snakeCase": 1}
- *
- * It also converts object values from MySQL to JavaScript
- * @example 1 -> true or "yyyy-mm-dd hh:mm:ss" -> Date
+ * @example {"snake_case": 1} -> {"snakeCase": 1} FIXME: maybe delete
  */
 
 export class ObjectKeysConverter {

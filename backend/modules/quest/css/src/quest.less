@@ -1,0 +1,110 @@
+@import "../../../../css/src/base-settings";
+@import "../../../../css/src/device-sizes";
+
+.quest-body {
+  background-color: black;
+}
+
+.quest-formatter {
+  color: @color-primary-1;
+  p {
+    @media all and (min-width: @device-lg) {
+      width: @device-md - 200px;
+    }
+    margin: 1em auto;
+    font-size: 14pt;
+  }
+}
+
+#quest-container {
+  margin: 1em;
+
+  .quest-formatter();
+}
+
+#quest-info-container {
+  #quest-level-selector {
+    @media all and (min-width: @device-md) {
+      width: 300px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .dd-item:hover {
+      background: #EEE;
+    }
+  }
+
+  #quest-level-editor {
+    margin-top: 20px;
+    @media all and (min-width: @device-lg) {
+      margin-left: 20px;
+      margin-top: 0;
+      width: 600px;
+      display: inline-block;
+      vertical-align: top;
+    }
+  }
+
+  #quest-level-preview {
+    padding: 1em;
+    .quest-body();
+    .quest-formatter();
+  }
+}
+
+.request-solution {
+  background-color: #EEE;
+  color: #000000;
+  margin: 0 auto;
+  width: 800px;
+  padding: 0.1px 10px 10px 10px;
+
+  button {
+    margin-left: 10px;
+  }
+}
+
+.quest-control {
+  > div {
+    margin-bottom: 2px;
+  }
+
+  label {
+    min-width: 105px;
+    display: inline-block;
+    text-align: right;
+  }
+}
+
+#quest-level-editor {
+  > div {
+    margin-bottom: 2px;
+  }
+
+  label {
+    min-width: 65px;
+    display: inline-block;
+    text-align: right;
+  }
+
+  .validation-type-container {
+    > div {
+      margin-bottom: 2px;
+    }
+
+    label {
+      min-width: 115px;
+    }
+
+  }
+}
+
+#quest-quests-list {
+  margin: 2px 0px;
+
+  img {
+    vertical-align: -2px;
+    width: 18px;
+  }
+}

@@ -7,8 +7,8 @@ import {QueryStringParameters} from "../../_utils/query-string-parameters";
 })
 export class ApiEndpointsService {
 
-  // public readonly API_ENDPOINT: string = 'https://gamecourse/v2/api';
-  public readonly API_ENDPOINT: string = 'http://localhost:8000/api';
+  // public readonly API_ENDPOINT: string = 'https://gamecourse/v2/api/v1';
+  public readonly API_ENDPOINT: string = 'http://localhost/gamecourse-v2/backend';
 
   constructor() { }
 

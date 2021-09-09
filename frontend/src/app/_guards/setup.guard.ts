@@ -18,7 +18,7 @@ import {catchError, map} from "rxjs/operators";
 export class SetupGuard implements CanActivate, CanLoad {
 
   constructor(
-    private apiHttpService: ApiHttpService,
+    private api: ApiHttpService,
     private router: Router
   ) {}
 
@@ -27,7 +27,8 @@ export class SetupGuard implements CanActivate, CanLoad {
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     const url = state.url;
-    return this.check(url);
+    // return this.check(url);
+    return true;
   }
 
   canLoad(
@@ -35,11 +36,12 @@ export class SetupGuard implements CanActivate, CanLoad {
     segments: UrlSegment[]): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     const url = '/' + route.path;
-    return this.check(url);
+    // return this.check(url);
+    return true;
   }
 
   check(url: string): Observable<boolean> {
-    return this.apiHttpService.needsSetup().pipe(
+    return this.api.needsSetup().pipe(
       map(
         res => {
           if (url === '/setup') {

@@ -1,4 +1,5 @@
 import {ObjectKeysConverter} from "../_utils/object-keys-converter";
+import {TypesConverter} from "../_utils/types-converter";
 
 export class Course {
   private _id: number;
@@ -7,21 +8,25 @@ export class Course {
   private _color: string;
   private _year: string;
   private _defaultLandingPage: string;
-  private _isActive: boolean = false;
-  private _isVisible: boolean = false;
+  private _isActive: boolean;
+  private _isVisible: boolean;
   private _roleHierarchy: string;
   private _theme: string;
-  private _createdAt: Date = new Date();
-  private _updatedAt: Date = new Date();
+  private _createdAt: Date;
+  private _updatedAt: Date;
+
+  // Extras: not in database
+  private _numberOfStudents?: number;
 
   constructor(source: Partial<Course>) {
-    const converter = new ObjectKeysConverter();
-    source = converter.keysToCamelCase(source);
+    const keysConverter = new ObjectKeysConverter();
+    source = keysConverter.keysToCamelCase(source);
 
+    const typesConverter = new TypesConverter();
     Object.keys(source).forEach(key => {
-      if (typeof this[key] === 'boolean') source[key] = !!source[key];
-      else if (this[key] instanceof Date) source[key] = new Date(source[key]);
-      this[key] = source[key];
+      if (source.hasOwnProperty(key)) {
+        this[key] = typesConverter.fromDatabase(source[key]);
+      }
     });
 
     return this;
@@ -76,7 +81,7 @@ export class Course {
   }
 
   get isActive(): boolean {
-    return this._isActive;
+    return !!this._isActive;
   }
 
   set isActive(value: boolean) {
@@ -84,7 +89,7 @@ export class Course {
   }
 
   get isVisible(): boolean {
-    return this._isVisible;
+    return !!this._isVisible;
   }
 
   set isVisible(value: boolean) {
@@ -121,5 +126,13 @@ export class Course {
 
   set updatedAt(value: Date) {
     this._updatedAt = value;
+  }
+
+  get numberOfStudents(): number {
+    return this._numberOfStudents;
+  }
+
+  set numberOfStudents(value: number) {
+    this._numberOfStudents = value;
   }
 }
