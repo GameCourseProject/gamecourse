@@ -1,5 +1,4 @@
 <?php
-// TODO: Fix the Endpoints! This library is outdated!
 
 require_once("fenixedu.config.php");
 require_once("RestRequest.inc.php");
