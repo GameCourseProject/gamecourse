@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Router} from "@angular/router";
+import {User} from "../../_domain/User";
 
 @Component({
   selector: 'app-navbar',
@@ -9,8 +10,7 @@ import {Router} from "@angular/router";
 })
 export class NavbarComponent implements OnInit {
 
-  user = {username: 'ist181583'}; // TODO: get actual user
-  isAdmin = true;
+  user: User;
 
   mainNavigation = [];
   settingsNavigation = [];
@@ -21,7 +21,15 @@ export class NavbarComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.initNavigations();
+    this.getUserInfo();
+  }
+
+  getUserInfo(): void {
+    this.api.getLoggedUser()
+      .subscribe(user => {
+        this.user = user;
+        this.initNavigations();
+      })
   }
 
   initNavigations(): void {
@@ -40,7 +48,7 @@ export class NavbarComponent implements OnInit {
       }
     ];
 
-    if (this.isAdmin) {
+    if (this.user.isAdmin) {
       this.mainNavigation.push({
         sref: '/users',
         image: 'images/leaderboard.svg',
