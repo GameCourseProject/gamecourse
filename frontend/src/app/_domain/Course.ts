@@ -10,9 +10,10 @@ export class Course {
   private _isVisible: boolean;
   private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
+  private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
-              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string) {
+              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string, nrStudents?: number) {
 
     this._id = id;
     this._name = name;
@@ -25,6 +26,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
+    if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 
   get id(): number {
@@ -115,7 +117,16 @@ export class Course {
     this._theme = value;
   }
 
+  get nrStudents(): number {
+    return this._nrStudents;
+  }
+
+  set nrStudents(value: number) {
+    this._nrStudents = value;
+  }
+
   static fromDatabase(obj: CourseDatabase): Course {
+    console.log(obj)
     return new Course(
       parseInt(obj.id),
       obj.name,
@@ -127,7 +138,8 @@ export class Course {
       !!obj.isActive,
       !!obj.isVisible,
       obj.roleHierarchy,
-      obj.theme
+      obj.theme,
+      obj.nstudents != undefined ? parseInt(obj.nstudents) : undefined
     );
   }
 }
@@ -143,5 +155,6 @@ interface CourseDatabase {
   "isActive": string,
   "isVisible": string,
   "roleHierarchy": string,
-  "theme": string
+  "theme": string,
+  "nstudents": string,
 }

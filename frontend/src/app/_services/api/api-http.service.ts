@@ -122,6 +122,21 @@ export class ApiHttpService {
       ) );
   }
 
+  public getUserCourses(): Observable<Course[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'getCoursesList');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map(
+        (res: any) => (res['data']['courses'])
+          .map(obj => Course.fromDatabase(obj))
+      ) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------- Course related --------------- ***/

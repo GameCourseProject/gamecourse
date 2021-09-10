@@ -705,8 +705,7 @@ class Badges extends Module
         if (array_key_exists("image", $achievement)) {
             $badgeData["image"] = $achievement['image'];
         }
-        Core::$systemDB->insert("badge", $badgeData);
-        $badgeId = Core::$systemDB->getLastId();
+        $badgeId = Core::$systemDB->insert("badge", $badgeData);
         for ($i = 1; $i <= $maxLevel; $i++) {
             Core::$systemDB->insert("badge_level", [
                 "badgeId" => $badgeId,
@@ -721,7 +720,7 @@ class Badges extends Module
     {
         $originalBadge = Core::$systemDB->select("badge", ["course" => $courseId, 'id' => $achievement['id']], "*");
 
-        if (!empty($originalBadge)) {
+        if(!empty($originalBadge)){
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
             $badgeData = [
                 "maxLevel" => $maxLevel, "name" => $achievement['name'],
@@ -736,10 +735,10 @@ class Badges extends Module
                 $badgeData["image"] = $achievement['image'];
             }
             Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
-
+    
             if ($originalBadge["maxLevel"] <= $maxLevel) {
                 for ($i = 1; $i <= $maxLevel; $i++) {
-
+    
                     if ($i > $originalBadge["maxLevel"]) {
                         //if they are new levels they need to be inserted and not updated
                         Core::$systemDB->insert("badge_level", [
@@ -773,7 +772,7 @@ class Badges extends Module
                     ]);
                 }
             }
-        }
+        } 
     }
     public function deleteBadge($badge)
     {
@@ -896,7 +895,7 @@ class Badges extends Module
     public function activeItem($itemId)
     {
         $active = Core::$systemDB->select("badge", ["id" => $itemId], "isActive");
-        if (!is_null($active)) {
+        if(!is_null($active)){
             Core::$systemDB->update("badge", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
             //ToDo: ADD RULE MANIPULATION HERE
         }
@@ -1050,7 +1049,7 @@ class Badges extends Module
 
                     if ($isPoint) {
                         $file .= $level["goal"];
-                    }
+                    } 
                 } else {
                     $file .= ";;;";
                 }

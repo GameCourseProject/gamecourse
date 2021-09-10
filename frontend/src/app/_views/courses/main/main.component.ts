@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {Course} from "../../../_domain/Course";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {throwError} from "rxjs";
-import {QueryStringParameters} from "../../../_utils/query-string-parameters";
 
 @Component({
   selector: 'app-main',
@@ -16,32 +14,21 @@ export class MainComponent implements OnInit {
 
   userCourses: Course[];
 
-  constructor(private api: ApiHttpService) { }
+  constructor(
+    private api: ApiHttpService
+  ) { }
 
   ngOnInit(): void {
     this.getUserCourses();
   }
 
   getUserCourses(): void {
-    // this.api.getAllUserCourses(1) // FIXME: get actual ID
-    //   .subscribe(
-    //     res => {
-    //       this.userCourses = res;
-    //
-    //       let iterations = this.userCourses.length;
-    //       for (const course of this.userCourses) {
-    //         this.api.getAllCourseStudents(course.id).subscribe(
-    //           res => {
-    //             course.numberOfStudents = res.length;
-    //             if (!--iterations) this.loading = false;
-    //           },
-    //           error => throwError(error)
-    //         )
-    //       }
-    //
-    //     },
-    //     error => throwError(error)
-    //   )
+    this.api.getUserCourses()
+      .subscribe(courses => {
+        this.userCourses = courses;
+        console.log(courses)
+        this.loading = false;
+      });
   }
 
   onSearch(query: string) {

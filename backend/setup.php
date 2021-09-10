@@ -64,7 +64,7 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     mkdir($functionsFolder);
 
     file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
-    \Utils::deleteDirectory('autogame/config', array(), false);
+    \Utils::deleteDirectory('autogame/config', array('autogame/config' . DIRECTORY_SEPARATOR . 'samples'), false);
     file_put_contents($metadataFile, "");
 
     file_put_contents('setup.done', '');
