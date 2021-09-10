@@ -1,6 +1,3 @@
-import {ObjectKeysConverter} from "../_utils/object-keys-converter";
-import {TypesConverter} from "../_utils/types-converter";
-
 export class Role {
   private _id: number;
   private _name: string;
@@ -11,17 +8,17 @@ export class Role {
   private _updatedAt: Date;
 
   constructor(source: Partial<Role>) {
-    const keysConverter = new ObjectKeysConverter();
-    source = keysConverter.keysToCamelCase(source);
-
-    const typesConverter = new TypesConverter();
-    Object.keys(source).forEach(key => {
-      if (source.hasOwnProperty(key)) {
-        this[key] = typesConverter.fromDatabase(source[key]);
-      }
-    });
-
-    return this;
+    // const keysConverter = new ObjectKeysConverter();
+    // source = keysConverter.keysToCamelCase(source);
+    //
+    // const typesConverter = new TypesConverter();
+    // Object.keys(source).forEach(key => {
+    //   if (source.hasOwnProperty(key)) {
+    //     this[key] = typesConverter.fromDatabase(source[key]);
+    //   }
+    // });
+    //
+    // return this;
   }
 
   get id(): number {

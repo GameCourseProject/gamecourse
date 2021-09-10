@@ -1,5 +1,5 @@
-import {ObjectKeysConverter} from "../_utils/object-keys-converter";
-import {TypesConverter} from "../_utils/types-converter";
+import {AuthType} from "./AuthType";
+import {ApiEndpointsService} from "../_services/api/api-endpoints.service";
 
 export class User {
   private _id: number;
@@ -10,21 +10,24 @@ export class User {
   private _studentNumber: number;
   private _isAdmin: boolean;
   private _isActive: boolean;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _username: string;
+  private _authMethod: AuthType;
+  private _photoUrl: string;
 
-  constructor(source: Partial<User>) {
-    const keysConverter = new ObjectKeysConverter();
-    source = keysConverter.keysToCamelCase(source);
+  constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
+              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string) {
 
-    const typesConverter = new TypesConverter();
-    Object.keys(source).forEach(key => {
-      if (source.hasOwnProperty(key)) {
-        this[key] = typesConverter.fromDatabase(source[key]);
-      }
-    });
-
-    return this;
+    this._id = id;
+    this._name = name;
+    this._email = email;
+    this._major = major;
+    this._nickname = nickname;
+    this._studentNumber = studentNumber;
+    this._isAdmin = isAdmin;
+    this._isActive = isActive;
+    this._username = username;
+    this._authMethod = authMethod;
+    this._photoUrl = photoUrl;
   }
 
   get id(): number {
@@ -91,19 +94,56 @@ export class User {
     this._isActive = value;
   }
 
-  get createdAt(): Date {
-    return this._createdAt;
+  get username(): string {
+    return this._username;
   }
 
-  set createdAt(value: Date) {
-    this._createdAt = value;
+  set username(value: string) {
+    this._username = value;
   }
 
-  get updatedAt(): Date {
-    return this._updatedAt;
+  get authMethod(): AuthType {
+    return this._authMethod;
   }
 
-  set updatedAt(value: Date) {
-    this._updatedAt = value;
+  set authMethod(value: AuthType) {
+    this._authMethod = value;
   }
+
+  get photoUrl(): string {
+    return this._photoUrl;
+  }
+
+  set photoUrl(value: string) {
+    this._photoUrl = value;
+  }
+
+  static fromDatabase(obj: UserDatabase): User {
+    return new User(
+      parseInt(obj.id),
+      obj.name,
+      obj.email,
+      obj.major,
+      obj.nickname,
+      parseInt(obj.studentNumber),
+      !!obj.isAdmin,
+      !!obj.isActive,
+      obj.username,
+      obj.authenticationService as AuthType,
+      ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png'
+    );
+  }
+}
+
+interface UserDatabase {
+  "id": string,
+  "name": string,
+  "email": string,
+  "major": string,
+  "nickname": string,
+  "studentNumber": string,
+  "isAdmin": string,
+  "isActive": string,
+  "username": string,
+  "authenticationService": string
 }

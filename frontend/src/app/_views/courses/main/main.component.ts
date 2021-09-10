@@ -23,25 +23,25 @@ export class MainComponent implements OnInit {
   }
 
   getUserCourses(): void {
-    this.api.getAllUserCourses(1) // FIXME: get actual ID
-      .subscribe(
-        res => {
-          this.userCourses = res;
-
-          let iterations = this.userCourses.length;
-          for (const course of this.userCourses) {
-            this.api.getAllCourseStudents(course.id).subscribe(
-              res => {
-                course.numberOfStudents = res.length;
-                if (!--iterations) this.loading = false;
-              },
-              error => throwError(error)
-            )
-          }
-
-        },
-        error => throwError(error)
-      )
+    // this.api.getAllUserCourses(1) // FIXME: get actual ID
+    //   .subscribe(
+    //     res => {
+    //       this.userCourses = res;
+    //
+    //       let iterations = this.userCourses.length;
+    //       for (const course of this.userCourses) {
+    //         this.api.getAllCourseStudents(course.id).subscribe(
+    //           res => {
+    //             course.numberOfStudents = res.length;
+    //             if (!--iterations) this.loading = false;
+    //           },
+    //           error => throwError(error)
+    //         )
+    //       }
+    //
+    //     },
+    //     error => throwError(error)
+    //   )
   }
 
   onSearch(query: string) {
@@ -69,10 +69,10 @@ export class MainComponent implements OnInit {
 
     }
 
-    this.api.updateCourse(course.id, {'is_active': course.isActive}).subscribe(
-      res => this.loadingAction = false,
-      error => throwError(error)
-    );
+    // this.api.updateCourse(course.id, {'is_active': course.isActive}).subscribe(
+    //   res => this.loadingAction = false,
+    //   error => throwError(error)
+    // );
   }
 
 }

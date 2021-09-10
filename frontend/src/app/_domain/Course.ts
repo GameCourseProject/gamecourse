@@ -1,6 +1,3 @@
-import {ObjectKeysConverter} from "../_utils/object-keys-converter";
-import {TypesConverter} from "../_utils/types-converter";
-
 export class Course {
   private _id: number;
   private _name: string;
@@ -8,28 +5,26 @@ export class Course {
   private _color: string;
   private _year: string;
   private _defaultLandingPage: string;
+  private _lastUpdate: Date;
   private _isActive: boolean;
   private _isVisible: boolean;
-  private _roleHierarchy: string;
+  private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
-  private _createdAt: Date;
-  private _updatedAt: Date;
 
-  // Extras: not in database
-  private _numberOfStudents?: number;
+  constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
+              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string) {
 
-  constructor(source: Partial<Course>) {
-    const keysConverter = new ObjectKeysConverter();
-    source = keysConverter.keysToCamelCase(source);
-
-    const typesConverter = new TypesConverter();
-    Object.keys(source).forEach(key => {
-      if (source.hasOwnProperty(key)) {
-        this[key] = typesConverter.fromDatabase(source[key]);
-      }
-    });
-
-    return this;
+    this._id = id;
+    this._name = name;
+    this._short = short;
+    this._color = color;
+    this._year = year;
+    this._defaultLandingPage = defaultLandingPage;
+    this._lastUpdate = lastUpdate;
+    this._isActive = isActive;
+    this._isVisible = isVisible;
+    this._roleHierarchy = roleHierarchy;
+    this._theme = theme;
   }
 
   get id(): number {
@@ -80,6 +75,14 @@ export class Course {
     this._defaultLandingPage = value;
   }
 
+  get lastUpdate(): Date {
+    return this._lastUpdate;
+  }
+
+  set lastUpdate(value: Date) {
+    this._lastUpdate = value;
+  }
+
   get isActive(): boolean {
     return !!this._isActive;
   }
@@ -112,27 +115,33 @@ export class Course {
     this._theme = value;
   }
 
-  get createdAt(): Date {
-    return this._createdAt;
+  static fromDatabase(obj: CourseDatabase): Course {
+    return new Course(
+      parseInt(obj.id),
+      obj.name,
+      obj.short,
+      obj.color,
+      obj.year,
+      obj.defaultLandingPage,
+      new Date(obj.lastUpdate),
+      !!obj.isActive,
+      !!obj.isVisible,
+      obj.roleHierarchy,
+      obj.theme
+    );
   }
+}
 
-  set createdAt(value: Date) {
-    this._createdAt = value;
-  }
-
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
-
-  set updatedAt(value: Date) {
-    this._updatedAt = value;
-  }
-
-  get numberOfStudents(): number {
-    return this._numberOfStudents;
-  }
-
-  set numberOfStudents(value: number) {
-    this._numberOfStudents = value;
-  }
+interface CourseDatabase {
+  "id": string,
+  "name": string,
+  "short": string,
+  "color": string,
+  "year": string,
+  "defaultLandingPage": string,
+  "lastUpdate": string,
+  "isActive": string,
+  "isVisible": string,
+  "roleHierarchy": string,
+  "theme": string
 }

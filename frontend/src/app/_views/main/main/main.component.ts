@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+
 import {Course} from "../../../_domain/Course";
+
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {throwError} from "rxjs";
-import {QueryStringParameters} from "../../../_utils/query-string-parameters";
 
 @Component({
   selector: 'app-main',
@@ -15,27 +15,21 @@ export class MainComponent implements OnInit {
 
   activeCourses: Course[] = [];
 
-  constructor(private apiHttpService: ApiHttpService) {
-  }
+  constructor(
+    private apiHttpService: ApiHttpService
+  ) { }
 
   ngOnInit(): void {
     this.loading = false;
-    // this.getUserActiveCourses();
+    this.getUserActiveCourses();
   }
 
   getUserActiveCourses(): void {
-    const queries = (qs: QueryStringParameters) => {
-      qs.push('active', true);
-    };
-
-    this.apiHttpService.getAllUserCourses(1, queries) // FIXME: get actual ID
-      .subscribe(
-        res => {
-          this.activeCourses = res;
-          this.loading = false;
-        },
-        error => throwError(error)
-      )
+    this.apiHttpService.getUserActiveCourses()
+      .subscribe(courses => {
+        this.activeCourses = courses;
+        this.loading = false;
+      });
   }
 
 }

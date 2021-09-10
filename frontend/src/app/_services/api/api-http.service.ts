@@ -12,8 +12,6 @@ import {Course} from "../../_domain/Course";
 import {User} from "../../_domain/User";
 import {Role} from "../../_domain/Role";
 
-import {TypesConverter} from "../../_utils/types-converter";
-
 @Injectable({
   providedIn: 'root'
 })
@@ -95,180 +93,39 @@ export class ApiHttpService {
   /*** ---------------- User related --------------- ***/
   /*** --------------------------------------------- ***/
 
-  public createUser(data: { [key: string]: any} ) {
-    const url = this.apiEndpoint.createUrl('users');
+  public getLoggedUser(): Observable<User> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'getUserInfo');
+    };
 
-    const typesConverter = new TypesConverter();
-    data = typesConverter.toDatabase(data);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.post(url, data);
+    return this.get(url, this.httpOptions)
+      .pipe( map(
+        (res: any) => User.fromDatabase(res['data']['userInfo'])
+      ) );
   }
 
-  public updateUser(userID: number, data: { [key: string]: any }) {
-    const url = this.apiEndpoint.createUrlWithPathVariables('users', [userID]);
-    return this.post(url, data);
-  }
+  public getUserActiveCourses(): Observable<Course[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'getUserActiveCourses');
+    };
 
-  public deleteUser(userID: number) {
-    const url = this.apiEndpoint.createUrl('users/' + userID + '/delete');
-    return this.post(url, userID);
-  }
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-  public getUserByID(userID: number): Observable<User> {
-    const url = this.apiEndpoint.createUrlWithPathVariables('users', [userID]);
-    return this.get(url).pipe(
-      map(value => {
-        const res: {[key: string]: any} = JSON.parse(JSON.stringify(value));
-        return new User(res);
-      }),
-      catchError(error => throwError(error))
-    )
-  }
-
-  public getUserByName(name: string): Observable<User> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters(
-      'users',
-      (qs: QueryStringParameters) => {
-        qs.push('name', name);
-      });
-
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        if (res.length > 1) {
-          throwError('There are more than one user with the name \'' + name + '\'');
-          return null;
-        }
-        else return new User(res[0]);
-      }),
-      catchError(error => throwError(error))
-    )
-  }
-
-  public getAllUsers(queries?: (queryStringParameters: QueryStringParameters) => void): Observable<User[]> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters('users', queries);
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        const users: User[] = [];
-
-        res.forEach(user => users.push(new User(user)));
-        return users;
-      }),
-      catchError(error => throwError(error))
-    );
-  }
-
-  public getAllUserCourses(userID: number, queries?: (queryStringParameters: QueryStringParameters) => void): Observable<Course[]> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters('users/' + userID + '/courses', queries);
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        const courses: Course[] = [];
-
-        res.forEach(course => courses.push(new Course(course)));
-        return courses;
-      }),
-      catchError(error => throwError(error))
-    );
-  }
-
-  public getAllUserRoles(userID: number, queries?: (queryStringParameters: QueryStringParameters) => void): Observable<Role[]> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters('users/' + userID + '/roles', queries);
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        const roles: Role[] = [];
-
-        res.forEach(role => roles.push(new Role(role)));
-        return roles;
-      }),
-      catchError(error => throwError(error))
-    );
+    return this.get(url, this.httpOptions)
+      .pipe( map(
+        (res: any) => (res['data']['userActiveCourses'])
+          .map(obj => Course.fromDatabase(obj))
+      ) );
   }
 
 
   /*** --------------------------------------------- ***/
   /*** -------------- Course related --------------- ***/
   /*** --------------------------------------------- ***/
-
-  public createCourse(data: { [key: string]: any} ) {
-    const url = this.apiEndpoint.createUrl('courses');
-
-    const typesConverter = new TypesConverter();
-    data = typesConverter.toDatabase(data);
-
-    return this.post(url, data);
-  }
-
-  public updateCourse(courseID: number, data: { [key: string]: any }) {
-    const url = this.apiEndpoint.createUrlWithPathVariables('courses', [courseID]);
-    return this.post(url, data);
-  }
-
-  public deleteCourse(courseID: number) {
-    const url = this.apiEndpoint.createUrl('courses/' + courseID + '/delete');
-    return this.post(url, courseID);
-  }
-
-  public getCourseByID(courseID: number): Observable<Course> {
-    const url = this.apiEndpoint.createUrlWithPathVariables('courses', [courseID]);
-    return this.get(url).pipe(
-      map(value => {
-        const res: {[key: string]: any} = JSON.parse(JSON.stringify(value));
-        return new Course(res);
-      }),
-      catchError(error => throwError(error))
-    )
-  }
-
-  public getCourseByName(name: string): Observable<Course> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters(
-      'courses',
-      (qs: QueryStringParameters) => {
-        qs.push('name', name);
-      });
-
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        if (res.length > 1) {
-          throwError('There are more than one course with the name \'' + name + '\'');
-          return null;
-        }
-        else return new Course(res[0]);
-      }),
-      catchError(error => throwError(error))
-    )
-  }
-
-  public getAllCourses(queries?: (queryStringParameters: QueryStringParameters) => void): Observable<Course[]> {
-    const url = this.apiEndpoint.createUrlWithQueryParameters('courses', queries);
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        const courses: Course[] = [];
-
-        res.forEach(course => courses.push(new Course(course)));
-        return courses;
-      }),
-      catchError(error => throwError(error))
-    );
-  }
-
-  public getAllCourseStudents(courseID: number): Observable<User[]> {
-    const url = this.apiEndpoint.createUrl('courses/' + courseID + '/students');
-    return this.get(url).pipe(
-      map(value => {
-        const res: [ {[key: string]: any} ] = JSON.parse(JSON.stringify(value));
-        const students: User[] = [];
-
-        res.forEach(student => students.push(new User(student)));
-        return students;
-      }),
-      catchError(error => throwError(error))
-    );
-  }
 
 
   /*** --------------------------------------------- ***/

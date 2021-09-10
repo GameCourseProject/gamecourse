@@ -7,8 +7,8 @@ import {QueryStringParameters} from "../../_utils/query-string-parameters";
 })
 export class ApiEndpointsService {
 
-  // public readonly API_ENDPOINT: string = 'https://gamecourse/v2/api/v1';
-  public readonly API_ENDPOINT: string = 'http://localhost/gamecourse-v2/backend';
+  // static readonly API_ENDPOINT: string = 'https://gamecourse/v2/api/v1';
+  static readonly API_ENDPOINT: string = 'http://localhost/gamecourse-v2/backend';
 
   constructor() { }
 
@@ -22,7 +22,7 @@ export class ApiEndpointsService {
    * @return string
    */
   public createUrl(action: string): string {
-    const urlBuilder: UrlBuilder = new UrlBuilder(this.API_ENDPOINT, action);
+    const urlBuilder: UrlBuilder = new UrlBuilder(ApiEndpointsService.API_ENDPOINT, action);
     return urlBuilder.toString();
   }
 
@@ -41,7 +41,7 @@ export class ApiEndpointsService {
     queryStringHandler?: (queryStringParameters: QueryStringParameters) => void
   ): string {
 
-    const urlBuilder: UrlBuilder = new UrlBuilder(this.API_ENDPOINT, action);
+    const urlBuilder: UrlBuilder = new UrlBuilder(ApiEndpointsService.API_ENDPOINT, action);
 
     // Push extra query string params
     if (queryStringHandler)
@@ -69,7 +69,7 @@ export class ApiEndpointsService {
         encodedPathVariablesUrl += `/${encodeURIComponent(pathVariable.toString())}`;
     }
 
-    const urlBuilder: UrlBuilder = new UrlBuilder(this.API_ENDPOINT, `${action}${encodedPathVariablesUrl}`);
+    const urlBuilder: UrlBuilder = new UrlBuilder(ApiEndpointsService.API_ENDPOINT, `${action}${encodedPathVariablesUrl}`);
     return urlBuilder.toString();
   }
 
