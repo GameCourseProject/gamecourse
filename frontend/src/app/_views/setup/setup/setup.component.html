@@ -1,32 +1,35 @@
-<div class="big-title">GameCourse</div>
+<div class="container">
+  <div class="big-title">GameCourse</div>
 
-<form class="middle-box" [formGroup]="form" (submit)="onSubmit()">
-  <div class="header">First time setup!</div>
+  <form class="middle-box" [formGroup]="form" (submit)="onSubmit()">
+    <div class="header">First time setup!</div>
 
-  <div class="content">
-    <h2>Create a course!</h2>
+    <div class="content">
+      <h2>Create a course!</h2>
 
-    <!-- Course Name -->
-    <label for="course-name" class="label">Course Name</label>
-    <input type="text" id="course-name" class="input-text" [formControlName]="'courseName'" placeholder="(ex: PCM 2015/2016)"><br>
+      <!-- Course Name -->
+      <label for="course-name" class="label">Course Name</label>
+      <input type="text" id="course-name" class="input-text" [formControlName]="'courseName'" placeholder="(ex: PCM 2015/2016)" [required]="true"><br>
 
-    <!-- Course Color -->
-    <label for="course-color" class="label">Course Color</label>
-    <input type="text" id="course-color" class="input-text" [formControlName]="'courseColor'" placeholder="(ex: #ffffff)"><br>
+      <!-- Course Color -->
+      <label for="course-color" class="label">Course Color</label>
+      <input type="text" id="course-color" class="input-text" [formControlName]="'courseColor'" placeholder="(ex: #ffffff)" [required]="true"><br>
 
-    <!-- Teacher ID -->
-    <label for="teacher-id" class="label">Teacher IST ID</label>
-    <input type="number" id="teacher-id" class="input-number" [formControlName]="'teacherId'" placeholder="(ex: 12345)" min="0" max="999999"><br>
+      <!-- Teacher ID -->
+      <label for="teacher-id" class="label">Teacher IST ID</label>
+      <input type="number" id="teacher-id" class="input-number" [formControlName]="'teacherId'" placeholder="(ex: 12345)" min="0" max="999999" [required]="true"><br>
 
-    <!-- Teacher Username -->
-    <label for="teacher-username" class="label">Teacher Username</label>
-    <input type="text" id="teacher-username" class="input-text" [formControlName]="'teacherUsername'" placeholder="(ex: ist112345)"><br>
+      <!-- Teacher Username -->
+      <label for="teacher-username" class="label">Teacher Username</label>
+      <input type="text" id="teacher-username" class="input-text" [formControlName]="'teacherUsername'" placeholder="(ex: ist112345)" [required]="true"><br>
+    </div>
+
+    <div class="footer"><input type="submit" class="button big" value="Finish!"></div>
+  </form>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="../../../../assets/loader/loader.gif">
   </div>
 
-  <div class="footer"><input type="submit" class="button big" value="Finish!"></div>
-</form>
-
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="../../../../assets/loader/loader.gif">
 </div>

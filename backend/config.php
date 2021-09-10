@@ -4,7 +4,7 @@
     define('API_URL', 'http://localhost/gamecourse-v2/backend');
 
     /** Database Connection */
-    define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecourse');
+    define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecourse-v2');
     define('CONNECTION_USERNAME', 'root');
     define('CONNECTION_PASSWORD', '');
 

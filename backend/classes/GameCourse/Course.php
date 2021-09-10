@@ -338,6 +338,10 @@ class Course
         new CronJob("ClassCheck", API::getValue('course'), null, null, true);
         new CronJob("GoogleSheets", API::getValue('course'), null, null, true);
         Core::$systemDB->delete("course", ["id" => $courseId]);
+        Course::removeCourseDataFolder("autogame/imported-functions/" . strval($courseId));
+        if (file_exists("autogame/config/config_" . strval($courseId) . ".txt")) {
+            unlink("autogame/config/config_" . strval($courseId) . ".txt");
+        }
     }
 
     //insert data to tiers and roles tables 
@@ -378,6 +382,9 @@ class Course
 
     public static function createCourseDataFolder($courseId, $courseName)
     {
+        if (!file_exists(COURSE_DATA_FOLDER))
+            mkdir(COURSE_DATA_FOLDER);
+
         $folder = Course::getCourseDataFolder($courseId, $courseName);
         if (!file_exists($folder))
             mkdir($folder);
@@ -610,7 +617,7 @@ class Course
         mkdir($rulesfolder);
         mkdir($functionsFolder);
         $defaults = file_get_contents($functionsFileDefault);
-        file_put_contents($defaultFunctionsFile, $defaults);
+        file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
         file_put_contents($metadataFile, "");
 
         return $course;

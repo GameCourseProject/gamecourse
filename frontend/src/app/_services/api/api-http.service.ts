@@ -3,7 +3,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 import {ApiEndpointsService} from "./api-endpoints.service";
 
-import {Observable, throwError} from "rxjs";
+import {Observable, of, throwError} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 import {QueryStringParameters} from "../../_utils/query-string-parameters";
 
@@ -34,17 +34,26 @@ export class ApiHttpService {
   /*** ------------------- Setup ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public needsSetup(): Observable<boolean> {
-    const url = this.apiEndpoint.createUrl('requiresSetup');
-    return this.get(url).pipe(
-      map(value => !!value),
-      catchError(error => throwError(error))
-    );
+  public doSetup(formData: FormData): Observable<boolean> {
+    const url = this.apiEndpoint.createUrl('setup.php');
+
+    return this.post(url, formData, this.httpOptions)
+      .pipe( map((res: any) => res['setup']) );
   }
 
-  public doSetup(formData): Observable<ArrayBuffer> {
-    const url = this.apiEndpoint.createUrl('setup');
-    return this.post(url, formData);
+  public isSetupDone(): Observable<boolean> {
+    const url = this.apiEndpoint.createUrl('login.php');
+
+    return this.post(url, new FormData(), this.httpOptions)
+      .pipe(
+        map(res => true),
+        catchError(error => {
+          console.warn(error);
+          if (error.status === 409)
+            return of(false)
+          return of(true);
+        })
+      );
   }
 
 
@@ -58,15 +67,15 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrl('login.php');
 
-    this.http.post(url, formData, this.httpOptions)
+    this.post(url, formData, this.httpOptions)
       .pipe( map((res: any) => res['redirectURL']) )
       .subscribe(url => window.open(url,"_self"));
   }
 
-  public checkLogin(): Observable<boolean> {
+  public isLoggedIn(): Observable<boolean> {
     const url = this.apiEndpoint.createUrl('login.php');
 
-    return this.http.post(url, new FormData(), this.httpOptions)
+    return this.post(url, new FormData(), this.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
@@ -77,7 +86,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('login.php', params);
 
-    return this.http.get(url, this.httpOptions)
+    return this.get(url, this.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 

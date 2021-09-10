@@ -1,0 +1,15 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# these rules tests the class Human from the python script 'human.py'
+# in the functions folder
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rule: R10(M)
+	when:
+		Human(target).gender() == "male"
+	then:
+		transform("male")
+
+rule: R10(F)
+	when:
+		Human(target).gender() == "female"
+	then:
+		transform("female")

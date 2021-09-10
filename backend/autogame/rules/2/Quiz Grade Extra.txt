@@ -1,0 +1,15 @@
+rule: Quiz Grade Extra
+# give last quiz grade
+
+	when:
+		logs = GC.participations.getParticipations(target, "quiz grade")
+		quiz_nine = GC.participations.getParticipationsByDescription(target, "quiz grade", "Quiz 9")
+		flogs = filter_quiz(logs, "Dry Run")
+
+		extra = True if (len(flogs) == 9) else False
+		log = exclude_worst(flogs, quiz_nine)
+		logs = log if extra else quiz_nine
+		len(quiz_nine) > 0
+		
+	then:
+		award_grade(target, "Quiz", logs, extra)

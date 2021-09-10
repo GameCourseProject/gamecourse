@@ -33,15 +33,20 @@ export class SetupComponent implements OnInit {
   onSubmit(): void {
     if (this.form.valid) {
       this.loading = true;
-      const formData = this.form.getRawValue();
+
+      const rawValue = this.form.getRawValue();
+      const formData = new FormData();
+      formData.append('course-name', rawValue.courseName);
+      formData.append('course-color', rawValue.courseColor);
+      formData.append('teacher-id', rawValue.teacherId);
+      formData.append('teacher-username', rawValue.teacherUsername);
 
       this.api.doSetup(formData).subscribe(
-        res => {
-          this.loading = false;
-          this.router.navigate(['/']);
-          console.log(res)
+        setup => {
+          if (setup) this.router.navigate(['']);
         },
-        error => throwError(error)
+        error => throwError(error),
+        () => this.loading = false
       );
     }
   }

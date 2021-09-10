@@ -10,14 +10,16 @@ class RuleSystem
 {
     private $course;
     private $courseId;
-    private $rulesdir = "autogame/rules/";
+    private $rulesdir;
     private $ruletestpath;
     private $ruletestoutput;
     private $templateRulePath = "modules/skills/rules/rule_skill_template_basic.txt";
+    private $templateWildcardRulePath = "modules/skills/rules/rule_skill_template_wildcard.txt";
     private $rules = array();
     private $tags = array();
 
     private $ruleSeparator = "\n\n#########\n\n";
+    const ROOT_FOLDER = "/var/www/html/gamecourse/";
 
 
     public function __construct($course)
@@ -25,10 +27,14 @@ class RuleSystem
         $this->course = $course;
         $this->courseId = $course->getId();
         $this->rulesdir = $this->course->getCourseDataFolder($this->courseId) . "/rules/";
-        $this->ruletestpath = $this->course->getCourseDataFolder($this->courseId) . "/rule-tests/rule.txt";
-        $this->ruletestoutput = $this->course->getCourseDataFolder($this->courseId) . "/rule-tests/rule-test-output.txt";
-        $this->metadatadir = "/var/www/html/gamecourse/autogame/config/config_" . strval($this->courseId) . ".txt";
+
+        $this->ruletestfolder = $this->course->getCourseDataFolder($this->courseId) . "/rule-tests/";
+        $this->ruletestpath = $this->ruletestfolder . "rule.txt";
+        $this->ruletestoutput = $this->ruletestfolder . "rule-test-output.txt";
+
+        $this->metadatadir = self::ROOT_FOLDER . "autogame/config/config_" . strval($this->courseId) . ".txt";
         $this->availableModules = ModuleLoader::getModules();
+        $this->logsfile = self::ROOT_FOLDER . "logs/log_" . strval($this->courseId) . ".txt";
     }
 
     // -------------- AUTOGAME --------------
@@ -73,6 +79,10 @@ class RuleSystem
         return $this->templateRulePath;
     }
 
+    public function getTemplateWildcardRulePath() {
+        return $this->templateWildcardRulePath;
+    }
+
     public function getLastRunDate() {
         $date = Core::$systemDB->select("autogame", ["course" => $this->courseId], "startedRunning");
         return $date;
@@ -90,7 +100,7 @@ class RuleSystem
         // Gets the information about imported GameRules Functions so that the information
         // can be displayed in the rule editor page
         
-        $cmd = "python3 /var/www/html/gamecourse/autogame/get_functions.py " . strval($this->courseId);
+        $cmd = "python3 " . self::ROOT_FOLDER . "autogame/get_functions.py " . strval($this->courseId);
         $output = null;
         exec($cmd, $output);
         $funcs = array();
@@ -272,10 +282,15 @@ class RuleSystem
         return $vars;
     }
 
+    public function getLogs() {
+        $log = file_get_contents($this->logsfile);
+        return $log;
+    }
+
 
     // -------------- EXTRA --------------
 
-    public function ruleFileExists($rulefile, $strict = true) { // TO DO recheck
+    public function ruleFileExists($rulefile, $strict = true) {
         // check if a rule file for a module or type exists
         $directoryListing = scandir($this->rulesdir, SCANDIR_SORT_ASCENDING);
         $ruleList = preg_grep('~\.(txt)$~i', $directoryListing);
@@ -441,13 +456,14 @@ class RuleSystem
 
     public function writeTestRule($rule) {
         // writes the rule to be tested to a txt file
+        mkdir($this->ruletestfolder);
         file_put_contents($this->ruletestpath, $rule);
     }
 
     public function clearRuleOutput() {
         // clears the output file used by the rule testing mechanism to
         // return errors
-        file_put_contents($this->ruletestoutput, "");
+        Module::rrmdir($this->ruletestfolder);
     }
 
     // -------------- RULE OPERATIONS --------------
@@ -519,6 +535,16 @@ class RuleSystem
         array_push($tags, implode("," , $newTag));
         $txt = implode("\n", $tags);
         file_put_contents($this->rulesdir . "tags.csv", $txt);
+    }
+
+    public function swapTags($modules) {
+        foreach ($modules as $i => $mod) {
+            $this->removeRules($mod["filename"]);
+            foreach ($mod["rules"] as $j => $rule) {
+                $ruletxt = $this->generateRule($rule);
+                $this->addRule($ruletxt, null, $rule);
+            }
+        }
     }
 
     public function generateRule($rule) {
@@ -686,10 +712,6 @@ class RuleSystem
     }
 
 
-
-
-
-
     // -------------- SECTION ACTIONS --------------
 
     public function newRule($module, $rule) {
@@ -780,15 +802,19 @@ class RuleSystem
         $this->fixPrecedences();
     }
 
-    
-
-    
 
     // -------------- GENERAL ACTIONS --------------
 
     public function createNewRuleFile($sectionName, $sectionPrecedence) {
-        $file = $this->rulesdir . strval($sectionPrecedence) . " - " . $sectionName . ".txt";
+        $filename = strval($sectionPrecedence) . " - " . $sectionName . ".txt";
+        $file = $this->rulesdir . $filename;
         file_put_contents($file, "");
+        return $filename;
+    }
+
+    public function removeRules($rulefile) {
+        $file = $this->rulesdir . $rulefile;
+        file_put_contents($file , "");
         return $file;
     }
 

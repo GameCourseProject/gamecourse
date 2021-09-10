@@ -1,0 +1,27 @@
+Talkative;Participate in Theoretical Lectures!;participate 2 times;participate 6 times;participate 12 times;-100;-100;-100;True;False;False;;;
+Proficient Tool User;Get creative with gimp, inkscape and the other tools;get four points;get eight points;get fourteen points;300;300;300;True;True;True;4;8;14
+Class Annotator;Find related resources, more information, about class subjects;get four points;get eight points;get twelve points;200;200;200;True;True;True;4;8;12
+Apprentice;"Give answers in the 'questions' or ""Labs"" forums";get four points;get eight points;get twelve points;-50;-50;-50;True;True;True;4;8;12
+Attentive Student;Find relevant bugs in class materials;get four points;get eight points;get twelve points;-50;-50;-50;True;True;True;4;8;12
+Squire;Help your colleagues by writing tutorials of your tree challenges;get four points;get ten points;get sixteen points;-100;-100;-100;True;True;True;4;10;16
+Challenger of the Unknown;Go forth and quest!;participated in the quest;;;1000;;;False;True;False;;;
+Replier Extraordinaire;Respond to the gamification questionnaires;respond to first questionnaire;respond to first two questionnaires;respond to all the questionnaires;-50;-50;-50;True;False;False;;;
+Artist;Show creativity and quality;get four posts of four points;get six posts of four points;get twelve posts of four points;150;150;150;True;True;False;;;
+Hall of Fame;Get into the Hall of Fame;one entry;two entries;three entries;-50;-50;-50;False;False;False;;;
+Right on Time;Don't be late for class!;be on time for 50% of lectures;be on time for 75% of lectures;always be there on time;-50;-50;-50;True;False;False;;;
+Amphitheatre Lover;Show up for theoretical lectures!;be there for 50% of lectures;be there for 75% of lectures;be there for all of the lectures;-75;-75;-75;True;False;False;;;
+Lab Lover;Show up for labs!;be there for 50% of labs;be there for 75% of labs;be there for all of the labs;-50;-50;-50;True;False;False;;;
+Wild Imagination;Suggest presentation subjects;sugest a new subject for your presentation;;;350;;;False;True;False;;;
+Presentation Zen Master;Think about your presentation before opening powerpoint;hand in document about the rationalle of your presentation.;;;250;;;False;False;False;;;
+Popular Choice Award;Have the most liked multimedia presentation;be the third most liked;be the second most liked;be the most liked!;-50;-50;-50;False;False;False;;;
+Hollywood Wannabe;Create great videos for your presentation;remixed video;created own video (single shoot);created own video, relevant edits;150;150;150;False;False;False;;;
+Golden Star;Be creative and do relevant things to help improve the course;perform one task;perform two tasks;perform three tasks;-100;-100;-100;False;False;False;;;
+Lab Master;Excel at the labs;top grade in four graded classes;top grade in six graded classes;top grade in all graded classes;0;0;0;True;False;False;4;6;9
+Quiz Master;Excel at the quizzes;top grade in four quizzes;top grade in six quizzes;top grade in eight quizzes;0;0;0;True;False;False;4;6;8
+Post Master;Post something in the forums;make twenty posts;make thirty posts;make fifty posts;0;0;0;True;True;False;;;
+Book Master;Read class slides;read slides for 50% of lectures;read slides for 75% of lectures;read all lectures slides;0;0;0;True;False;False;;;
+Tree Climber;Reach higher levels of the skill tree;reach level two;reach level three;reach level four;0;0;0;False;True;False;;;
+Lab King;Attend the labs, be the best;Have the highest grade in the labs;;;-80;;;False;False;False;;;
+Presentation King;Present your thing, be the best;Have the highest grade in the presentations;;;-80;;;False;False;False;;;
+Quiz King;Take the quizzes, be the best;Have the highest grade in the quizzes!;;;-80;;;False;False;False;;;
+Course Emperor;Take the course, be the best;Have the highest course grade!;;;-80;;;False;False;False;;;

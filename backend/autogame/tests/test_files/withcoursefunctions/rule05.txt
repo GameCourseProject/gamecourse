@@ -1,0 +1,3 @@
+rule: R5
+then:
+	award_achievement("Course Emperor",1,target,facts[target],"myinfo")

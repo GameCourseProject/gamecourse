@@ -1,0 +1,7 @@
+rule: Course Emperor
+# Take the course, be the best
+# lvl.1: Have the highest course grade!
+	when:
+		check_existance(facts,target,"course emperor")
+	then:
+		award_achievement("Course Emperor",1,target,None,False)

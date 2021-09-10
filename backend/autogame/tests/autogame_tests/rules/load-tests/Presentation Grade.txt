@@ -1,0 +1,8 @@
+rule: Presentation Grade
+# give grades from presentations
+
+	when:
+		logs = GC.participations.getParticipations(target, "presentation grade")
+		len(logs) > 0
+	then:
+		award_grade(target, "Presentation", logs)

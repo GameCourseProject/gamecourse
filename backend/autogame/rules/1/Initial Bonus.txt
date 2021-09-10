@@ -1,0 +1,7 @@
+rule: Initial Bonus
+# Attributed to everyone in the beginning of course
+
+	when:
+		bonus = METADATA["initial_bonus"]
+	then:
+        award_prize(target, "Initial Bonus", bonus)

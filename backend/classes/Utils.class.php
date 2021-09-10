@@ -84,6 +84,22 @@ class Utils {
             die();
     }
 
+    static function deleteDirectory($dir, $exceptions = array(), $deleteSelf = true)   // Deletes directory and all contents
+    {
+        if (is_dir($dir) && !in_array($dir, $exceptions)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . DIRECTORY_SEPARATOR . $object))
+                        self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $object, $exceptions);
+                    else
+                        unlink($dir . DIRECTORY_SEPARATOR . $object);
+                }
+            }
+            if ($deleteSelf) rmdir($dir);
+        }
+    }
+
     private static function unlinkDir($dirname) {
         $dh = dir($dirname);
         while (($fileName = $dh->read()) !== false) {

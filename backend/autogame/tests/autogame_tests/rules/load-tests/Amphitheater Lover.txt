@@ -1,0 +1,23 @@
+rule: Amphitheatre Lover
+# Show up for theoretical lectures!
+# 	lvl.1: be there for 50% of lectures
+# 	lvl.2: be there for 75% of lectures
+# 	lvl.3: be there for all of the lectures
+
+# needs : 200 awards
+
+	when:
+		lectures_alameda = METADATA["all_lectures_alameda"] + METADATA["invited_alameda"]
+		lectures_tagus = METADATA["all_lectures_tagus"] + METADATA["invited_tagus"]
+
+		logs = GC.participations.getAllParticipations(target, "attended lecture")
+		logs += GC.participations.getAllParticipations(target, "attended lecture (late)")
+		attendances = len(logs)
+
+		campus = get_campus(target)
+		lectures = lectures_alameda if campus == 'A' else lectures_tagus
+
+		lvl = compute_lvl(attendances, int(0.5 * lectures), int(0.75 * lectures), lectures)
+
+	then:
+		award_badge(target, "Amphitheatre Lover", lvl, logs)
