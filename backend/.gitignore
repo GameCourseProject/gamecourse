@@ -35,8 +35,8 @@ Thumbs.db
 !/course_data/defaultData/
 autogame/imported-functions/*/
 !/autogame/config/
-!/autogame/config/config_sample_**
 /autogame/config/**
+!/autogame/config/config_sample_**
 photos/**
 !/photos/no-photo.png
 modules/skills/resources/
