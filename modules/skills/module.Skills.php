@@ -237,7 +237,6 @@ class Skills extends Module
         else
             return $this->getSkillsAux($restrictions, 'skillTrees', "normalSkillId", $parent);
     }
-    //
 
     //check if skill has been completed by the user
     public function isSkillCompleted($skill, $user, $courseId)
@@ -305,7 +304,7 @@ class Skills extends Module
         if ($this->addTables("skills", "skill") || empty(Core::$systemDB->select("skill_tree", ["course" => $courseId]))) {
             Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
         }
-        $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
+        $folder = Course::getCourseDataFolder($courseId);
         if (!file_exists($folder . "/skills"))
             mkdir($folder . "/skills");
     }
@@ -1109,8 +1108,10 @@ class Skills extends Module
     public function activeItem($itemId)
     {
         $active = Core::$systemDB->select("skill", ["id" => $itemId], "isActive");
-        Core::$systemDB->update("skill", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
-        //ToDo: ADD RULE MANIPULATION HERE
+        if(!is_null($active)){
+            Core::$systemDB->update("skill", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
+            //ToDo: ADD RULE MANIPULATION HERE
+        }
     }
 
     public function is_configurable()
@@ -1144,41 +1145,44 @@ class Skills extends Module
         $this->saveMaxReward($maxVal, $courseId);
     }
 
-    public function newTier($tier, $courseId)
+    public static function newTier($tier, $courseId)
     {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        $numTiers =  sizeof(Core::$systemDB->selectMultiple("skill_tier"));
+        if(!empty($treeId)){
+            $numTiers =  sizeof(Core::$systemDB->selectMultiple("skill_tier"));
 
-        $tierData = [
-            "tier" => $tier["tier"],
-            "treeId" => $treeId,
-            "reward" => $tier['reward'],
-            "seqId" => $numTiers + 1
-        ];
-
-        Core::$systemDB->insert("skill_tier", $tierData);
+            $tierData = [
+                "tier" => $tier["tier"],
+                "treeId" => $treeId,
+                "reward" => $tier['reward'],
+                "seqId" => $numTiers + 1
+            ];
+    
+            Core::$systemDB->insert("skill_tier", $tierData);
+        }
     }
 
     public function editTier($tier, $courseId)
     {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
+        if(!empty($treeId)){
+            $tierData = [
+                "tier" => $tier['tier'],
+                "treeId" => $treeId,
+                "reward" => intval($tier['reward'])
+            ];
 
-        $tierData = [
-            "tier" => $tier['tier'],
-            "treeId" => $treeId,
-            "reward" => intval($tier['reward'])
-        ];
-
-        Core::$systemDB->update("skill_tier", $tierData, ["treeId" => $treeId, "tier" => $tier["id"]]);
+            Core::$systemDB->update("skill_tier", $tierData, ["treeId" => $treeId, "id" => $tier["id"]]);
+        }
     }
 
     public function deleteTier($tier, $courseId)
     {
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
 
-        $tierSkills = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $tier["id"]]);
+        $tierSkills = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, "tier" => $tier["tier"]]);
         if (empty($tierSkills))
-            Core::$systemDB->delete("skill_tier", ["treeId" => $treeId, "tier" => $tier['id']]);
+            Core::$systemDB->delete("skill_tier", ["treeId" => $treeId, "id" => $tier['id']]);
         else
             echo "This tier has skills. Please delete them first or change their tier.";
     }
@@ -1331,6 +1335,7 @@ class Skills extends Module
         // create rule
         $tiers = Core::$systemDB->selectMultiple("skill_tier", ["treeId" => $treeId], "*", "seqId");
         $course = Course::getCourse($courseId, false);
+        //$this->generateSkillRule($course, $skill['name'], $skill['isWildcard'], $dependencyList);
         $this->generateSkillRule($course, $skill['name'], $dependencyList);
     }
 
@@ -1338,7 +1343,11 @@ class Skills extends Module
     {
 
         $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
-        $originalSkill = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, 'id' => $skill['id']], "*", "name")[0];
+        $originalSkill = Core::$systemDB->selectMultiple("skill", ["treeId" => $treeId, 'id' => $skill['id']], "*", "name");
+        if(empty($originalSkill))
+            return;
+        else
+            $originalSkill = $originalSkill[0];
 
         $skillData = [
             "name" => $skill['name'],
@@ -1351,46 +1360,56 @@ class Skills extends Module
         $folder = Course::getCourseDataFolder($courseId);
         $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']); //ex: course_data/1-PCM/skills/Director
         $descriptionPage = @file_get_contents($path . '.html');
-        if ($descriptionPage === FALSE) {
+        if(!empty($skill['description'])){
+            if ($descriptionPage === FALSE) {
 
-            // update image folder if exists
-            $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
-            if (file_exists($oldDir)) {
-                if (!file_exists($path)) {
-                    // if there are no new images simply rename old folder
-                    rename($oldDir, $path);
-                } else {
-                    // if we have new and old images, copy each image from old folder to the new one
-                    if ($dh = opendir($oldDir)) {
-                        // ignore hidden files and directories
-                        $ignore = array('cgi-bin', '.', '..', '._');
-                        while (($file = readdir($dh)) !== false) {
-                            if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
-                                copy($oldDir . '/' . $file, $path . '/' . $file);
+                // update image folder if exists
+                $oldDir = $folder . '/skills/' . str_replace(' ', '', $originalSkill['name']);
+                if (file_exists($oldDir)) {
+                    if (!file_exists($path)) {
+                        // if there are no new images simply rename old folder
+                        rename($oldDir, $path);
+                    } else {
+                        // if we have new and old images, copy each image from old folder to the new one
+                        if ($dh = opendir($oldDir)) {
+                            // ignore hidden files and directories
+                            $ignore = array('cgi-bin', '.', '..', '._');
+                            while (($file = readdir($dh)) !== false) {
+                                if (!in_array($file, $ignore) and substr($file, 0, 1) != '.') {
+                                    copy($oldDir . '/' . $file, $path . '/' . $file);
+                                }
                             }
+                            closedir($dh);
+                            //rmdir($oldDir);
                         }
-                        closedir($dh);
-                        //rmdir($oldDir);
                     }
+                    //replace image source links in the html file
+                    $htmlDom = new DOMDocument;
+                    $htmlDom->preserveWhiteSpace = false;
+                    $htmlDom->loadHTML($skill['description']);
+                    $this->insertHeadHtml($htmlDom, $skill['name']);
+                    $htmlDom->formatOutput = true;
+                    $imageTags = $htmlDom->getElementsByTagName('img');
+                    foreach ($imageTags as $imageTag) {
+                        //Get the src attribute of the image.
+                        $imgSrc = $imageTag->getAttribute('src');
+                        $exploded = explode("/", $imgSrc);
+                        $imageName = end($exploded);
+                        $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
+                    }
+                    $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
+                } else {
+                    $htmlDom = new DOMDocument;
+
+                    $htmlDom->preserveWhiteSpace = false;
+                    $htmlDom->loadHTML($skill['description']);
+
+                    $this->insertHeadHtml($htmlDom, $skill['name']);
+                    $htmlDom->formatOutput = true;
+                    $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
                 }
-                //replace image source links in the html file
-                $htmlDom = new DOMDocument;
-                $htmlDom->preserveWhiteSpace = false;
-                $htmlDom->loadHTML($skill['description']);
-                $this->insertHeadHtml($htmlDom, $skill['name']);
-                $htmlDom->formatOutput = true;
-                $imageTags = $htmlDom->getElementsByTagName('img');
-                foreach ($imageTags as $imageTag) {
-                    //Get the src attribute of the image.
-                    $imgSrc = $imageTag->getAttribute('src');
-                    $exploded = explode("/", $imgSrc);
-                    $imageName = end($exploded);
-                    $imageTag->setAttribute('src', "../gamecourse/" . $path . '/' . $imageName);
-                }
-                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             } else {
                 $htmlDom = new DOMDocument;
-
                 $htmlDom->preserveWhiteSpace = false;
                 $htmlDom->loadHTML($skill['description']);
 
@@ -1398,14 +1417,6 @@ class Skills extends Module
                 $htmlDom->formatOutput = true;
                 $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
             }
-        } else {
-            $htmlDom = new DOMDocument;
-            $htmlDom->preserveWhiteSpace = false;
-            $htmlDom->loadHTML($skill['description']);
-
-            $this->insertHeadHtml($htmlDom, $skill['name']);
-            $htmlDom->formatOutput = true;
-            $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
         }
         file_put_contents($path . '.html', $skill['description']);
         $descriptionPage = @file_get_contents($path . '.html');
@@ -1524,11 +1535,11 @@ class Skills extends Module
             return null;
         }
         $skillInfo = Core::$systemDB->select("skill left join skill_tree on skill.treeId=skill_tree.id", ["skill.id" => $skill["id"], "course" => $courseId], "name, tier, treeId");
-        Core::$systemDB->delete("skill", ["id" => $skill['id']]);
-
-        $course = Course::getCourse($courseId);
-        $tierSeqId = Core::$systemDB->select("skill_tier", ["tier" => $skillInfo['tier'], "treeId" => $skillInfo['treeId']], "seqId");
-        $this->deleteGeneratedRule($course, $skillInfo['name']);
+        if(!empty($skillInfo)){
+            Core::$systemDB->delete("skill", ["id" => $skill['id']]);
+            $course = Course::getCourse($courseId);
+            $this->deleteGeneratedRule($course, $skillInfo['name']);
+        }
     }
 
     public function transformStringToList($skillDependencyString)
@@ -1608,8 +1619,9 @@ class Skills extends Module
 
     public static function importItems($course, $fileData, $replace = true)
     {
-        $courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("skills");
+        /*$courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("skills");*/
+        $moduleObject = new Skills();
 
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
@@ -1671,9 +1683,10 @@ class Skills extends Module
                     if (empty($tierExists)) {
                         $moduleObject->newTier($tierData, $course);
                     }
-                    if ($itemId) {
+                    if (!empty($itemId)) {
                         if ($replace) {
                             $skillData["id"] = $itemId;
+                            $skillData["description"] = "";
                             $moduleObject->editSkill($skillData, $course);
                         }
                     } else {
@@ -1819,7 +1832,7 @@ class Skills extends Module
         $rule["rulefile"] = $filename;
         $rs->addRule($txt, 0, $rule);
     }
-    
+
     public function deleteGeneratedRule($course, $skillName)
     {
         $rs = new RuleSystem($course);
