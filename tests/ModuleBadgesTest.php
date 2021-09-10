@@ -1010,23 +1010,6 @@ class ModuleBadgesTest extends TestCase
         $this->assertEquals($expectedLevels, $levels);
     }
 
-    public function testImportItemsEmptyFileSuccess(){
-        
-        //Given
-        $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
-        $file = "";
-
-        //When
-        $newBadges = $this->badges->importItems($courseId, $file);
-
-        //Then
-        $this->assertEquals(0, $newBadges);
-        $badges = Core::$systemDB->selectMultiple("badge", []);
-        $levels = Core::$systemDB->selectMultiple("badge_level", []);
-        $this->assertEmpty($levels);
-        $this->assertEmpty($badges);
-    }
-
     /**
      * @dataProvider invalidImportFileProvider
      */
