@@ -30,7 +30,12 @@ yarn-error.log
 Thumbs.db
 
 # GameCourse
-/course_data/
+!/course_data/
+/course_data/**
+!/course_data/defaultData/
+autogame/imported-functions/*/
+!/autogame/config/
+/autogame/config/**
 photos/ist*
 modules/skills/resources/
 modules/quest/resources/
