@@ -1,0 +1,5 @@
+ist13898;3898;Daniel Gonçalves;daniel.goncalves@inesc-id.pt
+ist13909;3909;Joaquim Jorge;jaj@inesc-id.pt
+ist152404;52404;Sandra Gama;sandra.gama@tecnico.ulisboa.pt
+ist173137;73137;André Baltazar;abaltazar8@gmail.com
+ist153934;53934;Hugo Nicolau;ist153934@tecnico.ulisboa.pt
