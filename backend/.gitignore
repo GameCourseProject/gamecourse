@@ -36,7 +36,8 @@ Thumbs.db
 autogame/imported-functions/*/
 !/autogame/config/
 /autogame/config/**
-photos/ist*
+photos/**
+!/photos/no-photo.png
 modules/skills/resources/
 modules/quest/resources/
 cache/
