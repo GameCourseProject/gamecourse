@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {User} from "../../_domain/User";
@@ -13,7 +13,6 @@ export class NavbarComponent implements OnInit {
   user: User;
 
   mainNavigation = [];
-  settingsNavigation = [];
 
   constructor(
     private api: ApiHttpService,
@@ -33,43 +32,76 @@ export class NavbarComponent implements OnInit {
   }
 
   initNavigations(): void {
-    this.mainNavigation = [
-      {
+    const pages = {
+      mainPage: {
         sref: '/main',
-        image: 'images/leaderboard.svg',
+          image: 'images/leaderboard.svg',
         text: 'Main Page',
         class: ''
       },
-      {
+
+      coursesPage: {
         sref: '/courses',
         image: 'images/leaderboard.svg',
         text: 'Courses',
         class: ''
-      }
-    ];
+      },
 
-    if (this.user.isAdmin) {
-      this.mainNavigation.push({
+      usersPage: {
         sref: '/users',
         image: 'images/leaderboard.svg',
         text: 'Users',
         class: ''
-      });
+      },
 
-      this.mainNavigation.push({
+      settings: {
         sref: '/settings',
         image: 'images/gear.svg',
         text: 'Settings',
         class:'dropdown',
-        children:'true'
+        children: [
+          {sref: '/settings/about', text: 'About'},
+          {sref: '/settings/global', text: 'Global'},
+          {sref: '/settings/modules', text: 'Modules'}
+        ]
+      }
+    };
+    this.mainNavigation = [];
+
+    if (window.innerWidth < 915) {
+      this.mainNavigation.push({
+        text: 'Other Pages',
+        class:'dropdown',
+        children: [
+          pages.mainPage,
+          pages.coursesPage
+        ]
       });
 
-      this.settingsNavigation = [
-        {sref: '/settings/about', text: 'About'},
-        {sref: '/settings/global', text: 'Global'},
-        {sref: '/settings/modules', text: 'Modules'}
-      ];
+      if (this.user.isAdmin)
+        this.mainNavigation[this.mainNavigation.length - 1].children.push(pages.usersPage);
+
+    } else if (window.innerWidth < 1000) {
+      this.mainNavigation.push(pages.mainPage);
+      this.mainNavigation.push({
+        text: 'Other Pages',
+        class:'dropdown',
+        children: [
+          pages.coursesPage
+        ]
+      });
+
+      if (this.user.isAdmin)
+        this.mainNavigation[this.mainNavigation.length - 1].children.push(pages.usersPage);
+
+    } else {
+      this.mainNavigation.push(pages.mainPage);
+      this.mainNavigation.push(pages.coursesPage);
+      if (this.user.isAdmin) this.mainNavigation.push(pages.usersPage);
     }
+
+    if (this.user.isAdmin)
+      this.mainNavigation.push(pages.settings);
   }
 
   logout(): void {
@@ -82,6 +114,11 @@ export class NavbarComponent implements OnInit {
         console.error(error.message)
       }
     )
+  }
+
+  @HostListener('window:resize', [])
+  onWindowResize(): void {
+    this.initNavigations();
   }
 
 }

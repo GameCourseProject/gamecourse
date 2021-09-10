@@ -126,8 +126,8 @@ export class User {
       obj.major,
       obj.nickname,
       parseInt(obj.studentNumber),
-      !!obj.isAdmin,
-      !!obj.isActive,
+      !!parseInt(obj.isAdmin),
+      !!parseInt(obj.isActive),
       obj.username,
       obj.authenticationService as AuthType,
       ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png'

@@ -126,7 +126,6 @@ export class Course {
   }
 
   static fromDatabase(obj: CourseDatabase): Course {
-    console.log(obj)
     return new Course(
       parseInt(obj.id),
       obj.name,
@@ -135,8 +134,8 @@ export class Course {
       obj.year,
       obj.defaultLandingPage,
       new Date(obj.lastUpdate),
-      !!obj.isActive,
-      !!obj.isVisible,
+      !!parseInt(obj.isActive),
+      !!parseInt(obj.isVisible),
       obj.roleHierarchy,
       obj.theme,
       obj.nstudents != undefined ? parseInt(obj.nstudents) : undefined
