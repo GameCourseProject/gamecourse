@@ -36,7 +36,7 @@ Thumbs.db
 autogame/imported-functions/*/
 !/autogame/config/
 /autogame/config/**
-!/autogame/config/config_sample_**
+!/autogame/config/samples
 photos/**
 !/photos/no-photo.png
 modules/skills/resources/
