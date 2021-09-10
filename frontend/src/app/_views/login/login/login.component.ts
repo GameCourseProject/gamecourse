@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.api.checkLogin().subscribe(
+    this.api.isLoggedIn().subscribe(
       isLoggedIn => {
         if (isLoggedIn) this.router.navigate(['/main']);
       },

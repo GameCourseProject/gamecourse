@@ -38,7 +38,7 @@ export class LoginGuard implements CanActivate, CanLoad {
   }
 
   check() {
-    return this.api.checkLogin().pipe(
+    return this.api.isLoggedIn().pipe(
       map(
         isLoggedIn => {
           if (isLoggedIn) {
