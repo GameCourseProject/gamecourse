@@ -8,9 +8,9 @@
     <app-sidebar
       [filters]="user.isAdmin ? filters.admin : filters.nonAdmin"
       [orderBy]="user.isAdmin ? orderBy.admin : orderBy.nonAdmin"
-      (onSearch)="searchList($event)"
-      (onFilterChange)="filterList($event)"
-      (onOrderChange)="orderList($event)">
+      (onSearch)="onSearch($event)"
+      (onFilterChange)="onFilterChanged($event)"
+      (onOrderChange)="onOrderByChanged($event)">
     </app-sidebar>
 
     <!-- Main Content -->
@@ -45,8 +45,8 @@
   <div id="allCourses">
     <div class="data-table">
 
-      <!-- Header -->
-      <table id="courses-table">
+      <table *ngIf="this.filteredCourses.length > 0" id="courses-table">
+        <!-- Header -->
         <thead>
         <tr>
           <th class="first-column"></th>
@@ -104,6 +104,7 @@
         </tbody>
       </table>
 
+      <p *ngIf="this.filteredCourses.length === 0" class="centered">No matches found</p>
     </div>
   </div>
 </ng-template>

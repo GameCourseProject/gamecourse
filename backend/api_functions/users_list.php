@@ -93,7 +93,7 @@ API::registerFunction('core', 'createUser', function () {
         if (API::getValue('userHasImage') == 'true') {
             API::requireValues('userImage');
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-            User::saveImage($img, $id);
+            User::saveImage($img, API::getValue('userUsername'));
         }
     } else {
         API::error("There is already a student registered with the student number: " . API::getValue('userStudentNumber'));
@@ -121,7 +121,7 @@ API::registerFunction('core', 'editUser', function () {
         if (API::getValue('userHasImage') == 'true') {
             API::requireValues('userImage');
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-            User::saveImage($img, API::getValue('userId'));
+            User::saveImage($img, API::getValue('userUsername'));
         }
     } else {
         API::error("There is no user with that id: " . API::getValue('userId'));
@@ -130,7 +130,6 @@ API::registerFunction('core', 'editUser', function () {
 
 //edit user on the system
 API::registerFunction('core', 'editSelfInfo', function () {
-    API::requireAdminPermission();
     API::requireValues('userHasImage', 'userId', 'userName', 'userAuthService', 'userStudentNumber', 'userEmail', 'userUsername');
 
     $user = Core::getLoggedUser();
@@ -143,7 +142,7 @@ API::registerFunction('core', 'editSelfInfo', function () {
     if (API::getValue('userHasImage') == 'true') {
         API::requireValues('userImage');
         $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
-        User::saveImage($img, API::getValue('userId'));
+        User::saveImage($img, API::getValue('userUsername'));
     }
 });
 

@@ -1,10 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import {Course} from "../../../_domain/Course";
-import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {User} from "../../../_domain/User";
-import {orderByNumber, orderByString} from "../../../_utils/order-by";
 import {throwError} from "rxjs";
+
+import {ApiHttpService} from "../../../_services/api/api-http.service";
+
+import {Course} from "../../../_domain/Course";
+import {User} from "../../../_domain/User";
+
+import {orderByNumber, orderByString} from "../../../_utils/order-by";
 import Pickr from "@simonwep/pickr";
+import _ from 'lodash';
+import {removePTCharacters} from "../../../_utils/remove-pt-chars";
 
 @Component({
   selector: 'app-main',
@@ -15,22 +20,28 @@ export class MainComponent implements OnInit {
 
   loading = true;
   loadingAction = false;
+  yearsOptions: string[] = [];
 
   user: User;
 
-  courses: Course[];
+  allCourses: Course[];
   filteredCourses: Course[];
   usingMyCourses: boolean;
+
+  searchQuery: string;
 
   filters = {
     admin: ['Active', 'Inactive', 'Visible', 'Invisible'],
     nonAdmin: []
   };
+  filtersActive: string[];
 
   orderBy = {
     admin: ['Name', 'Short', '# Students', 'Year'],
     nonAdmin: ['Name', 'Year']
-  }
+  };
+  orderByActive: {orderBy: string, sort: number};
+  DEFAULT_SORT = 1;
 
   exports = [
     { module: 'awards', name: 'Awards and Participations' },
@@ -39,7 +50,7 @@ export class MainComponent implements OnInit {
   exportOptions = [];
 
   isNewCourseModalOpen: boolean;
-  newCourse = {
+  newCourse = { // FIXME: make better
     name: null,
     short: null,
     year: null,
@@ -49,8 +60,6 @@ export class MainComponent implements OnInit {
   };
   saving: boolean;
 
-  yearsOptions: string[] = [];
-
   pickr: Pickr;
 
   constructor(
@@ -59,71 +68,126 @@ export class MainComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.getUser();
-    this.getCourses();
     this.getYearsOptions();
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
   getUser(): void {
     this.api.getLoggedUser()
-      .subscribe(user => this.user = user);
+      .subscribe(user => {
+        this.user = user;
+        this.getCourses();
+      });
   }
 
   getCourses(): void {
     this.api.getUserCourses()
       .subscribe(data => {
-        this.courses = data.courses;
-        this.filteredCourses = data.courses.slice(); // using slice so it is a copy by value and not reference
+        this.allCourses = data.courses;
+        this.filteredCourses = _.cloneDeep(data.courses); // deep copy
         this.usingMyCourses = !!data.myCourses;
 
-        this.courses.forEach(course => course.nameUrl = course.name.replace(/\W+/g, ''))
+        this.allCourses.forEach(course => course.nameUrl = course.name.replace(/\W+/g, ''));
 
         if (this.usingMyCourses) {  // non-admin
           // active or non-active courses but must be visible
-          this.courses.filter(course => course.isVisible);
+          this.allCourses.filter(course => course.isVisible);
           this.filteredCourses.filter(course => course.isVisible);
         }
 
-        this.orderList({orderBy: 'Name', sort: 1});
+        this.filtersActive = this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin);
+        this.orderByActive = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: this.DEFAULT_SORT } : { orderBy: this.orderBy.nonAdmin[0], sort: this.DEFAULT_SORT };
+        this.orderList();
 
         this.loading = false;
       });
   }
 
-  searchList(query: string): void {
-    console.log(query)
-    // TODO
+  getYearsOptions(): void {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    const YEARS_BEFORE = 1;
+    const YEARS_AFTER = 5;
+
+    let i = -YEARS_BEFORE;
+    while (currentYear + i < currentYear + YEARS_AFTER) {
+      this.yearsOptions.push((currentYear + i) + '-' + (currentYear + i + 1));
+      i++;
+    }
   }
 
-  filterList(filter: {filter: string, state: boolean}): void {
-    console.log(filter)
-    // TODO
 
+  /*** --------------------------------------------- ***/
+  /*** ---------- Search, Filter & Order ----------- ***/
+  /*** --------------------------------------------- ***/
+
+  onSearch(query: string): void {
+    this.searchQuery = query;
+    this.reduceList();
   }
 
-  orderList(order: {orderBy: string, sort: number}): void {
-    switch (order.orderBy) {
+  onFilterChanged(filter: {filter: string, state: boolean}): void {
+    if (filter.state) {
+      this.filtersActive.push(filter.filter);
+
+    } else {
+      const index = this.filtersActive.findIndex(el => el === filter.filter);
+      this.filtersActive.splice(index, 1);
+    }
+
+    this.reduceList();
+  }
+
+  onOrderByChanged(order: {orderBy: string, sort: number}): void {
+    this.orderByActive = order;
+    this.orderList();
+  }
+
+  reduceList(): void {
+    this.filteredCourses = [];
+
+    this.allCourses.forEach(course => {
+      if (this.isQueryTrueSearch(course) && this.isQueryTrueFilter(course))
+        this.filteredCourses.push(course);
+    });
+
+    this.orderList();
+  }
+
+  orderList(): void {
+    switch (this.orderByActive.orderBy) {
       case "Name":
-        this.filteredCourses.sort((a, b) => orderByString(a.name, b.name, order.sort))
+        this.filteredCourses.sort((a, b) => orderByString(a.name, b.name, this.orderByActive.sort))
         break;
 
       case "Short":
-        this.filteredCourses.sort((a, b) => orderByString(a.short, b.short, order.sort))
+        this.filteredCourses.sort((a, b) => orderByString(a.short, b.short, this.orderByActive.sort))
         break;
 
       case "# Students":
-        this.filteredCourses.sort((a, b) => orderByNumber(a.nrStudents, b.nrStudents, order.sort))
+        this.filteredCourses.sort((a, b) => orderByNumber(a.nrStudents, b.nrStudents, this.orderByActive.sort))
         break;
 
       case "Year":
-        this.filteredCourses.sort((a, b) => orderByString(a.year, b.year, order.sort))
+        this.filteredCourses.sort((a, b) => orderByString(a.year, b.year, this.orderByActive.sort))
         break;
     }
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   toggleActive(courseID: number) {
     this.loadingAction = true;
 
-    const course = this.courses.find(course => course.id === courseID);
+    const course = this.allCourses.find(course => course.id === courseID);
     course.isActive = !course.isActive;
 
     this.api.setCourseActive(course.id, course.isActive)
@@ -136,7 +200,7 @@ export class MainComponent implements OnInit {
   toggleVisible(courseID: number) {
     this.loadingAction = true;
 
-    const course = this.courses.find(course => course.id === courseID);
+    const course = this.allCourses.find(course => course.id === courseID);
     course.isVisible = !course.isVisible;
 
     this.api.setCourseVisible(course.id, course.isVisible)
@@ -163,7 +227,7 @@ export class MainComponent implements OnInit {
       null
     );
 
-    this.courses.push(course);
+    this.allCourses.push(course);
     this.filteredCourses.push(course); // FIXME: remove after filter
     // TODO: filter
 
@@ -185,6 +249,66 @@ export class MainComponent implements OnInit {
       )
   }
 
+  duplicateCourse(): void {
+    // TODO
+  }
+
+  editCourse(): void {
+    // TODO
+  }
+
+  deleteCourse(): void {
+    // TODO
+  }
+
+  importCourse(): void {
+    // TODO
+  }
+
+  exportCourse(): void {
+    // TODO
+  }
+
+  exportAllCourses(): void {
+    // TODO
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  parseForSearching(query: string): string[] {
+    let res: string[];
+    let temp: string;
+    query = removePTCharacters(query);
+
+    res = query.toLowerCase().split(' ');
+
+    temp = query.replace(' ', '').toLowerCase();
+    if (!res.includes(temp)) res.push(temp);
+
+    temp = query.toLowerCase();
+    if (!res.includes(temp)) res.push(temp);
+    return res;
+  }
+
+  isQueryTrueSearch(course: Course): boolean {
+    return !this.searchQuery ||
+      (course.name && !!this.parseForSearching(course.name).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
+      (course.short && !!this.parseForSearching(course.short).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
+      (course.year && !!this.parseForSearching(course.year).find(a => a.includes(this.searchQuery.toLowerCase())));
+  }
+
+  isQueryTrueFilter(course: Course): boolean {
+    for (const filter of this.filtersActive) {
+      if ((filter === 'Active' && course.isActive) || (filter === 'Inactive' && !course.isActive) ||
+        (filter === 'Visible' && course.isVisible) || (filter === 'Invisible' && !course.isVisible))
+        return true;
+    }
+    return false;
+  }
+
   isReadyToSubmit() {
     let isValid = function (text) {
       return (text != "" && text != undefined)
@@ -192,20 +316,6 @@ export class MainComponent implements OnInit {
 
     // Validate inputs
     return isValid(this.newCourse.name) && isValid(this.newCourse.short) && isValid(this.newCourse.year);
-  }
-
-  getYearsOptions(): void {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-
-    const YEARS_BEFORE = 1;
-    const YEARS_AFTER = 5;
-
-    let i = -YEARS_BEFORE;
-    while (currentYear + i < currentYear + YEARS_AFTER) {
-      this.yearsOptions.push((currentYear + i) + '-' + (currentYear + i + 1));
-      i++;
-    }
   }
 
   initColorPicker(): void {
