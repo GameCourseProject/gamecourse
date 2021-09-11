@@ -50,6 +50,10 @@ const routes: Routes = [
     canLoad: [LoginGuard, AdminGuard],
     canActivate: [LoginGuard, AdminGuard]
   },
+  {
+    path: 'docs',
+    loadChildren: () => import('./_views/docs/docs.module').then(mod => mod.DocsModule)
+  },
   { path: '', redirectTo: 'main', pathMatch: 'full' },
   { path: '404', component: PageNotFoundComponent},
   { path: 'no-access', component: NoAccessComponent},

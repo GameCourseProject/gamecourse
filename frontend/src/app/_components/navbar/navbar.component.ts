@@ -1,4 +1,4 @@
-import {Component, HostListener, OnInit} from '@angular/core';
+import {Component, HostListener, Input, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {User} from "../../_domain/User";
@@ -10,6 +10,8 @@ import {User} from "../../_domain/User";
 })
 export class NavbarComponent implements OnInit {
 
+  @Input() docs: boolean = false;     // Whether or not it is docs navbar
+
   user: User;
 
   mainNavigation = [];
@@ -20,7 +22,8 @@ export class NavbarComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.getUserInfo();
+    if (!this.docs) this.getUserInfo();
+    else this.initDocsNavigation();
   }
 
   getUserInfo(): void {
@@ -39,21 +42,18 @@ export class NavbarComponent implements OnInit {
         text: 'Main Page',
         class: ''
       },
-
       coursesPage: {
         sref: '/courses',
         image: 'images/leaderboard.svg',
         text: 'Courses',
         class: ''
       },
-
       usersPage: {
         sref: '/users',
         image: 'images/leaderboard.svg',
         text: 'Users',
         class: ''
       },
-
       settings: {
         sref: '/settings',
         image: 'images/gear.svg',
@@ -102,6 +102,28 @@ export class NavbarComponent implements OnInit {
 
     if (this.user.isAdmin)
       this.mainNavigation.push(pages.settings);
+  }
+
+  initDocsNavigation(): void {
+    const pages = {
+      viewsPage: {
+        sref: '/docs/views',
+        text: 'Views',
+      },
+      functionsPage: {
+        sref: '/docs/functions',
+        text: 'Functions',
+      },
+      modulesPage: {
+        sref: '/docs/modules',
+        text: 'Modules',
+      }
+    };
+    this.mainNavigation = [
+      pages.viewsPage,
+      pages.functionsPage,
+      pages.modulesPage
+    ]
   }
 
   logout(): void {

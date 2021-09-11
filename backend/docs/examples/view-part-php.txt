@@ -1,0 +1,25 @@
+$this->viewHandler->registerPartType('block', null, null,
+    function(&$block) {
+        if (array_key_exists('header', $block)) {
+            $this->viewHandler->callPartParse('value', $block['header']['title']);
+            $this->viewHandler->callPartParse('image', $block['header']['image']);
+        }
+
+        if (array_key_exists('children', $block)) {
+            foreach ($block['children'] as &$child)
+                $this->viewHandler->parsePart($child);
+        }
+    },
+    function(&$block, $viewParams, $visitor) {
+        if (array_key_exists('header', $block)) {
+            $this->viewHandler->callPartProcess('value', $block['header']['title'], $viewParams, $visitor);
+            $this->viewHandler->callPartProcess('image', $block['header']['image'], $viewParams, $visitor);
+        }
+
+        if (array_key_exists('children', $block)) {
+            $this->viewHandler->processRepeat($block['children'], $viewParams, $visitor, function(&$child, $viewParams, $visitor) {
+                $this->viewHandler->processPart($child, $viewParams, $visitor);
+            });
+        }
+    }
+);

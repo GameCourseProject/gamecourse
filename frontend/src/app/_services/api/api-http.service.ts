@@ -155,6 +155,36 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
+  /*** -------------------- Docs -------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public getSchema() { // FIXME: finish up when can enable modules
+    const params = (qs: QueryStringParameters) => {
+      qs.push('list', true);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('docs/functions/getSchema.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res[0]) )
+      .subscribe(courseID => {  // vai buscar o primeiro course identificado pelo id
+
+        const params = (qs: QueryStringParameters) => {
+          qs.push('course', courseID);
+        };
+
+        const url = this.apiEndpoint.createUrlWithQueryParameters('docs/functions/getSchema.php', params);
+console.log(url)
+        return this.get(url, this.httpOptions)
+          .pipe( map((res: any) => res[0]) )
+          .subscribe(libraries => {
+            console.log(libraries)
+          })
+      });
+  }
+
+
+  /*** --------------------------------------------- ***/
   /*** -------------- Helper Functions ------------- ***/
   /*** --------------------------------------------- ***/
 

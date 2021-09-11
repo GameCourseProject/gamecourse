@@ -1,0 +1,23 @@
+<div class="sidebar">
+
+  <!-- Picker -->
+  <ng-container *ngIf="isFunctions">
+    <div class="tab title" id="tab-create">Libraries</div>
+    <div class="tab course-selector">
+      Course: <select ng-options="course for course in courses" ng-model="course"></select>
+    </div>
+  </ng-container>
+
+  <!-- Search -->
+  <div class="tab search" id="find-tab">
+    <input type="text" placeholder="Search.." name="search">
+    <button class="magnifying-glass" id="search-btn"></button>
+  </div>
+
+  <!-- Tabs -->
+  <div *ngIf="!isFunctions" class="tabgroup">
+    <div *ngFor="let tab of tabs; let first = first; let i = index" class="tab" [ngClass]="{'selected': first}"
+         [id]="tab.id" (click)="this.onTabClicked.emit({id: tab.id, index: i})">{{tab.text}}</div>
+  </div>
+
+</div>

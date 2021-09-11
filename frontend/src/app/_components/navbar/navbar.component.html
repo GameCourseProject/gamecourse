@@ -4,14 +4,14 @@
   <a class="logo" [routerLink]="'/'"></a>
 
   <!-- User Info -->
-  <div *ngIf="user" class="user_info">
+  <div *ngIf="!docs && user" class="user_info">
     <div class="user_id">{{user.username}}</div>
     <a class="icon" id="user_icon" [ngStyle]="{'background-image': 'url(' + user.photoUrl + ')'}" [routerLink]="'/my-info'"></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 
   <!-- Menu -->
-  <ul class="menu">
+  <ul class="menu" [ngClass]="{'documentation': docs}">
     <li *ngFor="let link of mainNavigation" class="{{link.class}}">
       <a *ngIf="link.sref" [routerLink]="link.sref" [routerLinkActive]="'active focused'">{{link.text}}</a>
       <a *ngIf="!link.sref">{{link.text}}</a>
