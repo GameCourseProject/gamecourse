@@ -13,6 +13,7 @@ export class ModalComponent implements OnInit {
   @Input() positiveBtnText: string;          // Right btn text
   @Input() positiveBtnDisabled: boolean;     // Whether or not the right btn is disabled
   @Input() actionInProgress?: boolean;       // Show loader while action in progress
+  @Input() innerClickEvents: boolean = true; // Whether to close the modal when clicking outside
 
   @Input() templateRef: TemplateRef<any>;    // Custom template for modal
 
@@ -29,7 +30,7 @@ export class ModalComponent implements OnInit {
 
   clickedOutside(): void {
     if (this.ignore) this.ignore = false;
-    else this.closeBtnClicked.emit();
+    else if (this.innerClickEvents) this.closeBtnClicked.emit();
   }
 
 }

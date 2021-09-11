@@ -7,7 +7,7 @@
   </div>
 
   <!-- Filter -->
-  <div class="filter">
+  <div *ngIf="filters.length > 0" class="filter">
     <div class="title">Filter</div>
     <label class="container" *ngFor="let filter of filters; let i = index">
       {{filter}}
@@ -18,7 +18,7 @@
 
 
   <!-- Order by -->
-  <div class="order-by">
+  <div *ngIf="orderBy.length > 0" class="order-by">
     <div class="title">Order by</div>
     <label class="container" *ngFor="let order of orderBy; let first = first">
       {{order}}
@@ -28,8 +28,8 @@
 
     <!-- Sort -->
     <div class="sort">
-      <div class="triangle icon" [ngClass]="{'checked': sortInput === 1}" id="triangle-up" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
-      <div class="triangle icon" [ngClass]="{'checked': sortInput === -1}" id="triangle-down" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
+      <div class="triangle icon" [ngClass]="{'checked': sortInput === -1}" id="triangle-up" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
+      <div class="triangle icon" [ngClass]="{'checked': sortInput === 1}" id="triangle-down" (click)="sortInput = -sortInput; onOrderChange.emit({orderBy: orderInput, sort: sortInput})"></div>
     </div>
   </div>
 

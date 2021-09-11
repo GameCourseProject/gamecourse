@@ -11,9 +11,11 @@ export class Course {
   private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
   private _nrStudents?: number;
+  private _nameUrl?: string;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
-              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string, nrStudents?: number) {
+              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
+              nrStudents?: number) {
 
     this._id = id;
     this._name = name;
@@ -123,6 +125,14 @@ export class Course {
 
   set nrStudents(value: number) {
     this._nrStudents = value;
+  }
+
+  get nameUrl(): string {
+    return this._nameUrl;
+  }
+
+  set nameUrl(value: string) {
+    this._nameUrl = value;
   }
 
   static fromDatabase(obj: CourseDatabase): Course {

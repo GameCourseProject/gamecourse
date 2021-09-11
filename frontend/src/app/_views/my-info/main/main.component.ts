@@ -56,7 +56,7 @@ export class MainComponent implements OnInit {
 
   isReadyToEdit() {
     let isValid = function (text) {
-      return text != "" && text != undefined && text != null;
+      return text != "" && text != undefined;
     };
 
     // Validate inputs

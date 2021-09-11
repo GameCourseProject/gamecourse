@@ -17,7 +17,7 @@ export class SidebarComponent implements OnInit {
   searchInput: string;
   filtersInput: {filter: string, state: boolean}[] = [];
   orderInput: string;
-  sortInput: number = -1; // 1: ascending, -1: descending
+  sortInput: number = 1; // 1: ascending, -1: descending
 
   constructor() { }
 

@@ -6,7 +6,7 @@ set_time_limit(300);
 
 chdir('../../');
 
-//require_once 'cors.php';
+require_once 'cors.php';
 
 include 'classes/ClassLoader.class.php';
 
