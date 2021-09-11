@@ -6,7 +6,7 @@
   <!-- User Info -->
   <div *ngIf="user" class="user_info">
     <div class="user_id">{{user.username}}</div>
-    <a class="icon" id="user_icon" [ngStyle]="{'background-image': 'url(' + user.photoUrl + ')'}" [routerLink]="'myInfo'"></a>
+    <a class="icon" id="user_icon" [ngStyle]="{'background-image': 'url(' + user.photoUrl + ')'}" [routerLink]="'/my-info'"></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 

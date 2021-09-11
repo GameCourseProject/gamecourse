@@ -26,6 +26,12 @@ const routes: Routes = [
     canActivate: [LoginGuard]
   },
   {
+    path: 'my-info',
+    loadChildren: () => import('./_views/my-info/my-info.module').then(mod => mod.MyInfoModule),
+    canLoad: [LoginGuard],
+    canActivate: [LoginGuard]
+  },
+  {
     path: 'courses',
     loadChildren: () => import('./_views/courses/courses.module').then(mod => mod.CoursesModule),
     canLoad: [LoginGuard],

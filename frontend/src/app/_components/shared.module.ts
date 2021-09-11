@@ -6,6 +6,8 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { SidebarComponent } from './sidebar/sidebar.component';
 import {FormsModule} from "@angular/forms";
 import { NoAccessComponent } from './no-access/no-access.component';
+import { ModalComponent } from './modal/modal.component';
+import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive";
 
 
 @NgModule({
@@ -13,12 +15,15 @@ import { NoAccessComponent } from './no-access/no-access.component';
     NavbarComponent,
     PageNotFoundComponent,
     SidebarComponent,
-    NoAccessComponent
+    NoAccessComponent,
+    ModalComponent,
+    ClickedOutsideDirective
   ],
-    exports: [
-        NavbarComponent,
-        SidebarComponent
-    ],
+  exports: [
+    NavbarComponent,
+    SidebarComponent,
+    ModalComponent
+  ],
   imports: [
     CommonModule,
     RouterModule,

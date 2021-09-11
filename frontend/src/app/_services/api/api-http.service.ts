@@ -11,6 +11,7 @@ import {AuthType} from "../../_domain/AuthType";
 import {Course} from "../../_domain/Course";
 import {User} from "../../_domain/User";
 import {Role} from "../../_domain/Role";
+import {Form} from "@angular/forms";
 
 @Injectable({
   providedIn: 'root'
@@ -135,6 +136,16 @@ export class ApiHttpService {
         (res: any) => (res['data']['courses'])
           .map(obj => Course.fromDatabase(obj))
       ) );
+  }
+
+  public editSelfInfo(formData: FormData): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'editSelfInfo');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, formData, this.httpOptions).pipe();
   }
 
 
