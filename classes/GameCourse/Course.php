@@ -704,7 +704,7 @@ class Course
                     $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
                     //$views = $viewHandler->getViewWithParts($view["id"]);
 
-                    $arrPage = array("roleType" => $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "viewId" => $view["viewId"]);
+                    $arrPage = array("name" => $p["name"], "theme" => $p["theme"], "viewId" => $view["viewId"]);
                     array_push($tempPages, $arrPage);
                 }
 
