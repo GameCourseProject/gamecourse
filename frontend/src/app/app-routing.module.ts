@@ -5,6 +5,7 @@ import {LoginGuard} from "./_guards/login.guard";
 import {RedirectIfLoggedInGuard} from "./_guards/redirect-if-logged-in.guard";
 import {NoAccessComponent} from "./_components/no-access/no-access.component";
 import {RedirectIfSetupDoneGuard} from "./_guards/redirect-if-setup-done.guard";
+import {AdminGuard} from "./_guards/admin.guard";
 
 const routes: Routes = [
   {
@@ -40,14 +41,14 @@ const routes: Routes = [
   {
     path: 'users',
     loadChildren: () => import('./_views/users/users.module').then(mod => mod.UsersModule),
-    canLoad: [LoginGuard],
-    canActivate: [LoginGuard]
+    canLoad: [LoginGuard, AdminGuard],
+    canActivate: [LoginGuard, AdminGuard]
   },
   {
     path: 'settings',
     loadChildren: () => import('./_views/settings/settings.module').then(mod => mod.SettingsModule),
-    canLoad: [LoginGuard],
-    canActivate: [LoginGuard]
+    canLoad: [LoginGuard, AdminGuard],
+    canActivate: [LoginGuard, AdminGuard]
   },
   { path: '', redirectTo: 'main', pathMatch: 'full' },
   { path: '404', component: PageNotFoundComponent},
