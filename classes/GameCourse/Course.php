@@ -702,9 +702,9 @@ class Course
                     $p['course'] = $course;
                     unset($p['id']);
                     $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    $views = $viewHandler->getViewWithParts($view["id"]);
+                    //$views = $viewHandler->getViewWithParts($view["id"]);
 
-                    $arrPage = array("roleType" => $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "views" => $views);
+                    $arrPage = array("roleType" => $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "viewId" => $view["viewId"]);
                     array_push($tempPages, $arrPage);
                 }
 
@@ -720,7 +720,7 @@ class Course
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
                     );
-                    $views = $viewHandler->getViewWithParts($aspect["id"]);
+                    $views = $viewHandler->getViewWithParts($aspect["viewId"], null, true);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
