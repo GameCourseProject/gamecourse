@@ -19,7 +19,8 @@ import {catchError, map} from "rxjs/operators";
 export class AdminGuard implements CanActivate, CanLoad {
 
   constructor(
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private router: Router
   ) { }
 
   canActivate(
@@ -38,7 +39,10 @@ export class AdminGuard implements CanActivate, CanLoad {
 
   check() {
     return this.api.getLoggedUser().pipe(
-      map(user => user.isAdmin ),
+      map(user => {
+        if (user.isAdmin) return true;
+        else return this.router.parseUrl('/');
+      } ),
       catchError(error => throwError(error))
     );
   }
