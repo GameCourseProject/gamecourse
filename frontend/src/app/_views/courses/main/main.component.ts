@@ -47,18 +47,24 @@ export class MainComponent implements OnInit {
     { module: 'awards', name: 'Awards and Participations' },
     { module: 'modules', name: 'Modules' },
   ];
-  exportOptions = [];
+  exportOptions: { [id: number]: { users: boolean, awards: boolean, modules: boolean } } = {};
 
   isNewCourseModalOpen: boolean;
-  newCourse = { // FIXME: make better
+  isDeleteVerificationModalOpen: boolean;
+  isIndividualExportModalOpen: boolean;
+  isExportAllModalOpen: boolean;
+  saving: boolean;
+
+  newCourse = {
     name: null,
     short: null,
     year: null,
     color: null,
-    isActive: false,
-    isVisible: false
+    isActive: null,
+    isVisible: null
   };
-  saving: boolean;
+  courseToDelete: Course;
+  courseToExport: Course;
 
   pickr: Pickr;
 
@@ -91,7 +97,10 @@ export class MainComponent implements OnInit {
         this.filteredCourses = _.cloneDeep(data.courses); // deep copy
         this.usingMyCourses = !!data.myCourses;
 
-        this.allCourses.forEach(course => course.nameUrl = course.name.replace(/\W+/g, ''));
+        this.allCourses.forEach(course => {
+          course.nameUrl = course.name.replace(/\W+/g, '');
+          this.exportOptions[course.id] = { users: true, awards: true, modules: true };
+        });
 
         if (this.usingMyCourses) {  // non-admin
           // active or non-active courses but must be visible
@@ -101,7 +110,7 @@ export class MainComponent implements OnInit {
 
         this.filtersActive = this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin);
         this.orderByActive = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: this.DEFAULT_SORT } : { orderBy: this.orderBy.nonAdmin[0], sort: this.DEFAULT_SORT };
-        this.orderList();
+        this.reduceList();
 
         this.loading = false;
       });
@@ -221,52 +230,84 @@ export class MainComponent implements OnInit {
       this.newCourse.year,
       null,
       null,
-      this.newCourse.isActive,
-      this.newCourse.isVisible,
+      !!this.newCourse.isActive,
+      !!this.newCourse.isVisible,
       null,
       null
     );
 
-    this.allCourses.push(course);
-    this.filteredCourses.push(course); // FIXME: remove after filter
-    // TODO: filter
-
     this.api.createCourse(course)
       .subscribe(
-        done => {
-          this.isNewCourseModalOpen = false;
-          this.newCourse = {
-            name: null,
-            short: null,
-            year: null,
-            color: null,
-            isActive: false,
-            isVisible: false
-          };
-          this.loadingAction = false
+        res => {
+          this.allCourses.push(res);
+          this.exportOptions[res.id] = { users: true, awards: true, modules: true };
+          this.reduceList();
         },
-        error => throwError(error)
+        error => throwError(error),
+        () => {
+          this.isNewCourseModalOpen = false;
+          for (const key of Object.keys(this.newCourse)) {
+            this.newCourse[key] = null;
+          }
+          this.loadingAction = false
+        }
       )
   }
 
-  duplicateCourse(): void {
-    // TODO
+  duplicateCourse(course: Course): void {
+    this.loadingAction = true;
+
+    this.api.duplicateCourse(course) // FIXME: bug mkdir()
+      .subscribe(
+        res => {
+          this.allCourses.push(res);
+          this.exportOptions[res.id] = { users: true, awards: true, modules: true };
+          this.reduceList();
+        },
+        error => throwError(error),
+        () => this.loadingAction = false
+      )
   }
 
   editCourse(): void {
     // TODO
   }
 
-  deleteCourse(): void {
-    // TODO
+  deleteCourse(courseID: number): void {
+    this.loadingAction = true;
+    this.api.deleteCourse(courseID)
+      .subscribe(
+        res => {
+          const index = this.allCourses.findIndex(el => el.id === courseID);
+          this.allCourses.splice(index, 1);
+          this.exportOptions[courseID] = null;
+          this.reduceList();
+        },
+        error => throwError(error),
+        () => {
+          this.isDeleteVerificationModalOpen = false;
+          this.loadingAction = false
+        }
+      )
   }
 
   importCourse(): void {
     // TODO
   }
 
-  exportCourse(): void {
-    // TODO
+  exportCourse(course: Course, options): void {
+    this.saving = true;
+    this.api.exportCourses(course.id, options) // FIXME: not working
+      .subscribe(
+        zip => {
+          console.log(zip)
+        },
+        error => throwError(error),
+        () => {
+          this.isIndividualExportModalOpen = false;
+          this.saving = false
+        }
+      )
   }
 
   exportAllCourses(): void {
@@ -324,7 +365,7 @@ export class MainComponent implements OnInit {
       this.pickr = Pickr.create({
         el: '#new_pickr',
         useAsButton: true,
-        default: '#ffffff',
+        default: 'white',
         theme: 'monolith', // or 'classic', or 'nano',
         components: {
           hue: true,

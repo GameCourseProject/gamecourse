@@ -27,9 +27,6 @@
   </div>
 </div>
 
-<!-- TODO: modals -->
-<!-- TODO: boxes -->
-
 
 <!-- Admin Template -->
 <ng-template #adminTemplate>
@@ -89,16 +86,16 @@
             </label>
           </td>
           <td class="action-column">
-            <div class="icon duplicate_icon" title="Duplicate" ng-click="duplicateCourse(course)"></div>
+            <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateCourse(course)"></div>
           </td>
           <td class="action-column">
-            <div class="icon edit_icon" value="#edit-course" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div>
+            <div class="icon edit_icon" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div>
           </td>
           <td class="action-column">
-            <div class="icon delete_icon" value="#delete-verification-1" title="Remove" onclick="openModal(this)"></div>
+            <div class="icon delete_icon" title="Remove" (click)="courseToDelete = course; isDeleteVerificationModalOpen = true"></div>
           </td>
           <td class="action-column">
-            <div class="icon export_icon_no_outline" value="#export-verification-1" title="Export" onclick="openModal(this)"></div>
+            <div class="icon export_icon_no_outline" title="Export" (click)="courseToExport = course; isIndividualExportModalOpen = true"></div>
           </td>
         </tr>
         </tbody>
@@ -121,11 +118,7 @@
   <app-modal
     [isModalOpen]="isNewCourseModalOpen"
     [id]="'new-course'"
-    [title]="'New Course:'"
     [templateRef]="newCourseModal"
-    [positiveBtnText]="'Save'"
-    [positiveBtnDisabled]="!isReadyToSubmit()"
-    (positiveBtnClicked)="createCourse()"
     (closeBtnClicked)="isNewCourseModalOpen = false"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
@@ -133,44 +126,120 @@
 </ng-container>
 
 <ng-template #newCourseModal>
-  <div class="inputs">
+  <!-- Title -->
+  <div class="title">New Course:</div>
 
-    <!-- Name -->
-    <div class="name full">
-      <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newCourse.name" [required]="true">
-      <label for="name" class="form__label">Name</label>
-    </div>
+  <div class="content">
+    <div class="inputs">
 
-    <div class="row_inputs">
-      <div class="short_name half">
-        <input type="text" class="form__input" id="short_name" placeholder="Short Name *" [(ngModel)]="newCourse.short" [required]="true">
-        <label for="short_name" class="form__label">Short Name</label>
+      <!-- Name -->
+      <div class="name full">
+        <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newCourse.name" [required]="true">
+        <label for="name" class="form__label">Name</label>
       </div>
 
-      <div class="year half right">
-        <input list="years" class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
-        <label for="year" class="form__label">Year</label>
-        <datalist id="years">
-          <option *ngFor="let year of yearsOptions" value="{{year}}"></option>
-        </datalist>
-      </div>
+      <div class="row_inputs">
+        <div class="short_name half">
+          <input type="text" class="form__input" id="short_name" placeholder="Short Name *" [(ngModel)]="newCourse.short" [required]="true">
+          <label for="short_name" class="form__label">Short Name</label>
+        </div>
 
-      <div class="color_picker half">
-        <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="newCourse.color" role="button" aria-label="toggle color picker dialog">
-        <label for="new_pickr" class="form__label">Color</label>
-        <div id="color-sample">
-          <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
-          <div class="frame" [ngStyle]="{'borderColor': newCourse.color || 'lightgray'}" style="border: 1px solid lightgray"></div>
+        <div class="year half right">
+          <input list="years" class="form__input" id="year" placeholder="Year *" [(ngModel)]="newCourse.year" [required]="true">
+          <label for="year" class="form__label">Year</label>
+          <datalist id="years">
+            <option *ngFor="let year of yearsOptions" value="{{year}}"></option>
+          </datalist>
+        </div>
+
+        <div class="color_picker half">
+          <input type="text" class="form__input pickr" id="new_pickr" placeholder="Color *" [(ngModel)]="newCourse.color" role="button" aria-label="toggle color picker dialog">
+          <label for="new_pickr" class="form__label">Color</label>
+          <div id="color-sample">
+            <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
+            <div class="frame" [ngStyle]="{'borderColor': newCourse.color !== 'white' && newCourse.color !== '#ffffff' ? newCourse.color : 'lightgray'}"></div>
+          </div>
         </div>
       </div>
+
+      <div class="row">
+        <div class="on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" [(ngModel)]="newCourse.isActive"><span class="slider round"></span></label></div>
+        <div class="on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" [(ngModel)]="newCourse.isVisible"><span class="slider round"></span></label></div>
+      </div>
     </div>
 
-    <div class="row">
-      <div class="on_off"><span>Active </span><label class="switch"><input id="active" type="checkbox" [(ngModel)]="newCourse.isActive"><span class="slider round"></span></label></div>
-      <div class="on_off"><span>Visible </span><label class="switch"><input id="visible" type="checkbox" [(ngModel)]="newCourse.isVisible"><span class="slider round"></span></label></div>
-    </div>
+    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="createCourse()">Save</button>
   </div>
 </ng-template>
 
 
-<!-- New Course Modal -->
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-verification-' + courseToDelete.id"
+    [text]="'Are you sure you want to delete the Course?'"
+    [target]="courseToDelete.name"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteCourse(courseToDelete.id)"
+    (negativeBtnClicked)="courseToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    [actionInProgress]="saving">
+  </app-verification-modal>
+</ng-container>
+
+
+<!-- Individual Export Modal -->
+<ng-container *ngIf="isIndividualExportModalOpen">
+  <app-modal
+    [isModalOpen]="isIndividualExportModalOpen"
+    [id]="'export-verification-' + courseToExport.id"
+    [templateRef]="individualExportModal"
+    (closeBtnClicked)="isIndividualExportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'export'">
+  </app-modal>
+</ng-container>
+
+<ng-template #individualExportModal>
+
+  <!-- Title -->
+  <div class="title">Export Test Course</div>
+
+  <div class="warning">Select what to export:</div>
+
+  <div class="content">
+    <div id="new_box_tier" class="inputs">
+
+      <div class="row_inputs">
+        <div class="details full config_item">
+
+          <!-- Users -->
+          <div><label class="container">
+            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].users" [disabled]="exportOptions[courseToExport.id].awards" [checked]="exportOptions[courseToExport.id].awards" title="Users have to be exported if &quot;Awards and Participations&quot; is selected.">
+            <span class="checkmark">Users</span>
+          </label></div>
+
+          <!-- Awards & Participations -->
+          <div><label class="container">
+            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].awards">
+            <span class="checkmark">Awards and Participations</span>
+          </label></div>
+
+          <!-- Modules -->
+          <div><label class="container">
+            <input type="checkbox" [(ngModel)]="exportOptions[courseToExport.id].modules">
+            <span class="checkmark">Modules</span>
+          </label></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="cancel" (click)="isIndividualExportModalOpen = false">Cancel</button>
+    <button class="save_btn" (click)="exportCourse(courseToExport, exportOptions[courseToExport.id])">Export</button>
+  </div>
+
+</ng-template>
+
+<!-- TODO: boxes -->

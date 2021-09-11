@@ -1,0 +1,16 @@
+<div *ngIf="isModalOpen" class="modal" [id]="id" style="display: block;">
+  <div class="modal_content {{classList}}" clickedOutside (clickedOutside)="clickedOutside()">
+
+    <!-- Close btn -->
+    <button class="close_btn icon" (click)="closeBtnClicked.emit()"></button>
+
+    <!-- Content -->
+    <ng-container [ngTemplateOutlet]="templateRef"></ng-container>
+
+    <!-- Loader -->
+    <div *ngIf="actionInProgress" id="page-loading">
+      <img src="../../../../assets/loader/loader.gif" alt="loader">
+    </div>
+
+  </div>
+</div>

@@ -6,8 +6,9 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { SidebarComponent } from './sidebar/sidebar.component';
 import {FormsModule} from "@angular/forms";
 import { NoAccessComponent } from './no-access/no-access.component';
-import { ModalComponent } from './modal/modal.component';
+import { ModalComponent } from './modals/modal/modal.component';
 import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive";
+import { VerificationModalComponent } from './modals/verification-modal/verification-modal.component';
 
 
 @NgModule({
@@ -17,12 +18,14 @@ import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive"
     SidebarComponent,
     NoAccessComponent,
     ModalComponent,
-    ClickedOutsideDirective
+    ClickedOutsideDirective,
+    VerificationModalComponent
   ],
   exports: [
     NavbarComponent,
     SidebarComponent,
-    ModalComponent
+    ModalComponent,
+    VerificationModalComponent
   ],
   imports: [
     CommonModule,

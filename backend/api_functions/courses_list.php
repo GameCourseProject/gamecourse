@@ -42,7 +42,8 @@ API::registerFunction('core', 'createCourse', function() {
     if (API::getValue('creationMode') == 'similar')
         API::requireValues('copyFrom');
 
-    Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+    $course = Course::newCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'),(API::getValue('creationMode') == 'similar') ? API::getValue('copyFrom') : null);
+    API::response(array('course' => $course->getData()));
 });
 
 //request to edit an existing course

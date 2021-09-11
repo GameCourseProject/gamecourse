@@ -39,72 +39,75 @@
   <app-modal
     [isModalOpen]="isEditModalOpen"
     [id]="'edit-info'"
-    [title]="'Edit Info:'"
     [templateRef]="editInfo"
-    [positiveBtnText]="'Save'"
-    [positiveBtnDisabled]="!isReadyToEdit()"
-    (positiveBtnClicked)="submitEditUser()"
     (closeBtnClicked)="isEditModalOpen = false"
     [actionInProgress]="saving">
   </app-modal>
 </ng-container>
 
 <ng-template #editInfo>
-  <div id="edit_box" class="inputs">
-    <div class="row_inputs">
+  <!-- Title -->
+  <div class="title">Edit Info:</div>
 
-      <!-- Image -->
-      <div class="image smaller">
-        <div style="height:300px;">
-          <div class="profile_image">
-            <div id="edit_display_profile_image"><img src="{{user.photoUrl}}"></div>
+  <div class="content">
+    <div id="edit_box" class="inputs">
+      <div class="row_inputs">
+
+        <!-- Image -->
+        <div class="image smaller">
+          <div style="height:300px;">
+            <div class="profile_image">
+              <div id="edit_display_profile_image"><img src="{{user.photoUrl}}"></div>
+            </div>
+            <input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg">
           </div>
-          <input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg">
-        </div>
-      </div>
-
-      <!-- Details -->
-      <div class="details bigger right">
-        <div class="container">
-          <input type="text" class="form__input" id="name" placeholder="Name" [(ngModel)]="editUser.name" [disabled]="true">
-          <label for="name" class="form__label">Name</label>
         </div>
 
-        <div class="container">
-          <input type="text" class="form__input" id="nickname" placeholder="Nickname" [(ngModel)]="editUser.nickname">
-          <label for="nickname" class="form__label">Nickname</label>
-        </div>
-
-        <div class="container">
+        <!-- Details -->
+        <div class="details bigger right">
           <div class="container">
-            <input type="text" class="form__input" id="studentNumber" placeholder="Student Number" [(ngModel)]="editUser.studentNumber" [disabled]="true">
-            <label for="studentNumber" class="form__label">Number</label>
+            <input type="text" class="form__input" id="name" placeholder="Name" [(ngModel)]="editUser.name" [disabled]="true">
+            <label for="name" class="form__label">Name</label>
           </div>
-        </div>
 
-        <div class="container">
-          <input type="text" class="form__input" id="email" placeholder="Email *" [(ngModel)]="editUser.email">
-          <label for="email" class="form__label">Email</label>
-        </div>
+          <div class="container">
+            <input type="text" class="form__input" id="nickname" placeholder="Nickname" [(ngModel)]="editUser.nickname">
+            <label for="nickname" class="form__label">Nickname</label>
+          </div>
 
-        <div class="container">
-          <div class="details half">
+          <div class="container">
             <div class="container">
-              <input type="text" class="form__input" id="authService" placeholder="Auth service" [(ngModel)]="editUser.auth" [disabled]="true">
-              <label for="authService" class="form__label">Auth</label>
+              <input type="text" class="form__input" id="studentNumber" placeholder="Student Number" [(ngModel)]="editUser.studentNumber" [disabled]="true">
+              <label for="studentNumber" class="form__label">Number</label>
             </div>
           </div>
 
-          <div class="details half right">
-            <div class="container">
-              <input type="text" class="form__input" id="username" placeholder="Username" [(ngModel)]="editUser.username" disabled="disabled">
-              <label for="username" class="form__label">Username</label>
+          <div class="container">
+            <input type="text" class="form__input" id="email" placeholder="Email *" [(ngModel)]="editUser.email">
+            <label for="email" class="form__label">Email</label>
+          </div>
+
+          <div class="container">
+            <div class="details half">
+              <div class="container">
+                <input type="text" class="form__input" id="authService" placeholder="Auth service" [(ngModel)]="editUser.auth" [disabled]="true">
+                <label for="authService" class="form__label">Auth</label>
+              </div>
+            </div>
+
+            <div class="details half right">
+              <div class="container">
+                <input type="text" class="form__input" id="username" placeholder="Username" [(ngModel)]="editUser.username" disabled="disabled">
+                <label for="username" class="form__label">Username</label>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
-
     </div>
+
+    <button class="save_btn" [disabled]="!isReadyToEdit()" (click)="submitEditUser()">Save</button>
   </div>
 </ng-template>
 
