@@ -12,11 +12,12 @@ import os, sys, config, logging, json
 # Folder where rule files will be defined
 RULES_FOLDER = "rules"
 AUTOSAVE = False
-LOGFILE = '/var/www/html/gamecourse/logs/autogame-python.log'
-IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/autogame/imported-functions"
+BASE_DIR = '/var/www/html/gamecourse_test/'
+LOGFILE_BASE = BASE_DIR + 'logs/log_course_'
+IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse_test/autogame/imported-functions"
 
-def write_to_log(text, course):
-	logfile_path = LOGFILE + str(course) + ".txt"
+def write_to_log(text, course, logfile):
+	logfile_path = logfile + str(course) + ".txt"
 	separator = "-" * 55
 	separator += "\n\n"
 	timestamp = datetime.now()
@@ -30,10 +31,10 @@ def write_to_log(text, course):
 		file.write("\n\n\n")
 
 def get_config_metadata(course):
-	CONFIGFILE = "config_" + str(course) + ".txt"
-	CONFIGPATH = os.path.join(os.getcwd(),"config",CONFIGFILE)
+	configfile = "config_" + str(course) + ".txt"
+	configpath = os.path.join(BASE_DIR, "autogame", "config", configfile)
 	try:
-		with open(CONFIGPATH, 'r') as f:
+		with open(configpath, 'r') as f:
 			lines = f.read()
 			data = lines.split("\n")
 			metadata = {}
@@ -109,22 +110,22 @@ def process_indicators(output, course):
 	
 
 
-def log_start(course, start_date):
-	separator = "=" * 100
+def log_start(course, start_date, logfile):
+	separator = "=" * 80
 	separator += "\n"
-	date = "[" + str(start_date) + "] [Course " + str(course) + "] : AutoGame started running.\n"
-	with open(LOGFILE, 'a+') as file:
+	date = "[" + str(start_date) + "] : AutoGame started running.\n"
+	with open(logfile, 'a+') as file:
 		file.write(separator + date + separator + "\n")
 
-def log_end(course, end_date, targets):
-	separator = "=" * 100
+def log_end(course, end_date, targets, logfile):
+	separator = "=" * 80
 	separator += "\n"
-	date = "[" + str(end_date) + "] [Course " + str(course) + "] : AutoGame finished running.\n\n"
+	date = "[" + str(end_date) + "] : AutoGame finished running.\n\n"
 	details = "Autogame ran for the following targets:\n\n"
 	details += "Unordered:\t" + str(list(targets.keys())) + "\n\n"
 	details += "Ordered:\t" + str(sorted(list(targets.keys()))) + "\n\n"
 
-	with open(LOGFILE, 'a+') as file:
+	with open(logfile, 'a+') as file:
 		file.write(separator + date + details + separator + "\n")
 
 
@@ -173,18 +174,18 @@ if __name__ == "__main__":
 		else:
 			targets_list = sys.argv[3].strip("[]").split(",")
 
+	logfile = LOGFILE_BASE + str(course) + '.txt'
 
 	# change the scripts running location to the folder in which it is located
 	#os.chdir(os.path.dirname(sys.argv[0]))
 	#rulespath = os.path.join(os.getcwd(),RULES_FOLDER)
 
 	# Configure Logging
-	sep = "=" * 100 + "\n"
-	log_date = "[%(asctime)s] [Course " + str(course) + "] [%(levelname)s] : %(message)s\n"
-	error_msg = "=" * 100 + "\n"
+	sep = "=" * 80 + "\n"
+	log_date = "[%(asctime)s] [%(levelname)s] : %(message)s\n"
+	error_msg = "=" * 80 + "\n"
 	log_format = sep + log_date + error_msg
-
-	logging.basicConfig(filename=LOGFILE, filemode='a', format=log_format, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+	logging.basicConfig(filename=logfile, filemode='a', format=log_format, datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
 
 	# Check Autogame Status
 	last_activity, is_running = autogame_init(course)
@@ -202,7 +203,7 @@ if __name__ == "__main__":
 	METADATA = get_config_metadata(course)
 	scope, logs = {"METADATA" : METADATA, "null": None}, {}
 	rs = RuleSystem(path, AUTOSAVE)
-	
+
 	# Process targets
 	if targets_list != None:
 		# if targets were passed in cli
@@ -213,6 +214,7 @@ if __name__ == "__main__":
 		# get targets
 		students = get_targets(course, last_activity, all_targets)
 
+
 	# Clear badge progression before calculating again
 	for el in students.keys():
 		clear_badge_progression(el)
@@ -220,12 +222,11 @@ if __name__ == "__main__":
 	# Save the start date
 	timestamp = datetime.now()
 	start_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-	log_start(course, start_date)
+	log_start(course, start_date, logfile)
 
 	# Import custom course functions
 	functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
 	functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
-
 
 	try:
 		rs_output = rs.fire(students,logs,scope)
@@ -234,15 +235,18 @@ if __name__ == "__main__":
 			timestamp = datetime.now()
 			finish_date = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 			# if no errors in RS - set this instance as non-running
-			#autogame_terminate(course, start_date, finish_date)
-			log_end(course, finish_date, students)
+			autogame_terminate(course, start_date, finish_date)
+			log_end(course, finish_date, students, logfile)
 			
 			# calculate new XP value for each student in targets
 			for el in students.keys():
 				calculate_xp(course, el)
+			
+			sys.exit()
 
 		except Exception as e:
 			logging.error('Connection Refused in autogame_terminate().')
+			logging.error(str(e))
 			sys.exit()
 
 	except Exception as e:
