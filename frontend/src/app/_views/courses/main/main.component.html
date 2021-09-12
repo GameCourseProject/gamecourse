@@ -62,7 +62,7 @@
 
         <!-- Body -->
         <tbody>
-        <tr *ngFor="let course of filteredCourses">
+        <tr *ngFor="let course of filteredCourses" style="cursor: pointer" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl">
           <td class="first-column">
             <div class="profile-icon">
               <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
@@ -109,6 +109,64 @@
 
 <!-- Non-Admin Template -->
 <ng-template #nonAdminTemplate>
+
+  <div id="myCourses">
+
+    <!-- Active -->
+    <div class="section">
+      <div class="divider">
+        <div class="title"><span>Active</span></div>
+      </div>
+
+      <div class="content" id="active_courses">
+        <div class="card" *ngFor="let course of getActiveCourses(true)" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl">
+          <div class="color_box">
+            <div class="box" [ngStyle]="{'background-color': course.color}"></div>
+            <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">
+              <span [ngStyle]="{'color': course.color}">{{course.name}}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div class="course_name">{{course.short || course.name}}</div>
+            <div class="course_year">{{course.year}}</div>
+          </div>
+        </div>
+
+        <div class="error_box">
+          <div id="empty_active" class="error_msg"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Not Active -->
+    <div class="section">
+      <div class="divider">
+        <div class="title"><span>Not Active</span></div>
+      </div>
+
+      <div class="content" id="not_active_courses">
+        <div class="card" *ngFor="let course of getActiveCourses(false)" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl">
+          <div class="color_box">
+            <div class="box" [ngStyle]="{'background-color': course.color}"></div>
+            <div class="frame frame-course" [ngStyle]="{'border': '1px solid ' + course.color}">
+              <span [ngStyle]="{'color': course.color}">{{course.name}}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div class="course_name">{{course.name}}</div>
+            <div class="course_year">{{course.year}}</div>
+          </div>
+        </div>
+
+        <div class="error_box">
+          <div id="empty_notactive" class="error_msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </ng-template>
 

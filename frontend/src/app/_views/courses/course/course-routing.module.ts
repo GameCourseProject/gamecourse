@@ -5,16 +5,12 @@ import {MainComponent} from "./main/main.component";
 const routes: Routes = [
   {
     path: '',
-    component: MainComponent,
-  },
-  {
-    path: ':id/:name',
-    loadChildren: () => import('./course/course.module').then(mod => mod.CourseModule),
-  },
+    component: MainComponent
+  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class CoursesRoutingModule { }
+export class CourseRoutingModule { }

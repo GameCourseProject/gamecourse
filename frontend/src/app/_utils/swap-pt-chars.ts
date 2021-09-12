@@ -1,4 +1,4 @@
-export function removePTCharacters(s: string): string {
+export function swapPTCharacters(s: string): string {
   return s.replace(/[ãáâà]/ig, 'a')
     .replace(/[óôõ]/ig, 'o')
     .replace(/ç/ig, 'c')

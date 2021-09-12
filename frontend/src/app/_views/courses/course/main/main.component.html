@@ -1,0 +1,26 @@
+<app-navbar></app-navbar>
+
+<div style="position: relative">
+  <div *ngIf="!loading" id="course_name" [ngStyle]="{'background-color': course.color}">{{course.name}}</div>
+
+  <div *ngIf="!loading" id="wrapper" class="smaller_window">
+    <!-- conteudo da página -->
+    <div id="content-wrapper">
+      <div><div class="page-block">
+        <div class="header">
+          <img src="assets/icons/awards.svg">
+          <span>{{course.name}}</span>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="loading" id="page-loading">
+      <img src="../../../../../assets/loader/loader.gif" alt="loader">
+    </div>
+  </div>
+
+  <div *ngIf="!loading" class="navfooter">
+    <div class="lastrun">Last Run: {{ruleSystemLastRun.toLocaleString()}}</div>
+  </div>
+</div>

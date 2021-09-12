@@ -155,6 +155,32 @@ export class ApiHttpService {
   /*** -------------- Course related --------------- ***/
   /*** --------------------------------------------- ***/
 
+  public getCourse(courseID: number): Observable<Course> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'getCourse');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+  }
+
+  public getCourseInfo(courseID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'getCourseInfo');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data']));
+  }
+
   public createCourse(course: Course, creationMode: CreationMode = CreationMode.BLANk): Observable<Course> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');

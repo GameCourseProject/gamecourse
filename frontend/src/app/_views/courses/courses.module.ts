@@ -11,11 +11,11 @@ import {FormsModule} from "@angular/forms";
   declarations: [
     MainComponent
   ],
-    imports: [
-        CommonModule,
-        CoursesRoutingModule,
-        SharedModule,
-        FormsModule
-    ]
+  imports: [
+    CommonModule,
+    CoursesRoutingModule,
+    SharedModule,
+    FormsModule
+  ]
 })
 export class CoursesModule { }

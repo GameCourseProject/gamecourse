@@ -1,3 +1,5 @@
+import {swapPTCharacters} from "../_utils/swap-pt-chars";
+
 export class Course {
   private _id: number;
   private _name: string;
@@ -10,8 +12,8 @@ export class Course {
   private _isVisible: boolean;
   private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
+  private _nameUrl: string;
   private _nrStudents?: number;
-  private _nameUrl?: string;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
               lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
@@ -28,6 +30,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
+    this._nameUrl = swapPTCharacters(name).replace(/\W+/g, '');
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 
@@ -119,20 +122,20 @@ export class Course {
     this._theme = value;
   }
 
-  get nrStudents(): number {
-    return this._nrStudents;
-  }
-
-  set nrStudents(value: number) {
-    this._nrStudents = value;
-  }
-
   get nameUrl(): string {
     return this._nameUrl;
   }
 
   set nameUrl(value: string) {
     this._nameUrl = value;
+  }
+
+  get nrStudents(): number {
+    return this._nrStudents;
+  }
+
+  set nrStudents(value: number) {
+    this._nrStudents = value;
   }
 
   static fromDatabase(obj: CourseDatabase): Course {

@@ -6,8 +6,8 @@
     <div *ngIf="!loading" id="mainPage">
       <div class='title'>Welcome to the GameCourse system</div>
       <div id='active_courses_list'>
-        <span class="label">Your active allCourses</span>
-        <span *ngFor="let course of activeCourses"  [routerLink]="'course/id'">{{course.name}}</span>
+        <span class="label">Your active courses</span>
+        <span *ngFor="let course of activeCourses"  [routerLink]="'/courses/' + course.id + '/' + course.nameUrl">{{course.name}}</span>
       </div>
     </div>
   </div>

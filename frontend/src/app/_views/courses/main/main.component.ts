@@ -9,7 +9,7 @@ import {User} from "../../../_domain/User";
 import {orderByNumber, orderByString} from "../../../_utils/order-by";
 import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
-import {removePTCharacters} from "../../../_utils/remove-pt-chars";
+import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 
 @Component({
   selector: 'app-main',
@@ -98,7 +98,6 @@ export class MainComponent implements OnInit {
         this.usingMyCourses = !!data.myCourses;
 
         this.allCourses.forEach(course => {
-          course.nameUrl = course.name.replace(/\W+/g, '');
           this.exportOptions[course.id] = { users: true, awards: true, modules: true };
         });
 
@@ -322,7 +321,7 @@ export class MainComponent implements OnInit {
   parseForSearching(query: string): string[] {
     let res: string[];
     let temp: string;
-    query = removePTCharacters(query);
+    query = swapPTCharacters(query);
 
     res = query.toLowerCase().split(' ');
 
@@ -342,6 +341,9 @@ export class MainComponent implements OnInit {
   }
 
   isQueryTrueFilter(course: Course): boolean {
+    if (!this.user.isAdmin && this.filters.nonAdmin.length === 0)
+      return true;
+
     for (const filter of this.filtersActive) {
       if ((filter === 'Active' && course.isActive) || (filter === 'Inactive' && !course.isActive) ||
         (filter === 'Visible' && course.isVisible) || (filter === 'Invisible' && !course.isVisible))
@@ -383,6 +385,10 @@ export class MainComponent implements OnInit {
         this.newCourse.color = color.toHEXA().toString(0);
       });
     }, 0);
+  }
+
+  getActiveCourses(isActive: boolean): Course[] {
+    return this.filteredCourses.filter(course => course.isActive === isActive);
   }
 
 }

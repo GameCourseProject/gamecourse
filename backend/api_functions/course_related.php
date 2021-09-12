@@ -9,7 +9,19 @@ use GameCourse\User;
 use GameCourse\CourseUser;
 use GameCourse\RuleSystem;
 
+// get course from db
+API::registerFunction('core', 'getCourse', function () {
+    API::requireCoursePermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId, false)->getData();
 
+    if ($course) {
+        API::response(array('course' => $course));
+    } else {
+        API::error("There is no course with that id: " . $courseId);
+    }
+});
 
 //get course information, including navbar
 API::registerFunction('core', 'getCourseInfo', function () {
