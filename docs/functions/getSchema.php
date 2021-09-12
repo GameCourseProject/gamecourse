@@ -12,7 +12,7 @@ use \GameCourse\Course;
 
 Core::init();
 
-if (!Core::requireSetup(false))
+if (Core::requireSetup(false))
     die('Please perform setup first!');
 $courses = array_column(Core::getCourses(), "id");
 if (array_key_exists('list', $_GET)) {

@@ -9,7 +9,7 @@ use GameCourse\Core;
 use Modules\Plugin\GoogleSheets;
 
 Core::denyCLI();
-if (!Core::requireSetup(false))
+if (Core::requireSetup(false))
     header('Location: ..');
 
 if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_GET)) {
