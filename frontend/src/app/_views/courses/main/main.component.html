@@ -62,14 +62,14 @@
 
         <!-- Body -->
         <tbody>
-        <tr *ngFor="let course of filteredCourses" style="cursor: pointer" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl">
+        <tr *ngFor="let course of filteredCourses" style="cursor: pointer">
           <td class="first-column">
             <div class="profile-icon">
               <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
               <div class="frame" [ngStyle]="{'borderColor': course.color}" style="border: 1px solid"></div>
             </div>
           </td>
-          <td class="name-column" [routerLink]=""><span>{{course.name}}</span></td>
+          <td class="name-column" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl"><span>{{course.name}}</span></td>
           <td class="ng-binding">{{course.short}}</td>
           <td class="ng-binding">{{course.nrStudents}}</td>
           <td class="ng-binding">{{course.year}}</td>

@@ -324,6 +324,12 @@ select:focus {
   background-image: url("~src/assets/icons/save_icon.svg");
 }
 
+.refresh_icon {
+  background-image: url("~src/assets/icons/refresh_icon.png");
+  width: 3vh !important;
+  height: 3vh !important;
+}
+
 
 /*line of cards structure*/
 
@@ -610,15 +616,6 @@ input:checked+.slider:before {
 /* Image picker */
 
 /* Style the tab */
-.tab {
-  float: left;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
-  width: 25%;
-  height: 300px;
-}
-
-/* Style the buttons inside the tab */
 #image-picker .tab {
   float: left;
   border: 1px solid #ccc;
@@ -627,6 +624,7 @@ input:checked+.slider:before {
   height: 300px;
 }
 
+/* Style the buttons inside the tab */
 #image-picker .tab button {
   display: block;
   background-color: inherit;

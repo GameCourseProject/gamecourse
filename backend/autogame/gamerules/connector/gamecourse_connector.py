@@ -424,7 +424,7 @@ def clear_badge_progression(target):
 	host='localhost', database=database)
 	cursor = cnx.cursor(prepared=True)
 
-	cursor = cnx.cursor(prepared=True)
+	course = config.course
 
 	query = "DELETE from badge_progression where course=%s and user=%s;"
 	cursor.execute(query, (course, target))
@@ -453,7 +453,7 @@ def award_badge(target, badge, lvl, contributions=None, info=None):
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
-		awards_table = "awards"
+		awards_table = "award"
 
 	query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s;"
 
@@ -686,7 +686,7 @@ def award_prize(target, reward_name, xp, contributions=None):
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
-		awards_table = "awards"
+		awards_table = "award"
 
 	query = "SELECT moduleInstance FROM " + awards_table + " where user = %s AND course = %s AND description = %s AND type=%s;"
 
@@ -725,7 +725,7 @@ def award_grade(target, item, contributions=None, extra=None):
 	if config.test_mode:
 		awards_table = "award_test"
 	else:
-		awards_table = "awards"
+		awards_table = "award"
 
 	if item == "Lab":
 		description = "Lab Grade"

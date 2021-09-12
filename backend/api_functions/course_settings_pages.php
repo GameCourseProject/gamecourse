@@ -587,12 +587,6 @@ API::registerFunction('settings', 'ruleGeneralActions', function () {
                 'autogameMetadata' => $metadata
             );
             API::response($data);
-        } else if (API::hasKey('getAutoGameStatus') && !API::hasKey('getMetadataVars')) {
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
         } else if (API::hasKey('resetSocket')) {
             $res = $rs->resetSocketStatus();
             $autogame = $rs->getAutoGameStatus();
@@ -891,13 +885,30 @@ API::registerFunction('settings', 'runRuleSystem', function () {
 
     if ($course != null) {
         $rs = new RuleSystem($course);
-
         if (API::hasKey('runSelectedTargets')) {
             $selectedTargets = API::getValue('selectedTargets');
-            Course::newExternalData(API::getValue('course'), True); // TO DO
+            Course::newExternalData(API::getValue('course'), False, $selectedTargets);
+            $autogame = $rs->getAutoGameStatus();
+            $data = array(
+                'autogameStatus' => $autogame
+            );
+            API::response($data);
+        } else if (API::hasKey('runRuleSystem')) {
+            Course::newExternalData(API::getValue('course'), False);
+            $autogame = $rs->getAutoGameStatus();
+            $data = array(
+                'autogameStatus' => $autogame
+            );
+            API::response($data);
         } else if (API::hasKey('runAllTargets')) {
             Course::newExternalData(API::getValue('course'), True);
+            $autogame = $rs->getAutoGameStatus();
+            $data = array(
+                'autogameStatus' => $autogame
+            );
+            API::response($data);
         } else {
+            // TO DO
         }
     } else {
         API::error("There is no course with that id: " . API::getValue('course'));

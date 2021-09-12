@@ -425,7 +425,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 };
 
                 optionsScope.delete = function (obj, k) {
-                    console.log(k);
+                    //console.log(k);
                     delete obj[k];
                 };
 
@@ -480,7 +480,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             scopeToConfig.curr_variables = {};
                             scopeToConfig.hierarchyLoops = [];
                             scopeToConfig.preview_function = {};
-                            console.log(data);
+                            //console.log(data);
                         });
 
                         var container = $('<div id="edit-container">');
@@ -868,6 +868,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 if (id.includes('events'))
                                     optionsScope.$apply(optionsScope.curr_variables = {});
                                 //$('#preview-exp-button').attr("disabled", false);
+                                optionsScope.checkSuggestions(cm, true);
                             });
 
                             boxCodeMirror.on("blur", function (cm, event) {
@@ -1080,7 +1081,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                                     argn = arg.replace(/^\'+|\'+$/g, '');
                                                     new_args.push(argn);
                                                 });
-                                                console.log(new_args);
+                                                //console.log(new_args);
                                                 optionsScope.$apply(optionsScope.curr_args = new_args);
                                             }
                                         }
@@ -1195,7 +1196,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                                     argn = arg.replace(/^\'+|\'+$/g, '');
                                                     new_args.push(argn);
                                                 });
-                                                console.log(new_args);
+                                                //console.log(new_args);
                                                 optionsScope.$apply(optionsScope.curr_args = new_args);
                                             }
                                         }
@@ -2449,7 +2450,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                 }
             }
         } else {
-            console.log("aqui");
+            // console.log("aqui");
             if (isParent && viewAspects.id == viewId) {
                 return viewAspects;
             }

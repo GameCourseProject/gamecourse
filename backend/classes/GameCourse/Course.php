@@ -342,6 +342,9 @@ class Course
         if (file_exists("autogame/config/config_" . strval($courseId) . ".txt")) {
             unlink("autogame/config/config_" . strval($courseId) . ".txt");
         }
+        if (file_exists("logs/log_course_" . strval($courseId) . ".txt")) {
+            unlink("logs/log_course_" . strval($courseId) . ".txt");
+        }
     }
 
     //insert data to tiers and roles tables 
@@ -382,9 +385,6 @@ class Course
 
     public static function createCourseDataFolder($courseId, $courseName)
     {
-        if (!file_exists(COURSE_DATA_FOLDER))
-            mkdir(COURSE_DATA_FOLDER);
-
         $folder = Course::getCourseDataFolder($courseId, $courseName);
         if (!file_exists($folder))
             mkdir($folder);
@@ -596,6 +596,24 @@ class Course
                     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
                 }
             }
+
+            $functionsFolder = "autogame/imported-functions/" . $courseId . "/";
+            $functionsFolderPrev = "autogame/imported-functions/" . $copyFrom . "/";
+            mkdir($functionsFolder);
+            if (is_dir($functionsFolderPrev)) {
+                $funcDirListing = scandir($functionsFolderPrev, SCANDIR_SORT_ASCENDING);
+                $ruleFileList = preg_grep('~\.(py)$~i', $funcDirListing);
+                foreach ($ruleFileList as $file) {
+                    $txt = file_get_contents($functionsFolderPrev . $file);
+                    file_put_contents($functionsFolder . $file, $txt);
+                }
+            }
+            $metadataFilePrev = "autogame/config/config_" . $copyFrom . ".txt";
+            $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+            if (file_exists($metadataFilePrev)) {
+                $txt = file_get_contents($metadataFilePrev);
+                file_put_contents($metadataFile, $txt);
+            }
         } else {
             $teacherRoleId = Course::insertBasicCourseData(Core::$systemDB, $courseId);
             if ($currentUserId) {
@@ -605,21 +623,24 @@ class Course
             foreach ($modules as $mod) {
                 Core::$systemDB->insert("course_module", ["course" => $courseId, "moduleId" => $mod["moduleId"]]);
             }
+            
+            // autogame configs
+            $rulesfolder = join("/", array($dataFolder, "rules"));
+            $functionsFolder = "autogame/imported-functions/" . $courseId;
+            $functionsFileDefault = "autogame/imported-functions/defaults.py";
+            $defaultFunctionsFile = "/defaults.py";
+            $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+            mkdir($rulesfolder);
+            mkdir($functionsFolder);
+            $defaults = file_get_contents($functionsFileDefault);
+            file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
+            file_put_contents($metadataFile, "");
         }
 
         // insert line in AutoGame table
         Core::$systemDB->insert("autogame", ["course" => $courseId]);
-        $rulesfolder = join("/", array($dataFolder, "rules"));
-        $functionsFolder = "autogame/imported-functions/" . $courseId;
-        $functionsFileDefault = "autogame/imported-functions/defaults.py";
-        $defaultFunctionsFile = "/defaults.py";
-        $metadataFile = "autogame/config/config_" . $courseId . ".txt";
-        mkdir($rulesfolder);
-        mkdir($functionsFolder);
-        $defaults = file_get_contents($functionsFileDefault);
-        file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
-        file_put_contents($metadataFile, "");
-
+        $logsFile = "logs/log_course_" . strval($courseId) . ".txt";
+        file_put_contents($logsFile, "");
         return $course;
     }
 
@@ -705,9 +726,9 @@ class Course
                     $p['course'] = $course;
                     unset($p['id']);
                     $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    $views = $viewHandler->getViewWithParts($view["id"]);
+                    //$views = $viewHandler->getViewWithParts($view["id"]);
 
-                    $arrPage = array("roleType" => $p["roleType"], "name" => $p["name"], "theme" => $p["theme"], "views" => $views);
+                    $arrPage = array("name" => $p["name"], "theme" => $p["theme"], "viewId" => $view["viewId"]);
                     array_push($tempPages, $arrPage);
                 }
 
@@ -723,7 +744,7 @@ class Course
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
                     );
-                    $views = $viewHandler->getViewWithParts($aspect["id"]);
+                    $views = $viewHandler->getViewWithParts($aspect["viewId"], null, true);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);

@@ -1743,27 +1743,22 @@ class Skills extends Module
         }
         else if (sizeof($dependencies) > 0) {
             $ruletxt = explode("%", $newRule);
-
             $linesDependencies = "";
             $conditiontxt = array();
             $nrdependencies = sizeof($dependencies);
-
             foreach ($dependencies as $dependency) {
-                $deptxt = "combo" . strval($nrdependencies) . " = rule_unlocked(" . $dependency[0]['name'] . ", target) and rule_unlocked(" . $dependency[1]['name'] . ", target)\n\t\t";
+                $deptxt = "combo" . strval($nrdependencies) . " = rule_unlocked(\"" . $dependency[0]['name'] . "\", target) and rule_unlocked(\"" . $dependency[1]['name'] . "\", target)\n\t\t";
                 $linesDependencies .= $deptxt;
                 array_push($conditiontxt, "combo" . strval($nrdependencies));
                 $nrdependencies -= 1;
             }
-
             $linesDependencies = trim($linesDependencies, "\t\n");
             $lineCombo = implode(" or ", $conditiontxt);
             $linesDependencies .= "\n\t\t";
             $linesDependencies .= $lineCombo;
-
             array_splice($ruletxt, 1, 0, $linesDependencies);
             $txt = implode("", $ruletxt);
         }
-
         // add generated
         $rule = array();
         $rule["module"] = "skills";
@@ -1771,9 +1766,10 @@ class Skills extends Module
         if ($filename == null) {
             $filename = $rs->createNewRuleFile("skills", 1);
             $rs->fixPrecedences();
+            $filename = $rs->getFilename("skills");
         }
         $rule["rulefile"] = $filename;
-        if (sizeof($dependencies) == 0) { // if is wilcard will be added to top
+        if (sizeof($dependencies) == 0 || $dependencies == null) { // if is wilcard will be added to top
             $rs->addRule($txt, 0, $rule);
         }
         else { // add to end

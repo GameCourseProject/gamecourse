@@ -34,7 +34,7 @@ class RuleSystem
 
         $this->metadatadir = self::ROOT_FOLDER . "autogame/config/config_" . strval($this->courseId) . ".txt";
         $this->availableModules = ModuleLoader::getModules();
-        $this->logsfile = self::ROOT_FOLDER . "logs/log_" . strval($this->courseId) . ".txt";
+        $this->logsfile = self::ROOT_FOLDER . "logs/log_course_" . strval($this->courseId) . ".txt";
     }
 
     // -------------- AUTOGAME --------------
@@ -609,15 +609,20 @@ class RuleSystem
     // Rule Actions
 
     public function addRule($ruleTxt, $position, $rule) {
-
         if ($this->ruleFileExists($rule["rulefile"])) {
             $txt = file_get_contents($this->rulesdir . $rule["rulefile"]);
-            
             $sectionRules = $this->splitRules($txt);
-            if ($position != null)
-                array_splice($sectionRules, $position, 0, $ruleTxt);
-            else
-                array_push($sectionRules, $ruleTxt);
+            if (sizeof($sectionRules) == 1 && empty($sectionRules[0])) {
+                $sectionRules = array($ruleTxt);
+            }
+            else {
+                if ($position === 0) 
+                    array_unshift($sectionRules, $ruleTxt);
+                else if ($position != null)
+                    array_splice($sectionRules, $position, 0, $ruleTxt);
+                else
+                    array_push($sectionRules, $ruleTxt);
+            }
             $content = $this->joinRules($sectionRules);
             $file = file_put_contents($this->rulesdir . $rule["rulefile"], $content);
         }

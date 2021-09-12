@@ -53,12 +53,16 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
 
     // prepare autogame
     $rulesfolder = join("/", array($dataFolder, "rules"));
-    $functionsFolder = "autogame/imported-functions/" . $courseId;
+    $functionsFolder = "autogame/imported-functions/" . strval($courseId);
+    $logsFolder = "logs";
     $functionsFileDefault = "autogame/imported-functions/defaults.py";
     $defaults = file_get_contents($functionsFileDefault);
     $defaultFunctionsFile = "/defaults.py";
-    $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+    $metadataFile = "autogame/config/config_" . strval($courseId) . ".txt";
+    $logsFile = "logs/log_course_" . strval($courseId) . ".txt";
     mkdir($rulesfolder);
+    \Utils::deleteDirectory('logs');
+    mkdir($logsFolder);
     \Utils::deleteDirectory('autogame/imported-functions', array(), false);
     file_put_contents($functionsFileDefault, $defaults);
     mkdir($functionsFolder);
@@ -66,6 +70,7 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
     \Utils::deleteDirectory('autogame/config', array('autogame/config' . DIRECTORY_SEPARATOR . 'samples'), false);
     file_put_contents($metadataFile, "");
+    file_put_contents($logsFile, "");
 
     file_put_contents('setup.done', '');
 
