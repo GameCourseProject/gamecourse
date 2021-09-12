@@ -2,6 +2,9 @@ import {Component, HostListener, Input, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {User} from "../../_domain/User";
+import {Observable} from "rxjs";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-navbar',
@@ -10,20 +13,30 @@ import {User} from "../../_domain/User";
 })
 export class NavbarComponent implements OnInit {
 
-  @Input() docs: boolean = false;     // Whether or not it is docs navbar
+  @Input() updatePhoto?: Observable<void>;
+  @Input() docs?: boolean = false;     // Whether or not it is docs navbar
 
   user: User;
+  visible = true;
 
   mainNavigation = [];
 
   constructor(
     private api: ApiHttpService,
-    private router: Router
+    private router: Router,
+    private sanitizer: DomSanitizer
   ) { }
+
+  sanitize(url: string): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
 
   ngOnInit(): void {
     if (!this.docs) this.getUserInfo();
     else this.initDocsNavigation();
+
+    if (this.updatePhoto)
+      this.updatePhoto.subscribe(() => location.reload())
   }
 
   getUserInfo(): void {

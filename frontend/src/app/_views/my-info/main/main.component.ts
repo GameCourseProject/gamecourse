@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {User} from "../../../_domain/User";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {throwError} from "rxjs";
+import {Subject, throwError} from "rxjs";
 
 @Component({
   selector: 'app-main',
@@ -27,7 +27,8 @@ export class MainComponent implements OnInit {
   };
 
   photoToAdd: File;         // Any photo that comes through the input
-  photo: string;           // Photo to display
+  photo: string;            // Photo to display
+  updatePhotoSubject: Subject<void> = new Subject<void>(); // Trigger photo update on navbar
 
   loading = true;
   isEditModalOpen: boolean;
@@ -113,6 +114,7 @@ export class MainComponent implements OnInit {
       .subscribe(res => {
           this.user.nickname = this.editUser.nickname;
           this.user.email = this.editUser.email;
+          if (data.userHasImage) this.updatePhotoSubject.next();
         },
         error => throwError(error),
         () => {
