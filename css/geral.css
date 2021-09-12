@@ -321,6 +321,12 @@ select:focus {
     background-image: url(/gamecourse/images/save_icon.svg);
 }
 
+.refresh_icon {
+    background-image: url(/gamecourse/images/refresh_icon.png);
+    width: 3vh !important;
+    height: 3vh !important;
+}
+
 /*line of cards structure*/
 
 #myCourses {

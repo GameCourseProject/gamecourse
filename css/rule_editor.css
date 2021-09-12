@@ -132,6 +132,7 @@
     font-family: 'Courier New', monospace;
     flex: 1;
     min-height: 30vh;
+    max-height: 50vh;
     overflow-y: scroll;
     resize: vertical;
 }
@@ -292,7 +293,7 @@ hr.divider-strong {
 
 
 #rule-settings-modal .modal_content {
-    width: 800px;
+    width: 65%;
 }
 
 .config-section {
@@ -678,6 +679,10 @@ h3 .help-icon, .title .info-icon {
 
 /* Edit / Add Rule > Preview */
 
+#preview-line {
+    width: 100%;
+}
+
 .preview-buttons-container {
     width: 50%;
     display: inline-block;
@@ -837,7 +842,8 @@ p.rule-description {
     width: 3vh;
     height: 3vh;
     display: inline-block;
-    border-radius: 2em;
+    border-radius: 3vh;
+    margin-right: 1em;
 }
 
 .run-indicator-green {
@@ -853,8 +859,6 @@ p.rule-description {
     height: 3vh;
     margin-left: 0.5em;
     display: inline-block;
-    background-color: black;
-    border-radius: 2em;
 }
 
 .icon-placement {
@@ -888,4 +892,12 @@ p.rule-description {
     overflow-y: scroll;
     padding-right: 10vh;
     box-sizing: content-box;
+}
+
+.modal_content .delete_icon {
+    height: 25px;
+    width: 25px;
+    opacity: 0.8;
+    margin-left: 10px;
+    background-color: none;
 }

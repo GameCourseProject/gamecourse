@@ -19,7 +19,7 @@ class GameRules{
 	private $courseId;
 	private $host = "127.0.0.1";
 	private $port = "8004";
-	private $logFile = self::ROOT_FOLDER . "autogame/logs/log_course_";
+	private $logFile = self::ROOT_FOLDER . "logs/log_course_";
 	private $autogamePath = self::ROOT_FOLDER . "autogame/run_autogame.py";
 	private $all = False;
 	private $targets = null;
@@ -49,12 +49,12 @@ class GameRules{
 		Core::$systemDB->update("autogame", ["isRunning" => (int)0 ], ["course" => 0]);
 	}
 
-	public function logGameRules($result) {
+	public function logGameRules($result, $type="ERROR") {
 		date_default_timezone_set("Europe/Lisbon");
-		$sep = "\n\n\n=======================================\n";
-		$date = date("Y-m-d H:i:s") ." : php : ERROR \n";
-		$error = "=======================================\n" . $result . "\n";
-		file_put_contents($this->logFile, $sep . $date . $error, FILE_APPEND);
+		$sep = "\n================================================================================\n";
+		$date = "[" . date("Y/m/d H:i:s") ."] : php : " . $type . " \n\n";
+		$error = "\n\n================================================================================\n\n";
+		file_put_contents($this->logFile, $sep . $date . $result . $error, FILE_APPEND);
 	}
 
 	public function checkCourseExists() {
@@ -128,8 +128,8 @@ class GameRules{
 				try {
 			        $conn = stream_socket_accept($socket);
 					if (!$conn){
-						$error= "Could not accept connections on stream_socket_accept in startServerSocket().";
-						$this->logGameRules($error);
+						$error= "No connections received on the server socket.";
+						$this->logGameRules($error, "WARNING");
 						return;
 					}
 
@@ -164,11 +164,8 @@ class GameRules{
 			            $func = trim($function, "\n");
 			            
 			            $course = Course::getCourse(intval($courseNr));
-					
 			   	    	$viewHandler = $course->getModule('views')->getViewHandler();
 					
-					
-
 			            # if args are not empty on call
 			            if (!empty($args)) {
 			                $res = $viewHandler->callFunction($lib, $func, $args);
@@ -233,7 +230,7 @@ class GameRules{
 	// sets a custom error handler for correcting database inconsistencies
 	// set_error_handler("GameRules::noConnectionsHandler");
 	// set logfile path
-	$this->logFile .= $this->courseId . ".txt";
+	$this->logFile .= strval($this->courseId) . ".txt";
 
 		if (!($this->checkCourseExists())) {
 			echo("ERROR: The course given does not exist.");
