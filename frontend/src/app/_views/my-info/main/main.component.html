@@ -16,7 +16,7 @@
 
         <!-- Image -->
 
-        <div class="profile_img"><img src="{{user.photoUrl}}"></div>
+        <div class="profile_img"><img [src]="sanitize(photo)"></div>
 
         <!-- Info -->
         <div class="info">
@@ -57,9 +57,14 @@
         <div class="image smaller">
           <div style="height:300px;">
             <div class="profile_image">
-              <div id="edit_display_profile_image"><img src="{{user.photoUrl}}"></div>
+              <div id="edit_display_profile_image"><img [src]="sanitize(photo)"></div>
             </div>
-            <input type="file" class="form__input" id="edit_profile_image" required="" accept=".png, .jpeg, .jpg">
+            <app-input-file
+              [id]="'edit_profile_image'"
+              [accept]="'image/*'"
+              [classList]="'form__input'"
+              (valueChange)="onFileSelected($event)">
+            </app-input-file>
           </div>
         </div>
 

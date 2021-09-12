@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {User} from "../../../_domain/User";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {throwError} from "rxjs";
 
 @Component({
   selector: 'app-main',
@@ -24,12 +26,16 @@ export class MainComponent implements OnInit {
     username: string
   };
 
+  photoToAdd: File;         // Any photo that comes through the input
+  photo: string;           // Photo to display
+
   loading = true;
   isEditModalOpen: boolean;
   saving: boolean;
 
   constructor(
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -49,9 +55,14 @@ export class MainComponent implements OnInit {
           auth: user.authMethod,
           username: user.username
         };
+        this.photo = user.photoUrl;
 
         this.loading = false;
       })
+  }
+
+  sanitize(url: string): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
   isReadyToEdit() {
@@ -64,40 +75,51 @@ export class MainComponent implements OnInit {
       && isValid(this.editUser.username) && isValid(this.editUser.auth);
   };
 
-  submitEditUser(): void {
-    // TODO
-    // var reqData = {
-    //   course: $scope.course,
-    //   userName: $scope.editUser.userName,
-    //   userId: $scope.editUser.userId,
-    //   userStudentNumber: $scope.editUser.userStudentNumber,
-    //   userNickname: $scope.editUser.userNickname,
-    //   userEmail: $scope.editUser.userEmail,
-    //   userUsername: $scope.editUser.userUsername,
-    //   userAuthService: $scope.editUser.userAuthService,
-    //   userImage: $scope.editUser.userImage,
-    //   userHasImage: $scope.editUser.userHasImage,
-    // };
-    //
-    // const formData = new FormData();
-    // formData.append('course-name', rawValue.courseName);
-    // formData.append('course-color', rawValue.courseColor);
-    // formData.append('teacher-id', rawValue.teacherId);
-    // formData.append('teacher-username', rawValue.teacherUsername);
-    //
-    // this.api.editSelfInfo()
-    //
-    // $smartboards.request("core", "editSelfInfo", reqData, function (data, err) {
-    //   if (err) {
-    //     giveMessage(err.description);
-    //     return;
-    //   }
-    //   $("#edit-info").hide();
-    //   //getUsers();
-    //   window.location.reload();
-    //   // $("#action_completed").append("User: " + $scope.editUser.userName + "-" + $scope.editUser.userStudentNumber + " edited");
-    //   //$("#action_completed").show().delay(3000).fadeOut();
-    // });
+  onFileSelected(files: FileList): void {
+    this.photoToAdd = files.item(0);
+    this.photo = URL.createObjectURL(this.photoToAdd);
+  }
+
+  getBase64(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  async submitEditUser(): Promise<void> {
+    this.saving = true;
+
+    let photoData;
+    if (this.photoToAdd)
+      await this.getBase64(this.photoToAdd).then(data => photoData = data);
+
+    let data = {
+      userName: this.editUser.name,
+      userStudentNumber: this.editUser.studentNumber,
+      userNickname: this.editUser.nickname,
+      userEmail: this.editUser.email,
+      userUsername: this.editUser.username,
+      userAuthService: this.editUser.auth,
+      userHasImage: !!photoData
+    };
+
+    if (data.userHasImage)
+      data['userImage'] = photoData;
+
+    this.api.editSelfInfo(data)
+      .subscribe(res => {
+          this.user.nickname = this.editUser.nickname;
+          this.user.email = this.editUser.email;
+        },
+        error => throwError(error),
+        () => {
+          this.saving = false;
+          this.isEditModalOpen = false;
+          this.photoToAdd = null;
+        })
   }
 
 }

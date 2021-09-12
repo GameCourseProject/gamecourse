@@ -1,0 +1,10 @@
+<input
+  type="file"
+  id="{{id}}"
+  name="{{id}}"
+  [accept]="accept"
+  class="custom-file-input"
+  [multiple]="multiple"
+  (change)="onFilesSelected($event)"
+  [disabled]="disabled"
+  [required]="required">

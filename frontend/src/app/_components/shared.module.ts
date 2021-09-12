@@ -9,6 +9,7 @@ import { NoAccessComponent } from './no-access/no-access.component';
 import { ModalComponent } from './modals/modal/modal.component';
 import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive";
 import { VerificationModalComponent } from './modals/verification-modal/verification-modal.component';
+import { InputFileComponent } from './inputs/general/input-file/input-file.component';
 
 
 @NgModule({
@@ -19,13 +20,15 @@ import { VerificationModalComponent } from './modals/verification-modal/verifica
     NoAccessComponent,
     ModalComponent,
     ClickedOutsideDirective,
-    VerificationModalComponent
+    VerificationModalComponent,
+    InputFileComponent
   ],
   exports: [
     NavbarComponent,
     SidebarComponent,
     ModalComponent,
-    VerificationModalComponent
+    VerificationModalComponent,
+    InputFileComponent
   ],
   imports: [
     CommonModule,

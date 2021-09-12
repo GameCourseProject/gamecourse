@@ -140,14 +140,14 @@ export class ApiHttpService {
       ) );
   }
 
-  public editSelfInfo(formData: FormData): Observable<any> {
+  public editSelfInfo(data: {[key:string]: any}): Observable<any> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'editSelfInfo');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, formData, this.httpOptions).pipe();
+    return this.post(url, data, this.httpOptions).pipe();
   }
 
 
