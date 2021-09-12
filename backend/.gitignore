@@ -25,6 +25,7 @@
 npm-debug.log
 yarn-error.log
 logs/
+config.php
 
 # System Files
 .DS_Store
