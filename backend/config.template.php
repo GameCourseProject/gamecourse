@@ -3,7 +3,7 @@
     define('API_URL', '<API_URL>');
 
     /** Database Connection */
-    define('CONNECTION_STRING', 'mysql:host=<HOST>;dbname=<DD_NAME>');
+    define('CONNECTION_STRING', 'mysql:host=<DB_HOST>;dbname=<DB_NAME>');
     define('CONNECTION_USERNAME', '<DB_USER>');
     define('CONNECTION_PASSWORD', '<DB_PASSWORD>');
 
