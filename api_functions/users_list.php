@@ -130,7 +130,7 @@ API::registerFunction('core', 'editUser', function () {
 
 //edit user on the system
 API::registerFunction('core', 'editSelfInfo', function () {
-    API::requireValues('userHasImage', 'userId', 'userName', 'userAuthService', 'userStudentNumber', 'userEmail', 'userUsername');
+    API::requireValues('userHasImage', 'userName', 'userAuthService', 'userStudentNumber', 'userEmail', 'userUsername');
 
     $user = Core::getLoggedUser();
     $major = $user->getMajor();
