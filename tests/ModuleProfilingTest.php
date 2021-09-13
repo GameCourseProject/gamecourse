@@ -3221,7 +3221,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
 
         //When
-        $result = $this->profiling->checkStatus(1);
+        $result = $this->profiling->checkStatus($courseId);
 
         //Then
         $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
@@ -3247,7 +3247,7 @@ class ModuleProfilingTest extends TestCase
         $baseTime = "2020-06-20 14:30:00";
         Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
 
-        $myfile = fopen($this->profiling->getLogPath(), "w");
+        $myfile = fopen($this->profiling->getLogPath($courseId), "w");
 
         //When
         $result = $this->profiling->checkStatus($courseId);
@@ -3258,7 +3258,7 @@ class ModuleProfilingTest extends TestCase
         $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
-        unlink($this->profiling->getLogPath());
+        unlink($this->profiling->getLogPath($courseId));
     }
 
     public function testCheckStatusErrorMessage(){
@@ -3280,7 +3280,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("profiling_config", ["course" => $courseId, "lastRun" => $baseTime]);
 
         $errorMessage = "Error: An error occured while running the profiler.";
-        file_put_contents($this->profiling->getLogPath(), $errorMessage);
+        file_put_contents($this->profiling->getLogPath($courseId), $errorMessage);
 
         //When
         $result = $this->profiling->checkStatus($courseId);
@@ -3291,7 +3291,7 @@ class ModuleProfilingTest extends TestCase
         $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
-        unlink($this->profiling->getLogPath());
+        unlink($this->profiling->getLogPath($courseId));
     }
 
     /**
@@ -3346,7 +3346,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $fileContent = "{8995: 0, 4578: 1, 6845: 2}+[0, 2, 2, 1, 0]";
-        file_put_contents($this->profiling->getLogPath(), $fileContent);
+        file_put_contents($this->profiling->getLogPath($courseId), $fileContent);
 
         //When
         $result = $this->profiling->checkStatus($courseId);
@@ -3364,7 +3364,7 @@ class ModuleProfilingTest extends TestCase
         $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
         $this->assertNotEquals($baseTime, $newTime);
 
-        unlink($this->profiling->getLogPath());
+        unlink($this->profiling->getLogPath($courseId));
     }
 
     /**
@@ -3419,7 +3419,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $fileContent = "{8995: 0, 4578: 1, 6845: 2}+[0, 2, 2, 1, 0]";
-        file_put_contents($this->profiling->getLogPath(), $fileContent);
+        file_put_contents($this->profiling->getLogPath($courseId), $fileContent);
 
         //When
         $result = $this->profiling->checkStatus($courseId + 1);
@@ -3433,7 +3433,7 @@ class ModuleProfilingTest extends TestCase
         $entry = Core::$systemDB->select("profiling_config", ["course" => $courseId + 1]);
         $this->assertEmpty($entry);
 
-        unlink($this->profiling->getLogPath());
+        unlink($this->profiling->getLogPath($courseId));
     }
 
     public function testCheckStatusNullCourse(){
@@ -3485,7 +3485,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         $fileContent = "{8995: 0, 4578: 1, 6845: 2}+[0, 2, 2, 1, 0]";
-        file_put_contents($this->profiling->getLogPath(), $fileContent);
+        file_put_contents($this->profiling->getLogPath($courseId), $fileContent);
 
         //When
         $result = $this->profiling->checkStatus(null);
@@ -3496,7 +3496,167 @@ class ModuleProfilingTest extends TestCase
         $newTime = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
         $this->assertEquals($baseTime, $newTime);
 
-        unlink($this->profiling->getLogPath());
+        unlink($this->profiling->getLogPath($courseId));
+    }
+
+    public function testCheckPredictorStatusNoFile(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        //When
+        $result = $this->profiling->checkPredictorStatus($courseId);
+
+        //Then
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    public function testCheckPredictorStatusEmptyFile(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        $myfile = fopen($this->profiling->getPredictorPath($courseId), "w");
+
+        //When
+        $result = $this->profiling->checkPredictorStatus($courseId);
+
+        //Then
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+
+        unlink($this->profiling->getPredictorPath($courseId));
+    }
+
+    public function testCheckPredictorStatusErrorMessage(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        $errorMessage = "Error: No awards to analize while running predictor.";
+        file_put_contents($this->profiling->getPredictorPath($courseId), $errorMessage);
+
+        //When
+        $result = $this->profiling->checkPredictorStatus($courseId);
+
+        //Then
+        $this->assertEquals(array("errorMessage" => $errorMessage), $result);
+
+        unlink($this->profiling->getPredictorPath($courseId));
+    }
+
+    public function testCheckPredictorStatusSuccess(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        $nClusters = 6;
+        file_put_contents($this->profiling->getPredictorPath($courseId), $nClusters);
+
+        //When
+        $result = $this->profiling->checkPredictorStatus($courseId);
+
+        //Then
+        $this->assertEquals(array("nClusters" => $nClusters), $result);
+
+        unlink($this->profiling->getPredictorPath($courseId));
+    }
+
+    public function testCheckPredictorStatusInexistingCourse(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        $nClusters = 4;
+        file_put_contents($this->profiling->getPredictorPath($courseId), $nClusters);
+
+        //When
+        $result = $this->profiling->checkPredictorStatus($courseId + 1);
+
+        //Then
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+
+        unlink($this->profiling->getPredictorPath($courseId));
+    }
+
+    public function testCheckPredictorStatusNullCourse(){
+        
+        //Given
+        $courseId = Core::$systemDB->insert("course", [
+            "name" => "Forensics Cyber-Security", 
+            "short" => "FCS", 
+            "year" => "2020-2021", 
+            "color" => "#329da8", 
+            "isActive" => 1, 
+            "isVisible" => 1,
+            "roleHierarchy" => json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "Hacker"], 
+                                                                                                                        ["name" => "Spy"],
+                                                                                                                        ["name" => "Sleuth"]]]]]])
+        ]);
+
+        $nClusters = 4;
+        file_put_contents($this->profiling->getPredictorPath($courseId), $nClusters);
+
+        //When
+        $result = $this->profiling->checkPredictorStatus(null);
+
+        //Then
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+
+        unlink($this->profiling->getPredictorPath($courseId));
     }
 
 }
