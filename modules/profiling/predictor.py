@@ -67,8 +67,9 @@ if __name__ == "__main__":
         f.close()
         sys.exit(1)
 
-    file = open(RESULTS_PATH + "prediction.txt", "w")
+    
     course = sys.argv[1]
+    file = open(RESULTS_PATH + str(course) + "-prediction.txt", "w")
     method = sys.argv[2]
     if course_exists(course):
         try:
