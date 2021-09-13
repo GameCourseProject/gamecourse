@@ -11,8 +11,9 @@ use GameCourse\ModuleLoader;
 class Profiling extends Module {
 
     private $scriptPath = "/var/www/html/gamecourse/modules/profiling/profiler.py";
-    private $logPath = "/var/www/html/gamecourse/modules/profiling/results.txt";
-   
+    private $logPath = "/var/www/html/gamecourse/modules/profiling/";
+    private $predictorPath = "/var/www/html/gamecourse/modules/profiling/predictor.py";
+    
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
     // colors
@@ -28,8 +29,12 @@ class Profiling extends Module {
         parent::addResources('js/');
     }
 
-    public function getLogPath(){
-        return $this->logPath;
+    public function getLogPath($courseId){
+        return $this->logPath . $courseId . "-results.txt";
+    }
+
+    public function getPredictorPath($courseId){
+        return $this->logPath . $courseId . "-prediction.txt";
     }
 
     public function setupData($courseId){
@@ -72,6 +77,12 @@ class Profiling extends Module {
             $time = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
             API::response(array('time' => $time));
         });
+        API::registerFunction('settings', 'runPredictor', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            $method = API::getValue('method');
+            $clusters = $this->runPredictor($courseId, $method);
+        });
         API::registerFunction('settings', 'runProfiler', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
@@ -82,12 +93,12 @@ class Profiling extends Module {
         API::registerFunction('settings', 'checkRunningStatus', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            if(file_exists($this->logPath)){
+            if(file_exists($this->getLogPath($courseId))){
                 $clusters = $this->checkStatus($courseId);
 
                 if(array_key_exists("errorMessage", $clusters)){
-                    if (file_exists($this->logPath)){
-                        unlink($this->logPath);
+                    if (file_exists($this->getLogPath($courseId))){
+                        unlink($this->getLogPath($courseId));
                     }
                     API::error($clusters["errorMessage"], 400);
                 }
@@ -102,12 +113,34 @@ class Profiling extends Module {
                 API::response(array('running' => false));
             }
         });
+        API::registerFunction('settings', 'checkPredictorStatus', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            if(file_exists($this->getPredictorPath($courseId))){
+                $result = $this->checkPredictorStatus($courseId);
+
+                if(array_key_exists("errorMessage", $result)){
+                    if (file_exists($this->getPredictorPath($courseId))){
+                        unlink($this->getPredictorPath($courseId));
+                    }
+                    API::error($result["errorMessage"], 400);
+                }
+                if(empty($result)){
+                    API::response(array('predicting' => true));
+                }
+                unlink($this->getPredictorPath($courseId));
+                API::response(array('nClusters' => $result["nClusters"]));
+            }
+            else {
+                API::response(array('predicting' => false));
+            }
+        });
         API::registerFunction('settings', 'commitClusters', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = API::getValue('clusters');
-            if (file_exists($this->logPath)){
-                unlink($this->logPath);
+            if (file_exists($this->getLogPath($courseId))){
+                unlink($this->getLogPath($courseId));
             }
             $this->processClusterRoles($courseId, $clusters);
             $this->deleteSaved($courseId);
@@ -122,8 +155,8 @@ class Profiling extends Module {
         API::registerFunction('settings', 'deleteSaved', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            if (file_exists($this->logPath)){
-                unlink($this->logPath);
+            if (file_exists($this->getLogPath($courseId))){
+                unlink($this->getLogPath($courseId));
             }
             $this->deleteSaved($courseId);
         });
@@ -454,6 +487,11 @@ class Profiling extends Module {
         return $result;
     }
 
+    public function runPredictor($courseId, $method) {
+        $cmd = "python3 ". $this->predictorPath . " " . strval($courseId) . " " . $method . " > /dev/null &"; //python3
+        system($cmd);
+    }
+
     public function runProfiler($courseId, $nClusters, $minClusterSize) {
         $cmd = "python3 ". $this->scriptPath . " " . strval($courseId) . " " . strval($nClusters) . " " . strval($minClusterSize) . " > /dev/null &"; //python3
         system($cmd);
@@ -461,8 +499,8 @@ class Profiling extends Module {
     
     public function checkStatus($courseId){
         clearstatcache();
-        if(file_exists($this->logPath) and filesize($this->logPath)) {
-            $file = fopen($this->logPath, 'r');
+        if(file_exists($this->getLogPath($courseId)) and filesize($this->getLogPath($courseId))) {
+            $file = fopen($this->getLogPath($courseId), 'r');
             $line = fgets($file);
             fclose($file);
             if (stripos($line,"error") !== false) {
@@ -501,6 +539,23 @@ class Profiling extends Module {
         
         }
         else {
+            return array();
+        }
+    }
+
+    public function checkPredictorStatus($courseId){
+        clearstatcache();
+        if(file_exists($this->getPredictorPath($courseId)) and filesize($this->getPredictorPath($courseId))) {
+            $file = fopen($this->getPredictorPath($courseId), 'r');
+            $line = fgets($file);
+            fclose($file);
+            if (stripos($line,"error") !== false) {
+                return array("errorMessage" => $line);
+            }
+
+            return array("nClusters" => $line);
+        }
+        else{
             return array();
         }
     }

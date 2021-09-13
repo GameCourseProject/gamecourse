@@ -446,11 +446,12 @@ if __name__ == "__main__":
 		f.close()
 		sys.exit(1)
 	
-	file = open(RESULTS_PATH + "results.txt", "w")
 	course = sys.argv[1]
-	num_clusters = int(sys.argv[2])
-	min_cluster_size = int(sys.argv[3])
+	file = open(RESULTS_PATH + course + "-results.txt", "w")
+
 	if course_exists(course):
+		num_clusters = int(sys.argv[2])
+		min_cluster_size = int(sys.argv[3])
 		try:
 			awards = get_awards(course)
 			participations = get_participations(course)
