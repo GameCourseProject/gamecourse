@@ -57,7 +57,15 @@ class ModuleProfilingTest extends TestCase
             array(json_encode([["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "A"], 
                                                                                                            ["name" => "B"], 
                                                                                                            ["name" => "C"]]]]]]), 
-                              ["A", "B", "C"])                                                                                                                //random names, 3 clusters
+                              ["A", "B", "C"]),                                                                                                               //random names, 3 clusters
+            array(json_encode([["name" => "Observer"], ["name" => "Student", "children" => [["name" => "Profiling", "children" => [["name" => "A"],
+                                                                                                                                    ["name" => "B"],
+                                                                                                                                    ["name" => "C"]]]]]]),
+                                ["A", "B", "C"]),                                                                                                                             //student in second position
+            array(json_encode([["name" => "Observer"], ["name" => "Student", "children" => [["name" => "Other"], ["name" => "Profiling", "children" => [["name" => "A"],
+                                                                                                                                                        ["name" => "B"],
+                                                                                                                                                        ["name" => "C"]]]]]]),
+                                ["A", "B", "C"])                                                                                                                              //profiling in second position
         );
     }
 

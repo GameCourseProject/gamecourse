@@ -148,7 +148,7 @@ class Charts extends Module {
             };
             
             //keeps cache of leaderboard chart of user since the last update
-            $updated = $calcDay(Core::$systemDB->select("autogame",["course"=>$params['course']],"date"));
+            $updated = $calcDay(Core::$systemDB->select("autogame",["course"=>$params['course']],"finishedRunning"));
             $cacheId = 'leaderboardEvolution' . $params['course'] . '-' . $userID . '-' . $updated;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
@@ -196,7 +196,7 @@ class Charts extends Module {
                 if (!array_key_exists($student['id'], $firstDayStudent))
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
             }
-            
+
             if ($firstDayStudent[$userID] == PHP_INT_MAX) {
                 $chart['info'] = array(
                     'values' => array(),
