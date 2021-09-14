@@ -63,11 +63,11 @@ class Core
 
     public static function requireSetup($performSetup = true)
     {
-        $setup = file_exists('setup.done');
-        if (!$setup && $performSetup) {
+        $setup = !file_exists('setup.done');
+        if ($setup && $performSetup) {
             $setupOkay = (include 'pages/setup.php');
             if ($setupOkay == 'setup-done') {
-                return true;
+                return false;
             } else
                 exit;
         }
@@ -88,7 +88,7 @@ class Core
         }
         $isLoggedIn = array_key_exists('username', $_SESSION);
         $client = null;
-        if (!$isLoggedIn && $performLogin && Core::requireSetup()) {
+        if (!$isLoggedIn && $performLogin && !Core::requireSetup()) {
             $loginType = (include 'pages/login.php');
             $_SESSION['type'] = $loginType;
             if ($loginType == "google") {

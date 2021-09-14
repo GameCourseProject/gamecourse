@@ -14,7 +14,7 @@ echo '<pre>';
 echo "Guest Login\n";
 
 Core::denyCLI();
-if (!Core::requireSetup(false)) {
+if (Core::requireSetup(false)) {
     API::error("GameCourse is not yet setup.", 400);
 }
 $authorizedEmails = ['alice.dourado@campus.ul.pt'=>100,

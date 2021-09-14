@@ -23,7 +23,7 @@ Core::denyCLI();
 if (!Core::requireLogin(false)) {
     API::error("Not logged in!", 400);
 }
-if (!Core::requireSetup(false))
+if (Core::requireSetup(false))
     API::error("GameCourse is not yet setup.", 400);
 Core::init();
 if (!Core::checkAccess(false))

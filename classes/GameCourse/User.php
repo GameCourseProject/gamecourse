@@ -263,9 +263,9 @@ class User
         Core::$systemDB->delete("game_course_user", ["id" => $userId]);
     }
 
-    public static function saveImage($img, $userId)
+    public static function saveImage($img, $userUsername)
     {
-        file_put_contents("photos/". $userId . ".png", $img);
+        file_put_contents("photos/". $userUsername . ".png", $img);
     }
 
     public static function getImage($userId)

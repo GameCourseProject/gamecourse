@@ -372,16 +372,18 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
             // -------------- SETTINGS : RULE SYSTEM --------------
 
-            $scope.runAllTargets = function() { // TO DO
+            $scope.runAllTargets = function() {
                 $smartboards.request('settings', 'runRuleSystem', {course: $scope.course, runAllTargets: true}, function(data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
                     }
+                    $scope.autogame_status = data.autogameStatus;
+                    $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
                 });
             }
 
-            $scope.runSelectedTargets = function() { // TO DO
+            $scope.runSelectedTargets = function() {
                 var selected_targets = [];
                 targets = angular.copy($scope.selected_targets.sort());
                 targets = targets.map(el => el.id);
@@ -396,13 +398,14 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                         giveMessage(err.description);
                         return;
                     }
+                    $scope.autogame_status = data.autogameStatus;
+                    $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
                 });
                 
             }
 
             $scope.runRuleSystem = function () {
-                // TO DO : Summon rs here
-                $smartboards.request('settings', 'ruleSystemSettings', {course: $scope.course, getAutoGameStatus: true, getMetadataVars: false}, function(data, err) {
+                $smartboards.request('settings', 'runRuleSystem', {course: $scope.course, runRuleSystem: true}, function(data, err) {
                     if (err) {
                         giveMessage(err.description);
                         return;
@@ -499,20 +502,20 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
                 tab_one_section = $('<div class="config-section"></div>');
                 tab_one_section.append($('<h3>Run</h3><span class="settings-desc">Run the rulesystem manually if it is not already running.</span>'));
-                run_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runRuleSystem()" title="Runs RuleSystem for available targets">Run Rule System</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                run_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runRuleSystem()" title="Runs RuleSystem for available targets">Run Rule System</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh"><div class="icon refresh_icon" title="Refresh" ng-click="refreshRuleSystemStatus()"></div></div></div>');
                 tab_one_section.append(run_button);
                 tab_one.append(tab_one_section);
 
                 tab_one_section = $('<div class="config-section"></div>');
                 tab_one_section.append($("<h3>All Targets</h3><span>Run Rule System for all existing course targets (all users with the {{target_role}} type role).</span><br>"));
-                run_all_targets_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runAllTargets()" title="Runs RuleSystem for all course targets">Run All Targets</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                run_all_targets_button = $('<div class="run-left"><button id="run-all-targets-button" class="button" ng-click="runAllTargets()" title="Runs RuleSystem for all course targets">Run All Targets</button></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh"><div class="icon refresh_icon" title="Refresh" ng-click="refreshRuleSystemStatus()"></div></div></div>');
                 
                 tab_one_section.append(run_all_targets_button);
                 tab_one.append(tab_one_section);
 
                 tab_one_section = $('<div class="config-section"></div>');
                 ruletargetsh3 = $("<h3>Select Targets</h3><span>Select targets to run the Rule System for. Type a Student's name in the box below and click enter to select.</span><br>");
-                ruletargetsinput = $('<div class="run-left"><input type="text" id="rulesystem-targets" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Type student name here"></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh" ng-click="refreshRuleSystemStatus()"></div></div>');
+                ruletargetsinput = $('<div class="run-left"><input type="text" id="rulesystem-targets" class="form__input ng-pristine ng-valid ng-empty ng-touched" placeholder="Type student name here"></div><div class="run-right"><div class="run-indicator run-indicator-green" ng-if="run_status"></div><div class="run-indicator run-indicator-red" ng-if="!run_status"></div><div class="run-refresh"><div class="icon refresh_icon" title="Refresh" ng-click="refreshRuleSystemStatus()"></div></div></div>');
                 ruletargetslist = $('<div id="targets-list"></div>');
                 ruletargetslist.append('<div class="rule-targets" ng-repeat="target in selected_targets"><span class="target-text">{{target.id}} - {{target.name}}</span><span class="delete-target delete_icon" ng-click="deleteTarget(target,$index)"></span></div>');
                 run_targets_button = $('<button id="run-all-targets-button" class="button" ng-click="runSelectedTargets()" title="Runs RuleSystem for selected targets">Run Selected Targets</button>');
@@ -624,6 +627,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     }
                     if (data.socketUpdated) {
                         $scope.autogame_status = data.autogameStatus;
+                        $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
                     }
                     else {
                         // open modal or indicate error TODO
@@ -638,6 +642,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                         return;
                     }
                     $scope.autogame_status = data.autogameStatus;
+                    $scope.run_status = Boolean(Number($scope.autogame_status[1]["isRunning"]));
                 });
             }
         }
@@ -1083,6 +1088,7 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             // --------- PREVIEW SECTION ---------
             contpreview = $('<div class="rule-section">');
             preview = $('<div class="rule-part-box" id="preview-box">');
+            previewline = $('<div id="preview-line"></div>');
             previewfunctions = $('<div class="title"></div>');
             previewfunctions.append("<div class='icon editor-icon collapse_icon' style='float: left;' id='preview-box-toggle' title='Toggle' ng-click='togglePreviewSection($event)'></div>");
             previewfunctions.append('<span>Preview Functions</span>');
@@ -1095,7 +1101,8 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
             previewboxlist.append('<span ng-repeat="cmd in preview_history"><li class="request-li">> {{cmd.alias}}</li><span ng-if="cmd.response_array != null"><li class="response-index-li" ng-if="cmd.preview_type == \'function\'">Preview finished with no errors. {{cmd.response_array.length}} line(s) retrieved.</li><span ng-if="cmd.response_array != null"><li class="response-index-li" ng-if="cmd.preview_type == \'rule\'">Execution finished with no errors. {{cmd.response_array.length}} line(s) inserted.</li></span><span ng-if="cmd.response_array" ng-repeat="line in cmd.response_array"><li class="response-index-li">[{{$index}}]:</li><li class="response-item-li"><span ng-repeat="(key,value) in line">{{key}} : {{value}}<span ng-show="!$last">, </span></span></li></span><span ng-if="cmd.response"><li class="response-single-li">{{cmd.response}}</li></span></span>');
             
             previewbox.append(previewboxlist);
-            preview.append(previewfunctions, preview_buttons_container, previewbox);
+            previewline.append(previewfunctions, preview_buttons_container);
+            preview.append(previewline, previewbox);
             contpreview.append(preview);
 
             wrapper.append(cont, contpreview);
@@ -1114,7 +1121,6 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                 });
                 alias = "GC." + funcmod + "." + func + "(" + args + ")";
                 request = {"alias" : alias, "func" : func, "funcmod" : funcmod, "args" : args, "returnType" : return_type};
-                // TO DO find out why two execs?
 
                 $smartboards.request('settings', 'ruleEditorActions', {course: $scope.course, previewFunction: true, lib: funcmod, func: func, args: new_args}, function(data, err) {
                     if (err) {
@@ -1232,16 +1238,20 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
               });
 
               whenCodeMirror.on("focus", function (cm, event) {
-                  // display the module help toolbox
-                $("#rule-then-help").hide();
-                $("#rule-when-help").show();
-                $("#func-info-then").hide();
-              });
-
-              whenCodeMirror.on("blur", function (cm, event) {
-                // when the editor stops being selected
-                $("#preview-function-button").removeClass("preview-active-button");
+                // display the module help toolbox
+              $("#typing-help").hide();
+              $("#rule-then-help").hide();
+              $("#rule-when-help").show();
+              $("#func-info-then").hide();
             });
+
+            whenCodeMirror.on("blur", function (cm, event) {
+              // when the editor stops being selected
+              $("#preview-function-button").removeClass("preview-active-button");
+              $("#typing-help").show();
+              $("#rule-when-help").hide();
+              $("#func-info-when").hide();
+          });
               
 
               whenCodeMirror.on("keyup", function (cm, event) {
@@ -1412,9 +1422,9 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                         $scope.$apply($scope.active_func_when = {});
                         $scope.$apply($scope.curr_functions_when = $scope.grfunctions);
                         
-                        function_typed = textBefore.split(" "); 
+                        function_typed = textBefore.split("="); 
+                        function_typed = function_typed.map(s => s.trim());
                         typed = function_typed[function_typed.length-1];
-
                         
                         if (typed != "") {
                             if (typed.match(/[A-Za-z_]+.*$/)) {
@@ -1498,9 +1508,17 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
 
             thenCodeMirror.on("focus", function (cm, event) {
                 // display the func help toolbox
+                $("#typing-help").hide();
                 $("#rule-when-help").hide();
                 $("#rule-then-help").show();
                 $("#func-info-when").hide();
+            });
+
+            thenCodeMirror.on("blur", function (cm, event) {
+                // when the editor stops being selected
+                $("#typing-help").show();
+                $("#rule-then-help").hide();
+                $("#func-info-then").hide();
             });
 
             thenCodeMirror.on("keyup", function (cm, event) {
@@ -1518,7 +1536,8 @@ app.controller('CourseSettingsRules', function($rootScope, $scope, $stateParams,
                     $scope.$apply($scope.active_func_then = {});
                     $scope.$apply($scope.curr_functions_then = $scope.grfunctions);
                     
-                    function_typed = textBefore.split(" "); 
+                    function_typed = textBefore.split("="); 
+                    function_typed = function_typed.map(s => s.trim());
                     typed = function_typed[function_typed.length-1];
 
                     if (typed != "") {

@@ -13,6 +13,18 @@
     background-color: tomato;
 }
 
+.confirmation_btns .prediction-cancel{
+    background-color: tomato;
+}
+
+#run-button, #refresh-button{
+    margin-right: 10;
+}
+
+.predict-button{
+    margin-left: 10;
+}
+
 .save{
     position: absolute;
     right: 0;
@@ -61,6 +73,13 @@
     opacity: 0.5;
 }
 
+.results_row {
+    display: flex;
+    align-items: baseline;
+    margin-top: 20px;
+    justify-content: center;
+}
+
 .cluster_row {
     display: flex;
     align-items: baseline;
@@ -94,3 +113,66 @@ th:hover .disabled_arrow{
     align-items: center;
     justify-content: center;
 }
+.predictor-container {
+    width: 180px;
+    margin-left: 20px;
+    margin-top: 30px;
+    display: flex;
+  }
+
+#predictor-modal .predictor-methods {
+    position: relative;
+}
+
+#predictor-modal .predictor-methods .predictor-container .checkmark {
+    border-radius: 50%; 
+}
+
+#predictor-modal .predictor-methods .predictor-container .checkmark:after {
+    top: 5px;
+    left: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+#predictor-modal .predictor-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+#predictor-modal .predictor-container .checkmark {
+  position: absolute;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+}
+
+#predictor-modal .predictor-container .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+#predictor-modal .predictor-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+#predictor-modal .predictor-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+#results-modal .confirmation_btns{
+    display: flex;
+}
+
+.continue#no-predictor-button{
+    min-width: 55px;
+}
+
+

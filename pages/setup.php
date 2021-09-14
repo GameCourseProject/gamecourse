@@ -35,15 +35,19 @@ if (array_key_exists('setup', $_GET) && array_key_exists('course-name', $_POST) 
     
     // prepare autogame
     $rulesfolder = join("/", array($dataFolder, "rules"));
-    $functionsFolder = "autogame/imported-functions/" . $courseId;
+    $functionsFolder = "autogame/imported-functions/" . strval($courseId);
+    $logsFolder = "logs";
     $functionsFileDefault = "autogame/imported-functions/defaults.py";
     $defaultFunctionsFile = "/defaults.py";
-    $metadataFile = "autogame/config/config_" . $courseId . ".txt";
+    $metadataFile = "autogame/config/config_" . strval($courseId) . ".txt";
+    $logsFile = "logs/log_course_" . strval($courseId) . ".txt";
     mkdir($rulesfolder);
+    mkdir($logsFolder);
     mkdir($functionsFolder);
     $defaults = file_get_contents($functionsFileDefault);
     file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
     file_put_contents($metadataFile, "");
+    file_put_contents($logsFile, "");
 
     file_put_contents('setup.done', '');
 
