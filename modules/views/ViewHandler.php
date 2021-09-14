@@ -1498,7 +1498,8 @@ class ViewHandler
     public function handle($view, $course, $viewParams)
     { //receives page/template     
         //$viewRoles = array_column($this->getAspects($view["id"]), 'role');
-        $userRolesHierarchy = $course->getLoggedUser()->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
+        $courseUser = $course->getLoggedUser();
+        $userRolesHierarchy = $courseUser->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
         // add Default as the last choice
         array_push($userRolesHierarchy, "Default");
         $viewType = $view["roleType"];
@@ -1519,7 +1520,7 @@ class ViewHandler
             if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
                 $roleTwo = 'special.Own';
             } else {
-                $loggedUserRoles = $course->getLoggedUser()->getRolesNames();
+                $loggedUserRoles = $courseUser->getRolesNames();
                 $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
             }
             $userView = $this->getViewWithParts($viewId, $roleOne . '>' . $roleTwo);
