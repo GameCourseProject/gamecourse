@@ -6,7 +6,7 @@
   <!-- User Info -->
   <div *ngIf="!docs && user" class="user_info">
     <div class="user_id">{{user.username}}</div>
-    <a *ngIf="visible" class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="sanitize(user.photoUrl)" alt=""></a>
+    <a *ngIf="visible" class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 

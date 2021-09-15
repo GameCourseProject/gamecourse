@@ -3,6 +3,7 @@ import {User} from "../../../_domain/User";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {Subject, throwError} from "rxjs";
+import {ImageManager} from "../../../_utils/image-manager";
 
 @Component({
   selector: 'app-main',
@@ -26,9 +27,9 @@ export class MainComponent implements OnInit {
     username: string
   };
 
-  photoToAdd: File;         // Any photo that comes through the input
-  photo: string;            // Photo to display
-  updatePhotoSubject: Subject<void> = new Subject<void>(); // Trigger photo update on navbar
+  photoToAdd: File;       // Any photo that comes through the input
+  photo: ImageManager;    // Photo to be displayed
+  updatePhotoSubject: Subject<void> = new Subject<void>();    // Trigger photo update on navbar
 
   loading = true;
   isEditModalOpen: boolean;
@@ -37,7 +38,9 @@ export class MainComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private sanitizer: DomSanitizer
-  ) { }
+  ) {
+    this.photo = new ImageManager(sanitizer);
+  }
 
   ngOnInit(): void {
     this.getUserInfo();
@@ -56,14 +59,10 @@ export class MainComponent implements OnInit {
           auth: user.authMethod,
           username: user.username
         };
-        this.photo = user.photoUrl;
+        this.photo.set(user.photoUrl);
 
         this.loading = false;
       })
-  }
-
-  sanitize(url: string): SafeUrl {
-    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
   isReadyToEdit() {
@@ -78,16 +77,7 @@ export class MainComponent implements OnInit {
 
   onFileSelected(files: FileList): void {
     this.photoToAdd = files.item(0);
-    this.photo = URL.createObjectURL(this.photoToAdd);
-  }
-
-  getBase64(file: File) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
+    this.photo.set(this.photoToAdd);
   }
 
   async submitEditUser(): Promise<void> {
@@ -95,7 +85,7 @@ export class MainComponent implements OnInit {
 
     let photoData;
     if (this.photoToAdd)
-      await this.getBase64(this.photoToAdd).then(data => photoData = data);
+      await ImageManager.getBase64(this.photoToAdd).then(data => photoData = data);
 
     let data = {
       userName: this.editUser.name,
@@ -112,9 +102,9 @@ export class MainComponent implements OnInit {
 
     this.api.editSelfInfo(data)
       .subscribe(res => {
-          this.user.nickname = this.editUser.nickname;
-          this.user.email = this.editUser.email;
-          if (data.userHasImage) this.updatePhotoSubject.next();
+          this.getUserInfo();
+          if (data.userHasImage) // Trigger change on navbar
+            this.updatePhotoSubject.next();
         },
         error => throwError(error),
         () => {

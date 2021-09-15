@@ -18,10 +18,7 @@ import {CreationMode} from "../../_domain/CreationMode";
 export class ApiHttpService {
 
   private httpOptions = {
-    headers: new HttpHeaders({
-        'Cache-Control': 'no-cache, no-store, must-revalidate, post-check=0, pre-check=0',
-        'Expires': '0'
-      }),
+    headers: new HttpHeaders(),
     withCredentials: true
   };
 

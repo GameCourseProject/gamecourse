@@ -16,7 +16,7 @@
 
         <!-- Image -->
 
-        <div class="profile_img"><img [src]="sanitize(photo)"></div>
+        <div class="profile_img"><img [src]="photo.get()"></div>
 
         <!-- Info -->
         <div class="info">
@@ -57,7 +57,7 @@
         <div class="image smaller">
           <div style="height:300px;">
             <div class="profile_image">
-              <div id="edit_display_profile_image"><img [src]="sanitize(photo)"></div>
+              <div id="edit_display_profile_image"><img [src]="photo.get()"></div>
             </div>
             <app-input-file
               [id]="'edit_profile_image'"

@@ -3,8 +3,8 @@ import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {User} from "../../_domain/User";
 import {Observable} from "rxjs";
-import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {DomSanitizer} from "@angular/platform-browser";
+import {ImageManager} from "../../_utils/image-manager";
 
 @Component({
   selector: 'app-navbar',
@@ -17,6 +17,7 @@ export class NavbarComponent implements OnInit {
   @Input() docs?: boolean = false;     // Whether or not it is docs navbar
 
   user: User;
+  photo: ImageManager;
   visible = true;
 
   mainNavigation = [];
@@ -25,10 +26,8 @@ export class NavbarComponent implements OnInit {
     private api: ApiHttpService,
     private router: Router,
     private sanitizer: DomSanitizer
-  ) { }
-
-  sanitize(url: string): SafeUrl {
-    return this.sanitizer.bypassSecurityTrustUrl(url);
+  ) {
+    this.photo = new ImageManager(sanitizer);
   }
 
   ngOnInit(): void {
@@ -36,13 +35,14 @@ export class NavbarComponent implements OnInit {
     else this.initDocsNavigation();
 
     if (this.updatePhoto)
-      this.updatePhoto.subscribe(() => location.reload())
+      this.updatePhoto.subscribe(() => this.getUserInfo());
   }
 
   getUserInfo(): void {
     this.api.getLoggedUser()
       .subscribe(user => {
         this.user = user;
+        this.photo.set(user.photoUrl);
         this.initNavigations();
       })
   }
