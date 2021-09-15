@@ -200,11 +200,14 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                     document.getElementById("refresh-button").remove();
                 }
                 if (!document.getElementById("run-button")){
+                    var section = document.getElementById("buttons");
                     var runButton = document. createElement("BUTTON");
                     runButton.className += "button small";
                     runButton.innerHTML = "Run";
                     runButton.onclick = $scope.runProfiler;
                     runButton.id = "run-button";
+                    section.appendChild(runButton);
+                    $compile(section)($scope);
                 }
 		        giveMessage(err.description);
                 return;
@@ -227,6 +230,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
 
                 $scope.buildButtons.call();
                 statusDiv.innerHTML = '<p><b>Status:  </b> not running </p>';
+                //clearInterval($scope.timerID);
             }
             else if(data.running){
                 $scope.running = true;
@@ -259,6 +263,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 }
                 
                 $scope.running = false;
+                //clearInterval($scope.timerID);
             }
         })
     };
@@ -285,6 +290,103 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         });
     };
 
+    $scope.checkPredictorStatus = function () {
+        $smartboards.request('settings', 'checkPredictorStatus', {course: $scope.course}, function(data, err){
+            if (err) {
+                //clearInterval($scope.timerID);
+                if (document.getElementById("predict-refresh-button")){
+                    document.getElementById("predict-refresh-button").remove();
+                }
+                if (!document.getElementById("predict-button")){
+                    var row = document.getElementById("row1");
+                    var button = document.createElement("BUTTON");
+                    button.className += "button small predict-button";
+                    button.innerHTML = "Predict";
+                    button.value = "#predictor-modal"
+                    button.onclick = function(){openModal(this)};
+                    button.id = "predict-button";
+                    row.appendChild(button);
+                }
+		        giveMessage(err.description);
+                return;
+            }
+
+            if(!('predicting' in data)){
+                if (document.getElementById("predict-refresh-button")){
+                    document.getElementById("predict-refresh-button").remove();
+                }
+                if (!document.getElementById("predict-button")){
+                    var row = document.getElementById("row1");
+                    var button = document.createElement("BUTTON");
+                    button.className += "button small predict-button";
+                    button.innerHTML = "Predict";
+                    button.value = "#predictor-modal"
+                    button.onclick = function(){openModal(this)};
+                    button.id = "predict-button";
+                    row.appendChild(button);
+                }
+
+                $scope.predictedClusters = data.nClusters;
+                var placeholder = document.createElement("param");
+                placeholder.value = "#results-modal";
+                openModal(placeholder);
+                //clearInterval($scope.timerID);
+            }
+            else if(data.predicting === true){
+                if (!document.getElementById("predict-refresh-button")){
+                    var row = document.getElementById("row1");
+                    var button = document. createElement("BUTTON");
+                    button.innerHTML = "Refresh";
+                    button.id = "predict-refresh-button"
+                    button.classList.add("predict-button");
+                    button.onclick = $scope.checkPredictorStatus;
+                    row.appendChild(button);
+                }
+            }
+            else {
+                if (document.getElementById("predict-refresh-button")){
+                    document.getElementById("predict-refresh-button").remove();
+                }
+                if (!document.getElementById("predict-button")){
+                    var row = document.getElementById("row1");
+                    var button = document.createElement("BUTTON");
+                    button.className += "button small predict-button";
+                    button.innerHTML = "Predict";
+                    button.value = "#predictor-modal"
+                    button.onclick = function(){openModal(this)};
+                    button.id = "predict-button";
+                    row.appendChild(button);
+                }
+                //clearInterval($scope.timerID);
+            }
+        });
+    };
+
+    $scope.runPredictor = function () {
+        $smartboards.request('settings', 'runPredictor', {course: $scope.course, method: $scope.method}, function(data, err){
+            if (err) {
+                giveMessage(err.description);
+                return;
+            }
+
+            document.getElementById("predict-button").remove();
+            var row = document.getElementById("row1");
+
+            var button = document. createElement("BUTTON");
+            button.innerHTML = "Refresh";
+            button.id = "predict-refresh-button"
+            button.classList.add("predict-button");
+            button.onclick = $scope.checkPredictorStatus;
+            row.appendChild(button);
+
+            //$scope.timerID = setInterval($scope.checkPredictorStatus, 30000);
+        });
+    };
+
+    $scope.replaceNClusters = function(predictedClusters){
+        $scope.n_clusters = parseInt(predictedClusters);
+    }
+
     var configurationSection = $($element);
     var overviewSection = createSection(configurationSection, 'Overview');
     overviewSection.append("<figure class=\"highcharts-figure\"><div id='overview'></div></figure>");
@@ -299,10 +401,47 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
     importVerification.append($('<div class="warning">Please select a .csv or .txt file to be imported</div>'));
     importVerification.append($('<div class="target">The seperator must be comma</div>'));
     importVerification.append($('<input class="config_input" type="file" id="import_item" accept=".csv, .txt">')); //input file
-    importVerification.append($('<div class="confirmation_btns"><button ng-click="importItems(false)">Import</button></div>'))
+    importVerification.append($('<div class="confirmation_btns"><button ng-click="importItems(false)">Import</button></div>'));
     importModal.append(importVerification);
     $compile(importModal)($scope);
     runSection.append(importModal);
+    
+    var methods = [{name: "Elbow method", char: "e"}, {name: "Silhouette method", char: "s"}];
+    $scope.method = "e";
+
+    predictorModal = $("<div class='modal' id='predictor-modal'></div>");
+    predictorVerification = $("<div class='verification modal_content'></div>");
+    predictorVerification.append($('<button class="close_btn icon" value="#predictor-modal" onclick="closeModal(this)"></button>'));
+    predictorVerification.append($('<div class="warning">Please select a method to be used to predict the number of clusters:</div>'));
+    predictorContent = $('<div class="content"></div>');
+    methodOptions = $("<div class='predictor-methods'></div>");
+    jQuery.each(methods, function (index) {
+        methodOptions.append($("<label class='predictor-container'> " + methods[index]["name"] + 
+        "<input type='radio' checked='checked' ng-model='method' name='radio' ng-value='\""+ methods[index]["char"] + 
+        "\"' id='"+ methods[index]["char"] + "'><span class='checkmark'></span></label>")
+        ); 
+    });
+    predictorContent.append(methodOptions);
+    predictorVerification.append(predictorContent);
+    predictorButtons = $('<div class="results_row" ></div>');
+    predictorButtons.append($('<div class="confirmation_btns"><button value="#predictor-modal" onclick="closeModal(this)" ng-click="runPredictor()">Predict</button></div>'));
+    predictorButtons.append($('<div class="confirmation_btns"><button class="prediction-cancel" value="#predictor-modal" onclick="closeModal(this)">Cancel</button></div>'));
+    predictorVerification.append(predictorButtons);
+    predictorModal.append(predictorVerification);
+    runSection.append($compile(predictorModal)($scope));
+
+    resultsModal = $("<div class='modal' id='results-modal'></div>");
+    resultsVerification = $("<div class='verification modal_content'></div>");
+    resultsVerification.append($('<button class="close_btn icon" value="#results-modal" onclick="closeModal(this)"></button>'));
+    resultsVerification.append($('<div class="title">Predictor results</div>'));
+    resultsVerification.append($('<div class="warning">The predicted number of clusters for the next run is <b>{{predictedClusters}}</b>.</div>'));
+    resultsVerification.append($('<div class="warning">Replace number of clusters?</div>'));
+    verificationButtons = $('<div class="results_row" ></div>');
+    verificationButtons.append($('<div class="confirmation_btns"><button class="cancel" value="#results-modal" onclick="closeModal(this)" ng-click="replaceNClusters(predictedClusters)">Yes</button></div>'));
+    verificationButtons.append($('<div class="confirmation_btns"><button class="continue" id ="no-predictor-button" value="#results-modal" onclick="closeModal(this)">No</button></div>'));
+    resultsVerification.append(verificationButtons);
+    resultsModal.append(resultsVerification);
+    runSection.append($compile(resultsModal)($scope));
 
     var runningTag = $("<div id='running-tag'></div>");
     runSection.append(runningTag);
@@ -332,23 +471,17 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         runSection.prepend($compile(time)($scope));
 
         runConfig = $('<div class="cluster_column" ></div>');
-        row1 = $("<div class='cluster_row cluster_input'></div>");
+        row1 = $("<div id='row1' class='cluster_row cluster_input'></div>");
         row1.append('<span > Number of clusters: </span>');
         row1.append('<input class="config_input" ng-init="n_clusters" ng-model="n_clusters" type="number" min="3" max="10">');
+
         row2 = $("<div class='cluster_row cluster_input'></div>");
         row2.append('<span > Minimun cluster size: </span>');
         row2.append('<input class="config_input" ng-init="min_cluster_size" ng-model="min_cluster_size" type="number" min="0">');
+        
         runConfig.append(row1);
         runConfig.append(row2);
-        runSection.prepend($compile(runConfig)($scope))
-        
-        /*runConfig = $('<div class="cluster_column" ></div>');
-        runConfig.append('<p><b>Last run:  </b>' + $scope.time + '</p>');
-        row = $("<div class='cluster_row cluster_input'></div>");
-        row.append('<span > Number of clusters: </span>');
-        row.append('<input class="config_input" ng-init="n_clusters" ng-model="n_clusters" type="number" min="4" max="10">');
-        runConfig.append(row);
-        runSection.prepend($compile(runConfig)($scope));*/
+        runSection.prepend($compile(runConfig)($scope));
         
     });
     
@@ -376,6 +509,7 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             action_buttons.append($("<button id='export_button' class='icon export_icon profiling_button other' value='#export-item' ng-click='exportItem()'></button></div>"));
             action_buttons.append($("<button id='import_button' class='icon import_icon profiling_button other' value='#import-item' onclick='openModal(this)'></button>"));
             action_buttons.append($('<button id="run-button" class="button small" ng-click="runProfiler()">Run</button>'));
+            
             runSection.append($compile(action_buttons)($scope));
             rowHeader.append("<th><div class='container'><div ng-click='sortColumn(\"name\", false)' class='triangle-up' ng-class=\"{'checked_arrow': column == 'name' && !ascending}\"></div><div ng-click='sortColumn(\"name\", true)' class='triangle-down' ng-class=\"{'checked_arrow': column == 'name' && ascending}\"></div> Student </div></th><th ng-repeat='day in days'><div class='container'><div ng-click='sortColumn(day, false)' class='triangle-up' ng-class=\"{'checked_arrow': column == day && !ascending}\"></div><div ng-click='sortColumn(day, true)' class='triangle-down' ng-class=\"{'checked_arrow': column == day && ascending}\"></div>{{day}}</div></th>");
             rowHeader.append('</thead>')
@@ -399,6 +533,8 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
             $scope.buildButtons.call();
         }
 
+        $scope.checkPredictorStatus.call();
+
         rowContent.append("</tr></table>");
         table.append(rowHeader);
         table.append(rowContent);
@@ -409,6 +545,6 @@ function profilingPersonalizedConfig($scope, $element, $smartboards, $compile) {
         runSection.append($compile(contentDiv)($scope));      
     });
 
-    $compile(configurationSection)($scope);
+    //$compile(configurationSection)($scope);
 
 }
