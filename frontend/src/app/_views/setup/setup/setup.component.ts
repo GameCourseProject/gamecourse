@@ -34,14 +34,7 @@ export class SetupComponent implements OnInit {
     if (this.form.valid) {
       this.loading = true;
 
-      const rawValue = this.form.getRawValue();
-      const formData = new FormData();
-      formData.append('course-name', rawValue.courseName);
-      formData.append('course-color', rawValue.courseColor);
-      formData.append('teacher-id', rawValue.teacherId);
-      formData.append('teacher-username', rawValue.teacherUsername);
-
-      this.api.doSetup(formData).subscribe(
+      this.api.doSetup(this.form.getRawValue()).subscribe(
         setup => {
           if (setup) this.router.navigate(['']);
         },
@@ -50,4 +43,11 @@ export class SetupComponent implements OnInit {
       );
     }
   }
+}
+
+export interface SetupData {
+  courseName: string,
+  courseColor: string,
+  teacherId: number,
+  teacherUsername: string
 }

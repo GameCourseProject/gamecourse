@@ -18,14 +18,7 @@ export class MainComponent implements OnInit {
   values = ['name', 'nickname', 'studentNumber', 'email', 'authMethod', 'username']
 
   user: User;
-  editUser: {
-    name: string,
-    nickname: string,
-    studentNumber: number,
-    email: string,
-    auth: string,
-    username: string
-  };
+  editUser: UserData;
 
   photoToAdd: File;       // Any photo that comes through the input
   photo: ImageManager;    // Photo to be displayed
@@ -83,27 +76,13 @@ export class MainComponent implements OnInit {
   async submitEditUser(): Promise<void> {
     this.saving = true;
 
-    let photoData;
     if (this.photoToAdd)
-      await ImageManager.getBase64(this.photoToAdd).then(data => photoData = data);
+      await ImageManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
 
-    let data = {
-      userName: this.editUser.name,
-      userStudentNumber: this.editUser.studentNumber,
-      userNickname: this.editUser.nickname,
-      userEmail: this.editUser.email,
-      userUsername: this.editUser.username,
-      userAuthService: this.editUser.auth,
-      userHasImage: !!photoData
-    };
-
-    if (data.userHasImage)
-      data['userImage'] = photoData;
-
-    this.api.editSelfInfo(data)
+    this.api.editSelfInfo(this.editUser)
       .subscribe(res => {
           this.getUserInfo();
-          if (data.userHasImage) // Trigger change on navbar
+          if (this.editUser.image) // Trigger change on navbar
             this.updatePhotoSubject.next();
         },
         error => throwError(error),
@@ -114,4 +93,14 @@ export class MainComponent implements OnInit {
         })
   }
 
+}
+
+export interface UserData {
+  name: string,
+  nickname: string,
+  studentNumber: number,
+  email: string,
+  auth: string,
+  username: string,
+  image?: string | ArrayBuffer
 }

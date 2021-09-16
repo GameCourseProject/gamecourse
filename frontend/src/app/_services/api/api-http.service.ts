@@ -1,16 +1,18 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {Observable, of} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 import {ApiEndpointsService} from "./api-endpoints.service";
 
-import {Observable, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
 import {QueryStringParameters} from "../../_utils/query-string-parameters";
 
 import {AuthType} from "../../_domain/AuthType";
 import {Course} from "../../_domain/Course";
 import {User} from "../../_domain/User";
 import {CreationMode} from "../../_domain/CreationMode";
+import {SetupData} from "../../_views/setup/setup/setup.component";
+import {UserData} from "../../_views/my-info/main/main.component";
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +34,13 @@ export class ApiHttpService {
   /*** ------------------- Setup ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public doSetup(formData: FormData): Observable<boolean> {
+  public doSetup(data: SetupData): Observable<boolean> {
+    const formData = new FormData();
+    formData.append('course-name', data.courseName);
+    formData.append('course-color', data.courseColor);
+    formData.append('teacher-id', data.teacherId.toString());
+    formData.append('teacher-username', data.teacherUsername);
+
     const url = this.apiEndpoint.createUrl('setup.php');
 
     return this.post(url, formData, this.httpOptions)
@@ -117,8 +125,7 @@ export class ApiHttpService {
 
     return this.get(url, this.httpOptions)
       .pipe( map(
-        (res: any) => (res['data']['userActiveCourses'])
-          .map(obj => Course.fromDatabase(obj))
+        (res: any) => (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj))
       ) );
   }
 
@@ -140,7 +147,18 @@ export class ApiHttpService {
       ) );
   }
 
-  public editSelfInfo(data: {[key:string]: any}): Observable<any> {
+  public editSelfInfo(userData: UserData): Observable<any> {
+    const data = {
+      userName: userData.name,
+      userNickname: userData.nickname,
+      userStudentNumber: userData.studentNumber,
+      userEmail: userData.email,
+      userAuthService: userData.auth,
+      userUsername: userData.username,
+      userHasImage: !!userData.image,
+      userImage: userData.image
+    };
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'editSelfInfo');
@@ -260,7 +278,8 @@ export class ApiHttpService {
   /*** -------------------- Docs -------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getSchema() { // FIXME: finish up when can enable modules
+  // FIXME: finish up when can enable modules
+  public getSchema() {
     const params = (qs: QueryStringParameters) => {
       qs.push('list', true);
     };
