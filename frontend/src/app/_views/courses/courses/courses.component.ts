@@ -10,13 +10,14 @@ import {orderByNumber, orderByString} from "../../../_utils/order-by";
 import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
 import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
+import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 
 @Component({
   selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss']
+  templateUrl: './courses.component.html',
+  styleUrls: ['./courses.component.scss']
 })
-export class MainComponent implements OnInit {
+export class CoursesComponent implements OnInit {
 
   loading = true;
   loadingAction = false;
@@ -49,13 +50,16 @@ export class MainComponent implements OnInit {
   ];
   exportOptions: { [id: number]: { users: boolean, awards: boolean, modules: boolean } } = {};
 
-  isNewCourseModalOpen: boolean;
+  importedFile: File;
+
+  isCourseModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
   isIndividualExportModalOpen: boolean;
-  isExportAllModalOpen: boolean;
+  isImportModalOpen: boolean;
   saving: boolean;
 
-  newCourse = {
+  mode: 'add' | 'edit';
+  newCourse: CourseData = {
     name: null,
     short: null,
     year: null,
@@ -63,6 +67,7 @@ export class MainComponent implements OnInit {
     isActive: null,
     isVisible: null
   };
+  courseToEdit: Course;
   courseToDelete: Course;
   courseToExport: Course;
 
@@ -73,7 +78,7 @@ export class MainComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.getUser();
+    this.getUserAndCourses();
     this.getYearsOptions();
   }
 
@@ -82,7 +87,7 @@ export class MainComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getUser(): void {
+  getUserAndCourses(): void {
     this.api.getLoggedUser()
       .subscribe(user => {
         this.user = user;
@@ -221,21 +226,7 @@ export class MainComponent implements OnInit {
   createCourse(): void {
     this.loadingAction = true;
 
-    const course = new Course(
-      null,
-      this.newCourse.name,
-      this.newCourse.short,
-      this.newCourse.color,
-      this.newCourse.year,
-      null,
-      null,
-      !!this.newCourse.isActive,
-      !!this.newCourse.isVisible,
-      null,
-      null
-    );
-
-    this.api.createCourse(course)
+    this.api.createCourse(this.newCourse)
       .subscribe(
         res => {
           this.allCourses.push(res);
@@ -244,19 +235,33 @@ export class MainComponent implements OnInit {
         },
         error => throwError(error),
         () => {
-          this.isNewCourseModalOpen = false;
+          this.isCourseModalOpen = false;
           for (const key of Object.keys(this.newCourse)) {
             this.newCourse[key] = null;
           }
-          this.loadingAction = false
+          this.loadingAction = false;
+          const successBox = $('#action_completed');
+          successBox.empty();
+          successBox.append("New course created");
+          successBox.show().delay(3000).fadeOut();
         }
       )
   }
 
-  duplicateCourse(course: Course): void {
+  duplicateCourse(course: Course) {
     this.loadingAction = true;
 
-    this.api.duplicateCourse(course) // FIXME: bug mkdir()
+    this.newCourse = {
+      id: course.id,
+      name: course.name,
+      short: course.short,
+      year: course.year,
+      color: course.color,
+      isActive: course.isActive,
+      isVisible: course.isVisible
+    }
+
+    this.api.duplicateCourse(this.newCourse)
       .subscribe(
         res => {
           this.allCourses.push(res);
@@ -264,42 +269,97 @@ export class MainComponent implements OnInit {
           this.reduceList();
         },
         error => throwError(error),
-        () => this.loadingAction = false
+        () => {
+          this.isCourseModalOpen = false;
+          for (const key of Object.keys(this.newCourse)) {
+            this.newCourse[key] = null;
+          }
+          this.loadingAction = false;
+          const successBox = $('#action_completed');
+          successBox.empty();
+          successBox.append("New course created from " + course.name);
+          successBox.show().delay(3000).fadeOut();
+        }
       )
   }
 
   editCourse(): void {
-    // TODO
+    this.loadingAction = true;
+    this.newCourse['id'] = this.courseToEdit.id;
+
+    this.api.editCourse(this.newCourse)
+      .subscribe(
+        res => this.getCourses(),
+        error => throwError(error),
+        () => {
+          this.isCourseModalOpen = false;
+          for (const key of Object.keys(this.newCourse)) {
+            this.newCourse[key] = null;
+          }
+          this.loadingAction = false;
+          const successBox = $('#action_completed');
+          successBox.empty();
+          successBox.append("Course: "+ this.courseToEdit.name + " edited");
+          successBox.show().delay(3000).fadeOut();
+        }
+      )
   }
 
-  deleteCourse(courseID: number): void {
+  deleteCourse(course: Course): void {
     this.loadingAction = true;
-    this.api.deleteCourse(courseID)
+    this.api.deleteCourse(course.id)
       .subscribe(
         res => {
-          const index = this.allCourses.findIndex(el => el.id === courseID);
+          const index = this.allCourses.findIndex(el => el.id === course.id);
           this.allCourses.splice(index, 1);
-          this.exportOptions[courseID] = null;
+          this.exportOptions[course.id] = null;
           this.reduceList();
         },
         error => throwError(error),
         () => {
           this.isDeleteVerificationModalOpen = false;
           this.loadingAction = false
+          const successBox = $('#action_completed');
+          successBox.empty();
+          successBox.append("Course: " + course.name + " deleted");
+          successBox.show().delay(3000).fadeOut();
         }
       )
   }
 
-  importCourse(): void {
-    // TODO
+  importCourses(replace: boolean): void {
+    this.loadingAction = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedCourses = reader.result;
+      this.api.importCourses({file: importedCourses, replace})
+        .subscribe(
+          nCourses => {
+            this.getCourses();
+            const successBox = $('#action_completed');
+            successBox.empty();
+            successBox.append(nCourses + " Course" + (nCourses > 1 ? 's' : '') + " Imported");
+            successBox.show().delay(3000).fadeOut();
+          },
+          error => throwError(error),
+          () => {
+            this.isImportModalOpen = false;
+            this.loadingAction = false;
+          }
+        )
+    }
+    reader.readAsDataURL(this.importedFile);
   }
 
-  exportCourse(course: Course, options): void {
+  exportCourse(course: Course): void {
     this.saving = true;
-    this.api.exportCourses(course.id, options) // FIXME: not working
+
+    this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
       .subscribe(
         zip => {
-          console.log(zip)
+          const files = ApiEndpointsService.API_ENDPOINT + '/' + zip;
+          location.replace(files);
         },
         error => throwError(error),
         () => {
@@ -310,7 +370,7 @@ export class MainComponent implements OnInit {
   }
 
   exportAllCourses(): void {
-    // TODO
+    this.exportCourse(null);
   }
 
 
@@ -387,8 +447,39 @@ export class MainComponent implements OnInit {
     }, 0);
   }
 
+  initEditCourse(course: Course): void {
+    this.newCourse = {
+      name: course.name,
+      short: course.short,
+      year: course.year,
+      color: course.color,
+      isActive: course.isActive,
+      isVisible: course.isVisible
+    };
+    this.courseToEdit = course;
+  }
+
   getActiveCourses(isActive: boolean): Course[] {
     return this.filteredCourses.filter(course => course.isActive === isActive);
   }
 
+  onFileSelected(files: FileList): void {
+    this.importedFile = files.item(0);
+  }
+
+}
+
+export interface CourseData {
+  id?: number,
+  name: string,
+  short: string,
+  year: string,
+  color: string,
+  isActive: boolean,
+  isVisible: boolean
+}
+
+export interface ImportCoursesData {
+  file: string | ArrayBuffer,
+  replace: boolean
 }

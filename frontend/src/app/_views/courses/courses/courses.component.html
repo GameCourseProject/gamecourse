@@ -17,6 +17,10 @@
     <div id="mainContent">
       <ng-container *ngIf="user.isAdmin" [ngTemplateOutlet]="adminTemplate"></ng-container>
       <ng-container *ngIf="!user.isAdmin" [ngTemplateOutlet]="nonAdminTemplate"></ng-container>
+
+      <div class='success_box'>
+        <div id='action_completed' class='success_msg'></div>
+      </div>
     </div>
 
   </div>
@@ -31,11 +35,11 @@
 <!-- Admin Template -->
 <ng-template #adminTemplate>
 
-  <!-- Action buttons TODO -->
+  <!-- Action buttons -->
   <div class="action-buttons ">
-    <div class="icon add_icon" (click)="isNewCourseModalOpen = true; initColorPicker()"></div>
-    <div class="icon import_icon" title="Import" value="#import-course" onclick="openModal(this)"></div>
-    <div class="icon export_icon" title="Export all" ng-click="exportCourses()"></div>
+    <div class="icon add_icon" (click)="mode = 'add'; isCourseModalOpen = true; initColorPicker()"></div>
+    <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
+    <div class="icon export_icon" title="Export all" (click)="exportAllCourses()"></div>
   </div>
 
   <!-- Courses Table -->
@@ -89,7 +93,7 @@
             <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateCourse(course)"></div>
           </td>
           <td class="action-column">
-            <div class="icon edit_icon" title="Edit" onclick="openModal(this)" ng-click="modifyCourse(course)"></div>
+            <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditCourse(course); isCourseModalOpen = true; initColorPicker()"></div>
           </td>
           <td class="action-column">
             <div class="icon delete_icon" title="Remove" (click)="courseToDelete = course; isDeleteVerificationModalOpen = true"></div>
@@ -101,7 +105,10 @@
         </tbody>
       </table>
 
-      <p *ngIf="this.filteredCourses.length === 0" class="centered">No matches found</p>
+      <div *ngIf="this.filteredCourses.length === 0" class='error_box'>
+        <div id='empty_table' class='error_msg'>No matches found</div>
+      </div>
+
     </div>
   </div>
 </ng-template>
@@ -171,21 +178,21 @@
 </ng-template>
 
 
-<!-- New Course Modal -->
-<ng-container *ngIf="isNewCourseModalOpen">
+<!-- New Course / Edit Modal -->
+<ng-container *ngIf="isCourseModalOpen">
   <app-modal
-    [isModalOpen]="isNewCourseModalOpen"
-    [id]="'new-course'"
-    [templateRef]="newCourseModal"
-    (closeBtnClicked)="isNewCourseModalOpen = false"
+    [isModalOpen]="isCourseModalOpen"
+    [id]="mode === 'add' ? 'new-course' : 'edit-course'"
+    [templateRef]="courseModal"
+    (closeBtnClicked)="isCourseModalOpen = false"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>
 </ng-container>
 
-<ng-template #newCourseModal>
+<ng-template #courseModal>
   <!-- Title -->
-  <div class="title">New Course:</div>
+  <div class="title">{{mode === 'add' ? 'New Course:' : 'Edit Course:'}}</div>
 
   <div class="content">
     <div class="inputs">
@@ -226,7 +233,8 @@
       </div>
     </div>
 
-    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="createCourse()">Save</button>
+    <button class="cancel" (click)="isCourseModalOpen = false">Cancel</button>
+    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createCourse() : editCourse()">Save</button>
   </div>
 </ng-template>
 
@@ -239,7 +247,7 @@
     [text]="'Are you sure you want to delete the Course?'"
     [target]="courseToDelete.name"
     [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="deleteCourse(courseToDelete.id)"
+    (positiveBtnClicked)="deleteCourse(courseToDelete)"
     (negativeBtnClicked)="courseToDelete = null; isDeleteVerificationModalOpen = false"
     (closeBtnClicked)="isDeleteVerificationModalOpen = false"
     [actionInProgress]="saving">
@@ -295,7 +303,38 @@
     </div>
 
     <button class="cancel" (click)="isIndividualExportModalOpen = false">Cancel</button>
-    <button class="save_btn" (click)="exportCourse(courseToExport, exportOptions[courseToExport.id])">Export</button>
+    <button class="save_btn" (click)="exportCourse(courseToExport)">Export</button>
+  </div>
+
+</ng-template>
+
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-course'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a zip file to be imported</div>
+  <app-input-file
+    [id]="'import_course'"
+    [accept]="'.zip'"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importCourses(true)">Import Courses (Replace Duplicates)</button>
+    <button (click)="importCourses(false)">Import Courses (Ignore Duplicates)</button>
   </div>
 
 </ng-template>

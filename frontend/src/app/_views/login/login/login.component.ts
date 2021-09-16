@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.api.isLoggedIn().subscribe(
       isLoggedIn => {
-        if (isLoggedIn) this.router.navigate(['/main']);
+        if (isLoggedIn) this.router.navigate(['/my-info']);
       },
       error => {
         if (error.status === 401) {

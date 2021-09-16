@@ -2,14 +2,14 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { CoursesRoutingModule } from './courses-routing.module';
-import { MainComponent } from './main/main.component';
+import { CoursesComponent } from './courses/courses.component';
 import {SharedModule} from "../../_components/shared.module";
 import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
   declarations: [
-    MainComponent
+    CoursesComponent
   ],
   imports: [
     CommonModule,

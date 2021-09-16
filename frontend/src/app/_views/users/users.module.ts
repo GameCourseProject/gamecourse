@@ -2,13 +2,13 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { UsersRoutingModule } from './users-routing.module';
-import { MainComponent } from './main/main.component';
+import { UsersComponent } from './users/users.component';
 import {SharedModule} from "../../_components/shared.module";
 
 
 @NgModule({
   declarations: [
-    MainComponent
+    UsersComponent
   ],
     imports: [
         CommonModule,

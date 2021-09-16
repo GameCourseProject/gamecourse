@@ -2,14 +2,14 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { MyInfoRoutingModule } from './my-info-routing.module';
-import { MainComponent } from './main/main.component';
+import { MyInfoComponent } from './my-info/my-info.component';
 import {SharedModule} from "../../_components/shared.module";
 import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
   declarations: [
-    MainComponent
+    MyInfoComponent
   ],
   imports: [
     CommonModule,

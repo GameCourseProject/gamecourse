@@ -6,11 +6,11 @@ import {Subject, throwError} from "rxjs";
 import {ImageManager} from "../../../_utils/image-manager";
 
 @Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss']
+  selector: 'app-my-info',
+  templateUrl: './my-info.component.html',
+  styleUrls: ['./my-info.component.scss']
 })
-export class MainComponent implements OnInit {
+export class MyInfoComponent implements OnInit {
 
   NOT_SET = 'Not set';
 

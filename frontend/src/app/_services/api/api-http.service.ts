@@ -12,7 +12,8 @@ import {Course} from "../../_domain/Course";
 import {User} from "../../_domain/User";
 import {CreationMode} from "../../_domain/CreationMode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
-import {UserData} from "../../_views/my-info/main/main.component";
+import {UserData} from "../../_views/my-info/my-info/my-info.component";
+import {CourseData, ImportCoursesData} from "../../_views/courses/courses/courses.component";
 
 @Injectable({
   providedIn: 'root'
@@ -199,78 +200,130 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public createCourse(course: Course, creationMode: CreationMode = CreationMode.BLANk): Observable<Course> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'createCourse');
-      qs.push('courseName', course.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''));
-      qs.push('creationMode', creationMode);
-      qs.push('courseShort', course.short);
-      qs.push('courseYear', course.year);
-      qs.push('courseColor', course.color);
-      qs.push('courseIsVisible', course.isVisible ? 1 : 0);
-      qs.push('courseIsActive', course.isActive ? 1 : 0);
-      if (creationMode === CreationMode.SIMILAR) qs.push('copyFrom', course.id);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.get(url, this.httpOptions)
-      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
-  }
-
   public setCourseActive(courseID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "course_id": courseID,
+      "active": isActive ? 1 : 0
+    }
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'setCoursesActive');
-      qs.push('course_id', courseID);
-      qs.push('active', isActive ? 1 : 0);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.get(url, this.httpOptions)
+    return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
   public setCourseVisible(courseID: number, isVisible: boolean): Observable<void> {
+    const data = {
+      "course_id": courseID,
+      "visibility": isVisible ? 1 : 0
+    }
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'setCoursesvisibility');
-      qs.push('course_id', courseID);
-      qs.push('visibility', isVisible ? 1 : 0);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.get(url, this.httpOptions)
+    return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
-  public duplicateCourse(course: Course): Observable<Course> {
-    return this.createCourse(course, CreationMode.SIMILAR);
-  }
+  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANk): Observable<Course> {
+    const data = {
+      courseName: courseData.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''),
+      creationMode: creationMode,
+      courseShort: courseData.short,
+      courseYear: courseData.year,
+      courseColor: courseData.color,
+      courseIsVisible: courseData.isVisible ? 1 : 0,
+      courseIsActive: courseData.isActive ? 1 : 0,
+    }
 
-  public deleteCourse(courseID: number): Observable<void> {
+    if (creationMode === CreationMode.SIMILAR)
+      data['copyFrom'] = courseData.id;
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
-      qs.push('request', 'deleteCourse');
-      qs.push('course', courseID);
+      qs.push('request', 'createCourse');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.get(url, this.httpOptions)
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+  }
+
+  public duplicateCourse(courseData: CourseData): Observable<Course> {
+    return this.createCourse(courseData, CreationMode.SIMILAR);
+  }
+
+  public editCourse(courseData: CourseData): Observable<void> {
+    const data = {
+      course: courseData.id,
+      courseName: courseData.name,
+      courseShort: courseData.short,
+      courseYear: courseData.year,
+      courseColor: courseData.color,
+      courseIsVisible: courseData.isVisible ? 1 : 0,
+      courseIsActive: courseData.isActive ? 1 : 0,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'editCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteCourse(courseID: number): Observable<void> {
+    const data = { course: courseID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'deleteCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
   public exportCourses(courseID: number = null, options = null): Observable<string> {
+   const data = {
+     id: courseID,
+     options: options
+   }
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'exportCourses');
-      qs.push('id', courseID);
-      qs.push('options', options);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.get(url, this.httpOptions)
+    return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => res['data']['courses']) );
+  }
+
+  public importCourses(importData: ImportCoursesData): Observable<number> {
+    const data = {
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'importCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nCourses'])) );
   }
 
 
