@@ -427,7 +427,7 @@ export class CoursesComponent implements OnInit {
       this.pickr = Pickr.create({
         el: '#new_pickr',
         useAsButton: true,
-        default: 'white',
+        default: this.mode === 'add' ? 'white' : this.newCourse.color,
         theme: 'monolith', // or 'classic', or 'nano',
         components: {
           hue: true,
@@ -465,6 +465,10 @@ export class CoursesComponent implements OnInit {
 
   onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);
+  }
+
+  isWhite(color: string): boolean {
+    return ['white', '#ffffff', '#fff'].includes(color.toLowerCase());
   }
 
 }

@@ -70,7 +70,7 @@
           <td class="first-column">
             <div class="profile-icon">
               <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
-              <div class="frame" [ngStyle]="{'borderColor': course.color}" style="border: 1px solid"></div>
+              <div class="frame" [ngStyle]="{'borderColor': isWhite(course.color) ? 'lightgrey' : course.color}" style="border: 1px solid"></div>
             </div>
           </td>
           <td class="name-column" [routerLink]="'/courses/' + course.id + '/' + course.nameUrl"><span>{{course.name}}</span></td>
@@ -86,7 +86,7 @@
           <td class="check-column">
             <label class="switch">
               <input type="checkbox" [checked]="course.isVisible" (change)="toggleVisible(course.id)">
-              <span ng-click="makeVisible(course.id)" class="slider round"></span>
+              <span class="slider round"></span>
             </label>
           </td>
           <td class="action-column">
@@ -222,7 +222,7 @@
           <label for="new_pickr" class="form__label">Color</label>
           <div id="color-sample">
             <div class="box" [ngStyle]="{'backgroundColor': newCourse.color || 'white'}"></div>
-            <div class="frame" [ngStyle]="{'borderColor': newCourse.color !== 'white' && newCourse.color !== '#ffffff' ? newCourse.color : 'lightgray'}"></div>
+            <div class="frame" [ngStyle]="{'borderColor': isWhite(newCourse.color) ? 'lightgrey' : newCourse.color}"></div>
           </div>
         </div>
       </div>
@@ -338,5 +338,3 @@
   </div>
 
 </ng-template>
-
-<!-- TODO: boxes -->
