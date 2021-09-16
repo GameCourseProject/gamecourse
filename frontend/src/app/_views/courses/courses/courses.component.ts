@@ -236,9 +236,7 @@ export class CoursesComponent implements OnInit {
         error => throwError(error),
         () => {
           this.isCourseModalOpen = false;
-          for (const key of Object.keys(this.newCourse)) {
-            this.newCourse[key] = null;
-          }
+          this.clearObject(this.newCourse);
           this.loadingAction = false;
           const successBox = $('#action_completed');
           successBox.empty();
@@ -271,9 +269,7 @@ export class CoursesComponent implements OnInit {
         error => throwError(error),
         () => {
           this.isCourseModalOpen = false;
-          for (const key of Object.keys(this.newCourse)) {
-            this.newCourse[key] = null;
-          }
+          this.clearObject(this.newCourse);
           this.loadingAction = false;
           const successBox = $('#action_completed');
           successBox.empty();
@@ -293,9 +289,7 @@ export class CoursesComponent implements OnInit {
         error => throwError(error),
         () => {
           this.isCourseModalOpen = false;
-          for (const key of Object.keys(this.newCourse)) {
-            this.newCourse[key] = null;
-          }
+          this.clearObject(this.newCourse);
           this.loadingAction = false;
           const successBox = $('#action_completed');
           successBox.empty();
@@ -469,6 +463,12 @@ export class CoursesComponent implements OnInit {
 
   isWhite(color: string): boolean {
     return ['white', '#ffffff', '#fff'].includes(color.toLowerCase());
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
   }
 
 }

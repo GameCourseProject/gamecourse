@@ -184,7 +184,7 @@
     [isModalOpen]="isCourseModalOpen"
     [id]="mode === 'add' ? 'new-course' : 'edit-course'"
     [templateRef]="courseModal"
-    (closeBtnClicked)="isCourseModalOpen = false"
+    (closeBtnClicked)="isCourseModalOpen = false; clearObject(this.newCourse)"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>
@@ -233,7 +233,7 @@
       </div>
     </div>
 
-    <button class="cancel" (click)="isCourseModalOpen = false">Cancel</button>
+    <button *ngIf="mode === 'edit'" class="cancel" (click)="isCourseModalOpen = false; clearObject(this.newCourse)">Cancel</button>
     <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createCourse() : editCourse()">Save</button>
   </div>
 </ng-template>
