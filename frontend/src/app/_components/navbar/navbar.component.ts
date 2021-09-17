@@ -50,7 +50,7 @@ export class NavbarComponent implements OnInit {
   initNavigations(): void {
     const pages = {
       mainPage: {
-        sref: '/my-info',
+        sref: '/main',
           image: 'images/leaderboard.svg',
         text: 'Main Page',
         class: ''
