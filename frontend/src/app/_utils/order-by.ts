@@ -15,7 +15,6 @@ export function orderByNumber(a: number, b: number, sort: number = 1) {
 }
 
 export function orderByDate(a: Moment, b: Moment, sort: number = 1) {
-  if (a === null) return sort;
-  if (b === null) return -1 * sort;
-  return (b.milliseconds() - a.milliseconds()) * sort;
+  if (a === null || a.isSameOrBefore(b)) return sort;
+  else return -1 * sort;
 }
