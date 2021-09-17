@@ -42,6 +42,7 @@ API::registerFunction('core', 'getUserInfo', function() {
     $userInfo = $user->getData();
     $userInfo['username'] = $user->getUsername();
     $userInfo['authenticationService'] = User::getUserAuthenticationService($userInfo['username']);
+    $userInfo['hasImage'] = User::hasImage($user->getUsername());
     API::response(array('userInfo' => $userInfo));
 });
 

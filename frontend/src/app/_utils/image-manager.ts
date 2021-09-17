@@ -16,6 +16,8 @@ export class ImageManager {
   constructor(private sanitizer: DomSanitizer) { }
 
   public get(): SafeUrl {
+    if (!this.url) return null;
+
     if (this.timestamp)
       return this.sanitize(this.url + '?' + this.timestamp);
 
@@ -23,6 +25,12 @@ export class ImageManager {
   }
 
   public set(img: string | File) {
+    if (!img) {
+      this.url = null;
+      this.timestamp = null;
+      return;
+    }
+
     if (typeof img === 'string') {  // img URL
       this.url = img;
       this.timestamp = (new Date()).getTime();

@@ -15,9 +15,10 @@ export class ErrorService {
     return this.error;
   }
 
-  public static set(error: HttpErrorResponse): void {
-    this.error = error.error.error;
+  public static set(error: HttpErrorResponse | string): void {
+    this.error = error instanceof HttpErrorResponse ? error.error.error : error;
     throwError(error);
+    console.error(error);
   }
 
   public static clear(): void {

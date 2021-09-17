@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {User} from "../../../_domain/User";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {Subject, throwError} from "rxjs";
+import {DomSanitizer} from "@angular/platform-browser";
+import {Subject} from "rxjs";
 import {ImageManager} from "../../../_utils/image-manager";
 import {ErrorService} from "../../../_services/error.service";
+import {AuthType} from "../../../_domain/AuthType";
 
 @Component({
   selector: 'app-my-info',
@@ -21,6 +22,7 @@ export class MyInfoComponent implements OnInit {
   user: User;
   editUser: UserData;
 
+  originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
   photo: ImageManager;    // Photo to be displayed
   updatePhotoSubject: Subject<void> = new Subject<void>();    // Trigger photo update on navbar
@@ -50,9 +52,11 @@ export class MyInfoComponent implements OnInit {
           nickname: user.nickname,
           studentNumber: user.studentNumber,
           email: user.email,
+          major: user.major,
           auth: user.authMethod,
           username: user.username
         };
+        this.originalPhoto = user.photoUrl;
         this.photo.set(user.photoUrl);
 
         this.loading = false;
@@ -98,11 +102,15 @@ export class MyInfoComponent implements OnInit {
 }
 
 export interface UserData {
+  id?: number,
   name: string,
   nickname: string,
   studentNumber: number,
+  major: string,
   email: string,
-  auth: string,
+  auth: AuthType,
   username: string,
+  isAdmin?: boolean,
+  isActive?: boolean,
   image?: string | ArrayBuffer
 }

@@ -14,6 +14,7 @@ import {CreationMode} from "../../_domain/CreationMode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
 import {UserData} from "../../_views/my-info/my-info/my-info.component";
 import {CourseData, ImportCoursesData} from "../../_views/courses/courses/courses.component";
+import {ImportUsersData} from "../../_views/users/users/users.component";
 
 @Injectable({
   providedIn: 'root'
@@ -167,6 +168,141 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, this.httpOptions).pipe();
+  }
+
+  public getUsers(): Observable<User[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'users');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
+  }
+
+  public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
+    const data = {
+      "user_id": userID,
+      "isAdmin": isAdmin ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'setUserAdmin');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setUserActive(userID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "user_id": userID,
+      "isActive": isActive ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'setUserActive');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public createUser(userData: UserData): Observable<User> {
+    const data = {
+      userName: userData.name,
+      userStudentNumber: userData.studentNumber,
+      userNickname: userData.nickname,
+      userUsername: userData.username,
+      userEmail: userData.email,
+      userMajor: userData.major,
+      userIsActive: userData.isActive ? 1 : 0,
+      userIsAdmin: userData.isAdmin ? 1 : 0,
+      userAuthService: userData.auth,
+      userHasImage: !!userData.image,
+      userImage: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'createUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => User.fromDatabase(res['data']['user'])) );
+  }
+
+  public editUser(userData: UserData): Observable<void> {
+    const data = {
+      userId: userData.id,
+      userName: userData.name,
+      userStudentNumber: userData.studentNumber,
+      userNickname: userData.nickname,
+      userUsername: userData.username,
+      userEmail: userData.email,
+      userMajor: userData.major,
+      userIsActive: userData.isActive ? 1 : 0,
+      userIsAdmin: userData.isAdmin ? 1 : 0,
+      userAuthService: userData.auth,
+      userHasImage: !!userData.image,
+      userImage: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'editUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteUser(userID: number): Observable<void> {
+    const data = { user_id: userID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'deleteUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public exportUsers(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'exportUsers');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, null, this.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
+  }
+
+  public importUsers(importData: ImportUsersData): Observable<number> {
+    const data = {
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'importUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nUsers'])) );
   }
 
 
@@ -348,7 +484,7 @@ export class ApiHttpService {
         };
 
         const url = this.apiEndpoint.createUrlWithQueryParameters('docs/functions/getSchema.php', params);
-console.log(url)
+
         return this.get(url, this.httpOptions)
           .pipe( map((res: any) => res[0]) )
           .subscribe(libraries => {

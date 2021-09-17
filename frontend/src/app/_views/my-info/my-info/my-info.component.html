@@ -40,7 +40,7 @@
     [isModalOpen]="isEditModalOpen"
     [id]="'edit-info'"
     [templateRef]="editInfo"
-    (closeBtnClicked)="isEditModalOpen = false"
+    (closeBtnClicked)="isEditModalOpen = false; photo.set(originalPhoto)"
     [actionInProgress]="saving">
   </app-modal>
 </ng-container>
@@ -57,7 +57,10 @@
         <div class="image smaller">
           <div style="height:300px;">
             <div class="profile_image">
-              <div id="edit_display_profile_image"><img [src]="photo.get()"></div>
+              <div id="edit_display_profile_image">
+                <img *ngIf="photo.get()" [src]="photo.get()">
+                <span *ngIf="!photo.get()">Select a profile image</span>
+              </div>
             </div>
             <app-input-file
               [id]="'edit_profile_image'"

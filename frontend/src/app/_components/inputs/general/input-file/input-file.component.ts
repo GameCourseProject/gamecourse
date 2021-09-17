@@ -33,7 +33,7 @@ export class InputFileComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes?.accept && changes?.accept.currentValue.includes('image')) {
-      this.accept += ';capture=camera';
+      // this.accept += ';capture=camera'; // FIXME: allow camera input
     }
   }
 

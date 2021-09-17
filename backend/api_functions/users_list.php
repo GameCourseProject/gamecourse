@@ -30,6 +30,7 @@ API::registerFunction('core', 'users', function () {
         $user['lastLogin'] = $lastLogins;
         $user['username'] = $uOb->getUsername();
         $user['authenticationService'] = User::getUserAuthenticationService($user['username']);
+        $user['hasImage'] = User::hasImage($uOb->getUsername());
     }
 
     API::response(array('users' => $users));
@@ -95,6 +96,26 @@ API::registerFunction('core', 'createUser', function () {
             $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
             User::saveImage($img, API::getValue('userUsername'));
         }
+
+        $uOb = User::getUser($id);
+        $user = $uOb->getData();
+        $coursesIds = $uOb->getCourses();
+        $courses = [];
+        foreach ($coursesIds as $id) {
+            $cOb = Course::getCourse($id, false);
+            $c = $cOb->getData();
+            $courses[] = $c;
+        }
+        $lastLogins = $uOb->getSystemLastLogin();
+
+        $user['ncourses'] = sizeof($courses);
+        $user['courses'] = $courses;
+        $user['lastLogin'] = $lastLogins;
+        $user['username'] = $uOb->getUsername();
+        $user['authenticationService'] = User::getUserAuthenticationService($user['username']);
+        $user['hasImage'] = User::hasImage($uOb->getUsername());
+
+        API::response(array('user' => $user));
     } else {
         API::error("There is already a student registered with the student number: " . API::getValue('userStudentNumber'));
     }

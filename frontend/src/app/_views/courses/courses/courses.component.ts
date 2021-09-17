@@ -1,18 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import {throwError} from "rxjs";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {ErrorService} from "../../../_services/error.service";
 
 import {Course} from "../../../_domain/Course";
 import {User} from "../../../_domain/User";
 
 import {orderByNumber, orderByString} from "../../../_utils/order-by";
+import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
-import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
-import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
-import {error} from "jquery";
-import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-main',

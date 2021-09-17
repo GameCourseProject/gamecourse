@@ -156,7 +156,7 @@ export class Course {
   }
 }
 
-interface CourseDatabase {
+export interface CourseDatabase {
   "id": string,
   "name": string,
   "short": string,

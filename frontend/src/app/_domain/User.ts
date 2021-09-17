@@ -1,5 +1,6 @@
-import {AuthType} from "./AuthType";
 import {ApiEndpointsService} from "../_services/api/api-endpoints.service";
+import {AuthType} from "./AuthType";
+import {Course, CourseDatabase} from "./Course";
 
 export class User {
   private _id: number;
@@ -13,9 +14,13 @@ export class User {
   private _username: string;
   private _authMethod: AuthType;
   private _photoUrl: string;
+  private _nrCourses?: number;
+  private _courses?: Course[];
+  private _lastLogin?: Date;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
-              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string) {
+              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
+              nrCourses?: number, courses?: Course[], lastLogin?: Date) {
 
     this._id = id;
     this._name = name;
@@ -28,6 +33,9 @@ export class User {
     this._username = username;
     this._authMethod = authMethod;
     this._photoUrl = photoUrl;
+    this._nrCourses = nrCourses;
+    if (courses != undefined) this._courses = courses;
+    this._lastLogin = lastLogin;
   }
 
   get id(): number {
@@ -118,6 +126,30 @@ export class User {
     this._photoUrl = value;
   }
 
+  get nrCourses(): number {
+    return this._nrCourses;
+  }
+
+  set nrCourses(value: number) {
+    this._nrCourses = value;
+  }
+
+  get courses(): Course[] {
+    return this._courses;
+  }
+
+  set courses(value: Course[]) {
+    this._courses = value;
+  }
+
+  get lastLogin(): Date {
+    return this._lastLogin;
+  }
+
+  set lastLogin(value: Date) {
+    this._lastLogin = value;
+  }
+
   static fromDatabase(obj: UserDatabase): User {
     return new User(
       parseInt(obj.id),
@@ -130,7 +162,10 @@ export class User {
       !!parseInt(obj.isActive),
       obj.username,
       obj.authenticationService as AuthType,
-      ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png'
+      obj.hasImage ? ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png' : null,
+      obj.ncourses != undefined ? obj.ncourses : undefined,
+      obj.courses != undefined ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : undefined,
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g.test(obj.lastLogin) ? new Date(obj.lastLogin) : null
     );
   }
 }
@@ -145,5 +180,9 @@ interface UserDatabase {
   "isAdmin": string,
   "isActive": string,
   "username": string,
-  "authenticationService": string
+  "authenticationService": string,
+  "hasImage": boolean,
+  "ncourses": number,
+  "courses": CourseDatabase[],
+  "lastLogin": string
 }

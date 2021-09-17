@@ -232,7 +232,7 @@ class User
     public function getSystemLastLogin()
     {
         $lastLogin = Core::$systemDB->select("course_user", ["id" => $this->id], "lastActivity");
-        return $this->lastLoginTimeTostring($lastLogin);
+        return $lastLogin;
     }
 
     /*public function getSystemLastLogin()
@@ -268,14 +268,11 @@ class User
         file_put_contents("photos/". $userUsername . ".png", $img);
     }
 
-    public static function getImage($userId)
+    public static function hasImage($username)
     {
-        if(file_exists("photos/" . $userId . ".png")){
-            return file_get_contents("photos/" . $userId . ".png");
-        }else{
-            return null;
-        }
+        return file_exists("photos/" . $username . ".png");
     }
+
     public static function exportUsers()
     {
         $listOfUsers = User::getAllInfo();
