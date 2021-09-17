@@ -802,7 +802,7 @@ class Course
 
                 //data folder
                 $toFolder = Course::getCourseDataFolder($courseObj->cid, $course->name);
-                $fromFolder = $course->courseId . "-" . $course->name;
+                $fromFolder = $course->courseId . "-" . preg_replace("/[^a-zA-Z0-9_ ]/", "", $course->name);
 
                 for ($i = 0; $i < $zip->numFiles; $i++) {
                     $name = $zip->getNameIndex($i);
