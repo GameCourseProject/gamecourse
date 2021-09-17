@@ -9,7 +9,7 @@ import {
   UrlSegment,
   UrlTree
 } from '@angular/router';
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import {ApiHttpService} from "../_services/api/api-http.service";
 import {catchError, map} from "rxjs/operators";
 

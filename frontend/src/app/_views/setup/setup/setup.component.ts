@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {throwError} from "rxjs";
 import {Router} from "@angular/router";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-setup',
@@ -34,12 +34,13 @@ export class SetupComponent implements OnInit {
     if (this.form.valid) {
       this.loading = true;
 
-      this.api.doSetup(this.form.getRawValue()).subscribe(
-        setup => {
-          if (setup) this.router.navigate(['']);
-        },
-        error => throwError(error),
-        () => this.loading = false
+      this.api.doSetup(this.form.getRawValue())
+        .subscribe(
+          setup => {
+            if (setup) this.router.navigate(['']);
+            },
+            error => ErrorService.set(error),
+          () => this.loading = false
       );
     }
   }

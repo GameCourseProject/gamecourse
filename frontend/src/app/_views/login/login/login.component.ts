@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthType } from 'src/app/_domain/AuthType';
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {Router} from "@angular/router";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-login',
@@ -30,12 +31,11 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/no-access'])
         }
 
-        if (error.status === 409) {
+        else if (error.status === 409) {
           this.router.navigate(['/setup'])
         }
 
-        // TODO: alert
-        console.error(error)
+        else ErrorService.set(error);
       });
   }
 

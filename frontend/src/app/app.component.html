@@ -1,1 +1,9 @@
 <router-outlet></router-outlet>
+
+<!-- Error Modal
+================================================== -->
+<app-error-modal
+  [isModalOpen]="hasError()"
+  [text]="getError()"
+  (closeBtnClicked)="clearError()">
+</app-error-modal>

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import {Course} from "../../../_domain/Course";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-main',
@@ -29,7 +30,8 @@ export class MainComponent implements OnInit {
       .subscribe(courses => {
         this.activeCourses = courses;
         this.loading = false;
-      });
+      },
+        error => ErrorService.set(error));
   }
 
 }

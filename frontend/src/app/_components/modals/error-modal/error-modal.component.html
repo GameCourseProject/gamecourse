@@ -1,0 +1,16 @@
+<app-modal
+  [isModalOpen]="isModalOpen"
+  [id]="id"
+  [classList]="'verification ' + classList"
+  [templateRef]="errorModal"
+  (closeBtnClicked)="isModalOpen = false; closeBtnClicked.emit()"
+  [actionInProgress]="actionInProgress"
+  [innerClickEvents]="innerClickEvents">
+</app-modal>
+
+<ng-template #errorModal>
+  <div class="message_warning warning">{{text}}</div>
+  <div class="confirmation_btns">
+    <button (click)="isModalOpen = false; closeBtnClicked.emit()">{{negativeBtnText}}</button>
+  </div>
+</ng-template>

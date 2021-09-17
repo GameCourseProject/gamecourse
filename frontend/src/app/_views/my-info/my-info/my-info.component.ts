@@ -4,6 +4,7 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {Subject, throwError} from "rxjs";
 import {ImageManager} from "../../../_utils/image-manager";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-my-info',
@@ -55,7 +56,8 @@ export class MyInfoComponent implements OnInit {
         this.photo.set(user.photoUrl);
 
         this.loading = false;
-      })
+      },
+        error => ErrorService.set(error))
   }
 
   isReadyToEdit() {
@@ -85,7 +87,7 @@ export class MyInfoComponent implements OnInit {
           if (this.editUser.image) // Trigger change on navbar
             this.updatePhotoSubject.next();
         },
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.saving = false;
           this.isEditModalOpen = false;

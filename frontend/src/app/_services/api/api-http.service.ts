@@ -55,7 +55,7 @@ export class ApiHttpService {
       .pipe(
         map(res => true),
         catchError(error => {
-          console.warn(error);
+          console.warn(error.error.error);
           if (error.status === 409)
             return of(false)
           return of(true);

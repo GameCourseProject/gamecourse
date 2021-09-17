@@ -11,6 +11,8 @@ import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
 import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {error} from "jquery";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-main',
@@ -92,7 +94,8 @@ export class CoursesComponent implements OnInit {
       .subscribe(user => {
         this.user = user;
         this.getCourses();
-      });
+      },
+        error => ErrorService.set(error));
   }
 
   getCourses(): void {
@@ -117,7 +120,8 @@ export class CoursesComponent implements OnInit {
         this.reduceList();
 
         this.loading = false;
-      });
+      },
+        error => ErrorService.set(error));
   }
 
   getYearsOptions(): void {
@@ -206,7 +210,7 @@ export class CoursesComponent implements OnInit {
     this.api.setCourseActive(course.id, course.isActive)
       .subscribe(
       res => this.loadingAction = false,
-      error => throwError(error)
+      error => ErrorService.set(error)
       );
   }
 
@@ -219,7 +223,7 @@ export class CoursesComponent implements OnInit {
     this.api.setCourseVisible(course.id, course.isVisible)
       .subscribe(
         res => this.loadingAction = false,
-        error => throwError(error)
+        error => ErrorService.set(error)
       );
   }
 
@@ -233,7 +237,7 @@ export class CoursesComponent implements OnInit {
           this.exportOptions[res.id] = { users: true, awards: true, modules: true };
           this.reduceList();
         },
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.isCourseModalOpen = false;
           this.clearObject(this.newCourse);
@@ -266,7 +270,7 @@ export class CoursesComponent implements OnInit {
           this.exportOptions[res.id] = { users: true, awards: true, modules: true };
           this.reduceList();
         },
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.isCourseModalOpen = false;
           this.clearObject(this.newCourse);
@@ -286,7 +290,7 @@ export class CoursesComponent implements OnInit {
     this.api.editCourse(this.newCourse)
       .subscribe(
         res => this.getCourses(),
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.isCourseModalOpen = false;
           this.clearObject(this.newCourse);
@@ -309,7 +313,7 @@ export class CoursesComponent implements OnInit {
           this.exportOptions[course.id] = null;
           this.reduceList();
         },
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.isDeleteVerificationModalOpen = false;
           this.loadingAction = false
@@ -336,7 +340,7 @@ export class CoursesComponent implements OnInit {
             successBox.append(nCourses + " Course" + (nCourses > 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           },
-          error => throwError(error),
+          error => ErrorService.set(error),
           () => {
             this.isImportModalOpen = false;
             this.loadingAction = false;
@@ -355,7 +359,7 @@ export class CoursesComponent implements OnInit {
           const files = ApiEndpointsService.API_ENDPOINT + '/' + zip;
           location.replace(files);
         },
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => {
           this.isIndividualExportModalOpen = false;
           this.saving = false

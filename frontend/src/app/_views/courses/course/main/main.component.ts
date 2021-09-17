@@ -3,6 +3,7 @@ import {Course} from "../../../../_domain/Course";
 import {ActivatedRoute} from "@angular/router";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {throwError} from "rxjs";
+import {ErrorService} from "../../../../_services/error.service";
 
 @Component({
   selector: 'app-main',
@@ -31,7 +32,7 @@ export class MainComponent implements OnInit {
     this.api.getCourse(courseID)
       .subscribe(
         course => this.course = course,
-        error => throwError(error),
+        error => ErrorService.set(error),
         () => this.loading = false
       );
   }
@@ -44,7 +45,7 @@ export class MainComponent implements OnInit {
           this.ruleSystemLastRun = info.ruleSystemLastRun;
           this.getCourse(courseID);
         },
-        error => throwError(error)
+        error => ErrorService.set(error)
       );
   }
 }

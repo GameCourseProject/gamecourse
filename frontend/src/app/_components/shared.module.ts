@@ -10,6 +10,7 @@ import { ModalComponent } from './modals/modal/modal.component';
 import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive";
 import { VerificationModalComponent } from './modals/verification-modal/verification-modal.component';
 import { InputFileComponent } from './inputs/general/input-file/input-file.component';
+import { ErrorModalComponent } from './modals/error-modal/error-modal.component';
 
 
 @NgModule({
@@ -21,15 +22,17 @@ import { InputFileComponent } from './inputs/general/input-file/input-file.compo
     ModalComponent,
     ClickedOutsideDirective,
     VerificationModalComponent,
-    InputFileComponent
+    InputFileComponent,
+    ErrorModalComponent
   ],
-  exports: [
-    NavbarComponent,
-    SidebarComponent,
-    ModalComponent,
-    VerificationModalComponent,
-    InputFileComponent
-  ],
+    exports: [
+        NavbarComponent,
+        SidebarComponent,
+        ModalComponent,
+        VerificationModalComponent,
+        InputFileComponent,
+        ErrorModalComponent
+    ],
   imports: [
     CommonModule,
     RouterModule,
