@@ -161,7 +161,7 @@ export class UsersComponent implements OnInit {
         break;
 
       case "# Courses":
-        this.filteredUsers.sort((a, b) => orderByNumber(a.nrCourses, b.nrCourses, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => orderByNumber(a.courses.length, b.courses.length, this.orderByActive.sort))
         break;
 
       case "Last Login":
