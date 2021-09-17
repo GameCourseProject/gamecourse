@@ -466,6 +466,7 @@ export class CoursesComponent implements OnInit {
   }
 
   isWhite(color: string): boolean {
+    if (!color) return false;
     return ['white', '#ffffff', '#fff'].includes(color.toLowerCase());
   }
 
