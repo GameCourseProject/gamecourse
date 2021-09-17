@@ -34,6 +34,7 @@
               <th >Nickname</th>
               <th >Student nº</th>
               <th ># Courses</th>
+              <th >Last Login</th>
               <th class="check-column">Admin</th>
               <th class="check-column">Active</th>
               <th class="action-column"></th>
@@ -48,6 +49,7 @@
               <td class="ng-binding">{{user.nickname}}</td>
               <td class="ng-binding">{{user.studentNumber}}</td>
               <td class="ng-binding">{{user.courses.length}}</td>
+              <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : ''}}</td>
               <td class="check-column">
                 <label class="switch">
                   <input type="checkbox" [checked]="user.isAdmin" (change)="toggleAdmin(user.id)">

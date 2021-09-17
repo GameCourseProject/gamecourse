@@ -20,6 +20,7 @@
     "@angular/router": "~12.1.0",
     "@simonwep/pickr": "^1.8.1",
     "jquery": "^3.6.0",
+    "moment": "^2.29.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"

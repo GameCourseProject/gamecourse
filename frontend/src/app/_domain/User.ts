@@ -1,6 +1,8 @@
 import {ApiEndpointsService} from "../_services/api/api-endpoints.service";
 import {AuthType} from "./AuthType";
 import {Course, CourseDatabase} from "./Course";
+import * as moment from 'moment';
+import {Moment} from "moment";
 
 export class User {
   private _id: number;
@@ -15,11 +17,11 @@ export class User {
   private _authMethod: AuthType;
   private _photoUrl: string;
   private _courses?: Course[];
-  private _lastLogin?: Date;
+  private _lastLogin?: Moment;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
               isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
-              courses?: Course[], lastLogin?: Date) {
+              courses?: Course[], lastLogin?: Moment) {
 
     this._id = id;
     this._name = name;
@@ -132,11 +134,11 @@ export class User {
     this._courses = value;
   }
 
-  get lastLogin(): Date {
+  get lastLogin(): Moment {
     return this._lastLogin;
   }
 
-  set lastLogin(value: Date) {
+  set lastLogin(value: Moment) {
     this._lastLogin = value;
   }
 
@@ -154,7 +156,7 @@ export class User {
       obj.authenticationService as AuthType,
       obj.hasImage ? ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png' : null,
       obj.courses != undefined ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : undefined,
-      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g.test(obj.lastLogin) ? new Date(obj.lastLogin) : null
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g.test(obj.lastLogin) ? moment(obj.lastLogin).subtract(1, 'hours') : null
     );
   }
 }

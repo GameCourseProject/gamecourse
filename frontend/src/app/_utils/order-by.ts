@@ -1,4 +1,7 @@
-// sort --> 1: ascending, -1: descending
+import {Moment} from "moment";
+
+// NOTE: sort --> 1: ascending, -1: descending
+
 export function orderByString(a: string, b: string, sort: number = 1) {
   if (a === null) return sort;
   if (b === null) return -1 * sort;
@@ -11,8 +14,8 @@ export function orderByNumber(a: number, b: number, sort: number = 1) {
   return (a - b) * sort;
 }
 
-export function orderByDate(a: Date, b: Date, sort: number = 1) {
+export function orderByDate(a: Moment, b: Moment, sort: number = 1) {
   if (a === null) return sort;
   if (b === null) return -1 * sort;
-  return (b.getTime() - a.getTime()) * sort;
+  return (b.milliseconds() - a.milliseconds()) * sort;
 }
