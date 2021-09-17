@@ -20,7 +20,7 @@ API::registerFunction('core', 'users', function () {
         $courses = [];
         foreach ($coursesIds as $id) {
             $cOb = Course::getCourse($id, false);
-            $c = ["id" => $id, "name" => $cOb->getName()];
+            $c = $cOb->getData();
             $courses[] = $c;
         }
         $lastLogins = $uOb->getSystemLastLogin();
