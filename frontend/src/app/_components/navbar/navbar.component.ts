@@ -5,6 +5,7 @@ import {User} from "../../_domain/User";
 import {Observable} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ImageManager} from "../../_utils/image-manager";
+import {ErrorService} from "../../_services/error.service";
 
 @Component({
   selector: 'app-navbar',
@@ -144,10 +145,7 @@ export class NavbarComponent implements OnInit {
       isLoggedIn => {
         if (!isLoggedIn) this.router.navigate(['/login'])
       },
-      error => {
-        // TODO: alert
-        console.error(error.message)
-      }
+      error => ErrorService.set(error)
     )
   }
 

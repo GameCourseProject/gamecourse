@@ -12,6 +12,7 @@ import {
 import {Observable, of, throwError} from 'rxjs';
 import {ApiHttpService} from "../_services/api/api-http.service";
 import {catchError, map} from "rxjs/operators";
+import {ErrorService} from "../_services/error.service";
 
 @Injectable({
   providedIn: 'root'
@@ -48,8 +49,7 @@ export class LoginGuard implements CanActivate, CanLoad {
           }
         },
         error => {
-          // TODO: alert
-          console.error(error)
+          ErrorService.set(error)
           return false;
         }
       ),
