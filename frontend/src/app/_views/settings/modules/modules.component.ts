@@ -6,6 +6,7 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import _ from 'lodash';
+import {DownloadManager} from "../../../_utils/download-manager";
 
 @Component({
   selector: 'app-modules',
@@ -98,10 +99,7 @@ export class ModulesComponent implements OnInit {
   public exportModules(): void {
     this.loading = true;
     this.api.exportModules()
-      .subscribe(zip => {
-        const files = ApiEndpointsService.API_ENDPOINT + '/' + zip;
-        location.replace(files);
-      },
+      .subscribe(zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
         error => ErrorService.set(error),
       () => this.loading = false
       )

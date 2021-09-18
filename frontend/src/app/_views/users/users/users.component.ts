@@ -10,11 +10,11 @@ import {UserData} from "../../my-info/my-info/my-info.component";
 import {AuthType} from "../../../_domain/AuthType";
 import {ImageManager} from "../../../_utils/image-manager";
 
-import {orderByDate, orderByNumber, orderByString} from "../../../_utils/order-by";
 import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
-import {downloadAsCSV} from "../../../_utils/download-files";
 
 import _ from 'lodash';
+import {DownloadManager} from "../../../_utils/download-manager";
+import {Ordering} from "../../../_utils/ordering";
 
 
 @Component({
@@ -149,23 +149,23 @@ export class UsersComponent implements OnInit {
   orderList(): void {
     switch (this.orderByActive.orderBy) {
       case "Name":
-        this.filteredUsers.sort((a, b) => orderByString(a.name, b.name, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => Ordering.byString(a.name, b.name, this.orderByActive.sort))
         break;
 
       case "Nickname":
-        this.filteredUsers.sort((a, b) => orderByString(a.nickname, b.nickname, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => Ordering.byString(a.nickname, b.nickname, this.orderByActive.sort))
         break;
 
       case "Student Number":
-        this.filteredUsers.sort((a, b) => orderByNumber(a.studentNumber, b.studentNumber, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => Ordering.byNumber(a.studentNumber, b.studentNumber, this.orderByActive.sort))
         break;
 
       case "# Courses":
-        this.filteredUsers.sort((a, b) => orderByNumber(a.courses.length, b.courses.length, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => Ordering.byNumber(a.courses.length, b.courses.length, this.orderByActive.sort))
         break;
 
       case "Last Login":
-        this.filteredUsers.sort((a, b) => orderByDate(a.lastLogin, b.lastLogin, this.orderByActive.sort))
+        this.filteredUsers.sort((a, b) => Ordering.byDate(a.lastLogin, b.lastLogin, this.orderByActive.sort))
         break;
     }
   }
@@ -304,7 +304,7 @@ export class UsersComponent implements OnInit {
 
     this.api.exportUsers()
       .subscribe(
-        contents => downloadAsCSV('users', contents),
+        contents => DownloadManager.downloadAsCSV('users', contents),
         error => ErrorService.set(error),
         () => this.saving = false
       )

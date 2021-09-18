@@ -7,10 +7,11 @@ import {ErrorService} from "../../../_services/error.service";
 import {Course} from "../../../_domain/Course";
 import {User} from "../../../_domain/User";
 
-import {orderByNumber, orderByString} from "../../../_utils/order-by";
 import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 import Pickr from "@simonwep/pickr";
 import _ from 'lodash';
+import {DownloadManager} from "../../../_utils/download-manager";
+import {Ordering} from "../../../_utils/ordering";
 
 @Component({
   selector: 'app-main',
@@ -177,19 +178,19 @@ export class CoursesComponent implements OnInit {
   orderList(): void {
     switch (this.orderByActive.orderBy) {
       case "Name":
-        this.filteredCourses.sort((a, b) => orderByString(a.name, b.name, this.orderByActive.sort))
+        this.filteredCourses.sort((a, b) => Ordering.byString(a.name, b.name, this.orderByActive.sort))
         break;
 
       case "Short":
-        this.filteredCourses.sort((a, b) => orderByString(a.short, b.short, this.orderByActive.sort))
+        this.filteredCourses.sort((a, b) => Ordering.byString(a.short, b.short, this.orderByActive.sort))
         break;
 
       case "# Students":
-        this.filteredCourses.sort((a, b) => orderByNumber(a.nrStudents, b.nrStudents, this.orderByActive.sort))
+        this.filteredCourses.sort((a, b) => Ordering.byNumber(a.nrStudents, b.nrStudents, this.orderByActive.sort))
         break;
 
       case "Year":
-        this.filteredCourses.sort((a, b) => orderByString(a.year, b.year, this.orderByActive.sort))
+        this.filteredCourses.sort((a, b) => Ordering.byString(a.year, b.year, this.orderByActive.sort))
         break;
     }
   }
@@ -353,10 +354,7 @@ export class CoursesComponent implements OnInit {
 
     this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
       .subscribe(
-        zip => {
-          const files = ApiEndpointsService.API_ENDPOINT + '/' + zip;
-          location.replace(files);
-        },
+        zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
         error => ErrorService.set(error),
         () => {
           this.isIndividualExportModalOpen = false;
