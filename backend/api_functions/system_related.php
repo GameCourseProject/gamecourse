@@ -11,23 +11,18 @@ use GameCourse\Module;
 API::registerFunction('settings', 'global', function() {
     API::requireAdminPermission();
 
-    if (API::hasKey('setTheme')) {
-        if (file_exists('themes/' . API::getValue('setTheme')))
-            Core::setTheme(API::getValue('setTheme'));
-    } else {
-        $themes = array();
+    $themes = array();
 
-        $themesDir = dir('themes/');
-        while (($themeDirName = $themesDir->read()) !== false) {
-            $themeDir = 'themes/' . $themeDirName;
-            if ($themeDirName == '.' || $themeDirName == '..' || filetype($themeDir) != 'dir')
-                continue;
-            $themes[] = array('name' => $themeDirName, 'preview' => file_exists($themeDir . '/preview.png'));
-        }
-        $themesDir->close();
-        
-        API::response(array('theme' => $GLOBALS['theme'], 'themes' => $themes));
+    $themesDir = dir('themes/');
+    while (($themeDirName = $themesDir->read()) !== false) {
+        $themeDir = 'themes/' . $themeDirName;
+        if ($themeDirName == '.' || $themeDirName == '..' || filetype($themeDir) != 'dir')
+            continue;
+        $themes[] = array('name' => $themeDirName, 'preview' => file_exists($themeDir . '/preview.png'));
     }
+    $themesDir->close();
+
+    API::response(array('theme' => $GLOBALS['theme'], 'themes' => $themes));
 });
 
 //system settings (courses installed)

@@ -1,0 +1,461 @@
+@import "../../../css/src/base-settings";
+@import "../../../css/src/device-sizes";
+@import "../../../css/src/inputs";
+
+body {
+  font-family: @font-family;
+  background-color: @color-primary-1;
+  margin: 0;
+  height: 100%;
+  color: @color-primary-4;
+}
+
+a {
+  color: @link-color;
+  text-decoration: none;
+
+  &:hover {
+    color: @link-color-hover;
+    text-decoration: underline;
+  }
+}
+
+img {
+  vertical-align: middle;
+  max-width: 100%
+}
+
+nav {
+  background-color: @color-primary-2;
+  overflow: hidden;
+  margin-bottom: 20px;
+
+  .nav-header {
+    display: inline-block;
+    padding: 10px 10px 10px 20px;
+    line-height: 32px;
+    font-size: 140%;
+    font-weight: bold;
+    color: @color-primary-4;
+  }
+
+  .nav-collapse {
+    width: 100%;
+
+    @media all and (min-width: @device-sm) {
+      display: inline-block;
+      float: right;
+      width: auto;
+    }
+  }
+  ul {
+    list-style: none;
+    margin: 0px;
+    padding: 0;
+
+    @media all and (min-width: @device-sm) {
+      margin-right: 12px;
+    }
+
+    > li {
+      border-right: 1px solid @color-primary-1;
+      &:first-child {
+        border-left: 1px solid @color-primary-1;
+      }
+
+      @media all and (min-width: @device-sm) {
+        display: inline-block;
+      }
+
+      > a {
+        display: block;
+        padding: 10px 10px 10px 25px;
+        font-weight: bold;
+        transition: all .3s ease;
+        background-color: @link-blocky-background;
+        color: @link-blocky-color;
+
+        @media all and (min-width: @device-sm) {
+          padding-left: 10px;
+        }
+
+        &.active,&:active {
+          background-color: @link-blocky-background-active;
+          color: @link-blocky-color-active;
+        }
+
+        &:hover {
+          text-decoration: none;
+          cursor: pointer;
+          background-color: @link-blocky-background-hover;
+          color: @link-blocky-color-hover;
+        }
+
+        img {
+          margin-right: 8px;
+          width: 32px;
+          height: 32px;
+        }
+
+        div {
+          display: inline-block;
+          vertical-align: middle;
+        }
+
+        span {
+          vertical-align: middle;
+          &:nth-of-type(2) {
+            display: block;
+            font-size: 10px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.page-block {
+  background-color: @page-block-background;
+  margin: 0px 12px 12px 12px;
+
+  > .header {
+    font-size: 120%;
+    font-weight: bold;
+    position: relative;
+    line-height: 32px;
+
+    padding: 8px;
+
+    > span {
+      vertical-align: middle;
+      padding-left: 8px;
+    }
+
+    img {
+      width: 32px;
+    }
+    //.admin-controls(0px);
+  }
+  > .content {
+    margin: -@block-margin;
+    @media all and (min-width: @device-sm) {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+}
+
+.page-block .block {
+  flex-grow: 1;
+  margin: @block-margin @block-margin 0px @block-margin;
+  //margin: 0px 8px 8px 0px;
+  background-color: @block-background;
+
+  .block-header {
+    border-bottom: @block-header-border-bottom;
+    padding: 8px;
+    position: relative;
+    line-height: 40px;
+
+    > span:nth-child(2) {
+      font-size: 140%;
+      font-weight: bold;
+      padding-left: 8px;
+      vertical-align: middle;
+    }
+    img {
+      max-height: @block-header-image-height;
+    }
+
+    .image {
+      display: inline-block;
+      position: relative;
+      height: @block-header-image-height;
+      width: @block-header-image-height;
+      vertical-align: middle;
+
+      .editor {
+        background-color: #EEE;
+        border: 1px solid #444;
+        position: absolute;
+        left: 50px;
+        top: 0px;
+      }
+    }
+
+
+    //.admin-controls(8px);
+  }
+  .block-content {
+    padding: 8px;
+  }
+
+  &:last-child {
+    flex-grow: 0;
+  }
+
+  &.mobile-grow {
+    @media(max-width: @device-sm) {
+      width: inherit !important;
+    }
+  }
+}
+
+.tabs {
+  display: block;
+
+  @media (min-width: @device-md) {
+    display: flex;
+  }
+
+  .tabs-container {
+    list-style: none;
+    background-color: lighten(@color-primary-0, 5%);
+    padding: 8px;
+    margin: 0px 0px 8px 0px;
+    flex-shrink: 0;
+
+    @media all and (min-width: @device-md) {
+      width: 180px;
+      margin-bottom: 0px;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 16px;
+      font-weight: normal;
+    }
+
+    > li {
+      font-weight: bold;
+      padding: 0px;
+    }
+
+    a {
+      display: block;
+      padding: 2px;
+      margin: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: @color-primary-0;
+      }
+
+      &.active,&:active {
+        background-color: @color-primary-3;
+      }
+
+      span {
+        vertical-align: middle;
+      }
+    }
+  }
+  .tab-content-wrapper {
+    flex-grow: 1;
+    margin-left: 0px;
+    padding: 8px;
+
+    background-color: lighten(@color-primary-0, 5%);
+
+    @media all and (min-width: @device-md) {
+      margin-left: 2px;
+    }
+
+    > .tab-title {
+      font-weight: bold;
+      font-size: 110%;
+      padding: 8px;
+    }
+  }
+}
+
+.section {
+  padding: 4px;
+  > .title {
+    overflow: hidden;
+    white-space: nowrap;
+    &::after {
+      content: "";
+      display: inline-block;
+      width: 100%;
+      margin: 0px 0px 5px 5px;
+      border-bottom: 1px solid lighten(black, 40%);
+      opacity: 0.5;
+    }
+  }
+  > .content {
+    margin-top: 6px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+#modules {
+  display: flex;
+  flex-wrap: wrap;
+  > table {
+    display: block;
+    margin: 8px;
+    padding: 8px;
+    border: 1px solid @color-primary-1;
+    min-width: 280px;
+
+    .on { color: #282; }
+    .off { color: #f73; }
+  }
+}
+
+#users, #currentRoles {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.change-box {
+  margin-top: 8px;
+}
+
+#currentRoles {
+  padding-left: 5px;
+
+  @media all and (min-width: @device-md) {
+    width: 500px;
+  }
+
+  .user-names {
+    font-weight: bold;
+  }
+
+  .roles {
+    margin-top: 4px;
+
+    > div {
+      display: inline-block;
+      background-color: darken(white, 5%);
+      border: 1px solid darken(white, 10%);
+      padding: 4px 4px 4px 26px;
+      margin-right: 4px;
+      font-weight: bold;
+      position: relative;
+
+      &:hover {
+        background-color: darken(white, 10%);
+        border-color: darken(white, 15%);
+
+        .selector {
+          background-color: darken(white, 15%);
+          border-color: darken(white, 20%);
+        }
+      }
+
+      > .selector {
+        position: absolute;
+        top: 5px;
+        left: 6px;
+        background-color: darken(white, 10%);
+        border: 1px solid darken(white, 15%);
+        width: 14px;
+        height: 14px;
+        &.all:before {
+          content: '✓';
+          position: relative;
+          top: -5px;
+          left: 1px;
+        }
+        &.some:before {
+          content: '–';
+          position: relative;
+          top: -3px;
+          left: 2px;
+        }
+      }
+    }
+  }
+
+  .roles-modify {
+    margin-top: 4px;
+  }
+}
+
+.text-content {
+  background-color: @block-background;
+  width: 100%;
+  margin: @block-margin @block-margin 0px @block-margin;
+  padding: 8px;
+
+  a {
+    color: blue;
+
+    &:hover {
+      color: darken(blue, 10%);
+    }
+  }
+}
+
+#themes {
+  display: flex;
+  flex-wrap: wrap;
+  .theme {
+    margin: 8px;
+    padding: 8px;
+    border: 1px solid @color-primary-1;
+    text-align: center;
+
+    .preview {
+      width: 120px;
+      height: 80px;
+    }
+
+    &.current {
+      color: white;
+      background-color: #1aa35b;
+    }
+
+    &.pointer {
+      cursor: pointer;
+    }
+  }
+}
+
+#user-administration {
+  display: flex;
+  align-items: center;
+
+  > div {
+    display: inline-block;
+  }
+
+  > .buttons {
+    width: 130px;
+    margin: 0px 4px;
+    button {
+      display: block;
+      margin: 0 auto;
+    }
+  }
+}
+
+div.tooltip {
+  /*width: 300px;
+  height: 60px;*/
+  background-color: @color-primary-3;
+  border: 1px solid darken(@color-primary-3, 5%);
+
+  .content {
+    padding: 1px;
+
+    img.student-image {
+      width: 58px;
+    }
+
+    .userinfo {
+      display: inline-block;
+      padding-left: 4px;
+      vertical-align: top;
+
+      .name {
+        font-weight: bold;
+      }
+    }
+  }
+}
