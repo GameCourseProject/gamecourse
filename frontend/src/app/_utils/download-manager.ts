@@ -22,5 +22,3 @@ export class DownloadManager {
     location.replace(zip);
   }
 }
-
-// FIXME: add zip download
