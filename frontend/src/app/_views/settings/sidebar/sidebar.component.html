@@ -1,0 +1,5 @@
+<ul class="tabs-container">
+  <li *ngFor="let tab of navigation">
+    <a [routerLink]="tab.link" [routerLinkActive]="'active focused'">{{tab.name}}</a>
+  </li>
+</ul>

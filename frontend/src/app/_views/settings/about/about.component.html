@@ -1,0 +1,28 @@
+<app-navbar></app-navbar>
+
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper">
+    <div *ngIf="!loading" id="settings" class="page">
+      <div class="tabs">
+        <app-settings-sidebar></app-settings-sidebar>
+
+        <div class="tab-content-wrapper">
+          <div class="tab-content">
+            <div class="sections">
+              <div class="section">
+                <div class="content">GameCourse: A gamification system for courses.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>

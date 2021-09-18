@@ -15,6 +15,8 @@ import {SetupData} from "../../_views/setup/setup/setup.component";
 import {UserData} from "../../_views/my-info/my-info/my-info.component";
 import {CourseData, ImportCoursesData} from "../../_views/courses/courses/courses.component";
 import {ImportUsersData} from "../../_views/users/users/users.component";
+import {Module} from "../../_domain/Module";
+import {ImportModulesData} from "../../_views/settings/modules/modules.component";
 
 @Injectable({
   providedIn: 'root'
@@ -460,6 +462,62 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nCourses'])) );
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Settings ----------------- ***/
+  /*** --------------------------------------------- ***/
+
+  getSettingsGlobal(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'global');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  getSettingsModules(): Observable<Module[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'modules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+  importModule(importData: ImportModulesData): Observable<void> {
+    const data = {
+      file: importData.file,
+      fileName: importData.fileName
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'importModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  exportModules(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'core');
+      qs.push('request', 'exportModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, null, this.httpOptions)
+      .pipe( map((res: any) => res['data']['file']) );
   }
 
 

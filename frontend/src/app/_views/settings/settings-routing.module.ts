@@ -1,12 +1,23 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {SettingsComponent} from "./settings/settings.component";
+import {GlobalComponent} from "./global/global.component";
+import {AboutComponent} from "./about/about.component";
+import {ModulesComponent} from "./modules/modules.component";
 
 const routes: Routes = [
   {
-    path: '',
-    component: SettingsComponent
-  }
+    path: 'global',
+    component: GlobalComponent
+  },
+  {
+    path: 'about',
+    component: AboutComponent
+  },
+  {
+    path: 'modules',
+    component: ModulesComponent
+  },
+  { path: '', redirectTo: 'global', pathMatch: 'full' }
 ];
 
 @NgModule({

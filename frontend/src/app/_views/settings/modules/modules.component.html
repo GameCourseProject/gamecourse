@@ -1,0 +1,80 @@
+<app-navbar></app-navbar>
+
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper">
+    <div *ngIf="!loading" id="settings" class="page">
+      <div class="tabs">
+        <app-settings-sidebar></app-settings-sidebar>
+
+        <div class="tab-content-wrapper">
+          <div class="tab-content">
+
+            <!-- Search -->
+            <div class="search">
+              <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="onSearch(searchQuery)">
+              <button class="magnifying-glass" id="search-btn" (click)="onSearch(searchQuery)"></button>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="action-buttons ng-scope" id="install_modules">
+              <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
+              <div class="icon export_icon" title="Export" (click)="exportModules()"></div>
+            </div>
+
+            <!-- Modules -->
+            <div id="modules">
+              <div *ngFor="let module of filteredModules" class="module_card">
+                <div class="icon" [style.background-image]="'url(assets/modules/' + module.directory.split('/')[1] + '/icon.svg)'"></div>
+                <div class="header">{{module.name}}</div>
+                <div class="text no-status">{{module.description}}</div>
+              </div>
+
+              <div *ngIf="filteredModules.length === 0" class="error_box">
+                <div id="empty_search" class="error_msg">No matches found</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>
+
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-module'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .zip file to be imported</div>
+  <div class="target">Be sure you followed the <a [routerLink]="'/docs/modules'" target="_blank">module guidelines</a></div>
+  <div class="target">If importing a module with an existing name, it will be replaced.</div>
+  <app-input-file
+    [id]="'import_module'"
+    [accept]="'.zip'"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+  <div class="confirmation_btns">
+    <button (click)="importModule()">Install New Module</button>
+  </div>
+
+</ng-template>
