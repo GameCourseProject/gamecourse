@@ -721,12 +721,25 @@ class ViewHandler
         if (is_array($userRoles)) {
             //search from the most specific role to the least onde
             foreach ($userRoles as $role) {
-                $key = array_search("role." . $role, array_column($viewAspects, 'role'));
+                if (strpos($role, '>')) {
+                    $user = explode('>', $role)[0];
+                    $viewer = explode('>', $role)[1];
+                    $fullRole = 'role.' . $user . '>' . 'role.' . $viewer;
+                    $key = array_search($fullRole, array_column($viewAspects, 'role'));
+                } else
+                    $key = array_search("role." . $role, array_column($viewAspects, 'role'));
+
                 if ($key !== false) {
                     return $key;
                 }
             }
         } else {
+            if (strpos($userRoles, '>')) {
+                $user = explode('>', $userRoles)[0];
+                $viewer = explode('>', $userRoles)[1];
+                $role = 'role.' . $user . '>' . 'role.' . $viewer;
+                return $key = array_search($role, array_column($viewAspects, 'role'));
+            }
             return $key = array_search("role." . $userRoles, array_column($viewAspects, 'role'));
         }
 
@@ -1401,6 +1414,9 @@ class ViewHandler
             if (array_key_exists('class', $part)) {
                 $part['class'] = $part['class']->accept($visitor)->getValue();
             }
+            if (array_key_exists('cssId', $part)) {
+                $part['cssId'] = $part['cssId']->accept($visitor)->getValue();
+            }
             $this->processEvents($part, $visitor);
 
             $this->callPartProcess($part['partType'], $part, $viewParams, $visitor);
@@ -1464,6 +1480,9 @@ class ViewHandler
         if (array_key_exists('class', $part)) {
             $this->parseSelf($part['class']);
         }
+        if (array_key_exists('cssId', $part)) {
+            $this->parseSelf($part['cssId']);
+        }
         if (array_key_exists("label", $part)) {
             $this->parseSelf($part['label']);
         }
@@ -1517,7 +1536,6 @@ class ViewHandler
         // add Default as the last choice
         array_push($userRolesHierarchy, "Default");
         $viewType = $view["roleType"];
-        $roleOne = $roleTwo = null;
         $viewId = Core::$systemDB->select("page", ["id" => $view["id"]], "viewId");
 
         //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
@@ -1527,23 +1545,30 @@ class ViewHandler
             //     $roles = explode('>', $roleInteraction);
             //     $roleArray[$roles[0]][] = $roles[1];
             // }
-            $userRoles = $course->getUser($viewParams["user"])->getRolesNames();
-            $roleOne = $this->handleHelper(array_keys($roleArray), $course, $userRoles);
-            $roleArray = $roleArray[$roleOne];
-
-            if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
-                $roleTwo = 'special.Own';
-            } else {
-                $loggedUserRoles = $courseUser->getRolesNames();
-                $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
+            $userRoles = $course->getUser($viewParams["user"])->getUserRolesByHierarchy();
+            array_push($userRoles, "Default");
+            $viewerRoles = $userRolesHierarchy;
+            foreach ($viewerRoles as $vr) {
+                foreach ($userRoles as $ur) {
+                    $roleArray[] = $ur . '>' . $vr;
+                }
             }
-            $userView = $this->getViewWithParts($viewId, $roleOne . '>' . $roleTwo);
+            // $roleOne = $this->handleHelper(array_keys($roleArray), $course, $userRoles);
+            // $roleArray = $roleArray[$roleOne];
+
+            // // if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
+            // //     $roleTwo = 'special.Own';
+            // // } else {
+            // $loggedUserRoles = $courseUser->getRolesNames();
+            // $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
+            // // }
+            $userView = $this->getViewWithParts($viewId, $roleArray);
         } else if ($viewType == "ROLE_SINGLE") {
             //$userRoles = $course->getLoggedUser()->getRolesNames();
             //$roleOne = $this->handleHelper($viewRoles, $course, $userRoles);
             $userView = $this->getViewWithParts($viewId, $userRolesHierarchy);
         }
-
+        //print_r($userView);
         $this->parseView($userView);
         $this->processView($userView, $viewParams);
 

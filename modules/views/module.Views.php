@@ -1766,7 +1766,6 @@ class Views extends Module
                 $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
-                //print_r("here");
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1873,16 +1872,35 @@ class Views extends Module
         if (!$saving) {
             $viewParams = [
                 'course' => (string)$data["courseId"],
-                'viewer' => $roles['viewerRole']
             ];
+            if ($roles['viewerRole'] == 'Default')
+                $viewParams['viewer'] = Core::$systemDB->select(
+                    "course_user",
+                    ["course" => $course->getId()],
+                )['id'];
+            else {
+                $viewParams['viewer'] = Core::$systemDB->select(
+                    "user_role ur join role r on ur.course=r.course and ur.role=r.id",
+                    ["ur.course" => $course->getId(), 'r.name' => $roles['viewerRole']],
+                )['ur.id'];
+            }
 
             if ($viewType == "ROLE_SINGLE") {
                 $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole']);
             } else if ($viewType == "ROLE_INTERACTION") {
-                $viewParams['user'] = $roles['userRole'];
-                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole'] . '>' . $roles['userRole']);
+                if ($roles['userRole'] == 'Default')
+                    $viewParams['user'] = Core::$systemDB->select(
+                        "course_user",
+                        ["course" => $course->getId()],
+                    )['id'];
+                else {
+                    $viewParams['user'] = Core::$systemDB->select(
+                        "user_role ur join role r on ur.course=r.course and ur.role=r.id",
+                        ["ur.course" => $course->getId(), 'r.name' => $roles['userRole']],
+                    )['ur.id'];
+                }
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['userRole'] . '>' . $roles['viewerRole']);
             }
-
             $this->viewHandler->parseView($userView);
             $this->viewHandler->processView($userView, $viewParams);
             API::response(array('view' => $userView));

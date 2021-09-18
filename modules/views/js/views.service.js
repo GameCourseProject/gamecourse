@@ -38,7 +38,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.requestEdit = function (view, pageOrTemp, params, func) {
         $rootScope.templateId = view;
-        //console.log(view);
+        //  console.log(params);
         $smartboards.request('views', 'getEdit', $.extend({ view: view, pageOrTemp: pageOrTemp }, params), function (data, err) {
             if (err) {
                 func(undefined, err);
@@ -480,7 +480,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             scopeToConfig.curr_variables = {};
                             scopeToConfig.hierarchyLoops = [];
                             scopeToConfig.preview_function = {};
-                            //console.log(data);
+                            // console.log(data);
                         });
 
                         var container = $('<div id="edit-container">');
