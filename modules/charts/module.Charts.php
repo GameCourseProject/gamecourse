@@ -65,8 +65,8 @@ class Charts extends Module {
                 $others = array_map(function($studentsData) use ($param) {return $studentsData[$param['id']];},$studentsData);
                 
                 $starUser[$param['id']] = $val;
-                $average = array_sum($others) / $numStudents;
-                $starAverage[$param['id']] =$average;
+                $average = $numStudents == 0 ? 0 : array_sum($others) / $numStudents;
+                $starAverage[$param['id']] = $average;
                 $param['max'] = min($param['max'], max(ceil($val/500) * 500, ceil($average/500) * 500));
             }
 
