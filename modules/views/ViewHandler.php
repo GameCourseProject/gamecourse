@@ -72,7 +72,7 @@ class ViewHandler
     }
     //receives view and updates the DB with its info, propagates changes in the main view to all its children
     //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), used for change in aspectclass
-    public function updateViewAndChildren($viewPart, $basicUpdate = false, $ignoreIds = false, $templateName = null, &$partsInDB = null)
+    public function updateViewAndChildren($viewPart, $basicUpdate = false, $ignoreIds = false, $templateName = null, $fromModule = false, &$partsInDB = null)
     {
 
         if ($viewPart["parentId"] == null) {
@@ -83,7 +83,7 @@ class ViewHandler
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
-            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]])) && !$fromModule) {
                 // if we save twice in view editor, to not insert again
                 $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
                 Core::$systemDB->update("view", $copy, ["id" => $id]);
@@ -104,14 +104,18 @@ class ViewHandler
                     }
                 } else {
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
-                    if ($viewIdExists && $templateName != null) { //we only want to change viewId if we are saving as template
+                    if ($viewIdExists && $templateName != null && !$fromModule) { //we only want to change viewId if we are saving as template
+                        Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
+                        $viewPart["viewId"] = $viewId;
+                    } else if ($viewIdExists  && $fromModule && empty(Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $copy['viewId'], 'course' => $this->getCourseId()]))) {
+                        // if we are creating in other course, we want to change
                         Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                         $viewPart["viewId"] = $viewId;
                     } else
                         $viewPart["viewId"] = $copy["viewId"];
                 }
-                if ($templateName != null) {
-                    $templateId = Core::$systemDB->select("template", ["name" => $templateName], "id");
+                if (($templateName != null && !$fromModule) || ($fromModule  && empty(Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $viewPart['viewId'], 'course' => $this->getCourseId()])))) {
+                    $templateId = Core::$systemDB->select("template", ["name" => $templateName, 'course' => $this->getCourseId()], "id");
                     Core::$systemDB->insert("view_template", ["viewId" => $viewPart["viewId"], "templateId" => $templateId]);
                 }
             }
@@ -125,7 +129,7 @@ class ViewHandler
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
-            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]])) && !$fromModule) {
                 // if we save twice in view editor, to not insert again
                 $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
                 Core::$systemDB->update("view", $copy, ["id" => $id]);
@@ -276,7 +280,7 @@ class ViewHandler
                     $currentIdx += 1;
                 }
                 $child["viewIndex"] = $currentIdx;
-                $this->updateViewAndChildren($child, $basicUpdate, $ignoreIds, null, $children);
+                $this->updateViewAndChildren($child, $basicUpdate, $ignoreIds, null, $fromModule, $children);
             }
 
             if (!$basicUpdate) {
@@ -349,8 +353,13 @@ class ViewHandler
                 Core::$systemDB->delete("view", ["viewId" => $header["viewId"], "partType" => "header"]);
                 //delete header from the view_parent table
                 Core::$systemDB->delete("view_parent", ["childId" => $header["viewId"], "parenId" => $viewPart["id"]]);
-                //delete image & title (from header) from the view_parent table
+
+                $childrenHeader = Core::$systemDB->selectMultiple("view join view_parent", ["parentId" => $header["id"]], "id");
+                //delete image & title (from header) from the view_parent table and view table
                 Core::$systemDB->delete("view_parent", ["parentId" => $header["id"]]);
+                foreach ($childrenHeader as $c) {
+                    Core::$systemDB->delete("view", ["id" => $c["id"]]);
+                }
             }
             if ($basicUpdate && !empty($header)) { //ToDo
                 Core::$systemDB->update(
@@ -762,6 +771,8 @@ class ViewHandler
                 if ($a["name"] > $b["name"]) return 1;
                 return -1;
             });
+
+            $roles = array_combine(range(0, count($roles) - 1), $roles);
             return $roles;
         } else {
             $viewerRoles = [];
@@ -806,6 +817,9 @@ class ViewHandler
                 if ($a["name"] > $b["name"]) return 1;
                 return -1;
             });
+
+            $vRoles = array_combine(range(0, count($vRoles) - 1), $vRoles);
+            $uRoles = array_combine(range(0, count($uRoles) - 1), $uRoles);
 
             return [$uRoles, $vRoles];
         }

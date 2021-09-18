@@ -251,13 +251,14 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
             const targetViewerRole = $("#viewer_role").find(":selected")[0].text;
             // console.log(targetViewerRole);
 
-            $sbviews.findViewsForRole(views, targetViewerRole);
+
 
             if ($scope.roleType == 'ROLE_SINGLE') {
                 $scope.viewerRoles = $sbviews.getRolesOfView();
                 $scope.selectedVRole = $scope.viewRoles.filter(r => {
                     return r.name == targetViewerRole;
                 })[0].id;
+                $sbviews.findViewsForRole(views, targetViewerRole);
             } else {
                 const targetUserRole = $("#user_role").find(":selected")[0].text;
                 $scope.userRoles = $sbviews.getRolesOfView()[0];
@@ -269,6 +270,9 @@ angular.module('module.views').controller('ViewEditController', function ($rootS
                 $scope.selectedVRole = $scope.viewRoles[1].filter(r => {
                     return r.name == targetViewerRole;
                 })[0].id;
+
+
+                $sbviews.findViewsForRole(views, targetViewerRole, targetUserRole);
             }
 
 
