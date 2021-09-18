@@ -33,7 +33,7 @@
     define('COURSE_DATA_FOLDER', 'course_data');
 
     /** Themes */
-    $GLOBALS['theme'] = "default";
+    $GLOBALS['theme'] = "default"; // FIXME: remove when removing themes
 
     /**
      * XP default values

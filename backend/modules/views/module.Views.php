@@ -2038,8 +2038,8 @@ class Views extends Module
         Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
 
-        if ($fromModule)
-            Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
+        // if ($fromModule)
+        //     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
         //print_r($aspects);
         foreach ($aspects as &$aspect) {
             //print_r($aspect);
@@ -2068,7 +2068,7 @@ class Views extends Module
             //     }
             // }
             if ($fromModule)
-                $this->viewHandler->updateViewAndChildren($aspect, false, true);
+                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
             else
                 $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }
