@@ -17,6 +17,8 @@ import {CourseData, ImportCoursesData} from "../../_views/courses/courses/course
 import {ImportUsersData} from "../../_views/users/users/users.component";
 import {Module} from "../../_domain/Module";
 import {ImportModulesData} from "../../_views/settings/modules/modules.component";
+import {Moment} from "moment";
+import * as moment from "moment";
 
 @Injectable({
   providedIn: 'root'
@@ -462,6 +464,16 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nCourses'])) );
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ---------------- Rules System --------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public getRulesSystemLastRun(courseID: number): Observable<Moment> {
+    return this.getCourseInfo(courseID)
+      .pipe( map((res: CourseInfo) => moment(res.ruleSystemLastRun).subtract(1, 'hours')) );
   }
 
 

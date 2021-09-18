@@ -11,24 +11,3 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-
-/* footer config */
-.navfooter {
-  width: 100%;
-  font-size: 13px;
-  text-align: center;
-  border-top: 4px solid grey;
-  clear: both;
-  position: relative;
-  bottom: 0;
-  height: 40px;
-  color: grey;
-}
-
-.smaller_window .page {
-  height: calc(100vh - 67px - 25px - 40px);
-}
-
-.lastrun {
-  padding-top: 1em;
-}

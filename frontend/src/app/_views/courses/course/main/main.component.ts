@@ -12,9 +12,7 @@ import {ErrorService} from "../../../../_services/error.service";
 export class MainComponent implements OnInit {
 
   loading = true;
-
   course: Course;
-  ruleSystemLastRun: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -23,7 +21,7 @@ export class MainComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.getCourseInfo(params.id);
+      this.getCourse(params.id);
     }).unsubscribe();
   }
 
@@ -33,17 +31,6 @@ export class MainComponent implements OnInit {
         course => this.course = course,
         error => ErrorService.set(error),
         () => this.loading = false
-      );
-  }
-
-  getCourseInfo(courseID: number): void {
-    this.api.getCourseInfo(courseID)
-      .subscribe(
-        info => {
-          this.ruleSystemLastRun = info.ruleSystemLastRun;
-          this.getCourse(courseID);
-        },
-        error => ErrorService.set(error)
       );
   }
 }

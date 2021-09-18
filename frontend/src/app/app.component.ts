@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {ErrorService} from "./_services/error.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-root',
@@ -8,7 +9,12 @@ import {ErrorService} from "./_services/error.service";
 export class AppComponent {
   title = 'gamecourse-v2';
 
-  constructor() {
+  constructor(private router: Router) {
+  }
+
+  showFooter(): boolean {
+    const urlParts = this.router.url.substr(1).split('/');
+    return urlParts.includes('courses') && urlParts.length >= 3;
   }
 
   hasError(): boolean {

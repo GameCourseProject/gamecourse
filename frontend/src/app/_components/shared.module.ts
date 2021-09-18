@@ -11,6 +11,7 @@ import {ClickedOutsideDirective} from "../_directives/clicked-outside.directive"
 import { VerificationModalComponent } from './modals/verification-modal/verification-modal.component';
 import { InputFileComponent } from './inputs/general/input-file/input-file.component';
 import { ErrorModalComponent } from './modals/error-modal/error-modal.component';
+import { FooterComponent } from './footer/footer.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { ErrorModalComponent } from './modals/error-modal/error-modal.component'
     ClickedOutsideDirective,
     VerificationModalComponent,
     InputFileComponent,
-    ErrorModalComponent
+    ErrorModalComponent,
+    FooterComponent
   ],
     exports: [
         NavbarComponent,
@@ -31,7 +33,8 @@ import { ErrorModalComponent } from './modals/error-modal/error-modal.component'
         ModalComponent,
         VerificationModalComponent,
         InputFileComponent,
-        ErrorModalComponent
+        ErrorModalComponent,
+        FooterComponent
     ],
   imports: [
     CommonModule,
