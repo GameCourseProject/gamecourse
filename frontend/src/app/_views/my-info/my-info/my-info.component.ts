@@ -6,6 +6,7 @@ import {Subject} from "rxjs";
 import {ImageManager} from "../../../_utils/image-manager";
 import {ErrorService} from "../../../_services/error.service";
 import {AuthType} from "../../../_domain/AuthType";
+import {ImageUpdateService} from "../../../_services/image-update.service";
 
 @Component({
   selector: 'app-my-info',
@@ -25,7 +26,6 @@ export class MyInfoComponent implements OnInit {
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
   photo: ImageManager;    // Photo to be displayed
-  updatePhotoSubject: Subject<void> = new Subject<void>();    // Trigger photo update on navbar
 
   loading = true;
   isEditModalOpen: boolean;
@@ -33,7 +33,8 @@ export class MyInfoComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private photoUpdate: ImageUpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -88,8 +89,8 @@ export class MyInfoComponent implements OnInit {
     this.api.editSelfInfo(this.editUser)
       .subscribe(res => {
           this.getUserInfo();
-          if (this.editUser.image) // Trigger change on navbar
-            this.updatePhotoSubject.next();
+          if (this.editUser.image)
+            this.photoUpdate.triggerUpdate(); // Trigger change on navbar
         },
         error => ErrorService.set(error),
         () => {

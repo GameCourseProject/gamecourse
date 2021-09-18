@@ -1,11 +1,13 @@
 import {Component, HostListener, Input, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
-import {Router} from "@angular/router";
+import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {User} from "../../_domain/User";
 import {Observable} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ImageManager} from "../../_utils/image-manager";
 import {ErrorService} from "../../_services/error.service";
+import {CourseInfo} from "../../_domain/Course";
+import {ImageUpdateService} from "../../_services/image-update.service";
 
 @Component({
   selector: 'app-navbar',
@@ -15,130 +17,190 @@ import {ErrorService} from "../../_services/error.service";
 export class NavbarComponent implements OnInit {
 
   @Input() updatePhoto?: Observable<void>;
-  @Input() docs?: boolean = false;     // Whether or not it is docs navbar
 
   user: User;
   photo: ImageManager;
-  visible = true;
 
-  mainNavigation = [];
+  navigation: Navigation[];
+  mainNavigation: Navigation[];
+  courseNavigation: Navigation[];
+  docsNavigation: Navigation[];
+
+  docs: boolean;
+
+  course: { id: number, name: string };
+  courseInfo: CourseInfo;
 
   constructor(
     private api: ApiHttpService,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer,
+    private photoUpdate: ImageUpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
 
   ngOnInit(): void {
-    if (!this.docs) this.getUserInfo();
-    else this.initDocsNavigation();
-
-    if (this.updatePhoto)
-      this.updatePhoto.subscribe(() => this.getUserInfo());
+    this.getUserInfo();
+    this.photoUpdate.update.subscribe(() => this.getUserInfo())
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
 
   getUserInfo(): void {
     this.api.getLoggedUser()
       .subscribe(user => {
         this.user = user;
         this.photo.set(user.photoUrl);
-        this.initNavigations();
+
+        // Whenever URL changes
+        this.router.events.subscribe(event => {
+          if (event instanceof NavigationEnd) {
+            this.initNavigations();
+          }
+        });
+
       })
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ---------------- Navigation ----------------- ***/
+  /*** --------------------------------------------- ***/
+
   initNavigations(): void {
-    const pages = {
+    this.docs = this.router.url.includes('docs');
+    this.course = this.getCourse();
+
+    if (this.docs) this.navigation = this.getDocsNavigation();
+    else if (!this.course) this.navigation = this.getMainNavigation();
+    else if (this.course) this.setCourseNavigation();
+    else this.navigation = [];
+  }
+
+  getMainNavigation(): Navigation[] {
+    this.mainNavigation = [];
+    const pages: {[key: string]: Navigation} = {
       mainPage: {
-        sref: '/main',
-          image: 'images/leaderboard.svg',
-        text: 'Main Page',
-        class: ''
+        link: '/main',
+        name: 'Main Page'
       },
       coursesPage: {
-        sref: '/courses',
-        image: 'images/leaderboard.svg',
-        text: 'Courses',
-        class: ''
+        link: '/courses',
+        name: 'Courses'
       },
       usersPage: {
-        sref: '/users',
-        image: 'images/leaderboard.svg',
-        text: 'Users',
-        class: ''
+        link: '/users',
+        name: 'Users'
       },
       settings: {
-        sref: '/settings',
-        image: 'images/gear.svg',
-        text: 'Settings',
-        class:'dropdown',
+        link: '/settings',
+        name: 'Settings',
         children: [
-          {sref: '/settings/about', text: 'About'},
-          {sref: '/settings/global', text: 'Global'},
-          {sref: '/settings/modules', text: 'Modules'}
+          {link: '/settings/about', name: 'About'},
+          {link: '/settings/global', name: 'Global'},
+          {link: '/settings/modules', name: 'Modules'}
         ]
-      }
-    };
-    this.mainNavigation = [];
+      },
+    }
 
-    if (window.innerWidth < 915) {
-      this.mainNavigation.push({
-        text: 'Other Pages',
-        class:'dropdown',
-        children: [
-          pages.mainPage,
-          pages.coursesPage
-        ]
-      });
-
-      if (this.user.isAdmin)
-        this.mainNavigation[this.mainNavigation.length - 1].children.push(pages.usersPage);
-
-    } else if (window.innerWidth < 1000) {
+    if (window.innerWidth >= 915)
       this.mainNavigation.push(pages.mainPage);
+
+    if (window.innerWidth < 1000) {
       this.mainNavigation.push({
-        text: 'Other Pages',
-        class:'dropdown',
-        children: [
-          pages.coursesPage
-        ]
+        link: null,
+        name: 'Other Pages',
+        children: []
       });
+
+      const otherPages = this.mainNavigation[this.mainNavigation.length - 1];
+      if (window.innerWidth < 915) otherPages.children.push(pages.mainPage)
+      otherPages.children.push(pages.coursesPage);
 
       if (this.user.isAdmin)
         this.mainNavigation[this.mainNavigation.length - 1].children.push(pages.usersPage);
 
     } else {
-      this.mainNavigation.push(pages.mainPage);
       this.mainNavigation.push(pages.coursesPage);
-      if (this.user.isAdmin) this.mainNavigation.push(pages.usersPage);
+      if (this.user.isAdmin)
+        this.mainNavigation.push(pages.usersPage);
     }
 
     if (this.user.isAdmin)
       this.mainNavigation.push(pages.settings);
+
+    return this.mainNavigation;
   }
 
-  initDocsNavigation(): void {
-    const pages = {
+  setCourseNavigation(): void {
+    if (!this.courseInfo) {
+      this.api.getCourseInfo(this.course.id)
+        .subscribe(info => {
+          this.courseInfo = info;
+          this.courseNavigation = buildCourseNavigation(this.course.id, this.course.name, this.courseInfo);
+          this.navigation = this.courseNavigation;
+        },
+          error => ErrorService.set(error));
+    } else {
+      this.navigation = this.courseNavigation;
+    }
+
+    function buildCourseNavigation(courseID: number, courseName: string, courseInfo: CourseInfo): Navigation[] {
+      const path = '/courses/' + courseID + '/' + courseName + '/';
+
+      return courseInfo.navigation.map(nav => {
+        if (nav.text === 'Users') return { link: path + 'users', name: nav.text }
+        else if (nav.text === 'Course Settings') {
+          const children: Navigation[] = [
+            {link: path + 'settings/global', name: 'This Course'},
+            {link: path + 'settings/roles', name: 'Roles'},
+            {link: path + 'settings/modules', name: 'Modules'},
+            {link: path + 'settings/rules', name: 'Rules'}
+          ];
+
+          if (courseInfo.settings.find(el => el.text === 'Views'))
+            children.push({link: path + 'settings/views', name: 'Views'});
+
+          return { link: path + 'settings', name: nav.text, children }
+
+        } else return { link: path + '/' + nav.text.replace(' ', '-').toLowerCase(), name: nav.text }
+      })
+    }
+  }
+
+  getDocsNavigation(): Navigation[] {
+    const pages: {[key: string]: Navigation} = {
       viewsPage: {
-        sref: '/docs/views',
-        text: 'Views',
+        link: '/docs/views',
+        name: 'Views',
       },
       functionsPage: {
-        sref: '/docs/functions',
-        text: 'Functions',
+        link: '/docs/functions',
+        name: 'Functions',
       },
       modulesPage: {
-        sref: '/docs/modules',
-        text: 'Modules',
+        link: '/docs/modules',
+        name: 'Modules',
       }
     };
-    this.mainNavigation = [
+
+    this.docsNavigation = [
       pages.viewsPage,
       pages.functionsPage,
       pages.modulesPage
-    ]
+    ];
+    return this.docsNavigation;
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Logout ------------------- ***/
+  /*** --------------------------------------------- ***/
 
   logout(): void {
     this.api.logout().subscribe(
@@ -149,9 +211,28 @@ export class NavbarComponent implements OnInit {
     )
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  getCourse(): { id: number, name: string } {
+    const urlParts = this.router.url.substr(1).split('/');
+    if (urlParts.includes('courses') && urlParts.length >= 3)
+      return {id: parseInt(urlParts[1]), name: urlParts[2]}
+    else return null;
+  }
+
+
   @HostListener('window:resize', [])
   onWindowResize(): void {
     this.initNavigations();
   }
 
+}
+
+interface Navigation {
+  link: string,
+  name: string,
+  children?: Navigation[]
 }

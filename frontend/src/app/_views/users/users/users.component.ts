@@ -15,6 +15,7 @@ import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 import _ from 'lodash';
 import {DownloadManager} from "../../../_utils/download-manager";
 import {Ordering} from "../../../_utils/ordering";
+import {ImageUpdateService} from "../../../_services/image-update.service";
 
 
 @Component({
@@ -44,7 +45,6 @@ export class UsersComponent implements OnInit {
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
   photo: ImageManager;    // Photo to be displayed
-  updatePhotoSubject: Subject<void> = new Subject<void>();    // Trigger photo update on navbar
 
   importedFile: File;
 
@@ -70,7 +70,8 @@ export class UsersComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private photoUpdate: ImageUpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -237,8 +238,8 @@ export class UsersComponent implements OnInit {
       .subscribe(
         res => {
           this.getUsers();
-          if (this.user.id === this.newUser.id && this.newUser.image) // Trigger change on navbar
-            this.updatePhotoSubject.next();
+          if (this.user.id === this.newUser.id && this.newUser.image)
+            this.photoUpdate.triggerUpdate(); // Trigger change on navbar
         },
         error => ErrorService.set(error),
         () => {

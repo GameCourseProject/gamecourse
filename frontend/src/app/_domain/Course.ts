@@ -170,3 +170,16 @@ export interface CourseDatabase {
   "theme": string,
   "nstudents": string,
 }
+
+export interface CourseInfo {
+  navigation: {text: string, sref: string, seqId: string, class: string, children: boolean, restrictAcess: boolean}[],
+  settings: {text: string, sref: string, restrictAcess: string}[],
+  landingPage: string,
+  landingPageID: string,
+  landingPageType: boolean,
+  courseName: string,
+  courseColor: string,
+  resources: {name: string, files: string[]}[],
+  user: {},
+  ruleSystemLastRun: string
+}

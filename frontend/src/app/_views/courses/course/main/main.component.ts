@@ -40,7 +40,6 @@ export class MainComponent implements OnInit {
     this.api.getCourseInfo(courseID)
       .subscribe(
         info => {
-          console.log(info)
           this.ruleSystemLastRun = info.ruleSystemLastRun;
           this.getCourse(courseID);
         },

@@ -8,7 +8,7 @@ import {ApiEndpointsService} from "./api-endpoints.service";
 import {QueryStringParameters} from "../../_utils/query-string-parameters";
 
 import {AuthType} from "../../_domain/AuthType";
-import {Course} from "../../_domain/Course";
+import {Course, CourseInfo} from "../../_domain/Course";
 import {User} from "../../_domain/User";
 import {CreationMode} from "../../_domain/CreationMode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
@@ -325,7 +325,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
   }
 
-  public getCourseInfo(courseID: number): Observable<any> {
+  public getCourseInfo(courseID: number): Observable<CourseInfo> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'getCourseInfo');

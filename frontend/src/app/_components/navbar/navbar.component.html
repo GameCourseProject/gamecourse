@@ -6,17 +6,17 @@
   <!-- User Info -->
   <div *ngIf="!docs && user" class="user_info">
     <div class="user_id">{{user.username}}</div>
-    <a *ngIf="visible" class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
+    <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 
   <!-- Menu -->
   <ul class="menu" [ngClass]="{'documentation': docs}">
-    <li *ngFor="let link of mainNavigation" class="{{link.class}}">
-      <a *ngIf="link.sref" [routerLink]="link.sref" [routerLinkActive]="'active focused'">{{link.text}}</a>
-      <a *ngIf="!link.sref">{{link.text}}</a>
-      <div *ngIf="link.children" class="dropdown-content">
-        <a *ngFor="let sublink of link.children" [routerLink]="sublink.sref">{{sublink.text}}</a>
+    <li *ngFor="let nav of navigation" [ngClass]="{'dropdown': nav.children?.length > 0}">
+      <a *ngIf="nav.link" [routerLink]="nav.link" [routerLinkActive]="'active focused'">{{nav.name}}</a>
+      <a *ngIf="!nav.link">{{nav.name}}</a>
+      <div *ngIf="nav.children" class="dropdown-content">
+        <a *ngFor="let subNav of nav.children" [routerLink]="subNav.link">{{subNav.name}}</a>
       </div>
     </li>
   </ul>
