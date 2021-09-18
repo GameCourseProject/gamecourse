@@ -328,7 +328,7 @@ class Views extends Module
                                 'index' => $i
                             );
                             $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
-                            $value = $object->accept($visitor)->getValue();
+                            $value = $key->accept($visitor)->getValue();
 
                             $object["sortVariable" . $i] = $value;
                         }
