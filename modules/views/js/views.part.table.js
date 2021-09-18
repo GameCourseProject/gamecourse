@@ -21,7 +21,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             if (options.edit) {
                 table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role.includes('>')) {
-                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1]) || (scope.role.split('>')[0] != parseRole(part.role.split('>')[0]))) {
                         table.addClass('aspect_hide');
                     }
                 } else {

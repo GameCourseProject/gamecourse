@@ -753,6 +753,18 @@ function getViewerFromRole(role, parsed = false) {
     }
 }
 
+//get user
+function getUserFromRole(role, parsed = false) {
+    if (!parsed) {
+        if (!role.includes("."))
+            role = unparseRole(role);
+    }
+    if (role.includes(">")) {
+        return role.split(">")[0];
+    }
+    return 0;
+}
+
 // function moveRow(containerId, oldIdx, newIdx, atributes, item) {
 //     // children[0] - gives tbody; children gives the rows
 //     // cut the first child because the header is inside tbody

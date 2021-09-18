@@ -198,7 +198,7 @@ angular.module('module.charts', []).run(function ($sbviews, $compile) {
             if (options.edit) {
                 chartWrapper.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role.includes('>')) {
-                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1]) || (scope.role.split('>')[0] != parseRole(part.role.split('>')[0]))) {
                         chartWrapper.addClass('aspect_hide');
                     }
                 } else {

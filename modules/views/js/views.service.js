@@ -2560,12 +2560,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     //finds the right views to show for the targetRole
-    this.findViewsForRole = function (viewAspects, targetRole) {
+    this.findViewsForRole = function (viewAspects, targetRole, targetUser = null) {
         $(".highlight").click(); // removes the highligh and the toolbar that can be seen as a child
         //if (roletype == ROLE_SINGLE)
-        // console.log(viewAspects);
+        //console.log(viewAspects);
 
-        if (Array.from(viewAspects).some(el => $(el).hasClass('content'))) {
+        if (Array.from(viewAspects).some(el => $(el).hasClass('content')) || viewAspects.length != 1) {
             const components = Array.from(viewAspects);
             for (component of components) {
                 const children = Array.from(component.children);
@@ -2581,20 +2581,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                 // console.log(aspectChildren);
                 aspectChildren.forEach(aspects => {
-                    this.findViewsForRole(aspects, targetRole);
+                    this.findViewsForRole(aspects, targetRole, targetUser);
                 });
             }
 
         }
 
         //if there is only one aspect available
-        if (viewAspects.length == 1 && viewAspects[0].getAttribute('data-role') == targetRole) {
-            $(viewAspects[0]).removeClass('aspect_hide');
-            if ($(viewAspects[0]).hasClass('diff_aspect')) {
-                $(viewAspects[0]).removeClass('diff_aspect');
+        else if (viewAspects.length == 1 && !$(viewAspects[0]).hasClass('header')) {
+            if (($rootScope.roleType == 'ROLE_SINGLE' && viewAspects[0].getAttribute('data-role') == targetRole) ||
+                ($rootScope.roleType == 'ROLE_INTERACTION' && getViewerFromRole(viewAspects[0].getAttribute('data-role'), true) == targetRole && getUserFromRole(viewAspects[0].getAttribute('data-role'), true) == targetUser)) {
+                $(viewAspects[0]).removeClass('aspect_hide');
+                if ($(viewAspects[0]).hasClass('diff_aspect')) {
+                    $(viewAspects[0]).removeClass('diff_aspect');
+                }
+                // if ($(view).hasClass('highlight'))
+                //     $(view).click();
             }
-            // if ($(view).hasClass('highlight'))
-            //     $(view).click();
         }
 
         if (viewAspects.length == 1 && viewAspects[0].children && Array.from(viewAspects[0].children).length != 0 && !$(viewAspects[0]).hasClass('image')) {
@@ -2602,10 +2605,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             //in case is the content of a block (with or w/o header)
             if (children.some(el => $(el).hasClass('header'))) {
                 $.each(children, (idx, el) => {
-                    this.findViewsForRole([el], targetRole);
+                    this.findViewsForRole([el], targetRole, targetUser);
                 })
             } else if (children.some(el => $(el).hasClass('content'))) {
-                this.findViewsForRole(viewAspects[0].children, targetRole);
+                this.findViewsForRole(viewAspects[0].children, targetRole, targetUser);
             } else {
                 // console.log(children);
                 const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
@@ -2620,7 +2623,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                 // console.log(aspectChildren);
                 aspectChildren.forEach(aspects => {
-                    this.findViewsForRole(aspects, targetRole);
+                    this.findViewsForRole(aspects, targetRole, targetUser);
                 });
             }
 
@@ -2649,10 +2652,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     });
                 } else {
                     otherViews = viewAspects.filter(function (el) {
-                        return getViewerFromRole(el.getAttribute('data-role'), true) != role.name;
+                        return getViewerFromRole(el.getAttribute('data-role'), true) != role.name || getUserFromRole(el.getAttribute('data-role'), true) != targetUser;
                     });
                     view = viewAspects.filter(function (el) {
-                        return getViewerFromRole(el.getAttribute('data-role'), true) == role.name;
+                        return getViewerFromRole(el.getAttribute('data-role'), true) == role.name && getUserFromRole(el.getAttribute('data-role'), true) == targetUser;
                     });
                 }
 
