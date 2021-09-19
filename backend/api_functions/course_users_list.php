@@ -255,7 +255,8 @@ API::registerFunction('course', 'courseUsers', function () {
                     'lastLogin' => $user->getLastLogin(),
                     'username' => $user->getUsername(),
                     'authenticationService' => User::getUserAuthenticationService($user->getUsername()),
-                    'isActive' => $user->isActive()
+                    'isActive' => $user->isActive(),
+                    'hasImage' => User::hasImage($user->getUsername())
                 );
             }
 
