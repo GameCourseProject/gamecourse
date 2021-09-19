@@ -665,7 +665,7 @@ export class ApiHttpService {
   /*** ------------------ Settings ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  getSettingsGlobal(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
+  public getSettingsGlobal(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
       qs.push('request', 'global');
@@ -677,7 +677,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  getSettingsModules(): Observable<Module[]> {
+  public getSettingsModules(): Observable<Module[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
       qs.push('request', 'modules');
@@ -689,7 +689,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
-  importModule(importData: ImportModulesData): Observable<void> {
+  public importModule(importData: ImportModulesData): Observable<void> {
     const data = {
       file: importData.file,
       fileName: importData.fileName
@@ -705,7 +705,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  exportModules(): Observable<string> {
+  public exportModules(): Observable<string> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'core');
       qs.push('request', 'exportModule');
@@ -715,6 +715,42 @@ export class ApiHttpService {
     return this.post(url, null, this.httpOptions)
       .pipe( map((res: any) => res['data']['file']) );
   }
+
+  public getCourseGlobal(courseID: number): Observable<{ name: string, activeUsers: number, awards: number, participations: number }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'courseGlobal');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          name: res['data']['name'],
+          activeUsers: res['data']['activeUsers'],
+          awards: res['data']['awards'],
+          participations: res['data']['participations'],
+        };
+      }) );
+  }
+
+  public getTableData(courseID: number, table: string): Observable<{entries: any[], columns: any}> {
+  const params = (qs: QueryStringParameters) => {
+    qs.push('module', 'settings');
+    qs.push('request', 'getTableData');
+    qs.push('course', courseID);
+    qs.push('table', table);
+  };
+
+  const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+  return this.get(url, this.httpOptions)
+.pipe( map((res: any) => res['data']) );
+  }
+
+
 
 
   /*** --------------------------------------------- ***/

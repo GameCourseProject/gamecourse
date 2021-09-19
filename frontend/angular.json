@@ -51,11 +51,13 @@
             ],
             "styles": [
               "node_modules/@simonwep/pickr/dist/themes/monolith.min.css",
+              "node_modules/codemirror/lib/codemirror.css",
               "src/styles/global.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/@simonwep/pickr/dist/pickr.min.js"
+              "node_modules/@simonwep/pickr/dist/pickr.min.js",
+              "node_modules/codemirror/lib/codemirror.js"
             ]
           },
           "configurations": {

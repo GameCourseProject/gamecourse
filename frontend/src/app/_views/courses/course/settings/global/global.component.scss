@@ -20,3 +20,209 @@
   width: 100%;
   margin-bottom: 50px;
 }
+
+
+#configPage .header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+#configPage .page-block .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#configPage .header #name {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+#configPage .header #description {
+  font-size: 14px;
+}
+
+#configPage .content {
+  margin-top: 40px;
+}
+
+#configPage .config_input {
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  font-size: 14px;
+  padding: 7px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+  border-radius: 5px;
+  flex: 3;
+  margin-left: 20px;
+  border: 2px solid lightgray;
+  /* max-width: 70%; */
+}
+
+#configPage .multiple_inputs {
+  grid-template-columns: repeat(auto-fill, 460px);
+  display: grid;
+  justify-content: space-between;
+}
+
+#configPage .row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+#configPage .row span {
+  /* flex: 1; */
+  /* margin-left: 10px;
+  margin-right: 10px; */
+  font-size: 14px;
+  white-space: nowrap;
+  width: 30%;
+}
+#configPage #text-badge,
+#configPage .row #text-extra,
+#configPage .row #text-bragging,
+#configPage .row #text-level2,
+#configPage .row #text-level3 {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+
+
+#configPage .row .on_off,
+#configPage .row .color_picker {
+  position: relative;
+  margin-right: 0px;
+  flex: 3;
+  margin-left: 15px;
+}
+
+#configPage .row .color_picker input {
+  width: 100%;
+  margin-left: 0;
+}
+
+#configPage .row .color-sample {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 7px;
+  right: 15px;
+}
+
+#configPage .color_picker {
+  position: relative;
+  margin-right: 0px;
+}
+
+#configPage .color_picker input {
+  width: 100%;
+  margin-left: 0;
+  margin-bottom: 22px;
+}
+
+#configPage .half .color-sample {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 7px;
+  right: 15px;
+}
+
+#configPage .config_save_button {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  background-color: white;
+  z-index: 1;
+  padding-left: 20px;
+  background-position: right;
+}
+
+#configPage .config_save_button .icon {
+  height: 30px;
+  width: 30px;
+}
+
+#configPage #new_box,
+#configPage #new_box_tier {
+  padding-bottom: 30px;
+}
+
+#configPage .config_item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#configPage .config_item .on_off {
+  display: flex;
+  align-items: center;
+  margin: 0 0 31px 0;
+}
+
+#configPage .config_item .number_label,
+#configPage .config_item .date_label {
+  right: 35px !important;
+}
+
+#configPage .config_item .options_box {
+  display: flex;
+  align-items: baseline;
+}
+
+#configPage .config_item .options_box span {
+  margin-right: 15px;
+}
+
+#configPage .badge_image {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+#configPage .badge_image #img-badge,
+#configPage .badge_image #img-badge-l1,
+#configPage .badge_image #img-badge-l2,
+#configPage .badge_image #img-badge-l3,
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: inherit;
+}
+
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
+  border: 1px solid gray;
+  border-radius: 5px;
+}
+
+#configPage .data-table #listing-table td .badges,
+#configPage .badge_image #img-extra,
+#configPage .badge_image #img-bragging,
+#configPage .badge_image #img-level2,
+#configPage .badge_image #img-level3 {
+  height: 30px;
+  width: 30px;
+}
+
+.section .content .action-buttons {
+  top: -5px;
+  background-color: white;
+  z-index: 1;
+  padding-left: 30px;
+  right: 0;
+}

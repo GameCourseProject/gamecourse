@@ -19,6 +19,7 @@
     "@angular/platform-browser-dynamic": "~12.1.0",
     "@angular/router": "~12.1.0",
     "@simonwep/pickr": "^1.8.1",
+    "codemirror": "^5.62.3",
     "jquery": "^3.6.0",
     "moment": "^2.29.1",
     "rxjs": "~6.6.0",

@@ -5,32 +5,80 @@
       <div class="tabs">
         <app-course-settings-sidebar></app-course-settings-sidebar>
 
-<!--        <div class="tab-content-wrapper">-->
-<!--          <div class="tab-content" ui-view="tabContent">-->
+        <div class="tab-content-wrapper">
+          <div class="tab-content">
 
-<!--            &lt;!&ndash; Themes  &ndash;&gt;-->
-<!--            <div class="section">-->
-<!--              <div class="divider">-->
-<!--                <div class="title"><span>Themes</span></div>-->
-<!--              </div>-->
-<!--              <div class="content" id="themes">-->
-<!--                <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">-->
-<!--                  <div>{{theme.name}}</div>-->
-<!--                  <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'">-->
-<!--                </div>-->
-<!--              </div>-->
-<!--            </div>-->
+            <div id="configPage">
 
-<!--            &lt;!&ndash; Authentication  FIXME: legacy &ndash;&gt;-->
-<!--            <div class="section">-->
-<!--              <div class="divider">-->
-<!--                <div class="title"><span>Authentication</span></div>-->
-<!--              </div>-->
-<!--              <div class="content"></div>-->
-<!--            </div>-->
+              <!-- Info -->
+              <div class="section">
+                <div class="divider">
+                  <div class="title"><span>Info</span></div>
+                </div>
 
-<!--          </div>-->
-<!--        </div>-->
+                <div class="content">
+                  <div>
+                    <p><b>Course Name: </b>{{info.name}}</p>
+                    <p><b>Course ID: </b>{{info.id}}</p>
+                    <p><b>Active Users: </b>{{info.activeUsers}}</p>
+                    <p><b>Awards: </b>{{info.awards}}</p>
+                    <p><b>Participations: </b>{{info.participations}}</p>
+                  </div>
+
+                  <div><button id="edit_db_button" class="button" (click)="isViewDBModalOpen = true">View Database</button></div>
+                </div>
+              </div>
+
+              <!-- Navigation -->
+              <div class="section">
+                <div class="divider">
+                  <div class="title"><span>Navigation</span></div>
+                </div>
+
+                <div class="content ng-scope" id="navigation-config">
+                  <div class="data-table">
+                    <table id="nav-table">
+                      <tbody>
+                      <tr>
+                        <th>Position</th>
+                        <th>Page</th>
+                        <th class="action-column"></th>
+                        <th class="action-column"></th>
+                      </tr>
+                      <tr *ngFor="let nav of orderBySeqId()">
+                        <td>{{nav.seqId}}</td>
+                        <td>{{nav.name}}</td>
+                        <td class="action-column">
+                          <div class="icon up_icon" title="Move up" (click)="move(nav, 1)"></div>
+                        </td>
+                        <td class="action-column">
+                          <div class="icon down_icon" title="Move down" (click)="move(nav, -1)"></div>
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Styling -->
+              <div class="section">
+                <div class="divider">
+                  <div class="title"><span>Styling</span></div>
+                </div>
+
+                <div class="content">
+                  <div><button id="create_style_button" class="button" ng-click="createStyleFile()" style="display: none;">Create Style File</button></div>
+                  <div id="save-change-css" class="action-buttons" style="width:140px;"><button class="button" title="Save" ng-click="saveStyleFile()"> Save Changes </button></div>
+                  <div id="edit-css-file">
+                    <textarea id="style-file" class="form__input" placeholder="Write your style here...">{{styleFileContent || ''}}</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
 
       </div>
     </div>
@@ -41,3 +89,27 @@
     <img src="../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!-- View DB Modal -->
+<ng-container *ngIf="isViewDBModalOpen">
+  <app-modal
+    [isModalOpen]="isViewDBModalOpen"
+    [id]="'edit-db'"
+    [templateRef]="viewDbModal"
+    (closeBtnClicked)="isViewDBModalOpen = false"
+    [actionInProgress]="saving"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #viewDbModal>
+
+  <div class="warning">Please select a table:</div>
+
+  <div class="confirmation_btns">
+    <button (click)="showDatabase('award')">Award</button>
+    <button (click)="showDatabase('participation')">Participation</button>
+  </div>
+
+</ng-template>
