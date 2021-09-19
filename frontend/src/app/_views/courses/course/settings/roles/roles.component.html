@@ -5,32 +5,56 @@
       <div class="tabs">
         <app-course-settings-sidebar></app-course-settings-sidebar>
 
-        <!--        <div class="tab-content-wrapper">-->
-        <!--          <div class="tab-content" ui-view="tabContent">-->
+            <div class="tab-content-wrapper">
+              <div class="tab-content">
 
-        <!--            &lt;!&ndash; Themes  &ndash;&gt;-->
-        <!--            <div class="section">-->
-        <!--              <div class="divider">-->
-        <!--                <div class="title"><span>Themes</span></div>-->
-        <!--              </div>-->
-        <!--              <div class="content" id="themes">-->
-        <!--                <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">-->
-        <!--                  <div>{{theme.name}}</div>-->
-        <!--                  <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'">-->
-        <!--                </div>-->
-        <!--              </div>-->
-        <!--            </div>-->
+                <div class="content" id="roles_page">
 
-        <!--            &lt;!&ndash; Authentication  FIXME: legacy &ndash;&gt;-->
-        <!--            <div class="section">-->
-        <!--              <div class="divider">-->
-        <!--                <div class="title"><span>Authentication</span></div>-->
-        <!--              </div>-->
-        <!--              <div class="content"></div>-->
-        <!--            </div>-->
+                  <!-- Roles -->
+                  <div class="dd" id="roles-config">
+                    <div class="header">
+                      <span class="role_sections">Roles</span>
+                      <span class="page_sections">Landing Page</span>
+                    </div>
 
-        <!--          </div>-->
-        <!--        </div>-->
+                    <ol class="dd-list first-layer dd-has-children">
+                      <li *ngFor="let role of roles" class="dd-item dd-nodrag" data-name="Teacher">
+                        <div class="dd-handle icon"></div>
+                        <div class="dd-content">{{role.name}}</div>
+                        <select class="dd-content" [(ngModel)]="selectedLandingPage" (ngModelChange)="saveLandingPage(role)">
+                          <option [ngValue]="null" disabled selected>Default Course Page</option>
+                          <option *ngFor="let page of pages" [ngValue]="page.name">{{page.name}}</option>
+                        </select>
+                        <img class="dd-add icon" src="assets/icons/add_icon_no_outline.svg" title="New">
+                        <img class="dd-remove icon" src="assets/icons/delete_icon.svg" title="Remove">
+                        <div class="dd-delete-blocker"></div>
+                      </li>
+                    </ol>
+                  </div>
+
+                  <!-- Add btn -->
+                  <div id="add_role_button_box">
+                    <button title="New" (click)="addRole()" class="add_button icon"></button>
+                  </div>
+
+                  <!-- Action buttons -->
+                  <div class="action-buttons">
+                    <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
+                    <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
+                    <button id="role-change-button" class="button" disabled="disabled">Save Changes</button>
+                  </div>
+
+                  <div class="error_box">
+                    <div id="action_not_completed" class="error_msg"></div>
+                  </div>
+
+                  <div class="success_box">
+                    <div id="action_completed" class="success_msg"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
 
       </div>
     </div>
@@ -41,3 +65,17 @@
     <img src="../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!--<div class="modal ng-scope" id="new-role">-->
+<!--  <div class="modal_content little_modal">-->
+<!--    <button class="close_btn icon" id="cancel_role" value="#new-role" onclick="closeModal(this)"></button>-->
+<!--    <div class="title">New Role: </div>-->
+<!--    <div class="content">-->
+<!--      <div class="inputs">-->
+<!--        <div class="name full"><input type="text" class="form__input  ng-pristine ng-untouched ng-valid ng-empty" id="role_name" placeholder="Name *" ng-model="newRole.name"> <label for="name" class="form__label">Name</label></div>-->
+<!--      </div>-->
+<!--      <button class="save_btn" id="submit_role" ng-disabled="!isReadyToSubmit()" disabled="disabled"> Continue </button>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->

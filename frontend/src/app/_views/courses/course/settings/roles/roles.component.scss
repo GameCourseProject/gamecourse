@@ -20,3 +20,260 @@
   width: 100%;
   margin-bottom: 50px;
 }
+
+
+#roles-config {
+  width: 100%;
+}
+
+.dd {
+  position: relative;
+  display: block;
+  margin: 4px auto;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  max-width: 850px;
+}
+.dd-list {
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dd > .dd-list {
+  padding: 2px 0px;
+}
+.dd-list.first-layer.dd-has-children > .dd-item {
+  padding-left: 4px;
+}
+.dd-list.dd-has-children > .dd-item {
+  padding-left: 25px;
+}
+.dd-list .dd-list:not(.dd-has-children) {
+  padding-left: 21px;
+}
+.dd-collapsed .dd-list {
+  display: none;
+}
+.dd-item,
+.dd-empty,
+.dd-placeholder {
+  display: block;
+  position: relative;
+  margin: 0;
+  min-height: 20px;
+  font-size: 13px;
+}
+.dd-handle {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 5px 10px 5px 0;
+  border: none;
+  width: 20px;
+  height: 20px;
+  background-image: url('../../../../../../assets/icons/drag_icon.svg');
+  opacity: 0.8;
+}
+.dd-content {
+  display: inline-block;
+  color: #333;
+  margin-right: 10px;
+  width: calc(50% - 66px);
+  border: 2px solid lightgray;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.dd-handle:hover {
+  opacity: 1;
+}
+.dd-item {
+  padding-left: 4px;
+  background: #ffffff;
+  margin: 15px 0px;
+}
+.dd-item > button {
+  display: block;
+  position: absolute;
+  cursor: pointer;
+  float: left;
+  left: 0px;
+  top: 5px;
+  width: 25px;
+  margin: 2px 0px;
+  padding: 0px;
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+  font-weight: bold;
+}
+.dd-item > button:before {
+  content: '+';
+  display: block;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  text-indent: 0;
+}
+.dd-item > button[data-action="collapse"]:before {
+  content: '-';
+}
+.dd-placeholder,
+.dd-empty {
+  margin: 5px 0;
+  padding: 0;
+  min-height: 30px;
+  background: #f2fbff;
+  border: 1px dashed #b6bcbf;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+.dd-empty {
+  border: 1px dashed #bbb;
+  min-height: 100px;
+  background-color: #e5e5e5;
+  background-image: -webkit-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), -webkit-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff);
+  background-image: -moz-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), -moz-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff);
+  background-image: linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff);
+  background-size: 60px 60px;
+  background-position: 0 0, 30px 30px;
+}
+.dd-dragel {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9999;
+}
+.dd-dragel .dd-handle {
+  -webkit-box-shadow: 2px 4px 6px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 4px 6px 0 rgba(0, 0, 0, 0.1);
+}
+.dd-nodrag > .dd-handle{
+  opacity: 0.1;
+  cursor: not-allowed;
+}
+.dd-nodrag > .dd-remove {
+  opacity: 0.1;
+  pointer-events: none;
+}
+.dd-nodrag > .dd-delete-blocker{
+  cursor: not-allowed;
+  position: absolute;
+  float: right;
+  right: 0px;
+  top: 5px;
+  z-index: 2;
+  height: 23px;
+  width: 23px;
+}
+.dd-add {
+  position: absolute;
+  float: right;
+  right: 32px;
+  top: 6px;
+  z-index: 2;
+  height: 21px;
+  width: 21px;
+  opacity: 0.8;
+}
+.dd-remove {
+  position: absolute;
+  float: right;
+  right: 0px;
+  top: 5px;
+  z-index: 2;
+  height: 23px;
+  width: 23px;
+  opacity: 0.8;
+}
+
+#add_role_button_box {
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+}
+
+#roles_page .action-buttons {
+  width: 210px;
+}
+
+.smaller_window .action-buttons {
+  top: 20px;
+}
+
+#roles_page .error_box {
+  top: 35px;
+}
+
+.role_sections {
+  width: calc(50% + 15px);
+}
+
+/*roles page*/
+
+#roles-config {
+  width: 100%;
+}
+
+#roles-config .header {
+  width: 100%;
+  display: inline-flex;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role_sections {
+  width: calc(50% + 15px);
+}
+
+.page_sections {
+  width: calc(50% - 100px);
+}
+
+#add_role_button_box {
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+}
+
+#add_role_button_box .add_button {
+  width: calc(100% - 101px);
+  margin-left: 34px;
+  background-image: url('../../../../../../assets/icons/add_icon_no_outline.svg');
+  height: 35px;
+  background-color: white;
+  background-size: 25px;
+  background-position: center;
+  border: 2px solid lightgray;
+}
+
+#roles_page .action-buttons {
+  width: 210px;
+}
+
+.action-buttons .undo_icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.action-buttons .redo_icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+#roles_page .error_box {
+  top: 35px;
+}
+
+#roles_page .error_box .error_msg {
+  padding-top: 0;
+}

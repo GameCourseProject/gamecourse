@@ -737,17 +737,34 @@ export class ApiHttpService {
   }
 
   public getTableData(courseID: number, table: string): Observable<{entries: any[], columns: any}> {
-  const params = (qs: QueryStringParameters) => {
-    qs.push('module', 'settings');
-    qs.push('request', 'getTableData');
-    qs.push('course', courseID);
-    qs.push('table', table);
-  };
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'getTableData');
+      qs.push('course', courseID);
+      qs.push('table', table);
+    };
 
-  const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-  return this.get(url, this.httpOptions)
-.pipe( map((res: any) => res['data']) );
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getRoles(courseID: number): Observable<{ pages: any[], roles: Role[], rolesHierarchy: Role[] }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'roles');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => {
+        const roles = res['data']['roles_obj'].map(obj => new Role(obj.id, obj.name, obj.landingPage, courseID, null, null, null));
+        const rolesHierarchy = res['data']['rolesHierarchy'].map(obj => roles.find(el => el.id === obj.id));
+        return {pages: res['data']['pages'], roles, rolesHierarchy}
+      }) );
   }
 
 
