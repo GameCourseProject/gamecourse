@@ -126,7 +126,7 @@ class CourseUser extends User
     public function isActive()
     {
         $isActive = $this->getData("isActive");
-        return boolval($isActive);
+        return $isActive;
     }
     //gets data from course_user table
     function  getData($field = "*")
@@ -182,10 +182,9 @@ class CourseUser extends User
         ), "role");
     }
 
-    function setIsActive()
+    function setIsActive($isActive)
     {
-        $active = Core::$systemDB->select("course_user", ["course" => $this->course->getId(), "id" => $this->id], "isActive");
-        Core::$systemDB->update("course_user", ["isActive" => $active? 0 : 1], ["course" => $this->course->getId(), "id" => $this->id]);
+        Core::$systemDB->update("course_user", ["isActive" => $isActive], ["course" => $this->course->getId(), "id" => $this->id]);
     }
     
     function getUserRolesByHierarchy()

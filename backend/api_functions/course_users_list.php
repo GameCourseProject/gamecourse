@@ -153,12 +153,13 @@ API::registerFunction('course', 'activeUser', function () {
     API::requireCourseAdminPermission();
     API::requireValues('userId');
     API::requireValues('course');
+    API::requireValues('isActive');
 
     $courseId = API::getValue('course');
     $course = Course::getCourse($courseId, false);
     if ($course != null) {
         $courseUser = new CourseUser(API::getValue('userId'), $course);
-        $courseUser->setIsActive();
+        $courseUser->setIsActive(API::getValue('isActive'));
     }
 });
 
@@ -213,7 +214,12 @@ API::registerFunction('course', 'notCourseUsers', function () {
             return $a['id'] - $b['id'];
         });
 
-        API::response(array('notCourseUsers' => $notCourseUsers));
+        $notCourseUsersArray = [];
+        foreach ($notCourseUsers as $notUser) {
+            $notCourseUsersArray[] = $notUser;
+        }
+
+        API::response(array('notCourseUsers' => $notCourseUsersArray));
     } else {
         API::error("There is no course with that id: " . API::getValue('course'));
     }
