@@ -758,13 +758,13 @@ h3 .help-icon, .title .info-icon {
   }
   
   .line {
-    width: 15px;
-    margin-top: 9px;
-    margin-right: 15px;
-    margin-left: 15px;
-    float: left;
-    position: relative;
-    border-top: 2px solid black;
+    /*width: 15px;*/
+    /*margin-top: 9px;*/
+    /*margin-right: 15px;*/
+    /*margin-left: 15px;*/
+    /*float: left;*/
+    /*position: relative;*/
+    /*border-top: 2px solid black;*/
   }
   
   .accordion__item > .accordion-header:after {
