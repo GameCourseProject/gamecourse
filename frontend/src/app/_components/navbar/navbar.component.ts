@@ -56,6 +56,7 @@ export class NavbarComponent implements OnInit {
       .subscribe(user => {
         this.user = user;
         this.photo.set(user.photoUrl);
+        this.initNavigations();
 
         // Whenever URL changes
         this.router.events.subscribe(event => {
