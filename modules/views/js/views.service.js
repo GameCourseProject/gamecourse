@@ -2227,7 +2227,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     const viewRoles = $sbviews.findRolesOfView(part.viewId);
                     modal.parent().attr("id", "aspects_modal");
                     modal.append($('<button class="close_btn icon" value="#aspects_modal" ng-click="closeOverlay()"</button>'));
-                    modal.append($('<div class="title">Edit aspect for this view: </div>'));
+                    modal.append($('<div class="title">Manage aspects: </div>'));
                     modalContent = $("<div class='content'></div>");
 
                     edit_roles_selection = $('<div id="edit_roles_selection"></div>');
