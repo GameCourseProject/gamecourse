@@ -121,7 +121,7 @@ class CourseUser extends User
     public function getLastLogin()
     {
         $lastLogin = $this->getData("lastActivity");
-        return parent::lastLoginTimeTostring($lastLogin);
+        return $lastLogin;
     }
     public function isActive()
     {
