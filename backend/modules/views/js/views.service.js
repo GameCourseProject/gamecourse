@@ -312,7 +312,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         if (options.edit)
             return;
 
-        if (part.class !== undefined) {
+        if (part.class != undefined) {
             if (part.class.includes(';')) {
                 $.each(part.class.split(';'), function (i, item) {
                     element.addClass(item);
@@ -320,12 +320,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             } else
                 element.addClass(part.class);
         }
-        if (part.cssId !== undefined) {
+        if (part.cssId != undefined) {
             element.attr('id', part.cssId);
         }
-        if (part.style !== undefined)
+        if (part.style != undefined)
             element.attr('style', part.style);
-        if (part.label !== undefined)
+        if (part.label != undefined)
             element.attr('label-for-events', part.label);
 
         //add events attribute so they can acess functions of events directive
