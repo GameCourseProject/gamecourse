@@ -1,1 +1,43 @@
-<p>views works!</p>
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper">
+    <div *ngIf="!loading" id="settings" class="page">
+      <div class="tabs">
+        <app-course-settings-sidebar></app-course-settings-sidebar>
+
+        <!--        <div class="tab-content-wrapper">-->
+        <!--          <div class="tab-content" ui-view="tabContent">-->
+
+        <!--            &lt;!&ndash; Themes  &ndash;&gt;-->
+        <!--            <div class="section">-->
+        <!--              <div class="divider">-->
+        <!--                <div class="title"><span>Themes</span></div>-->
+        <!--              </div>-->
+        <!--              <div class="content" id="themes">-->
+        <!--                <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">-->
+        <!--                  <div>{{theme.name}}</div>-->
+        <!--                  <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'">-->
+        <!--                </div>-->
+        <!--              </div>-->
+        <!--            </div>-->
+
+        <!--            &lt;!&ndash; Authentication  FIXME: legacy &ndash;&gt;-->
+        <!--            <div class="section">-->
+        <!--              <div class="divider">-->
+        <!--                <div class="title"><span>Authentication</span></div>-->
+        <!--              </div>-->
+        <!--              <div class="content"></div>-->
+        <!--            </div>-->
+
+        <!--          </div>-->
+        <!--        </div>-->
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="../../../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>

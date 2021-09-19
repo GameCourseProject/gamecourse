@@ -637,6 +637,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data']['nUsers'])) );
   }
 
+  public hasViewsEnabled(courseID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'courseTabs');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => !!res['data'].find(el => el.text === 'Views')) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ---------------- Rules System --------------- ***/

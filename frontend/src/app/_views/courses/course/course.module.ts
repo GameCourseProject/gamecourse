@@ -6,7 +6,7 @@ import { MainComponent } from './main/main.component';
 import {SharedModule} from "../../../_components/shared.module";
 import { UsersComponent } from './users/users.component';
 import { SidebarComponent } from './settings/sidebar/sidebar.component';
-import { ThisCourseComponent } from './settings/this-course/this-course.component';
+import { GlobalComponent } from './settings/global/global.component';
 import { RolesComponent } from './settings/roles/roles.component';
 import { ModulesComponent } from './settings/modules/modules.component';
 import { RulesComponent } from './settings/rules/rules.component';
@@ -19,7 +19,7 @@ import {FormsModule} from "@angular/forms";
     MainComponent,
     UsersComponent,
     SidebarComponent,
-    ThisCourseComponent,
+    GlobalComponent,
     RolesComponent,
     ModulesComponent,
     RulesComponent,

@@ -2,11 +2,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {MainComponent} from "./main/main.component";
 import {UsersComponent} from "./users/users.component";
-import {ThisCourseComponent} from "./settings/this-course/this-course.component";
+import {GlobalComponent} from "./settings/global/global.component";
 import {RolesComponent} from "./settings/roles/roles.component";
 import {ModulesComponent} from "./settings/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views.component";
+import {RedirectIfViewsDisabledGuard} from "../../../_guards/redirect-if-views-disabled.guard";
 
 const routes: Routes = [
   {
@@ -19,7 +20,7 @@ const routes: Routes = [
   },
   {
     path: 'settings/global',
-    component: ThisCourseComponent
+    component: GlobalComponent
   },
   {
     path: 'settings/roles',
@@ -35,7 +36,9 @@ const routes: Routes = [
   },
   {
     path: 'settings/views',
-    component: ViewsComponent
+    component: ViewsComponent,
+    canLoad: [RedirectIfViewsDisabledGuard],
+    canActivate: [RedirectIfViewsDisabledGuard]
   },
   { path: 'settings', redirectTo: 'settings/global', pathMatch: 'full' }
 ];
