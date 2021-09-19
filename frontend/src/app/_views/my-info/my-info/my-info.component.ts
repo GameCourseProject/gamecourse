@@ -111,6 +111,7 @@ export interface UserData {
   email: string,
   auth: AuthType,
   username: string,
+  roles?: string[],
   isAdmin?: boolean,
   isActive?: boolean,
   image?: string | ArrayBuffer

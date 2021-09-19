@@ -11,6 +11,7 @@ import { RolesComponent } from './settings/roles/roles.component';
 import { ModulesComponent } from './settings/modules/modules.component';
 import { RulesComponent } from './settings/rules/rules.component';
 import { ViewsComponent } from './settings/views/views.component';
+import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { ViewsComponent } from './settings/views/views.component';
   imports: [
     CommonModule,
     CourseRoutingModule,
-    SharedModule
+    SharedModule,
+    FormsModule
   ]
 })
 export class CourseModule { }

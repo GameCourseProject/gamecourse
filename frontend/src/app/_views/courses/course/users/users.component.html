@@ -1,1 +1,333 @@
-<p>users works!</p>
+<div id="wrapper">
+  <!-- conteudo da página -->
+  <div id="content-wrapper" *ngIf="!loading">
+
+    <!-- Sidebar -->
+    <app-sidebar
+      [filters]="filters"
+      [orderBy]="orderBy"
+      (onSearch)="onSearch($event)"
+      (onFilterChange)="onFilterChanged($event)"
+      (onOrderChange)="onOrderByChanged($event)">
+    </app-sidebar>
+
+    <!-- Main Content -->
+    <div id="mainContent">
+      <!-- Action buttons -->
+      <div class="action-buttons ">
+        <div class="icon add_icon" (click)="isNewUserMethodModal = true"></div>
+        <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
+        <div class="icon export_icon" title="Export all" (click)="exportUsers()"></div>
+      </div>
+
+      <!-- Courses Table -->
+      <div id="allUsers">
+        <div class="data-table">
+
+          <table *ngIf="this.filteredUsers.length > 0" id="users-table">
+            <!-- Header -->
+            <thead>
+            <tr>
+              <th class="name-column">Name</th>
+              <th >Nickname</th>
+              <th >Major</th>
+              <th >Student nº</th>
+              <th >Last Login</th>
+              <th class="check-column">Active</th>
+              <th class="action-column"></th>
+              <th class="action-column"></th>
+            </tr>
+            </thead>
+
+            <!-- Body -->
+            <tbody>
+            <tr *ngFor="let user of filteredUsers" style="cursor: pointer">
+              <td class="name-column">
+                <span>{{user.name}}</span>
+                <div *ngFor="let role of user.roles" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}">
+                  {{role.name}}
+                </div>
+              </td>
+              <td class="ng-binding">{{user.nickname}}</td>
+              <td class="ng-binding">{{user.major}}</td>
+              <td class="ng-binding">{{user.studentNumber}}</td>
+              <td class="ng-binding">{{user.lastLogin ? user.lastLogin.fromNow() : ''}}</td>
+              <td class="check-column">
+                <label class="switch">
+                  <input type="checkbox" [checked]="user.isActive" (change)="toggleActive(user.id)">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="action-column">
+                <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditUser(user); isUserModalOpen = true;"></div>
+              </td>
+              <td class="action-column">
+                <div class="icon delete_icon" title="Remove" (click)="userToDelete = user; isDeleteVerificationModalOpen = true"></div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="this.filteredUsers.length === 0" class='error_box'>
+            <div id='empty_table' class='error_msg'>No matches found</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class='success_box'>
+        <div id='action_completed' class='success_msg'></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading || loadingAction" id="page-loading">
+    <img src="../../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>
+
+
+<!-- New User Method Modal -->
+<ng-container *ngIf="isNewUserMethodModal">
+  <app-modal
+    [isModalOpen]="isNewUserMethodModal"
+    [id]="'add-user'"
+    [templateRef]="newUserMethodModal"
+    (closeBtnClicked)="isNewUserMethodModal = false;"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #newUserMethodModal>
+  <div class="title centered">How do you want to add a new user? </div>
+  <div class="content options">
+    <div class="option" (click)="mode = 'add'; isUserModalOpen = true">
+      <div class="icon" id="choose_create_new_user" style="opacity: .8"></div>
+      <div class="description">Create a new user</div>
+    </div>
+    <div class="option" (click)="isSelectUserModalOpen = true">
+      <div class="icon" id="choose_select_user" style="opacity: .8"></div>
+      <div class="description">Select existing user</div>
+    </div>
+  </div>
+</ng-template>
+
+
+<!-- Select User Modal -->
+<ng-container *ngIf="isSelectUserModalOpen">
+  <app-modal
+    [isModalOpen]="isSelectUserModalOpen"
+    [id]="'add-user'"
+    [templateRef]="selectUserModal"
+    (closeBtnClicked)="isSelectUserModalOpen = false;"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #selectUserModal>
+  <div class="title">Select Users: </div>
+  <div class="content">
+    <div id="new_box" class="inputs">
+
+      <!-- Search -->
+      <div class="search_box" id="selected_users">
+        <div *ngFor="let user of selectedUsers" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}"
+        (click)="removeUser(user.id)">
+          {{user.name}}
+        </div>
+        <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="onSearchUser()">
+      </div>
+
+      <!-- Users -->
+      <div class="select_box" id="system_users">
+        <div *ngFor="let user of filteredNonUsers" class="line">
+          <div>{{user.name + ' - ' + user.studentNumber}}</div>
+          <div class="add_icon_no_outline icon" (click)="addUser(user)"></div>
+        </div>
+      </div>
+
+      <!-- Role -->
+      <div id="add_roles" style="margin-bottom: 0;">
+        <span style="margin-right: 10px;">Role: </span>
+        <select id="roles" class="form__input" name="roles" [(ngModel)]="selectedUserRole">
+          <option [ngValue]="null" disabled selected>Select a role</option>
+          <option *ngFor="let role of roles" [ngValue]="role.name">{{role.name}}</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="save_btn" (click)="submitUsers()" [disabled]="this.selectedUsers?.length === 0 || !this.selectedUserRole">Save</button>
+  </div>
+</ng-template>
+
+<!-- New User / Edit Modal -->
+<ng-container *ngIf="isUserModalOpen">
+  <app-modal
+    [isModalOpen]="isUserModalOpen"
+    [id]="mode === 'add' ? 'add-user' : 'edit-user'"
+    [templateRef]="userModal"
+    (closeBtnClicked)="isUserModalOpen = false; clearObject(this.newUser); photo.set(originalPhoto); this.selectedUserRoles = null"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #userModal>
+  <!-- Title -->
+  <div class="title">{{mode === 'add' ? 'New User:' : 'Edit User:'}}</div>
+
+  <div class="content">
+    <div class="inputs">
+
+      <div class="row_inputs">
+
+        <!-- Image -->
+        <div class="image smaller">
+          <div class="profile_image">
+            <div id="display_profile_image">
+              <img *ngIf="photo.get()" [src]="photo.get()">
+              <span *ngIf="!photo.get()">Select a profile image</span>
+            </div>
+          </div>
+          <app-input-file
+            [id]="'profile_image'"
+            [accept]="'image/*'"
+            [classList]="'form__input'"
+            (valueChange)="onFileSelected($event, 'image')">
+          </app-input-file>
+        </div>
+
+        <div class="details bigger right">
+
+          <!-- Name -->
+          <div class="container">
+            <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newUser.name" [required]="true">
+            <label for="name" class="form__label">Name</label>
+          </div>
+
+          <!-- Nickname -->
+          <div class="container">
+            <input type="text" class="form__input" id="nickname" placeholder="Nickname" [(ngModel)]="newUser.nickname" [required]="true">
+            <label for="nickname" class="form__label">Nickname</label>
+          </div>
+
+          <!-- Email -->
+          <div class="container">
+            <input type="email" class="form__input" id="email" placeholder="Email *" [(ngModel)]="newUser.email" [required]="true">
+            <label for="email" class="form__label">Email</label>
+          </div>
+
+          <div class="container">
+
+            <!-- Student number -->
+            <div class="details half">
+              <div class="container">
+                <input type="number" class="form__input" id="studentNumber" placeholder="Student Number *" [(ngModel)]="newUser.studentNumber" [required]="true">
+                <label for="studentNumber" class="form__label">Number</label>
+              </div>
+            </div>
+
+            <!-- Major -->
+            <div class="details half right">
+              <div class="container">
+                <input type="text" class="form__input" id="major" placeholder="Major *" [(ngModel)]="newUser.major" [required]="true">
+                <label for="major" class="form__label">Major</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row_inputs">
+
+        <!-- Auth Method -->
+        <div class="smaller">
+          <select id="authService" class="form__input" name="authService" [(ngModel)]="newUser.auth" [required]="true">
+            <option [ngValue]="null" disabled selected [ngStyle]="{'color': 'rbg(106,106,106)'}">Auth Service</option>
+            <option [ngValue]="AuthType.FENIX" value="fenix" [ngStyle]="{'color': '#333'}">Fénix</option>
+            <option [ngValue]="AuthType.GOOGLE" [ngStyle]="{'color': '#333'}">Google</option>
+            <option [ngValue]="AuthType.FACEBOOK" [ngStyle]="{'color': '#333'}">Facebook</option>
+            <option [ngValue]="AuthType.LINKEDIN" [ngStyle]="{'color': '#333'}">Linkedin</option>
+          </select>
+        </div>
+
+        <!-- Username -->
+        <div class="details bigger right">
+          <div class="container">
+            <input type="text" class="form__input" id="username" placeholder="Username *" [(ngModel)]="newUser.username">
+            <label for="username" class="form__label">Username</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add roles -->
+      <div [id]="'add_roles'">
+        <span style="margin-right: 10px;">Add Role: </span>
+        <select [id]="'roles'" class="form__input" name="roles" [(ngModel)]="selectedUserRole">
+          <option [ngValue]="null" disabled selected>Select a role *</option>
+          <option *ngFor="let role of filterRoles()" [ngValue]="role.name">{{role.name}}</option>
+        </select>
+        <button (click)="addRole(selectedUserRole)">Add</button>
+      </div>
+
+      <!-- Roles list -->
+      <div id="roles_list">
+        <span style="margin-right: 10px;">Roles: </span>
+        <div *ngFor="let role of selectedUserRoles" (click)="removeRole(role)" class="role_tag">{{role}}</div>
+      </div>
+    </div>
+
+    <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createUser() : editUser()">Save</button>
+  </div>
+</ng-template>
+
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-verification-' + userToDelete.id"
+    [text]="'Are you sure you want to delete the User?'"
+    [target]="userToDelete.name + ' - ' + userToDelete.studentNumber"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteUser(userToDelete)"
+    (negativeBtnClicked)="userToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    [actionInProgress]="saving">
+  </app-verification-modal>
+</ng-container>
+
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-user'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .csv or .txt file to be imported</div>
+  <div class="target">The separator must be comma</div>
+  <app-input-file
+    [id]="'import_user'"
+    [accept]="'.csv, .txt'"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event, 'file')">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importUsers(true)">Import Users (Replace Duplicates)</button>
+    <button (click)="importUsers(false)">Import Users (Ignore Duplicates)</button>
+  </div>
+
+</ng-template>

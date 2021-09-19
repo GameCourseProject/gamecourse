@@ -1,21 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import {Subject} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
+import {ImageUpdateService} from "../../../_services/image-update.service";
 
 import {User} from "../../../_domain/User";
 import {UserData} from "../../my-info/my-info/my-info.component";
 import {AuthType} from "../../../_domain/AuthType";
-import {ImageManager} from "../../../_utils/image-manager";
 
+import {ImageManager} from "../../../_utils/image-manager";
+import {DownloadManager} from "../../../_utils/download-manager";
+import {Ordering} from "../../../_utils/ordering";
 import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 
 import _ from 'lodash';
-import {DownloadManager} from "../../../_utils/download-manager";
-import {Ordering} from "../../../_utils/ordering";
-import {ImageUpdateService} from "../../../_services/image-update.service";
 
 
 @Component({
@@ -140,7 +139,7 @@ export class UsersComponent implements OnInit {
     this.filteredUsers = [];
 
     this.allUsers.forEach(user => {
-      if (this.isQueryTrueSearch(user) && this.isQueryTrueFilter(user))
+      if (this.isQueryTrueSearch(user, this.searchQuery) && this.isQueryTrueFilter(user))
         this.filteredUsers.push(user);
     });
 
@@ -331,13 +330,13 @@ export class UsersComponent implements OnInit {
     return res;
   }
 
-  isQueryTrueSearch(user: User): boolean {
-    return !this.searchQuery ||
-      (user.name && !!this.parseForSearching(user.name).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (user.nickname && !!this.parseForSearching(user.nickname).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (user.studentNumber && !!this.parseForSearching(user.studentNumber.toString()).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (user.email && !!this.parseForSearching(user.email).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (user.username && !!this.parseForSearching(user.username).find(a => a.includes(this.searchQuery.toLowerCase())));
+  isQueryTrueSearch(user: User, query: string): boolean {
+    return !query ||
+      (user.name && !!this.parseForSearching(user.name).find(a => a.includes(query.toLowerCase()))) ||
+      (user.nickname && !!this.parseForSearching(user.nickname).find(a => a.includes(query.toLowerCase()))) ||
+      (user.studentNumber && !!this.parseForSearching(user.studentNumber.toString()).find(a => a.includes(query.toLowerCase()))) ||
+      (user.email && !!this.parseForSearching(user.email).find(a => a.includes(query.toLowerCase()))) ||
+      (user.username && !!this.parseForSearching(user.username).find(a => a.includes(query.toLowerCase())));
   }
 
   isQueryTrueFilter(user: User): boolean {

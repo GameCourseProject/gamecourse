@@ -1,4 +1,6 @@
 import {swapPTCharacters} from "../_utils/swap-pt-chars";
+import {Moment} from "moment";
+import * as moment from "moment";
 
 export class Course {
   private _id: number;
@@ -7,7 +9,7 @@ export class Course {
   private _color: string;
   private _year: string;
   private _defaultLandingPage: string;
-  private _lastUpdate: Date;
+  private _lastUpdate: Moment;
   private _isActive: boolean;
   private _isVisible: boolean;
   private _roleHierarchy: string; // FIXME: create class
@@ -16,7 +18,7 @@ export class Course {
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
-              lastUpdate: Date, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
+              lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
               nrStudents?: number) {
 
     this._id = id;
@@ -82,11 +84,11 @@ export class Course {
     this._defaultLandingPage = value;
   }
 
-  get lastUpdate(): Date {
+  get lastUpdate(): Moment {
     return this._lastUpdate;
   }
 
-  set lastUpdate(value: Date) {
+  set lastUpdate(value: Moment) {
     this._lastUpdate = value;
   }
 
@@ -146,7 +148,7 @@ export class Course {
       obj.color,
       obj.year,
       obj.defaultLandingPage,
-      new Date(obj.lastUpdate),
+      moment(obj.lastUpdate),
       !!parseInt(obj.isActive),
       !!parseInt(obj.isVisible),
       obj.roleHierarchy,

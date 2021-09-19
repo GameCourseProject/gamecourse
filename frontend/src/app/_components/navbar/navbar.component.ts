@@ -6,7 +6,7 @@ import {Observable} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ImageManager} from "../../_utils/image-manager";
 import {ErrorService} from "../../_services/error.service";
-import {CourseInfo} from "../../_domain/Course";
+import {Course, CourseInfo} from "../../_domain/Course";
 import {ImageUpdateService} from "../../_services/image-update.service";
 
 @Component({
@@ -28,7 +28,7 @@ export class NavbarComponent implements OnInit {
 
   docs: boolean;
 
-  course: { id: number, name: string };
+  course: Course;
   courseInfo: CourseInfo;
 
   constructor(
@@ -72,9 +72,9 @@ export class NavbarComponent implements OnInit {
   /*** ---------------- Navigation ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  initNavigations(): void {
+  async initNavigations(): Promise<void> {
     this.docs = this.router.url.includes('docs');
-    this.course = this.getCourse();
+    this.course = await this.getCourse();
 
     if (this.docs) this.navigation = this.getDocsNavigation();
     else if (!this.course) this.navigation = this.getMainNavigation();
@@ -142,7 +142,7 @@ export class NavbarComponent implements OnInit {
       this.api.getCourseInfo(this.course.id)
         .subscribe(info => {
           this.courseInfo = info;
-          this.courseNavigation = buildCourseNavigation(this.course.id, this.course.name, this.courseInfo);
+          this.courseNavigation = buildCourseNavigation(this.course.id, this.course.nameUrl, this.courseInfo);
           this.navigation = this.courseNavigation;
         },
           error => ErrorService.set(error));
@@ -216,11 +216,12 @@ export class NavbarComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getCourse(): { id: number, name: string } {
+  async getCourse(): Promise<Course> {
     const urlParts = this.router.url.substr(1).split('/');
-    if (urlParts.includes('courses') && urlParts.length >= 3)
-      return {id: parseInt(urlParts[1]), name: urlParts[2]}
-    else return null;
+    if (urlParts.includes('courses') && urlParts.length >= 3) {
+      const courseID = parseInt(urlParts[1]);
+      return await this.api.getCourse(courseID).toPromise();
+    } else return null;
   }
 
 

@@ -22,3 +22,5 @@
   </ul>
 
 </div>
+
+<div *ngIf="course" id="course_name" [ngStyle]="{'background-color': course.color}">{{course.name}}</div>

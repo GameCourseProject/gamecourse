@@ -1,24 +1,25 @@
-export class Role {
-  private _id: number;
-  private _name: string;
-  private _landingPage: string;
-  private _courseID: number;
-  private _isCourseAdmin: boolean;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+import {Moment} from "moment";
+import {CourseDatabase} from "./Course";
 
-  constructor(source: Partial<Role>) {
-    // const keysConverter = new ObjectKeysConverter();
-    // source = keysConverter.keysToCamelCase(source);
-    //
-    // const typesConverter = new TypesConverter();
-    // Object.keys(source).forEach(key => {
-    //   if (source.hasOwnProperty(key)) {
-    //     this[key] = typesConverter.fromDatabase(source[key]);
-    //   }
-    // });
-    //
-    // return this;
+export class Role { // FIXME: verify fields
+  private _id?: number;
+  private _name?: string;
+  private _landingPage?: string;
+  private _courseID?: number;
+  private _isCourseAdmin?: boolean;
+  private _createdAt?: Moment;
+  private _updatedAt?: Moment;
+
+  constructor(id?: number, name?: string, landingPage?: string, courseId?: number, isCourseAdmin?: boolean,
+              createdAt?: Moment, updatedAt?: Moment) {
+
+    this._id = id;
+    this._name = name;
+    this._landingPage = landingPage;
+    this._courseID = courseId;
+    this._isCourseAdmin = isCourseAdmin;
+    this._createdAt = createdAt;
+    this._updatedAt = updatedAt;
   }
 
   get id(): number {
@@ -61,19 +62,27 @@ export class Role {
     this._isCourseAdmin = value;
   }
 
-  get createdAt(): Date {
+  get createdAt(): Moment {
     return this._createdAt;
   }
 
-  set createdAt(value: Date) {
+  set createdAt(value: Moment) {
     this._createdAt = value;
   }
 
-  get updatedAt(): Date {
+  get updatedAt(): Moment {
     return this._updatedAt;
   }
 
-  set updatedAt(value: Date) {
+  set updatedAt(value: Moment) {
     this._updatedAt = value;
   }
+
+  static fromDatabase(obj: RoleDatabase): Role {
+    return new Role(null, obj.name);
+  }
+}
+
+interface RoleDatabase {
+  name: string
 }

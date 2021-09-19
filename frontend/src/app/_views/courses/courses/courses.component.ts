@@ -168,7 +168,7 @@ export class CoursesComponent implements OnInit {
     this.filteredCourses = [];
 
     this.allCourses.forEach(course => {
-      if (this.isQueryTrueSearch(course) && this.isQueryTrueFilter(course))
+      if (this.isQueryTrueSearch(course, this.searchQuery) && this.isQueryTrueFilter(course))
         this.filteredCourses.push(course);
     });
 
@@ -387,11 +387,11 @@ export class CoursesComponent implements OnInit {
     return res;
   }
 
-  isQueryTrueSearch(course: Course): boolean {
-    return !this.searchQuery ||
-      (course.name && !!this.parseForSearching(course.name).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (course.short && !!this.parseForSearching(course.short).find(a => a.includes(this.searchQuery.toLowerCase()))) ||
-      (course.year && !!this.parseForSearching(course.year).find(a => a.includes(this.searchQuery.toLowerCase())));
+  isQueryTrueSearch(course: Course, query: string): boolean {
+    return !query ||
+      (course.name && !!this.parseForSearching(course.name).find(a => a.includes(query.toLowerCase()))) ||
+      (course.short && !!this.parseForSearching(course.short).find(a => a.includes(query.toLowerCase()))) ||
+      (course.year && !!this.parseForSearching(course.year).find(a => a.includes(query.toLowerCase())));
   }
 
   isQueryTrueFilter(course: Course): boolean {

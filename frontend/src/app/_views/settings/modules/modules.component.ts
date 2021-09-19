@@ -67,7 +67,7 @@ export class ModulesComponent implements OnInit {
     this.filteredModules = [];
 
     this.allModules.forEach(module => {
-      if (this.isQueryTrueSearch(module))
+      if (this.isQueryTrueSearch(module, this.searchQuery))
         this.filteredModules.push(module);
     });
   }
@@ -125,9 +125,9 @@ export class ModulesComponent implements OnInit {
     return res;
   }
 
-  isQueryTrueSearch(module: Module): boolean {
-    return !this.searchQuery ||
-      (module.name && !!this.parseForSearching(module.name).find(a => a.includes(this.searchQuery.toLowerCase())));
+  isQueryTrueSearch(module: Module, query: string): boolean {
+    return !query ||
+      (module.name && !!this.parseForSearching(module.name).find(a => a.includes(query.toLowerCase())));
   }
 
   onFileSelected(files: FileList): void {
