@@ -52,12 +52,18 @@
             "styles": [
               "node_modules/@simonwep/pickr/dist/themes/monolith.min.css",
               "node_modules/codemirror/lib/codemirror.css",
+              "node_modules/codemirror/theme/mdn-like.css",
+              "node_modules/codemirror/addon/hint/show-hint.css",
               "src/styles/global.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/@simonwep/pickr/dist/pickr.min.js",
-              "node_modules/codemirror/lib/codemirror.js"
+              "node_modules/codemirror/lib/codemirror.js",
+              "node_modules/codemirror/mode/css/css.js",
+              "node_modules/codemirror/addon/hint/show-hint.js",
+              "node_modules/codemirror/addon/hint/css-hint.js",
+              "node_modules/codemirror/addon/display/placeholder.js"
             ]
           },
           "configurations": {

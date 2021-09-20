@@ -716,6 +716,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['file']) );
   }
 
+  public getStyleFile(courseID: number): Observable<{styleFile: string, url: string}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'getStyleFile');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
+  }
+
   public getCourseGlobal(courseID: number): Observable<{ name: string, activeUsers: number, awards: number, participations: number }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
@@ -765,6 +778,37 @@ export class ApiHttpService {
         const rolesHierarchy = res['data']['rolesHierarchy'].map(obj => roles.find(el => el.id === obj.id));
         return {pages: res['data']['pages'], roles, rolesHierarchy}
       }) );
+  }
+
+  public createStyleFile(courseID: number): Observable<string> {
+    const data = {
+      course: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'createStyleFile');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res['data']['url']) );
+  }
+
+  public updateStyleFile(courseID: number, content: string): Observable<string> {
+    const data = {
+      course: courseID,
+      content: content
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'updateStyleFile');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res['data']['url']) );
   }
 
 

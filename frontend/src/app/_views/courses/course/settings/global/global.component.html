@@ -62,16 +62,22 @@
               </div>
 
               <!-- Styling -->
-              <div class="section">
+              <div *ngIf="viewsModuleEnabled" class="section">
                 <div class="divider">
                   <div class="title"><span>Styling</span></div>
                 </div>
 
                 <div class="content">
-                  <div><button id="create_style_button" class="button" ng-click="createStyleFile()" style="display: none;">Create Style File</button></div>
-                  <div id="save-change-css" class="action-buttons" style="width:140px;"><button class="button" title="Save" ng-click="saveStyleFile()"> Save Changes </button></div>
-                  <div id="edit-css-file">
-                    <textarea id="style-file" class="form__input" placeholder="Write your style here...">{{styleFileContent || ''}}</textarea>
+                  <div *ngIf="!hasStyleFile">
+                    <button id="create_style_button" class="button" (click)="createStyleFile()">Create Style File</button>
+                  </div>
+
+                  <div *ngIf="hasStyleFile" id="save-change-css" class="action-buttons" style="width:140px;">
+                    <button class="button" title="Save" (click)="saveStyleFile()"> Save Changes </button>
+                  </div>
+
+                  <div *ngIf="hasStyleFile" id="edit-css-file">
+                    <textarea id="style-file" class="form__input" placeholder="Write your style here...">{{style.contents}}</textarea>
                   </div>
                 </div>
               </div>
@@ -112,4 +118,22 @@
     <button (click)="showDatabase('participation')">Participation</button>
   </div>
 
+</ng-template>
+
+
+<!-- Success Modal -->
+<app-modal
+  [isModalOpen]="isSuccessModalOpen"
+  [id]="'message-api-box'"
+  [classList]="'verification'"
+  [templateRef]="successModal"
+  (closeBtnClicked)="isSuccessModalOpen = false"
+  [actionInProgress]="saving">
+</app-modal>
+
+<ng-template #successModal>
+  <div class="message_warning warning">Saved!</div>
+  <div class="confirmation_btns">
+    <button (click)="isSuccessModalOpen = false">Confirm</button>
+  </div>
 </ng-template>
