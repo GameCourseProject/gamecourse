@@ -12,6 +12,7 @@ import { VerificationModalComponent } from './modals/verification-modal/verifica
 import { InputFileComponent } from './inputs/general/input-file/input-file.component';
 import { ErrorModalComponent } from './modals/error-modal/error-modal.component';
 import { FooterComponent } from './footer/footer.component';
+import { InputCodeComponent } from './inputs/code/input-code/input-code.component';
 
 
 @NgModule({
@@ -25,7 +26,8 @@ import { FooterComponent } from './footer/footer.component';
     VerificationModalComponent,
     InputFileComponent,
     ErrorModalComponent,
-    FooterComponent
+    FooterComponent,
+    InputCodeComponent
   ],
     exports: [
         NavbarComponent,
@@ -34,7 +36,8 @@ import { FooterComponent } from './footer/footer.component';
         VerificationModalComponent,
         InputFileComponent,
         ErrorModalComponent,
-        FooterComponent
+        FooterComponent,
+        InputCodeComponent
     ],
   imports: [
     CommonModule,

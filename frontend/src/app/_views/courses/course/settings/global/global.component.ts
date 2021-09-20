@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {Subject} from "rxjs";
 
@@ -6,33 +6,27 @@ import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../_services/error.service";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
 
-import * as CodeMirror from 'codemirror';
-import 'codemirror/mode/css/css';
-import 'codemirror/addon/hint/show-hint';
-import 'codemirror/addon/hint/css-hint';
-import 'codemirror/addon/display/placeholder';
-
 @Component({
   selector: 'app-global',
   templateUrl: './global.component.html',
   styleUrls: ['./global.component.scss']
 })
-export class GlobalComponent implements OnInit, AfterViewInit {
+export class GlobalComponent implements OnInit {
 
   loading: boolean;
 
   info: { id: number, name: string, activeUsers: number, awards: number, participations: number };
   navigation: {name: string, seqId: number}[];
-  viewsModuleEnabled: boolean;
+  viewsModuleEnabled: boolean = true; // FIXME: remove
 
   isViewDBModalOpen;
   isSuccessModalOpen;
   saving: boolean;
 
   style: {contents: string, url: string};
-  styleLoaded: Subject<void> = new Subject<void>();
   hasStyleFile: boolean;
-  cssCodeMirror;
+  styleLoaded: Subject<void> = new Subject<void>();
+  styleInput: string = '';
 
   constructor(
     private api: ApiHttpService,
@@ -46,12 +40,6 @@ export class GlobalComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
-    this.styleLoaded.subscribe(() => {
-      setTimeout(() => this.initCodeMirror(), 0)
-    });
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -62,6 +50,7 @@ export class GlobalComponent implements OnInit, AfterViewInit {
       .subscribe(
         info => {
           this.info = Object.assign({id: courseID}, info);
+
           this.api.getCourseInfo(courseID)
             .subscribe(courseInfo => {
               this.navigation = [];
@@ -86,8 +75,8 @@ export class GlobalComponent implements OnInit, AfterViewInit {
       .subscribe(
         data => {
           this.style = {contents: data.styleFile, url: data.url};
-          this.hasStyleFile = !!this.style.contents;
-          if (this.hasStyleFile) this.styleLoaded.next();
+          this.hasStyleFile = this.hasStyle(this.style.contents);
+          if (this.hasStyleFile) setTimeout(() => this.styleLoaded.next(), 0);
 
           // Append style to global styles
           $('#css-file').remove();
@@ -97,25 +86,6 @@ export class GlobalComponent implements OnInit, AfterViewInit {
         error => ErrorService.set(error),
         () => this.loading = false
       );
-  }
-
-  initCodeMirror(): void {
-    const options = {
-      lineNumbers: true,
-      styleActiveLine: true,
-      mode: "css",
-      value: this.style.contents || '',
-      autohint: true,
-      lineWrapping: true,
-      theme: "mdn-like"
-    };
-
-    const textarea = $('#style-file')[0] as HTMLTextAreaElement;
-    this.cssCodeMirror = CodeMirror.fromTextArea(textarea, options);
-
-    this.cssCodeMirror.on("keyup", function (cm, event) {
-      cm.showHint(CodeMirror.hint.css);
-    });
   }
 
 
@@ -146,20 +116,20 @@ export class GlobalComponent implements OnInit, AfterViewInit {
       .subscribe(url => {
         this.style = {contents: '', url: url};
         this.hasStyleFile = true;
-        this.styleLoaded.next();
+        setTimeout(() => this.styleLoaded.next(), 0);
       }, error => ErrorService.set(error),
         () => this.saving = false);
   }
 
   saveStyleFile(): void {
     this.saving = true;
-    const updatedStyle = this.cssCodeMirror.getValue();
+    const updatedStyle = this.styleInput;
 
     this.api.updateStyleFile(this.info.id, updatedStyle)
       .subscribe(url => {
         this.isSuccessModalOpen = true;
         this.style = {contents: updatedStyle, url: url};
-        this.hasStyleFile = !!this.style.contents;
+        this.hasStyleFile = this.hasStyle(this.style.contents);
 
         // Append style to global styles
         $('#css-file').remove();
@@ -178,6 +148,10 @@ export class GlobalComponent implements OnInit, AfterViewInit {
   orderBySeqId() {
     if (this.navigation.length === 0) return [];
     return this.navigation.sort((a, b) => a.seqId - b.seqId)
+  }
+
+  hasStyle(style: string): boolean { // FIXME: should be in utils
+    return style.replace(/\s*/g, '') !== '';
   }
 
 }

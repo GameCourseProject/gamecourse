@@ -77,7 +77,15 @@
                   </div>
 
                   <div *ngIf="hasStyleFile" id="edit-css-file">
-                    <textarea id="style-file" class="form__input" placeholder="Write your style here...">{{style.contents}}</textarea>
+                    <app-input-code
+                      [id]="'style-file'"
+                      [classList]="'form__input'"
+                      [placeholder]="'Write your style here...'"
+                      [mode]="'css'"
+                      [init]="style.contents"
+                      [canInit]="styleLoaded"
+                      (valueChange)="this.styleInput = $event">
+                    </app-input-code>
                   </div>
                 </div>
               </div>
