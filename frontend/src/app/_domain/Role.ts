@@ -1,25 +1,15 @@
-import {Moment} from "moment";
-import {CourseDatabase} from "./Course";
-
-export class Role { // FIXME: verify fields
+export class Role {
   private _id?: number;
   private _name?: string;
   private _landingPage?: string;
-  private _courseID?: number;
-  private _isCourseAdmin?: boolean;
-  private _createdAt?: Moment;
-  private _updatedAt?: Moment;
+  private _children?: Role[];
 
-  constructor(id?: number, name?: string, landingPage?: string, courseId?: number, isCourseAdmin?: boolean,
-              createdAt?: Moment, updatedAt?: Moment) {
+  constructor(id?: number, name?: string, landingPage?: string, children?: Role[]) {
 
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;
-    this._courseID = courseId;
-    this._isCourseAdmin = isCourseAdmin;
-    this._createdAt = createdAt;
-    this._updatedAt = updatedAt;
+    this._children = children;
   }
 
   get id(): number {
@@ -46,43 +36,27 @@ export class Role { // FIXME: verify fields
     this._landingPage = value;
   }
 
-  get courseID(): number {
-    return this._courseID;
+  get children(): Role[] {
+    return this._children;
   }
 
-  set courseID(value: number) {
-    this._courseID = value;
-  }
-
-  get isCourseAdmin(): boolean {
-    return !!this._isCourseAdmin;
-  }
-
-  set isCourseAdmin(value: boolean) {
-    this._isCourseAdmin = value;
-  }
-
-  get createdAt(): Moment {
-    return this._createdAt;
-  }
-
-  set createdAt(value: Moment) {
-    this._createdAt = value;
-  }
-
-  get updatedAt(): Moment {
-    return this._updatedAt;
-  }
-
-  set updatedAt(value: Moment) {
-    this._updatedAt = value;
+  set children(value: Role[]) {
+    this._children = value;
   }
 
   static fromDatabase(obj: RoleDatabase): Role {
-    return new Role(null, obj.name);
+    return new Role(
+      obj.id ? parseInt(obj.id) : null,
+      obj.name,
+      obj.landingPage,
+      obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null
+    );
   }
 }
 
 interface RoleDatabase {
-  name: string
+  id?: string,
+  name: string,
+  landingPage?: string
+  children?: RoleDatabase[]
 }

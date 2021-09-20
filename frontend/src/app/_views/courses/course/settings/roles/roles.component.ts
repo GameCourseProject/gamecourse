@@ -3,6 +3,7 @@ import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {Role} from "../../../../../_domain/Role";
 import {ErrorService} from "../../../../../_services/error.service";
+import {Page} from "../../../../../_domain/Page";
 
 @Component({
   selector: 'app-roles',
@@ -15,12 +16,14 @@ export class RolesComponent implements OnInit {
 
   courseID: number;
 
+  defaultRoles: string[] = ['Teacher', 'Student', 'Watcher'];
   roles: Role[];
-  rolesHierarchy: Role[];
-  pages;
+  pages: Page[];
 
-  selectedRole: string = null;
-  selectedLandingPage: string = null;
+  selected: {role: string, page: string} = {
+    role: null,
+    page: ''
+  };
 
   constructor(
     private api: ApiHttpService,
@@ -35,17 +38,33 @@ export class RolesComponent implements OnInit {
     });
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
   getRoles(courseId: number): void {
     this.api.getRoles(courseId)
       .subscribe(res => {
         this.roles = res.roles;
-        this.rolesHierarchy = res.rolesHierarchy;
         this.pages = res.pages;
-        console.log(res)
-        this.loading = false;
+        // FIXME: remove
+        this.roles[1].children = [Role.fromDatabase({name: 'Profiling'})]
       },
-        error => ErrorService.set(error));
+        error => ErrorService.set(error),
+        () => {
+        this.loading = false;
+        setTimeout(() => {
+          // @ts-ignore
+          $('#roles-config').nestable({dropdown: this.pages.map(page => {name: page.name})});
+        }, 0);
+      });
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   saveLandingPage(role: Role): void {
     // TODO

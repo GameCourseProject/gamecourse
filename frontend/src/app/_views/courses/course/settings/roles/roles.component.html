@@ -5,56 +5,47 @@
       <div class="tabs">
         <app-course-settings-sidebar></app-course-settings-sidebar>
 
-            <div class="tab-content-wrapper">
-              <div class="tab-content">
+        <div class="tab-content-wrapper">
+          <div class="tab-content">
 
-                <div class="content" id="roles_page">
+            <div class="content" id="roles_page">
 
-                  <!-- Roles -->
-                  <div class="dd" id="roles-config">
-                    <div class="header">
-                      <span class="role_sections">Roles</span>
-                      <span class="page_sections">Landing Page</span>
-                    </div>
-
-                    <ol class="dd-list first-layer dd-has-children">
-                      <li *ngFor="let role of roles" class="dd-item dd-nodrag" data-name="Teacher">
-                        <div class="dd-handle icon"></div>
-                        <div class="dd-content">{{role.name}}</div>
-                        <select class="dd-content" [(ngModel)]="selectedLandingPage" (ngModelChange)="saveLandingPage(role)">
-                          <option [ngValue]="null" disabled selected>Default Course Page</option>
-                          <option *ngFor="let page of pages" [ngValue]="page.name">{{page.name}}</option>
-                        </select>
-                        <img class="dd-add icon" src="assets/icons/add_icon_no_outline.svg" title="New">
-                        <img class="dd-remove icon" src="assets/icons/delete_icon.svg" title="Remove">
-                        <div class="dd-delete-blocker"></div>
-                      </li>
-                    </ol>
-                  </div>
-
-                  <!-- Add btn -->
-                  <div id="add_role_button_box">
-                    <button title="New" (click)="addRole()" class="add_button icon"></button>
-                  </div>
-
-                  <!-- Action buttons -->
-                  <div class="action-buttons">
-                    <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
-                    <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
-                    <button id="role-change-button" class="button" disabled="disabled">Save Changes</button>
-                  </div>
-
-                  <div class="error_box">
-                    <div id="action_not_completed" class="error_msg"></div>
-                  </div>
-
-                  <div class="success_box">
-                    <div id="action_completed" class="success_msg"></div>
-                  </div>
+              <!-- Roles -->
+              <div class="dd" id="roles-config">
+                <div class="header">
+                  <span class="role_sections">Roles</span>
+                  <span class="page_sections">Landing Page</span>
                 </div>
 
+                <ng-container
+                  [ngTemplateOutlet]="roleList"
+                  [ngTemplateOutletContext]="{roles: roles}">
+                </ng-container>
+              </div>
+
+              <!-- Add btn -->
+              <div id="add_role_button_box">
+                <button title="New" (click)="addRole()" class="add_button icon"></button>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="action-buttons">
+                <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
+                <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
+                <button id="role-change-button" class="button" disabled="disabled">Save Changes</button>
+              </div>
+
+              <div class="error_box">
+                <div id="action_not_completed" class="error_msg"></div>
+              </div>
+
+              <div class="success_box">
+                <div id="action_completed" class="success_msg"></div>
               </div>
             </div>
+
+          </div>
+        </div>
 
       </div>
     </div>
@@ -65,6 +56,35 @@
     <img src="../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!-- Role List -->
+<ng-template #roleList let-roles='roles'>
+
+  <ol class="dd-list">
+    <li *ngFor="let role of roles" class="dd-item" [ngClass]="{'dd-nodrag': defaultRoles.includes(role.name)}"
+        [attr.data-name]="role.name">
+
+      <div class="dd-handle icon"></div>
+      <div class="dd-content">{{role.name}}</div>
+
+      <select class="dd-content" [(ngModel)]="selected.page" (ngModelChange)="saveLandingPage(role)">
+        <option [ngValue]="''" disabled [selected]="role.landingPage === ''">Default Course Page</option>
+        <option *ngFor="let page of pages" [ngValue]="page.name" [selected]="role.landingPage === page.name">{{page.name}}</option>
+      </select>
+
+      <ng-container
+        [ngTemplateOutlet]="roleList"
+        [ngTemplateOutletContext]="{roles: role.children}">
+      </ng-container>
+
+<!--      <img class="dd-add icon" src="assets/icons/add_icon_no_outline.svg" title="New">-->
+<!--      <img class="dd-remove icon" src="assets/icons/delete_icon.svg" title="Remove">-->
+<!--      <div class="dd-delete-blocker"></div>-->
+    </li>
+  </ol>
+
+</ng-template>
 
 
 <!--<div class="modal ng-scope" id="new-role">-->

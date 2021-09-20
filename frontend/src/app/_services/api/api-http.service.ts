@@ -20,6 +20,7 @@ import {ImportModulesData} from "../../_views/settings/modules/modules.component
 import {Moment} from "moment";
 import * as moment from "moment";
 import {Role} from "../../_domain/Role";
+import {Page} from "../../_domain/Page";
 
 @Injectable({
   providedIn: 'root'
@@ -763,7 +764,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getRoles(courseID: number): Observable<{ pages: any[], roles: Role[], rolesHierarchy: Role[] }> {
+  public getRoles(courseID: number): Observable<{ pages: Page[], roles: Role[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
       qs.push('request', 'roles');
@@ -774,9 +775,13 @@ export class ApiHttpService {
 
     return this.get(url, this.httpOptions)
       .pipe( map((res: any) => {
-        const roles = res['data']['roles_obj'].map(obj => new Role(obj.id, obj.name, obj.landingPage, courseID, null, null, null));
-        const rolesHierarchy = res['data']['rolesHierarchy'].map(obj => roles.find(el => el.id === obj.id));
-        return {pages: res['data']['pages'], roles, rolesHierarchy}
+        const roles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
+        res['data']['rolesHierarchy'].map(obj => {
+          if (obj.children) {
+            roles.find(role => role.id === obj.id).children = obj.children.map(child => Role.fromDatabase(child));
+          }
+        });
+        return {pages: res['data']['pages'].map(obj => Page.fromDatabase(obj)), roles}
       }) );
   }
 

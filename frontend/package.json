@@ -22,6 +22,7 @@
     "codemirror": "^5.62.3",
     "jquery": "^3.6.0",
     "moment": "^2.29.1",
+    "nestable2": "^1.6.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"

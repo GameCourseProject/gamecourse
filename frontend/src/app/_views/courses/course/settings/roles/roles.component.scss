@@ -22,10 +22,70 @@
 }
 
 
+/*roles page*/
+
 #roles-config {
   width: 100%;
 }
 
+#roles-config .header {
+  width: 100%;
+  display: inline-flex;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role_sections {
+  width: calc(50% + 15px);
+}
+
+.page_sections {
+  width: calc(50% - 100px);
+}
+
+#add_role_button_box {
+  width: 100%;
+  max-width: 850px;
+  margin: auto;
+}
+
+#add_role_button_box .add_button {
+  width: calc(100% - 101px);
+  margin-left: 34px;
+  background-image: url('../../../../../../assets/icons/add_icon_no_outline.svg');
+  height: 35px;
+  background-color: white;
+  background-size: 25px;
+  background-position: center;
+  border: 2px solid lightgray;
+}
+
+#roles_page .action-buttons {
+  width: 210px;
+}
+
+.action-buttons .undo_icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.action-buttons .redo_icon.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+#roles_page .error_box {
+  top: 35px;
+}
+
+#roles_page .error_box .error_msg {
+  padding-top: 0;
+}
+
+/*nestable*/
 .dd {
   position: relative;
   display: block;
@@ -44,12 +104,6 @@
 }
 .dd > .dd-list {
   padding: 2px 0px;
-}
-.dd-list.first-layer.dd-has-children > .dd-item {
-  padding-left: 4px;
-}
-.dd-list.dd-has-children > .dd-item {
-  padding-left: 25px;
 }
 .dd-list .dd-list:not(.dd-has-children) {
   padding-left: 21px;
@@ -76,6 +130,9 @@
   background-image: url('../../../../../../assets/icons/drag_icon.svg');
   opacity: 0.8;
 }
+.dd-handle:hover {
+  opacity: 1;
+}
 .dd-content {
   display: inline-block;
   color: #333;
@@ -86,11 +143,8 @@
   padding: 8px 10px;
   font-size: 12px;
 }
-.dd-handle:hover {
-  opacity: 1;
-}
 .dd-item {
-  padding-left: 4px;
+  padding-left: -40px;
   background: #ffffff;
   margin: 15px 0px;
 }
@@ -193,87 +247,10 @@
   opacity: 0.8;
 }
 
-#add_role_button_box {
-  width: 100%;
-  max-width: 850px;
-  margin: auto;
+.dd-item > .dd-expand, .dd-item >.dd-collapse {
+  display: none !important;
 }
 
-#roles_page .action-buttons {
-  width: 210px;
-}
-
-.smaller_window .action-buttons {
-  top: 20px;
-}
-
-#roles_page .error_box {
-  top: 35px;
-}
-
-.role_sections {
-  width: calc(50% + 15px);
-}
-
-/*roles page*/
-
-#roles-config {
-  width: 100%;
-}
-
-#roles-config .header {
-  width: 100%;
-  display: inline-flex;
-  text-align: center;
-  font-size: 11px;
-  font-weight: bold;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.role_sections {
-  width: calc(50% + 15px);
-}
-
-.page_sections {
-  width: calc(50% - 100px);
-}
-
-#add_role_button_box {
-  width: 100%;
-  max-width: 850px;
-  margin: auto;
-}
-
-#add_role_button_box .add_button {
-  width: calc(100% - 101px);
-  margin-left: 34px;
-  background-image: url('../../../../../../assets/icons/add_icon_no_outline.svg');
-  height: 35px;
-  background-color: white;
-  background-size: 25px;
-  background-position: center;
-  border: 2px solid lightgray;
-}
-
-#roles_page .action-buttons {
-  width: 210px;
-}
-
-.action-buttons .undo_icon.disabled {
-  opacity: 0.3;
-  pointer-events: none;
-}
-
-.action-buttons .redo_icon.disabled {
-  opacity: 0.3;
-  pointer-events: none;
-}
-
-#roles_page .error_box {
-  top: 35px;
-}
-
-#roles_page .error_box .error_msg {
-  padding-top: 0;
+.dd-item > button.dd-collapse:before {
+  content: '';
 }
