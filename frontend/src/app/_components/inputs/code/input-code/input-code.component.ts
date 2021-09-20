@@ -1,11 +1,11 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Observable} from "rxjs";
 
 import * as CodeMirror from 'codemirror';
 import 'codemirror/mode/css/css';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/css-hint';
 import 'codemirror/addon/display/placeholder';
-import {Observable} from "rxjs";
 
 @Component({
   selector: 'app-input-code',
@@ -43,6 +43,8 @@ export class InputCodeComponent implements OnInit {
   }
 
   initCodeMirror(): void {
+    if (this.codemirror) return;
+
     if (!this.options) {
       this.options = {
         lineNumbers: true,
@@ -54,7 +56,7 @@ export class InputCodeComponent implements OnInit {
     }
 
     this.options['mode'] = this.mode;
-    this.options['value'] = this.init;
+    this.options['value'] = !this.init.isEmpty() ? this.init : null;
 
     const textarea = $('#' + this.id)[0] as HTMLTextAreaElement;
     this.codemirror = CodeMirror.fromTextArea(textarea, this.options);

@@ -7,6 +7,8 @@ import {
   Router
 } from "@angular/router";
 
+import '@extensions/string';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'

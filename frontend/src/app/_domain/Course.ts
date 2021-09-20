@@ -1,4 +1,3 @@
-import {swapPTCharacters} from "../_utils/swap-pt-chars";
 import {Moment} from "moment";
 import * as moment from "moment";
 
@@ -32,7 +31,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
-    this._nameUrl = swapPTCharacters(name).replace(/\W+/g, '');
+    this._nameUrl = name.swapPTChars().replace(/\W+/g, '');
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 

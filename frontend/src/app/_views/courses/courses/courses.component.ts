@@ -6,12 +6,12 @@ import {ErrorService} from "../../../_services/error.service";
 
 import {Course} from "../../../_domain/Course";
 import {User} from "../../../_domain/User";
-
-import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
-import Pickr from "@simonwep/pickr";
-import _ from 'lodash';
 import {DownloadManager} from "../../../_utils/download-manager";
 import {Ordering} from "../../../_utils/ordering";
+
+import Pickr from "@simonwep/pickr";
+
+import _ from 'lodash';
 
 @Component({
   selector: 'app-main',
@@ -375,7 +375,7 @@ export class CoursesComponent implements OnInit {
   parseForSearching(query: string): string[] {
     let res: string[];
     let temp: string;
-    query = swapPTCharacters(query);
+    query = query.swapPTChars();
 
     res = query.toLowerCase().split(' ');
 

@@ -17,7 +17,7 @@ export class GlobalComponent implements OnInit {
 
   info: { id: number, name: string, activeUsers: number, awards: number, participations: number };
   navigation: {name: string, seqId: number}[];
-  viewsModuleEnabled: boolean = true; // FIXME: remove
+  viewsModuleEnabled: boolean;
 
   isViewDBModalOpen;
   isSuccessModalOpen;
@@ -75,7 +75,7 @@ export class GlobalComponent implements OnInit {
       .subscribe(
         data => {
           this.style = {contents: data.styleFile, url: data.url};
-          this.hasStyleFile = this.hasStyle(this.style.contents);
+          this.hasStyleFile = !this.style.contents.isEmpty();
           if (this.hasStyleFile) setTimeout(() => this.styleLoaded.next(), 0);
 
           // Append style to global styles
@@ -129,7 +129,7 @@ export class GlobalComponent implements OnInit {
       .subscribe(url => {
         this.isSuccessModalOpen = true;
         this.style = {contents: updatedStyle, url: url};
-        this.hasStyleFile = this.hasStyle(this.style.contents);
+        this.hasStyleFile = !this.style.contents.isEmpty();
 
         // Append style to global styles
         $('#css-file').remove();
@@ -148,10 +148,6 @@ export class GlobalComponent implements OnInit {
   orderBySeqId() {
     if (this.navigation.length === 0) return [];
     return this.navigation.sort((a, b) => a.seqId - b.seqId)
-  }
-
-  hasStyle(style: string): boolean { // FIXME: should be in utils
-    return style.replace(/\s*/g, '') !== '';
   }
 
 }

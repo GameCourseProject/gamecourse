@@ -1,22 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../_services/error.service";
+import {ImageUpdateService} from "../../../../_services/image-update.service";
 
 import {User} from "../../../../_domain/User";
 import {Course} from "../../../../_domain/Course";
+import {Role} from "../../../../_domain/Role";
+import {AuthType} from 'src/app/_domain/AuthType';
+import {UserData} from "../../../my-info/my-info/my-info.component";
+
+import {ImageManager} from "../../../../_utils/image-manager";
+import {Ordering} from "../../../../_utils/ordering";
+import {DownloadManager} from "../../../../_utils/download-manager";
 
 import _ from 'lodash';
-import {ImageManager} from "../../../../_utils/image-manager";
-import {UserData} from "../../../my-info/my-info/my-info.component";
-import {DomSanitizer} from "@angular/platform-browser";
-import {ImageUpdateService} from "../../../../_services/image-update.service";
-import {Ordering} from "../../../../_utils/ordering";
-import {swapPTCharacters} from "../../../../_utils/swap-pt-chars";
-import { AuthType } from 'src/app/_domain/AuthType';
-import {DownloadManager} from "../../../../_utils/download-manager";
-import {Role} from "../../../../_domain/Role";
 
 @Component({
   selector: 'app-users',
@@ -376,7 +376,7 @@ export class UsersComponent implements OnInit {
   parseForSearching(query: string): string[] {
     let res: string[];
     let temp: string;
-    query = swapPTCharacters(query);
+    query = query.swapPTChars();
 
     res = query.toLowerCase().split(' ');
 

@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {User} from "../../../_domain/User";
-import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
-import {Module} from "../../../_domain/Module";
+
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {ErrorService} from "../../../_services/error.service";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
-import _ from 'lodash';
+import {ErrorService} from "../../../_services/error.service";
+
+import {Module} from "../../../_domain/Module";
 import {DownloadManager} from "../../../_utils/download-manager";
+
+import _ from 'lodash';
 
 @Component({
   selector: 'app-modules',
@@ -113,7 +114,7 @@ export class ModulesComponent implements OnInit {
   parseForSearching(query: string): string[] {
     let res: string[];
     let temp: string;
-    query = swapPTCharacters(query);
+    query = query.swapPTChars();
 
     res = query.toLowerCase().split(' ');
 

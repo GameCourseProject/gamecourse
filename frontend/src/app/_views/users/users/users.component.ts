@@ -12,7 +12,6 @@ import {AuthType} from "../../../_domain/AuthType";
 import {ImageManager} from "../../../_utils/image-manager";
 import {DownloadManager} from "../../../_utils/download-manager";
 import {Ordering} from "../../../_utils/ordering";
-import {swapPTCharacters} from "../../../_utils/swap-pt-chars";
 
 import _ from 'lodash';
 
@@ -318,7 +317,7 @@ export class UsersComponent implements OnInit {
   parseForSearching(query: string): string[] {
     let res: string[];
     let temp: string;
-    query = swapPTCharacters(query);
+    query = query.swapPTChars();
 
     res = query.toLowerCase().split(' ');
 
