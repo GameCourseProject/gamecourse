@@ -82,8 +82,8 @@ class Moodle
             array_push($row_, $line);
         }
 
-	$inserted = false;
-	$updated = false;
+        $inserted = false;
+        $updated = false;
         $insertedOrUpdated = false;
         $sql = "insert into participation (user, course, description, type, post, rating) values";
         $values = "";
@@ -96,18 +96,6 @@ class Moodle
                     if (!$result) {
                         $inserted = true;
                         $values .= "(" . $user . "," . $this->courseId . ",'" . $row['quiz'] . "','quiz grade', 'mod/quiz/view.php?id=" . $row['quizid'] . "','" . $row['grade'] . "'),";
-                        // Core::$systemDB->insert(
-                        //     "participation",
-                        //     [
-                        //         "user" => $user,
-                        //         "course" => $this->courseId,
-                        //         "description" => $row['quiz'],
-                        //         "type" => "quiz grade",
-                        //         "post" => "mod/quiz/view.php?id=" . $row['quizid'],
-                        //         "date" => date('Y-m-d H:i:s', $row['timemodified']),
-                        //         "rating" => $row['grade']
-                        //     ]
-                        // );
                     } else {
                         $updated = true;
                         Core::$systemDB->update(
@@ -126,6 +114,97 @@ class Moodle
                                 "course" => $this->courseId,
                                 "type" => "quiz grade",
                                 "description" => $row['quiz']
+
+                            )
+                        );
+                    }
+                }
+            }
+        }
+        $values = rtrim($values, ",");
+        if ($inserted) {
+            $sql .= $values;
+            Core::$systemDB->executeQuery($sql);
+            if (!empty($row_) && $this->timeToUpdate == null) {
+                $lastRecord = end($row_);
+                $this->timeToUpdate = $lastRecord["timemodified"];
+            }
+        }
+
+	    $insertedOrUpdated = $inserted || $updated;
+        return $insertedOrUpdated;
+    }
+
+    public function getAssignmentGrades()
+    {  
+        $this->getDBConfigValues();
+        $sql = "select a.id as assigmentId, a.name as assignment, userid ,c.shortname as shortname, username, g.grade as grade, g.timemodified as timemodified, g.attemptnumber as attemptnumber ";
+        $sql .= "from " . $this->prefix . "assign a ";
+        $sql .= "join " . $this->prefix . "assign_grades g on a.id = g.assignment ";
+        $sql .= "join " . $this->prefix . "course c on a.course = c.id ";
+        $sql .= "join " . $this->prefix . "user u on g.userid = u.id";
+
+        $sql .= " and g.grade > -1";
+
+        if ($this->course) {
+            $sql .= " and c.id = " . $this->course;
+        }
+        if ($this->user) {
+            $sql .= " and u.id = " . $this->user;
+        }
+        if ($this->time) {
+            $sql .= " and g.timemodified > " . $this->time;
+        }
+        if ($this->timeToUpdate) {
+            $sql .= " and g.timemodified <= " . $this->timeToUpdate;
+        }
+        $sql .= " order by timemodified;";
+
+
+        $db = mysqli_connect($this->dbserver, $this->dbuser, $this->dbpass, $this->dbname, $this->dbport) or die("not connecting");
+        $result = mysqli_query($db, $sql);
+        return $result;
+    }
+
+    public function writeAssignmentGradesToDb($result)
+    {
+        $row_ = array();
+        while ($line = mysqli_fetch_assoc($result)) {
+            array_push($row_, $line);
+        }
+
+        $inserted = false;
+        $updated = false;
+        $insertedOrUpdated = false;
+        $sql = "insert into participation (user, course, description, type, post, rating) values";
+        $values = "";
+        foreach ($row_ as $row) {
+            $user = User::getUserIdByUsername($row["username"]);
+            if ($user) {
+                $courseUser = Core::$systemDB->select("course_user", ["id" => $user, "course" => $this->courseId]);
+                if ($courseUser) {
+                    $result = Core::$systemDB->select("participation", ["user" => $user, "course" => $this->courseId, "type" => "assignment grade", "post" => "mod/assign/view.php?id=" . $row['assigmentId']]);
+                    if (!$result) {
+                        $inserted = true;
+                        $values .= "(" . $user . "," . $this->courseId . ",'" . $row['assignment'] . "','assignment grade', 'mod/assign/view.php?id=" . $row['assigmentId'] . "','" . $row['grade'] . "'),";
+                    } else {
+                        $updated = true;
+                        Core::$systemDB->update(
+                            "participation",
+                            array(
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "description" => $row['assignment'],
+                                "type" => "assignment grade",
+                                "post" => "mod/assign/view.php?id=" . $row['assigmentId'],
+                                "date" => date('Y-m-d H:i:s', $row['timemodified']),
+                                "rating" => $row['grade']
+                            ),
+                            array(
+                                "user" => $user,
+                                "course" => $this->courseId,
+                                "type" => "assignment grade",
+                                "description" => $row['assignment']
 
                             )
                         );
