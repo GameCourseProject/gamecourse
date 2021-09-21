@@ -41,10 +41,10 @@ class CronJob
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            if(file_exists($cronFile)){
-                file_put_contents($cronFile, $toWrite);
-                echo exec('crontab /var/www/html/gamecourse/crontab.txt');
-            }
+            //if(file_exists($cronFile)){
+            file_put_contents($cronFile, $toWrite);
+            echo exec('crontab /var/www/html/gamecourse/crontab.txt');
+            //}
         }
     }
 }
