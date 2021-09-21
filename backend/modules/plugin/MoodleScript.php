@@ -31,9 +31,12 @@ $insertedProfessorRatings = $moodle->writeVotesToDb($values, true);
 $values = $moodle->getQuizGrades();
 $insertedQuiz = $moodle->writeQuizGradesToDb($values);
 
+$values = $moodle->getAssignmentGrades();
+$insertedAssignment = $moodle->writeAssignmentGradesToDb($values);
+
 $moodle->updateMoodleConfigTime();
 
 
-if ($insertedLogs || $insertedVotes || $insertedQuiz || $insertedPeergrades || $insertedProfessorRatings) {
+if ($insertedLogs || $insertedVotes || $insertedQuiz || $insertedAssignment || $insertedPeergrades || $insertedProfessorRatings) {
     Course::newExternalData($argv[1]);
 }
