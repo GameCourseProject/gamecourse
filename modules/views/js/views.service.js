@@ -480,7 +480,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             scopeToConfig.curr_variables = {};
                             scopeToConfig.hierarchyLoops = [];
                             scopeToConfig.preview_function = {};
-                            // console.log(data);
+                            console.log(data);
                         });
 
                         var container = $('<div id="edit-container">');
@@ -692,14 +692,17 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     }
                                 }
                             }
-                            vars = thisPart.variables;
-                            if (Object.keys(vars).length != 0) {
-                                for (var key in vars) {
-                                    allVars.push([key, vars[key]]);
+                            if (thisPart.variables) {
+                                vars = thisPart.variables;
+                                if (Object.keys(vars).length != 0) {
+                                    for (var key in vars) {
+                                        allVars.push([key, vars[key]]);
+                                    }
                                 }
                             }
 
-                            if (thisPart.loopData != "{}") {
+
+                            if (thisPart.loopData != "{}" && thisPart.loopData != undefined) {
                                 var itemReturnName;
                                 if (!thisPart.loopData.startsWith("{%")) {
                                     itemReturnName = optionsScope.functions.filter(el => el["keyword"] == thisPart.loopData.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').split(".")[1])[0]["returnName"];
@@ -900,7 +903,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             optionsScope.$apply(optionsScope.currentReturnType = null);
 
-                            if (optionsScope.part.partType != 'text') {
+                            if (toolbarOptions.overlayOptions.allowDataLoop) {
                                 // --------- LOOP DATA EDITOR ---------
                                 optionsScope.buildCodeMirrorBox('loopData');
                             }
@@ -947,7 +950,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             textBefore = cm.doc.getLine(line).substr(0, ch);
 
                             //variables
-                            if (textBefore.match(/{%[A-Za-z0-9]*$/)) {
+                            if (textBefore.match(/{%[A-Za-z0-9]*(?!.*{%[A-Za-z0-9])$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -958,7 +961,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 optionsScope.$apply(optionsScope.curr_functions = {});
                                 optionsScope.$apply(optionsScope.curr_variables = varlist.concat(hierarchyVars));
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
-                                gccomp = textBefore.split("{");
+                                var text = textBefore.match(/{%[A-Za-z0-9]*(?!.*{%[A-Za-z0-9])$/)[0];
+                                gccomp = text.split("{");
                                 var_typed = gccomp[gccomp.length - 1];
 
                                 if (var_typed != "") {
@@ -986,7 +990,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //libraries
-                            if (textBefore.match(/{[A-Za-z]*$/)) {
+                            if (textBefore.match(/{[A-Za-z]*(?!.*{[A-Za-z]*)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -997,7 +1001,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 optionsScope.$apply(optionsScope.curr_functions = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
                                 optionsScope.$apply(optionsScope.curr_libraries = optionsScope.available(textArea).lib);
-                                gccomp = textBefore.split("{");
+                                var text = textBefore.match(/{[A-Za-z]*(?!.*{[A-Za-z]*)$/)[0];
+                                gccomp = text.split("{");
                                 module_typed = gccomp[gccomp.length - 1];
 
                                 if (module_typed != "") {
@@ -1014,7 +1019,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //functions for libraries or over other functions
-                            if (textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+$/g)) {
+                            if (textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+(?!.*{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -1023,9 +1028,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 $(".var-list-item").css("color", "#333");
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
-                                gcfunc = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                var text = textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+(?!.*{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+)$/)[0];
+                                gcfunc = text.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
                                 function_typed = gcfunc[gcfunc.length - 1];
-                                functionWithArgs = textBefore.match(new RegExp("" + gcfunc[gcfunc.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                functionWithArgs = text.match(new RegExp("" + gcfunc[gcfunc.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
                                 if (functionWithArgs)
                                     function_typed = functionWithArgs[0];
                                 func_module = gcfunc[0].split("{")[1];
@@ -1117,7 +1123,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //props and functions of vars
-                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+$/)) {
+                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?(?!.*{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -1126,13 +1132,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 $(".var-list-item").css("color", "#333");
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
-                                gcvar = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                var text = textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?(?!.*{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?)$/)[0];
+
+                                gcvar = text.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
                                 function_typed = gcvar[gcvar.length - 1];
-                                functionWithArgs = textBefore.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                functionWithArgs = text.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
                                 if (functionWithArgs)
                                     function_typed = functionWithArgs[0];
                                 var_typed = gcvar[0].split("{")[1];
                                 lastobject = gcvar[gcvar.length - 2];//.replace(/\([0-9A-Za-z,"'_ %]*\)?/g, '');
+                                console.log(gcvar);
 
                                 let variable = varlist.concat(hierarchyVars).filter(el => el["name"] == var_typed)[0]; // %{var} 
                                 let object = variable; // %{var}.(...) ; variable over which the function will be applied
@@ -1147,8 +1156,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     bias = gcvar.length - 1;
                                     object["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"];
                                 }
+                                var moduleName = variable["returnValue"].split('.')[0];
                                 optionsScope.$apply(optionsScope.currentReturnType = object["returnType"]);
-                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')));
 
                                 if (function_typed != "") {
                                     var func = optionsScope.curr_functions.filter(el => el["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
@@ -1206,7 +1216,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     }
                                 }
                                 else {
-                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                    var moduleName = variable["returnValue"].split('.')[0];
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", variable["returnName"] ? variable["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')));
                                 }
                                 //removes parent when there is no more hierarchy
                                 if (gcvar.length > optionsScope.hierarchyLoops.length) {
@@ -1227,7 +1238,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     var options = optionsScope.getOptions(cm, []);
                                     cm.showHint(options);
                                 } else {
-                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.map(value => value["keyword"]));
+                                    var moduleName = variable["returnValue"].split('.')[0];
+                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", variable["returnName"] ? variable["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')).map(value => value["keyword"])); //filter : vars can be defined as other vars props
                                     cm.showHint(options);
                                 }
 
@@ -1486,7 +1498,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                         $timeout(function () {
                             optionsScope.buildCodeMirrorBoxes();
-                        }, 250);
+                        }, 500);
 
                         $timeout(function () {
                             if (optionsScope.part.partType == "image" || optionsScope.part.partType == "text") {
