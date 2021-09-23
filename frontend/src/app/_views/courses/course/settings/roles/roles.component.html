@@ -34,14 +34,10 @@
                 <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
                 <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
               </div>
+            </div>
 
-              <div class="error_box">
-                <div id="action_not_completed" class="error_msg"></div>
-              </div>
-
-              <div class="success_box">
-                <div id="action_completed" class="success_msg"></div>
-              </div>
+            <div class="success_box">
+              <div id="action_completed" class="success_msg"></div>
             </div>
 
           </div>

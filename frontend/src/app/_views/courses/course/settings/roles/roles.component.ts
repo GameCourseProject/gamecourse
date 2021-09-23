@@ -136,7 +136,13 @@ export class RolesComponent implements OnInit {
       .subscribe(
         res => this.getRoles(this.courseID),
         error => ErrorService.set(error),
-        () => this.loading = false)
+        () => {
+          this.loading = false;
+          const successBox = $('#action_completed');
+          successBox.empty();
+          successBox.append("Role hierarchy changed!");
+          successBox.show().delay(3000).fadeOut();
+        })
   }
 
   saveLandingPage(role: Role): void {
