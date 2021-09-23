@@ -239,6 +239,14 @@ def award_grade(target, item, contributions=None, extra=None):
 	return
 
 
+@rule_function
+def award_assignment_grade(target, contributions=None):
+	""" 
+	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_assignment_grade(target, contributions)
+	return
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions
