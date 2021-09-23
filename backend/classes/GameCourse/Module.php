@@ -348,6 +348,10 @@ abstract class Module
                 $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user";
                 $field = "a.*,m.name";
             }
+            else {
+                $field = "*";
+                $table = $object . " a join course_user cu on cu.id=a.user";
+            }
         }
         else {
             $field = "*";
