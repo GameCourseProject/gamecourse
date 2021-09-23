@@ -41,7 +41,7 @@
 
             <!-- Body -->
             <tbody>
-            <tr *ngFor="let user of filteredUsers" style="cursor: pointer">
+            <tr *ngFor="let user of filteredUsers">
               <td class="name-column">
                 <span>{{user.name}}</span>
                 <div *ngFor="let role of user.roles" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}">
