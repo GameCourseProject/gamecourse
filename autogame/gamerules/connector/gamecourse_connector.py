@@ -814,10 +814,64 @@ def award_grade(target, item, contributions=None, extra=None):
 				cursor.execute(query, (target, course, description, typeof, grade, number))
 				cnx.commit()
 				#config.award_list.append([str(target), "Grade from " + item, str(grade), str(number)])
-		
+
 	cnx.close()
 	return
 
+
+
+
+def award_assignment_grade(target, contributions=None):
+	# -----------------------------------------------------------	
+	# Writes 'award' table with reward from assigment grades.
+	# Will not retract effects, but will not award twice
+	# -----------------------------------------------------------
+
+	(database, username, password) = get_credentials()
+	cnx = mysql.connector.connect(user=username, password=password,
+	host='localhost', database=database)
+	cursor = cnx.cursor(prepared=True)
+
+	course = config.course
+	typeof = "assignment"
+	if config.test_mode:
+		awards_table = "award_test"
+	else:
+		awards_table = "award"
+
+	query = "SELECT description, reward FROM " + awards_table + " where user = %s AND course = %s AND type = %s;"
+	cursor.execute(query, (target, course, typeof))
+	table = cursor.fetchall()
+
+	
+	for line in contributions:
+		grade = int(line.rating)
+		description = line.description
+
+		found = False
+		for row in table:
+			if row[0] == description:
+				found = True
+				line = row
+				break
+
+		if found:
+			# if the line already existed and the new rating is different, update the line
+			old_grade = int(line[1])
+			if old_grade != grade:
+				query = "UPDATE " + awards_table + " SET reward=%s WHERE course=%s AND user = %s AND type=%s AND description=%s;"
+				cursor.execute(query, (grade, course, target, typeof, description))
+				cnx.commit()
+		
+		else:
+			# if the line did not exist, add it
+			query = "INSERT INTO " + awards_table + " (user, course, description, type, reward) VALUES(%s, %s , %s, %s, %s);"
+			cursor.execute(query, (target, course, description, typeof, grade))
+			cnx.commit()
+
+	cnx.close()
+	return
+		
 
 def get_campus(target):
 	# -----------------------------------------------------------	

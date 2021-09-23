@@ -131,3 +131,12 @@ def award_grade(target, item, contributions=None):
 	connector.award_grade(target, item, contributions)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
+
+@rule_function
+def award_assignment_grade(target, contributions=None):
+	""" 
+	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_assignment_grade(target, contributions)
+	return
