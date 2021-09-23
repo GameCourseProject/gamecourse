@@ -16,7 +16,7 @@
 
                 <div *ngIf="filteredModules.length > 0" class="modules">
                   <div *ngFor="let module of filteredModules" class="module_card" (click)="moduleOpen = module;isModuleDetailsModalOpen = true;">
-                    <div class="icon" [style.backgroundImage]="'url(assets/modules/' + module.id + '/icon.svg)'"></div>
+                    <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
                     <div class="header">{{module.name}}</div>
                     <div class="text">{{module.description}}</div>
                     <div class="status" [ngClass]="{'enable': module.enabled, 'disable': !module.enabled}">

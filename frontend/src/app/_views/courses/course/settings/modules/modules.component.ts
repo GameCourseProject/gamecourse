@@ -3,6 +3,7 @@ import {Module} from "../../../../../_domain/Module";
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {ErrorService} from "../../../../../_services/error.service";
+import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
 
 import _ from 'lodash';
 
@@ -118,6 +119,10 @@ export class ModulesComponent implements OnInit {
     return !query ||
       (module.name && !!this.parseForSearching(module.name).find(a => a.includes(query.toLowerCase()))) ||
       (module.id && !!this.parseForSearching(module.id).find(a => a.includes(query.toLowerCase())));
+  }
+
+  get API_ENDPOINT(): string {
+    return ApiEndpointsService.API_ENDPOINT;
   }
 
 }
