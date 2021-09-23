@@ -5,32 +5,33 @@
       <div class="tabs">
         <app-course-settings-sidebar></app-course-settings-sidebar>
 
-        <!--        <div class="tab-content-wrapper">-->
-        <!--          <div class="tab-content" ui-view="tabContent">-->
+            <div class="tab-content-wrapper">
+              <div class="tab-content">
 
-        <!--            &lt;!&ndash; Themes  &ndash;&gt;-->
-        <!--            <div class="section">-->
-        <!--              <div class="divider">-->
-        <!--                <div class="title"><span>Themes</span></div>-->
-        <!--              </div>-->
-        <!--              <div class="content" id="themes">-->
-        <!--                <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">-->
-        <!--                  <div>{{theme.name}}</div>-->
-        <!--                  <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'">-->
-        <!--                </div>-->
-        <!--              </div>-->
-        <!--            </div>-->
+                <!-- Search -->
+                <div class="search">
+                  <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
+                  <button class="magnifying-glass" id="search-btn" (click)="onSearch()"></button>
+                </div>
 
-        <!--            &lt;!&ndash; Authentication  FIXME: legacy &ndash;&gt;-->
-        <!--            <div class="section">-->
-        <!--              <div class="divider">-->
-        <!--                <div class="title"><span>Authentication</span></div>-->
-        <!--              </div>-->
-        <!--              <div class="content"></div>-->
-        <!--            </div>-->
+                <div *ngIf="filteredModules.length > 0" class="modules">
+                  <div *ngFor="let module of filteredModules" class="module_card" (click)="moduleOpen = module;isModuleDetailsModalOpen = true;">
+                    <div class="icon" [style.backgroundImage]="'url(assets/modules/' + module.id + '/icon.svg)'"></div>
+                    <div class="header">{{module.name}}</div>
+                    <div class="text">{{module.description}}</div>
+                    <div class="status" [ngClass]="{'enable': module.enabled, 'disable': !module.enabled}">
+                      {{module.enabled ? 'Enabled' : 'Disabled'}}
+                      <div class="background"></div>
+                    </div>
+                  </div>
+                </div>
 
-        <!--          </div>-->
-        <!--        </div>-->
+                <div *ngIf="filteredModules.length === 0" class='error_box'>
+                  <div id='empty_search' class='error_msg'>No matches found</div>
+                </div>
+
+              </div>
+            </div>
 
       </div>
     </div>
@@ -41,3 +42,52 @@
     <img src="../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!-- Module Details Modal -->
+<ng-container *ngIf="isModuleDetailsModalOpen">
+  <app-modal
+    [isModalOpen]="isModuleDetailsModalOpen"
+    [id]="'view-module'"
+    [templateRef]="moduleDetailsModal"
+    (closeBtnClicked)="isModuleDetailsModalOpen = false"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #moduleDetailsModal>
+
+  <div class="header">
+    <div class="icon" [style.backgroundImage]="'url(assets/modules/' + moduleOpen.id + '/icon.svg)'"></div>
+    <div class="title">{{moduleOpen.name}}</div>
+    <div class="on_off">
+      <label class="switch" [ngClass]="{'disabled': !moduleOpen.canBeEnabled}">
+        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canBeEnabled" (change)="toggleEnabled(moduleOpen)">
+        <span class="slider round"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="inputs">
+      <div class="full" id="description">{{moduleOpen.description}}</div>
+      <div class="row">
+        <div>
+          <span class="label">Dependencies: </span>
+          <span *ngFor="let dependency of moduleOpen.dependencies; let last = last" class="details">
+            <span [ngStyle]="{'color': dependency.enabled ? 'green' : 'red'}">{{dependency.id}}</span>
+            <span *ngIf="!last"> | </span>
+          </span>
+        </div>
+      </div>
+      <div class="row">
+        <div><span class="label">Version: </span><span class="details ng-binding">{{moduleOpen.version}}</span></div>
+      </div>
+      <div class="row">
+        <div><span class="label">Path: </span><span class="details ng-binding">{{moduleOpen.directory}}</span></div>
+      </div>
+    </div>
+    <button *ngIf="moduleOpen.hasConfiguration" class="config_btn">Configure</button>
+  </div>
+
+</ng-template>

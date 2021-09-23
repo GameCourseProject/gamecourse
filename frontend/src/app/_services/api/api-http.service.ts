@@ -663,7 +663,7 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Settings ----------------- ***/
+  /*** ------------- General Settings -------------- ***/
   /*** --------------------------------------------- ***/
 
   public getSettingsGlobal(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
@@ -716,6 +716,11 @@ export class ApiHttpService {
     return this.post(url, null, this.httpOptions)
       .pipe( map((res: any) => res['data']['file']) );
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------- Course Settings -------------- ***/
+  /*** --------------------------------------------- ***/
 
   public getStyleFile(courseID: number): Observable<{styleFile: string, url: string}> {
     const params = (qs: QueryStringParameters) => {
@@ -842,7 +847,35 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['url']) );
   }
 
+  public getCourseModules(courseID: number): Observable<Module[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'courseModules');
+      qs.push('course', courseID);
+    };
 
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+  public setModuleEnabled(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      "course": courseID,
+      "module": moduleID,
+      "enabled": isEnabled
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'saveCourseModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
 
 
   /*** --------------------------------------------- ***/
