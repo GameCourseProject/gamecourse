@@ -19,7 +19,7 @@ import {Module} from "../../_domain/Module";
 import {ImportModulesData} from "../../_views/settings/modules/modules.component";
 import {Moment} from "moment";
 import * as moment from "moment";
-import {Role} from "../../_domain/Role";
+import {Role, RoleDatabase} from "../../_domain/Role";
 import {Page} from "../../_domain/Page";
 
 @Injectable({
@@ -764,7 +764,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getRoles(courseID: number): Observable<{ pages: Page[], roles: Role[] }> {
+  public getRoles(courseID: number): Observable<{ pages: Page[], roles: Role[], rolesHierarchy: Role[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
       qs.push('request', 'roles');
@@ -775,14 +775,40 @@ export class ApiHttpService {
 
     return this.get(url, this.httpOptions)
       .pipe( map((res: any) => {
-        const roles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
-        res['data']['rolesHierarchy'].map(obj => {
-          if (obj.children) {
-            roles.find(role => role.id === obj.id).children = obj.children.map(child => Role.fromDatabase(child));
-          }
-        });
-        return {pages: res['data']['pages'].map(obj => Page.fromDatabase(obj)), roles}
+        const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
+        const roles = parseRoles(res['data']['rolesHierarchy'], allRoles);
+        return {pages: res['data']['pages'].map(obj => Page.fromDatabase(obj)), roles: allRoles, rolesHierarchy: roles}
       }) );
+
+    function parseRoles(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
+      return hierarchy.map(obj => {
+        const role = allRoles.find(el => el.id === parseInt(obj.id));
+        if (obj.children) {
+          role.children = parseRoles(obj.children, allRoles);
+        }
+        return role;
+      })
+    }
+  }
+
+  public saveRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {
+    const data = {
+      course: courseID,
+      updateRoleHierarchy: true,
+      hierarchy,
+      roles: roles.map(role => {
+        return {name: role.name, id: role.id ? role.id.toString() : null, landingPage: role.landingPage}
+      })
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'settings');
+      qs.push('request', 'roles');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
   public createStyleFile(courseID: number): Observable<string> {

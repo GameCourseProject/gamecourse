@@ -16,7 +16,7 @@ export class ErrorService {
   }
 
   public static set(error: HttpErrorResponse | string): void {
-    this.error = error instanceof HttpErrorResponse ? error.error.error : error;
+    this.error = error instanceof HttpErrorResponse ? error.error.text || error.error.error : error;
     throwError(error);
     console.error(error);
   }

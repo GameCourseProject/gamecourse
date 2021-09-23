@@ -54,7 +54,7 @@ export class Role {
   }
 }
 
-interface RoleDatabase {
+export interface RoleDatabase {
   id?: string,
   name: string,
   landingPage?: string

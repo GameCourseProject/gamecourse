@@ -19,20 +19,20 @@
 
                 <ng-container
                   [ngTemplateOutlet]="roleList"
-                  [ngTemplateOutletContext]="{roles: roles}">
+                  [ngTemplateOutletContext]="{roles: rolesHierarchy}">
                 </ng-container>
               </div>
 
               <!-- Add btn -->
               <div id="add_role_button_box">
-                <button title="New" (click)="addRole()" class="add_button icon"></button>
+                <button title="New" (click)="isNewRoleModalOpen = true; newRole.parent = null" class="add_button icon"></button>
               </div>
 
               <!-- Action buttons -->
               <div class="action-buttons">
                 <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
                 <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
-                <button id="role-change-button" class="button" disabled="disabled">Save Changes</button>
+                <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
               </div>
 
               <div class="error_box">
@@ -65,37 +65,46 @@
     <li *ngFor="let role of roles" class="dd-item" [ngClass]="{'dd-nodrag': defaultRoles.includes(role.name)}"
         [attr.data-name]="role.name">
 
-      <div class="dd-handle icon"></div>
+      <div class="handle icon" [ngClass]="{'dd-handle': !defaultRoles.includes(role.name)}"></div>
       <div class="dd-content">{{role.name}}</div>
 
-      <select class="dd-content" [(ngModel)]="selected.page" (ngModelChange)="saveLandingPage(role)">
-        <option [ngValue]="''" disabled [selected]="role.landingPage === ''">Default Course Page</option>
+      <select class="dd-content" [(ngModel)]="selectedPage[role.name]" (ngModelChange)="saveLandingPage(role)">
+        <option [ngValue]="''" [selected]="role.landingPage === ''">Default Course Page</option>
         <option *ngFor="let page of pages" [ngValue]="page.name" [selected]="role.landingPage === page.name">{{page.name}}</option>
       </select>
 
-      <ng-container
+      <img class="dd-add icon" (click)="isNewRoleModalOpen = true; newRole.parent = role" src="assets/icons/add_icon_no_outline.svg" title="New">
+      <img class="dd-remove icon" (click)="removeRole(role)" src="assets/icons/delete_icon.svg" title="Remove">
+
+      <ng-container *ngIf="role.children"
         [ngTemplateOutlet]="roleList"
         [ngTemplateOutletContext]="{roles: role.children}">
       </ng-container>
-
-<!--      <img class="dd-add icon" src="assets/icons/add_icon_no_outline.svg" title="New">-->
-<!--      <img class="dd-remove icon" src="assets/icons/delete_icon.svg" title="Remove">-->
-<!--      <div class="dd-delete-blocker"></div>-->
     </li>
   </ol>
 
 </ng-template>
 
 
-<!--<div class="modal ng-scope" id="new-role">-->
-<!--  <div class="modal_content little_modal">-->
-<!--    <button class="close_btn icon" id="cancel_role" value="#new-role" onclick="closeModal(this)"></button>-->
-<!--    <div class="title">New Role: </div>-->
-<!--    <div class="content">-->
-<!--      <div class="inputs">-->
-<!--        <div class="name full"><input type="text" class="form__input  ng-pristine ng-untouched ng-valid ng-empty" id="role_name" placeholder="Name *" ng-model="newRole.name"> <label for="name" class="form__label">Name</label></div>-->
-<!--      </div>-->
-<!--      <button class="save_btn" id="submit_role" ng-disabled="!isReadyToSubmit()" disabled="disabled"> Continue </button>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
+<ng-container *ngIf="isNewRoleModalOpen">
+  <app-modal
+    [isModalOpen]="isNewRoleModalOpen"
+    [id]="'new-role'"
+    [classList]="'little_modal'"
+    [templateRef]="newRoleModal"
+    (closeBtnClicked)="isNewRoleModalOpen = false; clearObject(newRole)">
+  </app-modal>
+</ng-container>
+
+<ng-template #newRoleModal>
+  <div class="title">New Role:</div>
+  <div class="content">
+    <div class="inputs">
+      <div class="name full">
+        <input type="text" class="form__input" id="role_name" placeholder="Name *" [(ngModel)]="newRole.name" [required]="true">
+        <label for="role_name" class="form__label">Name</label>
+      </div>
+    </div>
+    <button class="save_btn" id="submit_role" [disabled]="!isReadyToSubmit()" (click)="addRole()">Continue</button>
+  </div>
+</ng-template>

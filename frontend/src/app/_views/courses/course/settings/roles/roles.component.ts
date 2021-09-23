@@ -18,12 +18,16 @@ export class RolesComponent implements OnInit {
 
   defaultRoles: string[] = ['Teacher', 'Student', 'Watcher'];
   roles: Role[];
+  rolesHierarchy: Role[];
   pages: Page[];
 
-  selected: {role: string, page: string} = {
-    role: null,
-    page: ''
-  };
+  selectedPage: {[roleName: string]: string} = {};
+
+  isNewRoleModalOpen: boolean;
+  newRole: {name: string, parent: Role} = {name: null, parent: null};
+  saving: boolean;
+
+  hasChanges: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -47,16 +51,21 @@ export class RolesComponent implements OnInit {
     this.api.getRoles(courseId)
       .subscribe(res => {
         this.roles = res.roles;
-        this.pages = res.pages;
-        // FIXME: remove
-        this.roles[1].children = [Role.fromDatabase({name: 'Profiling'})]
+        this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
+        this.rolesHierarchy = res.rolesHierarchy;
       },
         error => ErrorService.set(error),
         () => {
         this.loading = false;
         setTimeout(() => {
+          const dd = $('#roles-config');
           // @ts-ignore
-          $('#roles-config').nestable({dropdown: this.pages.map(page => {name: page.name})});
+          dd.nestable({
+            expandBtnHTML: '',
+            collapseBtnHTML: ''
+          });
+
+          dd.on('change', () => this.hasChanges = true);
         }, 0);
       });
   }
@@ -66,20 +75,105 @@ export class RolesComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  saveLandingPage(role: Role): void {
-    // TODO
+  addRole(): void {
+    const role = new Role(null, this.newRole.name, '', null);
+
+    if (!this.newRole.parent) {
+      this.rolesHierarchy.push(role);
+
+    } else {
+      if (!this.newRole.parent.children) this.newRole.parent.children = [];
+      this.newRole.parent.children.push(role);
+    }
+    this.roles.push(role);
+
+    this.hasChanges = true;
+    this.isNewRoleModalOpen = false;
+    this.clearObject(this.newRole);
   }
 
-  addRole(): void {
-    // TODO
+  removeRole(role: Role): void {
+    if (this.defaultRoles.includes(role.name)) return;
+
+    // Remove children of role
+    if (role.children)
+      role.children.forEach(child => this.removeRole(child));
+
+    const parent = findParent(this.rolesHierarchy, role, null);
+
+    if (parent) {
+      const index = parent.children.findIndex(el => el.name === role.name);
+      parent.children.splice(index, 1);
+      if (parent.children.length === 0) parent.children = null;
+
+    } else {
+      const index = this.rolesHierarchy.findIndex(el => el.name === role.name);
+      this.rolesHierarchy.splice(index, 1);
+    }
+
+    const index = this.roles.findIndex(el => el.name === role.name);
+    this.roles.splice(index, 1);
+
+    this.hasChanges = true;
+
+    function findParent(roles: Role[], roleToFind: Role, parent: Role): Role {
+      for (const r of roles) {
+        if (r.name === roleToFind.name)
+          return parent;
+        else if (r.children) {
+          const parent = findParent(r.children, roleToFind, r)
+          if (parent) return parent;
+        }
+      }
+      return null;
+    }
+  }
+
+  saveRoles(): void {
+    this.loading = true;
+    // @ts-ignore
+    this.api.saveRoles(this.courseID, this.roles, $('#roles-config').nestable('serialize'))
+      .subscribe(
+        res => this.getRoles(this.courseID),
+        error => ErrorService.set(error),
+        () => this.loading = false)
+  }
+
+  saveLandingPage(role: Role): void {
+    role.landingPage = this.selectedPage[role.name];
+    this.hasChanges = true;
   }
 
   undo(): void {
-    // TODO
+    // TODO: update from GameCourse v1
+    ErrorService.set('This action still needs to be update to the current version. Action: undo()');
   }
 
   redo(): void {
-    // TODO
+    // TODO: update from GameCourse v1
+    ErrorService.set('This action still needs to be update to the current version. Action: redo()');
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  isReadyToSubmit() {
+    let isValid = function (text) {
+      return (text != "" && text != undefined)
+    }
+
+    const roleExists = this.roles.find(role => role.name === this.newRole.name);
+
+    // Validate inputs
+    return !roleExists && isValid(this.newRole.name);
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
   }
 
 }

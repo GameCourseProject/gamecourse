@@ -94,20 +94,20 @@ export class GlobalComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   showDatabase(table: string): void {
-    // TODO
+    // TODO: update from GameCourse v1
     this.api.getTableData(this.info.id, table)
       .subscribe(
         res => {
           console.log(res);
-          ErrorService.set('showDatabase() needs to be implemented');
+          ErrorService.set('This action still needs to be update to the current version. Action: showDatabase()');
         },
         error => ErrorService.set(error)
       )
   }
 
   move(item: {name: string, seqId: number}, direction: number): void {
-    // TODO
-    ErrorService.set('move() needs to be implemented');
+    // TODO: update from GameCourse v1
+    ErrorService.set('This action still needs to be update to the current version. Action: move()');
   }
 
   createStyleFile(): void {

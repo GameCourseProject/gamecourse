@@ -54,7 +54,7 @@
               "node_modules/codemirror/lib/codemirror.css",
               "node_modules/codemirror/theme/mdn-like.css",
               "node_modules/codemirror/addon/hint/show-hint.css",
-              "node_modules/nestable2/jquery.nestable.css",
+              "node_modules/nestable2/dist/jquery.nestable.min.css",
               "src/styles/global.scss"
             ],
             "scripts": [
@@ -65,7 +65,7 @@
               "node_modules/codemirror/addon/hint/show-hint.js",
               "node_modules/codemirror/addon/hint/css-hint.js",
               "node_modules/codemirror/addon/display/placeholder.js",
-              "node_modules/nestable2/jquery.nestable.js"
+              "node_modules/nestable2/dist/jquery.nestable.min.js"
             ]
           },
           "configurations": {
