@@ -374,6 +374,12 @@ class XPLevels extends Module
         return $levels;
     }
 
+    public function insertLevels($string){
+        $sql = "insert into level (number, course, description, goal) values ";
+        $sql .= $string . ";";
+        Core::$systemDB->executeQuery($sql);
+    }
+
     public function newLevel($level, $courseId){
         $levelData = ["number"=>$level['goal'] / 1000,
                     "course"=>$courseId,"description"=>$level['description'],
@@ -431,8 +437,9 @@ class XPLevels extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
-        $courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("xp");
+        /*$courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("xp");*/
+        $moduleObject = new XPLevels();
 
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
@@ -451,6 +458,7 @@ class XPLevels extends Module
                 $goalIndex = array_search("Minimum XP", $firstLine);
             }
         }
+        $toInsert = "";
         foreach ($lines as $line) {
             $line = trim($line);
             $item = explode(";", $line);
@@ -473,12 +481,15 @@ class XPLevels extends Module
                             $moduleObject->editLevel($levelData, $course);
                         }
                     } else {
-                        $moduleObject->newLevel($levelData, $course);
+                        $toInsert .= "(" . $levelData['goal'] / 1000 . "," . $course . ",\"" . $levelData['description'] . "\"," . $levelData['goal'] . "),";
                         $newItemNr++;
                     }
                 }
             }
             $i++;
+        }
+        if($newItemNr > 0) {
+            $moduleObject->insertLevels(rtrim($toInsert , ","));
         }
         return $newItemNr;
     }
