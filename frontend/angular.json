@@ -66,6 +66,9 @@
               "node_modules/codemirror/addon/hint/css-hint.js",
               "node_modules/codemirror/addon/display/placeholder.js",
               "node_modules/nestable2/dist/jquery.nestable.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "codemirror"
             ]
           },
           "configurations": {

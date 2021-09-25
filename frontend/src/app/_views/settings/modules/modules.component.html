@@ -23,7 +23,7 @@
             <!-- Modules -->
             <div id="modules">
               <div *ngFor="let module of filteredModules" class="module_card">
-                <div class="icon" [style.background-image]="'url(assets/modules/' + module.directory.split('/')[1] + '/icon.svg)'"></div>
+                <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
                 <div class="header">{{module.name}}</div>
                 <div class="text no-status">{{module.description}}</div>
               </div>

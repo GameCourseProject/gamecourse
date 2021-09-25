@@ -33,6 +33,10 @@ export class ModulesComponent implements OnInit {
     private route: ActivatedRoute
   ) { }
 
+  get API_ENDPOINT(): string {
+    return ApiEndpointsService.API_ENDPOINT;
+  }
+
   ngOnInit(): void {
     this.loading = true;
     this.route.params.subscribe(params => {
@@ -119,10 +123,6 @@ export class ModulesComponent implements OnInit {
     return !query ||
       (module.name && !!this.parseForSearching(module.name).find(a => a.includes(query.toLowerCase()))) ||
       (module.id && !!this.parseForSearching(module.id).find(a => a.includes(query.toLowerCase())));
-  }
-
-  get API_ENDPOINT(): string {
-    return ApiEndpointsService.API_ENDPOINT;
   }
 
 }
