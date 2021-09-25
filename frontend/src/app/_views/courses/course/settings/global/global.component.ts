@@ -97,10 +97,7 @@ export class GlobalComponent implements OnInit {
     // TODO: update from GameCourse v1
     this.api.getTableData(this.info.id, table)
       .subscribe(
-        res => {
-          console.log(res);
-          ErrorService.set('This action still needs to be update to the current version. Action: showDatabase()');
-        },
+        res => ErrorService.set('This action still needs to be update to the current version. Action: showDatabase()'),
         error => ErrorService.set(error)
       )
   }

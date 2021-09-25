@@ -47,7 +47,6 @@ export class RedirectIfViewsDisabledGuard implements CanActivate, CanLoad {
     return this.api.hasViewsEnabled(courseID).pipe(
       map(
         hasViewsEnabled => {
-          console.log(hasViewsEnabled)
           if (!hasViewsEnabled) {
             urlParts.splice(urlParts.length - 1, 1);
             const redirectURL = '/' + urlParts.join('/');

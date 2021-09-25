@@ -15,7 +15,7 @@
                 </div>
 
                 <div *ngIf="filteredModules.length > 0" class="modules">
-                  <div *ngFor="let module of filteredModules" class="module_card" (click)="moduleOpen = module;isModuleDetailsModalOpen = true;">
+                  <div *ngFor="let module of filteredModules" class="module_card" (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
                     <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
                     <div class="header">{{module.name}}</div>
                     <div class="text">{{module.description}}</div>
@@ -58,11 +58,11 @@
 <ng-template #moduleDetailsModal>
 
   <div class="header">
-    <div class="icon" [style.backgroundImage]="'url(assets/modules/' + moduleOpen.id + '/icon.svg)'"></div>
+    <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + moduleOpen.directory + 'icon.svg)'"></div>
     <div class="title">{{moduleOpen.name}}</div>
     <div class="on_off">
       <label class="switch" [ngClass]="{'disabled': !moduleOpen.canBeEnabled}">
-        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canBeEnabled" (change)="toggleEnabled(moduleOpen)">
+        <input type="checkbox" [checked]="moduleOpen.enabled" [disabled]="!moduleOpen.canBeEnabled" (change)="isEnabled = !isEnabled">
         <span class="slider round"></span>
       </label>
     </div>
@@ -87,6 +87,7 @@
         <div><span class="label">Path: </span><span class="details ng-binding">{{moduleOpen.directory}}</span></div>
       </div>
     </div>
+    <button class="save_btn" [disabled]="isEnabled === moduleOpen.enabled" (click)="toggleEnabled(moduleOpen)">Save</button>
     <button *ngIf="moduleOpen.hasConfiguration" class="config_btn">Configure</button>
   </div>
 

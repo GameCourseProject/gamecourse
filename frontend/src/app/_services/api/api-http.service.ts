@@ -533,7 +533,6 @@ export class ApiHttpService {
         return { id: user.id, name: user.name, studentNumber: user.studentNumber }
       }),
     }
-    console.log(data)
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'course');

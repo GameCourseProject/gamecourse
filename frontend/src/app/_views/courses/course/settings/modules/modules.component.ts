@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import {Module} from "../../../../../_domain/Module";
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
-import {ErrorService} from "../../../../../_services/error.service";
+
+import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
+import {ErrorService} from "../../../../../_services/error.service";
+
+import {Module} from "../../../../../_domain/Module";
 
 import _ from 'lodash';
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-modules',
@@ -25,7 +28,7 @@ export class ModulesComponent implements OnInit {
 
   isModuleDetailsModalOpen: boolean;
   moduleOpen: Module;
-  needsToBeSaved: {[key: string]: boolean} = {};
+  isEnabled: boolean;
   saving: boolean;
 
   constructor(
@@ -53,13 +56,13 @@ export class ModulesComponent implements OnInit {
   getModules(courseID: number): void {
     this.loading = true;
     this.api.getCourseModules(courseID)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(modules => {
         this.allModules = modules;
         this.filteredModules = _.cloneDeep(modules); // deep copy
-        this.allModules.forEach(module => this.needsToBeSaved[module.id] = false);
       },
-      error => ErrorService.set(error),
-        () => this.loading = false);
+      error => ErrorService.set(error)
+      );
   }
 
 
@@ -82,17 +85,17 @@ export class ModulesComponent implements OnInit {
 
   toggleEnabled(module: Module): void {
     this.saving = true;
+    const isEnabled = !module.enabled;
 
-    module.enabled = !module.enabled;
-
-    this.api.setModuleEnabled(this.courseID, module.id, module.enabled)
+    this.api.setModuleEnabled(this.courseID, module.id, isEnabled)
+      .pipe( finalize(() => this.saving = false) )
       .subscribe(
         res => {
+          module.enabled = !module.enabled;
           this.getModules(this.courseID);
         },
         error => ErrorService.set(error),
         () => {
-          this.saving = false;
           this.isModuleDetailsModalOpen = false;
           this.moduleOpen = null;
         }
