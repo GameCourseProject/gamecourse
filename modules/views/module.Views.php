@@ -2058,7 +2058,7 @@ class Views extends Module
 
         // if ($fromModule)
         //     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
-        //print_r($aspects);
+
         foreach ($aspects as &$aspect) {
             //print_r($aspect);
 

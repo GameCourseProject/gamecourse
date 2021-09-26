@@ -371,6 +371,17 @@ class ViewHandler
         }
     }
 
+    public function resetParentsAndViewIds(&$view)
+    {
+        if ($view['parentId'] != null)
+            $view['parentId'] = 0;
+        $view['viewId'] = null;
+
+        foreach ($view["children"] as &$child) {
+            $this->resetParentsAndViewIds($child);
+        }
+    }
+
     public function deleteViews($view, $isRoot = false)
     {
         $children = Core::$systemDB->selectMultiple("view join view_parent on viewId=childId", ["parentId" => $view["id"]], "*");
