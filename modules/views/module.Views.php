@@ -1635,8 +1635,8 @@ class Views extends Module
             $templateId = API::getValue('id');
             //get aspect
             $templateView = Core::$systemDB->select(
-                "view_template vt join view v on vt.viewId=v.id",
-                ["partType" => "block", "parent" => null, "templateId" => $templateId]
+                "view_template vt join view v on vt.viewId=v.viewId",
+                ["templateId" => $templateId]
             );
             //will get all the aspects (and contents) of the template
             $views = $this->viewHandler->getViewWithParts($templateView["id"], null, true);
