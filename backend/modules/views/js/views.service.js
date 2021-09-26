@@ -1445,10 +1445,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                         giveMessage(errorMsg);
                                         shouldSave = false;
                                     } else
-                                        optionsScope.loopData = value;
+                                        optionsScope.part.loopData = value;
                                 }
                                 else if (textArea == 'value')
-                                    optionsScope.value = value;
+                                    optionsScope.part.value = value;
                                 else if (textArea.includes('events')) {
                                     let eventType = textArea.split(".")[1];
                                     if (!(value.startsWith("{") && value.endsWith("}"))) {
@@ -1461,13 +1461,13 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     let variable = textArea.split(".")[1];
                                     optionsScope.part.variables[variable] = value;
                                 } else if (textArea == 'link') {
-                                    optionsScope.link = value;
+                                    optionsScope.part.link = value;
                                 } else if (textArea == 'visibilityCondition') {
                                     if (!(value.startsWith("{") && value.endsWith("}"))) {
                                         giveMessage(errorMsg);
                                         shouldSave = false;
                                     } else
-                                        optionsScope.visibilityCondition = value;
+                                        optionsScope.part.visibilityCondition = value;
                                 }
                             }
                             if (shouldSave) {
