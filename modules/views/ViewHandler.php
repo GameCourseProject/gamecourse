@@ -198,6 +198,9 @@ class ViewHandler
             }
             unset($viewPart["rows"]);
             unset($viewPart["headerRows"]);
+
+            //readjust keys to start at 0
+            $viewPart["children"] = array_combine(range(0, count($viewPart["children"]) - 1), $viewPart["children"]);
         }
         // if (isset($viewPart["isTemplateRef"]) && !$basicUpdate) { //update orignial template of the reference
         //     //$type = $this->getRoleType($viewPart["role"]); //type of viewPart (templateRef)
@@ -266,7 +269,6 @@ class ViewHandler
                 $children = Core::$systemDB->selectMultiple("view v join view_parent vp on v.viewId=vp.childId", ["parentId" => $viewPart["id"]], "*", null, [["partType", "header"]]);
                 $children = array_combine(array_column($children, "id"), $children);
             }
-
             foreach ($viewPart["children"] as $key => &$child) {
                 if ($key == 0) {
                     $currentViewId = $child["viewId"];
@@ -376,9 +378,24 @@ class ViewHandler
         if ($view['parentId'] != null)
             $view['parentId'] = 0;
         $view['viewId'] = null;
-
-        foreach ($view["children"] as &$child) {
-            $this->resetParentsAndViewIds($child);
+        if ($view["partType"] == "table") {
+            foreach ($view["headerRows"] as &$headRow) {
+                $this->resetParentsAndViewIds($headRow);
+                foreach ($headRow["values"] as &$rowElement) {
+                    $this->resetParentsAndViewIds($rowElement['value']);
+                }
+            }
+            foreach ($view["rows"] as &$row) {
+                $this->resetParentsAndViewIds($row);
+                foreach ($row["values"] as &$rowElement) {
+                    $this->resetParentsAndViewIds($rowElement['value']);
+                }
+            }
+        }
+        if (array_key_exists("children", $view)) {
+            foreach ($view["children"] as &$child) {
+                $this->resetParentsAndViewIds($child);
+            }
         }
     }
 
