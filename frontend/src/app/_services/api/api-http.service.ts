@@ -21,6 +21,8 @@ import {Moment} from "moment";
 import * as moment from "moment";
 import {Role, RoleDatabase} from "../../_domain/Role";
 import {Page} from "../../_domain/Page";
+import {Template} from "../../_domain/Template";
+import {RoleType} from "../../_domain/RoleType";
 
 @Injectable({
   providedIn: 'root'
@@ -648,6 +650,31 @@ export class ApiHttpService {
 
     return this.get(url, this.httpOptions)
       .pipe( map((res: any) => !!res['data'].find(el => el.text === 'Views')) );
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------- Views related --------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'listViews');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
+          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
+          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
+          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
+        }
+      }) );
   }
 
 

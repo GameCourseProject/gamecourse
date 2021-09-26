@@ -83,6 +83,11 @@ export class ModulesComponent implements OnInit {
     });
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   toggleEnabled(module: Module): void {
     this.saving = true;
     const isEnabled = !module.enabled;
