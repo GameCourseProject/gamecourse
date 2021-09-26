@@ -4,6 +4,7 @@ import {finalize} from "rxjs/operators";
 
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../_services/error.service";
+import {PagesUpdateService} from "../../../../../_services/pages-update.service";
 
 import {Page} from "../../../../../_domain/Page";
 import {Template} from "../../../../../_domain/Template";
@@ -35,9 +36,28 @@ export class ViewsComponent implements OnInit {
 
   searchQuery: string;
 
+  isViewModalOpen: boolean;
+  isDeleteVerificationModalOpen: boolean;
+  saving: boolean;
+
+  newView: {view: {name: string, viewId: number, isEnabled: boolean, roleTypeId?: string}, type: 'page' | 'template'} = {
+    view: {
+      name: null,
+      viewId: null,
+      isEnabled: null,
+      roleTypeId: null
+    },
+    type: null
+  }
+  viewToEdit: Page | Template;
+  viewToDelete: {view: Page | Template, type: 'page' | 'template'};
+
+  mode: 'add' | 'edit';
+
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private pagesUpdate: PagesUpdateService
   ) { }
 
   ngOnInit(): void {
@@ -107,9 +127,145 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  saveView(): void {
+    this.saving = true;
+
+    if (this.mode === 'add') {
+      if (this.newView.type === 'page') {
+        this.api.createPage(this.courseID, this.newView.view)
+          .pipe( finalize(() => {
+            this.saving = false;
+            this.isViewModalOpen = false;
+            this.clearObject(this.newView.view);
+            this.newView.type = null;
+          }) )
+          .subscribe(res => {
+            this.getViewsInfo();
+            this.pagesUpdate.triggerUpdate();
+          }, error => ErrorService.set(error))
+
+      } else if(this.newView.type === 'template') {
+        this.api.createTemplate(this.courseID, this.newView.view)
+          .pipe( finalize(() => {
+            this.saving = false;
+            this.isViewModalOpen = false;
+            this.clearObject(this.newView.view);
+            this.newView.type = null;
+          }) )
+          .subscribe(res => {
+            this.getViewsInfo();
+          }, error => ErrorService.set(error))
+      }
+
+    } else if (this.mode === 'edit') {
+      if (this.newView.type === 'page') {
+        this.viewToEdit = this.viewToEdit as Page;
+        this.viewToEdit.name = this.newView.view.name;
+        this.viewToEdit.viewId = this.newView.view.viewId;
+        this.viewToEdit.isEnabled = this.newView.view.isEnabled;
+
+        this.api.editPage(this.courseID, this.viewToEdit)
+          .pipe( finalize(() => {
+            this.saving = false;
+            this.isViewModalOpen = false;
+            this.clearObject(this.newView.view);
+            this.newView.type = null;
+          }) )
+          .subscribe(res => {
+              this.getViewsInfo();
+              this.pagesUpdate.triggerUpdate();
+            }, error => ErrorService.set(error))
+
+      } else if (this.newView.type === 'template') {
+        this.viewToEdit = this.viewToEdit as Template;
+        this.viewToEdit.name = this.newView.view.name;
+        this.viewToEdit.viewId = this.newView.view.viewId;
+        this.viewToEdit.roleTypeId = this.newView.view.roleTypeId;
+
+        this.api.editTemplate(this.courseID, this.viewToEdit)
+          .pipe( finalize(() => {
+            this.saving = false;
+            this.isViewModalOpen = false;
+            this.clearObject(this.newView.view);
+            this.newView.type = null;
+          }) )
+          .subscribe(res => {
+            this.getViewsInfo();
+          }, error => ErrorService.set(error))
+      }
+    }
+  }
+
+  editView(view: Page | Template, type: 'page' | 'template'): void {
+    this.viewToEdit = view;
+    this.newView.type = type;
+
+    if (type === 'page') {
+      view = view as Page;
+      this.newView.view.name = view.name;
+      this.newView.view.viewId = view.viewId;
+      this.newView.view.isEnabled = view.isEnabled;
+
+    } else if (type === 'template') {
+      view = view as Template;
+      this.newView.view.name = view.name;
+      this.newView.view.roleTypeId = view.roleTypeId;
+    }
+
+    this.mode = 'edit';
+    this.isViewModalOpen = true;
+  }
+
+  deleteView(): void {
+    this.saving = true;
+    if (this.viewToDelete.type === 'page') {
+      this.api.deletePage(this.courseID, this.viewToDelete.view as Page)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isDeleteVerificationModalOpen = false;
+          this.viewToDelete = null;
+        }) )
+        .subscribe(
+          res => {
+            this.getViewsInfo();
+            this.pagesUpdate.triggerUpdate();
+          },
+          error => ErrorService.set(error)
+        )
+
+    } else if (this.viewToDelete.type === 'template') {
+      this.api.deleteTemplate(this.courseID, this.viewToDelete.view as Template)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isDeleteVerificationModalOpen = false;
+          this.viewToDelete = null;
+        }) )
+        .subscribe(
+          res => {
+            this.getViewsInfo();
+          },
+          error => ErrorService.set(error)
+        )
+    }
+  }
+
+  globalize(template: Template): void {
+    this.saving = true;
+    this.api.globalizeTemplate(this.courseID, template)
+      .pipe( finalize(() => this.saving = false) )
+      .subscribe(res => {
+        this.getViewsInfo();
+      }, error => ErrorService.set(error));
+  }
+
   useGlobal(template: Template): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be update to the current version. Action: useGlobal()')
+    ErrorService.set('This action still needs to be updated to the current version. Action: useGlobal()')
+  }
+
+  exportTemplate(template: Template): void {
+    // TODO: update from GameCourse v1
+    ErrorService.set('This action still needs to be updated to the current version. Action: exportTemplate()')
   }
 
 
@@ -135,6 +291,27 @@ export class ViewsComponent implements OnInit {
   isQueryTrueSearch(item: Page | Template, query: string): boolean {
     return !query ||
       (item.name && !!this.parseForSearching(item.name).find(a => a.includes(query.toLowerCase())));
+  }
+
+  isReadyToSubmit() {
+    let isValid = function (text) {
+      return (text != "" && text != undefined)
+    }
+
+    if (this.newView.type === 'page') {
+      return isValid(this.newView.view.name) && isValid(this.newView.view.viewId);
+
+    } else if (this.newView.type === 'template') {
+      return isValid(this.newView.view.name) && isValid(this.newView.view.roleTypeId);
+    }
+
+    return false;
+  }
+
+  clearObject(obj): void {
+    for (const key of Object.keys(obj)) {
+      obj[key] = null;
+    }
   }
 
 }

@@ -152,12 +152,12 @@ export class RolesComponent implements OnInit {
 
   undo(): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be update to the current version. Action: undo()');
+    ErrorService.set('This action still needs to be updated to the current version. Action: undo()');
   }
 
   redo(): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be update to the current version. Action: redo()');
+    ErrorService.set('This action still needs to be updated to the current version. Action: redo()');
   }
 
 

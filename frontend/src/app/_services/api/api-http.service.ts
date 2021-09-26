@@ -677,6 +677,125 @@ export class ApiHttpService {
       }) );
   }
 
+  public createView(courseID: number, type: 'page' | 'template', info: {name: string, roleType?: string, isEnabled?: boolean, viewId: number}): Observable<void> {
+    const data = {
+      course: courseID,
+      name: info.name,
+      pageOrTemp: type,
+      isEnabled: info.isEnabled ? 1 : 0,
+      viewId: info.viewId,
+      roleType: info.roleType ? info.roleType : ''
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'createView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editView(courseID: number, type: 'page' | 'template', info: {id: number, name: string, roleType?: string, isEnabled?: boolean, viewId: number, theme?: string}): Observable<void> {
+    const data = {
+      course: courseID,
+      id: info.id,
+      name: info.name,
+      pageOrTemp: type,
+      isEnabled: info.isEnabled ? 1 : 0,
+      viewId: info.viewId ? info.viewId : '',
+      roleType: info.roleType ? info.roleType : '',
+      theme: info.theme || null
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'editView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteView(courseID: number, type: 'page' | 'template', info: {name: string, id: number}): Observable<void> {
+    const data = {
+      course: courseID,
+      name: info.name,
+      pageOrTemp: type,
+      id: info.id,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'deleteView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public createPage(courseID: number, page: Partial<Page>): Observable<void> {
+    return this.createView(courseID, 'page', {
+      name: page.name,
+      viewId: page.viewId,
+      isEnabled: page.isEnabled
+    });
+  }
+
+  public editPage(courseID: number, page: Page): Observable<void> {
+    return this.editView(courseID, 'page', {
+      id: page.id,
+      name: page.name,
+      isEnabled: page.isEnabled,
+      viewId: page.viewId
+    });
+  }
+
+  public deletePage(courseId: number, page: Page): Observable<any> {
+    return this.deleteView(courseId, 'page', {name: page.name, id: page.id});
+  }
+
+  public createTemplate(courseID: number, template: Partial<Template>): Observable<void> {
+    return this.createView(courseID, 'template', {
+      name: template.name,
+      viewId: template.viewId,
+      roleType: template.roleTypeId
+    });
+  }
+
+  public editTemplate(courseID: number, template: Template): Observable<void> {
+    return this.editView(courseID, 'template', {
+      id: template.id,
+      name: template.name,
+      viewId: template.viewId,
+      roleType: template.roleTypeId
+    });
+  }
+
+  public deleteTemplate(courseId: number, template: Template): Observable<any> {
+    return this.deleteView(courseId, 'template', {name: template.name, id: template.id});
+  }
+
+  public globalizeTemplate(courseID: number, template: Template): Observable<void> {
+    const data = {
+      course: courseID,
+      id: template.id,
+      isGlobal: template.isGlobal
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'globalizeTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ---------------- Rules System --------------- ***/

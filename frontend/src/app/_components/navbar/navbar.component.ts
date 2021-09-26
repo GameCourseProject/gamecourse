@@ -1,13 +1,13 @@
-import {Component, HostListener, Input, OnInit} from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {User} from "../../_domain/User";
-import {Observable} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ImageManager} from "../../_utils/image-manager";
 import {ErrorService} from "../../_services/error.service";
 import {Course, CourseInfo} from "../../_domain/Course";
 import {ImageUpdateService} from "../../_services/image-update.service";
+import {PagesUpdateService} from "../../_services/pages-update.service";
 
 @Component({
   selector: 'app-navbar',
@@ -15,8 +15,6 @@ import {ImageUpdateService} from "../../_services/image-update.service";
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-
-  @Input() updatePhoto?: Observable<void>;
 
   user: User;
   photo: ImageManager;
@@ -36,7 +34,8 @@ export class NavbarComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private photoUpdate: ImageUpdateService
+    private photoUpdate: ImageUpdateService,
+    private pagesUpdate: PagesUpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -44,6 +43,10 @@ export class NavbarComponent implements OnInit {
   ngOnInit(): void {
     this.getUserInfo();
     this.photoUpdate.update.subscribe(() => this.getUserInfo())
+    this.pagesUpdate.update.subscribe(() => {
+      this.courseInfo = null;
+      this.initNavigations();
+    })
   }
 
 

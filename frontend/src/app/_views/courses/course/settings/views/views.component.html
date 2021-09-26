@@ -34,8 +34,8 @@
                       </div>
 
                       <div class="page_actions">
-                        <span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(page,'page')"></span>
-                        <span class="delete_icon icon" ng-click="deleteView(page,'page')"></span>
+                        <span class="config_icon icon" title="Edit" (click)="editView(page, 'page')"></span>
+                        <span class="delete_icon icon" (click)="viewToDelete = {view: page, type: 'page'}; isDeleteVerificationModalOpen = true"></span>
                       </div>
                     </div>
 
@@ -46,12 +46,12 @@
                   </div>
 
                   <div class="action-buttons" style="width:30px">
-                    <div class="icon add_icon" title="New" ng-click="createView('page')"></div>
+                    <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'page'; isViewModalOpen = true;"></div>
                   </div>
+                </div>
 
-                  <div class="error_box">
-                    <div id="empty_pages" class="error_msg"></div>
-                  </div>
+                <div *ngIf="searchQuery && filteredPages.length === 0" class="error_box">
+                  <div id="empty_pages" class="error_msg">No matches found</div>
                 </div>
               </div>
 
@@ -61,7 +61,7 @@
                   <div class="title"><span>View Templates</span></div>
                 </div>
 
-                <div class="content" id="templates">
+                <div class="content" id="view_templates">
                   <div *ngFor="let template of filteredViewTemplates" class="card">
                     <div class="color_box">
                       <div class="box"></div>
@@ -73,22 +73,22 @@
                     <div class="footer">
                       <div class="page_name">{{template.name}}</div>
                       <div class="template_actions">
-                        <span class="config_icon icon" title="Edit" value="#edit-view" onclick="openModal(this)" ng-click="configureView(template, 'template')"></span>
-                        <span *ngIf="!template.isGlobal" class="globalize_icon icon" title="Globalize" ng-click="globalize(template)"></span>
-                        <span *ngIf="template.isGlobal" class="de_globalize_icon icon" title="Deglobalize" ng-click="globalize(template)"></span>
-                        <span class="export_icon_no_outline icon" title="Export" ng-click="exportTemplate(template)"></span>
-                        <span class="delete_icon icon" title="Remove" ng-click="deleteView(template,'template')"></span>
+                        <span class="config_icon icon" title="Edit" (click)="editView(template, 'template')"></span>
+                        <span *ngIf="!template.isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
+                        <span *ngIf="template.isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
+                        <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
+                        <span class="delete_icon icon" title="Remove" (click)="viewToDelete = {view: template, type: 'template'}; isDeleteVerificationModalOpen = true"></span>
                       </div>
                     </div>
                   </div>
 
                   <div class="action-buttons" style="width:30px">
-                    <div class="icon add_icon" title="New" ng-click="createView('template')"></div>
+                    <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'template'; isViewModalOpen = true;"></div>
                   </div>
+                </div>
 
-                  <div class="error_box">
-                    <div id="empty_templates" class="error_msg"></div>
-                  </div>
+                <div *ngIf="searchQuery && filteredViewTemplates.length === 0" class="error_box">
+                  <div id="empty_templates" class="error_msg">No matches found</div>
                 </div>
               </div>
 
@@ -111,10 +111,10 @@
                       <div class="page_name">{{template.name}}</div>
                     </div>
                   </div>
+                </div>
 
-                  <div class="error_box">
-                    <div id="empty_globals" class="error_msg"></div>
-                  </div>
+                <div *ngIf="searchQuery && filteredGlobalTemplates.length === 0" class="error_box">
+                  <div id="empty_globals" class="error_msg">No matches found</div>
                 </div>
               </div>
 
@@ -130,3 +130,72 @@
     <img src="../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!-- New / Edit View Modal -->
+<ng-container *ngIf="isViewModalOpen">
+  <app-modal
+    [isModalOpen]="isViewModalOpen"
+    [id]="mode === 'add' ? 'new-view' : 'edit-view'"
+    [templateRef]="newViewModal"
+    (closeBtnClicked)="isViewModalOpen = false; clearObject(newView.view); this.newView.type = null"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #newViewModal>
+
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{newView.type === 'page' ? 'page' : 'template'}}:</div>
+
+  <div class="content">
+    <div class="inputs" id="inputs_view_box" style="padding-bottom: 26px">
+      <!-- Name -->
+      <div class="name full">
+        <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newView.view.name">
+        <label for="name" class="form__label">Name</label>
+      </div>
+
+      <!-- View template -->
+      <select *ngIf="newView.type === 'page'" class="form__input pages_info" id="new_view_template" [(ngModel)]="newView.view.viewId">
+        <option [ngValue]="null" disabled selected>Select a view template *</option>
+        <option *ngFor="let template of allViewTemplates" [ngValue]="template.viewId" label="{{template.name}}">{{template.name}}</option>
+      </select>
+
+      <!-- Role Type -->
+      <select *ngIf="newView.type === 'template'" class="form__input pages_info" id="new_view_role" [(ngModel)]="newView.view.roleTypeId">
+        <option [ngValue]="null" disabled selected>Select a role type *</option>
+        <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
+      </select>
+    </div>
+
+    <div *ngIf="newView.type === 'page'" id="active_page" class="row">
+      <div class="on_off">
+        <span>Enable Page</span>
+        <label class="switch">
+          <input type="checkbox" [checked]="newView.view.isEnabled" (change)="newView.view.isEnabled = !newView.view.isEnabled">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="cancel" (click)="isViewModalOpen = false; clearObject(newView.view); this.newView.type = null"> Cancel </button>
+    <button class="save_btn" (click)="saveView()" [disabled]="!isReadyToSubmit()"> Save </button>
+  </div>
+
+</ng-template>
+
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-view'"
+    [text]="'Are you sure you want to delete this View?'"
+    [target]="viewToDelete.type + ': ' + viewToDelete.view.name + ' (id: ' + viewToDelete.view.id + ')'"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteView()"
+    (negativeBtnClicked)="viewToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    [actionInProgress]="saving">
+  </app-verification-modal>
+</ng-container>

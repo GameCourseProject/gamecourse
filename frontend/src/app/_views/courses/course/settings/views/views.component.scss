@@ -51,7 +51,8 @@
 }
 
 #pages,
-#templates {
+#view_templates,
+#global_templates {
   margin-left: -20px;
   display: inline-grid;
   grid-template-columns: repeat(auto-fill, 250px);
@@ -60,17 +61,14 @@
 }
 
 #pages .box,
-#templates .box {
-  background-color: lightgray;
-}
-
-#pages .box,
-#templates .box {
+#view_templates .box,
+#global_templates .box {
   background-color: lightgray;
 }
 
 #pages .card,
-#templates .card {
+#view_templates .card,
+#global_templates .card {
   height: 200px;
   cursor: auto;
   width: 240px;
@@ -151,4 +149,43 @@ input.database_search {
 
 .data-table table tr.notAllActive:hover{
   background-color: rgba(187, 49, 49, 0.562);
+}
+
+/*status bar also used on the views page*/
+
+.status {
+  width: 100%;
+  font-size: 12px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.status.disable {
+  border: 1px solid red;
+}
+
+.status.enable {
+  border: 1px solid green;
+}
+
+.status .background {
+  width: 100%;
+  height: 100%;
+  background-color: red;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.status.disable .background {
+  background-color: red;
+}
+
+.status.enable .background {
+  background-color: green;
 }
