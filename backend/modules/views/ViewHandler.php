@@ -352,7 +352,7 @@ class ViewHandler
             } else if (!empty($header) && !$basicUpdate) { //delete header in db
                 Core::$systemDB->delete("view", ["viewId" => $header["viewId"], "partType" => "header"]);
                 //delete header from the view_parent table
-                Core::$systemDB->delete("view_parent", ["childId" => $header["viewId"], "parenId" => $viewPart["id"]]);
+                Core::$systemDB->delete("view_parent", ["childId" => $header["viewId"], "parentId" => $viewPart["id"]]);
 
                 $childrenHeader = Core::$systemDB->selectMultiple("view join view_parent", ["parentId" => $header["id"]], "id");
                 //delete image & title (from header) from the view_parent table and view table

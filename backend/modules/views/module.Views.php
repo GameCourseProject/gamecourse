@@ -1482,6 +1482,14 @@ class Views extends Module
             API::response($response);
         });
 
+        // gets template by id
+        API::registerFunction('views', 'getTemplate', function () {
+            API::requireCourseAdminPermission();
+            API::requireValues('id');
+            $template = $this->getTemplate(API::getValue("id"));
+            API::response(array('template' => $template));
+        });
+
         //gets contents of template to put it in the view being edited
         API::registerFunction('views', 'getTemplateContent', function () {
             API::requireCourseAdminPermission();
@@ -1635,7 +1643,7 @@ class Views extends Module
             $templateId = API::getValue('id');
             //get aspect
             $templateView = Core::$systemDB->select(
-                "view_template vt join view v on vt.viewId=v.id",
+                "view_template vt join view v on vt.viewId=v.viewId",
                 ["partType" => "block", "parent" => null, "templateId" => $templateId]
             );
             //will get all the aspects (and contents) of the template
