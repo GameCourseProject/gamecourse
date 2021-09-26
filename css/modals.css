@@ -19,6 +19,7 @@ button {
 
 .verification .message_warning.warning {
     margin-bottom: 30px;
+    word-break: break-word;
 }
 
 .verification .target {
