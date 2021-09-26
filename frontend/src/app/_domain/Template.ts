@@ -90,7 +90,7 @@ export class Template {
   }
 }
 
-interface TemplateDatabase {
+export interface TemplateDatabase {
   id: string;
   name: string;
   course: string;

@@ -31,7 +31,7 @@ export class RoleType {
   }
 }
 
-enum RoleTypeId {
+export enum RoleTypeId {
   ROLE_SINGLE = 'ROLE_SINGLE',
   ROLE_INTERACTION = 'ROLE_INTERACTION'
 }

@@ -10,8 +10,9 @@ import { GlobalComponent } from './settings/global/global.component';
 import { RolesComponent } from './settings/roles/roles.component';
 import { ModulesComponent } from './settings/modules/modules.component';
 import { RulesComponent } from './settings/rules/rules.component';
-import { ViewsComponent } from './settings/views/views.component';
+import { ViewsComponent } from './settings/views/views/views.component';
 import {FormsModule} from "@angular/forms";
+import { ViewEditorComponent } from './settings/views/view-editor/view-editor.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import {FormsModule} from "@angular/forms";
     RolesComponent,
     ModulesComponent,
     RulesComponent,
-    ViewsComponent
+    ViewsComponent,
+    ViewEditorComponent
   ],
   imports: [
     CommonModule,

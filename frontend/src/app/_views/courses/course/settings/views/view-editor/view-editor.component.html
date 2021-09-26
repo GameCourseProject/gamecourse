@@ -1,0 +1,61 @@
+<div id="viewEditor">
+  <ng-container *ngIf="!loading">
+
+    <!-- Helper -->
+    <div class="side_helper">
+      <div id="open_helper" (click)="help = !help">
+        <span class="help icon"></span>
+        <span id="arrow" class="open icon"></span>
+      </div>
+      <div id="helper_content" [ngClass]="{'visible': help}">
+        <span><a target="_blank" [routerLink]="'/docs'">About Views</a></span>
+        <span><a target="_blank" [routerLink]="'/docs/functions'">Available Functions</a></span>
+      </div>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <div id="page_history">
+      <span class="clickable" (click)="goToViews()">Views</span>
+      <div class="go_back icon" (click)="goToViews()"></div>
+
+      <span class="clickable" (click)="goToViews()">Templates</span>
+      <div class="go_back icon"></div>
+
+      <span *ngIf="template">{{template.name}}</span>
+      <span id="warning_ref">The selected view is a reference for a template!</span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons" id="view_editor_actions">
+      <div class="editor-roles">
+
+        <ng-container *ngIf="template && template.roleTypeId === RoleTypeId.ROLE_INTERACTION">
+          <div style="margin-right:5px;">User: </div>
+          <select id="user_role" onchange="selectViews()" ng-model="selectedURole">
+            <option *ngFor="let role of courseRoles" [ngValue]="role.id">{{role.name}}</option>
+          </select>
+        </ng-container>
+
+        <div style="margin-right:5px;">View as: </div>
+        <select id="viewer_role" onchange="selectViews()" ng-model="selectedVRole">
+          <option *ngFor="let role of viewRoles" [ngValue]="role.id">{{role.name}}</option>
+        </select>
+      </div>
+
+      <div id="undo_icon" class="icon undo_icon" [ngClass]="{'disabled': !canUndo()}" title="Redo"></div>
+      <div id="redo_icon" class="icon redo_icon" [ngClass]="{'disabled': !canRedo()}" title="Redo"></div>
+
+      <button>Save Changes</button>
+      <button>Preview</button>
+    </div>
+
+    <!-- Editor -->
+
+
+  </ng-container>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
+  </div>
+</div>

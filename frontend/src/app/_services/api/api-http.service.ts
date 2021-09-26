@@ -21,8 +21,8 @@ import {Moment} from "moment";
 import * as moment from "moment";
 import {Role, RoleDatabase} from "../../_domain/Role";
 import {Page} from "../../_domain/Page";
-import {Template} from "../../_domain/Template";
-import {RoleType} from "../../_domain/RoleType";
+import {Template, TemplateDatabase} from "../../_domain/Template";
+import {RoleType, RoleTypeId} from "../../_domain/RoleType";
 
 @Injectable({
   providedIn: 'root'
@@ -654,146 +654,67 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------- Views related --------------- ***/
+  /*** ---------------- Views Editor --------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
+  public getEdit(courseID: number, template: Template, roles: {viewerRole: string, userRole: string}):
+    Observable<{view: any[], fields: any[], templates: Template[], courseRoles: Role[], viewRoles: Role[], rolesHierarchy: Role[]}> {
+
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
-      qs.push('request', 'listViews');
-      qs.push('course', courseID);
+      qs.push('request', 'getEdit');
+    };
+
+    const data = {
+      course: courseID,
+      pageOrTemp: 'template', // FIXME: this is deprecated code
+      view: template.id,
+      roles: roles
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.post(url, data, this.httpOptions)
       .pipe( map((res: any) => {
-        return {
-          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
-          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
-          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
-          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
+        const templates = Object.values(res['data']['templates']).map(obj => Template.fromDatabase(obj as TemplateDatabase));
+        const allRoles: Role[] = res['data']['courseRoles'].map(obj => Role.fromDatabase(obj));
+        let viewRoles: Role[];
+        if (template.roleTypeId === RoleTypeId.ROLE_SINGLE) {
+          viewRoles = res['data']['viewRoles'].map(obj => Role.fromDatabase(obj));
+        } else if (template.roleTypeId === RoleTypeId.ROLE_INTERACTION) {
+          viewRoles = res['data']['viewRoles'].map(arr => arr.map(obj => Role.fromDatabase(obj)))[0];
         }
+        const rolesHierarchy: Role[] = parseRoles(res['data']['rolesHierarchy'], allRoles);
+
+        return {view: res['data']['view'], fields: res['data']['fields'], templates, courseRoles: allRoles, viewRoles, rolesHierarchy}
       }) );
+
+    function parseRoles(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
+      return hierarchy.map(obj => {
+        const role = allRoles.find(el => el.id === parseInt(obj.id));
+        if (obj.children) {
+          role.children = parseRoles(obj.children, allRoles);
+        }
+        return role;
+      })
+    }
   }
 
-  public createView(courseID: number, type: 'page' | 'template', info: {name: string, roleType?: string, isEnabled?: boolean, viewId: number}): Observable<void> {
-    const data = {
-      course: courseID,
-      name: info.name,
-      pageOrTemp: type,
-      isEnabled: info.isEnabled ? 1 : 0,
-      viewId: info.viewId,
-      roleType: info.roleType ? info.roleType : ''
-    };
-
+  public getTemplate(courseID: number, templateID: number): Observable<Template> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
-      qs.push('request', 'createView');
+      qs.push('request', 'getTemplate');
+    };
+
+    const data = {
+      id: templateID,
+      course: courseID
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
     return this.post(url, data, this.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public editView(courseID: number, type: 'page' | 'template', info: {id: number, name: string, roleType?: string, isEnabled?: boolean, viewId: number, theme?: string}): Observable<void> {
-    const data = {
-      course: courseID,
-      id: info.id,
-      name: info.name,
-      pageOrTemp: type,
-      isEnabled: info.isEnabled ? 1 : 0,
-      viewId: info.viewId ? info.viewId : '',
-      roleType: info.roleType ? info.roleType : '',
-      theme: info.theme || null
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'editView');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public deleteView(courseID: number, type: 'page' | 'template', info: {name: string, id: number}): Observable<void> {
-    const data = {
-      course: courseID,
-      name: info.name,
-      pageOrTemp: type,
-      id: info.id,
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'deleteView');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public createPage(courseID: number, page: Partial<Page>): Observable<void> {
-    return this.createView(courseID, 'page', {
-      name: page.name,
-      viewId: page.viewId,
-      isEnabled: page.isEnabled
-    });
-  }
-
-  public editPage(courseID: number, page: Page): Observable<void> {
-    return this.editView(courseID, 'page', {
-      id: page.id,
-      name: page.name,
-      isEnabled: page.isEnabled,
-      viewId: page.viewId
-    });
-  }
-
-  public deletePage(courseId: number, page: Page): Observable<any> {
-    return this.deleteView(courseId, 'page', {name: page.name, id: page.id});
-  }
-
-  public createTemplate(courseID: number, template: Partial<Template>): Observable<void> {
-    return this.createView(courseID, 'template', {
-      name: template.name,
-      viewId: template.viewId,
-      roleType: template.roleTypeId
-    });
-  }
-
-  public editTemplate(courseID: number, template: Template): Observable<void> {
-    return this.editView(courseID, 'template', {
-      id: template.id,
-      name: template.name,
-      viewId: template.viewId,
-      roleType: template.roleTypeId
-    });
-  }
-
-  public deleteTemplate(courseId: number, template: Template): Observable<any> {
-    return this.deleteView(courseId, 'template', {name: template.name, id: template.id});
-  }
-
-  public globalizeTemplate(courseID: number, template: Template): Observable<void> {
-    const data = {
-      course: courseID,
-      id: template.id,
-      isGlobal: template.isGlobal
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'globalizeTemplate');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
   }
 
 
@@ -1015,6 +936,150 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'settings');
       qs.push('request', 'saveCourseModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------- Views settings --------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'listViews');
+      qs.push('course', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
+          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
+          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
+          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
+        }
+      }) );
+  }
+
+  public createView(courseID: number, type: 'page' | 'template', info: {name: string, roleType?: string, isEnabled?: boolean, viewId: number}): Observable<void> {
+    const data = {
+      course: courseID,
+      name: info.name,
+      pageOrTemp: type,
+      isEnabled: info.isEnabled ? 1 : 0,
+      viewId: info.viewId,
+      roleType: info.roleType ? info.roleType : ''
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'createView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editView(courseID: number, type: 'page' | 'template', info: {id: number, name: string, roleType?: string, isEnabled?: boolean, viewId: number, theme?: string}): Observable<void> {
+    const data = {
+      course: courseID,
+      id: info.id,
+      name: info.name,
+      pageOrTemp: type,
+      isEnabled: info.isEnabled ? 1 : 0,
+      viewId: info.viewId ? info.viewId : '',
+      roleType: info.roleType ? info.roleType : '',
+      theme: info.theme || null
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'editView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteView(courseID: number, type: 'page' | 'template', info: {name: string, id: number}): Observable<void> {
+    const data = {
+      course: courseID,
+      name: info.name,
+      pageOrTemp: type,
+      id: info.id,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'deleteView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, this.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public createPage(courseID: number, page: Partial<Page>): Observable<void> {
+    return this.createView(courseID, 'page', {
+      name: page.name,
+      viewId: page.viewId,
+      isEnabled: page.isEnabled
+    });
+  }
+
+  public editPage(courseID: number, page: Page): Observable<void> {
+    return this.editView(courseID, 'page', {
+      id: page.id,
+      name: page.name,
+      isEnabled: page.isEnabled,
+      viewId: page.viewId
+    });
+  }
+
+  public deletePage(courseId: number, page: Page): Observable<any> {
+    return this.deleteView(courseId, 'page', {name: page.name, id: page.id});
+  }
+
+  public createTemplate(courseID: number, template: Partial<Template>): Observable<void> {
+    return this.createView(courseID, 'template', {
+      name: template.name,
+      viewId: template.viewId,
+      roleType: template.roleTypeId
+    });
+  }
+
+  public editTemplate(courseID: number, template: Template): Observable<void> {
+    return this.editView(courseID, 'template', {
+      id: template.id,
+      name: template.name,
+      viewId: template.viewId,
+      roleType: template.roleTypeId
+    });
+  }
+
+  public deleteTemplate(courseId: number, template: Template): Observable<any> {
+    return this.deleteView(courseId, 'template', {name: template.name, id: template.id});
+  }
+
+  public globalizeTemplate(courseID: number, template: Template): Observable<void> {
+    const data = {
+      course: courseID,
+      id: template.id,
+      isGlobal: template.isGlobal
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'globalizeTemplate');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

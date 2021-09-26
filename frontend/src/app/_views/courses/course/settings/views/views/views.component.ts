@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {ErrorService} from "../../../../../_services/error.service";
-import {PagesUpdateService} from "../../../../../_services/pages-update.service";
+import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {ErrorService} from "../../../../../../_services/error.service";
+import {PagesUpdateService} from "../../../../../../_services/pages-update.service";
 
-import {Page} from "../../../../../_domain/Page";
-import {Template} from "../../../../../_domain/Template";
-import {RoleType} from "../../../../../_domain/RoleType";
+import {Page} from "../../../../../../_domain/Page";
+import {Template} from "../../../../../../_domain/Template";
+import {RoleType} from "../../../../../../_domain/RoleType";
 
 import _ from 'lodash';
 
@@ -57,6 +57,7 @@ export class ViewsComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private router: Router,
     private pagesUpdate: PagesUpdateService
   ) { }
 
@@ -196,7 +197,7 @@ export class ViewsComponent implements OnInit {
     }
   }
 
-  editView(view: Page | Template, type: 'page' | 'template'): void {
+  editViewInfo(view: Page | Template, type: 'page' | 'template'): void {
     this.viewToEdit = view;
     this.newView.type = type;
 
@@ -266,6 +267,10 @@ export class ViewsComponent implements OnInit {
   exportTemplate(template: Template): void {
     // TODO: update from GameCourse v1
     ErrorService.set('This action still needs to be updated to the current version. Action: exportTemplate()')
+  }
+
+  editView(template: Template): void {
+    this.router.navigate(['templates/' + template.id + '/editor'], {relativeTo: this.route});
   }
 
 

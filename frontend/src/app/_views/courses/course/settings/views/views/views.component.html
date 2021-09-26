@@ -34,7 +34,7 @@
                       </div>
 
                       <div class="page_actions">
-                        <span class="config_icon icon" title="Edit" (click)="editView(page, 'page')"></span>
+                        <span class="config_icon icon" title="Edit" (click)="editViewInfo(page, 'page')"></span>
                         <span class="delete_icon icon" (click)="viewToDelete = {view: page, type: 'page'}; isDeleteVerificationModalOpen = true"></span>
                       </div>
                     </div>
@@ -66,14 +66,14 @@
                     <div class="color_box">
                       <div class="box"></div>
                       <div class="frame frame-page">
-                        <span class="edit_icon" title="Edit" ng-click="editView(template.id,template.roleType,template.name)"></span>
+                        <span class="edit_icon" title="Edit" (click)="editView(template)"></span>
                       </div>
                     </div>
 
                     <div class="footer">
                       <div class="page_name">{{template.name}}</div>
                       <div class="template_actions">
-                        <span class="config_icon icon" title="Edit" (click)="editView(template, 'template')"></span>
+                        <span class="config_icon icon" title="Edit" (click)="editViewInfo(template, 'template')"></span>
                         <span *ngIf="!template.isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
                         <span *ngIf="template.isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
                         <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
@@ -127,7 +127,7 @@
 
   <!-- Loader -->
   <div *ngIf="loading" id="page-loading">
-    <img src="../../../../../../assets/loader/loader.gif" alt="loader">
+    <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
 
