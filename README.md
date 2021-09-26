@@ -1,2 +1,2 @@
-# gamecourse
-Gamecourse, inicializado com conteudo da old SmartBoards
+# GameCourse v2
+TODO
