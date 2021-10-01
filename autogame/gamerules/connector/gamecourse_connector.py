@@ -821,7 +821,7 @@ def award_grade(target, item, contributions=None, extra=None):
 
 
 
-def award_assignment_grade(target, contributions=None):
+def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
 	# -----------------------------------------------------------	
 	# Writes 'award' table with reward from assigment grades.
 	# Will not retract effects, but will not award twice
@@ -845,7 +845,7 @@ def award_assignment_grade(target, contributions=None):
 
 	
 	for line in contributions:
-		grade = int(line.rating)
+		grade = (int(line.rating) / max_grade) * xp_per_assignemnt
 		description = line.description
 
 		found = False
