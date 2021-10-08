@@ -96,7 +96,7 @@ class XPLevels extends Module
         $xp["xp"] = array_sum($xp);
         return $xp;
     }
-    //calculates total xp of an user
+    //calculates total xp of a user
     public function calculateXP($user, $courseId)
     {
         $userId = $this->getUserId($user);
@@ -113,6 +113,13 @@ class XPLevels extends Module
             [["type", "skill"], ["type", "badge"]]
         ); //where not
         return $badgeXP + $skillXP + $otherXP;
+    }
+    //calculates a user's total xp for a type of award
+    public function calculateXPByType($user, $courseId, $type)
+    {
+        $userId = $this->getUserId($user);
+        $xp = Core::$systemDB->select("award", ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
+        return $xp;
     }
 
     //returns the total xp from user_xp table for the course user
@@ -240,6 +247,21 @@ class XPLevels extends Module
                 return new ValueNode($badgeXP);
             },
             'Returns the sum of XP that all Bonus Badges provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
+            'library',
+            null
+        );
+        //xp.getXPByType(user, type) returns value xp of a type of award for user
+        $viewHandler->registerFunction(
+            'xp',
+            'getXPByType',
+            function ($user, $type) use ($courseId) {
+                $userId = $this->getUserId($user);
+                $xp = $this->calculateXPByType($userId, $courseId, $type);
+                return new ValueNode($xp);
+            },
+            'Returns the sum of XP that a type of award provide as reward from a GameCourseUser identified by user.',
             'integer',
             null,
             'library',

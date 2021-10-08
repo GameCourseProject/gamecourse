@@ -353,15 +353,15 @@ abstract class Module
                     $where["m.isActive"] = true;
                 }
 
-                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user";
+                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user and cu.course = a.course";
                 $field = "a.*,m.name";
             } else {
                 $field = "*";
-                $table = $object . " a join course_user cu on cu.id=a.user";
+                $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
             }
         } else {
             $field = "*";
-            $table = $object . " a join course_user cu on cu.id=a.user";
+            $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
         }
 
         $where["a.course"] = $courseId;

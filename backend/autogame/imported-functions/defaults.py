@@ -133,10 +133,10 @@ def award_grade(target, item, contributions=None):
 	return
 
 @rule_function
-def award_assignment_grade(target, contributions=None):
+def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
 	""" 
 	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
 	, which contain the XP reward to be awarded. 
 	"""
-	connector.award_assignment_grade(target, contributions)
+	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
 	return
