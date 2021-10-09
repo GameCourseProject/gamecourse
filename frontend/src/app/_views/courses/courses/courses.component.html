@@ -6,9 +6,9 @@
     <app-sidebar
       [filters]="user.isAdmin ? filters.admin : filters.nonAdmin"
       [orderBy]="user.isAdmin ? orderBy.admin : orderBy.nonAdmin"
-      (onSearch)="onSearch($event)"
-      (onFilterChange)="onFilterChanged($event)"
-      (onOrderChange)="onOrderByChanged($event)">
+      (onSearch)="reduceList($event)"
+      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"
+      (onOrderChange)="order.active = $event; orderList()">
     </app-sidebar>
 
     <!-- Main Content -->
@@ -44,7 +44,7 @@
   <div id="allCourses">
     <div class="data-table">
 
-      <table *ngIf="this.filteredCourses.length > 0" id="courses-table">
+      <table *ngIf="reduce.items.length > 0" id="courses-table">
         <!-- Header -->
         <thead>
         <tr>
@@ -64,7 +64,7 @@
 
         <!-- Body -->
         <tbody>
-        <tr *ngFor="let course of filteredCourses">
+        <tr *ngFor="let course of reduce.items">
           <td class="first-column">
             <div class="profile-icon">
               <div class="box" [ngStyle]="{'backgroundColor': course.color}"></div>
@@ -103,7 +103,7 @@
         </tbody>
       </table>
 
-      <div *ngIf="this.filteredCourses.length === 0" class='error_box'>
+      <div *ngIf="reduce.items.length === 0" class='error_box'>
         <div id='empty_table' class='error_msg'>No matches found</div>
       </div>
 
@@ -182,7 +182,7 @@
     [isModalOpen]="isCourseModalOpen"
     [id]="mode === 'add' ? 'new-course' : 'edit-course'"
     [templateRef]="courseModal"
-    (closeBtnClicked)="isCourseModalOpen = false; clearObject(this.newCourse)"
+    (closeBtnClicked)="isCourseModalOpen = false; clearObject(newCourse)"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>
@@ -231,7 +231,7 @@
       </div>
     </div>
 
-    <button *ngIf="mode === 'edit'" class="cancel" (click)="isCourseModalOpen = false; clearObject(this.newCourse)">Cancel</button>
+    <button *ngIf="mode === 'edit'" class="cancel" (click)="isCourseModalOpen = false; clearObject(newCourse)">Cancel</button>
     <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="mode === 'add' ? createCourse() : editCourse()">Save</button>
   </div>
 </ng-template>

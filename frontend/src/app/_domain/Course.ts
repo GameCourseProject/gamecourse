@@ -31,7 +31,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
-    this._nameUrl = name.swapPTChars().replace(/\W+/g, '');
+    this._nameUrl = name.swapNonENChars().replace(/\W+/g, '');
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 

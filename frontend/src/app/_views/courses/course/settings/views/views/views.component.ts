@@ -9,8 +9,7 @@ import {PagesUpdateService} from "../../../../../../_services/pages-update.servi
 import {Page} from "../../../../../../_domain/Page";
 import {Template} from "../../../../../../_domain/Template";
 import {RoleType} from "../../../../../../_domain/RoleType";
-
-import _ from 'lodash';
+import {Reduce} from "../../../../../../_utils/display/reduce";
 
 @Component({
   selector: 'app-views',
@@ -24,17 +23,15 @@ export class ViewsComponent implements OnInit {
   courseID: number;
 
   allPages: Page[];
-  filteredPages: Page[];
-
   allViewTemplates: Template[];
-  filteredViewTemplates: Template[];
-
   allGlobalTemplates: Template[];
-  filteredGlobalTemplates: Template[];
+
+  reduceForPages = new Reduce();
+  reduceForViewTemplates = new Reduce();
+  reduceForGlobalTemplates = new Reduce();
+  searchQuery: string; // FIXME: create search component and remove this
 
   types: RoleType[];
-
-  searchQuery: string;
 
   isViewModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
@@ -80,15 +77,12 @@ export class ViewsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(res => {
         this.allPages = res.pages;
-        this.filteredPages = _.cloneDeep(res.pages); // deep copy
-
         this.allViewTemplates = res.templates;
-        this.filteredViewTemplates = _.cloneDeep(res.templates); // deep copy
-
         this.allGlobalTemplates = res.globals;
-        this.filteredGlobalTemplates = _.cloneDeep(res.globals); // deep copy
 
         this.types = res.types;
+
+        this.reduceList();
 
       }, error => ErrorService.set(error));
   }
@@ -98,29 +92,10 @@ export class ViewsComponent implements OnInit {
   /*** ------------------- Search ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  onSearch(): void {
-    this.reduceList();
-  }
-
-  reduceList(): void {
-    this.filteredPages = [];
-    this.filteredViewTemplates = [];
-    this.filteredGlobalTemplates = [];
-
-    this.allPages.forEach(page => {
-      if (this.isQueryTrueSearch(page, this.searchQuery))
-        this.filteredPages.push(page);
-    });
-
-    this.allViewTemplates.forEach(template => {
-      if (this.isQueryTrueSearch(template, this.searchQuery))
-        this.filteredViewTemplates.push(template);
-    });
-
-    this.allGlobalTemplates.forEach(template => {
-      if (this.isQueryTrueSearch(template, this.searchQuery))
-        this.filteredGlobalTemplates.push(template);
-    });
+  reduceList(query?: string): void {
+    this.reduceForPages.search(this.allPages, query);
+    this.reduceForViewTemplates.search(this.allViewTemplates, query);
+    this.reduceForGlobalTemplates.search(this.allGlobalTemplates, query);
   }
 
 
@@ -277,26 +252,6 @@ export class ViewsComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  parseForSearching(query: string): string[] {
-    let res: string[];
-    let temp: string;
-    query = query.swapPTChars();
-
-    res = query.toLowerCase().split(' ');
-
-    temp = query.replace(' ', '').toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-
-    temp = query.toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-    return res;
-  }
-
-  isQueryTrueSearch(item: Page | Template, query: string): boolean {
-    return !query ||
-      (item.name && !!this.parseForSearching(item.name).find(a => a.includes(query.toLowerCase())));
-  }
 
   isReadyToSubmit() {
     let isValid = function (text) {

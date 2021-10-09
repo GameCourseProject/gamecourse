@@ -89,7 +89,7 @@ export class ViewEditorComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   goToViews(): void {
-    this.router.navigate(['../../'], {relativeTo: this.route});
+    this.router.navigate(['../../../'], {relativeTo: this.route});
   }
 
   canUndo(): boolean {

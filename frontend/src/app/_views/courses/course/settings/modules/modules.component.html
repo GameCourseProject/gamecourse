@@ -10,12 +10,12 @@
 
                 <!-- Search -->
                 <div class="search">
-                  <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
-                  <button class="magnifying-glass" id="search-btn" (click)="onSearch()"></button>
+                  <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+                  <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
                 </div>
 
-                <div *ngIf="filteredModules.length > 0" class="modules">
-                  <div *ngFor="let module of filteredModules" class="module_card" (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
+                <div *ngIf="reduce.items.length > 0" class="modules">
+                  <div *ngFor="let module of reduce.items" class="module_card" (click)="moduleOpen = module; isEnabled = module.enabled; isModuleDetailsModalOpen = true;">
                     <div class="icon" [style.backgroundImage]="'url('+ API_ENDPOINT + '/' + module.directory + 'icon.svg)'"></div>
                     <div class="header">{{module.name}}</div>
                     <div class="text">{{module.description}}</div>
@@ -26,7 +26,7 @@
                   </div>
                 </div>
 
-                <div *ngIf="filteredModules.length === 0" class='error_box'>
+                <div *ngIf="reduce.items.length === 0" class='error_box'>
                   <div id='empty_search' class='error_msg'>No matches found</div>
                 </div>
 

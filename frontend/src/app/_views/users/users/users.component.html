@@ -6,9 +6,9 @@
     <app-sidebar
       [filters]="filters"
       [orderBy]="orderBy"
-      (onSearch)="onSearch($event)"
-      (onFilterChange)="onFilterChanged($event)"
-      (onOrderChange)="onOrderByChanged($event)">
+      (onSearch)="reduceList($event)"
+      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"
+      (onOrderChange)="order.active = $event; orderList()">
     </app-sidebar>
 
     <!-- Main Content -->
@@ -24,7 +24,7 @@
       <div id="allUsers">
         <div class="data-table">
 
-          <table *ngIf="this.filteredUsers.length > 0" id="users-table">
+          <table *ngIf="reduce.items.length > 0" id="users-table">
             <!-- Header -->
             <thead>
             <tr>
@@ -42,7 +42,7 @@
 
             <!-- Body -->
             <tbody>
-            <tr *ngFor="let user of filteredUsers">
+            <tr *ngFor="let user of reduce.items">
               <td class="name-column"><span>{{user.name}}</span></td>
               <td class="ng-binding">{{user.nickname}}</td>
               <td class="ng-binding">{{user.studentNumber}}</td>
@@ -70,7 +70,7 @@
             </tbody>
           </table>
 
-          <div *ngIf="this.filteredUsers.length === 0" class='error_box'>
+          <div *ngIf="reduce.items.length === 0" class='error_box'>
             <div id='empty_table' class='error_msg'>No matches found</div>
           </div>
 
@@ -97,7 +97,7 @@
     [isModalOpen]="isUserModalOpen"
     [id]="mode === 'add' ? 'new-user' : 'edit-user'"
     [templateRef]="userModal"
-    (closeBtnClicked)="isUserModalOpen = false; clearObject(this.newUser); photo.set(originalPhoto)"
+    (closeBtnClicked)="isUserModalOpen = false; clearObject(newUser); photo.set(originalPhoto)"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>

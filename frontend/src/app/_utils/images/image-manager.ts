@@ -4,6 +4,8 @@
  * is done by appending a timestamp to the URL so that it overcomes
  * unwanted browser caching.
  *
+ * It is most useful for non-static images, like user profile pictures.
+ *
  * It also has utility functions related to images.
  */
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";

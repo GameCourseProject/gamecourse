@@ -3,7 +3,7 @@ import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {User} from "../../_domain/User";
 import {DomSanitizer} from "@angular/platform-browser";
-import {ImageManager} from "../../_utils/image-manager";
+import {ImageManager} from "../../_utils/images/image-manager";
 import {ErrorService} from "../../_services/error.service";
 import {Course, CourseInfo} from "../../_domain/Course";
 import {ImageUpdateService} from "../../_services/image-update.service";

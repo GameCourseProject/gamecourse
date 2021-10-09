@@ -22,9 +22,11 @@ export class SidebarComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    if (this.filters) {
+    if (this.filters)
       this.filters.forEach(filter => this.filtersInput.push({filter: filter, state: true}));
-    }
+
+    if (this.orderBy && this.orderBy.length > 0)
+      this.orderInput = this.orderBy[0];
   }
 
 }

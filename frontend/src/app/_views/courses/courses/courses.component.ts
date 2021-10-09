@@ -6,8 +6,9 @@ import {ErrorService} from "../../../_services/error.service";
 
 import {Course} from "../../../_domain/Course";
 import {User} from "../../../_domain/User";
-import {DownloadManager} from "../../../_utils/download-manager";
-import {Ordering} from "../../../_utils/ordering";
+import {DownloadManager} from "../../../_utils/download/download-manager";
+import {Reduce} from "../../../_utils/display/reduce";
+import {Order, Sort} from "../../../_utils/display/order";
 
 import Pickr from "@simonwep/pickr";
 
@@ -27,23 +28,20 @@ export class CoursesComponent implements OnInit {
   user: User;
 
   allCourses: Course[];
-  filteredCourses: Course[];
   usingMyCourses: boolean;
 
-  searchQuery: string;
+  reduce = new Reduce();
+  order = new Order();
 
   filters = {
     admin: ['Active', 'Inactive', 'Visible', 'Invisible'],
     nonAdmin: []
   };
-  filtersActive: string[];
 
   orderBy = {
     admin: ['Name', 'Short', '# Students', 'Year'],
     nonAdmin: ['Name', 'Year']
   };
-  orderByActive: {orderBy: string, sort: number};
-  DEFAULT_SORT = 1;
 
   exports = [
     { module: 'awards', name: 'Awards and Participations' },
@@ -101,7 +99,6 @@ export class CoursesComponent implements OnInit {
     this.api.getUserCourses()
       .subscribe(data => {
         this.allCourses = data.courses;
-        this.filteredCourses = _.cloneDeep(data.courses); // deep copy
         this.usingMyCourses = !!data.myCourses;
 
         this.allCourses.forEach(course => {
@@ -111,12 +108,10 @@ export class CoursesComponent implements OnInit {
         if (this.usingMyCourses) {  // non-admin
           // active or non-active courses but must be visible
           this.allCourses.filter(course => course.isVisible);
-          this.filteredCourses.filter(course => course.isVisible);
         }
 
-        this.filtersActive = this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin);
-        this.orderByActive = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: this.DEFAULT_SORT } : { orderBy: this.orderBy.nonAdmin[0], sort: this.DEFAULT_SORT };
-        this.reduceList();
+        this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
+        this.reduceList(undefined, this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin));
 
         this.loading = false;
       },
@@ -142,55 +137,27 @@ export class CoursesComponent implements OnInit {
   /*** ---------- Search, Filter & Order ----------- ***/
   /*** --------------------------------------------- ***/
 
-  onSearch(query: string): void {
-    this.searchQuery = query;
-    this.reduceList();
-  }
-
-  onFilterChanged(filter: {filter: string, state: boolean}): void {
-    if (filter.state) {
-      this.filtersActive.push(filter.filter);
-
-    } else {
-      const index = this.filtersActive.findIndex(el => el === filter.filter);
-      this.filtersActive.splice(index, 1);
-    }
-
-    this.reduceList();
-  }
-
-  onOrderByChanged(order: {orderBy: string, sort: number}): void {
-    this.orderByActive = order;
-    this.orderList();
-  }
-
-  reduceList(): void {
-    this.filteredCourses = [];
-
-    this.allCourses.forEach(course => {
-      if (this.isQueryTrueSearch(course, this.searchQuery) && this.isQueryTrueFilter(course))
-        this.filteredCourses.push(course);
-    });
-
+  reduceList(query?: string, filters?: string[]): void {
+    this.reduce.searchAndFilter(this.allCourses, query, filters);
     this.orderList();
   }
 
   orderList(): void {
-    switch (this.orderByActive.orderBy) {
+    switch (this.order.active.orderBy) {
       case "Name":
-        this.filteredCourses.sort((a, b) => Ordering.byString(a.name, b.name, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
         break;
 
       case "Short":
-        this.filteredCourses.sort((a, b) => Ordering.byString(a.short, b.short, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byString(a.short, b.short, this.order.active.sort))
         break;
 
       case "# Students":
-        this.filteredCourses.sort((a, b) => Ordering.byNumber(a.nrStudents, b.nrStudents, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byNumber(a.nrStudents, b.nrStudents, this.order.active.sort))
         break;
 
       case "Year":
-        this.filteredCourses.sort((a, b) => Ordering.byString(a.year, b.year, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byString(a.year, b.year, this.order.active.sort))
         break;
     }
   }
@@ -372,40 +339,6 @@ export class CoursesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  parseForSearching(query: string): string[] {
-    let res: string[];
-    let temp: string;
-    query = query.swapPTChars();
-
-    res = query.toLowerCase().split(' ');
-
-    temp = query.replace(' ', '').toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-
-    temp = query.toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-    return res;
-  }
-
-  isQueryTrueSearch(course: Course, query: string): boolean {
-    return !query ||
-      (course.name && !!this.parseForSearching(course.name).find(a => a.includes(query.toLowerCase()))) ||
-      (course.short && !!this.parseForSearching(course.short).find(a => a.includes(query.toLowerCase()))) ||
-      (course.year && !!this.parseForSearching(course.year).find(a => a.includes(query.toLowerCase())));
-  }
-
-  isQueryTrueFilter(course: Course): boolean {
-    if (!this.user.isAdmin && this.filters.nonAdmin.length === 0)
-      return true;
-
-    for (const filter of this.filtersActive) {
-      if ((filter === 'Active' && course.isActive) || (filter === 'Inactive' && !course.isActive) ||
-        (filter === 'Visible' && course.isVisible) || (filter === 'Invisible' && !course.isVisible))
-        return true;
-    }
-    return false;
-  }
-
   isReadyToSubmit() {
     let isValid = function (text) {
       return (text != "" && text != undefined)
@@ -454,7 +387,7 @@ export class CoursesComponent implements OnInit {
   }
 
   getActiveCourses(isActive: boolean): Course[] {
-    return this.filteredCourses.filter(course => course.isActive === isActive);
+    return this.reduce.items.filter(course => course.isActive === isActive);
   }
 
   onFileSelected(files: FileList): void {

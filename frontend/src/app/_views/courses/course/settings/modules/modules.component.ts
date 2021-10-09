@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+import {finalize} from "rxjs/operators";
 
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
 import {ErrorService} from "../../../../../_services/error.service";
 
 import {Module} from "../../../../../_domain/Module";
-
-import _ from 'lodash';
-import {finalize} from "rxjs/operators";
+import {Reduce} from "../../../../../_utils/display/reduce";
 
 @Component({
   selector: 'app-modules',
@@ -22,9 +21,9 @@ export class ModulesComponent implements OnInit {
   courseID: number;
 
   allModules: Module[];
-  filteredModules: Module[];
 
-  searchQuery: string;
+  reduce = new Reduce();
+  searchQuery: string; // FIXME: create search component and remove this
 
   isModuleDetailsModalOpen: boolean;
   moduleOpen: Module;
@@ -59,7 +58,7 @@ export class ModulesComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(modules => {
         this.allModules = modules;
-        this.filteredModules = _.cloneDeep(modules); // deep copy
+        this.reduceList();
       },
       error => ErrorService.set(error)
       );
@@ -70,17 +69,8 @@ export class ModulesComponent implements OnInit {
   /*** ------------------- Search ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  onSearch(): void {
-    this.reduceList();
-  }
-
-  reduceList(): void {
-    this.filteredModules = [];
-
-    this.allModules.forEach(module => {
-      if (this.isQueryTrueSearch(module, this.searchQuery))
-        this.filteredModules.push(module);
-    });
+  reduceList(query?: string): void {
+    this.reduce.search(this.allModules, query);
   }
 
 
@@ -105,32 +95,6 @@ export class ModulesComponent implements OnInit {
           this.moduleOpen = null;
         }
       );
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Helpers ------------------ ***/
-  /*** --------------------------------------------- ***/
-
-  parseForSearching(query: string): string[] {
-    let res: string[];
-    let temp: string;
-    query = query.swapPTChars();
-
-    res = query.toLowerCase().split(' ');
-
-    temp = query.replace(' ', '').toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-
-    temp = query.toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-    return res;
-  }
-
-  isQueryTrueSearch(module: Module, query: string): boolean {
-    return !query ||
-      (module.name && !!this.parseForSearching(module.name).find(a => a.includes(query.toLowerCase()))) ||
-      (module.id && !!this.parseForSearching(module.id).find(a => a.includes(query.toLowerCase())));
   }
 
 }

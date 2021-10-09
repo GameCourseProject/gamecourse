@@ -12,9 +12,10 @@ import {Role} from "../../../../_domain/Role";
 import {AuthType} from 'src/app/_domain/AuthType';
 import {UserData} from "../../../my-info/my-info/my-info.component";
 
-import {ImageManager} from "../../../../_utils/image-manager";
-import {Ordering} from "../../../../_utils/ordering";
-import {DownloadManager} from "../../../../_utils/download-manager";
+import {ImageManager} from "../../../../_utils/images/image-manager";
+import {Order, Sort} from "../../../../_utils/display/order";
+import {DownloadManager} from "../../../../_utils/download/download-manager";
+import {Reduce} from "../../../../_utils/display/reduce";
 
 import _ from 'lodash';
 
@@ -33,19 +34,15 @@ export class UsersComponent implements OnInit {
   roles: Role[];
 
   allUsers: User[];
-  filteredUsers: User[];
-
   allNonUsers: User[];
-  filteredNonUsers: User[];
 
-  searchQuery: string;
+  reduce = new Reduce();
+  order = new Order();
+
+  reduceNonUsers = new Reduce();
 
   filters: string[];
-  filtersActive: string[];
-
   orderBy = ['Name', 'Nickname', 'Student Number', 'Last Login'];
-  orderByActive: {orderBy: string, sort: number};
-  DEFAULT_SORT = 1;
 
   originalPhoto: string;  // Original photo
   photoToAdd: File;       // Any photo that comes through the input
@@ -79,7 +76,7 @@ export class UsersComponent implements OnInit {
   selectUserQuery: string;
   selectedUserRole: string = null;
   selectedUserRoles: string[];
-  selectedUsers: User[];
+  selectedUsers: User[] = [];
 
   constructor(
     private api: ApiHttpService,
@@ -134,11 +131,9 @@ export class UsersComponent implements OnInit {
     this.api.getCourseUsers(courseId)
       .subscribe(users => {
         this.allUsers = users;
-        this.filteredUsers = _.cloneDeep(users); // deep copy
 
-        this.filtersActive = _.cloneDeep(this.filters);
-        this.orderByActive = { orderBy: this.orderBy[0], sort: this.DEFAULT_SORT };
-        this.reduceList();
+        this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
+        this.reduceList(undefined, _.cloneDeep(this.filters));
 
         this.getNonCourseUsers(courseId);
       },
@@ -149,8 +144,7 @@ export class UsersComponent implements OnInit {
     this.api.getNotCourseUsers(courseId)
       .subscribe(users => {
         this.allNonUsers = users;
-        this.filteredNonUsers = _.cloneDeep(users); // deep copy
-
+        this.reduceListNonUsers();
         this.loading = false;
       },
         error => ErrorService.set(error))
@@ -161,66 +155,33 @@ export class UsersComponent implements OnInit {
   /*** ---------- Search, Filter & Order ----------- ***/
   /*** --------------------------------------------- ***/
 
-  onSearch(query: string): void {
-    this.searchQuery = query;
-    this.reduceList();
-  }
-
-  onFilterChanged(filter: {filter: string, state: boolean}): void {
-    if (filter.state) {
-      this.filtersActive.push(filter.filter);
-
-    } else {
-      const index = this.filtersActive.findIndex(el => el === filter.filter);
-      this.filtersActive.splice(index, 1);
-    }
-
-    this.reduceList();
-  }
-
-  onOrderByChanged(order: {orderBy: string, sort: number}): void {
-    this.orderByActive = order;
+  reduceList(query?: string, filters?: string[]): void {
+    this.reduce.searchAndFilter(this.allUsers, query, filters);
     this.orderList();
   }
 
-  reduceList(): void {
-    this.filteredUsers = [];
-
-    this.allUsers.forEach(user => {
-      if (this.isQueryTrueSearch(user, this.searchQuery) && this.isQueryTrueFilter(user))
-        this.filteredUsers.push(user);
-    });
-
-    this.orderList();
+  reduceListNonUsers(query?: string): void {
+    this.reduceNonUsers.search(this.allNonUsers, query);
   }
 
   orderList(): void {
-    switch (this.orderByActive.orderBy) {
+    switch (this.order.active.orderBy) {
       case "Name":
-        this.filteredUsers.sort((a, b) => Ordering.byString(a.name, b.name, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byString(a.name, b.name, this.order.active.sort))
         break;
 
       case "Nickname":
-        this.filteredUsers.sort((a, b) => Ordering.byString(a.nickname, b.nickname, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byString(a.nickname, b.nickname, this.order.active.sort))
         break;
 
       case "Student Number":
-        this.filteredUsers.sort((a, b) => Ordering.byNumber(a.studentNumber, b.studentNumber, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byNumber(a.studentNumber, b.studentNumber, this.order.active.sort))
         break;
 
       case "Last Login":
-        this.filteredUsers.sort((a, b) => Ordering.byDate(a.lastLogin, b.lastLogin, this.orderByActive.sort))
+        this.reduce.items.sort((a, b) => Order.byDate(a.lastLogin, b.lastLogin, this.order.active.sort))
         break;
     }
-  }
-
-  onSearchUser(): void {
-    this.filteredNonUsers = [];
-
-    this.allNonUsers.forEach(user => {
-      if (this.isQueryTrueSearch(user, this.selectUserQuery) && !this.selectedUsers.find(el => el.id === user.id))
-        this.filteredNonUsers.push(user);
-    });
   }
 
 
@@ -373,41 +334,6 @@ export class UsersComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  parseForSearching(query: string): string[] {
-    let res: string[];
-    let temp: string;
-    query = query.swapPTChars();
-
-    res = query.toLowerCase().split(' ');
-
-    temp = query.replace(' ', '').toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-
-    temp = query.toLowerCase();
-    if (!res.includes(temp)) res.push(temp);
-    return res;
-  }
-
-  isQueryTrueSearch(user: User, query: string): boolean {
-    return !query ||
-      (user.name && !!this.parseForSearching(user.name).find(a => a.includes(query.toLowerCase()))) ||
-      (user.nickname && !!this.parseForSearching(user.nickname).find(a => a.includes(query.toLowerCase()))) ||
-      (user.studentNumber && !!this.parseForSearching(user.studentNumber.toString()).find(a => a.includes(query.toLowerCase()))) ||
-      (user.email && !!this.parseForSearching(user.email).find(a => a.includes(query.toLowerCase()))) ||
-      (user.username && !!this.parseForSearching(user.username).find(a => a.includes(query.toLowerCase())));
-  }
-
-  isQueryTrueFilter(user: User): boolean {
-    if (this.filters.length === 0)
-      return true;
-
-    for (const filter of this.filtersActive) {
-      if (user.roles.find(role => role.name === filter))
-        return true;
-    }
-    return false;
-  }
-
   isReadyToSubmit() {
     let isValid = function (text) {
       return (text != "" && text != undefined)
@@ -456,15 +382,17 @@ export class UsersComponent implements OnInit {
 
     if (!this.selectedUsers.find(el => el.id === user.id)) {
       this.selectedUsers.push(user);
-      const index = this.filteredNonUsers.findIndex(el => el.id === user.id);
-      this.onSearchUser();
+      const index = this.allNonUsers.findIndex(el => el.id === user.id);
+      this.allNonUsers.splice(index, 1);
+      this.reduceListNonUsers();
     }
   }
 
   removeUser(userID: number): void {
     const index = this.selectedUsers.findIndex(el => el.id === userID);
+    this.allNonUsers.push(this.selectedUsers[index]);
     this.selectedUsers.splice(index, 1);
-    this.onSearchUser();
+    this.reduceListNonUsers();
   }
 
   addRole(role: string): void {

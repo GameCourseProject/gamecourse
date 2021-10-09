@@ -1,10 +1,25 @@
 import {Moment} from "moment";
 
+export enum Sort {
+  ASCENDING = 1,
+  DESCENDING = -1
+}
+
 /**
- * This class has utility functions to order items of various types.
- * @summary sort --> 1: ascending, -1: descending
+ * This class is responsible for ordering a list of items.
+ * It also has utility functions to order items of various types.
  */
-export class Ordering {
+export class Order {
+
+  private _active: {orderBy: string, sort: number};    // Order selected
+
+  get active(): { orderBy: string; sort: number } {
+    return this._active;
+  }
+
+  set active(value: { orderBy: string; sort: number }) {
+    this._active = value;
+  }
 
   public static byString(a: string, b: string, sort: number = 1): number {
     if (a === null) return sort;

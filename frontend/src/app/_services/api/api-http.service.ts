@@ -5,7 +5,7 @@ import {catchError, map} from "rxjs/operators";
 
 import {ApiEndpointsService} from "./api-endpoints.service";
 
-import {QueryStringParameters} from "../../_utils/query-string-parameters";
+import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 
 import {AuthType} from "../../_domain/AuthType";
 import {Course, CourseInfo} from "../../_domain/Course";

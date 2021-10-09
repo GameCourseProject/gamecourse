@@ -10,8 +10,8 @@
 
               <!-- Search -->
               <div class="search">
-                <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
-                <button class="magnifying-glass" id="search-btn" (click)="onSearch()"></button>
+                <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+                <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
               </div>
 
               <!-- Pages -->
@@ -21,7 +21,7 @@
                 </div>
 
                 <div class="content" id="pages">
-                  <div *ngFor="let page of filteredPages" class="card">
+                  <div *ngFor="let page of reduceForPages.items" class="card">
                     <div class="color_box">
                       <div class="box"></div>
                       <div class="frame frame-page"></div>
@@ -50,7 +50,7 @@
                   </div>
                 </div>
 
-                <div *ngIf="searchQuery && filteredPages.length === 0" class="error_box">
+                <div *ngIf="searchQuery && reduceForPages.items.length === 0" class="error_box">
                   <div id="empty_pages" class="error_msg">No matches found</div>
                 </div>
               </div>
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="content" id="view_templates">
-                  <div *ngFor="let template of filteredViewTemplates" class="card">
+                  <div *ngFor="let template of reduceForViewTemplates.items" class="card">
                     <div class="color_box">
                       <div class="box"></div>
                       <div class="frame frame-page">
@@ -87,7 +87,7 @@
                   </div>
                 </div>
 
-                <div *ngIf="searchQuery && filteredViewTemplates.length === 0" class="error_box">
+                <div *ngIf="searchQuery && reduceForViewTemplates.items.length === 0" class="error_box">
                   <div id="empty_templates" class="error_msg">No matches found</div>
                 </div>
               </div>
@@ -99,7 +99,7 @@
                 </div>
 
                 <div class="content" id="global_templates">
-                  <div *ngFor="let template of filteredGlobalTemplates" class="card">
+                  <div *ngFor="let template of reduceForGlobalTemplates.items" class="card">
                     <div class="color_box">
                       <div class="box"></div>
                       <div class="frame frame-page">
@@ -113,7 +113,7 @@
                   </div>
                 </div>
 
-                <div *ngIf="searchQuery && filteredGlobalTemplates.length === 0" class="error_box">
+                <div *ngIf="searchQuery && reduceForGlobalTemplates.items.length === 0" class="error_box">
                   <div id="empty_globals" class="error_msg">No matches found</div>
                 </div>
               </div>

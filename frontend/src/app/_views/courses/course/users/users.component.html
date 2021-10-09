@@ -6,9 +6,9 @@
     <app-sidebar
       [filters]="filters"
       [orderBy]="orderBy"
-      (onSearch)="onSearch($event)"
-      (onFilterChange)="onFilterChanged($event)"
-      (onOrderChange)="onOrderByChanged($event)">
+      (onSearch)="reduceList($event)"
+      (onFilterChange)="reduce.updateFilter($event.filter, $event.state); reduceList()"
+      (onOrderChange)="order.active = $event; orderList()">
     </app-sidebar>
 
     <!-- Main Content -->
@@ -24,7 +24,7 @@
       <div id="allUsers">
         <div class="data-table">
 
-          <table *ngIf="this.filteredUsers.length > 0" id="users-table">
+          <table *ngIf="reduce.items.length > 0" id="users-table">
             <!-- Header -->
             <thead>
             <tr>
@@ -41,7 +41,7 @@
 
             <!-- Body -->
             <tbody>
-            <tr *ngFor="let user of filteredUsers">
+            <tr *ngFor="let user of reduce.items">
               <td class="name-column">
                 <span>{{user.name}}</span>
                 <div *ngFor="let role of user.roles" class="role_tag" [ngStyle]="{backgroundColor: course.color, color: 'white'}">
@@ -68,7 +68,7 @@
             </tbody>
           </table>
 
-          <div *ngIf="this.filteredUsers.length === 0" class='error_box'>
+          <div *ngIf="reduce.items.length === 0" class='error_box'>
             <div id='empty_table' class='error_msg'>No matches found</div>
           </div>
 
@@ -138,12 +138,12 @@
         (click)="removeUser(user.id)">
           {{user.name}}
         </div>
-        <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="onSearchUser()">
+        <input id="select_system_user" type="text" placeholder="Search.." [(ngModel)]="selectUserQuery" (ngModelChange)="reduceListNonUsers($event)">
       </div>
 
       <!-- Users -->
       <div class="select_box" id="system_users">
-        <div *ngFor="let user of filteredNonUsers" class="line">
+        <div *ngFor="let user of reduceNonUsers.items" class="line">
           <div>{{user.name + ' - ' + user.studentNumber}}</div>
           <div class="add_icon_no_outline icon" (click)="addUser(user)"></div>
         </div>
@@ -159,7 +159,7 @@
       </div>
     </div>
 
-    <button class="save_btn" (click)="submitUsers()" [disabled]="this.selectedUsers?.length === 0 || !this.selectedUserRole">Save</button>
+    <button class="save_btn" (click)="submitUsers()" [disabled]="selectedUsers?.length === 0 || !selectedUserRole">Save</button>
   </div>
 </ng-template>
 
@@ -169,7 +169,7 @@
     [isModalOpen]="isUserModalOpen"
     [id]="mode === 'add' ? 'add-user' : 'edit-user'"
     [templateRef]="userModal"
-    (closeBtnClicked)="isUserModalOpen = false; clearObject(this.newUser); photo.set(originalPhoto); this.selectedUserRoles = null"
+    (closeBtnClicked)="isUserModalOpen = false; clearObject(newUser); photo.set(originalPhoto); selectedUserRoles = null"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
   </app-modal>

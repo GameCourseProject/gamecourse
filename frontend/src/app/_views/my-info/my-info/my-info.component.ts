@@ -3,7 +3,7 @@ import {User} from "../../../_domain/User";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {DomSanitizer} from "@angular/platform-browser";
 import {Subject} from "rxjs";
-import {ImageManager} from "../../../_utils/image-manager";
+import {ImageManager} from "../../../_utils/images/image-manager";
 import {ErrorService} from "../../../_services/error.service";
 import {AuthType} from "../../../_domain/AuthType";
 import {ImageUpdateService} from "../../../_services/image-update.service";

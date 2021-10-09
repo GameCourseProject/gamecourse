@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {UrlBuilder} from "../../_utils/url-builder";
-import {QueryStringParameters} from "../../_utils/query-string-parameters";
+import {UrlBuilder} from "../../_utils/api/url-builder";
+import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 
 @Injectable({
   providedIn: 'root'
