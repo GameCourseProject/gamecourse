@@ -1,13 +1,15 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
-import {User} from "../../_domain/User";
 import {DomSanitizer} from "@angular/platform-browser";
-import {ImageManager} from "../../_utils/images/image-manager";
+
+import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ErrorService} from "../../_services/error.service";
-import {Course, CourseInfo} from "../../_domain/Course";
 import {ImageUpdateService} from "../../_services/image-update.service";
 import {PagesUpdateService} from "../../_services/pages-update.service";
+
+import {User} from "../../_domain/User";
+import {Course, CourseInfo} from "../../_domain/Course";
+import {ImageManager} from "../../_utils/images/image-manager";
 
 @Component({
   selector: 'app-navbar',
@@ -146,7 +148,7 @@ export class NavbarComponent implements OnInit {
       this.api.getCourseInfo(this.course.id)
         .subscribe(info => {
           this.courseInfo = info;
-          this.courseNavigation = buildCourseNavigation(this.course.id, this.course.nameUrl, this.courseInfo);
+          this.courseNavigation = buildCourseNavigation(this.course.id, this.courseInfo);
           this.navigation = this.courseNavigation;
         },
           error => ErrorService.set(error));
@@ -154,8 +156,8 @@ export class NavbarComponent implements OnInit {
       this.navigation = this.courseNavigation;
     }
 
-    function buildCourseNavigation(courseID: number, courseName: string, courseInfo: CourseInfo): Navigation[] {
-      const path = '/courses/' + courseID + '/' + courseName + '/';
+    function buildCourseNavigation(courseID: number, courseInfo: CourseInfo): Navigation[] {
+      const path = '/courses/' + courseID + '/';
 
       return courseInfo.navigation.map(nav => {
         if (nav.text === 'Users') return { link: path + 'users', name: nav.text }
@@ -222,7 +224,7 @@ export class NavbarComponent implements OnInit {
 
   async getCourse(): Promise<Course> {
     const urlParts = this.router.url.substr(1).split('/');
-    if (urlParts.includes('courses') && urlParts.length >= 3) {
+    if (urlParts.includes('courses') && urlParts.length >= 2) {
       const courseID = parseInt(urlParts[1]);
       return await this.api.getCourse(courseID).toPromise();
     } else return null;

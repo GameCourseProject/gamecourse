@@ -23,7 +23,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
       this.course = await this.getCourse(params.id);
-      const path = '/courses/' + this.course.id + '/' + this.course.nameUrl + '/settings/';
+      const path = '/courses/' + this.course.id + '/settings/';
 
       this.navigation = [
         {

@@ -13,7 +13,6 @@ export class Course {
   private _isVisible: boolean;
   private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
-  private _nameUrl: string;
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
@@ -31,7 +30,6 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
-    this._nameUrl = name.swapNonENChars().replace(/\W+/g, '');
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 
@@ -121,14 +119,6 @@ export class Course {
 
   set theme(value: string) {
     this._theme = value;
-  }
-
-  get nameUrl(): string {
-    return this._nameUrl;
-  }
-
-  set nameUrl(value: string) {
-    this._nameUrl = value;
   }
 
   get nrStudents(): number {

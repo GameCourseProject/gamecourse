@@ -8,7 +8,7 @@ const routes: Routes = [
     component: CoursesComponent,
   },
   {
-    path: ':id/:name',
+    path: ':id',
     loadChildren: () => import('./course/course.module').then(mod => mod.CourseModule),
   },
 ];
