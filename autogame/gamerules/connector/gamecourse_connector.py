@@ -850,7 +850,7 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 
 		found = False
 		for row in table:
-			if row[0] == description:
+			if row[0].decode() == description:
 				found = True
 				line = row
 				break
