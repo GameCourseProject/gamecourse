@@ -1,4 +1,11 @@
-import {Search} from "./reduce";
+import {Reduce, Search} from "./reduce";
+
+class SearchSpec extends Search {
+
+  static search(target: string, query: string): boolean {
+    return Search.search(target, query);
+  }
+}
 
 describe('Reduce', () => {
 
@@ -86,7 +93,7 @@ describe('Reduce', () => {
 
     parameters.forEach(parameter => {
       it(parameter.description, () => {
-        expect(Search.search(parameter.target, parameter.query)).toBe(parameter.output);
+        expect(SearchSpec.search(parameter.target, parameter.query)).toBe(parameter.output);
       });
     });
   });

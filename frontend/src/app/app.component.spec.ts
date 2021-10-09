@@ -26,10 +26,4 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('gamecourse-v2');
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('gamecourse-v2 app is running!');
-  });
 });

@@ -218,7 +218,7 @@ export class Search {
     return res;
   }
 
-  public static search(target: string, query: string): boolean {
+  protected static search(target: string, query: string): boolean {
     return !!this.parse(target).find(a => a.includes(query.toFlat().replace(this.IGNORED, '')));
   }
 
