@@ -4,8 +4,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ErrorService} from "../../_services/error.service";
-import {ImageUpdateService} from "../../_services/image-update.service";
-import {PagesUpdateService} from "../../_services/pages-update.service";
+import {UpdateService, UpdateType} from "../../_services/update.service";
 
 import {User} from "../../_domain/User";
 import {Course, CourseInfo} from "../../_domain/Course";
@@ -36,19 +35,22 @@ export class NavbarComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private photoUpdate: ImageUpdateService,
-    private pagesUpdate: PagesUpdateService
+    private updateManager: UpdateService,
   ) {
     this.photo = new ImageManager(sanitizer);
   }
 
   ngOnInit(): void {
     this.getUserInfo();
-    this.photoUpdate.update.subscribe(() => this.getUserInfo())
-    this.pagesUpdate.update.subscribe(() => {
-      this.courseInfo = null;
-      this.initNavigations();
-    })
+    this.updateManager.update.subscribe(type => {
+      if (type === UpdateType.AVATAR) {
+        this.getUserInfo();
+
+      } else if (type === UpdateType.ACTIVE_PAGES) {
+        this.courseInfo = null;
+        this.initNavigations();
+      }
+    });
   }
 
 

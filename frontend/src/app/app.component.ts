@@ -38,14 +38,15 @@ export class AppComponent {
   }
 
   hasError(): boolean {
-    return !!ErrorService.get();
+    return !!ErrorService.error;
   }
 
   getError(): string {
-    return ErrorService.get();
+    return ErrorService.error;
   }
 
-  clearError(): void {
+  closeError(): void {
+    if (ErrorService.callback) ErrorService.callback();
     ErrorService.clear();
   }
 

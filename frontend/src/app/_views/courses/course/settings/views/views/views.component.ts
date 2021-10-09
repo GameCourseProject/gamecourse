@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../../_services/error.service";
-import {PagesUpdateService} from "../../../../../../_services/pages-update.service";
+import {UpdateService, UpdateType} from "../../../../../../_services/update.service";
 
 import {Page} from "../../../../../../_domain/Page";
 import {Template} from "../../../../../../_domain/Template";
@@ -55,12 +55,12 @@ export class ViewsComponent implements OnInit {
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private router: Router,
-    private pagesUpdate: PagesUpdateService
+    private updateManager: UpdateService
   ) { }
 
   ngOnInit(): void {
     this.loading = true;
-    this.route.params.subscribe(params => {
+    this.route.parent.params.subscribe(params => {
       this.courseID = params.id;
       this.getViewsInfo();
     });
@@ -84,7 +84,16 @@ export class ViewsComponent implements OnInit {
 
         this.reduceList();
 
-      }, error => ErrorService.set(error));
+      }, error => {
+        if (error.status === 404) {
+          ErrorService.set(
+            error.status === 404 ? error.error.error + ': module \'views\' is disabled' : error,
+            error.status === 404 ? () => {
+              this.router.navigate(['/']);
+            } : null
+          );
+        }
+      });
   }
 
 
@@ -117,7 +126,7 @@ export class ViewsComponent implements OnInit {
           }) )
           .subscribe(res => {
             this.getViewsInfo();
-            this.pagesUpdate.triggerUpdate();
+            this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
           }, error => ErrorService.set(error))
 
       } else if(this.newView.type === 'template') {
@@ -149,7 +158,7 @@ export class ViewsComponent implements OnInit {
           }) )
           .subscribe(res => {
               this.getViewsInfo();
-              this.pagesUpdate.triggerUpdate();
+              this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
             }, error => ErrorService.set(error))
 
       } else if (this.newView.type === 'template') {
@@ -204,7 +213,7 @@ export class ViewsComponent implements OnInit {
         .subscribe(
           res => {
             this.getViewsInfo();
-            this.pagesUpdate.triggerUpdate();
+            this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
           },
           error => ErrorService.set(error)
         )
@@ -242,10 +251,6 @@ export class ViewsComponent implements OnInit {
   exportTemplate(template: Template): void {
     // TODO: update from GameCourse v1
     ErrorService.set('This action still needs to be updated to the current version. Action: exportTemplate()')
-  }
-
-  editView(template: Template): void {
-    this.router.navigate(['templates/' + template.id + '/editor'], {relativeTo: this.route});
   }
 
 

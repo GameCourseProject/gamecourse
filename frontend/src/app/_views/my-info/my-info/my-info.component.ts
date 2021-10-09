@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import {User} from "../../../_domain/User";
-import {ApiHttpService} from "../../../_services/api/api-http.service";
+import {Component, OnInit} from '@angular/core';
 import {DomSanitizer} from "@angular/platform-browser";
-import {Subject} from "rxjs";
-import {ImageManager} from "../../../_utils/images/image-manager";
+
+import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
+
+import {User} from "../../../_domain/User";
+
+import {ImageManager} from "../../../_utils/images/image-manager";
 import {AuthType} from "../../../_domain/AuthType";
-import {ImageUpdateService} from "../../../_services/image-update.service";
+
 
 @Component({
   selector: 'app-my-info',
@@ -34,7 +37,7 @@ export class MyInfoComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private sanitizer: DomSanitizer,
-    private photoUpdate: ImageUpdateService
+    private updateManager: UpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -90,7 +93,7 @@ export class MyInfoComponent implements OnInit {
       .subscribe(res => {
           this.getUserInfo();
           if (this.editUser.image)
-            this.photoUpdate.triggerUpdate(); // Trigger change on navbar
+            this.updateManager.triggerUpdate(UpdateType.AVATAR) // Trigger change on navbar
         },
         error => ErrorService.set(error),
         () => {

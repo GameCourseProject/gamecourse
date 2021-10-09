@@ -1,0 +1,14 @@
+.page {
+  width: 100%;
+  height: calc(100vh - 67px);
+
+  .content {
+    height: 100%;
+    overflow: auto;
+    background-color: white;
+    margin-left: 200px;
+    padding-left: 70px;
+    padding-right: 70px;
+    font-size: 14px;
+  }
+}

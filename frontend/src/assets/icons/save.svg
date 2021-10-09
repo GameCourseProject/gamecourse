@@ -139,8 +139,8 @@
     <inkscape:grid
        id="GridFromPre046Settings"
        type="xygrid"
-       originx="0px"
-       originy="0px"
+       originx="0"
+       originy="0"
        spacingx="1px"
        spacingy="1px"
        color="#9f9f9f"

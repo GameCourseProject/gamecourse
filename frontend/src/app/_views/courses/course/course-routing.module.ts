@@ -2,12 +2,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {MainComponent} from "./main/main.component";
 import {UsersComponent} from "./users/users.component";
+import {SettingsComponent} from "./settings/settings/settings.component";
 import {GlobalComponent} from "./settings/global/global.component";
 import {RolesComponent} from "./settings/roles/roles.component";
 import {ModulesComponent} from "./settings/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
-import {RedirectIfViewsDisabledGuard} from "../../../_guards/redirect-if-views-disabled.guard";
 import {ViewEditorComponent} from "./settings/views/view-editor/view-editor.component";
 
 const routes: Routes = [
@@ -20,34 +20,36 @@ const routes: Routes = [
     component: UsersComponent
   },
   {
-    path: 'settings/global',
-    component: GlobalComponent
-  },
-  {
-    path: 'settings/roles',
-    component: RolesComponent
-  },
-  {
-    path: 'settings/modules',
-    component: ModulesComponent
-  },
-  {
-    path: 'settings/rules',
-    component: RulesComponent
-  },
-  {
-    path: 'settings/views',
-    component: ViewsComponent,
-    canLoad: [RedirectIfViewsDisabledGuard],
-    canActivate: [RedirectIfViewsDisabledGuard]
-  },
-  {
-    path: 'settings/views/templates/:templateId/editor',
-    component: ViewEditorComponent,
-    canLoad: [RedirectIfViewsDisabledGuard],
-    canActivate: [RedirectIfViewsDisabledGuard]
-  },
-  { path: 'settings', redirectTo: 'settings/global', pathMatch: 'full' }
+    path: 'settings',
+    component: SettingsComponent,
+    children: [
+      {
+        path: 'global',
+        component: GlobalComponent
+      },
+      {
+        path: 'roles',
+        component: RolesComponent
+      },
+      {
+        path: 'modules',
+        component: ModulesComponent
+      },
+      {
+        path: 'rules',
+        component: RulesComponent
+      },
+      {
+        path: 'views',
+        component: ViewsComponent,
+      },
+      {
+        path: 'views/templates/:id/editor',
+        component: ViewEditorComponent,
+      },
+      { path: '', redirectTo: 'global', pathMatch: 'full' }
+    ]
+  }
 ];
 
 @NgModule({

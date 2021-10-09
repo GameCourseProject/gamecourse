@@ -1,56 +1,40 @@
-<div id="wrapper">
-  <!-- conteudo da página -->
-  <div id="content-wrapper">
-    <div *ngIf="!loading" id="settings" class="page">
-      <div class="tabs">
-        <app-course-settings-sidebar></app-course-settings-sidebar>
+<ng-container *ngIf="!loading">
+  <div class="content" id="roles_page">
 
-        <div class="tab-content-wrapper">
-          <div class="tab-content">
-
-            <div class="content" id="roles_page">
-
-              <!-- Roles -->
-              <div class="dd" id="roles-config">
-                <div class="header">
-                  <span class="role_sections">Roles</span>
-                  <span class="page_sections">Landing Page</span>
-                </div>
-
-                <ng-container
-                  [ngTemplateOutlet]="roleList"
-                  [ngTemplateOutletContext]="{roles: rolesHierarchy}">
-                </ng-container>
-              </div>
-
-              <!-- Add btn -->
-              <div id="add_role_button_box">
-                <button title="New" (click)="isNewRoleModalOpen = true; newRole.parent = null" class="add_button icon"></button>
-              </div>
-
-              <!-- Action buttons -->
-              <div class="action-buttons">
-                <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
-                <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
-                <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
-              </div>
-            </div>
-
-            <div class="success_box">
-              <div id="action_completed" class="success_msg"></div>
-            </div>
-
-          </div>
-        </div>
-
+    <!-- Roles -->
+    <div class="dd" id="roles-config">
+      <div class="header">
+        <span class="role_sections">Roles</span>
+        <span class="page_sections">Landing Page</span>
       </div>
+
+      <ng-container
+        [ngTemplateOutlet]="roleList"
+        [ngTemplateOutletContext]="{roles: rolesHierarchy}">
+      </ng-container>
+    </div>
+
+    <!-- Add btn -->
+    <div id="add_role_button_box">
+      <button title="New" (click)="isNewRoleModalOpen = true; newRole.parent = null" class="add_button icon"></button>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <div id="undo_icon" class="icon undo_icon disabled" title="Undo" (click)="undo()"></div>
+      <div id="redo_icon" class="icon redo_icon disabled" title="Redo" (click)="redo()"></div>
+      <button id="role-change-button" class="button" [disabled]="!hasChanges" (click)="saveRoles()">Save Changes</button>
     </div>
   </div>
 
-  <!-- Loader -->
-  <div *ngIf="loading" id="page-loading">
-    <img src="../../../../../../assets/loader/loader.gif" alt="loader">
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
   </div>
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 

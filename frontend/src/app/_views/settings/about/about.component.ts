@@ -7,8 +7,6 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AboutComponent implements OnInit {
 
-  loading: boolean;
-
   constructor() { }
 
   ngOnInit(): void {

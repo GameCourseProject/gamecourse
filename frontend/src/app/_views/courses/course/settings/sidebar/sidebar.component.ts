@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import {Course} from "../../../../../_domain/Course";
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+
+import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../_services/error.service";
+import {UpdateService, UpdateType} from "../../../../../_services/update.service";
+
+import {Course} from "../../../../../_domain/Course";
 
 @Component({
   selector: 'app-course-settings-sidebar',
@@ -17,39 +20,50 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private updateManager: UpdateService
   ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
-      this.course = await this.getCourse(params.id);
-      const path = '/courses/' + this.course.id + '/settings/';
+      await this.initNavigation(params.id);
 
-      this.navigation = [
-        {
-          name: 'This Course',
-          link: path + 'global'
-        },
-        {
-          name: 'Roles',
-          link: path + 'roles'
-        },
-        {
-          name: 'Modules',
-          link: path + 'modules'
-        },
-        {
-          name: 'Rules',
-          link: path + 'rules'
-        }
-      ];
+      this.updateManager.update.subscribe(async type => {
+        console.log('update')
+        if (type === UpdateType.VIEWS) await this.initNavigation(params.id);
+      });
+    }).unsubscribe();
+  }
 
-      this.api.hasViewsEnabled(this.course.id)
-        .subscribe(has => {
-            if (has) this.navigation.push({name: 'Views', link: path + 'views'});
-          },
-          error => ErrorService.set(error));
-    });
+  async initNavigation(courseID: number) {
+    console.log('init sidebar')
+    this.course = await this.getCourse(courseID);
+    const path = '/courses/' + this.course.id + '/settings/';
+
+    this.navigation = [
+      {
+        name: 'This Course',
+        link: path + 'global'
+      },
+      {
+        name: 'Roles',
+        link: path + 'roles'
+      },
+      {
+        name: 'Modules',
+        link: path + 'modules'
+      },
+      {
+        name: 'Rules',
+        link: path + 'rules'
+      }
+    ];
+
+    this.api.hasViewsEnabled(this.course.id)
+      .subscribe(has => {
+          if (has) this.navigation.push({name: 'Views', link: path + 'views'});
+        },
+        error => ErrorService.set(error));
   }
 
   async getCourse(courseID: number): Promise<Course> {

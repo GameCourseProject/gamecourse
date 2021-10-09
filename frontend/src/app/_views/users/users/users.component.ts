@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
-import {ImageUpdateService} from "../../../_services/image-update.service";
+import {UpdateService, UpdateType} from "../../../_services/update.service";
 
 import {User} from "../../../_domain/User";
 import {UserData} from "../../my-info/my-info/my-info.component";
@@ -66,7 +66,7 @@ export class UsersComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private sanitizer: DomSanitizer,
-    private photoUpdate: ImageUpdateService
+    private updateManager: UpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -204,7 +204,7 @@ export class UsersComponent implements OnInit {
         res => {
           this.getUsers();
           if (this.user.id === this.newUser.id && this.newUser.image)
-            this.photoUpdate.triggerUpdate(); // Trigger change on navbar
+            this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
         },
         error => ErrorService.set(error),
         () => {

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-docs-sidebar',
@@ -7,10 +7,8 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 })
 export class SidebarComponent implements OnInit {
 
-  @Input() tabs: {id: string, text: string}[];
-  @Input() isFunctions: boolean = false;
-
-  @Output() onTabClicked: EventEmitter<{id: string, index: number}> = new EventEmitter<{id: string, index: number}>();
+  @Input() selected: string;
+  @Input() tabs: {name: string, link: string}[];
 
   constructor() { }
 

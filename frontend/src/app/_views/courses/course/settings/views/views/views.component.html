@@ -1,134 +1,120 @@
-<div id="wrapper">
-  <!-- conteudo da página -->
-  <div id="content-wrapper">
-    <div *ngIf="!loading" id="settings" class="page">
-      <div class="tabs">
-        <app-course-settings-sidebar></app-course-settings-sidebar>
+<ng-container *ngIf="!loading">
 
-          <div class="tab-content-wrapper">
-            <div class="tab-content">
+  <!-- Search -->
+  <div class="search">
+    <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
+  </div>
 
-              <!-- Search -->
-              <div class="search">
-                <input type="text" id="seach_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
-                <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
-              </div>
+  <!-- Pages -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Pages</span></div>
+    </div>
 
-              <!-- Pages -->
-              <div class="section">
-                <div class="divider">
-                  <div class="title"><span>Pages</span></div>
-                </div>
+    <div class="content" id="pages">
+      <div *ngFor="let page of reduceForPages.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page"></div>
+        </div>
 
-                <div class="content" id="pages">
-                  <div *ngFor="let page of reduceForPages.items" class="card">
-                    <div class="color_box">
-                      <div class="box"></div>
-                      <div class="frame frame-page"></div>
-                    </div>
-
-                    <div class="footer with_status">
-                      <div class="page_info">
-                        <span>{{page.name}}</span>
-                        <span>(id: {{page.id}})</span>
-                      </div>
-
-                      <div class="page_actions">
-                        <span class="config_icon icon" title="Edit" (click)="editViewInfo(page, 'page')"></span>
-                        <span class="delete_icon icon" (click)="viewToDelete = {view: page, type: 'page'}; isDeleteVerificationModalOpen = true"></span>
-                      </div>
-                    </div>
-
-                    <div class="status" [ngClass]="{'enable': page.isEnabled, 'disable': !page.isEnabled}">
-                      {{page.isEnabled ? 'Enabled' : 'Disabled'}}
-                      <div class="background"></div>
-                    </div>
-                  </div>
-
-                  <div class="action-buttons" style="width:30px">
-                    <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'page'; isViewModalOpen = true;"></div>
-                  </div>
-                </div>
-
-                <div *ngIf="searchQuery && reduceForPages.items.length === 0" class="error_box">
-                  <div id="empty_pages" class="error_msg">No matches found</div>
-                </div>
-              </div>
-
-              <!-- View Templates -->
-              <div class="section">
-                <div class="divider">
-                  <div class="title"><span>View Templates</span></div>
-                </div>
-
-                <div class="content" id="view_templates">
-                  <div *ngFor="let template of reduceForViewTemplates.items" class="card">
-                    <div class="color_box">
-                      <div class="box"></div>
-                      <div class="frame frame-page">
-                        <span class="edit_icon" title="Edit" (click)="editView(template)"></span>
-                      </div>
-                    </div>
-
-                    <div class="footer">
-                      <div class="page_name">{{template.name}}</div>
-                      <div class="template_actions">
-                        <span class="config_icon icon" title="Edit" (click)="editViewInfo(template, 'template')"></span>
-                        <span *ngIf="!template.isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
-                        <span *ngIf="template.isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
-                        <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
-                        <span class="delete_icon icon" title="Remove" (click)="viewToDelete = {view: template, type: 'template'}; isDeleteVerificationModalOpen = true"></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="action-buttons" style="width:30px">
-                    <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'template'; isViewModalOpen = true;"></div>
-                  </div>
-                </div>
-
-                <div *ngIf="searchQuery && reduceForViewTemplates.items.length === 0" class="error_box">
-                  <div id="empty_templates" class="error_msg">No matches found</div>
-                </div>
-              </div>
-
-              <!-- Global Templates -->
-              <div class="section">
-                <div class="divider">
-                  <div class="title"><span>Global Templates</span></div>
-                </div>
-
-                <div class="content" id="global_templates">
-                  <div *ngFor="let template of reduceForGlobalTemplates.items" class="card">
-                    <div class="color_box">
-                      <div class="box"></div>
-                      <div class="frame frame-page">
-                        <span *ngIf="template.courseId !== courseID" class="add_icon_no_outline" (click)="useGlobal(template)"></span>
-                      </div>
-                    </div>
-
-                    <div class="footer">
-                      <div class="page_name">{{template.name}}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div *ngIf="searchQuery && reduceForGlobalTemplates.items.length === 0" class="error_box">
-                  <div id="empty_globals" class="error_msg">No matches found</div>
-                </div>
-              </div>
-
-            </div>
+        <div class="footer with_status">
+          <div class="page_info">
+            <span>{{page.name}}</span>
+            <span>(id: {{page.id}})</span>
           </div>
 
+          <div class="page_actions">
+            <span class="config_icon icon" title="Edit" (click)="editViewInfo(page, 'page')"></span>
+            <span class="delete_icon icon" (click)="viewToDelete = {view: page, type: 'page'}; isDeleteVerificationModalOpen = true"></span>
+          </div>
+        </div>
+
+        <div class="status" [ngClass]="{'enable': page.isEnabled, 'disable': !page.isEnabled}">
+          {{page.isEnabled ? 'Enabled' : 'Disabled'}}
+          <div class="background"></div>
+        </div>
       </div>
+
+      <div class="action-buttons" style="width:30px">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'page'; isViewModalOpen = true;"></div>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && reduceForPages.items.length === 0" class="error_box">
+      <div id="empty_pages" class="error_msg">No matches found</div>
     </div>
   </div>
 
-  <!-- Loader -->
-  <div *ngIf="loading" id="page-loading">
-    <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
+  <!-- View Templates -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>View Templates</span></div>
+    </div>
+
+    <div class="content" id="view_templates">
+      <div *ngFor="let template of reduceForViewTemplates.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page">
+            <span class="edit_icon" title="Edit" [routerLink]="'templates/' + template.id + '/editor'"></span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="page_name">{{template.name}}</div>
+          <div class="template_actions">
+            <span class="config_icon icon" title="Edit" (click)="editViewInfo(template, 'template')"></span>
+            <span *ngIf="!template.isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
+            <span *ngIf="template.isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
+            <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
+            <span class="delete_icon icon" title="Remove" (click)="viewToDelete = {view: template, type: 'template'}; isDeleteVerificationModalOpen = true"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons" style="width:30px">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'template'; isViewModalOpen = true;"></div>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && reduceForViewTemplates.items.length === 0" class="error_box">
+      <div id="empty_templates" class="error_msg">No matches found</div>
+    </div>
   </div>
+
+  <!-- Global Templates -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Global Templates</span></div>
+    </div>
+
+    <div class="content" id="global_templates">
+      <div *ngFor="let template of reduceForGlobalTemplates.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page">
+            <span *ngIf="template.courseId !== courseID" class="add_icon_no_outline" (click)="useGlobal(template)"></span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="page_name">{{template.name}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && reduceForGlobalTemplates.items.length === 0" class="error_box">
+      <div id="empty_globals" class="error_msg">No matches found</div>
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 

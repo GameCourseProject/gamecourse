@@ -36,7 +36,7 @@ export class RolesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.route.params.subscribe(params => {
+    this.route.parent.params.subscribe(params => {
       this.courseID = params.id;
       this.getRoles(this.courseID);
     });

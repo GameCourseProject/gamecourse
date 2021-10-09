@@ -1,43 +1,27 @@
-<div id="wrapper">
-  <!-- conteudo da página -->
-  <div id="content-wrapper">
-    <div *ngIf="!loading" id="settings" class="page">
-      <div class="tabs">
-        <app-settings-sidebar></app-settings-sidebar>
-
-        <div class="tab-content-wrapper">
-          <div class="tab-content" ui-view="tabContent">
-
-            <!-- Themes FIXME: legacy, can remove (also remove themes folder from backend) -->
-            <div class="section">
-              <div class="divider">
-                <div class="title"><span>Themes</span></div>
-              </div>
-              <div class="content" id="themes">
-                <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">
-                  <div>{{theme.name}}</div>
-                  <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'">
-                </div>
-              </div>
-            </div>
-
-            <!-- Authentication  FIXME: legacy -->
-            <div class="section">
-              <div class="divider">
-                <div class="title"><span>Authentication</span></div>
-              </div>
-              <div class="content"></div>
-            </div>
-
-          </div>
-        </div>
-
+<ng-container *ngIf="!loading">
+  <!-- Themes FIXME: legacy, can remove (also remove themes folder from backend) -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Themes</span></div>
+    </div>
+    <div class="content" id="themes">
+      <div *ngFor="let theme of themes" class="theme pointer" [ngClass]="{'current': theme.name === default}">
+        <div>{{theme.name}}</div>
+        <img *ngIf="theme.preview" class="preview" [src]="API_ENDPOINT + '/themes/' + theme.name + '/preview.png'" alt="">
       </div>
     </div>
   </div>
 
-  <!-- Loader -->
-  <div *ngIf="loading" id="page-loading">
-    <img src="../../../../assets/loader/loader.gif" alt="loader">
+  <!-- Authentication  FIXME: legacy -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Authentication</span></div>
+    </div>
+    <div class="content"></div>
   </div>
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="../../../../assets/loader/loader.gif" alt="loader">
 </div>

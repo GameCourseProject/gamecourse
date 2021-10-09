@@ -1,0 +1,34 @@
+<div class="section">
+  <h2>Module Initialization</h2>
+  <div class="subsection">
+    <p><span>To initialize something when the module initializes the function </span><code>init()</code><span> is used. It allows the module to use other features of the GameCourse core, like Navigation, or setup additional things required for the module.</span></p>
+    <p><span>As an example, lets define a new navigation button, which is only available for Administrators of the system. To do this, we start by defining our empty </span><code>init()</code><span> function inside the class.</span></p>
+    <pre class="code">
+class EmptyModule extends Module {{'{'}}
+    <span class="highlight">public function init() {{'{'}}
+}</span>
+}</pre>
+    <p><span>Then we state that we need to use something that is part of the Core of the GameCourse system by appending </span><code>use GameCourse\Core</code><span> near the other use statements. An to conclude it we add the code that checks if the user is an Administrator and in that case add the navigation, resulting in the final code:</span></p>
+    <pre class="code">
+<span class="highlight">use GameCourse\Core;</span>
+use GameCourse\Module;
+use GameCourse\ModuleLoader;
+
+class <span class="highlight">CustomNavigation</span> extends Module {{'{'}}
+      public function init() {{'{'}}<span class="highlight">        $user = Core::getLoggedUser();
+        if (($user != null && $user->isAdmin()))
+            Core::addNavigation( 'Técnico', 'http://tecnico.ulisboa.pt');</span>
+    }
+}
+
+ModuleLoader::registerModule(array(
+    'id' => '<span class="highlight">customnav</span>',
+    'name' => '<span class="highlight">Custom Navigation</span>',
+    'version' => '0.1',
+    'factory' => function() {{'{'}}
+      return new <span class="highlight">CustomNavigation</span>();
+    }
+));</pre>
+    <p><span>The example can be downloaded </span><a href="pages/examples/customnavigation.tar.gz" aria-label="Custom Navigation Module Example">here</a><span>, ready to use, just needs to be extracted to the modules folder.</span></p>
+  </div>
+</div>

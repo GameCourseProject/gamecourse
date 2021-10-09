@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../_services/error.service";
-import {ImageUpdateService} from "../../../../_services/image-update.service";
+import {UpdateService, UpdateType} from "../../../../_services/update.service";
 
 import {User} from "../../../../_domain/User";
 import {Course} from "../../../../_domain/Course";
@@ -82,7 +82,7 @@ export class UsersComponent implements OnInit {
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private photoUpdate: ImageUpdateService
+    private updateManager: UpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }
@@ -240,7 +240,7 @@ export class UsersComponent implements OnInit {
         () => {
           this.getCourseUsers(this.course.id);
           if (this.user.id === this.newUser.id && this.newUser.image)
-            this.photoUpdate.triggerUpdate(); // Trigger change on navbar
+            this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
         },
         error => ErrorService.set(error),
         () => {

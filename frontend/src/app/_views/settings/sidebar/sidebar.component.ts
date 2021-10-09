@@ -10,14 +10,14 @@ export class SidebarComponent implements OnInit {
   navigation: { name: string, link: string }[] = [
     {
       name: 'Global',
-      link: '/settings/global'
+      link: 'global'
     },
     {
       name: 'Installed Modules',
-      link: '/settings/modules'
+      link: 'modules'
     },{
       name: 'About',
-      link: '/settings/about'
+      link: 'about'
     }
   ];
 

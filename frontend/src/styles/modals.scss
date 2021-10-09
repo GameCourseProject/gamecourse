@@ -262,8 +262,8 @@ button {
   margin: 2px 0 10px 10px;
   display: block;
   transition: all 0.3s;
-  transform: translateX(0px);
-  -webkit-transform: translateX(0px);
+  transform: translateX(0);
+  -webkit-transform: translateX(0);
   color: lightgray;
   position: absolute;
   top: 10px;

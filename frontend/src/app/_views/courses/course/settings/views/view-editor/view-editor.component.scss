@@ -254,7 +254,7 @@
 
 .edit-toolbar {
   position: fixed;
-  bottom: 0px;
+  bottom: 0;
   right: 40%;
   right: 0;
   width: 100vw;
@@ -401,7 +401,7 @@
 }
 
 #viewEditor .block .add_new_part {
-  margin: 0px;
+  margin: 0;
   margin-top: 40px;
 }
 
@@ -511,7 +511,7 @@
 }
 
 #edit_part #expression-functions ul, #edit_part #preview-expressions ul {
-  padding-inline-start: 0px;
+  padding-inline-start: 0;
   margin-block-start: 0em;
   margin-block-end: 0em;
 }
@@ -535,7 +535,7 @@
 }
 
 #preview-functions ul {
-  padding-inline-start: 0px;
+  padding-inline-start: 0;
   margin-block-start: 0em;
   margin-block-end: 0em;
 }
@@ -663,8 +663,8 @@
   width: 100%;
   height: 100%;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   background-color: rgba(128, 128, 128, 0.1);
   z-index: 2;
   cursor: move;
@@ -782,7 +782,7 @@
 
 .specializations-selection>div ul {
   margin: 0;
-  padding: 0px;
+  padding: 0;
   background-color: white;
   list-style-type: none;
   border: 2px solid lightgray;
@@ -817,8 +817,8 @@ select:disabled {
 }
 
 .templates-list {
-  padding-left: 0px;
-  margin-left: 0px;
+  padding-left: 0;
+  margin-left: 0;
   list-style: none;
 }
 
@@ -1206,7 +1206,7 @@ select:disabled {
   display: none;
   flex-direction: column;
   background-color: lightgray;
-  padding: 5px 0px;
+  padding: 5px 0;
   top: 40px;
   z-index: 3;
   border-radius: 5px;

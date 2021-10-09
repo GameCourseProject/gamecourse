@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import {Subject} from "rxjs";
 
 /**
- * This service can notify components that active pages have changed.
+ * This service can notify components that an update of a certain type
+ * should be done.
  *
  * Any component interested in the update need to have this service
  * injected and then subscribe to the Observable via the getter.
@@ -13,17 +14,23 @@ import {Subject} from "rxjs";
 @Injectable({
   providedIn: 'root'
 })
-export class PagesUpdateService {
+export class UpdateService {
 
-  private _update: Subject<void> = new Subject<void>();
+  private _update: Subject<UpdateType> = new Subject<UpdateType>();
 
   constructor() { }
 
-  get update(): Subject<void> {
+  get update(): Subject<UpdateType> {
     return this._update;
   }
 
-  public triggerUpdate(): void {
-    this._update.next();
+  public triggerUpdate(type: UpdateType): void {
+    this._update.next(type);
   }
+}
+
+export enum UpdateType {
+  AVATAR,
+  ACTIVE_PAGES,
+  VIEWS
 }

@@ -40,9 +40,12 @@ export class ViewEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.route.params.subscribe(params => {
+    this.route.parent.params.subscribe(params => {
       this.courseID = params.id;
-      this.getTemplate(params.templateId);
+
+      this.route.params.subscribe(childParams => {
+        this.getTemplate(childParams.id);
+      });
     });
   }
 

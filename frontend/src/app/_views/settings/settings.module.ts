@@ -8,21 +8,22 @@ import { ModulesComponent } from './modules/modules.component';
 import { AboutComponent } from './about/about.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import {FormsModule} from "@angular/forms";
+import { SettingsComponent } from './settings/settings.component';
 
 
 @NgModule({
   declarations: [
-
-    GlobalComponent,
-       ModulesComponent,
-       AboutComponent,
-       SidebarComponent
+     GlobalComponent,
+     ModulesComponent,
+     AboutComponent,
+     SidebarComponent,
+     SettingsComponent
   ],
     imports: [
-        CommonModule,
-        SettingsRoutingModule,
-        SharedModule,
-        FormsModule
+      CommonModule,
+      SettingsRoutingModule,
+      SharedModule,
+      FormsModule
     ]
 })
 export class SettingsModule { }

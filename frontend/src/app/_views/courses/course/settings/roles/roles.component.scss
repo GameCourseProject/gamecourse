@@ -1,38 +1,8 @@
-.page {
-  width: 100%;
-  height: calc(100vh - 94px);
-}
-
-.tabs {
-  display: flex;
-  height: 100%;
-}
-
-.tab-content-wrapper {
-  padding: 80px 55px 35px 70px;
-  position: relative;
-  width: calc(100% - 305px);
-  height: calc(100% - 115px - 20px);
-  overflow: auto;
-}
-
-.tab-content {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 50px;
-
-  .content {
-    max-width: 630px;
-  }
-}
-
-
-/*roles page*/
-
 #roles-config {
   width: 100%;
-  max-width: initial;
+  max-width: 850px;
+  margin-right: auto;
+  margin-left: auto;
 
   .header {
     display: flex;

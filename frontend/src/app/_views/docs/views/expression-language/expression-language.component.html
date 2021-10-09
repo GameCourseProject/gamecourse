@@ -1,0 +1,89 @@
+<div class="section">
+  <p class=MsoNormal><span lang=EN-US>GameCourse has its own language and
+                vocabulary to allow users to personalize views and interact with the database,
+                this is used in the settings of the individual view parts. It is very similar
+                to a programming language. The language has multiple libraries, some of which
+                only became available with the activation of specific modules, the functions
+                defined in those libraries can return values, objects (a data structure
+                containing values) and collections (a data structure containing any number of
+                objects).</span></p>
+  <p class=MsoNormal><span lang=EN-US><span>An example of an expression is </span><code>Hello
+    {{'{users.getUser(%viewer).name'}}!</code><span> which would be evaluated as ’Hello John!’,
+                    for example, if the name of the user was John. In this language anything typed
+                    outside of the curly brackets is accepted as text with the exception of names
+                    starting with </span><code>%</code><span> (percentage) which return the value of a variable, to
+                    escape this case use
+                </span><code>%%</code><span>. When you want to evaluate something, it should be placed inside curly
+                    brackets, for example, </span><code>{{'{2*3}'}}</code><span>. To access the name of the user as we
+                    demonstrated in the first example, we use </span><code>{{'{users.getUser(%viewer).name}'}}</code>
+                <span>which will fetch the user with the id </span><code>%viewer</code><span> (which is evaluated as the
+                    id of the user that is logged in the application) and then returns the name of
+                    that user.</span></span></p>
+  <h2>Operations and Functions</h2>
+  <div class="subsection">
+    <p class=MsoNormal><span lang=EN-US>
+                    <span>As in many other languages the expressions provide the simple mathematics operators for
+                        addition </span><code>+</code><span>, subtraction </span><code>-</code><span>, multiplication
+                    </span><code>*</code>
+                    <span>, division </span><code>/</code><span> and mod </span><code>%</code>
+                    <span>. It also provides logic and bitwise operators, and </span><code>&amp;&amp;</code><span>
+                        (bitwise </span><code>&amp;</code><span>), or </span><code>||</code>
+                    <span>(bitwise </span><code>|</code><span>), negation </span><code>!</code><span> (bitwise
+                    </span></span>
+      <code><span lang=EN-US style='font-family:"Cambria Math",serif'>&#8764;</span></code>
+      <span lang=EN-US>)and bitwise xor </span><code><span lang=EN-US>ˆ</span></code>
+      <span lang=EN-US><span>. It is
+                        also possible to call functions defined in GameCourse from the expressions. A
+                        function call starts with the library that provides that behavior or a
+                        collection/object belonging to one of those libraries and is followed by a dot
+                    </span><code>.</code><span> and an arbitrary number of letters, A through z. Arguments of the
+                        function are enclosed in parenthesis </span><code>()</code><span> and need to be comma
+                    </span><code>,</code>
+                    <span>separated, if there are no arguments the parenthesis are not necessary.</span></span>
+    </p>
+    <p class=MsoNormal><span lang=EN-US>The libraries available by default are
+                    system are actions, awards, allCourses, participations, system and users. There
+                    are also some functions not associated with any library that can be used over
+                    objects or collections.</span></p>
+
+    <p class=MsoNormal><span lang=EN-US>There are also 3 other libraries which can
+                    be available if their respective modules are enabled, which are badges,
+                    skillTrees and xp. </span></p>
+
+    <p class=MsoNormal><span lang=EN-US>Other functions may be added by registering
+                    them in a module.</span></p>
+    <p class=MsoNormal><span lang=EN-US><span>The available functions according to the
+                        enabled modules can be found in the </span><a [routerLink]="'/docs/functions'">Functions page</a>.</span></p>
+  </div>
+  <a name="ViewsExpressionVariables"></a>
+  <h2>Variables</h2>
+  <div class="subsection">
+    <p class=MsoNormal><span lang=EN-US><span>Variables are used by the expressions to
+                        allow an easier creation of expressions without having to write very long
+                        expressions to access certain fields. A variable starts with a % (percentage
+                        symbol) and is followed by an arbitrary number of letters, A through z. It is
+                        possible to call functions over variables, for example is we have a variable
+                    </span><b>%item</b><span>
+                        containing an user object we can call functions of the users library such as
+                    </span><b>%item.username</b>.</span></p>
+
+    <p class=MsoNormal><span lang=EN-US>GameCourse has already defined some
+                    built-in meta variables:</span></p>
+    <ul>
+      <li><code>%course</code><span> - Represents the course that the
+                        user is manipulating;</span></li>
+      <li><code>%user</code><span> - Represents the user associated to
+                        the page which is being displayed;</span></li>
+      <li><code>%viewer</code><span> - Represents the user that is
+                        currently logged in watching the page;</span></li>
+    </ul>
+    <p class=MsoNormal><span lang=EN-US>And when the Loop Data field is used there
+                    is also:</span></p>
+    <ul>
+      <li><code>%index</code><span> - Represents the current index while
+                        iterating a collection;</span></li>
+      <li><code> %item</code><span> - Represents the object that is
+                        currently being iterated in that view;</span></li>
+    </ul>
+  </div>
+</div>

@@ -30,12 +30,12 @@ export class GlobalComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
     this.loading = true;
-    this.route.params.subscribe(params => {
+    this.route.parent.params.subscribe(params => {
       this.getCourseInfo(params.id);
     });
   }
@@ -55,13 +55,14 @@ export class GlobalComponent implements OnInit {
             .subscribe(courseInfo => {
               this.navigation = [];
               for (const nav of courseInfo.navigation) {
-                if (nav.text === 'Views')
-                  this.viewsModuleEnabled = true;
-
-                else if (nav.text !== 'Users' && nav.text !== 'Course Settings')
+                if (nav.text !== 'Users' && nav.text !== 'Course Settings')
                   this.navigation.push({ name: nav.text, seqId: parseInt(nav.seqId) });
               }
-              if (this.viewsModuleEnabled ) this.getStyleFile(courseID);
+
+              if (courseInfo.settings.find(el => el.text === 'Views'))
+                this.viewsModuleEnabled = true;
+
+              if (this.viewsModuleEnabled) this.getStyleFile(courseID);
               else this.loading = false;
               },
               error => ErrorService.set(error));

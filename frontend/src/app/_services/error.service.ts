@@ -7,15 +7,31 @@ import {HttpErrorResponse} from "@angular/common/http";
 })
 export class ErrorService {
 
-  private static error: string;
+  private static _error: string;
+  private static _callback: () => any;
 
   constructor() { }
 
-  public static get(): string {
-    return this.error;
+  static get error(): string {
+    return this._error;
   }
 
-  public static set(error: HttpErrorResponse | string): void {
+  private static set error(value: string) {
+    this._error = value;
+  }
+
+  static get callback() {
+    return this._callback;
+  }
+
+  private static set callback(value: () => any) {
+    this._callback = value;
+  }
+
+  public static set(error: HttpErrorResponse | string, callback?: () => any): void {
+    if (callback)
+      this.callback = callback;
+
     this.error = error instanceof HttpErrorResponse ? error.error.text || error.error.error : error;
     throwError(error);
     console.error(error);
@@ -23,5 +39,6 @@ export class ErrorService {
 
   public static clear(): void {
     this.error = null;
+    this.callback = null;
   }
 }

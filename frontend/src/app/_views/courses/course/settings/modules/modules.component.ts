@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
@@ -8,6 +8,7 @@ import {ErrorService} from "../../../../../_services/error.service";
 
 import {Module} from "../../../../../_domain/Module";
 import {Reduce} from "../../../../../_utils/display/reduce";
+import {UpdateService, UpdateType} from "../../../../../_services/update.service";
 
 @Component({
   selector: 'app-modules',
@@ -32,7 +33,8 @@ export class ModulesComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private updateManager: UpdateService
   ) { }
 
   get API_ENDPOINT(): string {
@@ -41,7 +43,7 @@ export class ModulesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.route.params.subscribe(params => {
+    this.route.parent.params.subscribe(params => {
       this.courseID = params.id;
       this.getModules(this.courseID);
     });
@@ -88,6 +90,9 @@ export class ModulesComponent implements OnInit {
         res => {
           module.enabled = !module.enabled;
           this.getModules(this.courseID);
+
+          if (module.id === 'views')
+            this.updateManager.triggerUpdate(UpdateType.VIEWS);
         },
         error => ErrorService.set(error),
         () => {
