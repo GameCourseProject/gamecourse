@@ -317,7 +317,7 @@
 <ng-template #importModal>
 
   <div class="warning">Please select a .csv or .txt file to be imported</div>
-  <div class="target">The separator must be comma</div>
+  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
   <app-input-file
     [id]="'import_user'"
     [accept]="'.csv, .txt'"
