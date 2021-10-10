@@ -29,14 +29,12 @@ export class SidebarComponent implements OnInit {
       await this.initNavigation(params.id);
 
       this.updateManager.update.subscribe(async type => {
-        console.log('update')
         if (type === UpdateType.VIEWS) await this.initNavigation(params.id);
       });
     }).unsubscribe();
   }
 
   async initNavigation(courseID: number) {
-    console.log('init sidebar')
     this.course = await this.getCourse(courseID);
     const path = '/courses/' + this.course.id + '/settings/';
 

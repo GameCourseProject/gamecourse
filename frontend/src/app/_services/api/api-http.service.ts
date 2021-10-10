@@ -654,6 +654,26 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
+  /*** ------------------- Views ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  public getView(courseID: number, viewID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'view');
+      qs.push('course', courseID);
+      qs.push('pageOrTemp', 'page');
+      qs.push('view', viewID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, this.httpOptions)
+      .pipe( map((res: any) => res['data']['view']) );
+  }
+
+
+  /*** --------------------------------------------- ***/
   /*** ---------------- Views Editor --------------- ***/
   /*** --------------------------------------------- ***/
 

@@ -12,8 +12,9 @@ import {RolesComponent} from "./settings/roles/roles.component";
 import {ModulesComponent} from "./settings/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
-import { ViewEditorComponent } from './settings/views/view-editor/view-editor.component';
+import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import {SidebarComponent} from "./settings/sidebar/sidebar.component";
+import { PageComponent } from './page/page.component';
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import {SidebarComponent} from "./settings/sidebar/sidebar.component";
     ModulesComponent,
     RulesComponent,
     ViewsComponent,
-    ViewEditorComponent
+    ViewsEditorComponent,
+    PageComponent
   ],
   imports: [
     CommonModule,

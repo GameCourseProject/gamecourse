@@ -8,7 +8,8 @@ import {RolesComponent} from "./settings/roles/roles.component";
 import {ModulesComponent} from "./settings/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
-import {ViewEditorComponent} from "./settings/views/view-editor/view-editor.component";
+import {ViewsEditorComponent} from "./settings/views/views-editor/views-editor.component";
+import {PageComponent} from "./page/page.component";
 
 const routes: Routes = [
   {
@@ -43,12 +44,16 @@ const routes: Routes = [
         path: 'views',
         component: ViewsComponent,
       },
-      {
-        path: 'views/templates/:id/editor',
-        component: ViewEditorComponent,
-      },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]
+  },
+  {
+    path: 'settings/views/templates/:id/editor',
+    component: ViewsEditorComponent,
+  },
+  {
+    path: 'pages/:id',
+    component: PageComponent
   }
 ];
 

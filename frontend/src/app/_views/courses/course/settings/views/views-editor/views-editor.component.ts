@@ -12,10 +12,10 @@ import {User} from "../../../../../../_domain/User";
 
 @Component({
   selector: 'app-view-editor',
-  templateUrl: './view-editor.component.html',
-  styleUrls: ['./view-editor.component.scss']
+  templateUrl: './views-editor.component.html',
+  styleUrls: ['./views-editor.component.scss']
 })
-export class ViewEditorComponent implements OnInit {
+export class ViewsEditorComponent implements OnInit {
 
   loading: boolean;
 
@@ -92,7 +92,7 @@ export class ViewEditorComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   goToViews(): void {
-    this.router.navigate(['../../../'], {relativeTo: this.route});
+    this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
   }
 
   canUndo(): boolean {

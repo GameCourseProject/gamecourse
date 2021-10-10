@@ -176,7 +176,11 @@ export class NavbarComponent implements OnInit {
 
           return { link: path + 'settings', name: nav.text, children }
 
-        } else return { link: path + '/' + nav.text.replace(' ', '-').toLowerCase(), name: nav.text }
+        } else {
+          // FIXME: refactor api link
+          const pageId = parseInt(nav.sref.substr(nav.sref.search('id')).replace("id:'", "").split("'")[0]);
+          return { link: path + 'pages/' + pageId, name: nav.text }
+        }
       })
     }
   }

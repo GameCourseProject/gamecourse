@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-course-settings',
@@ -8,15 +7,9 @@ import {Router} from "@angular/router";
 })
 export class SettingsComponent implements OnInit {
 
-  isViewEditor: boolean;
-
-  constructor(
-    private router: Router
-  ) { }
+  constructor() { }
 
   ngOnInit(): void {
-    const url = this.router.url;
-    this.isViewEditor = url.includes('views') && url.includes('editor');
   }
 
 }
