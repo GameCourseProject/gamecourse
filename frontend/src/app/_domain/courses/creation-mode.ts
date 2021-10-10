@@ -1,4 +1,4 @@
 export enum CreationMode {
-  BLANk = 'blank',
+  BLANK = 'blank',
   SIMILAR = 'similar'
 }

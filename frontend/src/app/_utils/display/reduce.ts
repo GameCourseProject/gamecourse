@@ -1,8 +1,8 @@
-import {Course} from "../../_domain/Course";
-import {User} from "../../_domain/User";
-import {Module} from "../../_domain/Module";
-import {Page} from "../../_domain/Page";
-import {Template} from "../../_domain/Template";
+import {Course} from "../../_domain/courses/course";
+import {User} from "../../_domain/users/user";
+import {Module} from "../../_domain/modules/module";
+import {Page} from "../../_domain/pages & templates/page";
+import {Template} from "../../_domain/pages & templates/template";
 
 /**
  * This class is responsible for reducing a list of items,

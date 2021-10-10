@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {Course} from "../../../../_domain/Course";
+import {Course} from "../../../../_domain/courses/course";
 import {ActivatedRoute} from "@angular/router";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../_services/error.service";

@@ -1,5 +1,3 @@
-import {RoleType} from "./RoleType";
-
 export class Template {
   private _id: number;
   private _name: string;

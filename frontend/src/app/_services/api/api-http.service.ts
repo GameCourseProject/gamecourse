@@ -7,22 +7,22 @@ import {ApiEndpointsService} from "./api-endpoints.service";
 
 import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 
-import {AuthType} from "../../_domain/AuthType";
-import {Course, CourseInfo} from "../../_domain/Course";
-import {User} from "../../_domain/User";
-import {CreationMode} from "../../_domain/CreationMode";
+import {AuthType} from "../../_domain/auth/auth-type";
+import {Course, CourseInfo} from "../../_domain/courses/course";
+import {User} from "../../_domain/users/user";
+import {CreationMode} from "../../_domain/courses/creation-mode";
 import {SetupData} from "../../_views/setup/setup/setup.component";
 import {UserData} from "../../_views/my-info/my-info/my-info.component";
 import {CourseData, ImportCoursesData} from "../../_views/courses/courses/courses.component";
 import {ImportUsersData} from "../../_views/users/users/users.component";
-import {Module} from "../../_domain/Module";
+import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/settings/modules/modules.component";
 import {Moment} from "moment";
 import * as moment from "moment";
-import {Role, RoleDatabase} from "../../_domain/Role";
-import {Page} from "../../_domain/Page";
-import {Template, TemplateDatabase} from "../../_domain/Template";
-import {RoleType, RoleTypeId} from "../../_domain/RoleType";
+import {Role, RoleDatabase} from "../../_domain/roles/role";
+import {Page} from "../../_domain/pages & templates/page";
+import {Template, TemplateDatabase} from "../../_domain/pages & templates/template";
+import {RoleType, RoleTypeId} from "../../_domain/roles/role-type";
 
 @Injectable({
   providedIn: 'root'
@@ -433,7 +433,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANk): Observable<Course> {
+  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANK): Observable<Course> {
     const data = {
       courseName: courseData.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''),
       creationMode: creationMode,

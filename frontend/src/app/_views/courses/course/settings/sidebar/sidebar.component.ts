@@ -5,7 +5,7 @@ import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../_services/error.service";
 import {UpdateService, UpdateType} from "../../../../../_services/update.service";
 
-import {Course} from "../../../../../_domain/Course";
+import {Course} from "../../../../../_domain/courses/course";
 
 @Component({
   selector: 'app-course-settings-sidebar',

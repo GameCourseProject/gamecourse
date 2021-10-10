@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AuthType } from 'src/app/_domain/AuthType';
+import { AuthType } from 'src/app/_domain/auth/auth-type';
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {Router} from "@angular/router";
 import {ErrorService} from "../../../_services/error.service";

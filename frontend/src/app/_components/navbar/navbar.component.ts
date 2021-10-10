@@ -6,8 +6,8 @@ import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ErrorService} from "../../_services/error.service";
 import {UpdateService, UpdateType} from "../../_services/update.service";
 
-import {User} from "../../_domain/User";
-import {Course, CourseInfo} from "../../_domain/Course";
+import {User} from "../../_domain/users/user";
+import {Course, CourseInfo} from "../../_domain/courses/course";
 import {ImageManager} from "../../_utils/images/image-manager";
 
 @Component({

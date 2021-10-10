@@ -5,10 +5,10 @@ import {finalize} from "rxjs/operators";
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../../_services/error.service";
 
-import {Template} from "../../../../../../_domain/Template";
-import {RoleTypeId} from "../../../../../../_domain/RoleType";
-import {Role} from "../../../../../../_domain/Role";
-import {User} from "../../../../../../_domain/User";
+import {Template} from "../../../../../../_domain/pages & templates/template";
+import {RoleTypeId} from "../../../../../../_domain/roles/role-type";
+import {Role} from "../../../../../../_domain/roles/role";
+import {User} from "../../../../../../_domain/users/user";
 
 @Component({
   selector: 'app-view-editor',
@@ -64,7 +64,6 @@ export class ViewsEditorComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => {
-          console.log(res)
           this.courseRoles = res.courseRoles;
           this.fields = res.fields;
           this.rolesHierarchy = res.rolesHierarchy;

@@ -4,8 +4,8 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {ErrorService} from "../../../_services/error.service";
 
-import {Course} from "../../../_domain/Course";
-import {User} from "../../../_domain/User";
+import {Course} from "../../../_domain/courses/course";
+import {User} from "../../../_domain/users/user";
 import {DownloadManager} from "../../../_utils/download/download-manager";
 import {Reduce} from "../../../_utils/display/reduce";
 import {Order, Sort} from "../../../_utils/display/order";

@@ -1,9 +1,9 @@
-import {ApiEndpointsService} from "../_services/api/api-endpoints.service";
-import {AuthType} from "./AuthType";
-import {Course, CourseDatabase} from "./Course";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+import {AuthType} from "../auth/auth-type";
+import {Course, CourseDatabase} from "../courses/course";
 import * as moment from 'moment';
 import {Moment} from "moment";
-import {Role} from "./Role";
+import {Role} from "../roles/role";
 
 export class User {
   private _id: number;

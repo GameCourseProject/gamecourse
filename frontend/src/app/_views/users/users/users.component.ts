@@ -5,9 +5,9 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
 import {UpdateService, UpdateType} from "../../../_services/update.service";
 
-import {User} from "../../../_domain/User";
+import {User} from "../../../_domain/users/user";
 import {UserData} from "../../my-info/my-info/my-info.component";
-import {AuthType} from "../../../_domain/AuthType";
+import {AuthType} from "../../../_domain/auth/auth-type";
 
 import {ImageManager} from "../../../_utils/images/image-manager";
 import {DownloadManager} from "../../../_utils/download/download-manager";

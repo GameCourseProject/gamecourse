@@ -4,7 +4,7 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {ErrorService} from "../../../_services/error.service";
 
-import {Module} from "../../../_domain/Module";
+import {Module} from "../../../_domain/modules/module";
 import {DownloadManager} from "../../../_utils/download/download-manager";
 import {Reduce} from "../../../_utils/display/reduce";
 

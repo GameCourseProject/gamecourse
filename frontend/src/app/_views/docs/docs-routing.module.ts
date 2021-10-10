@@ -50,7 +50,7 @@ const routes: Routes = [
           { path: '', redirectTo: 'creation', pathMatch: 'full' }
         ]
       },
-      { path: '', redirectTo: 'creation', pathMatch: 'full' }
+      { path: '', redirectTo: 'views', pathMatch: 'full' }
     ]
   }
 ];

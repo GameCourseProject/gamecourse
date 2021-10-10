@@ -6,10 +6,10 @@ import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../_services/error.service";
 import {UpdateService, UpdateType} from "../../../../_services/update.service";
 
-import {User} from "../../../../_domain/User";
-import {Course} from "../../../../_domain/Course";
-import {Role} from "../../../../_domain/Role";
-import {AuthType} from 'src/app/_domain/AuthType';
+import {User} from "../../../../_domain/users/user";
+import {Course} from "../../../../_domain/courses/course";
+import {Role} from "../../../../_domain/roles/role";
+import {AuthType} from 'src/app/_domain/auth/auth-type';
 import {UserData} from "../../../my-info/my-info/my-info.component";
 
 import {ImageManager} from "../../../../_utils/images/image-manager";

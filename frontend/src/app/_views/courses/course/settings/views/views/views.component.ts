@@ -6,9 +6,9 @@ import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../../_services/error.service";
 import {UpdateService, UpdateType} from "../../../../../../_services/update.service";
 
-import {Page} from "../../../../../../_domain/Page";
-import {Template} from "../../../../../../_domain/Template";
-import {RoleType} from "../../../../../../_domain/RoleType";
+import {Page} from "../../../../../../_domain/pages & templates/page";
+import {Template} from "../../../../../../_domain/pages & templates/template";
+import {RoleType} from "../../../../../../_domain/roles/role-type";
 import {Reduce} from "../../../../../../_utils/display/reduce";
 
 @Component({

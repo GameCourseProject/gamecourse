@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
-import {Role} from "../../../../../_domain/Role";
+import {Role} from "../../../../../_domain/roles/role";
 import {ErrorService} from "../../../../../_services/error.service";
-import {Page} from "../../../../../_domain/Page";
+import {Page} from "../../../../../_domain/pages & templates/page";
 
 @Component({
   selector: 'app-roles',
