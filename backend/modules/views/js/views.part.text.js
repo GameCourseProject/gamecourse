@@ -96,12 +96,13 @@ angular.module('module.views').run(function ($rootScope, $timeout, $sbviews, $co
                 element.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role.includes('>')) {
                     if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1]) || (scope.role.split('>')[0] != parseRole(part.role.split('>')[0]))) {
-                        if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
+                        if (part.parentId != null && !("header" in scope.$parent.part && part in scope.$parent.part.header) || part.parentId === null)
                             element.addClass('aspect_hide');
                     }
                 } else {
                     if (scope.role != parseRole(part.role)) {
-                        if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
+
+                        if (part.parentId != null && !("header" in scope.$parent.part && part in scope.$parent.part.header) || part.parentId === null)
                             element.addClass('aspect_hide');
                     }
                 }
