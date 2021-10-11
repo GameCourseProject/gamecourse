@@ -1,11 +1,11 @@
-import {View, ViewDatabase, ViewType, VisibilityType} from "./view";
-import {Role} from "../roles/role";
+import {View, ViewDatabase, VisibilityType} from "./view";
+import {ViewType} from "./view-type";
 
 export class ViewText extends View {
 
   private _value: string;
 
-  constructor(id: number, viewId: number, parentId: number, role: Role, value: string, loopData?: any, variables?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, value: string, loopData?: any, variables?: any,
               style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any, link?: any, info?: any) {
 
@@ -14,7 +14,6 @@ export class ViewText extends View {
 
     this.value = value;
   }
-
 
   get value(): string {
     return this._value;

@@ -1,11 +1,12 @@
-import {View, ViewDatabase, ViewType, VisibilityType} from "./view";
-import {Role} from "../roles/role";
+import {View, ViewDatabase, VisibilityType} from "./view";
+import {ViewType} from "./view-type";
+import {buildView} from "./build-view";
 
 export class ViewRow extends View {
 
   private _values: View[];
 
-  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: Role, values: View[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, values: View[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any, link?: any, info?: any) {
 
@@ -31,7 +32,7 @@ export class ViewRow extends View {
       parsedObj.parentId,
       parsedObj.type,
       parsedObj.role,
-      obj.values.map(value => View.fromDatabase(value.value)),
+      obj.values.map(value => buildView(value.value)),
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,

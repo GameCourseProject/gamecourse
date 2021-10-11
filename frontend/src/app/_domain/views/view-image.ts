@@ -1,11 +1,11 @@
-import {View, ViewDatabase, ViewType, VisibilityType} from "./view";
-import {Role} from "../roles/role";
+import {View, ViewDatabase, VisibilityType} from "./view";
+import {ViewType} from "./view-type";
 
 export class ViewImage extends View {
 
   private _src: string;
 
-  constructor(id: number, viewId: number, parentId: number, role: Role, src: string, loopData?: any, variables?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, src: string, loopData?: any, variables?: any,
               style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any, link?: any, info?: any) {
 

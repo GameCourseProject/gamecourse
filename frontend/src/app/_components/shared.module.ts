@@ -13,6 +13,11 @@ import { InputFileComponent } from './inputs/general/input-file/input-file.compo
 import { ErrorModalComponent } from './modals/error-modal/error-modal.component';
 import { FooterComponent } from './footer/footer.component';
 import { InputCodeComponent } from './inputs/code/input-code/input-code.component';
+import { BlockComponent } from './building-blocks/block/block.component';
+import { TextComponent } from './building-blocks/text/text.component';
+import { ImageComponent } from './building-blocks/image/image.component';
+import { TableComponent } from './building-blocks/table/table.component';
+import { HeaderComponent } from './building-blocks/header/header.component';
 
 
 @NgModule({
@@ -27,7 +32,12 @@ import { InputCodeComponent } from './inputs/code/input-code/input-code.componen
     InputFileComponent,
     ErrorModalComponent,
     FooterComponent,
-    InputCodeComponent
+    InputCodeComponent,
+    BlockComponent,
+    TextComponent,
+    ImageComponent,
+    TableComponent,
+    HeaderComponent
   ],
     exports: [
         NavbarComponent,
@@ -37,7 +47,9 @@ import { InputCodeComponent } from './inputs/code/input-code/input-code.componen
         InputFileComponent,
         ErrorModalComponent,
         FooterComponent,
-        InputCodeComponent
+        InputCodeComponent,
+        TextComponent,
+        ImageComponent
     ],
   imports: [
     CommonModule,

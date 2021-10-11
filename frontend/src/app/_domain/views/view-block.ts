@@ -1,16 +1,18 @@
-import {View, ViewDatabase, ViewType, VisibilityType} from "./view";
+import {View, ViewDatabase, VisibilityType, } from "./view";
+import {ViewHeader, ViewHeaderDatabase} from "./view-header";
 import {ViewImage, ViewImageDatabase} from "./view-image";
+import {ViewType} from "./view-type";
 import {ViewText, ViewTextDatabase} from "./view-text";
-import {Role} from "../roles/role";
+import {buildView} from "./build-view";
 
 export class ViewBlock extends View {
 
   private _children: View[];
-  private _header?: { image: ViewImage, title: ViewText } // FIXME: should be a view on its own
+  private _header?: ViewHeader; // FIXME: should be a children as well
 
-  constructor(id: number, viewId: number, parentId: number, role: Role, children: View[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, children: View[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any, header?: {image: ViewImage, title: ViewText}) {
+              visibilityCondition?: any, events?: any, link?: any, info?: any, header?: ViewHeader) {
 
     super(id, viewId, parentId, ViewType.BLOCK, role, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events, link, info);
@@ -30,11 +32,11 @@ export class ViewBlock extends View {
     this._children = value;
   }
 
-  get header(): { image: ViewImage; title: ViewText } {
+  get header(): ViewHeader {
     return this._header;
   }
 
-  set header(value: { image: ViewImage; title: ViewText }) {
+  set header(value: ViewHeader) {
     this._header = value;
   }
 
@@ -45,7 +47,7 @@ export class ViewBlock extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
-      obj.children.map(child => View.fromDatabase(child)),
+      obj.children.map(child => buildView(child)),
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
@@ -57,7 +59,7 @@ export class ViewBlock extends View {
       parsedObj.events,
       parsedObj.link,
       parsedObj.info,
-      { image: ViewImage.fromDatabase(obj.header.image), title: ViewText.fromDatabase(obj.header.title)}
+      ViewHeader.fromDatabase(obj.header as ViewHeaderDatabase)
     );
   }
 }

@@ -1,0 +1,20 @@
+<ng-container
+  [ngTemplateOutlet]="view.link ? LINK : BARE">
+</ng-container>
+
+
+<!------------------------------------------------->
+<!------------------- TEMPLATES ------------------->
+<!------------------------------------------------->
+<!-- TODO: missing view commom settings -->
+<!-- TODO: missing aspect & editing -->
+
+<ng-template #BARE>
+  <span class="value" [ngClass]="{'red': isEmpty}"
+    [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</span>
+</ng-template>
+
+<ng-template #LINK>
+  <a href="{{view.link}}" class="value" [ngClass]="{'red': isEmpty}"
+     [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</a>
+</ng-template>

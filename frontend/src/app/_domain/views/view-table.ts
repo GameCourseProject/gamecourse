@@ -1,6 +1,7 @@
-import {View, ViewDatabase, ViewType, VisibilityType} from "./view";
+import {View, ViewDatabase, VisibilityType} from "./view";
 import {ViewRow, ViewRowDatabase} from "./view-row";
-import {Role} from "../roles/role";
+import {ViewType} from "./view-type";
+import {buildView} from "./build-view";
 
 export class ViewTable extends View {
 
@@ -9,7 +10,7 @@ export class ViewTable extends View {
   private _nrColumns: number;
   private _nrRows: number;
 
-  constructor(id: number, viewId: number, parentId: number, role: Role, headerRows: ViewRow[], rows: ViewRow[],
+  constructor(id: number, viewId: number, parentId: number, role: string, headerRows: ViewRow[], rows: ViewRow[],
               nrColumns: number, loopData?: any, variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
               visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any) {
 
@@ -61,8 +62,8 @@ export class ViewTable extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
-      obj.headerRows.map(header => View.fromDatabase(header) as ViewRow),
-      obj.rows.map(row => View.fromDatabase(row) as ViewRow),
+      obj.headerRows.map(header => buildView(header) as ViewRow),
+      obj.rows.map(row => buildView(row) as ViewRow),
       obj.columns,
       parsedObj.loopData,
       parsedObj.variables,

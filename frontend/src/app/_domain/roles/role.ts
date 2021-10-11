@@ -44,6 +44,21 @@ export class Role {
     this._children = value;
   }
 
+  /**
+   * Parses a role from the format 'role.Default' to 'Default',
+   * or 'role.Default>role.Default' to 'Default>Default'
+   *
+   * @param role
+   */
+  static parse(role: string): string {
+    if (role.includes(">")) {
+      const viewer = role.split(">")[1].split(".")[1];
+      const user = role.split(">")[0].split(".")[1];
+      return user + ">" + viewer;
+
+    } else return role.split(".")[1];
+  }
+
   static fromDatabase(obj: RoleDatabase): Role {
     return new Role(
       obj.id ? parseInt(obj.id) : null,

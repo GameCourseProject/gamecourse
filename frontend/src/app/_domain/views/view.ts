@@ -1,18 +1,5 @@
 import {Role} from "../roles/role";
-import {ViewBlock, ViewBlockDatabase} from "./view-block";
-import {ViewText, ViewTextDatabase} from "./view-text";
-import {ViewImage, ViewImageDatabase} from "./view-image";
-import {ViewTable, ViewTableDatabase} from "./view-table";
-import {ViewRow, ViewRowDatabase} from "./view-row";
-
-export enum ViewType {
-  TEXT = 'text',
-  IMAGE = 'image',
-  TABLE = 'table',
-  TABLE_HEADER_ROW = 'headerRow',
-  TABLE_ROW = 'row',
-  BLOCK = 'block'
-}
+import {ViewType} from "./view-type";
 
 export enum VisibilityType {
   VISIBLE = 'visible',
@@ -26,7 +13,7 @@ export abstract class View {
   private _viewId: number;                // All aspects of the view have same viewId
   private _parentId: number;
   private _type: ViewType;
-  private _role: Role;
+  private _role: string;
 
   private _loopData?: any;
 
@@ -46,7 +33,7 @@ export abstract class View {
   private _info?: any;
 
 
-  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: Role, loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
               visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any) {
 
@@ -100,11 +87,11 @@ export abstract class View {
     this._type = value;
   }
 
-  get role(): Role {
+  get role(): string {
     return this._role;
   }
 
-  set role(value: Role) {
+  set role(value: string) {
     this._role = value;
   }
 
@@ -196,23 +183,13 @@ export abstract class View {
     this._info = value;
   }
 
-  static fromDatabase(obj: ViewDatabase): View {
-    const type = obj.partType;
-    if (type === ViewType.TEXT) return ViewText.fromDatabase(obj as ViewTextDatabase);
-    else if (type === ViewType.IMAGE) return ViewImage.fromDatabase(obj as ViewImageDatabase);
-    else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase);
-    else if (type === ViewType.TABLE_HEADER_ROW || type === ViewType.TABLE_HEADER_ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
-    else if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
-    return null;
-  }
-
   /**
-   * Parses a view object into one where all fields
-   * are in the correct type and format.
+   * Parses a view object into one where all fields are in the
+   * correct type and format.
    *
    * @param obj
    */
-  static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: Role, loopData?: any,
+  static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
     variables?: any, style?: any, cssId?: string, class?: string, label?: string,
     visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any} {
 
@@ -221,7 +198,7 @@ export abstract class View {
       viewId: parseInt(obj.viewId),
       parentId: parseInt(obj.parentId),
       type: ViewType[obj.partType],
-      role: Role.fromDatabase({name: obj.role.replace('role.', '')}),
+      role: Role.parse(obj.role),
       loopData: obj.loopData || null,
       variables: obj.variables || null,
       style: obj.style || null,
@@ -245,13 +222,14 @@ export interface ViewDatabase {
   partType: string;
   label: string;
   loopData: string;
-  variables: string;
+  variables: any;
   class: string;
   cssId: string;
   style: string;
   link: string;
   visibilityCondition: string;
   visibilityType: string;
-  events: string;
+  events: any;
   info: string;
 }
+
