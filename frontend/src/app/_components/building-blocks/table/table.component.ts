@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
+import {ViewTable} from "../../../_domain/views/view-table";
 
 @Component({
   selector: 'bb-table',
@@ -6,6 +7,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./table.component.scss']
 })
 export class TableComponent implements OnInit {
+
+  @Input() view: ViewTable;
+  @Input() edit: boolean;
 
   constructor() { }
 

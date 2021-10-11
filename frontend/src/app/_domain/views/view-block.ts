@@ -1,8 +1,8 @@
 import {View, ViewDatabase, VisibilityType, } from "./view";
 import {ViewHeader, ViewHeaderDatabase} from "./view-header";
-import {ViewImage, ViewImageDatabase} from "./view-image";
+import {ViewImageDatabase} from "./view-image";
 import {ViewType} from "./view-type";
-import {ViewText, ViewTextDatabase} from "./view-text";
+import {ViewTextDatabase} from "./view-text";
 import {buildView} from "./build-view";
 
 export class ViewBlock extends View {

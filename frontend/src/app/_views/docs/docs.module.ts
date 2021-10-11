@@ -5,7 +5,7 @@ import { DocsRoutingModule } from './docs-routing.module';
 import { ViewsComponent } from './views/views/views.component';
 import { FunctionsComponent } from './functions/functions.component';
 import { ModulesShellComponent } from './modules/modules-shell.component';
-import { SharedModule } from "../../_components/shared.module";
+import { SharedModule } from "../../shared.module";
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { DocsComponent } from './docs/docs.component';
 import { PartsComponent } from './views/parts/parts.component';

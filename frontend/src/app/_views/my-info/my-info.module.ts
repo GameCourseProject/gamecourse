@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { MyInfoRoutingModule } from './my-info-routing.module';
 import { MyInfoComponent } from './my-info/my-info.component';
-import {SharedModule} from "../../_components/shared.module";
+import {SharedModule} from "../../shared.module";
 import {FormsModule} from "@angular/forms";
 
 

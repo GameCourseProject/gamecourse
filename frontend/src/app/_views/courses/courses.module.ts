@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { CoursesRoutingModule } from './courses-routing.module';
 import { CoursesComponent } from './courses/courses.component';
-import {SharedModule} from "../../_components/shared.module";
+import {SharedModule} from "../../shared.module";
 import {FormsModule} from "@angular/forms";
 
 

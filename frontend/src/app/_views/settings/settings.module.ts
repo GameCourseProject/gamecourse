@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SettingsRoutingModule } from './settings-routing.module';
-import {SharedModule} from "../../_components/shared.module";
+import {SharedModule} from "../../shared.module";
 import { GlobalComponent } from './global/global.component';
 import { ModulesComponent } from './modules/modules.component';
 import { AboutComponent } from './about/about.component';

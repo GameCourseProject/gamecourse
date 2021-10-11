@@ -5,7 +5,7 @@ import { CourseRoutingModule } from './course-routing.module';
 import { MainComponent } from './main/main.component';
 import { UsersComponent } from './users/users.component';
 import {SettingsComponent} from "./settings/settings/settings.component";
-import {SharedModule} from "../../../_components/shared.module";
+import {SharedModule} from "../../../shared.module";
 import {FormsModule} from "@angular/forms";
 import {GlobalComponent} from "./settings/global/global.component";
 import {RolesComponent} from "./settings/roles/roles.component";
