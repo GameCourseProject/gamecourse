@@ -4,6 +4,7 @@ import {ErrorService} from "../../../_services/error.service";
 import {ImageManager} from "../../../_utils/images/image-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {requireValues} from "../../../_utils/misc/misc";
 
 @Component({
   selector: 'bb-image',
@@ -25,8 +26,7 @@ export class ImageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.view.src === null || this.view.src === undefined)
-      ErrorService.set('ViewImage requires a value \'src\'.');
+    requireValues([this.view.src]);
 
     if (this.view.src.isEmpty())
       this.isEmpty = true;

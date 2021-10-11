@@ -39,18 +39,19 @@ import { HeaderComponent } from './building-blocks/header/header.component';
     TableComponent,
     HeaderComponent
   ],
-    exports: [
-        NavbarComponent,
-        SidebarComponent,
-        ModalComponent,
-        VerificationModalComponent,
-        InputFileComponent,
-        ErrorModalComponent,
-        FooterComponent,
-        InputCodeComponent,
-        TextComponent,
-        ImageComponent
-    ],
+  exports: [
+    NavbarComponent,
+    SidebarComponent,
+    ModalComponent,
+    VerificationModalComponent,
+    InputFileComponent,
+    ErrorModalComponent,
+    FooterComponent,
+    InputCodeComponent,
+    TextComponent,
+    ImageComponent,
+    HeaderComponent
+  ],
   imports: [
     CommonModule,
     RouterModule,

@@ -18,10 +18,7 @@ export class ViewBlock extends View {
       visibilityCondition, events, link, info);
 
     this.children = children;
-    if (header) {
-      this.header.image = header.image;
-      this.header.title = header.title;
-    }
+    if (header) this.header = header;
   }
 
   get children(): View[] {

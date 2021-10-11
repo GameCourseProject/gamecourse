@@ -10,15 +10,17 @@
 <!-- TODO: missing aspect & editing -->
 
 <ng-template #BARE>
-  <img class="image" [src]="image.get()" alt="">
+  <span [classList]="'image' + (view.class ? ' ' + view.class : '')">
+    <img class="img" [src]="image.get()" alt="">
+  </span>
 </ng-template>
 
 <ng-template #LINK>
-  <a class="image" href="{{view.link}}">
-    <img [src]="image.get()" alt="">
+  <a [classList]="'image' + (view.class ? ' ' + view.class : '')" href="{{view.link}}">
+    <img class="img" [src]="image.get()" alt="">
   </a>
 </ng-template>
 
 <ng-template #EMPTY>
-  <div class="image placeholder red"></div>
+  <div [classList]="'image placeholder red' + (view.class ? ' ' + view.class : '')"></div>
 </ng-template>

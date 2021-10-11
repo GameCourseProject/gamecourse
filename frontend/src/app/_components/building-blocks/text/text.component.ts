@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewText} from "../../../_domain/views/view-text";
-import {ErrorService} from "../../../_services/error.service";
+import {requireValues} from "../../../_utils/misc/misc";
 
 @Component({
   selector: 'bb-text',
@@ -17,8 +17,7 @@ export class TextComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    if (this.view.value === null || this.view.value === undefined)
-      ErrorService.set('ViewText requires a value \'value\'.');
+    requireValues([this.view.value]);
 
     if (this.view.value.isEmpty()) {
       this.isEmpty = true;

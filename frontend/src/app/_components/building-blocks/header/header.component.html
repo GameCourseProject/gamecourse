@@ -1,1 +1,24 @@
-<p>header works!</p>
+<ng-container
+  [ngTemplateOutlet]="view.link ? LINK : BARE">
+</ng-container>
+
+
+<!------------------------------------------------->
+<!------------------- TEMPLATES ------------------->
+<!------------------------------------------------->
+<!-- TODO: missing view commom settings -->
+<!-- TODO: missing aspect & editing -->
+
+<ng-template #BARE>
+  <div class="header">
+    <bb-image [view]="view.image"></bb-image>
+    <bb-text [view]="view.title"></bb-text>
+  </div>
+</ng-template>
+
+<ng-template #LINK>
+  <a class="header" href="{{view.link}}">
+    <bb-image [view]="view.image"></bb-image>
+    <bb-text [view]="view.title"></bb-text>
+  </a>
+</ng-template>
