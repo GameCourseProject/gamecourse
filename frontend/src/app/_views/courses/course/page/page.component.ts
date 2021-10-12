@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {ErrorService} from "../../../../_services/error.service";
+import {View} from "../../../../_domain/views/view";
 
 @Component({
   selector: 'app-page',
@@ -12,6 +13,7 @@ export class PageComponent implements OnInit {
 
   courseID: number;
   pageID: number;
+  pageView: View;
 
   constructor(
     private api: ApiHttpService,
@@ -38,7 +40,7 @@ export class PageComponent implements OnInit {
   getPage(): void {
     this.api.getView(this.courseID, this.pageID)
       .subscribe(
-        res => console.log(res),
+        view => this.pageView = view,
         error => ErrorService.set(error)
       )
   }

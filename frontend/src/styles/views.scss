@@ -16,19 +16,39 @@
 
 .view {
 
-  .text {
+  &.text {
     &.header_title {
       vertical-align: middle;
       margin-left: 8px;
       font-size: 16px;
+      padding: 10px 20px;
+    }
+
+    &.table_header {
+      font-size: 14px;
+    }
+
+    &.table_body {
+      font-size: 13px;
     }
   }
 
-  .image {
+  &.image {
     &.header_image {
       width: 45px;
       height: 45px;
       vertical-align: middle;
+      padding: 10px;
+    }
+  }
+
+  &.block {
+    .view {
+      margin: 10px;
+
+      .view {
+        margin: unset; // only block children
+      }
     }
   }
 

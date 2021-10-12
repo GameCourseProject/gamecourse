@@ -1,5 +1,4 @@
 .image {
-  padding: 10px 20px;
   display: inline-block;
 
   .img {
@@ -9,9 +8,8 @@
   }
 
   &.placeholder {
-    vertical-align: middle;
-    display: inline-block;
     background-color: lightskyblue;
+    vertical-align: middle;
     width: 100px;
     height: 100px;
     opacity: 0.5;

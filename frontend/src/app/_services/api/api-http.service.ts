@@ -23,6 +23,8 @@ import {Role, RoleDatabase} from "../../_domain/roles/role";
 import {Page} from "../../_domain/pages & templates/page";
 import {Template, TemplateDatabase} from "../../_domain/pages & templates/template";
 import {RoleType, RoleTypeId} from "../../_domain/roles/role-type";
+import {View} from "../../_domain/views/view";
+import {buildView} from "../../_domain/views/build-view";
 
 @Injectable({
   providedIn: 'root'
@@ -657,7 +659,7 @@ export class ApiHttpService {
   /*** ------------------- Views ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getView(courseID: number, viewID: number): Observable<any> {
+  public getView(courseID: number, viewID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
       qs.push('request', 'view');
@@ -669,7 +671,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, this.httpOptions)
-      .pipe( map((res: any) => res['data']['view']) );
+      .pipe( map((res: any) => buildView(res['data']['view'])) );
   }
 
 
