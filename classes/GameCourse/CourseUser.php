@@ -346,23 +346,23 @@ class CourseUser extends User
             $lines[0] = trim($lines[0]);
             $firstLine = explode(",", $lines[0]);
             $firstLine = array_map('trim', $firstLine);
-                if (in_array("name", $firstLine) 
-                && in_array("email", $firstLine) && in_array("nickname", $firstLine) 
-                && in_array("major", $firstLine) && in_array("studentNumber", $firstLine)
-                && in_array("isAdmin", $firstLine) && in_array("isActive", $firstLine) 
-                && in_array("roles", $firstLine) && in_array("username", $firstLine) && in_array("auth", $firstLine) 
-            ) {
-                $has1stLine = true;
-                $nameIndex = array_search("name", $firstLine);
-                $nicknameIndex = array_search("nickname", $firstLine);
-                $emailIndex = array_search("email", $firstLine);
-                $majorIndex = array_search("major", $firstLine);
-                $studentNumberIndex = array_search("studentNumber", $firstLine);
-                $isAdminIndex = array_search("isAdmin", $firstLine);
-                $isActiveIndex = array_search("isActive", $firstLine);
-                $rolesIndex = array_search("roles", $firstLine);
-                $usernameIndex = array_search("username", $firstLine);
-                $authIndex = array_search("auth", $firstLine);
+            foreach ($firstLine as $item) {
+                if (strval($item) !== 'name' && strval($item) !== 'email' && strval($item) !== 'nickname'
+                    && strval($item) !== 'studentNumber' && strval($item) !== 'isAdmin' && strval($item) !== 'isActive'
+                    && strval($item) !== 'major' && strval($item) !== 'username' && strval($item) !== 'auth' && strval($item) !== 'roles') {
+
+                    $has1stLine = true;
+                    $nameIndex = array_search("name", $firstLine);
+                    $nicknameIndex = array_search("nickname", $firstLine);
+                    $emailIndex = array_search("email", $firstLine);
+                    $majorIndex = array_search("major", $firstLine);
+                    $studentNumberIndex = array_search("studentNumber", $firstLine);
+                    $isAdminIndex = array_search("isAdmin", $firstLine);
+                    $isActiveIndex = array_search("isActive", $firstLine);
+                    $rolesIndex = array_search("roles", $firstLine);
+                    $usernameIndex = array_search("username", $firstLine);
+                    $authIndex = array_search("auth", $firstLine);
+                }
             }
         }
         $i = 0;
