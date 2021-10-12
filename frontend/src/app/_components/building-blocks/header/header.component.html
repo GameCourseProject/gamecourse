@@ -1,5 +1,5 @@
 <ng-container
-  [ngTemplateOutlet]="view.link ? LINK : BARE">
+  [ngTemplateOutlet]="BARE">
 </ng-container>
 
 
@@ -14,11 +14,4 @@
     <bb-image [view]="view.image"></bb-image>
     <bb-text [view]="view.title"></bb-text>
   </div>
-</ng-template>
-
-<ng-template #LINK>
-  <a [classList]="view.class" href="{{view.link}}">
-    <bb-image [view]="view.image"></bb-image>
-    <bb-text [view]="view.title"></bb-text>
-  </a>
 </ng-template>
