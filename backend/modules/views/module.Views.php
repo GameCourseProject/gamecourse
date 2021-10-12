@@ -1100,6 +1100,30 @@ class Views extends Module
         );
 
         $this->viewHandler->registerPartType(
+            'header',
+            null,
+            null,
+            function (&$header) { //parse function
+                if (array_key_exists('image', $header)) {
+                    $this->viewHandler->parsePart($header['image']);
+                }
+
+                if (array_key_exists('title', $header)) {
+                    $this->viewHandler->parsePart($header['title']);
+                }
+            },
+            function (&$header, $viewParams, $visitor) { //processing function
+                if (array_key_exists('image', $header)) {
+                    $this->viewHandler->processPart($header['image'], $viewParams, $visitor);
+                }
+
+                if (array_key_exists('title', $header)) {
+                    $this->viewHandler->processPart($header['title'], $viewParams, $visitor);
+                }
+            }
+        );
+
+        $this->viewHandler->registerPartType(
             'table',
             function (&$table, &$savePart) {
                 $this->breakTableRows($table['headerRows'], $savePart);
