@@ -362,6 +362,40 @@ class Views extends Module
             null,
             'collection'
         );
+        //%collection.getKNeighbors, returns k neighbors
+        $this->viewHandler->registerFunction(
+            null,
+            'getKNeighbors',
+            function ($collection, $user, $k) use ($courseId) {
+                $key = array_search($user, array_column($collection['value'], 'id'));
+                $nElements = count($collection['value']);
+                $result = [];
+                // elements before
+                for ($i = $k; $i > 0; $i--){
+                    if($key - $i >= 0){
+                        $collection['value'][$key - $i]["rank"] = $key - $i;
+                        $result[] = $collection['value'][$key - $i];
+                    }
+                }
+                // add student
+                $collection['value'][$key]["rank"] = $key;
+                $result[] = $collection['value'][$key];
+                
+                
+                // elements after
+                for ($i = 1; $i <= $k and $key + $i < $nElements; $i++){
+                    $collection['value'][$key + $i]["rank"] = $key + $i;
+                    $result[] = $collection['value'][$key + $i];
+                }
+
+                return $this->createNode($result, 'users', "collection");
+
+            },
+            "Returns a collection with k neighbors.\nk: The number of neighbors to return. Ex: k = 3 will return the 3 users before and the 3 users after the user viewing the page.",
+            'collection',
+            null,
+            'collection'
+        );
         //functions of actions(events) library, 
         //they don't really do anything, they're just here so their arguments can be processed 
         $this->viewHandler->registerLibrary("views", "actions", "Library to be used only on EVENTS. These functions define the response to event triggers");
@@ -608,6 +642,19 @@ class Views extends Module
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
+            null,
+            'object',
+            'user'
+        );
+        //%user.rank
+        $this->viewHandler->registerFunction(
+            'users',
+            'rank',
+            function ($user) {
+                return $this->basicGetterFunction($user, "rank");
+            },
+            'Returns a string with the position of the user on a collection. To be used with getKNeighbors',
+            'string',
             null,
             'object',
             'user'
