@@ -28,7 +28,7 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     $teacherUsername = $_POST['teacher-username'];
 
     $db = new SQLDB(CONNECTION_STRING, CONNECTION_USERNAME, CONNECTION_PASSWORD);
-    $sql = file_get_contents("gamecourse.sql");
+    $sql = file_get_contents("setup.sql");
     $db->executeQuery($sql);
 
     $courseId = 1;
