@@ -1,0 +1,28 @@
+.table {
+  position: relative;
+  border-radius: 5px;
+  overflow: auto;
+  width: calc(100% - 24px);
+
+  table {
+    width: 100%;
+    font-size: 13px;
+    border-spacing: 2px;
+    padding: 5px;
+    background-color: #cfcfcf;
+
+    tr {
+      background-color: white;
+      transition: all .3s ease;
+
+      th {
+        font-size: 14px;
+        text-align: left;
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+    }
+  }
+}

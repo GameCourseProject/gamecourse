@@ -33,7 +33,7 @@ export class FooterComponent implements OnInit {
     const urlParts = this.router.url.substr(1).split('/');
     if (urlParts[0] === 'courses')
       return parseInt(urlParts[1]);
-    ErrorService.set('Error while getting course ID: getCourseId() -> footer.component');
+    ErrorService.set('Error: Couldn\'t get course ID. (footer.component.ts::getCourseId())');
     return null;
   }
 

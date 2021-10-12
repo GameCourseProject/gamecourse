@@ -1,8 +1,6 @@
 import {View, ViewDatabase, VisibilityType, } from "./view";
 import {ViewHeader, ViewHeaderDatabase} from "./view-header";
-import {ViewImageDatabase} from "./view-image";
 import {ViewType} from "./view-type";
-import {ViewTextDatabase} from "./view-text";
 import {buildView} from "./build-view";
 
 export class ViewBlock extends View {
@@ -56,12 +54,12 @@ export class ViewBlock extends View {
       parsedObj.events,
       parsedObj.link,
       parsedObj.info,
-      ViewHeader.fromDatabase(obj.header as ViewHeaderDatabase)
+      obj.header ? buildView(obj.header) as ViewHeader : null
     );
   }
 }
 
 export interface ViewBlockDatabase extends ViewDatabase {
   children: ViewDatabase[];
-  header?: { image: ViewImageDatabase, title: ViewTextDatabase }
+  header?: ViewHeaderDatabase
 }

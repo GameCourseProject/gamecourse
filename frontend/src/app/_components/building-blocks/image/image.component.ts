@@ -1,6 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewImage} from "../../../_domain/views/view-image";
-import {ErrorService} from "../../../_services/error.service";
 import {ImageManager} from "../../../_utils/images/image-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
@@ -16,6 +15,8 @@ export class ImageComponent implements OnInit {
   @Input() view: ViewImage;
   @Input() edit: boolean;
 
+  readonly IMAGE_CLASS = 'image';
+
   isEmpty: boolean;
   image: ImageManager;
 
@@ -28,8 +29,9 @@ export class ImageComponent implements OnInit {
   ngOnInit(): void {
     requireValues([this.view.src]);
 
-    if (this.view.src.isEmpty())
-      this.isEmpty = true;
+    this.view.class += ' ' + this.IMAGE_CLASS;
+
+    if (this.view.src.isEmpty()) this.isEmpty = true;
     else this.image.set(ApiEndpointsService.API_ENDPOINT + '/' + this.view.src);
   }
 

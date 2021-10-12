@@ -1,10 +1,10 @@
-import {View} from "./view";
+import {View, ViewDatabase} from "./view";
 import {ViewType} from "./view-type";
 import {ViewText, ViewTextDatabase} from "./view-text";
 import {ViewImage, ViewImageDatabase} from "./view-image";
 import {ViewTable, ViewTableDatabase} from "./view-table";
 import {ViewBlock, ViewBlockDatabase} from "./view-block";
-import {ViewRow, ViewRowDatabase} from "./view-row";
+import {ViewHeader, ViewHeaderDatabase} from "./view-header";
 
 /**
  * Builds a view from an object according to whatever type the view is.
@@ -16,12 +16,12 @@ import {ViewRow, ViewRowDatabase} from "./view-row";
  *
  * @param obj
  */
-export function buildView(obj: any): View {
+export function buildView(obj: ViewDatabase): View {
   const type = obj.partType;
   if (type === ViewType.TEXT) return ViewText.fromDatabase(obj as ViewTextDatabase);
   else if (type === ViewType.IMAGE) return ViewImage.fromDatabase(obj as ViewImageDatabase);
   else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase);
-  else if (type === ViewType.TABLE_ROW || type === ViewType.TABLE_HEADER_ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
+  else if (type === ViewType.HEADER) return ViewHeader.fromDatabase(obj as ViewHeaderDatabase);
   else if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
   return null;
 }

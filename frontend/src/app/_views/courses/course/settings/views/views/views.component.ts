@@ -245,12 +245,12 @@ export class ViewsComponent implements OnInit {
 
   useGlobal(template: Template): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be updated to the current version. Action: useGlobal()')
+    ErrorService.set('Error: This action still needs to be updated to the current version. (views.component.ts::useGlobal(template))')
   }
 
   exportTemplate(template: Template): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be updated to the current version. Action: exportTemplate()')
+    ErrorService.set('Error: This action still needs to be updated to the current version. (views.component.ts::exportTemplate(template)')
   }
 
 

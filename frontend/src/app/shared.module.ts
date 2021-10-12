@@ -18,7 +18,7 @@ import { TextComponent } from './_components/building-blocks/text/text.component
 import { ImageComponent } from './_components/building-blocks/image/image.component';
 import { TableComponent } from './_components/building-blocks/table/table.component';
 import { HeaderComponent } from './_components/building-blocks/header/header.component';
-import {AppModule} from "./app.module";
+import {AnyComponent} from "./_components/building-blocks/any/any.component";
 import {AsPipe} from "./_pipes/as.pipe";
 
 
@@ -40,6 +40,7 @@ import {AsPipe} from "./_pipes/as.pipe";
     ImageComponent,
     TableComponent,
     HeaderComponent,
+    AnyComponent,
     AsPipe
   ],
   exports: [
@@ -54,7 +55,9 @@ import {AsPipe} from "./_pipes/as.pipe";
     TextComponent,
     ImageComponent,
     HeaderComponent,
-    BlockComponent
+    BlockComponent,
+    AnyComponent,
+    TableComponent,
   ],
   imports: [
     CommonModule,

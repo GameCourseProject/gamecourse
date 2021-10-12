@@ -32,6 +32,8 @@ export abstract class View {
   private _link?: any;
   private _info?: any;
 
+  static readonly VIEW_CLASS = 'view';
+
 
   constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
@@ -197,13 +199,13 @@ export abstract class View {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
       parentId: parseInt(obj.parentId),
-      type: ViewType[obj.partType],
+      type: obj.partType as ViewType,
       role: Role.parse(obj.role),
       loopData: obj.loopData || null,
       variables: obj.variables || null,
       style: obj.style || null,
       cssId: obj.cssId || null,
-      class: obj.class || null,
+      class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
       label: obj.label || null,
       visibilityType: VisibilityType[obj.visibilityType] || null,
       visibilityCondition: obj.visibilityCondition || null,
@@ -218,18 +220,18 @@ export interface ViewDatabase {
   id: string;
   viewId: string;
   parentId: string;
-  role: string;
   partType: string;
-  label: string;
-  loopData: string;
-  variables: any;
-  class: string;
-  cssId: string;
-  style: string;
-  link: string;
-  visibilityCondition: string;
-  visibilityType: string;
-  events: any;
-  info: string;
+  role: string;
+  loopData?: string;
+  variables?: any;
+  style?: string;
+  cssId?: string;
+  class?: string;
+  label?: string;
+  visibilityType?: string;
+  visibilityCondition?: string;
+  events?: any;
+  link?: string;
+  info?: string;
 }
 

@@ -1,1 +1,36 @@
-<p>table works!</p>
+<ng-container
+  [ngTemplateOutlet]="TABLE">
+</ng-container>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+<!-- TODO: missing view common settings -->
+<!-- TODO: missing aspect & editing -->
+
+<ng-template #TABLE>
+  <div [classList]="view.class">
+    <table>
+
+      <!-- Header -->
+      <thead>
+        <tr *ngFor="let row of view.headerRows">
+          <th *ngFor="let header of row">
+            <bb-any [view]="header"></bb-any>
+          </th>
+        </tr>
+      </thead>
+
+      <!-- Body -->
+      <tbody>
+        <tr *ngFor="let row of view.rows">
+          <td *ngFor="let item of row">
+            <bb-any [view]="item"></bb-any>
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+  </div>
+</ng-template>

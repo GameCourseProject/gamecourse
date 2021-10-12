@@ -12,6 +12,7 @@ export class HeaderComponent implements OnInit {
   @Input() view: ViewHeader;
   @Input() edit: boolean;
 
+  readonly HEADER_CLASS = 'header';
   readonly IMAGE_CLASS = 'header_image';
   readonly TITLE_CLASS = 'header_title';
 
@@ -20,11 +21,9 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     requireValues([this.view.image, this.view.title]);
 
-    if (!this.view.image.class || this.view.image.class.isEmpty()) this.view.image.class = this.IMAGE_CLASS;
-    else this.view.image.class += ' ' + this.IMAGE_CLASS;
-
-    if (!this.view.title.class || this.view.title.class.isEmpty()) this.view.title.class = this.TITLE_CLASS;
-    else this.view.title.class += ' ' + this.TITLE_CLASS;
+    this.view.class += ' ' + this.HEADER_CLASS;
+    this.view.image.class += ' ' + this.IMAGE_CLASS;
+    this.view.title.class += ' ' + this.TITLE_CLASS;
   }
 
 }

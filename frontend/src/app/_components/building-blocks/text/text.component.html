@@ -3,18 +3,19 @@
 </ng-container>
 
 
-<!------------------------------------------------->
-<!------------------- TEMPLATES ------------------->
-<!------------------------------------------------->
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
 <!-- TODO: missing view commom settings -->
 <!-- TODO: missing aspect & editing -->
+<!-- FIXME: rethink naming BARE to DEFAULT or SIMPLE -->
 
 <ng-template #BARE>
-  <span [classList]="'value' + (view.class ? ' ' + view.class : '')" [ngClass]="{'red': isEmpty}"
+  <span [classList]="view.class" [ngClass]="{'red': isEmpty}"
     [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</span>
 </ng-template>
 
 <ng-template #LINK>
-  <a href="{{view.link}}" [classList]="'value' + (view.class ? ' ' + view.class : '')" [ngClass]="{'red': isEmpty}"
+  <a [classList]="view.class" [ngClass]="{'red': isEmpty}" href="{{view.link}}"
      [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</a>
 </ng-template>

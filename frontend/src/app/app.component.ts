@@ -7,7 +7,7 @@ import {
   Router
 } from "@angular/router";
 
-import '@extensions/string';
+import '@extensions/string.extensions';
 
 @Component({
   selector: 'app-root',

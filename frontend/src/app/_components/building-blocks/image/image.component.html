@@ -3,24 +3,25 @@
 </ng-container>
 
 
-<!------------------------------------------------->
-<!------------------- TEMPLATES ------------------->
-<!------------------------------------------------->
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
 <!-- TODO: missing view commom settings -->
 <!-- TODO: missing aspect & editing -->
+<!-- FIXME: rethink naming BARE to DEFAULT or SIMPLE -->
 
 <ng-template #BARE>
-  <span [classList]="'image' + (view.class ? ' ' + view.class : '')">
+  <span [classList]="view.class">
     <img class="img" [src]="image.get()" alt="">
   </span>
 </ng-template>
 
 <ng-template #LINK>
-  <a [classList]="'image' + (view.class ? ' ' + view.class : '')" href="{{view.link}}">
+  <a [classList]="view.class" href="{{view.link}}">
     <img class="img" [src]="image.get()" alt="">
   </a>
 </ng-template>
 
 <ng-template #EMPTY>
-  <div [classList]="'image placeholder red' + (view.class ? ' ' + view.class : '')"></div>
+  <div [classList]="view.class + ' placeholder red'"></div>
 </ng-template>

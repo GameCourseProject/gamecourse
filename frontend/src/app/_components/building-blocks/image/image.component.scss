@@ -8,9 +8,16 @@
     object-fit: cover;
   }
 
-  &.header_image {
-    width: 45px;
-    height: 45px;
+  &.placeholder {
     vertical-align: middle;
+    display: inline-block;
+    background-color: lightskyblue;
+    width: 100px;
+    height: 100px;
+    opacity: 0.5;
+
+    &.red {
+      background-color: red;
+    }
   }
 }

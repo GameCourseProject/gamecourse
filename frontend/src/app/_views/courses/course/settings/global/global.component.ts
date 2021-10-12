@@ -98,14 +98,14 @@ export class GlobalComponent implements OnInit {
     // TODO: update from GameCourse v1
     this.api.getTableData(this.info.id, table)
       .subscribe(
-        res => ErrorService.set('This action still needs to be updated to the current version. Action: showDatabase()'),
+        res => ErrorService.set('Error: This action still needs to be updated to the current version. (global.component.ts::showDatabase(table))'),
         error => ErrorService.set(error)
       )
   }
 
   move(item: {name: string, seqId: number}, direction: number): void {
     // TODO: update from GameCourse v1
-    ErrorService.set('This action still needs to be updated to the current version. Action: move()');
+    ErrorService.set('Error: This action still needs to be updated to the current version. (global.component.ts::move(item, direction))');
   }
 
   createStyleFile(): void {

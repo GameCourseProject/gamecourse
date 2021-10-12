@@ -1,41 +1,41 @@
 import {View, ViewDatabase, VisibilityType} from "./view";
-import {ViewRow, ViewRowDatabase} from "./view-row";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
+import {ErrorService} from "../../_services/error.service";
 
 export class ViewTable extends View {
 
-  private _headerRows: ViewRow[];
-  private _rows: ViewRow[];
+  private _headerRows: View[][];
+  private _rows: View[][];
   private _nrColumns: number;
-  private _nrRows: number;
 
-  constructor(id: number, viewId: number, parentId: number, role: string, headerRows: ViewRow[], rows: ViewRow[],
-              nrColumns: number, loopData?: any, variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
-              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any) {
+  constructor(id: number, viewId: number, parentId: number, role: string, headerRows: View[][], rows: View[][], loopData?: any,
+              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: any, link?: any, info?: any) {
 
     super(id, viewId, parentId, ViewType.TABLE, role, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events, link, info);
 
+    this.check(headerRows, rows);
+
     this.headerRows = headerRows;
     this.rows = rows;
-    this.nrColumns = nrColumns;
-    this.nrRows = rows.length;
+    this.nrColumns = headerRows.length > 0 ? headerRows[0].length : rows.length > 0 ? rows[0].length : 0;
   }
 
-  get headerRows(): ViewRow[] {
+  get headerRows(): View[][] {
     return this._headerRows;
   }
 
-  set headerRows(value: ViewRow[]) {
+  set headerRows(value: View[][]) {
     this._headerRows = value;
   }
 
-  get rows(): ViewRow[] {
+  get rows(): View[][] {
     return this._rows;
   }
 
-  set rows(value: ViewRow[]) {
+  set rows(value: View[][]) {
     this._rows = value;
   }
 
@@ -47,12 +47,20 @@ export class ViewTable extends View {
     this._nrColumns = value;
   }
 
-  get nrRows(): number {
-    return this._nrRows;
-  }
+  /**
+   * Checks if values are in a correct format.
+   *
+   * @param headerRows
+   * @param rows
+   */
+  private check(headerRows: View[][], rows: View[][]) {
+    const nrColumns = headerRows[0].length;
 
-  set nrRows(value: number) {
-    this._nrRows = value;
+    if (!headerRows.every(row => row.length === nrColumns))
+      ErrorService.set('Error: Couldn\'t create table - header rows don\'t have the same number of columns. (view-table.ts)');
+
+    if (!rows.every(row => row.length === nrColumns))
+      ErrorService.set('Error: Couldn\'t create table - rows don\'t have the same number of columns. (view-table.ts)');
   }
 
   static fromDatabase(obj: ViewTableDatabase): ViewTable {
@@ -62,9 +70,8 @@ export class ViewTable extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
-      obj.headerRows.map(header => buildView(header) as ViewRow),
-      obj.rows.map(row => buildView(row) as ViewRow),
-      obj.columns,
+      obj.headerRows.map(row => row.map(header => buildView(header))),
+      obj.rows.map(row => row.map(r => buildView(r))),
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
@@ -81,7 +88,6 @@ export class ViewTable extends View {
 }
 
 export interface ViewTableDatabase extends ViewDatabase {
-  rows: ViewRowDatabase[];
-  headerRows: ViewRowDatabase[];
-  columns: number;
+  headerRows: ViewDatabase[][];
+  rows: ViewDatabase[][];
 }

@@ -1,10 +1,4 @@
-<div class="block">
+<div [classList]="view.class">
   <bb-header *ngIf="view.header" [view]="view.header | as : ViewHeader"></bb-header>
-  <ng-container *ngFor="let child of view.children">
-    <bb-text *ngIf="child.type === ViewType.TEXT" [view]="child | as : ViewText"></bb-text>
-    <bb-image *ngIf="child.type === ViewType.IMAGE" [view]="child | as : ViewImage"></bb-image>
-    <bb-header *ngIf="child.type === ViewType.HEADER" [view]="child | as : ViewHeader"></bb-header>
-    <bb-table *ngIf="child.type === ViewType.TABLE" [view]="child | as : ViewTable"></bb-table>
-    <bb-block *ngIf="child.type === ViewType.BLOCK" [view]="child | as : ViewBlock"></bb-block>
-  </ng-container>
+  <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
 </div>
