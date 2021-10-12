@@ -9,6 +9,7 @@ use Modules\Views\ViewHandler;
 
 class Leaderboard extends Module {
     const LEADERBOARD_TEMPLATE_NAME = 'Leaderboard - by leaderboard';
+    const RELATIVE_LEADERBOARD_TEMPLATE_NAME = 'Relative Leaderboard - by leaderboard';
 
     public function setupResources() {
         parent::addResources('js/');
@@ -24,6 +25,9 @@ class Leaderboard extends Module {
         
         if (!$viewsModule->templateExists(self::LEADERBOARD_TEMPLATE_NAME)) {
             $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), true);
+        }
+        if (!$viewsModule->templateExists(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME)) {
+            $viewsModule->setTemplate(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), true);
         }
     }
 
