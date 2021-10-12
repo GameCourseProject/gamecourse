@@ -29,7 +29,6 @@ export abstract class View {
 
   private _events?: any;
 
-  private _link?: any;
   private _info?: any;
 
   static readonly VIEW_CLASS = 'view';
@@ -37,7 +36,7 @@ export abstract class View {
 
   constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
-              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any) {
+              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, info?: any) {
 
     this.id = id;
     this.viewId = viewId;
@@ -53,7 +52,6 @@ export abstract class View {
     this.visibilityType = visibilityType;
     this.visibilityCondition = this.visibilityCondition;
     this.events = events;
-    this.link = link;
     this.info = info;
   }
 
@@ -169,14 +167,6 @@ export abstract class View {
     this._events = value;
   }
 
-  get link(): any {
-    return this._link;
-  }
-
-  set link(value: any) {
-    this._link = value;
-  }
-
   get info(): any {
     return this._info;
   }
@@ -193,7 +183,7 @@ export abstract class View {
    */
   static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
     variables?: any, style?: any, cssId?: string, class?: string, label?: string,
-    visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, link?: any, info?: any} {
+    visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, info?: any} {
 
     return {
       id: parseInt(obj.id),
@@ -210,7 +200,6 @@ export abstract class View {
       visibilityType: VisibilityType[obj.visibilityType] || null,
       visibilityCondition: obj.visibilityCondition || null,
       events: obj.events || null,
-      link: obj.link || null,
       info: obj.info || null
     }
   }
@@ -231,7 +220,6 @@ export interface ViewDatabase {
   visibilityType?: string;
   visibilityCondition?: string;
   events?: any;
-  link?: string;
   info?: string;
 }
 

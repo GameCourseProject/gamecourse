@@ -11,10 +11,10 @@ export class ViewTable extends View {
 
   constructor(id: number, viewId: number, parentId: number, role: string, headerRows: View[][], rows: View[][], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any) {
+              visibilityCondition?: any, events?: any, info?: any) {
 
     super(id, viewId, parentId, ViewType.TABLE, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, link, info);
+      visibilityCondition, events, info);
 
     this.check(headerRows, rows);
 
@@ -81,7 +81,6 @@ export class ViewTable extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.link,
       parsedObj.info
     );
   }

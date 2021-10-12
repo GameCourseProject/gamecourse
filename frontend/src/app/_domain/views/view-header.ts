@@ -11,10 +11,10 @@ export class ViewHeader extends View{
 
   constructor(id: number, viewId: number, parentId: number, role: string, image: ViewImage, title: ViewText, loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any) {
+              visibilityCondition?: any, events?: any, info?: any) {
 
     super(id, viewId, parentId, ViewType.HEADER, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, link, info);
+      visibilityCondition, events, info);
 
     this.image = image;
     this.title = title;
@@ -54,7 +54,6 @@ export class ViewHeader extends View{
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.link,
       parsedObj.info
     );
   }

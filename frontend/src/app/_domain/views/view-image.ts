@@ -4,15 +4,17 @@ import {ViewType} from "./view-type";
 export class ViewImage extends View {
 
   private _src: string;
+  private _link: string;
 
   constructor(id: number, viewId: number, parentId: number, role: string, src: string, loopData?: any, variables?: any,
               style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any) {
+              visibilityCondition?: any, events?: any, info?: any, link?: any) {
 
     super(id, viewId, parentId, ViewType.IMAGE, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, link, info);
+      visibilityCondition, events, info);
 
     this.src = src;
+    if (link) this.link = link;
   }
 
   get src(): string {
@@ -21,6 +23,14 @@ export class ViewImage extends View {
 
   set src(value: string) {
     this._src = value;
+  }
+
+  get link(): string {
+    return this._link;
+  }
+
+  set link(value: string) {
+    this._link = value;
   }
 
   static fromDatabase(obj: ViewImageDatabase): ViewImage {
@@ -40,12 +50,13 @@ export class ViewImage extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.link,
-      parsedObj.info
+      parsedObj.info,
+      obj.link
     );
   }
 }
 
 export interface ViewImageDatabase extends ViewDatabase {
   value: string;
+  link?: string;
 }

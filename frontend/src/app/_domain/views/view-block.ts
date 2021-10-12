@@ -10,10 +10,10 @@ export class ViewBlock extends View {
 
   constructor(id: number, viewId: number, parentId: number, role: string, children: View[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any, header?: ViewHeader) {
+              visibilityCondition?: any, events?: any, info?: any, header?: ViewHeader) {
 
     super(id, viewId, parentId, ViewType.BLOCK, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, link, info);
+      visibilityCondition, events, info);
 
     this.children = children;
     if (header) this.header = header;
@@ -52,7 +52,6 @@ export class ViewBlock extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.link,
       parsedObj.info,
       obj.header ? buildView(obj.header) as ViewHeader : null
     );

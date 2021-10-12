@@ -4,15 +4,17 @@ import {ViewType} from "./view-type";
 export class ViewText extends View {
 
   private _value: string;
+  private _link?: string;
 
   constructor(id: number, viewId: number, parentId: number, role: string, value: string, loopData?: any, variables?: any,
               style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any, info?: any) {
+              visibilityCondition?: any, events?: any, info?: any, link?: any) {
 
     super(id, viewId, parentId, ViewType.TEXT, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, link, info);
+      visibilityCondition, events, info);
 
     this.value = value;
+    if (link) this.link = link;
   }
 
   get value(): string {
@@ -21,6 +23,14 @@ export class ViewText extends View {
 
   set value(value: string) {
     this._value = value;
+  }
+
+  get link(): string {
+    return this._link;
+  }
+
+  set link(value: string) {
+    this._link = value;
   }
 
   static fromDatabase(obj: ViewTextDatabase): ViewText {
@@ -40,12 +50,13 @@ export class ViewText extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.link,
-      parsedObj.info
+      parsedObj.info,
+      obj.link
     );
   }
 }
 
 export interface ViewTextDatabase extends ViewDatabase {
   value: string;
+  link?: string;
 }
