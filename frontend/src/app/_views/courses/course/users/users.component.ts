@@ -90,7 +90,7 @@ export class UsersComponent implements OnInit {
   ngOnInit(): void {
     this.getLoggedUser();
     this.route.params.subscribe(params => {
-      this.getCourse(params.id);
+      this.getCourse(parseInt(params.id));
     });
   }
 

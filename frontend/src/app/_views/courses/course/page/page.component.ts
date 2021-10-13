@@ -22,10 +22,10 @@ export class PageComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.parent.params.subscribe(params => {
-      this.courseID = params.id;
+      this.courseID = parseInt(params.id);
 
       this.route.params.subscribe(params => {
-        this.pageID = params.id;
+        this.pageID = parseInt(params.id);
         this.getPage();
 
       }).unsubscribe();

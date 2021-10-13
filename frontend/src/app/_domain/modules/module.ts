@@ -1,3 +1,6 @@
+import {ApiHttpService} from "../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+
 export class Module {
   private _id: string;
   private _name: string;
@@ -8,6 +11,8 @@ export class Module {
   private _enabled: boolean;
   private _canBeEnabled: boolean;
   private _hasConfiguration: boolean;
+
+  static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
   constructor(id: string, name: string, directory: string, version: string, dependencies: {id: string, mode?: string, enabled?: boolean}[],
               description: string, enabled: boolean, canBeEnabled: boolean, hasConfiguration: boolean) {
@@ -95,6 +100,59 @@ export class Module {
     this._hasConfiguration = value;
   }
 
+  /**
+   * Loads course's active modules' styles.
+   *
+   * @param courseId
+   */
+  static loadStyles(courseId: number): void {
+    Module.stylesLoaded.set(courseId, {state: LoadingState.PENDING});
+
+    ApiHttpService.getCourseResources(courseId)
+      .subscribe(resources => {
+        const styles: {name: string, path: string}[] = [];
+        for (const module of resources) {
+          for (const resource of module.files) {
+            if (resource.includes('.css')) {
+              const split = resource.split('/');
+              styles.push({
+                name: courseId + '-' + split[split.length - 1].replace('.css', ''),
+                path: ApiEndpointsService.API_ENDPOINT + '/' + resource
+              });
+            }
+          }
+        }
+
+        const head = document.getElementsByTagName('head')[0];
+        const stylesIds: string[] = [];
+        styles.forEach(s => {
+          const style = document.createElement('link');
+          const id = s.name + '-styling';
+          style.id = id;
+          stylesIds.push(id);
+          style.rel = 'stylesheet';
+          style.href = `${s.path}`;
+          head.appendChild(style);
+        });
+
+        this.stylesLoaded.set(courseId, {state: LoadingState.LOADED, stylesIds});
+      });
+  }
+
+  /**
+   * Removes course's modules' styles and reloads them
+   *
+   * @param courseId
+   */
+  static reloadStyles(courseId: number): void {
+    this.stylesLoaded.get(courseId).stylesIds.forEach(id => {
+      const style = document.getElementById(id);
+      style.remove();
+    });
+
+    this.loadStyles(courseId);
+  }
+
   static fromDatabase(obj: ModuleDatabase): Module {
     return new Module(
       obj.id,
@@ -120,4 +178,10 @@ interface ModuleDatabase {
   enabled?: boolean;
   canBeEnabled?: boolean;
   hasConfiguration?: boolean;
+}
+
+export enum LoadingState {
+  NOT_LOADED,
+  LOADED,
+  PENDING
 }

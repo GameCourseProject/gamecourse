@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpXhrBackend} from "@angular/common/http";
 import {Observable, of} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
@@ -31,7 +31,7 @@ import {buildView} from "../../_domain/views/build-view";
 })
 export class ApiHttpService {
 
-  private httpOptions = {
+  private static readonly httpOptions = {
     headers: new HttpHeaders(),
     withCredentials: true
   };
@@ -55,14 +55,14 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrl('setup.php');
 
-    return this.post(url, formData, this.httpOptions)
+    return this.post(url, formData, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['setup']) );
   }
 
   public isSetupDone(): Observable<boolean> {
     const url = this.apiEndpoint.createUrl('login.php');
 
-    return this.post(url, new FormData(), this.httpOptions)
+    return this.post(url, new FormData(), ApiHttpService.httpOptions)
       .pipe(
         map(res => true),
         catchError(error => {
@@ -85,7 +85,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrl('login.php');
 
-    this.post(url, formData, this.httpOptions)
+    this.post(url, formData, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['redirectURL']) )
       .subscribe(url => window.open(url,"_self"));
   }
@@ -93,7 +93,7 @@ export class ApiHttpService {
   public isLoggedIn(): Observable<boolean> {
     const url = this.apiEndpoint.createUrl('login.php');
 
-    return this.post(url, new FormData(), this.httpOptions)
+    return this.post(url, new FormData(), ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
@@ -104,7 +104,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('login.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['isLoggedIn']) );
   }
 
@@ -121,7 +121,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
         (res: any) => User.fromDatabase(res['data']['userInfo'])
       ) );
@@ -135,7 +135,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map(
         (res: any) => (res['data']['userActiveCourses']).map(obj => Course.fromDatabase(obj))
       ) );
@@ -149,7 +149,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
           return {
             courses: (res['data']['courses']).map(obj => Course.fromDatabase(obj)),
@@ -177,7 +177,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions).pipe();
+    return this.post(url, data, ApiHttpService.httpOptions).pipe();
   }
 
   public getUsers(): Observable<User[]> {
@@ -188,7 +188,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
   }
 
@@ -204,7 +204,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -220,7 +220,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -245,7 +245,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => User.fromDatabase(res['data']['user'])) );
   }
 
@@ -271,7 +271,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -284,7 +284,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -295,7 +295,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, this.httpOptions)
+    return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
   }
 
@@ -311,7 +311,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nUsers'])) );
   }
 
@@ -329,7 +329,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
   }
 
@@ -342,8 +342,20 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']));
+  }
+
+  static getCourseResources(courseID: number): Observable<{name: string, files: string[]}[]> {
+    const module = 'core';
+    const request = 'getCourseResources';
+    const course = courseID;
+
+    const url = ApiEndpointsService.API_ENDPOINT + '/info.php?module=' + module + '&request=' + request + '&course=' + course;
+
+    const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
+    return httpClient.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['resources']));
   }
 
   public getCourseUsers(courseID: number): Observable<User[]> {
@@ -356,7 +368,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['userList']).map(obj => User.fromDatabase(obj))) );
   }
 
@@ -369,7 +381,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['notCourseUsers']).map(obj => User.fromDatabase(obj))) );
   }
 
@@ -382,7 +394,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => (res['data']['courseRoles']).map(role => Role.fromDatabase(role))) );
   }
 
@@ -398,7 +410,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -414,7 +426,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -431,7 +443,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -455,7 +467,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
   }
 
@@ -480,7 +492,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -493,7 +505,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -509,7 +521,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['courses']) );
   }
 
@@ -525,7 +537,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nCourses'])) );
   }
 
@@ -544,7 +556,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -569,7 +581,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -595,7 +607,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -608,7 +620,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -620,7 +632,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, this.httpOptions)
+    return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
   }
 
@@ -637,7 +649,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nUsers'])) );
   }
 
@@ -650,7 +662,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => !!res['data'].find(el => el.text === 'Views')) );
   }
 
@@ -696,7 +708,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         const templates = Object.values(res['data']['templates']).map(obj => Template.fromDatabase(obj as TemplateDatabase));
         const allRoles: Role[] = res['data']['courseRoles'].map(obj => Role.fromDatabase(obj));
@@ -735,7 +747,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
   }
 
@@ -762,7 +774,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
   }
 
@@ -774,7 +786,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
@@ -790,7 +802,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
   }
 
@@ -801,7 +813,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, this.httpOptions)
+    return this.post(url, null, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['file']) );
   }
 
@@ -819,7 +831,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
   }
 
@@ -832,7 +844,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         return {
           name: res['data']['name'],
@@ -853,7 +865,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
   }
 
@@ -866,7 +878,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
         const roles = parseRoles(res['data']['rolesHierarchy'], allRoles);
@@ -900,7 +912,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -915,7 +927,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['url']) );
   }
 
@@ -931,7 +943,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['url']) );
   }
 
@@ -944,7 +956,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
   }
 
@@ -961,7 +973,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -979,7 +991,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         return {
           pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
@@ -1006,7 +1018,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -1028,7 +1040,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -1046,7 +1058,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -1105,7 +1117,7 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, this.httpOptions)
+    return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
 
@@ -1122,7 +1134,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('docs/functions/getSchema.php', params);
 
-    return this.get(url, this.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res[0]) )
       .subscribe(courseID => {  // vai buscar o primeiro course identificado pelo id
 
@@ -1132,7 +1144,7 @@ export class ApiHttpService {
 
         const url = this.apiEndpoint.createUrlWithQueryParameters('docs/functions/getSchema.php', params);
 
-        return this.get(url, this.httpOptions)
+        return this.get(url, ApiHttpService.httpOptions)
           .pipe( map((res: any) => res[0]) )
           .subscribe(libraries => {
             console.log(libraries)

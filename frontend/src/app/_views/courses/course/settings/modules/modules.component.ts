@@ -44,7 +44,7 @@ export class ModulesComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
-      this.courseID = params.id;
+      this.courseID = parseInt(params.id);
       this.getModules(this.courseID);
     });
   }
@@ -93,6 +93,8 @@ export class ModulesComponent implements OnInit {
 
           if (module.id === 'views')
             this.updateManager.triggerUpdate(UpdateType.VIEWS);
+
+          Module.reloadStyles(this.courseID);
         },
         error => ErrorService.set(error),
         () => {

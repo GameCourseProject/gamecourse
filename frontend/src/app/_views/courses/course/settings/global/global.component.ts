@@ -36,7 +36,7 @@ export class GlobalComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
-      this.getCourseInfo(params.id);
+      this.getCourseInfo(parseInt(params.id));
     });
   }
 

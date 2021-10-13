@@ -26,10 +26,10 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
-      await this.initNavigation(params.id);
+      await this.initNavigation(parseInt(params.id));
 
       this.updateManager.update.subscribe(async type => {
-        if (type === UpdateType.VIEWS) await this.initNavigation(params.id);
+        if (type === UpdateType.VIEWS) await this.initNavigation(parseInt(params.id));
       });
     }).unsubscribe();
   }

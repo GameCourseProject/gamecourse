@@ -41,7 +41,7 @@ export class ViewsEditorComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
-      this.courseID = params.id;
+      this.courseID = parseInt(params.id);
 
       this.route.params.subscribe(childParams => {
         this.getTemplate(childParams.id);
