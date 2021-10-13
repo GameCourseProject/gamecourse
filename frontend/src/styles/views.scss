@@ -40,6 +40,11 @@
       vertical-align: middle;
       padding: 10px;
     }
+
+    &.table_body {
+      height: 45px;
+      border: 1px solid #666666;
+    }
   }
 
   &.block {
