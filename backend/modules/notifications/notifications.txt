@@ -5,17 +5,22 @@
         "partType": "block",
         "class": "notifications-container",
         "header": {
+            "id": "3883",
+          "viewId": "3883",
+          "role": "role.Student>special.Own",
+          "partType": "header",
+          "parentId": "1436",
             "title": {
                 "role": "role.Student>special.Own",
                 "partType": "text",
                 "value": "Notifications",
-                "info": null
+                "info": null,
             },
             "image": {
                 "role": "role.Student>special.Own",
                 "partType": "image",
                 "value": "images\/awards.svg",
-                "info": null
+                "info": null,
             }
         },
         "children": [
@@ -29,6 +34,10 @@
                         "class": "notification",
                         "partType": "block",
                         "header": {
+                            "id": "3884",
+                            "viewId": "3884",
+                            "role": "role.Student>special.Own",
+                            "partType": "header",
                             "title": {
                                 "role": "role.Student>special.Own",
                                 "partType": "text",
@@ -59,6 +68,10 @@
                         "role": "role.Student>special.Own",
                         "partType": "block",
                         "header": {
+                            "id": "3885",
+                            "viewId": "3885",
+                            "role": "role.Student>special.Own",
+                            "partType": "header",
                             "title": {
                                 "role": "role.Student>special.Own",
                                 "partType": "text",

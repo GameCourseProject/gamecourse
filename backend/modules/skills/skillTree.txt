@@ -207,6 +207,11 @@
                     }
                 ],
                 "header": {
+                    "id": "3909",
+                    "viewId": "3909",
+                    "role": "role.Default>role.Default",
+                    "partType": "header",
+                    "parentId": "3826",
                     "image": {
                         "id": "2944",
                         "viewId": "2944",
@@ -459,6 +464,11 @@
                     }
                 ],
                 "header": {
+                    "id": "3910",
+                    "viewId": "3910",
+                    "role": "role.Default>role.Default",
+                    "partType": "header",
+                    "parentId": "3826",
                     "image": {
                         "id": "3863",
                         "viewId": "3863",

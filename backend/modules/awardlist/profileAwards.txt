@@ -258,12 +258,17 @@
                     }
                 ],
                 "header": {
+                  "id": "3881",
+                  "viewId": "3881",
+                  "role": "role.Student>role.Default",
+                  "partType": "header",
+                  "parentId": "4033",
                     "image": {
                         "id": "4034",
                         "viewId": "4034",
                         "role": "role.Student>role.Default",
                         "partType": "image",
-                        "parentId": "4033",
+                        "parentId": "3881",
                         "viewIndex": "0",
                         "label": null,
                         "loopData": "{}",
@@ -283,7 +288,7 @@
                         "viewId": "4035",
                         "role": "role.Student>role.Default",
                         "partType": "text",
-                        "parentId": "4033",
+                        "parentId": "3881",
                         "viewIndex": "1",
                         "label": null,
                         "loopData": "{}",

@@ -1198,8 +1198,6 @@ class Views extends Module
             null,
             function (&$block) { //parse function
                 if (array_key_exists('header', $block)) {
-                    $block['header']['title']['type'] = 'value';
-                    $block['header']['image']['type'] = 'image';
                     $this->viewHandler->parsePart($block['header']['title']);
                     $this->viewHandler->parsePart($block['header']['image']);
                 }

@@ -173,6 +173,11 @@
                     }
                 ],
                 "header": {
+                    "id": "3908",
+                    "viewId": "3908",
+                    "role": "role.Default>role.Default",
+                    "partType": "header",
+                    "parentId": "3826",
                     "image": {
                         "id": "268",
                         "viewId": "268",

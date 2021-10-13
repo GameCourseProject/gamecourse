@@ -323,12 +323,17 @@
           }
         ],
         "header": {
+          "id": "3880",
+          "viewId": "3880",
+          "role": "role.Default>role.Default",
+          "partType": "header",
+          "parentId": "4049",
           "image": {
             "id": "4050",
             "viewId": "4050",
             "role": "role.Default>role.Default",
             "partType": "image",
-            "parentId": "4049",
+            "parentId": "3880",
             "viewIndex": "0",
             "label": null,
             "loopData": "{}",
@@ -348,7 +353,7 @@
             "viewId": "4051",
             "role": "role.Default>role.Default",
             "partType": "text",
-            "parentId": "4049",
+            "parentId": "3880",
             "viewIndex": "1",
             "label": null,
             "loopData": "{}",
