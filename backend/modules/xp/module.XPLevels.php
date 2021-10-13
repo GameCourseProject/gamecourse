@@ -548,7 +548,9 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
+        array('id' => 'views', 'mode' => 'hard'),
+        array('id' => 'badges', 'mode' => 'hard'),
+        array('id' => 'skills', 'mode' => 'hard')
     ),
     'factory' => function() {
         return new XPLevels();

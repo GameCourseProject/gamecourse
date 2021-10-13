@@ -132,6 +132,20 @@ API::registerFunction('core', 'getCourseInfo', function () {
         API::error("There is no course with that id: " . $courseId);
     }
 });
+
+//get course resources
+API::registerFunction('core', 'getCourseResources', function () {
+    API::requireCoursePermission();
+    API::requireValues('course');
+    $courseId = API::getValue('course');
+    $course = Course::getCourse($courseId, false);
+
+    if ($course != null) {
+        API::response(array('resources' => $course->getModulesResources()));
+    } else {
+        API::error("There is no course with that id: " . $courseId);
+    }
+});
 //------------------ File System-----------------------------------
 API::registerFunction('course', 'getDataFolders', function () {
 

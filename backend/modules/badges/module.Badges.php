@@ -1070,7 +1070,8 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
+        array('id' => 'views', 'mode' => 'hard'),
+        array('id' => 'xp', 'mode' => 'hard') // FIXME: only because of template; refactor
     ),
     'factory' => function () {
         return new Badges();
