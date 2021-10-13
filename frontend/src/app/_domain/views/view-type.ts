@@ -4,5 +4,6 @@ export enum ViewType {
   CHART = 'chart', // TODO
   TABLE = 'table',
   HEADER = 'header',
+  ROW = 'row',
   BLOCK = 'block',
 }

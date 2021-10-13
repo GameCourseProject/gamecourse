@@ -51,7 +51,7 @@ export class ViewText extends View {
       parsedObj.visibilityCondition,
       parsedObj.events,
       parsedObj.info,
-      obj.link
+      obj.link || null
     );
   }
 }

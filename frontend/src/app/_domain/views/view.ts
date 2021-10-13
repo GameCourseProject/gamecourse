@@ -29,7 +29,7 @@ export abstract class View {
 
   private _events?: any;
 
-  private _info?: any;
+  private _info?: any; // FIXME: prob deprecated; used in aspects?
 
   static readonly VIEW_CLASS = 'view';
 
