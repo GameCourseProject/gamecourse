@@ -40,7 +40,7 @@ class API {
         $courseUser = Course::getCourse(API::getValue('course'), false)->getLoggedUser();
         $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
         if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
-            API::error('You don\'t have permission acess this course!', 401);
+            API::error('You don\'t have permission to access this course!', 401);
             //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));
         }
     }

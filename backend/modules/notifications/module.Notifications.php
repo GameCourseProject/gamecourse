@@ -14,6 +14,7 @@ class Notifications extends Module
     {
         parent::addResources('js/');
         parent::addResources('css/notifications.css');
+        parent::addResources('imgs/');
     }
 
     public function init()

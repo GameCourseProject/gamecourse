@@ -10,6 +10,7 @@ class Charts extends Module {
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/charts.css');
+        parent::addResources('imgs');
     }
 
     public function registerChart($id, $processFunc) {

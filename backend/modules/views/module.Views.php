@@ -1348,17 +1348,13 @@ class Views extends Module
 
         //gets a parsed and processed view
         API::registerFunction('views', 'view', function () { //this is just being used for pages but can also deal with templates
+            API::requireCoursePermission();
+
             $data = $this->getViewSettings();
             $course = $data["course"];
             $courseUser = $course->getLoggedUser();
             $courseUser->refreshActivity();
-            if (API::hasKey('needPermission') && API::getValue('needPermission') == true) {
-                $user = Core::getLoggedUser();
-                $isAdmin = (($user != null && $user->isAdmin()) || $courseUser->isTeacher());
-                if (!$isAdmin) {
-                    API::error("This page can only be acessd by Adminis or Teachers, you don't have permission");
-                }
-            }
+
             $viewParams = [
                 'course' => (string)$data["courseId"],
                 'viewer' => (string)$courseUser->getId()
@@ -1368,9 +1364,7 @@ class Views extends Module
                 $viewParams['user'] = (string) API::getValue('user');
             }
 
-            API::response([ //'fields' => ,//not beeing user currently
-                'view' => $this->viewHandler->handle($data["viewSettings"], $course, $viewParams)
-            ]);
+            API::response(['view' => $this->viewHandler->handle($data["viewSettings"], $course, $viewParams)]);
         });
         //gets V of pages and templates for the views page
         API::registerFunction('views', 'listViews', function () {

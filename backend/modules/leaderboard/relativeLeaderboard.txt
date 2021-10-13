@@ -554,7 +554,7 @@
         "label": null,
         "loopData": "{}",
         "variables": [],
-        "value": "images\/leaderboard.svg",
+        "value": "modules/leaderboard/imgs/leaderboard.svg",
         "class": null,
         "style": null,
         "link": null,

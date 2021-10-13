@@ -29,6 +29,7 @@ class Skills extends Module
         parent::addResources('js/');
         parent::addResources('css/skills.css');
         parent::addResources('css/skill-page.css');
+        parent::addResources('imgs');
     }
 
     public function moduleConfigJson($courseId)

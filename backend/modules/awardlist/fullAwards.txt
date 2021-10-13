@@ -338,7 +338,7 @@
             "label": null,
             "loopData": "{}",
             "variables": [],
-            "value": "images/awards.svg",
+            "value": "modules/awards/imgs/awards.svg",
             "class": null,
             "style": null,
             "link": null,

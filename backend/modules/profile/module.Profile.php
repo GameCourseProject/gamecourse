@@ -12,6 +12,7 @@ class Profile extends Module {
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/profile.css');
+        parent::addResources('imgs');
     }
 
     public function init() {

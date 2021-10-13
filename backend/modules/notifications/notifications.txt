@@ -19,7 +19,7 @@
             "image": {
                 "role": "role.Student>special.Own",
                 "partType": "image",
-                "value": "images\/awards.svg",
+                "value": "modules/awards/imgs/awards.svg",
                 "info": null,
             }
         },
@@ -55,7 +55,7 @@
                             {
                                 "role": "role.Student>special.Own",
                                 "partType": "image",
-                                "value": "images\/close.svg",
+                                "value": "modules/notifications/imgs/close.svg",
                                 "info": null,
                                 "class": "close",
                                 "events": {
@@ -81,7 +81,7 @@
                             "image": {
                                 "role": "role.Student>special.Own",
                                 "partType": "image",
-                                "value": "images\/skills.svg",
+                                "value": "modules/skills/imgs/skills.svg",
                                 "info": null,
                                 "style": "background-color: {skillname=%notification.name].color}"
                             }
@@ -90,7 +90,7 @@
                             {
                                 "role": "role.Student>special.Own",
                                 "partType": "image",
-                                "value": "images/close.svg",
+                                "value":  "modules/notifications/imgs/close.svg",
                                 "info": null,
                                 "class": "close",
                                 "events": {

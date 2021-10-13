@@ -14,6 +14,7 @@ class Leaderboard extends Module {
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/leaderboard.css');
+        parent::addResources('imgs/');
     }
 
     public function init() {

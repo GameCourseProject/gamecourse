@@ -17,6 +17,7 @@ class AwardList extends Module
     {
         parent::addResources('js/');
         parent::addResources('css/awards.css');
+        parent::addResources('imgs/');
     }
 
     public function init()

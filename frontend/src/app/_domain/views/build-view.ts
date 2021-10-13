@@ -23,7 +23,7 @@ export function buildView(obj: ViewDatabase): View {
   else if (type === ViewType.IMAGE) return ViewImage.fromDatabase(obj as ViewImageDatabase);
   else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase);
   else if (type === ViewType.HEADER) return ViewHeader.fromDatabase(obj as ViewHeaderDatabase);
-  else if (type === ViewType.ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
+  else if (type === ViewType.ROW || type === 'headerRow') return ViewRow.fromDatabase(obj as ViewRowDatabase);
   else if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
   return null;
 }

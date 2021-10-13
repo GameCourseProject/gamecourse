@@ -504,7 +504,7 @@
       "viewId": "3879",
       "role": "role.Default",
       "partType": "header",
-      "parentId": "2754",
+      "parentId": "2732",
       "image": {
         "id": "2755",
         "viewId": "2755",
@@ -515,7 +515,7 @@
         "label": null,
         "loopData": "{}",
         "variables": [],
-        "value": "images\/leaderboard.svg",
+        "value": "modules/leaderboard/imgs/leaderboard.svg",
         "class": null,
         "style": null,
         "link": null,

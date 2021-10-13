@@ -553,7 +553,8 @@ class ViewHandler
         if ($organizedView["partType"] == "block" && sizeof($organizedView["children"]) > 0) {
             foreach ($organizedView["children"] as $key => $child) {
                 if ($child["partType"] == "header" && $child["role"] == $organizedView["role"]) {
-                    $organizedView["header"] = [];
+                    $organizedView["header"] = $child;
+                    unset($organizedView["header"]["children"]);
                     foreach ($child["children"] as $headerKey => $headerChild) {
                         if ($headerChild["role"] == $child["role"]) {
                             $element = $headerChild["partType"] == "image" ? $headerChild["partType"] : "title";
@@ -905,6 +906,7 @@ class ViewHandler
                 $this->lookAtTemplateReference($child, $organizedView["children"][$i]);
             }
         }
+        ;
         $this->lookAtHeader($organizedView);
         $this->lookAtTable($organizedView);
     }
