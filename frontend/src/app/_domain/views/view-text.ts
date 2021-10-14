@@ -1,4 +1,4 @@
-import {View, ViewDatabase, VisibilityType} from "./view";
+import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 
 export class ViewText extends View {
@@ -6,12 +6,12 @@ export class ViewText extends View {
   private _value: string;
   private _link?: string;
 
-  constructor(id: number, viewId: number, parentId: number, role: string, value: string, loopData?: any, variables?: any,
-              style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, info?: any, link?: any) {
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, value: string, loopData?: any,
+              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: any, link?: any) {
 
-    super(id, viewId, parentId, ViewType.TEXT, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, info);
+    super(id, viewId, parentId, ViewType.TEXT, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
+      visibilityCondition, events);
 
     this.value = value;
     if (link) this.link = link;
@@ -40,6 +40,7 @@ export class ViewText extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
+      parsedObj.mode,
       obj.value,
       parsedObj.loopData,
       parsedObj.variables,
@@ -50,7 +51,6 @@ export class ViewText extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.info,
       obj.link || null
     );
   }

@@ -1,4 +1,22 @@
-<div [classList]="view.class">
-  <bb-header *ngIf="view.header" [view]="view.header | as : ViewHeader"></bb-header>
-  <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
-</div>
+<ng-container
+  [ngTemplateOutlet]="SIMPLE">
+</ng-container>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #SIMPLE>
+  <div [classList]="view.class" [ngClass]="view.children.length === 0 ? BLOCK_EMPTY_CLASS : ''"
+       [attr.data-viewId]="view.viewId"
+       [attr.data-role]="edit ? view.role : null">
+
+    <bb-header *ngIf="view.header" [view]="view.header | as : ViewHeader"></bb-header>
+    <div [classList]="BLOCK_CHILDREN_CLASS">
+      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
+    </div>
+
+    <div *ngIf="edit && isEditingLayout" class="add-child"></div>
+  </div>
+</ng-template>

@@ -9,6 +9,8 @@ import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleTypeId} from "../../../../../../_domain/roles/role-type";
 import {Role} from "../../../../../../_domain/roles/role";
 import {User} from "../../../../../../_domain/users/user";
+import {View} from "../../../../../../_domain/views/view";
+import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
 
 @Component({
   selector: 'app-view-editor',
@@ -27,16 +29,22 @@ export class ViewsEditorComponent implements OnInit {
   fields: any[];
   rolesHierarchy: Role[];
   templates: Template[]
-  view: any[];
+  view: View;
   viewRoles: Role[];
 
   help: boolean = false;
+  clickedHelpOnce: boolean = false;
 
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private selection: ViewSelectionService
   ) { }
+
+  get RoleTypeId(): typeof RoleTypeId {
+    return RoleTypeId;
+  }
 
   ngOnInit(): void {
     this.loading = true;
@@ -49,18 +57,34 @@ export class ViewsEditorComponent implements OnInit {
     });
   }
 
-  get RoleTypeId(): typeof RoleTypeId {
-    return RoleTypeId;
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  getTemplate(templateId: number): void {
+    this.loading = true;
+    this.api.getTemplate(this.courseID, templateId)
+      .subscribe(
+        template => {
+          this.template = template;
+          // if (part.isTemplateRef) //TODO: templateRef
+          //   $('#warning_ref').show();
+        },
+        error => ErrorService.set(error),
+        () => this.getEditInfo(this.template)
+      )
+  }
+
   getEditInfo(template: Template): void {
     this.loading = true;
-    this.api.getEdit(this.courseID, template, {viewerRole: 'Default', userRole: 'Default'})
+
+    const roleParsed = Role.parse(template.role);
+    const roles = template.roleTypeId === RoleTypeId.ROLE_SINGLE ?
+      { viewerRole: roleParsed } :
+      { viewerRole: roleParsed.split('>')[1], userRole: roleParsed.split('>')[0] }
+
+    this.api.getEdit(this.courseID, template, roles)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => {
@@ -72,16 +96,6 @@ export class ViewsEditorComponent implements OnInit {
           this.viewRoles = res.viewRoles;
         },
         error => ErrorService.set(error)
-      )
-  }
-
-  getTemplate(templateId: number): void {
-    this.loading = true;
-    this.api.getTemplate(this.courseID, templateId)
-      .subscribe(
-        template => this.template = template,
-        error => ErrorService.set(error),
-        () => this.getEditInfo(this.template)
       )
   }
 
@@ -101,5 +115,4 @@ export class ViewsEditorComponent implements OnInit {
   canRedo(): boolean {
     return false;
   }
-
 }

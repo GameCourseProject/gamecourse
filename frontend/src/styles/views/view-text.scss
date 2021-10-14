@@ -1,0 +1,24 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.text {
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.editor {
+  .text {
+    padding: 10px 5px;
+  }
+}

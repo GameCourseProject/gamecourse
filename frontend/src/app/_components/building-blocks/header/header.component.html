@@ -1,16 +1,16 @@
 <ng-container
-  [ngTemplateOutlet]="BARE">
+  [ngTemplateOutlet]="SIMPLE">
 </ng-container>
 
 
 <!------------------------------------------------>
 <!------------------ VARIATIONS ------------------>
 <!------------------------------------------------>
-<!-- TODO: missing view commom settings -->
-<!-- TODO: missing aspect & editing -->
 
-<ng-template #BARE>
-  <div [classList]="view.class">
+<ng-template #SIMPLE>
+  <div [classList]="view.class"
+       [attr.data-viewId]="view.viewId"
+       [attr.data-role]="edit ? view.role : null">
     <bb-image [view]="view.image"></bb-image>
     <bb-text [view]="view.title"></bb-text>
   </div>

@@ -1,21 +1,25 @@
 <ng-container
-  [ngTemplateOutlet]="view.link ? LINK : BARE">
+  [ngTemplateOutlet]="view.link ? LINK : SIMPLE">
 </ng-container>
 
 
 <!------------------------------------------------>
 <!------------------ VARIATIONS ------------------>
 <!------------------------------------------------>
-<!-- TODO: missing view commom settings -->
-<!-- TODO: missing aspect & editing -->
-<!-- FIXME: rethink naming BARE to DEFAULT or SIMPLE -->
 
-<ng-template #BARE>
+<ng-template #SIMPLE>
   <span [classList]="view.class" [ngClass]="{'red': isEmpty}"
-    [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</span>
+        [attr.data-viewId]="view.viewId"
+        [attr.data-role]="edit ? view.role : null">
+    {{view.value}}
+  </span>
 </ng-template>
 
 <ng-template #LINK>
-  <a [classList]="view.class" [ngClass]="{'red': isEmpty}" href="{{view.link}}"
-     [attr.data-role]="edit ? view.role : null" [attr.data-viewId]="view.viewId">{{view.value}}</a>
+  <a href="{{view.link}}"
+     [classList]="view.class" [ngClass]="{'red': isEmpty}"
+     [attr.data-viewId]="view.viewId"
+     [attr.data-role]="edit ? view.role : null">
+    {{view.value}}
+  </a>
 </ng-template>

@@ -1,60 +1,18 @@
-/**
- * This file is for styles that should override any view's inner views styles,
- * and don't make up a component variation or are module specific.
- *
- * Examples :
- *  ✔  A table has text as headers, meaning view table has view text inside.
- *     We want to make header text red. Since this is not a variation of the
- *     view, we should add the styling to make it red in this file.
- *
- *  ❌ A view text can be a link. Since this is a variation of the view text
- *     we should add the styling for this directly in the view component styles.
- *
- *  ❌ We want to make leaderboard table have a red background. Since this is
- *     module specific styling it should be on the module styles folder.
- */
+@import "views/view-text";
+@import "views/view-image";
+@import "views/view-header";
+@import "views/view-table";
+@import "views/view-block";
 
-.view {
 
-  &.text {
-    &.header_title {
-      vertical-align: middle;
-      margin-left: 8px;
-      font-size: 16px;
-      padding: 10px 20px;
-    }
+.editor {
+  .view {
+    border: 2px solid lightgray;
+    margin: 15px;
+    cursor: pointer;
 
-    &.table_header {
-      font-size: 14px;
-    }
-
-    &.table_body {
-      font-size: 13px;
+    &.highlight {
+      border: 2px solid grey;
     }
   }
-
-  &.image {
-    &.header_image {
-      width: 45px;
-      height: 45px;
-      vertical-align: middle;
-      padding: 10px;
-    }
-
-    &.table_body {
-      height: 45px;
-      border: 1px solid #666666;
-    }
-  }
-
-  &.block {
-    .view {
-      margin: 10px;
-
-      .view {
-        margin: unset; // only block children
-      }
-    }
-  }
-
 }

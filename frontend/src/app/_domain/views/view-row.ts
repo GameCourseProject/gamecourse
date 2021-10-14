@@ -1,4 +1,4 @@
-import {View, ViewDatabase, VisibilityType} from "./view";
+import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
 
@@ -6,12 +6,12 @@ export class ViewRow extends View {
 
   private _values: View[];
 
-  constructor(id: number, viewId: number, parentId: number, role: string, values: View[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, values: View[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, info?: any) {
+              visibilityCondition?: any, events?: any) {
 
-    super(id, viewId, parentId, ViewType.ROW, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, info);
+    super(id, viewId, parentId, ViewType.ROW, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
+      visibilityCondition, events);
 
     this.values = values;
   }
@@ -31,6 +31,7 @@ export class ViewRow extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
+      parsedObj.mode,
       obj.values.map(view => buildView(view.value)),
       parsedObj.loopData,
       parsedObj.variables,
@@ -40,8 +41,7 @@ export class ViewRow extends View {
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
-      parsedObj.events,
-      parsedObj.info
+      parsedObj.events
     );
   }
 }

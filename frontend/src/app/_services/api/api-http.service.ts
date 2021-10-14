@@ -19,7 +19,7 @@ import {Module} from "../../_domain/modules/module";
 import {ImportModulesData} from "../../_views/settings/modules/modules.component";
 import {Moment} from "moment";
 import * as moment from "moment";
-import {Role, RoleDatabase} from "../../_domain/roles/role";
+import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/pages & templates/page";
 import {Template, TemplateDatabase} from "../../_domain/pages & templates/template";
 import {RoleType, RoleTypeId} from "../../_domain/roles/role-type";
@@ -671,13 +671,14 @@ export class ApiHttpService {
   /*** ------------------- Views ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getView(courseID: number, viewID: number): Observable<View> {
+  public getView(courseID: number, viewID: number, type: 'page' | 'template', userID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
       qs.push('request', 'view');
       qs.push('course', courseID);
-      qs.push('pageOrTemp', 'page');
+      qs.push('pageOrTemp', type);
       qs.push('view', viewID);
+      qs.push('user', userID); // if ROLE_INTERACTION, FIXME: should have a refactor, getPage()
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -691,8 +692,8 @@ export class ApiHttpService {
   /*** ---------------- Views Editor --------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getEdit(courseID: number, template: Template, roles: {viewerRole: string, userRole: string}):
-    Observable<{view: any[], fields: any[], templates: Template[], courseRoles: Role[], viewRoles: Role[], rolesHierarchy: Role[]}> {
+  public getEdit(courseID: number, template: Template, roles: {viewerRole: string, userRole?: string}):
+    Observable<{view: View, fields: any[], templates: Template[], courseRoles: Role[], viewRoles: Role[], rolesHierarchy: Role[]}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
@@ -718,20 +719,10 @@ export class ApiHttpService {
         } else if (template.roleTypeId === RoleTypeId.ROLE_INTERACTION) {
           viewRoles = res['data']['viewRoles'].map(arr => arr.map(obj => Role.fromDatabase(obj)))[0];
         }
-        const rolesHierarchy: Role[] = parseRoles(res['data']['rolesHierarchy'], allRoles);
+        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
 
-        return {view: res['data']['view'], fields: res['data']['fields'], templates, courseRoles: allRoles, viewRoles, rolesHierarchy}
+        return {view: buildView(res['data']['view'][0]), fields: res['data']['fields'], templates, courseRoles: allRoles, viewRoles, rolesHierarchy}
       }) );
-
-    function parseRoles(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
-      return hierarchy.map(obj => {
-        const role = allRoles.find(el => el.id === parseInt(obj.id));
-        if (obj.children) {
-          role.children = parseRoles(obj.children, allRoles);
-        }
-        return role;
-      })
-    }
   }
 
   public getTemplate(courseID: number, templateID: number): Observable<Template> {
@@ -881,19 +872,9 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
-        const roles = parseRoles(res['data']['rolesHierarchy'], allRoles);
+        const roles = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
         return {pages: res['data']['pages'].map(obj => Page.fromDatabase(obj)), roles: allRoles, rolesHierarchy: roles}
       }) );
-
-    function parseRoles(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
-      return hierarchy.map(obj => {
-        const role = allRoles.find(el => el.id === parseInt(obj.id));
-        if (obj.children) {
-          role.children = parseRoles(obj.children, allRoles);
-        }
-        return role;
-      })
-    }
   }
 
   public saveRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {

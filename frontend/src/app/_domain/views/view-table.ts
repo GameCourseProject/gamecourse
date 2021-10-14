@@ -1,4 +1,4 @@
-import {View, ViewDatabase, VisibilityType} from "./view";
+import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
 import {ErrorService} from "../../_services/error.service";
@@ -10,12 +10,12 @@ export class ViewTable extends View {
   private _rows: ViewRow[];
   private _nrColumns: number;
 
-  constructor(id: number, viewId: number, parentId: number, role: string, headerRows: ViewRow[], rows: ViewRow[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, headerRows: ViewRow[], rows: ViewRow[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, info?: any) {
+              visibilityCondition?: any, events?: any) {
 
-    super(id, viewId, parentId, ViewType.TABLE, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, info);
+    super(id, viewId, parentId, ViewType.TABLE, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
+      visibilityCondition, events);
 
     this.check(headerRows, rows);
 
@@ -71,6 +71,7 @@ export class ViewTable extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
+      parsedObj.mode,
       obj.headerRows.map(row => buildView(row)) as ViewRow[],
       obj.rows.map(row => buildView(row)) as ViewRow[],
       parsedObj.loopData,
@@ -81,8 +82,7 @@ export class ViewTable extends View {
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
-      parsedObj.events,
-      parsedObj.info
+      parsedObj.events
     );
   }
 }

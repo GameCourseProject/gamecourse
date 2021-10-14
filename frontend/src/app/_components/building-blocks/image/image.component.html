@@ -1,27 +1,31 @@
 <ng-container
-  [ngTemplateOutlet]="isEmpty ? EMPTY : view.link ? LINK : BARE">
+  [ngTemplateOutlet]="isEmpty ? EMPTY : view.link ? LINK : SIMPLE">
 </ng-container>
 
 
 <!------------------------------------------------>
 <!------------------ VARIATIONS ------------------>
 <!------------------------------------------------>
-<!-- TODO: missing view commom settings -->
-<!-- TODO: missing aspect & editing -->
-<!-- FIXME: rethink naming BARE to DEFAULT or SIMPLE -->
 
-<ng-template #BARE>
-  <span [classList]="view.class">
-    <img class="img" [src]="image.get()" alt="">
+<ng-template #SIMPLE>
+  <span [classList]="view.class"
+        [attr.data-viewId]="view.viewId"
+        [attr.data-role]="edit ? view.role : null">
+    <img class="img" [src]="image.get()" alt=""> <!-- FIXME: should have alt (accessibility) -->
   </span>
 </ng-template>
 
-<ng-template #LINK>
-  <a [classList]="view.class" href="{{view.link}}">
-    <img class="img" [src]="image.get()" alt="">
+<ng-template #LINK> <!-- FIXME: target should be an option -->
+  <a href="{{view.link}}" target="_blank"
+     [classList]="view.class"
+     [attr.data-viewId]="view.viewId"
+     [attr.data-role]="edit ? view.role : null">
+    <img class="img" [src]="image.get()" alt=""> <!-- FIXME: should have alt (accessibility) -->
   </a>
 </ng-template>
 
 <ng-template #EMPTY>
-  <div [classList]="view.class + ' placeholder red'"></div>
+  <div [classList]="view.class + ' placeholder red'"
+       [attr.data-viewId]="view.viewId"
+       [attr.data-role]="edit ? view.role : null"></div>
 </ng-template>

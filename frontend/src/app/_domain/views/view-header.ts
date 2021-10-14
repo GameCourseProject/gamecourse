@@ -1,6 +1,6 @@
 import {ViewImage, ViewImageDatabase} from "./view-image";
 import {ViewText, ViewTextDatabase} from "./view-text";
-import {View, ViewDatabase, VisibilityType} from "./view";
+import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
 
@@ -9,12 +9,12 @@ export class ViewHeader extends View{
   private _image: ViewImage;
   private _title: ViewText;
 
-  constructor(id: number, viewId: number, parentId: number, role: string, image: ViewImage, title: ViewText, loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, info?: any) {
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, image: ViewImage, title: ViewText,
+              loopData?: any, variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
+              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any) {
 
-    super(id, viewId, parentId, ViewType.HEADER, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, info);
+    super(id, viewId, parentId, ViewType.HEADER, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
+      visibilityCondition, events);
 
     this.image = image;
     this.title = title;
@@ -43,6 +43,7 @@ export class ViewHeader extends View{
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
+      parsedObj.mode,
       buildView(obj.image) as ViewImage,
       buildView(obj.title) as ViewText,
       parsedObj.loopData,
@@ -53,8 +54,7 @@ export class ViewHeader extends View{
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
-      parsedObj.events,
-      parsedObj.info
+      parsedObj.events
     );
   }
 }

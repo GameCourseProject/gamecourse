@@ -1,4 +1,4 @@
-import {View, ViewDatabase, VisibilityType, } from "./view";
+import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewHeader, ViewHeaderDatabase} from "./view-header";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
@@ -6,14 +6,14 @@ import {buildView} from "./build-view";
 export class ViewBlock extends View {
 
   private _children: View[];
-  private _header?: ViewHeader; // FIXME: should be a children as well
+  private _header?: ViewHeader; // FIXME: should be a child as well
 
-  constructor(id: number, viewId: number, parentId: number, role: string, children: View[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,
               variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, info?: any, header?: ViewHeader) {
+              visibilityCondition?: any, events?: any, header?: ViewHeader) {
 
-    super(id, viewId, parentId, ViewType.BLOCK, role, loopData, variables, style, cssId, cl, label, visibilityType,
-      visibilityCondition, events, info);
+    super(id, viewId, parentId, ViewType.BLOCK, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
+      visibilityCondition, events);
 
     this.children = children;
     if (header) this.header = header;
@@ -42,6 +42,7 @@ export class ViewBlock extends View {
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
+      parsedObj.mode,
       obj.children.map(child => buildView(child)),
       parsedObj.loopData,
       parsedObj.variables,
@@ -52,7 +53,6 @@ export class ViewBlock extends View {
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
       parsedObj.events,
-      parsedObj.info,
       obj.header ? buildView(obj.header) as ViewHeader : null
     );
   }

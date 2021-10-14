@@ -7,6 +7,7 @@ import {
   Router
 } from "@angular/router";
 
+import * as $ from "jquery";
 import '@extensions/string.extensions';
 
 @Component({

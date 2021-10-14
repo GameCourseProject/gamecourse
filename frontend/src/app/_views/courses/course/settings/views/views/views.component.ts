@@ -76,9 +76,9 @@ export class ViewsComponent implements OnInit {
     this.api.getViewsList(this.courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(res => {
-        this.allPages = res.pages;
-        this.allViewTemplates = res.templates;
-        this.allGlobalTemplates = res.globals;
+        this.allPages = res.pages.sort((a, b) => a.name.localeCompare(b.name));
+        this.allViewTemplates = res.templates.sort((a, b) => a.name.localeCompare(b.name));
+        this.allGlobalTemplates = res.globals.sort((a, b) => a.name.localeCompare(b.name));
 
         this.types = res.types;
 

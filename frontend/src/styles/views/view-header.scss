@@ -1,0 +1,41 @@
+/**
+ * ----------------------------
+ * DISPLAY VERSION
+ * ----------------------------
+ */
+
+.header {
+  width: fit-content;
+  margin-bottom: 20px;
+
+  .header_image {
+    width: 45px;
+    height: 45px;
+    vertical-align: middle;
+  }
+
+  .header_title {
+    vertical-align: middle;
+    margin-left: 8px;
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+}
+
+
+/**
+ * ----------------------------
+ * EDITOR VERSION
+ * ----------------------------
+ */
+
+.editor {
+  .header {
+    border-radius: 5px;
+
+    .header_title {
+      padding: 10px;
+      font-weight: 600;
+    }
+  }
+}

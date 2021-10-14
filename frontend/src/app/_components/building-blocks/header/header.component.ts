@@ -1,16 +1,16 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewHeader} from "../../../_domain/views/view-header";
 import {requireValues} from "../../../_utils/misc/misc";
+import {ViewMode} from "../../../_domain/views/view";
 
 @Component({
   selector: 'bb-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  templateUrl: './header.component.html'
 })
 export class HeaderComponent implements OnInit {
 
   @Input() view: ViewHeader;
-  @Input() edit: boolean;
+  edit: boolean;
 
   readonly HEADER_CLASS = 'header';
   readonly IMAGE_CLASS = 'header_image';
@@ -19,7 +19,8 @@ export class HeaderComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    requireValues([this.view.image, this.view.title]);
+    requireValues(this.view, [this.view.image, this.view.title]);
+    this.edit = this.view.mode === ViewMode.EDIT;
 
     this.view.class += ' ' + this.HEADER_CLASS;
     this.view.image.class += ' ' + this.IMAGE_CLASS;

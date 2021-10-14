@@ -59,6 +59,21 @@ export class Role {
     } else return role.split(".")[1];
   }
 
+  /**
+   * Parses roles hierarchy coming from backend to an appropriate
+   * format with nested roles.
+   *
+   * @param hierarchy
+   * @param allRoles
+   */
+  static parseHierarchy(hierarchy: RoleDatabase[], allRoles: Role[]): Role[] {
+    return hierarchy.map(obj => {
+      const role = allRoles.find(el => el.id === parseInt(obj.id));
+      if (obj.children) role.children = Role.parseHierarchy(obj.children, allRoles);
+      return role;
+    })
+  }
+
   static fromDatabase(obj: RoleDatabase): Role {
     return new Role(
       obj.id ? parseInt(obj.id) : null,

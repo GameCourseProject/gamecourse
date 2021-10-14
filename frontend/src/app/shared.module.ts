@@ -20,6 +20,7 @@ import { TableComponent } from './_components/building-blocks/table/table.compon
 import { HeaderComponent } from './_components/building-blocks/header/header.component';
 import {AnyComponent} from "./_components/building-blocks/any/any.component";
 import {AsPipe} from "./_pipes/as.pipe";
+import {ViewSelectionDirective} from "./_directives/view-selection.directive";
 
 
 @NgModule({
@@ -41,7 +42,8 @@ import {AsPipe} from "./_pipes/as.pipe";
     TableComponent,
     HeaderComponent,
     AnyComponent,
-    AsPipe
+    AsPipe,
+    ViewSelectionDirective
   ],
   exports: [
     NavbarComponent,
@@ -57,7 +59,7 @@ import {AsPipe} from "./_pipes/as.pipe";
     HeaderComponent,
     BlockComponent,
     AnyComponent,
-    TableComponent,
+    TableComponent
   ],
   imports: [
     CommonModule,

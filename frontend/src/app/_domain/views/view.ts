@@ -1,6 +1,11 @@
 import {Role} from "../roles/role";
 import {ViewType} from "./view-type";
 
+export enum ViewMode {
+  DISPLAY = 'display',
+  EDIT = 'edit'
+}
+
 export enum VisibilityType {
   VISIBLE = 'visible',
   INVISIBLE = 'invisible',
@@ -9,11 +14,12 @@ export enum VisibilityType {
 
 export abstract class View {
 
-  private _id: number;                    // Unique view id
-  private _viewId: number;                // All aspects of the view have same viewId
+  private _id: number;          // Unique view id
+  private _viewId: number;      // All aspects of the view have same viewId
   private _parentId: number;
   private _type: ViewType;
   private _role: string;
+  private _mode: ViewMode;
 
   private _loopData?: any;
 
@@ -29,20 +35,19 @@ export abstract class View {
 
   private _events?: any;
 
-  private _info?: any; // FIXME: prob deprecated; used in aspects?
-
   static readonly VIEW_CLASS = 'view';
 
 
-  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
-              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, info?: any) {
+  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
+              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: any) {
 
     this.id = id;
     this.viewId = viewId;
     this.parentId = parentId;
     this.type = type;
     this.role = role;
+    this.mode = mode;
     this.loopData = loopData;
     this.variables = variables;
     this.style = style;
@@ -50,9 +55,8 @@ export abstract class View {
     this.class = cl;
     this.label = label;
     this.visibilityType = visibilityType;
-    this.visibilityCondition = this.visibilityCondition;
+    this.visibilityCondition = visibilityCondition;
     this.events = events;
-    this.info = info;
   }
 
   get id(): number {
@@ -93,6 +97,14 @@ export abstract class View {
 
   set role(value: string) {
     this._role = value;
+  }
+
+  get mode(): ViewMode {
+    return this._mode;
+  }
+
+  set mode(value: ViewMode) {
+    this._mode = value;
   }
 
   get loopData(): any {
@@ -167,23 +179,15 @@ export abstract class View {
     this._events = value;
   }
 
-  get info(): any {
-    return this._info;
-  }
-
-  set info(value: any) {
-    this._info = value;
-  }
-
   /**
    * Parses a view object into one where all fields are in the
    * correct type and format.
    *
    * @param obj
    */
-  static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, loopData?: any,
-    variables?: any, style?: any, cssId?: string, class?: string, label?: string,
-    visibilityType?: VisibilityType, visibilityCondition?: any, events?: any, info?: any} {
+  static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode,
+    loopData?: any, variables?: any, style?: any, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
+    visibilityCondition?: any, events?: any} {
 
     return {
       id: parseInt(obj.id),
@@ -191,6 +195,7 @@ export abstract class View {
       parentId: parseInt(obj.parentId),
       type: obj.partType as ViewType,
       role: Role.parse(obj.role),
+      mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
       loopData: obj.loopData || null,
       variables: obj.variables || null,
       style: obj.style || null,
@@ -200,7 +205,6 @@ export abstract class View {
       visibilityType: VisibilityType[obj.visibilityType] || null,
       visibilityCondition: obj.visibilityCondition || null,
       events: obj.events || null,
-      info: obj.info || null
     }
   }
 }
@@ -211,6 +215,7 @@ export interface ViewDatabase {
   parentId: string;
   partType: string;
   role: string;
+  edit: boolean;
   loopData?: string;
   variables?: any;
   style?: string;
@@ -220,6 +225,5 @@ export interface ViewDatabase {
   visibilityType?: string;
   visibilityCondition?: string;
   events?: any;
-  info?: string;
 }
 

@@ -1,9 +1,9 @@
+import {View} from "../../_domain/views/view";
 import {ErrorService} from "../../_services/error.service";
 
-export function requireValues(values: any[]) {
-  const varToString = varObj => Object.keys(varObj)[0];
+export function requireValues(view: View, values: any[]) {
   values.forEach(value => {
     if (value === null || value === undefined)
-      ErrorService.set('Error: View requires \'' + varToString(value) + '\'.');
+      ErrorService.set('Error: View ' + view.type + ' doesn\'t have all required fields. View: ' + view);
   });
 }
