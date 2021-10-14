@@ -1223,6 +1223,27 @@ class Views extends Module
             'library'
         );
 
+        //participations.getVideoViews(user, nameSubstring)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getVideoViews',
+
+            function (int $user, $nameSubstring) use ($courseId) {
+                $table = "participation";
+
+                $where = ["user" => $user, "type" => "url viewed", "course" => $courseId];
+                $likeParams = ["description" => $nameSubstring];
+
+                $participations = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
+
+                return $this->createNode($participations, "participation", "collection");
+            },
+            "Returns a collection of unique url views for videos. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify videos.Ex:'[Video]%'",
+            'collection',
+            'participation',
+            'library'
+        );
+
 
         //participations.getForumParticipationsuser, forum)
         $this->viewHandler->registerFunction(
@@ -2133,7 +2154,7 @@ class Views extends Module
             //     }
             // }
             if ($fromModule)
-                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
+            $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
             else
                 $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }
