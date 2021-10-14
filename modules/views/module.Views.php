@@ -2154,7 +2154,7 @@ class Views extends Module
             //     }
             // }
             if ($fromModule)
-            $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
+                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
             else
                 $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }
