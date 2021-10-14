@@ -687,9 +687,10 @@ class ViewHandler
         //foreach ($aspectsViews as &$organizedView) {
         //$templateViews["children"] = [];
         foreach ($templateViews as &$aspect) {
+            $aspect['edit'] = $edit;
             $aspect["children"] = [];
             if (isset($parts[$aspect['id']])) {
-                $this->lookAtChildren($aspect['id'], $parts, $aspect);
+                $this->lookAtChildren($aspect['id'], $parts, $aspect, $edit);
             }
         }
         //print_r($templateViews);
@@ -893,15 +894,16 @@ class ViewHandler
         $organizedView["templateId"] = $aspect["templateId"];
     }
     //Go through views and update array with parameters info (it receives arrays with all the data, doesnt do more queries)
-    public function lookAtChildren($parent, $children, &$organizedView)
+    public function lookAtChildren($parent, $children, &$organizedView, $edit = false)
     {
         if (!array_key_exists($parent, $children))
             return;
 
         for ($i = 0; $i < count($children[$parent]); $i++) {
             $child = $children[$parent][$i];
+            $child['edit'] = $edit;
             $this->lookAtParameter($child, $organizedView);
-            $this->lookAtChildren($child['id'], $children, $organizedView["children"][$i]);
+            $this->lookAtChildren($child['id'], $children, $organizedView["children"][$i], $edit);
             if ($child["partType"] == "templateRef") {
                 $this->lookAtTemplateReference($child, $organizedView["children"][$i]);
             }

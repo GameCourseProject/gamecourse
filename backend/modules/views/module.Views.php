@@ -638,7 +638,7 @@ class Views extends Module
                 if (file_exists("photos/" . $user["value"]["username"] . ".png")) {
                     return new ValueNode("photos/" . $user["value"]["username"] . ".png");
                 }
-                return new ValueNode("images/no-photo.png");
+                return new ValueNode("photos/no-photo.png");
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
