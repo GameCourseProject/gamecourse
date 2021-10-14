@@ -133,6 +133,15 @@ def award_grade(target, item, contributions=None):
 	return
 
 @rule_function
+def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
+	""" 
+	Awards a post grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
+	return
+	
+@rule_function
 def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
 	""" 
 	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
