@@ -183,6 +183,7 @@
 .block .header .image .img, .view .header .image .img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .view .content .block .header .title,

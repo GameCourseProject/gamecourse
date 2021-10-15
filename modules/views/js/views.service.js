@@ -2482,8 +2482,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
         //find the right view to show for the globally selected role
         this.findViewsForRole(otherViews, currentGlobalViewerRole);
-        const rolesToCheck = roleViewer != currentGlobalViewerRole ? [roleViewer, currentGlobalViewerRole] : [roleViewer];
-
+        let rolesToCheck = roleViewer != currentGlobalViewerRole ? [roleViewer, currentGlobalViewerRole] : [roleViewer];
+        rolesToCheck = rolesToCheck.filter(role => role);
         rolesToCheck.forEach(role => {
             if (($("[data-role=" + role + "]").toArray().length == 0 || $("[data-role*='>" + role + "']").toArray().length == 0) && role != "Default") {
                 const roles = this.buildRolesHierarchyForOneRole(role);
@@ -2649,6 +2649,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         }
 
         else {
+            viewAspects = Object.values(viewAspects)
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
