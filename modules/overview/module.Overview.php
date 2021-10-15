@@ -38,6 +38,7 @@ ModuleLoader::registerModule(array(
     'id' => 'overview',
     'name' => 'Overview',
     'description' => 'Creates a view template with all the skills done.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

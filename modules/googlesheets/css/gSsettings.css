@@ -1,0 +1,52 @@
+#gSConfigPage .plugin_row{
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+#gSConfigPage .plugin_row input {
+    width: 334px;
+    margin-right: 20px;
+}
+#gSConfigPage .plugin_row span {
+    width: 105px;
+    display: inline-block;
+}
+#gSConfigPage .plugin_row .button {
+    margin-top: 10px;
+}
+
+#gSConfigPage .column{
+    display: flex;
+    flex-direction: column;
+}
+#gSConfigPage #sheet_names_row {
+    display: inline-flex !important;
+}
+
+#gSConfigPage #sheet_names{
+    width: calc(100% - 105px);
+    margin-left: 15px;
+}
+#gSConfigPage #sheet_names input {
+    margin-bottom: 5px;
+    margin-left: 5px;
+}
+
+#gSConfigPage .input_with_button{
+    width: calc(100% - 155px);
+}
+#gSConfigPage .input_with_button .button {
+    margin-left: 20px;
+}
+
+#gSConfigPage .periodicity input {
+    width: 150px;
+}
+#gSConfigPage .periodicity select {
+    width: 165px;
+    margin-right: 20px;
+    margin-left: 0;
+}
+#gSConfigPage input[type="file"].config_input.plugin {
+    border: none;
+}

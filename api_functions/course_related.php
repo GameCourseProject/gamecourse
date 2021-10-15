@@ -89,6 +89,7 @@ API::registerFunction('core', 'getCourseInfo', function () {
             //se views tiver active
             if (in_array("views", $course->getEnabledModules()))
                 Core::addSettings('Views', 'course.settings.views', true);
+
         }
 
         $navPages = Core::getNavigation();

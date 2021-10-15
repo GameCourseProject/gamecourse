@@ -58,6 +58,7 @@ ModuleLoader::registerModule(array(
     'id' => 'qr',
     'name' => 'QR',
     'description' => 'Generates a QR code to be used for student participation in class.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

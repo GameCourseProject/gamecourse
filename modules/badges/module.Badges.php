@@ -1067,6 +1067,7 @@ ModuleLoader::registerModule(array(
     'id' => 'badges',
     'name' => 'Badges',
     'description' => 'Enables Badges with 3 levels and xp points that can be atributed to a student in certain conditions.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

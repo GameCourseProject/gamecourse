@@ -664,6 +664,7 @@ ModuleLoader::registerModule(array(
     'id' => 'profiling',
     'name' => 'Profiling',
     'description' => 'Assigns students to clusters according to their profile.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

@@ -250,6 +250,7 @@ API::registerFunction('settings', 'courseModules', function () {
                 'id' => $module['id'],
                 'name' => $module['name'],
                 'dir' => $module['dir'],
+                'type' => $module['type'],
                 'version' => $module['version'],
                 'enabled' => $module['enabled'],
                 'canBeEnabled' => $canBeEnabled,

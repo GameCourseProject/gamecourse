@@ -15,7 +15,7 @@ app.controller('CourseSettings', function ($scope, $state, $compile, $smartboard
             tabs.append($compile('<li><a ui-sref="course.settings.global">This Course</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.roles">Roles</a></li>')($scope));
             tabs.append($compile('<li><a ui-sref="course.settings.modules">Modules</a></li>')($scope));
-            tabs.append($compile('<li><a ui-sref="course.settings.rules">Rules</a></li>')($scope));	
+            tabs.append($compile('<li><a ui-sref="course.settings.rules">Rules</a></li>')($scope));
             for (var i = 0; i < data.length; ++i)
                 tabs.append($compile(buildTabs(data[i], tabs, $smartboards, $scope))($scope));
             // tabs.append($compile('<li><a ui-sref="course.settings.about">About</a></li>')($scope));
@@ -489,7 +489,7 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-model='search' ><button class='magnifying-glass' id='search-btn'></button>  </div>")
 
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0" ng-click="openModule(module)"></div> ')
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0 && module.type === \'GameElement\'" ng-click="openModule(module)"></div> ')
     module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text">{{module.description}}</div>'));
@@ -498,6 +498,10 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     modules.append(module_card);
     //error section
     modules.append($("<div class='error_box'><div id='empty_search' class='error_msg' ng-if='mdls.length === 0'>No matches found</div></div>"));
+
+    // Modules Section
+    var modulesection = createSection($($element), 'Game Elements');
+    tabContent.append($compile(modulesection)($scope));
 
     tabContent.append($compile(search)($scope));
     tabContent.append($compile(modules)($scope));
@@ -535,6 +539,59 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     modal.append(viewModal);
     $compile(modal)($scope);
     $element.append(modal);
+
+
+    // Data Sources Section
+    var dsources = createSection($($element), 'Data Sources');
+    tabContent.append($compile(dsources)($scope));
+
+    dsmodules = $('<div id="modules"></div>');
+    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0  && module.type === \'DataSource\'" ng-click="openModule(module)"></div> ')
+    dsmodule_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
+    dsmodule_card.append($('<div class="header">{{module.name}}</div>'));
+    dsmodule_card.append($('<div class="text">{{module.description}}</div>'));
+    dsmodule_card.append($('<div ng-if="module.enabled != true" class="status disable">Disabled <div class="background"></div></div>'));
+    dsmodule_card.append($('<div ng-if="module.enabled == true" class="status enable">Enabled <div class="background"></div></div>'));
+    dsmodules.append(dsmodule_card);
+    //error section
+    dsmodules.append($("<div class='error_box'><div id='empty_search' class='error_msg' ng-if='mdls.length === 0'>No matches found</div></div>"));
+
+    tabContent.append($compile(dsmodules)($scope));
+
+    //modal for details of the module
+    dsmodal = $("<div class='modal' style='' id='view-module'></div>");
+    dsviewModal = $("<div class='modal_content'></div>");
+    dsviewModal.append($('<button class="close_btn icon" value="#view-module" onclick="closeModal(this)"></button>'));
+    dsheader = $('<div class= "header"></div>');
+    dsheader.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module_open.id}}/icon.svg)"></div>'));
+    dsheader.append($('<div class="title">{{module_open.name}} </div>'));
+    //se tiver dependencias pendentes tira-se o input e a class slider leva disabled
+    dsheader.append($('<div class= "on_off" ng-if="module_open.canBeEnabled == true"><label class="switch"><input id="active" type="checkbox" ng-model="module_open.enabled"><span class="slider round"></span></label></div>'))
+    dsheader.append($('<div class= "on_off" ng-if="module_open.canBeEnabled != true"><label class="switch disabled"><input id="active" type="checkbox" ng-model="module_open.enabled" disabled><span class="slider round"></span></label></div>'))
+
+
+
+    dsviewModal.append(dsheader);
+    dscontent = $('<div class="content">');
+    dsbox = $('<div class="inputs">');
+    dsbox.append($('<div class="full" id="description">{{module_open.description}}</div>'))
+    dsdependencies_row = $('<div class= "row"></div>');
+    dsdependencies = $('<div ><span class="label">Dependencies: </span></div>');
+    dsdependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled == true" ><span style="color: green">{{dependency.id}}</span> | </span>'))
+    dsdependencies.append($('<span class="details" ng-repeat="(i, dependency) in module_open.dependencies" ng-if="dependency.enabled != true" ><span style="color: red">{{dependency.id}}</span> | </span>'))
+
+    dsdependencies_row.append(dsdependencies);
+    dsbox.append(dsdependencies_row);
+    dsbox.append($('<div class= "row"><div ><span class="label">Version: </span><span class="details">{{module_open.version}}</span></div></div>'))
+    dsbox.append($('<div class= "row"><div ><span class="label">Path: </span><span class="details">{{module_open.dir}}</span></div></div>'))
+    dscontent.append(dsbox);
+    dscontent.append($('<button class="save_btn" ng-click="saveModule()" ng-disabled="!needsToBeSaved()" > Save </button>'))
+    dscontent.append($('<button ng-if="module_open.hasConfiguration == true" class="config_btn" ui-sref="course.settings.{{module_open.id}}"> Configure </button>'));
+    dsviewModal.append(dscontent);
+    dsmodal.append(dsviewModal);
+    $compile(dsmodal)($scope);
+    $element.append(dsmodal);
+
 
 });
 

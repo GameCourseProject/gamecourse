@@ -2125,6 +2125,7 @@ ModuleLoader::registerModule(array(
     'id' => 'views',
     'name' => 'Views',
     'description' => 'Enables views and the view editor to create pages with expression language.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'factory' => function () {

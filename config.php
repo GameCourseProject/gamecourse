@@ -1,13 +1,13 @@
-    <?php
-    define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecourse');
+<?php
+    define('CONNECTION_STRING', 'mysql:host=localhost;dbname=gamecourse2');
     define('CONNECTION_USERNAME', 'root');
     define('CONNECTION_PASSWORD', '');
     define('MODULES_FOLDER', 'modules');
     define('COURSE_DATA_FOLDER', 'course_data');
     define('BASE', 'gamecourse');
 
-    define('FENIX_CLIENT_ID', '1977390058176612');
-    define('FENIX_CLIENT_SECRET', 'YGNmsVmrW/60VZJolC6xk8LQsTjDtg3W9/BWrQrrra9cdGvFOjVjzTbRRtIwYcaCHPPGeuXmEcSgNt0vZnEHUg==');
+    define('FENIX_CLIENT_ID', '1132965128044834');
+    define('FENIX_CLIENT_SECRET', '1OJw/LkiqF0y86xXrmDAKcn36b4hyMm6Hj1CDJ79J8e70JIzp4XvBepFegfkgyi2wZKa0Zs1giZBp0w3NxnSzQ==');
     define('FENIX_REDIRECT_URL', 'http://localhost/gamecourse/auth/');
     define('FENIX_API_BASE_URL', 'https://fenix.tecnico.ulisboa.pt');
 

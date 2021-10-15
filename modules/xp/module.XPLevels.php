@@ -512,6 +512,7 @@ ModuleLoader::registerModule(array(
     'id' => 'xp',
     'name' => 'XP and Levels',
     'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

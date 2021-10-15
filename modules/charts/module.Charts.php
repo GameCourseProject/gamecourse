@@ -373,6 +373,7 @@ ModuleLoader::registerModule(array(
     'id' => 'charts',
     'name' => 'Charts',
     'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

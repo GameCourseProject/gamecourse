@@ -79,6 +79,7 @@ ModuleLoader::registerModule(array(
     'id' => 'awardlist',
     'name' => 'Award List',
     'description' => 'Enables Awards and creates a view template with list of awards per student.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array("1.1", "1.2"),
     'dependencies' => array(

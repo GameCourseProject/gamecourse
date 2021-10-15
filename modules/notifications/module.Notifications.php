@@ -153,6 +153,7 @@ ModuleLoader::registerModule(array(
     'id' => 'notifications',
     'name' => 'Notifications',
     'description' => 'Allows email notifications when a badge or points are atributed to a student.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

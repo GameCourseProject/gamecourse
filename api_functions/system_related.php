@@ -41,6 +41,7 @@ API::registerFunction('settings', 'modules', function() {
         $mod = array(
             'id' => $module['id'],
             'name' => $module['name'],
+            'type' => $module['type'],
             'dir' => $module['dir'],
             'version' => $module['version'],
             'dependencies' => $module['dependencies'],
