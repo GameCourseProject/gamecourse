@@ -20,10 +20,7 @@ class XPLevels extends Module
     {
 
         Core::$systemDB->delete("user_xp", ["course" => $courseId]);
-        $lvls = Core::$systemDB->selectMultiple("level", ["course" => $courseId]);
-        foreach ($lvls as $lvl) {
-            Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
-        }
+        Core::$systemDB->delete("level", ["course" => $courseId]);
     }
 
     public function calculateBonusBadgeXP($userId, $courseId)
