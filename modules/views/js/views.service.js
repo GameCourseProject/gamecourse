@@ -226,6 +226,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.build = function (scope, what, options) {
         var part = $parse(what)(scope);
+        console.log(what);
         return this.buildElement(scope, part, options);
     };
 
@@ -255,6 +256,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             //element.attr("style", "background-color: #ddedeb; ");//#881111
         }
         else {
+
             if (this.registeredPartType[part.partType] == undefined) {
                 console.error('Unknown part type: ' + part.partType);
                 return;
@@ -1141,7 +1143,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     function_typed = functionWithArgs[0];
                                 var_typed = gcvar[0].split("{")[1];
                                 lastobject = gcvar[gcvar.length - 2];//.replace(/\([0-9A-Za-z,"'_ %]*\)?/g, '');
-                                console.log(gcvar);
+                                //console.log(gcvar);
 
                                 let variable = varlist.concat(hierarchyVars).filter(el => el["name"] == var_typed)[0]; // %{var} 
                                 let object = variable; // %{var}.(...) ; variable over which the function will be applied
@@ -2576,8 +2578,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         $(".highlight").click(); // removes the highligh and the toolbar that can be seen as a child
         //if (roletype == ROLE_SINGLE)
         //console.log(viewAspects);
-
-        if (Array.from(viewAspects).some(el => $(el).hasClass('content')) || viewAspects.length != 1) {
+        if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).hasClass('table') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('svg') || $(el).is('text')) || viewAspects.length != 1) {
             const components = Array.from(viewAspects);
             for (component of components) {
                 const children = Array.from(component.children);
@@ -2648,8 +2649,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         }
 
+        // these tags do not have role and we do not want to do nothing when the element(s) are one of these html tags
+        // tags from table and chart
+        else if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('table') || $(el).is('svg') || $(el).is('text'))) {
+            ;
+        }
+
+
         else {
-            viewAspects = Object.values(viewAspects)
+            viewAspects = Object.values(viewAspects);
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
@@ -2664,6 +2672,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         return el.getAttribute('data-role') == role.name;
                     });
                 } else {
+                    //console.log(viewAspects);
                     otherViews = viewAspects.filter(function (el) {
                         return getViewerFromRole(el.getAttribute('data-role'), true) != role.name || getUserFromRole(el.getAttribute('data-role'), true) != targetUser;
                     });
