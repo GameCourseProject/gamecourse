@@ -474,6 +474,22 @@ class Views extends Module
             'user',
             'library'
         );
+        //users.hasPicture(user) returns collection of users
+        $this->viewHandler->registerFunction(
+            'users',
+            'hasPicture',
+            function (int $user) {
+                $username = Core::$systemDB->select("auth", ["game_course_user_id" => $user], "username");
+                if (file_exists("photos/" . $username . ".png")) {
+                    return new ValueNode(true);
+                }
+                return new ValueNode(false);
+            },
+            "Returns a boolean whether the user has a picture in the system or.",
+            'boolean',
+            'user',
+            'library'
+        );
         //%user.studentnumber
         $this->viewHandler->registerFunction(
             'users',
