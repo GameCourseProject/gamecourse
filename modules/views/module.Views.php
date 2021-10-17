@@ -1740,10 +1740,12 @@ class Views extends Module
             }
 
             $templates = $this->getTemplates();
-            $templates = array_filter($templates, function ($var, $key) use ($viewType) {
-                // returns whether the input integer is even
-                return $var["roleType"] == $viewType;
-            }, ARRAY_FILTER_USE_BOTH);
+            if ($viewType == 'ROLE_SINGLE') {
+                $templates = array_filter($templates, function ($var, $key) use ($viewType) {
+                    // returns whether the input integer is even
+                    return $var["roleType"] == $viewType;
+                }, ARRAY_FILTER_USE_BOTH);
+            }
             $templates = array_values($templates);
             //removes the template itself
             if (($key = array_search($viewSettings["viewId"], array_column($templates, 'viewId'))) !== FALSE) {
