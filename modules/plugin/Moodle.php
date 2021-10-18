@@ -870,6 +870,10 @@ public function parseLogsToDB($row, $db)
             if ($row['component'] == 'mod_url') {
                 $temp_action = "url " . $row['action'];
                 $temp_url = "view.php?id=" . $row['cmid'];
+                $sql4 = "SELECT name FROM " . $this->prefix . "url inner join " . $this->prefix . "logstore_standard_log on " . $this->prefix . "url.id =objectid where component='mod_url' and objectid=" . $row['objectid'] . ";";
+                $result4 = mysqli_query($db, $sql4);
+                $row4 = mysqli_fetch_assoc($result4);
+                $temp_module = $row4['name'];
             }
             if ($row['component'] == 'mod_forum') {
 
