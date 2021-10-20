@@ -353,11 +353,11 @@ def calculate_kmeans(data, num_clusters, min_cluster_size):
 
 	if np.all(counts > min_cluster_size):
 		kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(xp)
-		return num_clusters, kmeans
 	
 	else:
 		kmeans = KMeans(n_clusters=(num_clusters - 1), random_state=0).fit(xp)
-		return num_clusters - 1, kmeans
+
+	return kmeans
 
 def order_clusters(centers):
 	ordered = {}
@@ -370,7 +370,7 @@ def order_clusters(centers):
 
 def clustering(total_xp, maindata, headers, num_clusters, min_cluster_size):
 
-	n_clusters, prediction = calculate_kmeans(total_xp, num_clusters, min_cluster_size)
+	prediction = calculate_kmeans(total_xp, num_clusters, min_cluster_size)
 	ordered = order_clusters(prediction.cluster_centers_)
 	grades = []
 	clusters = []
