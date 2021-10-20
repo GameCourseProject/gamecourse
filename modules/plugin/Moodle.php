@@ -360,7 +360,7 @@ class Moodle
         $evaluator = $rowEvaluator['username'];
         $votesFields = array(
             "user" => $row["username"],
-            "description" => $row['name'] . ", " . $row['subject'],
+            "description" => addslashes($row['name'] . ", " . $row['subject']),
             "post" => "discuss.php?d=" . $row['id'] . "#p" . $row['itemid'],
             "date" => date('Y-m-d H:i:s', $row['timemodified']),
             "rating" => $row['rating'],
@@ -390,7 +390,6 @@ class Moodle
 
         foreach ($row_ as $row) {
             $votesField = $this->parseVotesToDB($row, $db);
-
             $prof = User::getUserIdByUsername($votesField["evaluator"]);
             $user = User::getUserIdByUsername($votesField["user"]);
             if ($user && $prof) {
