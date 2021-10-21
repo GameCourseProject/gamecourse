@@ -474,7 +474,7 @@ class Views extends Module
             'user',
             'library'
         );
-        //users.hasPicture(user) returns collection of users
+        //users.hasPicture(user) returns boolean
         $this->viewHandler->registerFunction(
             'users',
             'hasPicture',
@@ -485,7 +485,7 @@ class Views extends Module
                 }
                 return new ValueNode(false);
             },
-            "Returns a boolean whether the user has a picture in the system or.",
+            "Returns a boolean whether the user has a picture in the system or not.",
             'boolean',
             'user',
             'library'
