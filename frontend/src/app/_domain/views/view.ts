@@ -202,8 +202,9 @@ export abstract class View {
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
       class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
       label: (obj.label && !obj.label.isEmpty()) ? obj.label : null,
-      visibilityType: obj.visibilityType as VisibilityType || null,
-      visibilityCondition: obj.visibilityCondition || null,
+      visibilityType: obj.visibilityType as VisibilityType || VisibilityType.VISIBLE,
+      visibilityCondition: (obj.visibilityType as VisibilityType) === VisibilityType.CONDITIONAL &&
+                            obj.visibilityCondition && !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
       events: obj.events || null,
     }
   }

@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {View} from "../../../_domain/views/view";
+import {View, VisibilityType} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-type";
 import { ViewText } from 'src/app/_domain/views/view-text';
 import { ViewImage } from 'src/app/_domain/views/view-image';
@@ -18,6 +18,10 @@ export class AnyComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+  }
+
+  get VisibilityType(): typeof VisibilityType {
+    return VisibilityType;
   }
 
   get ViewType(): typeof ViewType {

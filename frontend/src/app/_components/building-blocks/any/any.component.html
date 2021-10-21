@@ -1,5 +1,7 @@
-<bb-text *ngIf="view.type === ViewType.TEXT" [view]="view | as : ViewText"></bb-text>
-<bb-image *ngIf="view.type === ViewType.IMAGE" [view]="view | as : ViewImage"></bb-image>
-<bb-header *ngIf="view.type === ViewType.HEADER" [view]="view | as : ViewHeader"></bb-header>
-<bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable"></bb-table>
-<bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock"></bb-block>
+<ng-container *ngIf="view.visibilityType === VisibilityType.VISIBLE">
+  <bb-text *ngIf="view.type === ViewType.TEXT" [view]="view | as : ViewText"></bb-text>
+  <bb-image *ngIf="view.type === ViewType.IMAGE" [view]="view | as : ViewImage"></bb-image>
+  <bb-header *ngIf="view.type === ViewType.HEADER" [view]="view | as : ViewHeader"></bb-header>
+  <bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable"></bb-table>
+  <bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock"></bb-block>
+</ng-container>
