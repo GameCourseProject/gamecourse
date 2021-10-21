@@ -616,7 +616,7 @@ class Badges extends Module
         );
 
         if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getId(), true);
+            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), true);
     }
 
     public function saveMaxReward($max, $courseId)

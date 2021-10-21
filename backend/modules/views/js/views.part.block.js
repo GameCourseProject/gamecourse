@@ -22,6 +22,7 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
             return part;
         },
         build: function (scope, part, options) {
+            scope.maxViewId = 0;
             function deleteIds(newPart) {
                 delete newPart.id;
                 for (var c in newPart.children) {
@@ -40,20 +41,33 @@ angular.module('module.views').run(function ($smartboards, $sbviews, $compile, $
 
             function updateViewIds(newPart, newViewId) {
                 newPart.viewId = newViewId;
+                scope.maxViewId = (parseInt(newViewId) + 1).toString();
                 for (var r in newPart.headerRows) {
                     newViewId = (parseInt(newViewId) + 1).toString();
+                    if (parseInt(newViewId) <= parseInt(scope.maxViewId)) {
+                        newViewId = (parseInt(scope.maxViewId) + 1).toString()
+                    }
                     updateViewIds(newPart.headerRows[r], newViewId);
                 }
                 for (var r in newPart.rows) {
                     newViewId = (parseInt(newViewId) + 1).toString();
+                    if (parseInt(newViewId) <= parseInt(scope.maxViewId)) {
+                        newViewId = (parseInt(scope.maxViewId) + 1).toString()
+                    }
                     updateViewIds(newPart.rows[r], newViewId);
                 }
                 for (var c in newPart.values) {
                     newViewId = (parseInt(newViewId) + 1).toString();
+                    if (parseInt(newViewId) <= parseInt(scope.maxViewId)) {
+                        newViewId = (parseInt(scope.maxViewId) + 1).toString()
+                    }
                     updateViewIds(newPart.values[c].value, newViewId);
                 }
                 for (var c in newPart.children) {
                     newViewId = (parseInt(newViewId) + 1).toString();
+                    if (parseInt(newViewId) <= parseInt(scope.maxViewId)) {
+                        newViewId = (parseInt(scope.maxViewId) + 1).toString()
+                    }
                     updateViewIds(newPart.children[c], newViewId);
                 }
             }

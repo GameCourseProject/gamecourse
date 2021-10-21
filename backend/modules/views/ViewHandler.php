@@ -142,7 +142,8 @@ class ViewHandler
                     if (!isset($copy["viewId"])) {
                         $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $viewId], '*', null, [['id', $viewId]]));
                         if ($viewIdExists) {
-                            $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                            $tmp = Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc');
+                            $lastViewId = intval(end($tmp)['viewId']) + 1;
                             Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $viewId]);
                             $viewPart["viewId"] = $lastViewId;
                         } else {
@@ -302,7 +303,8 @@ class ViewHandler
                     $headerId = Core::$systemDB->getLastId();
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $headerId], '*', null, [['id', $headerId]]));
                     if ($viewIdExists) {
-                        $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                        $tmp = Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc');
+                        $lastViewId = intval(end($tmp)['viewId']) + 1;
                         Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $headerId]);
                         $headerViewId = $lastViewId;
                     } else {

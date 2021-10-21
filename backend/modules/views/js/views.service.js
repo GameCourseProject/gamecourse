@@ -2578,7 +2578,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         //if (roletype == ROLE_SINGLE)
         //console.log(viewAspects);
 
-        if (Array.from(viewAspects).some(el => $(el).hasClass('content')) || viewAspects.length != 1) {
+        if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).hasClass('table') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('svg') || $(el).is('text')) || viewAspects.length != 1) {
             const components = Array.from(viewAspects);
             for (component of components) {
                 const children = Array.from(component.children);
@@ -2649,7 +2649,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         }
 
+        // these tags do not have role and we do not want to do nothing when the element(s) are one of these html tags
+        // tags from table and chart
+        else if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('table') || $(el).is('svg') || $(el).is('text'))) {
+            ;
+        }
+
+
         else {
+            viewAspects = Object.values(viewAspects);
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one

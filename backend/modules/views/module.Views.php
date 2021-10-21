@@ -474,6 +474,22 @@ class Views extends Module
             'user',
             'library'
         );
+        //users.hasPicture(user) returns collection of users
+        $this->viewHandler->registerFunction(
+            'users',
+            'hasPicture',
+            function (int $user) {
+                $username = Core::$systemDB->select("auth", ["game_course_user_id" => $user], "username");
+                if (file_exists("photos/" . $username . ".png")) {
+                    return new ValueNode(true);
+                }
+                return new ValueNode(false);
+            },
+            "Returns a boolean whether the user has a picture in the system or.",
+            'boolean',
+            'user',
+            'library'
+        );
         //%user.studentnumber
         $this->viewHandler->registerFunction(
             'users',
@@ -1756,6 +1772,12 @@ class Views extends Module
             }
 
             $templates = $this->getTemplates();
+            if ($viewType == 'ROLE_SINGLE') {
+                $templates = array_filter($templates, function ($var, $key) use ($viewType) {
+                    // returns whether the input integer is even
+                    return $var["roleType"] == $viewType;
+                }, ARRAY_FILTER_USE_BOTH);
+            }
             $templates = array_filter($templates, function ($var, $key) use ($viewType) {
                 // returns whether the input integer is even
                 return $var["roleType"] == $viewType;

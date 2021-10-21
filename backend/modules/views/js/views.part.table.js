@@ -307,7 +307,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     for (var cid = 0; cid < part.columns; cid++) {
                         var newPart = $sbviews.defaultPart('text');
                         newPart.role = part.role;
-                        newPart.viewId = nextViewId.toString();;
+                        newPart.viewId = nextViewId.toString();
                         row.values.push({ value: newPart });
                         $sbviews.setDefaultParamters(row);
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, newPart, childOptions)));
