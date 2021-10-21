@@ -8,7 +8,9 @@
 <!------------------------------------------------>
 
 <ng-template #SIMPLE>
-  <div [classList]="view.class" [ngClass]="view.children.length === 0 ? BLOCK_EMPTY_CLASS : ''"
+  <div [attr.id]="view.cssId"
+       [classList]="view.class" [ngClass]="view.children.length === 0 ? BLOCK_EMPTY_CLASS : ''"
+       [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
        [attr.data-role]="edit ? view.role : null">
 

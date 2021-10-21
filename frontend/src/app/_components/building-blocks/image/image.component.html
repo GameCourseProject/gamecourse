@@ -8,7 +8,9 @@
 <!------------------------------------------------>
 
 <ng-template #SIMPLE>
-  <span [classList]="view.class"
+  <span [attr.id]="view.cssId"
+        [classList]="view.class"
+        [attr.style]="view.style"
         [attr.data-viewId]="view.viewId"
         [attr.data-role]="edit ? view.role : null">
     <img class="img" [src]="image.get()" alt=""> <!-- FIXME: should have alt (accessibility) -->
@@ -17,7 +19,9 @@
 
 <ng-template #LINK> <!-- FIXME: target should be an option -->
   <a href="{{view.link}}" target="_blank"
+     [attr.id]="view.cssId"
      [classList]="view.class"
+     [attr.style]="view.style"
      [attr.data-viewId]="view.viewId"
      [attr.data-role]="edit ? view.role : null">
     <img class="img" [src]="image.get()" alt=""> <!-- FIXME: should have alt (accessibility) -->
@@ -25,7 +29,9 @@
 </ng-template>
 
 <ng-template #EMPTY>
-  <div [classList]="view.class + ' placeholder red'"
+  <div [attr.id]="view.cssId"
+       [classList]="view.class + ' placeholder red'"
+       [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
        [attr.data-role]="edit ? view.role : null"></div>
 </ng-template>

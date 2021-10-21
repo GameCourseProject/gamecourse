@@ -8,7 +8,9 @@
 <!------------------------------------------------>
 
 <ng-template #SIMPLE>
-  <span [classList]="view.class" [ngClass]="{'red': isEmpty}"
+  <span [attr.id]="view.cssId"
+        [classList]="view.class" [ngClass]="{'red': isEmpty}"
+        [attr.style]="view.style"
         [attr.data-viewId]="view.viewId"
         [attr.data-role]="edit ? view.role : null">
     {{view.value}}
@@ -17,7 +19,9 @@
 
 <ng-template #LINK>
   <a href="{{view.link}}"
+     [attr.id]="view.cssId"
      [classList]="view.class" [ngClass]="{'red': isEmpty}"
+     [attr.style]="view.style"
      [attr.data-viewId]="view.viewId"
      [attr.data-role]="edit ? view.role : null">
     {{view.value}}

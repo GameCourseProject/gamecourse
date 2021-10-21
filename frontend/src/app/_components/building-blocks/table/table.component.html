@@ -8,7 +8,9 @@
 <!------------------------------------------------>
 
 <ng-template #SIMPLE>
-  <div [classList]="view.class"
+  <div [attr.id]="view.cssId"
+       [classList]="view.class"
+       [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
        [attr.data-role]="edit ? view.role : null">
     <table>

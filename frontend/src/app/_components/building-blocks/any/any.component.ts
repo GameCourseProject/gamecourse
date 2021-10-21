@@ -9,13 +9,11 @@ import { ViewBlock } from 'src/app/_domain/views/view-block';
 
 @Component({
   selector: 'bb-any',
-  templateUrl: './any.component.html',
-  styleUrls: ['./any.component.scss']
+  templateUrl: './any.component.html'
 })
 export class AnyComponent implements OnInit {
 
   @Input() view: View;
-  @Input() edit: boolean;
 
   constructor() { }
 
