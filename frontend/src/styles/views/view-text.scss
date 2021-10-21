@@ -4,7 +4,7 @@
  * ----------------------------
  */
 
-.text {
+.view.text {
   position: relative;
   display: inline-block;
   font-size: 13px;
@@ -18,7 +18,7 @@
  */
 
 .editor {
-  .text {
+  .view.text {
     padding: 10px 5px;
   }
 }

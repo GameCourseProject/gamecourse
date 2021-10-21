@@ -10,6 +10,7 @@ import {Page} from "../../../../../../_domain/pages & templates/page";
 import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleType} from "../../../../../../_domain/roles/role-type";
 import {Reduce} from "../../../../../../_utils/display/reduce";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-views',
@@ -277,6 +278,10 @@ export class ViewsComponent implements OnInit {
     for (const key of Object.keys(obj)) {
       obj[key] = null;
     }
+  }
+
+  get Template(): typeof Template {
+    return Template;
   }
 
 }

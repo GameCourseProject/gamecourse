@@ -1717,7 +1717,7 @@ class Views extends Module
         //export template to a txt file on main project folder, it needs to be moved to a module folder to be used
         API::registerFunction('views', 'exportTemplate', function () {
             API::requireCourseAdminPermission();
-            API::requireValues('id', "name", 'course');
+            API::requireValues('id', 'course');
             $templateId = API::getValue('id');
             //get aspect
             $templateView = Core::$systemDB->select(
@@ -1725,10 +1725,8 @@ class Views extends Module
                 ["templateId" => $templateId]
             );
             //will get all the aspects (and contents) of the template
-            $views = $this->viewHandler->getViewWithParts($templateView["id"], null, true);
-            $filename = "Template-" . preg_replace("/[^a-zA-Z0-9-]/", "", API::getValue('name')) . "-" . $templateId . ".txt";
-            file_put_contents($filename, json_encode($views));
-            API::response(array('filename' => $filename));
+            $views = $this->viewHandler->getViewWithParts($templateView["id"], null, true); // FIXME: why edit true?
+            API::response(array('template' => json_encode($views)));
         });
         //get contents of a view with a specific aspect, for the edit page
         API::registerFunction('views', 'getEdit', function () {

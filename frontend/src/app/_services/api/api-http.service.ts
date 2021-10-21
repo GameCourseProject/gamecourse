@@ -1102,6 +1102,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public exportTemplate(courseID: number, templateId: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'exportTemplate');
+      qs.push('course', courseID);
+      qs.push('id', templateId);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      // .pipe( map((res: any) => 'data:text;charset=utf-8,' + encodeURIComponent(res['data']['template'])) );
+      .pipe( map((res: any) => res['data']['template']) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/

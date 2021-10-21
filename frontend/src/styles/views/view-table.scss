@@ -4,7 +4,7 @@
  * ----------------------------
  */
 
-.table {
+.view.table {
   position: relative;
   border-radius: 5px;
   overflow: auto;
@@ -51,7 +51,7 @@
  */
 
 .editor {
-  .table {
+  .view.table {
 
     table {
       padding: 0;

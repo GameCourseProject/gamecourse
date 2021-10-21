@@ -17,7 +17,7 @@ export class MainComponent implements OnInit {
   activeCourses: Course[] = [];
 
   constructor(
-    private apiHttpService: ApiHttpService
+    private api: ApiHttpService
   ) { }
 
   ngOnInit(): void {
@@ -26,7 +26,7 @@ export class MainComponent implements OnInit {
   }
 
   getUserActiveCourses(): void {
-    this.apiHttpService.getUserActiveCourses()
+    this.api.getUserActiveCourses()
       .subscribe(courses => {
         this.activeCourses = courses;
         this.loading = false;

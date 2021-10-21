@@ -4,7 +4,7 @@
  * ----------------------------
  */
 
-.header {
+.view.header {
   width: fit-content;
   margin-bottom: 20px;
 
@@ -30,7 +30,7 @@
  */
 
 .editor {
-  .header {
+  .view.header {
     border-radius: 5px;
 
     .header_title {
