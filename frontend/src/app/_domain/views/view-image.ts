@@ -6,8 +6,10 @@ export class ViewImage extends View {
   private _src: string;
   private _link: string;
 
+  static readonly IMAGE_CLASS = 'image';
+
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, src: string, loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any, link?: any) {
 
     super(id, viewId, parentId, ViewType.IMAGE, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
@@ -46,7 +48,7 @@ export class ViewImage extends View {
       parsedObj.variables,
       parsedObj.style,
       parsedObj.cssId,
-      parsedObj.class,
+      parsedObj.class + ' ' + this.IMAGE_CLASS,
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,

@@ -18,19 +18,15 @@ export class HeaderComponent implements OnInit {
   @Input() view: ViewHeader;
   edit: boolean;
 
-  readonly HEADER_CLASS = 'header';
-  readonly IMAGE_CLASS = 'header_image';
-  readonly TITLE_CLASS = 'header_title';
-
   constructor() { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.image, this.view.title]);
     this.edit = this.view.mode === ViewMode.EDIT;
 
-    this.view.class += ' ' + this.HEADER_CLASS + (!!this.view.events?.click ? ' clickable' : '');
-    this.view.image.class += ' ' + this.IMAGE_CLASS + (!!this.view.image.events?.click ? ' clickable' : '');
-    this.view.title.class += ' ' + this.TITLE_CLASS + (!!this.view.title.events?.click ? ' clickable' : '');
+    if (!!this.view.events?.click) this.view.class += ' clickable';
+    if (!!this.view.image.events?.click) this.view.image.class += ' clickable';
+    if (!!this.view.title.events?.click) this.view.title.class += ' clickable';
   }
 
 

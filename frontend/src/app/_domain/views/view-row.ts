@@ -6,8 +6,10 @@ export class ViewRow extends View {
 
   private _values: View[];
 
+  static readonly ROW_CLASS = 'row';
+
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, values: View[], loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any) {
 
     super(id, viewId, parentId, ViewType.ROW, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,

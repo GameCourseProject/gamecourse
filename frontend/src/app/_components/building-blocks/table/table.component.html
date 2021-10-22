@@ -22,7 +22,7 @@
       <!-- Header -->
       <thead>
         <tr *ngIf="edit && isEditingLayout" style="height: 30px;">
-          <th *ngFor="let i of [].constructor(view.nrColumns)" [classList]="TABLE_TOOLBAR_CLASS">
+          <th *ngFor="let i of [].constructor(view.nrColumns)" [classList]="ViewTable.TABLE_TOOLBAR_CLASS">
             <ng-container [ngTemplateOutlet]="TOP_TOOLBAR"></ng-container>
           </th>
         </tr>
@@ -32,7 +32,7 @@
             <bb-any [view]="header"></bb-any>
           </th>
 
-          <th *ngIf="edit && isEditingLayout" [classList]="TABLE_TOOLBAR_CLASS" style="width: 160px">
+          <th *ngIf="edit && isEditingLayout" [classList]="ViewTable.TABLE_TOOLBAR_CLASS" style="width: 160px">
             <ng-container [ngTemplateOutlet]="RIGHT_TOOLBAR"></ng-container>
           </th>
         </tr>
@@ -45,7 +45,7 @@
             <bb-any [view]="item"></bb-any>
           </td>
 
-          <td *ngIf="edit && isEditingLayout" [classList]="TABLE_TOOLBAR_CLASS" style="width: 160px">
+          <td *ngIf="edit && isEditingLayout" [classList]="ViewTable.TABLE_TOOLBAR_CLASS" style="width: 160px">
             <ng-container [ngTemplateOutlet]="RIGHT_TOOLBAR"></ng-container>
           </td>
         </tr>

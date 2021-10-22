@@ -20,20 +20,20 @@ export class BlockComponent implements OnInit {
   edit: boolean;
   isEditingLayout: boolean;
 
-  readonly BLOCK_CLASS = 'block';
-  readonly BLOCK_CHILDREN_CLASS = 'block_children';
-  readonly BLOCK_EMPTY_CLASS = 'block_empty';
-
   constructor() { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.children]);
-    this.view.class += ' ' + this.BLOCK_CLASS + (!!this.view.events?.click ? ' clickable' : '');
+    if (!!this.view.events?.click) this.view.class += ' clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
   }
 
   get ViewHeader(): typeof ViewHeader {
     return ViewHeader;
+  }
+
+  get ViewBlock(): typeof ViewBlock {
+    return ViewBlock;
   }
 
 

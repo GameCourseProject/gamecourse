@@ -10,8 +10,13 @@ export class ViewTable extends View {
   private _rows: ViewRow[];
   private _nrColumns: number;
 
+  static readonly TABLE_CLASS = 'table';
+  static readonly TABLE_HEADER_CLASS = 'table_header';
+  static readonly TABLE_BODY_CLASS = 'table_body';
+  static readonly TABLE_TOOLBAR_CLASS = 'table_toolbar';
+
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, headerRows: ViewRow[], rows: ViewRow[], loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any) {
 
     super(id, viewId, parentId, ViewType.TABLE, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
@@ -66,19 +71,25 @@ export class ViewTable extends View {
 
   static fromDatabase(obj: ViewTableDatabase): ViewTable {
     const parsedObj = View.parse(obj);
+
+    const headerRows = obj.headerRows.map(row => buildView(row)) as ViewRow[];
+    headerRows.forEach(row => row.values.forEach(header => header.class += ' ' + this.TABLE_HEADER_CLASS));
+    const rows = obj.rows.map(row => buildView(row)) as ViewRow[];
+    rows.forEach(row => row.values.forEach(r => r.class += ' ' + this.TABLE_BODY_CLASS));
+
     return new ViewTable(
       parsedObj.id,
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.headerRows.map(row => buildView(row)) as ViewRow[],
-      obj.rows.map(row => buildView(row)) as ViewRow[],
+      headerRows,
+      rows,
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
       parsedObj.cssId,
-      parsedObj.class,
+      parsedObj.class + ' ' + this.TABLE_CLASS,
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,

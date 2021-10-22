@@ -24,8 +24,6 @@ export class ImageComponent implements OnInit {
   isEmpty: boolean;
   image: ImageManager;
 
-  readonly IMAGE_CLASS = 'image';
-
   constructor(
     private sanitizer: DomSanitizer,
   ) {
@@ -34,7 +32,7 @@ export class ImageComponent implements OnInit {
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.src]);
-    this.view.class += ' ' + this.IMAGE_CLASS + (!!this.view.events?.click ? ' clickable' : '');
+    if(!!this.view.events?.click) this.view.class += ' clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
 
     if (this.view.src.isEmpty()) this.isEmpty = true;

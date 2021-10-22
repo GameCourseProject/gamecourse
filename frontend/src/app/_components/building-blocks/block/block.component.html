@@ -9,7 +9,7 @@
 
 <ng-template #SIMPLE>
   <div [attr.id]="view.cssId"
-       [classList]="view.class" [ngClass]="view.children.length === 0 ? BLOCK_EMPTY_CLASS : ''"
+       [classList]="view.class" [ngClass]="view.children.length === 0 ? ViewBlock.BLOCK_EMPTY_CLASS : ''"
        [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
        [attr.data-role]="edit ? view.role : null"
@@ -19,7 +19,7 @@
        [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
 
     <bb-header *ngIf="view.header" [view]="view.header | as : ViewHeader"></bb-header>
-    <div [classList]="BLOCK_CHILDREN_CLASS">
+    <div [classList]="ViewBlock.BLOCK_CHILDREN_CLASS">
       <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>
 

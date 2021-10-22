@@ -20,15 +20,13 @@ export class TextComponent implements OnInit {
 
   isEmpty: boolean;
 
-  readonly TEXT_CLASS = 'text';
-
   readonly DEFAULT = '(Empty value)';
 
   constructor() { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.value]);
-    this.view.class += ' ' + this.TEXT_CLASS + (!!this.view.events?.click ? ' clickable' : '');
+    if (!!this.view.events?.click) this.view.class += ' clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
     this.isEmpty = this.view.value.isEmpty();
   }

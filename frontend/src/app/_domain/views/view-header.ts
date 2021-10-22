@@ -9,8 +9,12 @@ export class ViewHeader extends View{
   private _image: ViewImage;
   private _title: ViewText;
 
+  static readonly HEADER_CLASS = 'header';
+  static readonly IMAGE_CLASS = 'header_image';
+  static readonly TITLE_CLASS = 'header_title';
+
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, image: ViewImage, title: ViewText,
-              loopData?: any, variables?: any, style?: any, cssId?: string, cl?: string, label?: string,
+              loopData?: any, variables?: any, style?: string, cssId?: string, cl?: string, label?: string,
               visibilityType?: VisibilityType, visibilityCondition?: any, events?: any) {
 
     super(id, viewId, parentId, ViewType.HEADER, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
@@ -38,19 +42,25 @@ export class ViewHeader extends View{
 
   static fromDatabase(obj: ViewHeaderDatabase): ViewHeader {
     const parsedObj = View.parse(obj);
+
+    const image = buildView(obj.image) as ViewImage;
+    image.class += ' ' + this.IMAGE_CLASS;
+    const title = buildView(obj.title) as ViewText;
+    title.class += ' ' + this.TITLE_CLASS;
+
     return new ViewHeader(
       parsedObj.id,
       parsedObj.viewId,
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      buildView(obj.image) as ViewImage,
-      buildView(obj.title) as ViewText,
+      image,
+      title,
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
       parsedObj.cssId,
-      parsedObj.class,
+      parsedObj.class + ' ' + this.HEADER_CLASS,
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,

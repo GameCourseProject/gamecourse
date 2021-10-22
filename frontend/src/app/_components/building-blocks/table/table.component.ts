@@ -8,6 +8,7 @@ import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
 import { EventHideView } from 'src/app/_domain/events/event-hide-view';
 import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
+import {ViewText} from "../../../_domain/views/view-text";
 
 @Component({
   selector: 'bb-table',
@@ -19,20 +20,23 @@ export class TableComponent implements OnInit {
   edit: boolean;
   isEditingLayout: boolean;
 
-  readonly TABLE_CLASS = 'table';
-  readonly TABLE_HEADER_CLASS = 'table_header';
-  readonly TABLE_BODY_CLASS = 'table_body';
-  readonly TABLE_TOOLBAR_CLASS = 'table_toolbar';
-
   constructor() { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
     this.edit = this.view.mode === ViewMode.EDIT;
 
-    this.view.class += ' ' + this.TABLE_CLASS + (!!this.view.events?.click ? ' clickable' : '');
-    this.view.headerRows.forEach(row => row.values.forEach(header => header.class += ' ' + this.TABLE_HEADER_CLASS + (!!header.events?.click ? ' clickable' : '')));
-    this.view.rows.forEach(row => row.values.forEach(r => r.class += ' ' + this.TABLE_BODY_CLASS + (!!r.events?.click ? ' clickable' : '')));
+    if (!!this.view.events?.click) this.view.class += ' clickable';
+    this.view.headerRows.forEach(row => row.values.forEach(header => {
+      if (!!header.events?.click) header.class += ' clickable';
+    }));
+    this.view.rows.forEach(row => row.values.forEach(r => {
+      if(!!r.events?.click) r.class += ' clickable';
+    }));
+  }
+
+  get ViewTable(): typeof ViewTable {
+    return ViewTable;
   }
 
 

@@ -25,7 +25,7 @@ export abstract class View {
   private _role: string;
   private _mode: ViewMode;
 
-  private _style?: any;
+  private _style?: string;
   private _cssId?: string;
   private _class?: string;
   private _label?: string;  // FIXME: use label or delete
@@ -43,7 +43,7 @@ export abstract class View {
 
 
   protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
-                        variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+                        variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
                         visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     this.id = id;
@@ -127,11 +127,11 @@ export abstract class View {
     this._variables = value;
   }
 
-  get style(): any {
+  get style(): string {
     return this._style;
   }
 
-  set style(value: any) {
+  set style(value: string) {
     this._style = value;
   }
 
@@ -190,13 +190,13 @@ export abstract class View {
    * @param obj
    */
   static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode,
-    loopData?: any, variables?: any, style?: any, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
+    loopData?: any, variables?: any, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
     visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
 
     return {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
-      parentId: parseInt(obj.parentId),
+      parentId: parseInt(obj.parentId) || null,
       type: obj.partType as ViewType,
       role: Role.parse(obj.role),
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,

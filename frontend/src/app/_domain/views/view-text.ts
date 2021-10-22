@@ -6,8 +6,10 @@ export class ViewText extends View {
   private _value: string;
   private _link?: string;
 
+  static readonly TEXT_CLASS = 'text';
+
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, value: string, loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any, link?: any) {
 
     super(id, viewId, parentId, ViewType.TEXT, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
@@ -46,7 +48,7 @@ export class ViewText extends View {
       parsedObj.variables,
       parsedObj.style,
       parsedObj.cssId,
-      parsedObj.class,
+      parsedObj.class + ' ' + this.TEXT_CLASS,
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
