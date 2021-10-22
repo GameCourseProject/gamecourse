@@ -9,6 +9,7 @@ import {User} from "../../../_domain/users/user";
 
 import {ImageManager} from "../../../_utils/images/image-manager";
 import {AuthType} from "../../../_domain/auth/auth-type";
+import {exists} from "../../../_utils/misc/misc";
 
 
 @Component({
@@ -70,7 +71,7 @@ export class MyInfoComponent implements OnInit {
 
   isReadyToEdit() {
     let isValid = function (text) {
-      return !text.isEmpty();
+      return exists(text) && !text.toString().isEmpty();
     };
 
     // Validate inputs

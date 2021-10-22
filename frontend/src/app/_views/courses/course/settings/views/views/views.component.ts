@@ -10,7 +10,7 @@ import {Page} from "../../../../../../_domain/pages & templates/page";
 import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleType} from "../../../../../../_domain/roles/role-type";
 import {Reduce} from "../../../../../../_utils/display/reduce";
-import {DownloadManager} from "../../../../../../_utils/download/download-manager";
+import {exists} from "../../../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-views',
@@ -261,7 +261,7 @@ export class ViewsComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return !text.isEmpty();
+      return exists(text) && !text.toString().isEmpty();
     }
 
     if (this.newView.type === 'page') {

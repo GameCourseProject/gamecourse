@@ -18,6 +18,7 @@ import {DownloadManager} from "../../../../_utils/download/download-manager";
 import {Reduce} from "../../../../_utils/display/reduce";
 
 import _ from 'lodash';
+import {exists} from "../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-users',
@@ -336,7 +337,7 @@ export class UsersComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return !text.isEmpty();
+      return exists(text) && !text.toString().isEmpty();
     }
 
     // Validate inputs

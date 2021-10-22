@@ -193,6 +193,9 @@ export abstract class View {
     loopData?: any, variables?: any, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
     visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
 
+    const visibilityType = obj.visibilityType === VisibilityType.CONDITIONAL || !(obj.visibilityType as VisibilityType) ?
+      VisibilityType.VISIBLE : obj.visibilityType as VisibilityType; // FIXME: transform to correct format in backend (curerntly returning 'conditional')
+
     return {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
@@ -206,10 +209,10 @@ export abstract class View {
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
       class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
       label: (obj.label && !obj.label.isEmpty()) ? obj.label : null,
-      visibilityType: obj.visibilityType as VisibilityType || VisibilityType.VISIBLE,
-      visibilityCondition: (obj.visibilityType as VisibilityType) === VisibilityType.CONDITIONAL &&
-                            obj.visibilityCondition && !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
-      events: obj.events && !!Object.keys(obj.events).length ?
+      visibilityType,
+      visibilityCondition: obj.visibilityType === VisibilityType.CONDITIONAL && obj.visibilityCondition &&
+                           !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
+      events: obj.events && !!Object.keys(obj.events).length && typeof obj.events !== 'string' ? // FIXME: transform to correct format in backend (currently '[]')
               objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
     }
   }

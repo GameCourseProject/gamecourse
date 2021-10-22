@@ -4,6 +4,7 @@ import {ActivatedRoute} from "@angular/router";
 import {Role} from "../../../../../_domain/roles/role";
 import {ErrorService} from "../../../../../_services/error.service";
 import {Page} from "../../../../../_domain/pages & templates/page";
+import {exists} from "../../../../../_utils/misc/misc";
 
 @Component({
   selector: 'app-roles',
@@ -167,7 +168,7 @@ export class RolesComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return !text.isEmpty();
+      return exists(text) && !text.toString().isEmpty();
     }
 
     const roleExists = this.roles.find(role => role.name === this.newRole.name);
