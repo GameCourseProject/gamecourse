@@ -336,7 +336,7 @@ export class UsersComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return (text != "" && text != undefined)
+      return !text.isEmpty();
     }
 
     // Validate inputs

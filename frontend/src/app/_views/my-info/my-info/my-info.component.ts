@@ -70,7 +70,7 @@ export class MyInfoComponent implements OnInit {
 
   isReadyToEdit() {
     let isValid = function (text) {
-      return text != "" && text != undefined;
+      return !text.isEmpty();
     };
 
     // Validate inputs

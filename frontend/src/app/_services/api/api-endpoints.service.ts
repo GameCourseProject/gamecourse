@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {UrlBuilder} from "../../_utils/api/url-builder";
 import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
+import {exists} from "../../_utils/misc/misc";
 
 @Injectable({
   providedIn: 'root'
@@ -65,7 +66,7 @@ export class ApiEndpointsService {
 
     // Push extra path variables
     for (const pathVariable of pathVariables) {
-      if (pathVariable !== null)
+      if (exists(pathVariable))
         encodedPathVariablesUrl += `/${encodeURIComponent(pathVariable.toString())}`;
     }
 

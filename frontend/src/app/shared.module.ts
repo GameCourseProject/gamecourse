@@ -21,6 +21,10 @@ import { HeaderComponent } from './_components/building-blocks/header/header.com
 import {AnyComponent} from "./_components/building-blocks/any/any.component";
 import {AsPipe} from "./_pipes/as.pipe";
 import {ViewSelectionDirective} from "./_directives/view-selection.directive";
+import {GoToPageDirective} from "./_directives/events/go-to-page.directive";
+import {HideViewDirective} from "./_directives/events/hide-view.directive";
+import {ShowViewDirective} from "./_directives/events/show-view.directive";
+import {ToggleViewDirective} from "./_directives/events/toggle-view.directive";
 
 
 @NgModule({
@@ -43,7 +47,11 @@ import {ViewSelectionDirective} from "./_directives/view-selection.directive";
     HeaderComponent,
     AnyComponent,
     AsPipe,
-    ViewSelectionDirective
+    ViewSelectionDirective,
+    GoToPageDirective,
+    HideViewDirective,
+    ShowViewDirective,
+    ToggleViewDirective
   ],
     exports: [
         NavbarComponent,

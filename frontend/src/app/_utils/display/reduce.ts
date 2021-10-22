@@ -3,6 +3,7 @@ import {User} from "../../_domain/users/user";
 import {Module} from "../../_domain/modules/module";
 import {Page} from "../../_domain/pages & templates/page";
 import {Template} from "../../_domain/pages & templates/template";
+import {exists} from "../misc/misc";
 
 /**
  * This class is responsible for reducing a list of items,
@@ -45,7 +46,7 @@ export class Reduce {
    * @param query
    */
   public search(items: any[], query?: string) {
-    if (query !== undefined)
+    if (exists(query))
       this.query = query;
 
     this.items = [];
@@ -62,7 +63,7 @@ export class Reduce {
    * @param filters
    */
   public filter(items: any[], filters?: string[]) {
-    if (filters !== undefined)
+    if (exists(filters))
       this.filters = filters;
 
     this.items = [];
@@ -80,10 +81,10 @@ export class Reduce {
    * @param filters
    */
   public searchAndFilter(items: any[], query?: string, filters?: string[]) {
-    if (query !== undefined)
+    if (exists(query))
       this.query = query;
 
-    if (filters !== undefined)
+    if (exists(filters))
       this.filters = filters;
 
     this.items = [];

@@ -2,6 +2,7 @@ interface String {
   toFlat(): string;
   isEmpty(): boolean;
   swapNonENChars(): string;
+  noWhiteSpace(): string;
 }
 
 /**
@@ -41,4 +42,14 @@ String.prototype.swapNonENChars = function(): string {
     .replace(/ñ/ig, 'n')
     .replace(/ß/ig, 'b')
     .replace(/æ/ig, 'ae');
+}
+
+
+/**
+ * Removes whitespace from a string.
+ *
+ * @return string
+ */
+String.prototype.noWhiteSpace = function(): string {
+  return this.replace(/\s*/g, '');
 }

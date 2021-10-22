@@ -1,5 +1,9 @@
 import {Role} from "../roles/role";
+import {EventType} from "./events/event-type";
 import {ViewType} from "./view-type";
+import {Event} from "./events/event";
+import {buildEvent} from "./events/build-event";
+import {objectMap} from "../../_utils/misc/misc";
 
 export enum ViewMode {
   DISPLAY = 'display',
@@ -33,14 +37,14 @@ export abstract class View {
   private _visibilityType?: VisibilityType;
   private _visibilityCondition?: any;
 
-  private _events?: any;
+  private _events?: {[key in EventType]?: Event};
 
   static readonly VIEW_CLASS = 'view';
 
 
-  constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
-              variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any) {
+  protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
+                        variables?: any, style?: any, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+                        visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     this.id = id;
     this.viewId = viewId;
@@ -171,11 +175,11 @@ export abstract class View {
     this._visibilityCondition = value;
   }
 
-  get events(): any {
+  get events(): {[key in EventType]?: Event} {
     return this._events;
   }
 
-  set events(value: any) {
+  set events(value: {[key in EventType]?: Event}) {
     this._events = value;
   }
 
@@ -187,7 +191,7 @@ export abstract class View {
    */
   static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode,
     loopData?: any, variables?: any, style?: any, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
-    visibilityCondition?: any, events?: any} {
+    visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
 
     return {
       id: parseInt(obj.id),
@@ -205,7 +209,8 @@ export abstract class View {
       visibilityType: obj.visibilityType as VisibilityType || VisibilityType.VISIBLE,
       visibilityCondition: (obj.visibilityType as VisibilityType) === VisibilityType.CONDITIONAL &&
                             obj.visibilityCondition && !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
-      events: obj.events || null,
+      events: obj.events && !!Object.keys(obj.events).length ?
+              objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
     }
   }
 }
@@ -225,6 +230,6 @@ export interface ViewDatabase {
   label?: string;
   visibilityType?: string;
   visibilityCondition?: string;
-  events?: any;
+  events?: {[key in EventType]?: string};
 }
 

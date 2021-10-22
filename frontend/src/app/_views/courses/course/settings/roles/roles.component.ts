@@ -167,7 +167,7 @@ export class RolesComponent implements OnInit {
 
   isReadyToSubmit() {
     let isValid = function (text) {
-      return (text != "" && text != undefined)
+      return !text.isEmpty();
     }
 
     const roleExists = this.roles.find(role => role.name === this.newRole.name);

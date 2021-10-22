@@ -1,5 +1,6 @@
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
+import {exists} from "../../_utils/misc/misc";
 
 export class Module {
   private _id: string;
@@ -161,9 +162,9 @@ export class Module {
       obj.version,
       obj.dependencies,
       obj.description,
-      obj.enabled !== null && obj.enabled !== undefined ? !!obj.enabled : null,
-      obj.canBeEnabled !== null && obj.canBeEnabled !== undefined ? !!obj.canBeEnabled : null,
-      obj.hasConfiguration !== null && obj.hasConfiguration !== undefined ? !!obj.hasConfiguration : null
+      exists(obj.enabled) ? !!obj.enabled : null,
+      exists(obj.canBeEnabled) ? !!obj.canBeEnabled : null,
+      exists(obj.hasConfiguration) ? !!obj.hasConfiguration : null
     );
   }
 }

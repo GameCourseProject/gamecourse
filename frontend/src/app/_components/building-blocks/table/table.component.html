@@ -12,7 +12,11 @@
        [classList]="view.class"
        [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
-       [attr.data-role]="edit ? view.role : null">
+       [attr.data-role]="edit ? view.role : null"
+       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
+       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
+       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
+       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
     <table>
 
       <!-- Header -->
