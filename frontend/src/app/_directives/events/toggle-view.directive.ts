@@ -1,5 +1,5 @@
 import {Directive, HostListener, Input} from '@angular/core';
-import {EventToggleView} from "../../_domain/views/events/event-toggle-view";
+import {EventToggleView} from "../../_domain/events/event-toggle-view";
 import {exists} from "../../_utils/misc/misc";
 
 @Directive({

@@ -4,7 +4,7 @@ import {EventAction} from "./event-action";
 
 export class EventHideView extends Event {
 
-  private _viewId: number;
+  private _viewId: number;  // FIXME: use label or delete
 
   constructor(type: EventType, viewId: number) {
     super(type, EventAction.HIDE_VIEW);

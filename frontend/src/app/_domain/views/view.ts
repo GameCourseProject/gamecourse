@@ -1,8 +1,8 @@
 import {Role} from "../roles/role";
-import {EventType} from "./events/event-type";
+import {EventType} from "../events/event-type";
 import {ViewType} from "./view-type";
-import {Event} from "./events/event";
-import {buildEvent} from "./events/build-event";
+import {Event} from "../events/event";
+import {buildEvent} from "../events/build-event";
 import {objectMap} from "../../_utils/misc/misc";
 
 export enum ViewMode {
@@ -25,19 +25,19 @@ export abstract class View {
   private _role: string;
   private _mode: ViewMode;
 
-  private _loopData?: any;
-
-  private _variables?: any;
-
   private _style?: any;
   private _cssId?: string;
   private _class?: string;
-  private _label?: string;
+  private _label?: string;  // FIXME: use label or delete
 
   private _visibilityType?: VisibilityType;
-  private _visibilityCondition?: any;
 
   private _events?: {[key in EventType]?: Event};
+
+  // Edit only params
+  private _loopData?: any;
+  private _variables?: any;
+  private _visibilityCondition?: any;
 
   static readonly VIEW_CLASS = 'view';
 

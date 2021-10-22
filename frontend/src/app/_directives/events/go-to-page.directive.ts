@@ -1,6 +1,6 @@
 import {Directive, HostListener, Input} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
-import {EventGoToPage} from "../../_domain/views/events/event-go-to-page";
+import {EventGoToPage} from "../../_domain/events/event-go-to-page";
 import {exists} from "../../_utils/misc/misc";
 
 @Directive({

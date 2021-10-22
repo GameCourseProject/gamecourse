@@ -1,7 +1,7 @@
 import {Event} from "./event";
 import {EventType} from "./event-type";
 import {EventAction} from "./event-action";
-import {exists} from "../../../_utils/misc/misc";
+import {exists} from "../../_utils/misc/misc";
 
 export class EventGoToPage extends Event {
   private _pageId: number;

@@ -2,12 +2,12 @@ import {Event} from "./event";
 import {EventType} from "./event-type";
 import {EventAction} from "./event-action";
 
-export class EventShowView extends Event {
+export class EventToggleView extends Event {
 
-  private _viewId: number;
+  private _viewId: number;  // FIXME: use label or delete
 
   constructor(type: EventType, viewId: number) {
-    super(type, EventAction.SHOW_VIEW);
+    super(type, EventAction.TOGGLE_VIEW);
     this.viewId = viewId;
   }
 
