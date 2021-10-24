@@ -8,7 +8,6 @@ import {ErrorService} from "../../../../../_services/error.service";
 
 import {Module} from "../../../../../_domain/modules/module";
 import {Reduce} from "../../../../../_utils/display/reduce";
-import {UpdateService, UpdateType} from "../../../../../_services/update.service";
 
 @Component({
   selector: 'app-modules',
@@ -33,8 +32,7 @@ export class ModulesComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute,
-    private updateManager: UpdateService
+    private route: ActivatedRoute
   ) { }
 
   get API_ENDPOINT(): string {
@@ -90,10 +88,6 @@ export class ModulesComponent implements OnInit {
         res => {
           module.enabled = !module.enabled;
           this.getModules(this.courseID);
-
-          if (module.id === 'views')
-            this.updateManager.triggerUpdate(UpdateType.VIEWS);
-
           Module.reloadStyles(this.courseID);
         },
         error => ErrorService.set(error),

@@ -40,9 +40,12 @@ export class PageComponent implements OnInit {
   getPage(): void {
     this.api.getLoggedUser()
       .subscribe(user => {
-          this.api.getView(this.courseID, this.pageID, 'page', user.id)
+          this.api.renderPage(this.courseID, this.pageID, user.id)
             .subscribe(
-              view => this.pageView = view,
+              view => {
+                console.log(view)
+                this.pageView = view
+              },
               error => ErrorService.set(error)
             );
       }, error => ErrorService.set(error));

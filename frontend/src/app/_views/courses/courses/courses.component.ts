@@ -29,7 +29,6 @@ export class CoursesComponent implements OnInit {
   user: User;
 
   allCourses: Course[];
-  usingMyCourses: boolean;
 
   reduce = new Reduce();
   order = new Order();
@@ -98,18 +97,12 @@ export class CoursesComponent implements OnInit {
 
   getCourses(): void {
     this.api.getUserCourses()
-      .subscribe(data => {
-        this.allCourses = data.courses;
-        this.usingMyCourses = !!data.myCourses;
+      .subscribe(courses => {
+        this.allCourses = courses;
 
         this.allCourses.forEach(course => {
           this.exportOptions[course.id] = { users: true, awards: true, modules: true };
         });
-
-        if (this.usingMyCourses) {  // non-admin
-          // active or non-active courses but must be visible
-          this.allCourses.filter(course => course.isVisible);
-        }
 
         this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
         this.reduceList(undefined, this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin));

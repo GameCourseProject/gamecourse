@@ -26,8 +26,8 @@
           </div>
 
           <div class="page_actions">
-            <span class="config_icon icon" title="Edit" (click)="editViewInfo(page, 'page')"></span>
-            <span class="delete_icon icon" (click)="viewToDelete = {view: page, type: 'page'}; isDeleteVerificationModalOpen = true"></span>
+            <span class="config_icon icon" title="Edit" (click)="editPage(page)"></span>
+            <span class="delete_icon icon" (click)="pageSelected = page; isDeleteVerificationModalOpen = true"></span>
           </div>
         </div>
 
@@ -38,7 +38,7 @@
       </div>
 
       <div class="action-buttons" style="width:30px">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'page'; isViewModalOpen = true;"></div>
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; clear(); isPageModalOpen = true;"></div>
       </div>
     </div>
 
@@ -65,17 +65,17 @@
         <div class="footer">
           <div class="page_name">{{(template | as : Template).name}}</div>
           <div class="template_actions">
-            <span class="config_icon icon" title="Edit" (click)="editViewInfo(template, 'template')"></span>
+            <span class="config_icon icon" title="Edit" (click)="editTemplate(template)"></span>
             <span *ngIf="!(template | as : Template).isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
             <span *ngIf="(template | as : Template).isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
             <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
-            <span class="delete_icon icon" title="Remove" (click)="viewToDelete = {view: template, type: 'template'}; isDeleteVerificationModalOpen = true"></span>
+            <span class="delete_icon icon" title="Remove" (click)="templateSelected = template; isDeleteVerificationModalOpen = true"></span>
           </div>
         </div>
       </div>
 
       <div class="action-buttons" style="width:30px">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; newView.type = 'template'; isViewModalOpen = true;"></div>
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; clear(); isTemplateModalOpen = true;"></div>
       </div>
     </div>
 
@@ -119,54 +119,85 @@
 </div>
 
 
-<!-- New / Edit View Modal -->
-<ng-container *ngIf="isViewModalOpen">
+<!-- New / Edit Page Modal -->
+<ng-container *ngIf="isPageModalOpen">
   <app-modal
-    [isModalOpen]="isViewModalOpen"
+    [isModalOpen]="isPageModalOpen"
     [id]="mode === 'add' ? 'new-view' : 'edit-view'"
-    [templateRef]="newViewModal"
-    (closeBtnClicked)="isViewModalOpen = false; clearObject(newView.view); this.newView.type = null"
+    [templateRef]="newPageModal"
+    (closeBtnClicked)="isPageModalOpen = false; clear()"
     [actionInProgress]="saving">
   </app-modal>
 </ng-container>
 
-<ng-template #newViewModal>
+<ng-template #newPageModal>
 
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{newView.type === 'page' ? 'page' : 'template'}}:</div>
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} page:</div>
 
   <div class="content">
-    <div class="inputs" id="inputs_view_box" style="padding-bottom: 26px">
+    <div class="inputs" style="padding-bottom: 26px">
       <!-- Name -->
       <div class="name full">
-        <input type="text" class="form__input" id="name" placeholder="Name *" [(ngModel)]="newView.view.name">
-        <label for="name" class="form__label">Name</label>
+        <input type="text" class="form__input" id="page_name" placeholder="Name *" [(ngModel)]="pageSelected.name">
+        <label for="page_name" class="form__label">Name</label>
       </div>
 
       <!-- View template -->
-      <select *ngIf="newView.type === 'page'" class="form__input pages_info" id="new_view_template" [(ngModel)]="newView.view.viewId">
+      <select class="form__input pages_info" [(ngModel)]="pageSelected.viewId">
         <option [ngValue]="null" disabled selected>Select a view template *</option>
         <option *ngFor="let template of allViewTemplates" [ngValue]="template.viewId" label="{{template.name}}">{{template.name}}</option>
       </select>
-
-      <!-- Role Type -->
-      <select *ngIf="newView.type === 'template'" class="form__input pages_info" id="new_view_role" [(ngModel)]="newView.view.roleTypeId">
-        <option [ngValue]="null" disabled selected>Select a role type *</option>
-        <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
-      </select>
     </div>
 
-    <div *ngIf="newView.type === 'page'" id="active_page" class="row">
+    <div id="active_page" class="row">
       <div class="on_off">
         <span>Enable Page</span>
         <label class="switch">
-          <input type="checkbox" [checked]="newView.view.isEnabled" (change)="newView.view.isEnabled = !newView.view.isEnabled">
+          <input type="checkbox" [checked]="pageSelected.isEnabled" (change)="pageSelected.isEnabled = !pageSelected.isEnabled">
           <span class="slider round"></span>
         </label>
       </div>
     </div>
 
-    <button class="cancel" (click)="isViewModalOpen = false; clearObject(newView.view); this.newView.type = null"> Cancel </button>
-    <button class="save_btn" (click)="saveView()" [disabled]="!isReadyToSubmit()"> Save </button>
+    <button class="cancel" (click)="isPageModalOpen = false; clear()"> Cancel </button>
+    <button class="save_btn" (click)="savePage(pageSelected)" [disabled]="!isReadyToSubmit('page')"> Save </button>
+  </div>
+
+</ng-template>
+
+
+<!-- New / Edit Template Modal -->
+<ng-container *ngIf="isTemplateModalOpen">
+  <app-modal
+    [isModalOpen]="isTemplateModalOpen"
+    [id]="mode === 'add' ? 'new-view' : 'edit-view'"
+    [templateRef]="newTemplateModal"
+    (closeBtnClicked)="isTemplateModalOpen = false; clear()"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #newTemplateModal>
+
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} template:</div>
+
+  <div class="content">
+    <div class="inputs" style="padding-bottom: 26px">
+      <!-- Name -->
+      <div class="name full">
+        <input type="text" class="form__input" id="template_name" placeholder="Name *" [(ngModel)]="templateSelected.name">
+        <label for="template_name" class="form__label">Name</label>
+      </div>
+
+      <!-- Role Type -->
+      <select class="form__input pages_info" id="new_view_role" [(ngModel)]="templateSelected.roleTypeId">
+        <option [ngValue]="null" disabled selected>Select a role type *</option>
+        <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
+      </select>
+    </div>
+
+    <button class="cancel" (click)="isTemplateModalOpen = false; clear()"> Cancel </button>
+    <button class="save_btn" (click)="saveTemplate(templateSelected)" [disabled]="!isReadyToSubmit('template')"> Save </button>
   </div>
 
 </ng-template>
@@ -177,11 +208,11 @@
   <app-verification-modal
     [isModalOpen]="isDeleteVerificationModalOpen"
     [id]="'delete-view'"
-    [text]="'Are you sure you want to delete this View?'"
-    [target]="viewToDelete.type + ': ' + viewToDelete.view.name + ' (id: ' + viewToDelete.view.id + ')'"
+    [text]="'Are you sure you want to delete this ' + (pageSelected ? 'page' : 'template') + '?'"
+    [target]="(pageSelected ? 'Page' : 'Template') + ': ' + (pageSelected?.name || templateSelected?.name) + ' (id: ' + (pageSelected?.id || templateSelected?.id) + ')'"
     [positiveBtnText]="'Delete'"
-    (positiveBtnClicked)="deleteView()"
-    (negativeBtnClicked)="viewToDelete = null; isDeleteVerificationModalOpen = false"
+    (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"
+    (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"
     (closeBtnClicked)="isDeleteVerificationModalOpen = false"
     [actionInProgress]="saving">
   </app-verification-modal>

@@ -5,6 +5,8 @@ import {Subject} from "rxjs";
 import {ApiHttpService} from "../../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../../_services/error.service";
 import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
+import {Page} from "../../../../../_domain/pages & templates/page";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-global',
@@ -16,8 +18,7 @@ export class GlobalComponent implements OnInit {
   loading: boolean;
 
   info: { id: number, name: string, activeUsers: number, awards: number, participations: number };
-  navigation: {name: string, seqId: number}[];
-  viewsModuleEnabled: boolean;
+  activePages: Page[];
 
   isViewDBModalOpen;
   isSuccessModalOpen;
@@ -51,19 +52,10 @@ export class GlobalComponent implements OnInit {
         info => {
           this.info = Object.assign({id: courseID}, info);
 
-          this.api.getCourseInfo(courseID)
+          this.api.getCourseWithInfo(courseID)
             .subscribe(courseInfo => {
-              this.navigation = [];
-              for (const nav of courseInfo.navigation) {
-                if (nav.text !== 'Users' && nav.text !== 'Course Settings')
-                  this.navigation.push({ name: nav.text, seqId: parseInt(nav.seqId) });
-              }
-
-              if (courseInfo.settings.find(el => el.text === 'Views'))
-                this.viewsModuleEnabled = true;
-
-              if (this.viewsModuleEnabled) this.getStyleFile(courseID);
-              else this.loading = false;
+              this.activePages = courseInfo.activePages;
+                this.getStyleFile(courseID);
               },
               error => ErrorService.set(error));
         },
@@ -73,6 +65,7 @@ export class GlobalComponent implements OnInit {
 
   getStyleFile(courseID: number): void {
     this.api.getStyleFile(courseID)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
         data => {
           this.style = {contents: data.styleFile, url: data.url};
@@ -84,8 +77,7 @@ export class GlobalComponent implements OnInit {
           if (this.style.url && this.style.contents !== '')
             $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + ApiEndpointsService.API_ENDPOINT + '/' + data.url + '">');
         },
-        error => ErrorService.set(error),
-        () => this.loading = false
+        error => ErrorService.set(error)
       );
   }
 
@@ -103,14 +95,14 @@ export class GlobalComponent implements OnInit {
       )
   }
 
-  move(item: {name: string, seqId: number}, direction: number): void {
+  move(page: Page, direction: number): void {
     // TODO: update from GameCourse v1
     ErrorService.set('Error: This action still needs to be updated to the current version. (global.component.ts::move(item, direction))');
   }
 
   createStyleFile(): void {
     this.saving = true;
-    this.api.createStyleFile(this.info.id)
+    this.api.createCourseStyleFile(this.info.id)
       .subscribe(url => {
         this.style = {contents: '', url: url};
         this.hasStyleFile = true;
@@ -143,9 +135,9 @@ export class GlobalComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  orderBySeqId() {
-    if (this.navigation.length === 0) return [];
-    return this.navigation.sort((a, b) => a.seqId - b.seqId)
+  orderBySeqId(): Page[] {
+    if (this.activePages.length === 0) return [];
+    return this.activePages.sort((a, b) => a.seqId - b.seqId)
   }
 
 }

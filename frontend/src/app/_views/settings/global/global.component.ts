@@ -25,10 +25,10 @@ export class GlobalComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.api.getSettingsGlobal()
-      .subscribe(global => {
-        this.default = global.theme;
-        this.themes = global.themes;
+    this.api.getThemeSettings()
+      .subscribe(settings => {
+        this.default = settings.theme;
+        this.themes = settings.themes;
         this.loading = false;
       },
         error => ErrorService.set(error));

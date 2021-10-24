@@ -1,5 +1,5 @@
 import {Moment} from "moment";
-import * as moment from "moment";
+import {dateFromDatabase} from "../../_utils/misc/misc";
 
 export class Course {
   private _id: number;
@@ -137,12 +137,12 @@ export class Course {
       obj.color,
       obj.year,
       obj.defaultLandingPage,
-      moment(obj.lastUpdate),
+      dateFromDatabase(obj.lastUpdate),
       !!parseInt(obj.isActive),
       !!parseInt(obj.isVisible),
       obj.roleHierarchy,
       obj.theme,
-      obj.nstudents != undefined ? parseInt(obj.nstudents) : undefined
+      obj.nrStudents != undefined ? parseInt(obj.nrStudents) : undefined
     );
   }
 }
@@ -159,18 +159,5 @@ export interface CourseDatabase {
   "isVisible": string,
   "roleHierarchy": string,
   "theme": string,
-  "nstudents": string,
-}
-
-export interface CourseInfo {
-  navigation: {text: string, sref: string, seqId: string, class: string, children: boolean, restrictAcess: boolean}[],
-  settings: {text: string, sref: string, restrictAcess: string}[],
-  landingPage: string,
-  landingPageID: string,
-  landingPageType: boolean,
-  courseName: string,
-  courseColor: string,
-  resources: {name: string, files: string[]}[],
-  user: {},
-  ruleSystemLastRun: string
+  "nrStudents"?: string,
 }

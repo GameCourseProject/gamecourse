@@ -41,7 +41,7 @@ export class ModulesComponent implements OnInit {
 
   getModules(): void {
     this.loading = true;
-    this.api.getSettingsModules()
+    this.api.getModulesAvailable()
       .subscribe(
         modules => {
           this.allModules = modules;
@@ -67,6 +67,7 @@ export class ModulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   public importModule(): void {
+    // FIXME: check if working
     this.loading = true;
 
     const reader = new FileReader();
@@ -86,6 +87,7 @@ export class ModulesComponent implements OnInit {
   }
 
   public exportModules(): void {
+    // FIXME: not working
     this.loading = true;
     this.api.exportModules()
       .subscribe(zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),

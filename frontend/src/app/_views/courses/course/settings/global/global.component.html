@@ -35,14 +35,14 @@
             <th class="action-column"></th>
             <th class="action-column"></th>
           </tr>
-          <tr *ngFor="let nav of orderBySeqId()">
-            <td>{{nav.seqId}}</td>
-            <td>{{nav.name}}</td>
+          <tr *ngFor="let page of orderBySeqId()">
+            <td>{{page.seqId}}</td>
+            <td>{{page.name}}</td>
             <td class="action-column">
-              <div class="icon up_icon" title="Move up" (click)="move(nav, 1)"></div>
+              <div class="icon up_icon" title="Move up" (click)="move(page, 1)"></div>
             </td>
             <td class="action-column">
-              <div class="icon down_icon" title="Move down" (click)="move(nav, -1)"></div>
+              <div class="icon down_icon" title="Move down" (click)="move(page, -1)"></div>
             </td>
           </tr>
           </tbody>
@@ -52,7 +52,7 @@
   </div>
 
   <!-- Styling -->
-  <div *ngIf="viewsModuleEnabled" class="section">
+  <div *ngIf="activePages.length > 0" class="section">
     <div class="divider">
       <div class="title"><span>Styling</span></div>
     </div>

@@ -3,7 +3,7 @@ export class Page {
   private _name: string;
   private _courseId: number;
   private _viewId: number;
-  private _sedId: number;
+  private _seqId: number;
   private _theme: string;
   private _isEnabled: boolean;
 
@@ -12,7 +12,7 @@ export class Page {
     this._name = name;
     this._courseId = courseId;
     this._viewId = viewId;
-    this._sedId = seqId;
+    this._seqId = seqId;
     this._theme = theme;
     this._isEnabled = isEnabled;
   }
@@ -49,12 +49,12 @@ export class Page {
     this._viewId = value;
   }
 
-  get sedId(): number {
-    return this._sedId;
+  get seqId(): number {
+    return this._seqId;
   }
 
-  set sedId(value: number) {
-    this._sedId = value;
+  set seqId(value: number) {
+    this._seqId = value;
   }
 
   get theme(): string {

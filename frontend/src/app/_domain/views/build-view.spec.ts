@@ -18,7 +18,7 @@ describe('Build View', () => {
   const CSS_ID = 'some-id';
   const CLASS = 'some-class';
   const VISIBILITY_TYPE = 'visible';
-  const EVENTS = {'click': 'goToPage(10)'};
+  const EVENTS = '{"click": "goToPage(10)"}';
 
   const LINK = 'https://tecnico.ulisboa.pt';
   const TEXT = 'This is some text';

@@ -1,5 +1,7 @@
 import {View} from "../../_domain/views/view";
 import {ErrorService} from "../../_services/error.service";
+import * as moment from 'moment';
+import {Moment} from "moment/moment";
 
 export function requireValues(view: View, values: any[]) {
   values.forEach(value => {
@@ -18,4 +20,9 @@ export function objectMap(obj, fn) {
       ([k, v], i) => [k, fn(v, k, i)]
     )
   );
+}
+
+export function dateFromDatabase(date: string): Moment {
+  const FORMAT = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g;
+  return FORMAT.test(date) ? moment(date).subtract(1, 'hours') : null; // FIXME: check utc and local
 }

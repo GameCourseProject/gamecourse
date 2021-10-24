@@ -28,7 +28,7 @@ export class ErrorService {
     this._callback = value;
   }
 
-  public static set(error: HttpErrorResponse | string, callback?: () => any): void {
+  public static set(error: HttpErrorResponse | string, callback?): void {
     if (callback)
       this.callback = callback;
 

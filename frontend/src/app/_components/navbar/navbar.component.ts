@@ -7,8 +7,9 @@ import {ErrorService} from "../../_services/error.service";
 import {UpdateService, UpdateType} from "../../_services/update.service";
 
 import {User} from "../../_domain/users/user";
-import {Course, CourseInfo} from "../../_domain/courses/course";
+import {Course} from "../../_domain/courses/course";
 import {ImageManager} from "../../_utils/images/image-manager";
+import {Page} from "../../_domain/pages & templates/page";
 
 @Component({
   selector: 'app-navbar',
@@ -25,10 +26,10 @@ export class NavbarComponent implements OnInit {
   courseNavigation: Navigation[];
   docsNavigation: Navigation[];
 
-  docs: boolean;
+  isDocs: boolean;
 
   course: Course;
-  courseInfo: CourseInfo;
+  activePages: Page[];
 
   constructor(
     private api: ApiHttpService,
@@ -47,7 +48,7 @@ export class NavbarComponent implements OnInit {
         this.getUserInfo();
 
       } else if (type === UpdateType.ACTIVE_PAGES) {
-        this.courseInfo = null;
+        this.activePages = null;
         this.initNavigations();
       }
     });
@@ -81,12 +82,12 @@ export class NavbarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async initNavigations(): Promise<void> {
-    this.docs = this.router.url.includes('docs');
-    this.course = await this.getCourse();
+    this.isDocs = this.router.url.includes('docs');
+    const isInCourse = this.router.url.includes('courses/');
 
-    if (this.docs) this.navigation = this.getDocsNavigation();
-    else if (!this.course) this.navigation = this.getMainNavigation();
-    else if (this.course) this.setCourseNavigation();
+    if (this.isDocs) this.navigation = this.getDocsNavigation();
+    else if (!isInCourse) this.navigation = this.getMainNavigation();
+    else if (isInCourse) this.navigation = await this.getCourseNavigation();
     else this.navigation = [];
   }
 
@@ -109,9 +110,9 @@ export class NavbarComponent implements OnInit {
         link: '/settings',
         name: 'Settings',
         children: [
-          {link: '/settings/about', name: 'About'},
           {link: '/settings/global', name: 'Global'},
-          {link: '/settings/modules', name: 'Modules'}
+          {link: '/settings/modules', name: 'Modules'},
+          {link: '/settings/about', name: 'About'}
         ]
       },
     }
@@ -145,43 +146,31 @@ export class NavbarComponent implements OnInit {
     return this.mainNavigation;
   }
 
-  setCourseNavigation(): void {
-    if (!this.courseInfo) {
-      this.api.getCourseInfo(this.course.id)
-        .subscribe(info => {
-          this.courseInfo = info;
-          this.courseNavigation = buildCourseNavigation(this.course.id, this.courseInfo);
-          this.navigation = this.courseNavigation;
-        },
-          error => ErrorService.set(error));
-    } else {
-      this.navigation = this.courseNavigation;
+  async getCourseNavigation(): Promise<Navigation[]> {
+    if (!this.course || !this.activePages) {
+      const courseInfo = await this.getCourseInfo();
+      this.course = courseInfo.course;
+      this.activePages = courseInfo.activePages;
+      this.courseNavigation = buildCourseNavigation(this.course.id, this.activePages);
     }
+    return this.courseNavigation;
 
-    function buildCourseNavigation(courseID: number, courseInfo: CourseInfo): Navigation[] {
+    function buildCourseNavigation(courseID: number, activePages: Page[]): Navigation[] {
       const path = '/courses/' + courseID + '/';
-
-      return courseInfo.navigation.map(nav => {
-        if (nav.text === 'Users') return { link: path + 'users', name: nav.text }
-        else if (nav.text === 'Course Settings') {
-          const children: Navigation[] = [
+      const fixed = [
+        {link: path + 'users', name: 'Users'},
+        {link: path + 'settings', name: 'Course Settings', children: [
             {link: path + 'settings/global', name: 'This Course'},
             {link: path + 'settings/roles', name: 'Roles'},
             {link: path + 'settings/modules', name: 'Modules'},
-            {link: path + 'settings/rules', name: 'Rules'}
-          ];
-
-          if (courseInfo.settings.find(el => el.text === 'Views'))
-            children.push({link: path + 'settings/views', name: 'Views'});
-
-          return { link: path + 'settings', name: nav.text, children }
-
-        } else {
-          // FIXME: refactor api link
-          const pageId = parseInt(nav.sref.substr(nav.sref.search('id')).replace("id:'", "").split("'")[0]);
-          return { link: path + 'pages/' + pageId, name: nav.text }
-        }
-      })
+            {link: path + 'settings/rules', name: 'Rules'},
+            {link: path + 'settings/views', name: 'Views'}
+        ]}
+      ];
+      const pages = activePages.map(page => {
+        return {link: path + 'pages/' + page.id, name: page.name};
+      });
+      return pages.concat(fixed);
     }
   }
 
@@ -228,11 +217,11 @@ export class NavbarComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async getCourse(): Promise<Course> {
+  async getCourseInfo(): Promise<{course: Course, activePages: Page[]}> {
     const urlParts = this.router.url.substr(1).split('/');
     if (urlParts.includes('courses') && urlParts.length >= 2) {
       const courseID = parseInt(urlParts[1]);
-      return await this.api.getCourse(courseID).toPromise();
+      return await this.api.getCourseWithInfo(courseID).toPromise();
     } else return null;
   }
 
@@ -244,7 +233,7 @@ export class NavbarComponent implements OnInit {
 
 }
 
-interface Navigation {
+export interface Navigation {
   link: string,
   name: string,
   children?: Navigation[]

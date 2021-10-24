@@ -196,6 +196,8 @@ export abstract class View {
     const visibilityType = obj.visibilityType === VisibilityType.CONDITIONAL || !(obj.visibilityType as VisibilityType) ?
       VisibilityType.VISIBLE : obj.visibilityType as VisibilityType; // FIXME: transform to correct format in backend (curerntly returning 'conditional')
 
+    if (obj.events) obj.events = JSON.parse(obj.events);
+
     return {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
@@ -212,7 +214,7 @@ export abstract class View {
       visibilityType,
       visibilityCondition: obj.visibilityType === VisibilityType.CONDITIONAL && obj.visibilityCondition &&
                            !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
-      events: obj.events && !!Object.keys(obj.events).length && typeof obj.events !== 'string' ? // FIXME: transform to correct format in backend (currently '[]')
+      events: obj.events && !!Object.keys(obj.events).length ?
               objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
     }
   }
@@ -233,6 +235,6 @@ export interface ViewDatabase {
   label?: string;
   visibilityType?: string;
   visibilityCondition?: string;
-  events?: {[key in EventType]?: string};
+  events?: string; // format: '{[key in EventType]?: string}'
 }
 

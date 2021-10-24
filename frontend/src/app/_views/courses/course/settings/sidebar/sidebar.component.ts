@@ -1,11 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {ErrorService} from "../../../../../_services/error.service";
-import {UpdateService, UpdateType} from "../../../../../_services/update.service";
-
-import {Course} from "../../../../../_domain/courses/course";
+import {Navigation} from "../../../../../_components/navbar/navbar.component";
 
 @Component({
   selector: 'app-course-settings-sidebar',
@@ -14,29 +10,22 @@ import {Course} from "../../../../../_domain/courses/course";
 })
 export class SidebarComponent implements OnInit {
 
-  course: Course;
-
-  navigation: { name: string, link: string }[] = [];
+  courseID: number;
+  navigation: Navigation[] = [];
 
   constructor(
-    private api: ApiHttpService,
-    private route: ActivatedRoute,
-    private updateManager: UpdateService
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
-      await this.initNavigation(parseInt(params.id));
-
-      this.updateManager.update.subscribe(async type => {
-        if (type === UpdateType.VIEWS) await this.initNavigation(parseInt(params.id));
-      });
+      this.courseID = parseInt(params.id);
+      this.initNavigation();
     }).unsubscribe();
   }
 
-  async initNavigation(courseID: number) {
-    this.course = await this.getCourse(courseID);
-    const path = '/courses/' + this.course.id + '/settings/';
+  initNavigation() {
+    const path = '/courses/' + this.courseID + '/settings/';
 
     this.navigation = [
       {
@@ -54,18 +43,12 @@ export class SidebarComponent implements OnInit {
       {
         name: 'Rules',
         link: path + 'rules'
+      },
+      {
+        name: 'Views',
+        link: path + 'views'
       }
     ];
-
-    this.api.hasViewsEnabled(this.course.id)
-      .subscribe(has => {
-          if (has) this.navigation.push({name: 'Views', link: path + 'views'});
-        },
-        error => ErrorService.set(error));
-  }
-
-  async getCourse(courseID: number): Promise<Course> {
-    return await this.api.getCourse(courseID).toPromise();
   }
 
 }

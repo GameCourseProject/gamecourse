@@ -4,14 +4,14 @@
   <a class="logo" [routerLink]="'/'"></a>
 
   <!-- User Info -->
-  <div *ngIf="!docs && user" class="user_info">
+  <div *ngIf="!isDocs && user" class="user_info">
     <div class="user_id">{{user.username}}</div>
     <a class="icon" id="user_icon" [routerLink]="'/my-info'"><img [src]="photo.get()" alt=""></a>
     <a class="icon" id="user_exit" (click)="logout()"></a>
   </div>
 
   <!-- Menu -->
-  <ul class="menu" [ngClass]="{'documentation': docs}">
+  <ul class="menu" [ngClass]="{'documentation': isDocs}">
     <li *ngFor="let nav of navigation" [ngClass]="{'dropdown': nav.children?.length > 0}">
       <a *ngIf="nav.link" [routerLink]="nav.link" [routerLinkActive]="'active focused'">{{nav.name}}</a>
       <a *ngIf="!nav.link">{{nav.name}}</a>

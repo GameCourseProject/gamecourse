@@ -1,9 +1,9 @@
 import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {AuthType} from "../auth/auth-type";
 import {Course, CourseDatabase} from "../courses/course";
-import * as moment from 'moment';
 import {Moment} from "moment";
 import {Role} from "../roles/role";
+import {dateFromDatabase} from "../../_utils/misc/misc";
 
 export class User {
   private _id: number;
@@ -168,7 +168,7 @@ export class User {
       obj.hasImage ? ApiEndpointsService.API_ENDPOINT + '/photos/' + obj.username + '.png' : null,
       obj.roles ? obj.roles.map(role => Role.fromDatabase({name: role})) : null,
       obj.courses != undefined ? obj.courses.map(courseObj => Course.fromDatabase(courseObj)) : undefined,
-      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g.test(obj.lastLogin) ? moment(obj.lastLogin).subtract(1, 'hours') : null
+      dateFromDatabase(obj.lastLogin)
     );
   }
 }

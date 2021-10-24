@@ -11,6 +11,7 @@ import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleType} from "../../../../../../_domain/roles/role-type";
 import {Reduce} from "../../../../../../_utils/display/reduce";
 import {exists} from "../../../../../../_utils/misc/misc";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-views',
@@ -34,21 +35,15 @@ export class ViewsComponent implements OnInit {
 
   types: RoleType[];
 
-  isViewModalOpen: boolean;
+  isPageModalOpen: boolean;
+  isTemplateModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
   saving: boolean;
 
-  newView: {view: {name: string, viewId: number, isEnabled: boolean, roleTypeId?: string}, type: 'page' | 'template'} = {
-    view: {
-      name: null,
-      viewId: null,
-      isEnabled: null,
-      roleTypeId: null
-    },
-    type: null
-  }
-  viewToEdit: Page | Template;
-  viewToDelete: {view: Page | Template, type: 'page' | 'template'};
+  newPage: Partial<Page>;
+  pageSelected: Page;
+  newTemplate: Partial<Template>;
+  templateSelected: Template;
 
   mode: 'add' | 'edit';
 
@@ -110,128 +105,129 @@ export class ViewsComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Actions ------------------ ***/
+  /*** ------------------- Pages ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  saveView(): void {
+  savePage(page: Page): void {
     this.saving = true;
 
     if (this.mode === 'add') {
-      if (this.newView.type === 'page') {
-        this.api.createPage(this.courseID, this.newView.view)
-          .pipe( finalize(() => {
-            this.saving = false;
-            this.isViewModalOpen = false;
-            this.clearObject(this.newView.view);
-            this.newView.type = null;
-          }) )
-          .subscribe(res => {
-            this.getViewsInfo();
-            this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
-          }, error => ErrorService.set(error))
-
-      } else if(this.newView.type === 'template') {
-        this.api.createTemplate(this.courseID, this.newView.view)
-          .pipe( finalize(() => {
-            this.saving = false;
-            this.isViewModalOpen = false;
-            this.clearObject(this.newView.view);
-            this.newView.type = null;
-          }) )
-          .subscribe(res => {
-            this.getViewsInfo();
-          }, error => ErrorService.set(error))
-      }
+      this.api.createPage(this.courseID, page)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isPageModalOpen = false;
+          this.pageSelected = null;
+        }) )
+        .subscribe(res => {
+          this.getViewsInfo();
+          this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
+        }, error => ErrorService.set(error))
 
     } else if (this.mode === 'edit') {
-      if (this.newView.type === 'page') {
-        this.viewToEdit = this.viewToEdit as Page;
-        this.viewToEdit.name = this.newView.view.name;
-        this.viewToEdit.viewId = this.newView.view.viewId;
-        this.viewToEdit.isEnabled = this.newView.view.isEnabled;
-
-        this.api.editPage(this.courseID, this.viewToEdit)
-          .pipe( finalize(() => {
-            this.saving = false;
-            this.isViewModalOpen = false;
-            this.clearObject(this.newView.view);
-            this.newView.type = null;
-          }) )
-          .subscribe(res => {
-              this.getViewsInfo();
-              this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
-            }, error => ErrorService.set(error))
-
-      } else if (this.newView.type === 'template') {
-        this.viewToEdit = this.viewToEdit as Template;
-        this.viewToEdit.name = this.newView.view.name;
-        this.viewToEdit.viewId = this.newView.view.viewId;
-        this.viewToEdit.roleTypeId = this.newView.view.roleTypeId;
-
-        this.api.editTemplate(this.courseID, this.viewToEdit)
-          .pipe( finalize(() => {
-            this.saving = false;
-            this.isViewModalOpen = false;
-            this.clearObject(this.newView.view);
-            this.newView.type = null;
-          }) )
-          .subscribe(res => {
-            this.getViewsInfo();
-          }, error => ErrorService.set(error))
-      }
+      this.api.editPage(this.courseID, page)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isPageModalOpen = false;
+          this.pageSelected = null;
+        }) )
+        .subscribe(res => {
+          this.getViewsInfo();
+          this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
+        }, error => ErrorService.set(error))
     }
   }
 
-  editViewInfo(view: Page | Template, type: 'page' | 'template'): void {
-    this.viewToEdit = view;
-    this.newView.type = type;
-
-    if (type === 'page') {
-      view = view as Page;
-      this.newView.view.name = view.name;
-      this.newView.view.viewId = view.viewId;
-      this.newView.view.isEnabled = view.isEnabled;
-
-    } else if (type === 'template') {
-      view = view as Template;
-      this.newView.view.name = view.name;
-      this.newView.view.roleTypeId = view.roleTypeId;
-    }
-
+  editPage(page: Page): void {
+    this.pageSelected = page;
     this.mode = 'edit';
-    this.isViewModalOpen = true;
+    this.isPageModalOpen = true;
   }
 
-  deleteView(): void {
+  deletePage(): void {
     this.saving = true;
-    if (this.viewToDelete.type === 'page') {
-      this.api.deletePage(this.courseID, this.viewToDelete.view as Page)
+    this.api.deletePage(this.courseID, this.pageSelected)
+      .pipe( finalize(() => {
+        this.saving = false;
+        this.isDeleteVerificationModalOpen = false;
+        this.pageSelected = null;
+      }) )
+      .subscribe(
+        res => {
+          this.getViewsInfo();
+          this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
+        },
+        error => ErrorService.set(error)
+      )
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ----------------- Templates ----------------- ***/
+  /*** --------------------------------------------- ***/
+
+  saveTemplate(template: Template): void {
+    this.saving = true;
+
+    if (this.mode === 'add') {
+      this.api.createTemplate(this.courseID, template)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isTemplateModalOpen = false;
+          this.templateSelected = null;
+        }) )
+        .subscribe(res => {
+          this.getViewsInfo();
+        }, error => ErrorService.set(error))
+
+    } else if (this.mode === 'edit') {
+      this.api.editTemplate(this.courseID, template)
+        .pipe( finalize(() => {
+          this.saving = false;
+          this.isTemplateModalOpen = false;
+          this.templateSelected = null;
+        }) )
+        .subscribe(res => {
+          this.getViewsInfo();
+        }, error => ErrorService.set(error))
+    }
+  }
+
+  editTemplate(template: Template): void {
+    this.templateSelected = template;
+    this.mode = 'edit';
+    this.isTemplateModalOpen = true;
+  }
+
+  deleteTemplate(): void {
+    this.saving = true;
+
+    // Check if there's a page binding to this template
+    let canDelete = true;
+    this.allPages.forEach(page => {
+      if (page.viewId === this.templateSelected.viewId) {
+        canDelete = false;
+        ErrorService.set('Page \'' + page.name + '\' uses this template. Please delete this page first and try again.');
+      }
+    });
+
+    if (canDelete) {
+      this.api.deleteTemplate(this.courseID, this.templateSelected)
         .pipe( finalize(() => {
           this.saving = false;
           this.isDeleteVerificationModalOpen = false;
-          this.viewToDelete = null;
+          this.templateSelected = null;
         }) )
         .subscribe(
           res => {
             this.getViewsInfo();
-            this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES);
           },
           error => ErrorService.set(error)
         )
 
-    } else if (this.viewToDelete.type === 'template') {
-      this.api.deleteTemplate(this.courseID, this.viewToDelete.view as Template)
-        .pipe( finalize(() => {
-          this.saving = false;
-          this.isDeleteVerificationModalOpen = false;
-          this.viewToDelete = null;
-        }) )
-        .subscribe(
-          res => {
-            this.getViewsInfo();
-          },
-          error => ErrorService.set(error)
-        )
+    } else {
+      this.saving = false;
+      this.isDeleteVerificationModalOpen = false;
+      this.templateSelected = null;
     }
   }
 
@@ -250,8 +246,12 @@ export class ViewsComponent implements OnInit {
   }
 
   exportTemplate(template: Template): void {
-    // TODO: update from GameCourse v1
-    ErrorService.set('Error: This action still needs to be updated to the current version. (views.component.ts::exportTemplate(template)')
+    this.saving = true;
+    this.api.exportTemplate(this.courseID, template.id)
+      .pipe( finalize(() => this.saving = false) )
+      .subscribe(res => {
+        DownloadManager.downloadAsText('Template - ' + template.name, res)
+      }, error => ErrorService.set(error))
   }
 
 
@@ -259,25 +259,26 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  isReadyToSubmit() {
+  isReadyToSubmit(type: 'page' | 'template') {
     let isValid = function (text) {
       return exists(text) && !text.toString().isEmpty();
     }
 
-    if (this.newView.type === 'page') {
-      return isValid(this.newView.view.name) && isValid(this.newView.view.viewId);
+    if (type === 'page') {
+      return isValid(this.pageSelected.name) && isValid(this.pageSelected.viewId);
 
-    } else if (this.newView.type === 'template') {
-      return isValid(this.newView.view.name) && isValid(this.newView.view.roleTypeId);
+    } else {
+      return isValid(this.templateSelected.name) && isValid(this.templateSelected.roleTypeId);
     }
-
-    return false;
   }
 
-  clearObject(obj): void {
-    for (const key of Object.keys(obj)) {
-      obj[key] = null;
-    }
+  clear(): void {
+    this.pageSelected = new Page(null, null, null, null, null, null, null);
+    this.templateSelected = new Template(null, null, null, null, null, null, null);
+  }
+
+  get Page(): typeof Page {
+    return Page;
   }
 
   get Template(): typeof Template {
