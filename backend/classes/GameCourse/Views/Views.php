@@ -833,7 +833,7 @@ class Views
             'user',
             'library'
         );
-        //users.hasPicture(user) returns collection of users
+        //users.hasPicture(user) returns boolean
         ViewHandler::registerFunction(
             'users',
             'hasPicture',
@@ -844,7 +844,7 @@ class Views
                 }
                 return new ValueNode(false);
             },
-            "Returns a boolean whether the user has a picture in the system or.",
+            "Returns a boolean whether the user has a picture in the system or not.",
             'boolean',
             'user',
             'library'
