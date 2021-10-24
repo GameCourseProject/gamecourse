@@ -1,11 +1,8 @@
 <?php
 /* Jison generated parser */
-namespace Modules\Views\Expression
-;
+namespace GameCourse\Views\Expression;
+
 use Exception;
-
-
-
 
 class ExpressionEvaluatorBase
 {

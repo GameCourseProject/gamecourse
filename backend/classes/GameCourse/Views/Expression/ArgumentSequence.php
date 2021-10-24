@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 class ArgumentSequence extends Node {
     private $node;

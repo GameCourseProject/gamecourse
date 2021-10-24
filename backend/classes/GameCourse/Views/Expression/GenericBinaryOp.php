@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 class GenericBinaryOp extends BinaryOp {
     private $op;

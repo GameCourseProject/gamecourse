@@ -1,10 +1,8 @@
 <?php
-use GameCourse\API;
-use GameCourse\Course;
+
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-
-use Modules\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class SideView extends Module {
 
@@ -16,16 +14,8 @@ class SideView extends Module {
     }
 
     public function init() {
-        $viewsModule = $this->getParent()->getModule('views');
-        //$viewHandler = $viewsModule->getViewHandler();
-        //$viewHandler->createPageOrTemplateIfNew('Side View',"page","ROLE_SINGLE");
-
-        // $viewHandler->registerPage($this, 'sideview', 'Side View', array(
-        //     'type' => ViewHandler::VT_ROLE_SINGLE
-        // ));
-
-        if (!$viewsModule->templateExists(self::SIDE_VIEW_TEMPLATE)) {
-            $viewsModule->setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), true);
+        if (!Views::templateExists(self::SIDE_VIEW_TEMPLATE, $this->getCourseId())) {
+            Views::setTemplate(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), $this->getCourseId(),true);
         }
         
     }
@@ -45,9 +35,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Creates a view template with a side view with information of the userlogged in.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function() {
         return new SideView();
     }

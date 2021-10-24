@@ -1,11 +1,9 @@
 <?php
 
-use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-
-use Modules\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class AwardList extends Module
 {
@@ -23,8 +21,6 @@ class AwardList extends Module
     public function init()
     {
         $user = Core::getLoggedUser();
-        $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
 
         //if (($user != null && $user->isAdmin()) || $this->getParent()->getLoggedUser()->isTeacher())
         //    $viewHandler->createPageOrTemplateIfNew('AwardList', "page", "ROLE_SINGLE");
@@ -59,11 +55,11 @@ class AwardList extends Module
             null
         );*/
 
-        if (!$viewsModule->templateExists(self::AWARDS_PROFILE_TEMPLATE))
-            $viewsModule->setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), true);
+        if (!Views::templateExists(self::AWARDS_PROFILE_TEMPLATE, $this->getCourseId()))
+            Views::setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $this->getCourseId(), true);
 
-        if (!$viewsModule->templateExists(self::FULL_AWARDS_TEMPLATE))
-            $viewsModule->setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), true);
+        if (!Views::templateExists(self::FULL_AWARDS_TEMPLATE, $this->getCourseId()))
+            Views::setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $this->getCourseId(), true);
     }
 
     public function is_configurable()
@@ -82,9 +78,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Enables Awards and creates a view template with list of awards per student.',
     'version' => '0.1',
     'compatibleVersions' => array("1.1", "1.2"),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new AwardList();
     }

@@ -2,7 +2,7 @@
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
-use Modules\Views\ViewHandler;
+use GameCourse\Views\ViewHandler;
 
 class Charts extends Module {
     private $registeredCharts = array();
@@ -21,16 +21,14 @@ class Charts extends Module {
     }
 
     public function init() {
-        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
-
-        $viewHandler->registerPartType('chart', null, null,
-            function(&$chart) use (&$viewHandler) {
+        ViewHandler::registerPartType('chart', null, null,
+            function(&$chart) {
                 if ($chart['chartType'] == 'progress') {
-                    $viewHandler->parseSelf($chart['info']['value']);
-                    $viewHandler->parseSelf($chart['info']['max']);
+                    ViewHandler::parseSelf($chart['info']['value']);
+                    ViewHandler::parseSelf($chart['info']['max']);
                 }
             },
-            function(&$chart, $viewParams, $visitor) use (&$viewHandler) {
+            function(&$chart, $viewParams, $visitor) {
                 //$s = \GameCourse\Course::$coursesDb->numQueriesExecuted();
                 if ($chart['chartType'] == 'progress') {
                     $chart['info']['value'] = $chart['info']['value']->accept($visitor)->getValue();
@@ -377,7 +375,6 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'skills', 'mode' => 'optional'),
         array('id' => 'badges', 'mode' => 'optional'),
         array('id' => 'xp', 'mode' => 'optional')

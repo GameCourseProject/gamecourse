@@ -3,21 +3,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 include('classes/ClassLoader.class.php');
-include('api_functions/courses_list.php');
-include('api_functions/users_list.php');
-include('api_functions/course_users_list.php');
-include('api_functions/course_settings_pages.php');
-include('api_functions/course_related.php');
-include('api_functions/system_related.php');
+include('api_functions/api_endpoints.php');
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\Course;
 use GameCourse\ModuleLoader;
-use GameCourse\Module;
-use GameCourse\Settings;
 use GameCourse\User;
-use GameCourse\CourseUser;
 
 require_once 'cors.php';
 

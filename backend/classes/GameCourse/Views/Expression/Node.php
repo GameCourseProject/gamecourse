@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 abstract class Node {
     public abstract function accept($visitor);

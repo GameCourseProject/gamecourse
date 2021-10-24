@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 class GenericUnaryOp extends UnaryOp {
     private $op;

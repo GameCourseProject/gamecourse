@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 class ValueNode extends Node {
     private $value;

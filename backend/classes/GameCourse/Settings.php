@@ -1,9 +1,6 @@
 <?php
 namespace GameCourse;
 
-use \Utils as Utils;
-use \GameCourse as GameCourse;
-
 class Settings {
 
     public static function addTab($item) {

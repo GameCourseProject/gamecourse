@@ -1,5 +1,5 @@
 <?php
-use GameCourse\Settings as Settings;
+
 
 class Utils {
     static function discoverFiles($baseDir, ...$files) {
@@ -51,10 +51,6 @@ class Utils {
         }
         if ($_POST == null)
             $_POST = array();
-    }
-
-    static function createBase() {
-        return (array_key_exists('HTTPS', $_SERVER) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/'. BASE . '/';
     }
 
     static function goThroughRoles($roles, $func, &...$data) {

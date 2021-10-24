@@ -2,8 +2,6 @@
 
 namespace GameCourse;
 
-use GameCourse\ModuleLoader;
-use GameCourse\Core;
 use ZipArchive;
 
 class RuleSystem

@@ -6,8 +6,6 @@ use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
-use Modules\Views\ViewHandler;
-
 class QR extends Module {
     
     public function setupResources() {
@@ -60,9 +58,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Generates a QR code to be used for student participation in class.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function() {
         return new QR();
     }

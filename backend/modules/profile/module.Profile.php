@@ -1,8 +1,8 @@
 <?php
-use GameCourse\Core;
+
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-use Modules\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class Profile extends Module {
 
@@ -17,18 +17,12 @@ class Profile extends Module {
 
     public function init() {
         $user = $this->getParent()->getLoggedUser();
-        //if ($user->exists())
-            //Core::addNavigation('photos/' . Core::getLoggedUser()->getUsername() . '.png', 'My Profile', 'course.myprofile', true);
-            //Core::addNavigation('My Profile', 'course.myprofile', true);
 
-        $viewsModule = $this->getParent()->getModule('views');
-        //$viewHandler = $viewsModule->getViewHandler();
-        //$viewHandler->createPageOrTemplateIfNew('Profile',"page","ROLE_INTERACTION");
+        if (!Views::templateExists(self::STUDENT_SUMMARY_TEMPLATE, $this->getCourseId()))
+            Views::setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $this->getCourseId(),true);
 
-        if (!$viewsModule->templateExists(self::STUDENT_SUMMARY_TEMPLATE))
-            $viewsModule->setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), true);
-        if (!$viewsModule->templateExists(self::STUDENT_AWARD_LIST))
-            $viewsModule->setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), true);
+        if (!Views::templateExists(self::STUDENT_AWARD_LIST, $this->getCourseId()))
+            Views::setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), $this->getCourseId(),true);
        
     }
 
@@ -51,7 +45,6 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'charts', 'mode' => 'hard')
     ),
     'factory' => function() {

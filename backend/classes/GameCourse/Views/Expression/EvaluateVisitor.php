@@ -1,15 +1,11 @@
 <?php
-namespace Modules\Views\Expression;
-
-use GameCourse\Core;
+namespace GameCourse\Views\Expression;
 
 class EvaluateVisitor extends Visitor {
     private $params;
-    private $viewHandler;
 
-    public function __construct($params, $viewHandler) {
+    public function __construct($params) {
         $this->params = $params;
-        $this->viewHandler = $viewHandler;
     }
 
     public function visitStatementSequence($node) {
@@ -103,7 +99,7 @@ class EvaluateVisitor extends Visitor {
         }
         
         if ($context==null){
-            return $this->viewHandler->callFunction($lib,$funcName, $args);
+            return ViewHandler::callFunction($lib,$funcName, $args);
         }else{
             $contextVal=$context->accept($this)->getValue();
         
@@ -124,7 +120,7 @@ class EvaluateVisitor extends Visitor {
                     $node->setLib($lib);
                 }
             }
-            return $this->viewHandler->callFunction($lib,$funcName, $args, $contextVal);
+            return ViewHandler::callFunction($lib,$funcName, $args, $contextVal);
         }
     }
 

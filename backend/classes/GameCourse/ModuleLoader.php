@@ -1,8 +1,6 @@
 <?php
 namespace GameCourse;
 
-use \GameCourse as GameCourse;
-
 class ModuleLoader {
     
     private static $loadingModuleDir = null;

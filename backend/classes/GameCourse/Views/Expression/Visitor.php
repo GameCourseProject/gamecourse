@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 abstract class Visitor {
     public abstract function visitStatementSequence($node);

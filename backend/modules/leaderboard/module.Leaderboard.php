@@ -1,11 +1,8 @@
 <?php
-use GameCourse\API;
-use GameCourse\Core;
-use GameCourse\Course;
+
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-use GameCourse\Settings;
-use Modules\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class Leaderboard extends Module {
     const LEADERBOARD_TEMPLATE_NAME = 'Leaderboard - by leaderboard';
@@ -18,17 +15,11 @@ class Leaderboard extends Module {
     }
 
     public function init() {
-        //Core::addNavigation( 'Leaderboard', 'course.leaderboard', true);
-
-        $viewsModule = $this->getParent()->getModule('views');
-        //$viewHandler = $viewsModule->getViewHandler();
-        //$viewHandler->createPageOrTemplateIfNew('Leaderboard',"page","ROLE_SINGLE");
-        
-        if (!$viewsModule->templateExists(self::LEADERBOARD_TEMPLATE_NAME)) {
-            $viewsModule->setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), true);
+        if (!Views::templateExists(self::LEADERBOARD_TEMPLATE_NAME, $this->getCourseId())) {
+            Views::setTemplate(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), $this->getCourseId(), true);
         }
-        if (!$viewsModule->templateExists(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME)) {
-            $viewsModule->setTemplate(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), true);
+        if (!Views::templateExists(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, $this->getCourseId())) {
+            Views::setTemplate(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), $this->getCourseId(), true);
         }
     }
 
@@ -51,7 +42,6 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'charts', 'mode' => 'hard')
     ),
     'factory' => function() {

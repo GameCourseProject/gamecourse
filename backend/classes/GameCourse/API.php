@@ -7,7 +7,12 @@ class API {
     private static $requestFunction;
     private static $values = array();
     private static $uploadedFile = null;
-    
+
+    public static function getAllFunctions(): array
+    {
+        return self::$functions;
+    }
+
     public static function getUploadedFile() {
         return static::$uploadedFile;
     }
@@ -32,33 +37,6 @@ class API {
         if (array_key_exists($request, static::$functions[$module]))
             static::error('API functions overlap - ' . $module . ' - '. $request);
         static::$functions[$module][$request] = $function;
-    }
-    
-    //only allows acess to admins and users of the course
-    public static function requireCoursePermission() {
-        API::requireValues('course');
-        $courseUser = Course::getCourse(API::getValue('course'), false)->getLoggedUser();
-        $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
-        if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
-            API::error('You don\'t have permission to access this course!', 401);
-            //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));
-        }
-    }
-    
-    //only allows acess to admins and teachers of the course
-    public static function requireCourseAdminPermission() {
-        API::requireValues('course');
-        $courseAdmin = Course::getCourse(API::getValue('course'), false)->getLoggedUser()->hasRole('Teacher');
-        if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
-            API::error('You don\'t have permission to request this!', 401);
-            //GameCourse::log('WARNING: Unauthorized attempt to login into settings. UserID=' . (GameCourse::getLoggedUserID() != null ? GameCourse::getLoggedUserID() : 'None'));
-        }
-    }
-    
-    //only allows acess to admins
-    public static function requireAdminPermission() {
-        if (!Core::getLoggedUser()->isAdmin())
-            API::error('Insufficient permissions to run this API function', 401);
     }
 
     public static function gatherRequestInfo() {
@@ -128,5 +106,45 @@ class API {
 
     public static function getValues() {
         return static::$values;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Permissions ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * Only allows access to admins and users of the course.
+     *
+     * @param int $courseId;
+     */
+    public static function requireCoursePermission() {
+        API::requireValues('courseId');
+        $courseUser = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser();
+        $isCourseUser = (!is_a($courseUser, "GameCourse\NullCourseUser"));
+        if (!Core::getLoggedUser()->isAdmin() && !$isCourseUser) {
+            API::error('You don\'t have permission to access this course.', 401);
+        }
+    }
+
+    /**
+     * Only allows access to admins and teachers of the course.
+     *
+     * @param int $courseId;
+     */
+    public static function requireCourseAdminPermission() {
+        API::requireValues('courseId');
+        $courseAdmin = Course::getCourse(API::getValue('courseId'), false)->getLoggedUser()->hasRole('Teacher');
+        if (!Core::getLoggedUser()->isAdmin() && !$courseAdmin) {
+            API::error('You don\'t have permission to request this - only course admins can.', 401);
+        }
+    }
+
+    /**
+     * Only allows access to admins.
+     */
+    public static function requireAdminPermission() {
+        if (!Core::getLoggedUser()->isAdmin())
+            API::error('You don\'t have permission to request this - only admins can.', 401);
     }
 }

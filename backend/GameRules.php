@@ -10,7 +10,7 @@ include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\ModuleLoader;
+use GameCourse\ViewHandler;
 
 class GameRules{
 
@@ -164,14 +164,13 @@ class GameRules{
 			            $func = trim($function, "\n");
 			            
 			            $course = Course::getCourse(intval($courseNr));
-			   	    	$viewHandler = $course->getModule('views')->getViewHandler();
 					
 			            # if args are not empty on call
 			            if (!empty($args)) {
-			                $res = $viewHandler->callFunction($lib, $func, $args);
+			                $res = ViewHandler::callFunction($lib, $func, $args);
 			            }
 			            else {
-			                $res = $viewHandler->callFunction($lib, $func, []);
+			                $res = ViewHandler::callFunction($lib, $func, []);
 			            }
 
 			            $result = $res->getValue();

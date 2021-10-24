@@ -5,8 +5,7 @@ namespace GameCourse;
 include 'GameRules.php';
 
 use GameRules;
-use Modules\Views\ViewHandler;
-use GameCourse\CronJob;
+use GameCourse\Views\ViewHandler;
 
 class Course
 {
@@ -24,6 +23,11 @@ class Course
         return $this->cid;
     }
 
+    public function exists(): bool
+    {
+        return (!empty($this->getData("id")));
+    }
+
     public function getData($field = '*')
     {
         return Core::$systemDB->select("course", ["id" => $this->cid], $field);
@@ -32,9 +36,6 @@ class Course
     {
         return $this->getData("name");
     }
-    //public function getNumBadges(){
-    //    return $this->getData("numBadges");
-    //}
     public function getActive()
     {
         return $this->getData("isActive");
@@ -273,7 +274,7 @@ class Course
         return null;
     }
 
-    public function getModulesResources()
+    public function getModulesResources(): array
     {
         $modules = $this->getModules();
         $resources = array();
@@ -302,13 +303,14 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
-        if ($enabled) {
-            $enabled = 1;
-        } else {
-            $enabled = 0;
-        }
+        $enabled = $enabled ? 1 : 0;
         Core::$systemDB->update("course_module", ["isEnabled" => $enabled], ["course" => $this->cid, "moduleId" => $moduleId]);
-        if (!$enabled) {
+
+        if ($enabled) {
+            ModuleLoader::initModules($this);
+
+        } else {
+            // TODO: delete module templates (with respective views) and pages
             //ToDo:do something about views that use this module?
             //  Core::$systemDB->delete("page",["module"=>$moduleId, "course"=>$this->cid]);
         }
@@ -320,7 +322,7 @@ class Course
         \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
     }
 
-    public static function getCourse($cid, $initModules = true)
+    public static function getCourse($cid, $initModules = true): Course
     {
         if (!array_key_exists($cid, static::$courses)) {
             static::$courses[$cid] = new Course($cid);
@@ -499,14 +501,6 @@ class Course
 
             //pages and views data
             if (in_array("views", $enabledModules)) {
-                $viewModule = ModuleLoader::getModule("views");
-                $handler = $viewModule["factory"]();
-                $handler->setParent($course);
-                $viewHandler = new ViewHandler($handler);
-
-
-
-                $handler = $copyFromCourse->getModule("views")->getViewHandler();
 
                 //templates
                 $templates = Core::$systemDB->selectMultiple("template", ["course" => $copyFrom, "isGlobal" => 0]);
@@ -518,7 +512,7 @@ class Course
                         ["templateId" => $t["id"]]
                     );
 
-                    $views = $handler->getViewWithParts($aspect["viewId"], null, true);
+                    $views = ViewHandler::getViewWithParts($aspect["viewId"], null, true);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
@@ -532,8 +526,7 @@ class Course
                     Core::$systemDB->insert("template", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
 
                     foreach ($aspects as $aspect) {
-
-                        $viewHandler->resetParentsAndViewIds($aspect);
+                        ViewHandler::resetParentsAndViewIds($aspect);
                         unset($aspect["id"]);
                         unset($aspect['viewId']);
                         //need to convert the roles of the aspects to the new roles
@@ -551,7 +544,7 @@ class Course
                         $aspect["role"] = implode(">", $roles);
 
 
-                        $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                        ViewHandler::updateViewAndChildren($aspect, $courseId, null, true, $template['name']);
                     }
 
                     //------ DEAL WITH PAGES -----
@@ -645,10 +638,6 @@ class Course
             $tempArr["participations"] = [];
 
             if (is_null($options) or $options["modules"]) {
-                $viewModule = ModuleLoader::getModule("views");
-                $handler = $viewModule["factory"]();
-                $viewHandler = new ViewHandler($handler);
-
                 //Course data folder
                 $dataFolder = Course::getCourseDataFolder($course["id"], $course["name"]);
                 $courseIdName = explode("/", $dataFolder)[1] . "/"; // Ex: 1-PCM/
@@ -701,9 +690,6 @@ class Course
                 foreach ($pages as $p) {
                     $p['course'] = $course;
                     unset($p['id']);
-                    //$view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    //$views = $viewHandler->getViewWithParts($view["id"]);
-
                     $arrPage = array("name" => $p["name"], "theme" => $p["theme"], "viewId" => $p["viewId"], "seqId" => $p["seqId"], "isEnabled" => $p['isEnabled']);
                     array_push($tempPages, $arrPage);
                 }
@@ -718,7 +704,7 @@ class Course
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
                     );
-                    $views = $viewHandler->getViewWithParts($aspect["viewId"], null, true);
+                    $views = ViewHandler::getViewWithParts($aspect["viewId"], null, true);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
@@ -838,10 +824,6 @@ class Course
                 if (!$courseObj->getModule("views")) {
                     ModuleLoader::initModules($courseObj);
                 }
-                $viewModule = ModuleLoader::getModule("views");
-                $handler = $viewModule["factory"]();
-                $handler->setParent($courseObj);
-                $viewHandler = new ViewHandler($handler);
 
                 //pages
                 foreach ($course->page as $page) {
@@ -856,11 +838,11 @@ class Course
 
                     $pageWithView = Core::$systemDB->select('page', ['viewId' => $aspects[0]['viewId'], 'course' => $courseObj->cid]);
                     foreach ($aspects as &$aspect) {
-                        $viewHandler->resetParentsAndViewIds($aspect);
+                        ViewHandler::resetParentsAndViewIds($aspect);
                         unset($aspect["id"]);
                         unset($aspect['viewId']);
 
-                        $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                        ViewHandler::updateViewAndChildren($aspect, $courseObj->getId(), null, true, $template['name']);
                     }
                     if ($pageWithView) {
                         $templateId = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $courseObj->cid], "id");
@@ -907,10 +889,6 @@ class Course
                     //     ModuleLoader::initModules($courseEdit);
                     // }
 
-                    $viewModule = ModuleLoader::getModule("views");
-                    $handler = $viewModule["factory"]();
-                    $handler->setParent($courseObjEdit);
-                    $viewHandler = new ViewHandler($handler);
                     $tempPages = array();
 
                     //pages
@@ -939,11 +917,11 @@ class Course
                             $pageWithView = $tempPages[$aspects[0]['viewId']];
                         }
                         foreach ($aspects as &$aspect) {
-                            $viewHandler->resetParentsAndViewIds($aspect);
+                            ViewHandler::resetParentsAndViewIds($aspect);
                             unset($aspect["id"]);
                             unset($aspect['viewId']);
 
-                            $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                            ViewHandler::updateViewAndChildren($aspect, $courseObj->getId(), null, true, $template['name']);
                         }
 
 
@@ -1232,5 +1210,12 @@ class Course
         }
 
         return $response;
+    }
+
+    public function getPages(bool $active = null): array {
+        if ($active !== null)
+            return Core::$systemDB->selectMultiple('page', ['course' => $this->getId(), 'isEnabled' => $active ? 1 : 0]);
+        else
+            return Core::$systemDB->selectMultiple('page', ['course' => $this->getId()]);
     }
 }

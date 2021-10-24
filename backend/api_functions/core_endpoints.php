@@ -1,14 +1,23 @@
 <?php
+
 namespace APIFunctions;
 
 use GameCourse\API;
-use GameCourse\Core;
-use GameCourse\ModuleLoader;
 use GameCourse\Module;
+use GameCourse\ModuleLoader;
+
+$MODULE = 'core';
 
 
-//system settings (theme settings)
-API::registerFunction('settings', 'global', function() {
+/*** --------------------------------------------- ***/
+/*** ------------------- Themes ------------------ ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Get theme settings
+ * FIXME: not doing much now; needs refactor
+ */
+API::registerFunction($MODULE, 'getThemeSettings', function() {
     API::requireAdminPermission();
 
     $themes = array();
@@ -25,12 +34,20 @@ API::registerFunction('settings', 'global', function() {
     API::response(array('theme' => $GLOBALS['theme'], 'themes' => $themes));
 });
 
-//system settings (courses installed)
-API::registerFunction('settings', 'modules', function() {
+
+
+/*** --------------------------------------------- ***/
+/*** ------------------ Modules ------------------ ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Get all available modules in the system.
+ */
+API::registerFunction($MODULE, 'getModules', function() {
     API::requireAdminPermission();
-    
+
     $allModules = ModuleLoader::getModules();
-    
+
     $modulesArr = [];
     foreach ($allModules as $module) {
         $mod = array(
@@ -41,26 +58,36 @@ API::registerFunction('settings', 'modules', function() {
             'dependencies' => $module['dependencies'],
             'description' => $module['description']
         );
-        $modulesArr[] = $mod; 
+        $modulesArr[] = $mod;
     }
-    
+
     API::response($modulesArr);
 
 });
 
-// ------------------- Module List
-
-API::registerFunction('core', 'importModule', function () {
+/**
+ * Import modules into the system.
+ * FIXME: check if working
+ *
+ * @param $file
+ * @param string $fileName
+ */
+API::registerFunction($MODULE, 'importModule', function () {
     API::requireAdminPermission();
     API::requireValues('file');
     API::requireValues('fileName');
+
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
     Module::importModules($fileContents, API::getValue("fileName"));
     API::response(array());
 });
 
-API::registerFunction('core', 'exportModule', function () {
+/**
+ * Export modules of the system.
+ * FIXME: not working.
+ */
+API::registerFunction($MODULE, 'exportModule', function () {
     API::requireAdminPermission();
     $zipFile = Module::exportModules();
     API::response(array("file"=> $zipFile));

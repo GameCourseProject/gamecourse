@@ -5,11 +5,13 @@ namespace Modules\Skills;
 use DOMDocument;
 use GameCourse\API;
 use GameCourse\Module;
-use Modules\Views\Expression\ValueNode;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\RuleSystem;
+use GameCourse\Views\Expression\ValueNode;
+use GameCourse\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class Skills extends Module
 {
@@ -320,13 +322,11 @@ class Skills extends Module
         $courseId = $this->getParent()->getId();
         $this->setupData($courseId);
 
-        $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
         //functions for the expression language
-        $viewHandler->registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
+        ViewHandler::registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
 
         //skillTrees.getTree(id), returns tree object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getTree',
             function (int $id) {
@@ -342,7 +342,7 @@ class Skills extends Module
         );
 
         //skillTrees.trees, returns collection w all trees
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'trees',
             function () use ($courseId) {
@@ -356,7 +356,7 @@ class Skills extends Module
         );
 
         //skillTrees.getAllSkills(...) returns collection
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getAllSkills',
             function ($tree = null, $tier = null, $dependsOn = null, $requiredBy = null, $isActive = true) use ($courseId) {
@@ -400,7 +400,7 @@ class Skills extends Module
             null
         );
         //%tree.getAllSkills(...) returns collection
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getAllSkills',
             function ($tree = null, $tier = null, $dependsOn = null, $requiredBy = null, $isActive = true) use ($courseId) {
@@ -445,7 +445,7 @@ class Skills extends Module
         );
 
         //%tree.getSkill(name), returns skill object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getSkill',
             function ($tree, string $name) {
@@ -466,7 +466,7 @@ class Skills extends Module
             'tree'
         );
         //%tree.getTier(number), returns tier object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getTier',
             function ($tree, int $number) {
@@ -486,7 +486,7 @@ class Skills extends Module
             'tree'
         );
         //%tree.tiers, returns collection w all tiers of the tree
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'tiers',
             function ($tree) {
@@ -509,7 +509,7 @@ class Skills extends Module
             'tree'
         );
         //%tier.skills(isActive), returns collection w all skills of the tier
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'skills',
             function ($tier, bool $isActive = true) {
@@ -544,7 +544,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.nextTier, returns tier object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'nextTier',
             function ($tier) {
@@ -563,7 +563,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.previousTier, returns tier object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'previousTier',
             function ($tier) {
@@ -582,7 +582,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.reward
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'reward',
             function ($arg) {
@@ -595,7 +595,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.usedWildcards
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'usedWildcards',
             function ($arg, $user) {
@@ -610,7 +610,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.hasWildcards
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'hasWildcards',
             function ($arg) {
@@ -625,7 +625,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.tier
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'tier',
             function ($arg) {
@@ -639,7 +639,7 @@ class Skills extends Module
         );
 
         //%skill.tier
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'tier',
             function ($arg) {
@@ -653,7 +653,7 @@ class Skills extends Module
         );
 
         //%skill.color
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'color',
             function ($skill) {
@@ -666,7 +666,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.name
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'name',
             function ($skill) {
@@ -679,7 +679,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.isActive
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'isActive',
             function ($skill) {
@@ -692,7 +692,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.getPost(user)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getPost',
             function ($skill, $user) use ($courseId) {
@@ -721,7 +721,7 @@ class Skills extends Module
         );
 
         //%skill.isUnlocked(user), returns true if skill is available to the user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'isUnlocked',
             function ($skill, $user) use ($courseId) {
@@ -735,7 +735,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.isCompleted(user), returns true if skill has been achieved by the user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'isCompleted',
             function ($skill, $user) use ($courseId) {
@@ -749,7 +749,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.completedBy(), returns a collection with the users that completed the skill
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'completedBy',
             function ($skill) use ($courseId) {
@@ -762,7 +762,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.dependsOn,return colection of dependencies, each has a colection of skills
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'dependsOn',
             function ($skill) {
@@ -777,7 +777,7 @@ class Skills extends Module
             'skill'
         );
         //%skill.requiredBy, returns collection of skills that depend on the given skill
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'requiredBy',
             function ($skill) {
@@ -791,7 +791,7 @@ class Skills extends Module
             'skill'
         );
         //%dependency.simpleSkills, returns collection of the required/normal/simple skills of a dependency
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'simpleSkills',
             function ($dep) {
@@ -810,7 +810,7 @@ class Skills extends Module
             'dependency'
         );
         //%dependency.dependencies, returns names of the required/normal/simple skills/tiers of a dependency
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'dependencies',
             function ($dep) {
@@ -839,7 +839,7 @@ class Skills extends Module
             'dependency'
         );
         //%dependency.superSkill, returns skill object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'superSkill',
             function ($dep) {
@@ -854,7 +854,7 @@ class Skills extends Module
         );
 
         //%skill.getStyle(user)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'getStyle',
             function ($skill, $user) use ($courseId) {
@@ -877,7 +877,7 @@ class Skills extends Module
             'skill'
         );
         //skillTrees.wildcardAvailable(tierName,user)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'skillTrees',
             'wildcardAvailable',
             function ($skill, $tier, $user) use ($courseId) {
@@ -889,8 +889,8 @@ class Skills extends Module
             'library'
         );
 
-        if (!$viewsModule->templateExists(self::SKILL_TREE_TEMPLATE)) {
-            $viewsModule->setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), true);
+        if (!Views::templateExists(self::SKILL_TREE_TEMPLATE, $this->getCourseId())) {
+            Views::setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId(),true);
         }
 
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)
@@ -1851,7 +1851,6 @@ ModuleLoader::registerModule(array(
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'xp', 'mode' => 'hard')
     ),
     'factory' => function () {

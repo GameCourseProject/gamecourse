@@ -3,11 +3,11 @@
 namespace Modules\Badges;
 
 use GameCourse\Core;
-use Modules\Views\Expression\ValueNode;
+use GameCourse\Views\Expression\ValueNode;
+use GameCourse\Views\Views;
+use GameCourse\Views\ViewHandler;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-
-use GameCourse\API;
 use GameCourse\Course;
 
 class Badges extends Module
@@ -230,13 +230,11 @@ class Badges extends Module
 
         $courseId = $this->getParent()->getId();
         $this->setupData($courseId);
-        $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
 
-        $viewHandler->registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
+        ViewHandler::registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
 
         //badges.getAllBadges(isExtra,isBragging,isActive)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'getAllBadges',
             function (bool $isExtra = null, bool $isBragging = null, bool $isActive = true) {
@@ -256,7 +254,7 @@ class Badges extends Module
 
         );
         //badges.getBadge(name)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'getBadge',
             function (string $name = null) {
@@ -269,7 +267,7 @@ class Badges extends Module
             null
         );
         //badges.getBadgesCount(user) returns num of badges of user (if specified) or of course 
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'getBadgesCount',
             function ($user = null) {
@@ -282,7 +280,7 @@ class Badges extends Module
             null
         );
         //badges.doesntHaveBadge(%badge, %level, %active) returns True if there are no students with this badge, False otherwise
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'doesntHaveBadge',
             function ($badge, $level, $active = true) {
@@ -296,7 +294,7 @@ class Badges extends Module
             null
         );
         //users.getUsersWithBadge(%badge, %level, %active) returns an object with all users that earned that badge on that level
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'users',
             'getUsersWithBadge',
             function ($badge, $level, $active = true) {
@@ -310,7 +308,7 @@ class Badges extends Module
             null
         );
         //%badge.description
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'description',
             function ($arg) {
@@ -323,7 +321,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.name
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'name',
             function ($badge) {
@@ -336,7 +334,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.maxLevel
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'maxLevel',
             function ($badge) {
@@ -349,7 +347,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.isExtra
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'isExtra',
             function ($badge) {
@@ -362,7 +360,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.isCount
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'isCount',
             function ($badge) {
@@ -375,7 +373,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.isPost
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'isPost',
             function ($badge) {
@@ -388,7 +386,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.isBragging
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'isBragging',
             function ($badge) {
@@ -401,7 +399,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.isActive
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'isActive',
             function ($badge) {
@@ -414,7 +412,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.renderPicture(number) return expression for the image of the badge in the specified level
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'renderPicture',
             function ($badge, $level) {
@@ -433,7 +431,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.levels returns collection of level objects
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'levels',
             function ($badge) {
@@ -447,7 +445,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.getLevel(number) returns level object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'getLevel',
             function ($badge, $level) {
@@ -462,7 +460,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.currLevel(%user) returns object of the current level of user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'currLevel',
             function ($badge, int $user) {
@@ -477,7 +475,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.nextLevel(user) %level.nextLevel  returns level object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'nextLevel',
             function ($arg, $user = null) {
@@ -496,7 +494,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.previousLevel(user) %level.previousLevel  returns level object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'previousLevel',
             function ($arg, $user = null) {
@@ -516,7 +514,7 @@ class Badges extends Module
         );
 
         //badges.badgeProgression(badge,user)
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'badgeProgression',
 
@@ -533,7 +531,7 @@ class Badges extends Module
         );
 
         //%badgeProgression.post
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'post',
             function ($badge) {
@@ -547,7 +545,7 @@ class Badges extends Module
         );
 
         //%badgeProgression.description
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'description',
             function ($badge) {
@@ -561,7 +559,7 @@ class Badges extends Module
         );
 
         //%collection.countBadgesProgress  returns size of the collection or points obtained
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'countBadgesProgress',
             function ($collection, $badge) {
@@ -576,7 +574,7 @@ class Badges extends Module
 
 
         //%level.goal
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'goal',
             function ($level) {
@@ -589,7 +587,7 @@ class Badges extends Module
             'level'
         );
         //%level.reward
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'reward',
             function ($level) {
@@ -602,7 +600,7 @@ class Badges extends Module
             'level'
         );
         //%level.number
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'badges',
             'number',
             function ($level) {
@@ -615,8 +613,8 @@ class Badges extends Module
             'level'
         );
 
-        if (!$viewsModule->templateExists(self::BADGES_TEMPLATE_NAME))
-            $viewsModule->setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), true);
+        if (!Views::templateExists(self::BADGES_TEMPLATE_NAME, $this->getCourseId()))
+            Views::setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getCourseId(),true);
     }
 
     public function saveMaxReward($max, $courseId)
@@ -1069,9 +1067,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Enables Badges with 3 levels and xp points that can be atributed to a student in certain conditions.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new Badges();
     }

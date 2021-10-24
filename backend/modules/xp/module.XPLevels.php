@@ -1,12 +1,13 @@
 <?php
 namespace Modules\XP;
 
+use Exception;
 use GameCourse\Module;
-use Modules\Views\Expression\ValueNode;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
-use GameCourse\API;
 use GameCourse\Course;
+use GameCourse\Views\Expression\ValueNode;
+use GameCourse\Views\ViewHandler;
 
 class XPLevels extends Module
 {
@@ -156,15 +157,14 @@ class XPLevels extends Module
     public function init()
     {
 
-        $viewHandler = $this->getParent()->getModule('views')->getViewHandler();
         $course = $this->getParent();
         $courseId = $course->getId();
         $this->setupData($courseId);
 
-        $viewHandler->registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
+        ViewHandler::registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
 
         //xp.allLevels returns collection of level objects
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getAllLevels',
             function () use ($courseId)/*use ($levelWhere, $levelTable)*/ {
@@ -181,7 +181,7 @@ class XPLevels extends Module
             null
         );
         //xp.getLevel(user,number,goal) returns level object
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getLevel',
             function ($user = null, int $number = null, string $goal = null) use ($courseId) {
@@ -220,7 +220,7 @@ class XPLevels extends Module
             null
         );
         //xp.getBadgesXP(user) returns value of badge xp for user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getBadgesXP',
             function ($user) use ($courseId) {
@@ -235,7 +235,7 @@ class XPLevels extends Module
             null
         );
         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getBonusBadgesXP',
             function ($user) use ($courseId) {
@@ -250,7 +250,7 @@ class XPLevels extends Module
             null
         );
         //xp.getXPByType(user, type) returns value xp of a type of award for user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getXPByType',
             function ($user, $type) use ($courseId) {
@@ -265,7 +265,7 @@ class XPLevels extends Module
             null
         );
         //xp.getSkillTreeXP(user) returns value of skill xp for user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getSkillTreeXP',
             function ($user) use ($courseId) {
@@ -280,7 +280,7 @@ class XPLevels extends Module
             null
         );
         //xp.getXP(user) returns value of xp for user
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'getXP',
             function ($user) use ($courseId) {
@@ -294,7 +294,7 @@ class XPLevels extends Module
             null
         );
         //%level.description
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'description',
             function ($level) {
@@ -307,7 +307,7 @@ class XPLevels extends Module
             'level'
         );
         //%level.goal
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'goal',
             function ($level) {
@@ -320,7 +320,7 @@ class XPLevels extends Module
             'level'
         );
         //%level.number
-        $viewHandler->registerFunction(
+        ViewHandler::registerFunction(
             'xp',
             'number',
             function ($level) {
@@ -544,9 +544,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Enables user vocabulary to use the terms xp and points to use around the course.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function() {
         return new XPLevels();
     }

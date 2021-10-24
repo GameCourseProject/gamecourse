@@ -714,9 +714,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Allows multiple sources of information to be automaticaly included on gamecourse.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new Plugin();
     }

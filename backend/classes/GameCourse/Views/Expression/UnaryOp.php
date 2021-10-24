@@ -1,5 +1,5 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 abstract class UnaryOp extends Node {
     public function __construct($rhs) {

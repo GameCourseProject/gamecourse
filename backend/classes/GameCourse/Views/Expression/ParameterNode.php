@@ -1,9 +1,9 @@
 <?php
-namespace Modules\Views\Expression;
+namespace GameCourse\Views\Expression;
 
 class ParameterNode extends Node {
     private $param;
-    private $key; //param may be a array with key
+    private $key; //param may be an array with key
 
     public function __construct($param, $key=null) {
         $this->param = $param;

@@ -22,10 +22,9 @@ function comparePNGImages($img, $img2) {
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\DataSchema;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-use GameCourse\Settings;
+use GameCourse\Views\Views;
 
 class Quest extends Module {
     const LEVEL_NO_EXIST = 'Hummm.. This level does not seem to exist.';
@@ -460,12 +459,8 @@ class Quest extends Module {
             }*/
         });
 
-
-        $viewsModule = $this->getParent()->getModule('views');
-        if ($viewsModule != null) {
-            if (!$viewsModule->templateExists('Quest Announce - by quest'))
-                $viewsModule->setTemplate('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')),$this->getId(), true);
-        }
+        if (!Views::templateExists('Quest Announce - by quest', $this->getCourseId()))
+            Views::setTemplate('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')), $this->getCourseId(), true);
     }
 
     public function cleanModuleData() {
@@ -560,9 +555,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Generates a sequence of pages that create a treasure hunt game.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'soft')
-    ),
+    'dependencies' => array(),
     'factory' => function() {
         return new Quest();
     }

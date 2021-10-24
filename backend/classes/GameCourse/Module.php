@@ -2,7 +2,7 @@
 
 namespace GameCourse;
 
-use Modules\Views\Expression\ValueNode;
+use GameCourse\Views\Expression\ValueNode;
 
 abstract class Module
 {
@@ -368,7 +368,7 @@ abstract class Module
         return Core::$systemDB->selectMultiple($table, $where, $field, null, [], $whereDate);
     }
     //checks if object/collection array is correctly formated, may also check if a parameter belongs to an object
-    public function checkArray($array, $type, $functionName, $parameter = null)
+    public static function checkArray($array, $type, $functionName, $parameter = null)
     {
         if (!is_array($array) || !array_key_exists("type", $array) || $array["type"] != $type) {
             throw new \Exception("The function '." . $functionName . "' must be called on " . $type);

@@ -204,7 +204,7 @@ class Core
         return $fenixEduClient->get($url, true);
     }
 
-    public static function getLoggedUser()
+    public static function getLoggedUser(): User
     {
         return static::$loggedUser;
     }
@@ -228,7 +228,7 @@ class Core
         return static::$systemDB->delete("pending_invite",["id"=>$id]);
     }*/
 
-    public static function getCourses()
+    public static function getCourses(): array
     {
         return static::$systemDB->selectMultiple("course");
     }

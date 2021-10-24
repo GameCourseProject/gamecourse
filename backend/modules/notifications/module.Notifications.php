@@ -1,9 +1,10 @@
 <?php
 
-use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
+use GameCourse\Views\ViewHandler;
+use GameCourse\Views\Views;
 
 class Notifications extends Module
 {
@@ -78,9 +79,7 @@ class Notifications extends Module
             }
         }
 
-        $viewsModule = $this->getParent()->getModule('views');
-        $viewHandler = $viewsModule->getViewHandler();
-        $viewHandler->registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
+        ViewHandler::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
         /*  $viewHandler->registerFunction(
             'notifications',
             'checkNotifications',
@@ -135,8 +134,8 @@ class Notifications extends Module
         //     }*/
         // });
 
-        if (!$viewsModule->templateExists('Notifications Profile - by notifications'))
-            $viewsModule->setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), true);
+        if (!Views::templateExists('Notifications Profile - by notifications', $this->getCourseId()))
+            Views::setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId(),true);
     }
 
     public function is_configurable()
@@ -156,9 +155,7 @@ ModuleLoader::registerModule(array(
     'description' => 'Allows email notifications when a badge or points are atributed to a student.',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new Notifications();
     }
