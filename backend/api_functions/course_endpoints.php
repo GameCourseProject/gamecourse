@@ -28,10 +28,10 @@ API::registerFunction($MODULE, 'getCourse', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false)->getData();
+    $course = Course::getCourse($courseId, false);
 
-    if (!$course) API::error('There is no course with id = ' . $courseId);
-    API::response(array('course' => $course));
+    if (!$course->exists()) API::error('There is no course with id = ' . $courseId);
+    API::response(array('course' => $course->getData()));
 });
 
 /**
@@ -47,7 +47,7 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
     $courseId = API::getValue('courseId');
     $course = Course::getCourse($courseId, false);
     $courseUser = $course->getLoggedUser();
-    $courseUser->refreshActivity(); // FIXME: should be elsewhere
+    $courseUser->refreshActivity();
 
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
@@ -59,32 +59,30 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
     $filteredPages = [];
     foreach ($activePages as $page) {
         $view = Core::$systemDB->select("view", ["viewId" => $page["viewId"]]);
-        $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $page["viewId"], "course" => $courseId], "id,name,roleType");
+        $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $view["viewId"], "course" => $courseId], "id,name,roleType");
         $aspects = Core::$systemDB->selectMultiple("view", ["viewId" => $view["viewId"]]);
 
-        if ($template["roleType"] == "ROLE_INTERACTION") {
-            foreach ($aspects as $aspect) {
-                $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
-                //userRole used for pages like profile - only makes sense to add if the user has info to see about himself
-                $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
-                if ((($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
-                        || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole)))
-                    && !empty(Core::$systemDB->select("view_parent", ["parentId" => $v["id"]]))
-                ) {
-                    $filteredPages[] = $page;
-                    break;
-                }
-            }
-
-        } else if ($template["roleType"] == "ROLE_SINGLE") {
-            foreach ($aspects as $aspect) {
+        $showPage = false;
+        foreach ($aspects as $aspect) {
+            if ($template["roleType"] == "ROLE_SINGLE") {
                 $viewerRole = explode(".", $aspect["role"])[1];
                 if (($viewerRole == "Default" || $courseUser->hasRole($viewerRole))) {
-                    $filteredPages[] = $page;
+                    $showPage = true;
                     break;
                 }
+
+            } else if ($template["roleType"] == "ROLE_INTERACTION") {
+                $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
+                $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
+                if (($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
+                    || ($viewerRole != "Default" && $courseUser->hasRole($viewerRole))) {
+                    $showPage = true;
+                    break;
+                }
+
             }
         }
+        if ($showPage) $filteredPages[] = $page;
     }
     $activePages = $filteredPages;
 
@@ -713,62 +711,6 @@ API::registerFunction($MODULE, 'getCourseModules', function () {
     API::response($modulesArr);
 });
 
-/**
- * Set module state in course: either enabled or disabled.
- *
- * @param int $courseId
- * @param int $moduleId
- * @param bool $isEnabled
- */
-API::registerFunction($MODULE, 'setModuleState', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('courseId', 'moduleId', 'isEnabled');
-
-    $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
-
-    $toEnable = API::getValue('isEnabled');
-    $moduleId = API::getValue('moduleId');
-    $module = ModuleLoader::getModule($moduleId);
-
-    if ($module == null)
-        API::error('There is no module with id = ' . $moduleId);
-
-    $moduleObject = $module['factory']();
-    $moduleEnabled = Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled");
-
-    if ($moduleEnabled && !$toEnable) { //disabling module
-        $modules = $course->getModules();
-        foreach ($modules as $mod) {
-            $dependencies = $mod->getDependencies();
-            foreach ($dependencies as $dependency) {
-                if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
-                    API::error('Must disable all modules that depend on this one first.');
-            }
-        }
-
-        if (Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1], "count(*)") == 1) {
-            //only drop the tables of the module data if this is the last course where it is enabled
-            $moduleObject->dropTables($moduleId); //deletes tables associated with the module
-        } else {
-            $moduleObject->deleteDataRows($courseId);
-        }
-
-    } else if (!$moduleEnabled && $toEnable) { //enabling module
-        foreach ($module['dependencies'] as $dependency) {
-            // FIXME: BUG - can enable module without dependencies enabled
-            if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
-                API::error('Must enable all dependencies first.');
-        }
-    }
-
-    if ($moduleEnabled != $toEnable) {
-        $course->setModuleEnabled($moduleId, !$moduleEnabled);
-    }
-});
 
 
 /*** --------------------------------------------- ***/
@@ -780,30 +722,33 @@ API::registerFunction($MODULE, 'setModuleState', function () {
 API::registerFunction($MODULE, 'roles', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId');
-    $course = Course::getCourse(API::getValue('courseId'), false);
-    if ($course != null) {
-        if (API::hasKey('updateRoleHierarchy')) {
 
-            API::requireValues('hierarchy');
-            API::requireValues('roles');
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-            $hierarchy = API::getValue('hierarchy');
-            $newRoles = API::getValue('roles');
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
 
-            $course->setRoles($newRoles);
-            $course->setRolesHierarchy($hierarchy);
-            http_response_code(201);
-        } else {
-            $globalInfo = array(
-                'pages' => $course->getAvailablePages(),
-                'roles' => array_column($course->getRoles("name"), "name"),
-                'roles_obj' => $course->getRoles('id, name, landingPage'),
-                'rolesHierarchy' => $course->getRolesHierarchy(),
-            );
-            API::response($globalInfo);
-        }
+    if (API::hasKey('updateRoleHierarchy')) {
+
+        API::requireValues('hierarchy');
+        API::requireValues('roles');
+
+        $hierarchy = API::getValue('hierarchy');
+        $newRoles = API::getValue('roles');
+
+        $course->setRoles($newRoles);
+        $course->setRolesHierarchy($hierarchy);
+        http_response_code(201);
+
     } else {
-        API::error("There is no course with that id: " . API::getValue('courseId'));
+        $globalInfo = array(
+            'pages' => $course->getAvailablePages(),
+            'roles' => array_column($course->getRoles("name"), "name"),
+            'roles_obj' => $course->getRoles('id, name, landingPage'),
+            'rolesHierarchy' => $course->getRolesHierarchy(),
+        );
+        API::response($globalInfo);
     }
 });
 
@@ -836,415 +781,422 @@ API::registerFunction($MODULE, 'getRulesSystemLastRun', function () {
 // General Actions: system actions perfomed in the rule list UI
 API::registerFunction('settings', 'ruleGeneralActions', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId);
 
-        if (API::hasKey('newSection')) {
-            if (API::hasKey('sectionName') && API::hasKey('sectionPrecedence')) {
-                $sectionName = API::getValue('sectionName');
-                $sectionPrecedence = API::getValue('sectionPrecedence');
-                $rs->createNewRuleFile($sectionName, $sectionPrecedence);
-            }
-        } else if (API::hasKey('submitTagsEdit')) {
-            if (API::hasKey('tags')) {
-                $tags = API::getValue('tags');
-                $rs->editTags($tags);
-            }
-        } else if (API::hasKey('swapTags')) {
-            if (API::hasKey('rules')) {
-                $rules = API::getValue('rules');
-                $txt = $rs->swapTags($rules);
-            }
-        } else if (API::hasKey('deleteTag')) {
-            if (API::hasKey('tag')) {
-                $tag = API::getValue('tag');
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
 
-                $rs->deleteTag($tag);
-            }
-        } else if (API::hasKey('importFile')) {
-            if (API::hasKey('filename') && API::hasKey('replace') && API::hasKey('file')) {
-                $filename = API::getValue('filename');
-                $replace = API::getValue('replace');
-                $file = API::getValue('file');
-                $fileContent = explode(",", $file);
-                if (sizeof($fileContent) == 2)
-                    $rs->importFile($filename, base64_decode($fileContent[1]), $replace);
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
 
-                $rules = $rs->getRules();
-                $globalInfo = array(
-                    'rules' => $rules
-                );
-
-                API::response($globalInfo);
-                // send response
-            }
-        } else if (API::hasKey('exportRuleFiles')) {
-            if (API::hasKey('filename')) {
-                $filename = API::getValue('filename');
-                $zipname = $rs->exportRuleFiles($filename);
-            }
-        } else if (API::hasKey('getTargets')) {
-            $targets = $rs->getTargets();
-            $data = array(
-                'targets' => $targets
-            );
-            API::response($data);
-        } else if (API::hasKey('getAutoGameStatus') && API::hasKey('getMetadataVars')) {
-            $autogame = $rs->getAutoGameStatus();
-            $metadata = $rs->getAutoGameMetadata();
-            $data = array(
-                'autogameStatus' => $autogame,
-                'autogameMetadata' => $metadata
-            );
-            API::response($data);
-        } else if (API::hasKey('resetSocket')) {
-            $res = $rs->resetSocketStatus();
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'socketUpdated' => $res,
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else if (API::hasKey('resetCourse')) {
-            $rs->resetCourseStatus();
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else {
-            // TO DO
+    if (API::hasKey('newSection')) {
+        if (API::hasKey('sectionName') && API::hasKey('sectionPrecedence')) {
+            $sectionName = API::getValue('sectionName');
+            $sectionPrecedence = API::getValue('sectionPrecedence');
+            $rs->createNewRuleFile($sectionName, $sectionPrecedence);
         }
+    } else if (API::hasKey('submitTagsEdit')) {
+        if (API::hasKey('tags')) {
+            $tags = API::getValue('tags');
+            $rs->editTags($tags);
+        }
+    } else if (API::hasKey('swapTags')) {
+        if (API::hasKey('rules')) {
+            $rules = API::getValue('rules');
+            $txt = $rs->swapTags($rules);
+        }
+    } else if (API::hasKey('deleteTag')) {
+        if (API::hasKey('tag')) {
+            $tag = API::getValue('tag');
+
+            $rs->deleteTag($tag);
+        }
+    } else if (API::hasKey('importFile')) {
+        if (API::hasKey('filename') && API::hasKey('replace') && API::hasKey('file')) {
+            $filename = API::getValue('filename');
+            $replace = API::getValue('replace');
+            $file = API::getValue('file');
+            $fileContent = explode(",", $file);
+            if (sizeof($fileContent) == 2)
+                $rs->importFile($filename, base64_decode($fileContent[1]), $replace);
+
+            $rules = $rs->getRules();
+            $globalInfo = array(
+                'rules' => $rules
+            );
+
+            API::response($globalInfo);
+            // send response
+        }
+    } else if (API::hasKey('exportRuleFiles')) {
+        if (API::hasKey('filename')) {
+            $filename = API::getValue('filename');
+            $zipname = $rs->exportRuleFiles($filename);
+        }
+    } else if (API::hasKey('getTargets')) {
+        $targets = $rs->getTargets();
+        $data = array(
+            'targets' => $targets
+        );
+        API::response($data);
+    } else if (API::hasKey('getAutoGameStatus') && API::hasKey('getMetadataVars')) {
+        $autogame = $rs->getAutoGameStatus();
+        $metadata = $rs->getAutoGameMetadata();
+        $data = array(
+            'autogameStatus' => $autogame,
+            'autogameMetadata' => $metadata
+        );
+        API::response($data);
+    } else if (API::hasKey('resetSocket')) {
+        $res = $rs->resetSocketStatus();
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'socketUpdated' => $res,
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
+    } else if (API::hasKey('resetCourse')) {
+        $rs->resetCourseStatus();
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 // RuleSystem Settings Actions: actions performed in the settings menu of the rule system
 API::registerFunction('settings', 'ruleSystemSettings', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-        if (API::hasKey('getAutoGameStatus') && API::hasKey('getMetadataVars')) {
-            $autogame = $rs->getAutoGameStatus();
-            $metadata = $rs->getAutoGameMetadata();
-            $data = array(
-                'autogameStatus' => $autogame,
-                'autogameMetadata' => $metadata
-            );
-            API::response($data);
-        } else if (API::hasKey('resetSocket')) {
-            $res = $rs->resetSocketStatus();
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'socketUpdated' => $res,
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else if (API::hasKey('resetCourse')) {
-            $rs->resetCourseStatus();
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else if (API::hasKey('getLogs')) {
-            $logs = $rs->getLogs();
-            $data = array(
-                'logs' => $logs
-            );
-            API::response($data);
-        } else if (API::hasKey('getAvailableRoles')) {
-            $roles = $course->getRoles();
-            $data = array(
-                'availableRoles' => $roles
-            );
-            API::response($data);
-        } else if (API::hasKey('saveVariable')) {
-            $variables = API::getValue('variables');
-            $rs->setMetadataVariables($variables);
-        } else if (API::hasKey('getTags')) {
-            $tags = $rs->getTags();
-            $data = array(
-                'tags' => $tags
-            );
-            API::response($data);
-        } else if (API::hasKey('getFuncs')) {
-            $funcs = $rs->getGameRulesFuncs();
-            $data = array(
-                'funcs' => $funcs
-            );
-            API::response($data);
-        } else {
-            // TO DO
-        }
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
+
+    if (API::hasKey('getAutoGameStatus') && API::hasKey('getMetadataVars')) {
+        $autogame = $rs->getAutoGameStatus();
+        $metadata = $rs->getAutoGameMetadata();
+        $data = array(
+            'autogameStatus' => $autogame,
+            'autogameMetadata' => $metadata
+        );
+        API::response($data);
+    } else if (API::hasKey('resetSocket')) {
+        $res = $rs->resetSocketStatus();
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'socketUpdated' => $res,
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
+    } else if (API::hasKey('resetCourse')) {
+        $rs->resetCourseStatus();
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
+    } else if (API::hasKey('getLogs')) {
+        $logs = $rs->getLogs();
+        $data = array(
+            'logs' => $logs
+        );
+        API::response($data);
+    } else if (API::hasKey('getAvailableRoles')) {
+        $roles = $course->getRoles();
+        $data = array(
+            'availableRoles' => $roles
+        );
+        API::response($data);
+    } else if (API::hasKey('saveVariable')) {
+        $variables = API::getValue('variables');
+        $rs->setMetadataVariables($variables);
+    } else if (API::hasKey('getTags')) {
+        $tags = $rs->getTags();
+        $data = array(
+            'tags' => $tags
+        );
+        API::response($data);
+    } else if (API::hasKey('getFuncs')) {
+        $funcs = $rs->getGameRulesFuncs();
+        $data = array(
+            'funcs' => $funcs
+        );
+        API::response($data);
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 // Rule Section Actions: actions perfomed over sections in the rule list UI
 API::registerFunction('settings', 'ruleSectionActions', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-        if (API::hasKey('newRule')) {
-            if (API::hasKey('module')) {
-                $module = API::getValue('module');
-                $rule = API::getValue('rule');
-                $rs->newRule($module, $rule);
-            }
-        } else if (API::hasKey('exportRuleFile')) {
-            if (API::hasKey('module')) {
-                $fileData = $rs->exportRuleFile(API::getValue('module'));
-                API::response($fileData);
-            }
-        } else if (API::hasKey('increasePriority')) {
-            if (API::hasKey('filename')) {
-                $module = API::getValue('module');
-                $filename = API::getValue('filename');
-                $rs->increasePriority($filename);
-            }
-        } else if (API::hasKey('decreasePriority')) {
-            if (API::hasKey('filename')) {
-                $filename = API::getValue('filename');
-                $rs->decreasePriority($filename);
-            }
-        } else if (API::hasKey('deleteSection')) {
-            if (API::hasKey('filename')) {
-                $filename = API::getValue('filename');
-                $rs->deleteSection($filename);
-            }
-        } else {
-            // TO DO
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
+
+    if (API::hasKey('newRule')) {
+        if (API::hasKey('module')) {
+            $module = API::getValue('module');
+            $rule = API::getValue('rule');
+            $rs->newRule($module, $rule);
+        }
+    } else if (API::hasKey('exportRuleFile')) {
+        if (API::hasKey('module')) {
+            $fileData = $rs->exportRuleFile(API::getValue('module'));
+            API::response($fileData);
+        }
+    } else if (API::hasKey('increasePriority')) {
+        if (API::hasKey('filename')) {
+            $module = API::getValue('module');
+            $filename = API::getValue('filename');
+            $rs->increasePriority($filename);
+        }
+    } else if (API::hasKey('decreasePriority')) {
+        if (API::hasKey('filename')) {
+            $filename = API::getValue('filename');
+            $rs->decreasePriority($filename);
+        }
+    } else if (API::hasKey('deleteSection')) {
+        if (API::hasKey('filename')) {
+            $filename = API::getValue('filename');
+            $rs->deleteSection($filename);
         }
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 // Rule Actions: actions perfomed over rules in the rule list UI
 API::registerFunction('settings', 'ruleSpecificActions', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-        if (API::hasKey('toggleRule')) {
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $rs->toggleRule($rule, $index);
-            }
-        } else if (API::hasKey('duplicateRule')) {
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $rs->duplicateRule($rule, $index);
-            }
-        } else if (API::hasKey('deleteRule')) {
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $rs->removeRule($rule, $index);
-            }
-        } else if (API::hasKey('moveUpRule')) {
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $rs->moveUpRule($rule, $index);
-            }
-        } else if (API::hasKey('moveDownRule')) {
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $rs->moveDownRule($rule, $index);
-            }
-        } else {
-            // TO DO
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
+
+    if (API::hasKey('toggleRule')) {
+        if (API::hasKey('rule')) {
+            $rule = API::getValue('rule');
+            $index = API::getValue('index');
+            $rs->toggleRule($rule, $index);
+        }
+    } else if (API::hasKey('duplicateRule')) {
+        if (API::hasKey('rule')) {
+            $rule = API::getValue('rule');
+            $index = API::getValue('index');
+            $rs->duplicateRule($rule, $index);
+        }
+    } else if (API::hasKey('deleteRule')) {
+        if (API::hasKey('rule')) {
+            $rule = API::getValue('rule');
+            $index = API::getValue('index');
+            $rs->removeRule($rule, $index);
+        }
+    } else if (API::hasKey('moveUpRule')) {
+        if (API::hasKey('rule')) {
+            $rule = API::getValue('rule');
+            $index = API::getValue('index');
+            $rs->moveUpRule($rule, $index);
+        }
+    } else if (API::hasKey('moveDownRule')) {
+        if (API::hasKey('rule')) {
+            $rule = API::getValue('rule');
+            $index = API::getValue('index');
+            $rs->moveDownRule($rule, $index);
         }
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 // Rule Editor Actions: actions perfomed over rules in the add/edit rule page
 API::registerFunction('settings', 'ruleEditorActions', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
-        $tags = $rs->getTags();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-        if (API::hasKey('submitRule')) {
-            // Saves a rule after editing or creating
-            if (API::hasKey('rule')) {
-                $rule = API::getValue('rule');
-                $index = API::getValue('index');
-                $ruletxt = $rs->generateRule($rule);
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
 
-                if (API::hasKey('add')) {
-                    $rs->updateTags($rule["tags"]);
-                    $rs->addRule($ruletxt, $index, $rule);
-                } else {
-                    $rs->updateTags($rule["tags"]);
-                    $rs->replaceRule($ruletxt, $index, $rule);
-                }
-            }
-        } else if (API::hasKey('getLibraries')) {
-            // Gets the list of libraries that can be used in rule writing
-            $libs = $course->getEnabledLibrariesInfo();
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
+    $tags = $rs->getTags();
 
-            API::response($libs);
-        } else if (API::hasKey('getFunctions')) {
-            // Gets the list of functions that can be used in rule writing
-            $funcs = $course->getFunctions();
-            API::response($funcs);
-        } else if (API::hasKey('previewFunction')) {
-            // Previews a function being used in rule writing
-            if (API::hasKey('lib') && API::hasKey('func') && API::hasKey('args')) {
-                $lib = API::getValue('lib');
-                $func = API::getValue('func');
-                $args = API::getValue('args');
-
-                $res = null;
-
-                if (!empty($args)) {
-                    $objs = ViewHandler::callFunction($lib, $func, $args);
-                    $obj = $objs->getValue();
-                    $objtype = getType($obj);
-                } else {
-                    $objs = ViewHandler::callFunction($lib, $func, []);
-                    $obj = $objs->getValue();
-                    $objtype = getType($obj);
-                }
-
-                if ($objtype == "bool") {
-                    $res = $obj;
-                } else if ($objtype == "string") {
-                    $res = $obj;
-                } else if ($objtype == "object") {
-                    $res = $obj;
-                } else if ($objtype == "integer") {
-                    $res = $obj;
-                } else if ($objtype == "array") {
-                    if ($obj["type"] == "collection") {
-                        $res = json_encode($obj["value"]);
-                    }
-                } else {
-                    $res = get_object_vars($obj);
-                }
-                API::response($res);
-            }
-        } else if (API::hasKey('previewRule')) {
+    if (API::hasKey('submitRule')) {
+        // Saves a rule after editing or creating
+        if (API::hasKey('rule')) {
             $rule = API::getValue('rule');
-            $res = $rs->generateRule($rule);
+            $index = API::getValue('index');
+            $ruletxt = $rs->generateRule($rule);
 
-            // write rule to file
-            $rs->writeTestRule($res);
-            try {
-                // args: [course] [all_targets] [targets] [test_mode]
-                $resError = Course::newExternalData(API::getValue('course'), True, null, True);
-                // get results
-                $res = Core::$systemDB->selectMultiple("award_test", null, "*");
-                if ($resError != null) {
-                    $data = array("result" => null, "error" => $resError);
-                } else {
-                    $data = array("result" => $res, "error" => null);
-                }
-            } catch (\Exception $e) {
+            if (API::hasKey('add')) {
+                $rs->updateTags($rule["tags"]);
+                $rs->addRule($ruletxt, $index, $rule);
+            } else {
+                $rs->updateTags($rule["tags"]);
+                $rs->replaceRule($ruletxt, $index, $rule);
             }
-            $rs->clearRuleOutput(); // clear output
-            Core::$systemDB->deleteAll("award_test"); // clear DB
-
-            //$data = array("result" => array(), "error" => null);
-            API::response($data);
-        } else {
-            // TO DO
         }
+    } else if (API::hasKey('getLibraries')) {
+        // Gets the list of libraries that can be used in rule writing
+        $libs = $course->getEnabledLibrariesInfo();
+
+        API::response($libs);
+    } else if (API::hasKey('getFunctions')) {
+        // Gets the list of functions that can be used in rule writing
+        $funcs = $course->getFunctions();
+        API::response($funcs);
+    } else if (API::hasKey('previewFunction')) {
+        // Previews a function being used in rule writing
+        if (API::hasKey('lib') && API::hasKey('func') && API::hasKey('args')) {
+            $lib = API::getValue('lib');
+            $func = API::getValue('func');
+            $args = API::getValue('args');
+
+            $res = null;
+
+            if (!empty($args)) {
+                $objs = ViewHandler::callFunction($lib, $func, $args);
+                $obj = $objs->getValue();
+                $objtype = getType($obj);
+            } else {
+                $objs = ViewHandler::callFunction($lib, $func, []);
+                $obj = $objs->getValue();
+                $objtype = getType($obj);
+            }
+
+            if ($objtype == "bool") {
+                $res = $obj;
+            } else if ($objtype == "string") {
+                $res = $obj;
+            } else if ($objtype == "object") {
+                $res = $obj;
+            } else if ($objtype == "integer") {
+                $res = $obj;
+            } else if ($objtype == "array") {
+                if ($obj["type"] == "collection") {
+                    $res = json_encode($obj["value"]);
+                }
+            } else {
+                $res = get_object_vars($obj);
+            }
+            API::response($res);
+        }
+    } else if (API::hasKey('previewRule')) {
+        $rule = API::getValue('rule');
+        $res = $rs->generateRule($rule);
+
+        // write rule to file
+        $rs->writeTestRule($res);
+        try {
+            // args: [course] [all_targets] [targets] [test_mode]
+            $resError = Course::newExternalData(API::getValue('courseId'), True, null, True);
+            // get results
+            $res = Core::$systemDB->selectMultiple("award_test", null, "*");
+            if ($resError != null) {
+                $data = array("result" => null, "error" => $resError);
+            } else {
+                $data = array("result" => $res, "error" => null);
+            }
+        } catch (\Exception $e) {
+        }
+        $rs->clearRuleOutput(); // clear output
+        Core::$systemDB->deleteAll("award_test"); // clear DB
+
+        //$data = array("result" => array(), "error" => null);
+        API::response($data);
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 API::registerFunction('settings', 'runRuleSystem', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
+    API::requireValues('courseId');
 
-    if ($course != null) {
-        $rs = new RuleSystem($course);
-        if (API::hasKey('runSelectedTargets')) {
-            $selectedTargets = API::getValue('selectedTargets');
-            Course::newExternalData(API::getValue('course'), False, $selectedTargets);
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else if (API::hasKey('runRuleSystem')) {
-            Course::newExternalData(API::getValue('course'), False);
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else if (API::hasKey('runAllTargets')) {
-            Course::newExternalData(API::getValue('course'), True);
-            $autogame = $rs->getAutoGameStatus();
-            $data = array(
-                'autogameStatus' => $autogame
-            );
-            API::response($data);
-        } else {
-            // TO DO
-        }
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $rs = new RuleSystem($course);
+    if (API::hasKey('runSelectedTargets')) {
+        $selectedTargets = API::getValue('selectedTargets');
+        Course::newExternalData(API::getValue('courseId'), False, $selectedTargets);
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
+    } else if (API::hasKey('runRuleSystem')) {
+        Course::newExternalData(API::getValue('courseId'), False);
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
+    } else if (API::hasKey('runAllTargets')) {
+        Course::newExternalData(API::getValue('courseId'), True);
+        $autogame = $rs->getAutoGameStatus();
+        $data = array(
+            'autogameStatus' => $autogame
+        );
+        API::response($data);
     } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
+        // TO DO
     }
 });
 
 // rules page
 API::registerFunction('settings', 'getRulesFromCourse', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $course = Course::getCourse(API::getValue('course'));
-    if ($course != null) {
+    API::requireValues('courseId');
 
-        $rs = new RuleSystem($course);
-        $rules = $rs->getRules();
-        $tags = $rs->getTags();
-        $funcs = $rs->getGameRulesFuncs();
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
 
-        $globalInfo = array(
-            'rules' => $rules,
-            'tags' => $tags,
-            'funcs' => $funcs
-        );
-        API::response($globalInfo);
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
-    }
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $rs = new RuleSystem($course);
+    $rules = $rs->getRules();
+    $tags = $rs->getTags();
+    $funcs = $rs->getGameRulesFuncs();
+
+    $globalInfo = array(
+        'rules' => $rules,
+        'tags' => $tags,
+        'funcs' => $funcs
+    );
+    API::response($globalInfo);
 });
 
 

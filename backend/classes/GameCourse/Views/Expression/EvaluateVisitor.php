@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse\Views\Expression;
 
+use GameCourse\Views\ViewHandler;
+
 class EvaluateVisitor extends Visitor {
     private $params;
 

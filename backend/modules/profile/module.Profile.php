@@ -19,10 +19,10 @@ class Profile extends Module {
         $user = $this->getParent()->getLoggedUser();
 
         if (!Views::templateExists(self::STUDENT_SUMMARY_TEMPLATE, $this->getCourseId()))
-            Views::setTemplate(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $this->getCourseId(),true);
+            Views::setTemplateFromFile(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $this->getCourseId());
 
         if (!Views::templateExists(self::STUDENT_AWARD_LIST, $this->getCourseId()))
-            Views::setTemplate(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), $this->getCourseId(),true);
+            Views::setTemplateFromFile(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), $this->getCourseId());
        
     }
 

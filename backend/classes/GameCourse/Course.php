@@ -5,6 +5,7 @@ namespace GameCourse;
 include 'GameRules.php';
 
 use GameRules;
+use GameCourse\Views\Views;
 use GameCourse\Views\ViewHandler;
 
 class Course
@@ -469,7 +470,7 @@ class Course
 
             //course table
             $keys = ['defaultLandingPage', "roleHierarchy", "theme"];
-            $fromCourseData = $copyFromCourse->getData(); //Core::$systemDB->select("course",["id"=>$fromId]);
+            $fromCourseData = $copyFromCourse->getData();
             $newData = [];
             foreach ($keys as $key)
                 $newData[$key] = $fromCourseData[$key];
@@ -499,70 +500,20 @@ class Course
                 }
             }
 
-            //pages and views data
-            if (in_array("views", $enabledModules)) {
+            //pages & templates
+            $templates = Core::$systemDB->selectMultiple("view_template vt join template t on vt.templateId=id", ["course" => $copyFrom, "isGlobal" => 0]);
+            foreach ($templates as $t) {
+                $view = Core::$systemDB->selectMultiple(
+                    "view_template vt join view v on vt.viewId=v.viewId",
+                    ["templateId" => $t["id"]],
+                    "v.*"
+                );
+                ViewHandler::buildView($view, true);
+                [$templateId, $viewId] = Views::setTemplate($view, $courseId, $t["name"], $t["roleType"]);
 
-                //templates
-                $templates = Core::$systemDB->selectMultiple("template", ["course" => $copyFrom, "isGlobal" => 0]);
-                $tempTemplates = array();
-                foreach ($templates as $t) {
-                    $t['course'] = $course;
-                    $aspect = Core::$systemDB->select(
-                        "view_template vt join view v on vt.viewId=v.viewId",
-                        ["templateId" => $t["id"]]
-                    );
-
-                    $views = ViewHandler::getViewWithParts($aspect["viewId"], null, true);
-
-                    $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
-                    array_push($tempTemplates, $arrTemplate);
-                }
-
-
-                //import
-                foreach ($tempTemplates as $template) {
-                    $aspects = $template["views"];
-
-                    Core::$systemDB->insert("template", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
-
-                    foreach ($aspects as $aspect) {
-                        ViewHandler::resetParentsAndViewIds($aspect);
-                        unset($aspect["id"]);
-                        unset($aspect['viewId']);
-                        //need to convert the roles of the aspects to the new roles
-                        if ($template["roleType"] == 'ROLE_INTERACTION') {
-                            $roles = explode(">", $aspect["role"]);
-                        } else {
-                            $roles = [$aspect["role"]];
-                        }
-                        foreach ($roles as &$role) {
-                            $specificationName = explode(".", $role);
-                            if ($specificationName[0] == "role" && $specificationName[1] != "Default") {
-                                $role = "role." . $newRoleOfOldId($specificationName[1]);
-                            }
-                        }
-                        $aspect["role"] = implode(">", $roles);
-
-
-                        ViewHandler::updateViewAndChildren($aspect, $courseId, null, true, $template['name']);
-                    }
-
-                    //------ DEAL WITH PAGES -----
-                    //get info from page of the source course
-                    $templateIdCopyFrom = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $copyFrom], "id");
-                    $viewIdCopyFrom = Core::$systemDB->select('view_template', ['templateId' => $templateIdCopyFrom], 'viewId');
-
-                    $pageWithView = Core::$systemDB->select("page", ["course" => $copyFrom, "viewId" => $viewIdCopyFrom]);
-
-                    if ($pageWithView) {
-                        unset($pageWithView['id']);
-                        //insert new page with course and viewId updated
-                        $templateId = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $courseId], "id");
-                        $viewId = Core::$systemDB->select('view_template', ['templateId' => $templateId], 'viewId');
-                        $pageWithView['course'] = $courseId;
-                        $pageWithView['viewId'] = $viewId;
-                        Core::$systemDB->insert('page', $pageWithView);
-                    }
+                $pagesOfTemplate = Core::$systemDB->selectMultiple("page", ["viewId" => $t["viewId"]]);
+                foreach ($pagesOfTemplate as $page) {
+                    Views::createPage($courseId, $page["name"], (int)$viewId, 0);
                 }
             }
 

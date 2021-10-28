@@ -2,6 +2,7 @@
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\ViewHandler;
 
 class Charts extends Module {
@@ -21,23 +22,25 @@ class Charts extends Module {
     }
 
     public function init() {
-        ViewHandler::registerPartType('chart', null, null,
-            function(&$chart) {
-                if ($chart['chartType'] == 'progress') {
-                    ViewHandler::parseSelf($chart['info']['value']);
-                    ViewHandler::parseSelf($chart['info']['max']);
+        Dictionary::registerViewType(
+            'chart',
+            'This type displays various types of charts.',
+            null,
+            null,
+            function(&$view) { //parse function
+                if ($view['chartType'] == 'progress') {
+                    ViewHandler::parseSelf($view['info']['value']);
+                    ViewHandler::parseSelf($view['info']['max']);
                 }
             },
-            function(&$chart, $viewParams, $visitor) {
-                //$s = \GameCourse\Course::$coursesDb->numQueriesExecuted();
-                if ($chart['chartType'] == 'progress') {
-                    $chart['info']['value'] = $chart['info']['value']->accept($visitor)->getValue();
-                    $chart['info']['max'] = $chart['info']['max']->accept($visitor)->getValue();
+            function(&$view, $viewParams, $visitor) { //processing function
+                if ($view['chartType'] == 'progress') {
+                    $view['info']['value'] = $view['info']['value']->accept($visitor)->getValue();
+                    $view['info']['max'] = $view['info']['max']->accept($visitor)->getValue();
                 } else {
-                    $processFunc = $this->registeredCharts[$chart['info']['provider']];
-                    $processFunc($chart, $viewParams, $visitor);
+                    $processFunc = $this->registeredCharts[$view['info']['provider']];
+                    $processFunc($view, $viewParams, $visitor);
                 }
-                //echo \GameCourse\Course::$coursesDb->numQueriesExecuted() - $s . 'aaa';
             }
         );
         

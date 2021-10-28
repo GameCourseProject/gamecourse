@@ -43,7 +43,7 @@ export class ViewImage extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.value,
+      obj.src,
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
@@ -59,6 +59,6 @@ export class ViewImage extends View {
 }
 
 export interface ViewImageDatabase extends ViewDatabase {
-  value: string;
+  src: string;
   link?: string;
 }

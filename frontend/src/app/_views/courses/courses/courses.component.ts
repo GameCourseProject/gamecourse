@@ -106,7 +106,6 @@ export class CoursesComponent implements OnInit {
 
         this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
         this.reduceList(undefined, this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin));
-
         this.loading = false;
       },
         error => ErrorService.set(error));
@@ -380,7 +379,7 @@ export class CoursesComponent implements OnInit {
     this.courseToEdit = course;
   }
 
-  getActiveCourses(isActive: boolean): Course[] {
+  getNonAdminCourses(isActive: boolean): Course[] {
     return this.reduce.items.filter(course => course.isActive === isActive);
   }
 

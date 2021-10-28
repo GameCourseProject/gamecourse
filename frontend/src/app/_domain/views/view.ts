@@ -196,13 +196,11 @@ export abstract class View {
     const visibilityType = obj.visibilityType === VisibilityType.CONDITIONAL || !(obj.visibilityType as VisibilityType) ?
       VisibilityType.VISIBLE : obj.visibilityType as VisibilityType; // FIXME: transform to correct format in backend (curerntly returning 'conditional')
 
-    if (obj.events) obj.events = JSON.parse(obj.events);
-
     return {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
       parentId: parseInt(obj.parentId) || null,
-      type: obj.partType as ViewType,
+      type: obj.type as ViewType,
       role: Role.parse(obj.role),
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
       loopData: obj.loopData || null,
@@ -224,7 +222,7 @@ export interface ViewDatabase {
   id: string;
   viewId: string;
   parentId: string;
-  partType: string;
+  type: string;
   role: string;
   edit: boolean;
   loopData?: string;

@@ -175,7 +175,7 @@ angular.module('module.charts', []).run(function ($sbviews, $compile) {
             });
     }
 
-    $sbviews.registerPartType('chart', {
+    $sbviews.registerViewType('chart', {
         name: 'Chart',
         defaultPart: function () {
             return {

@@ -126,6 +126,8 @@ export class Reduce {
   }
 
   private isQueryTrueFilter(item: any): boolean {
+    if (this.filters.length === 0) return true;
+
     for (const filter of this.filters) {
       if ( (item instanceof Course && Filter.onCourse(item, filter)) ||
         (item instanceof User && Filter.onUser(item, filter)) )

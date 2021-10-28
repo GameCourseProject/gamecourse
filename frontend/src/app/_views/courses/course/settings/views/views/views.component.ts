@@ -38,12 +38,15 @@ export class ViewsComponent implements OnInit {
   isPageModalOpen: boolean;
   isTemplateModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
+  isImportModalOpen: boolean;
   saving: boolean;
 
   newPage: Partial<Page>;
   pageSelected: Page;
   newTemplate: Partial<Template>;
   templateSelected: Template;
+
+  importedFile: File;
 
   mode: 'add' | 'edit';
 
@@ -180,7 +183,7 @@ export class ViewsComponent implements OnInit {
         }, error => ErrorService.set(error))
 
     } else if (this.mode === 'edit') {
-      this.api.editTemplate(this.courseID, template)
+      this.api.editTemplateBasicInfo(this.courseID, template)
         .pipe( finalize(() => {
           this.saving = false;
           this.isTemplateModalOpen = false;
@@ -245,6 +248,25 @@ export class ViewsComponent implements OnInit {
     ErrorService.set('Error: This action still needs to be updated to the current version. (views.component.ts::useGlobal(template))')
   }
 
+  importTemplate(): void {
+    this.saving = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedTemplate = reader.result;
+      this.api.importTemplate(this.courseID, importedTemplate)
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.saving = false;
+        }) )
+        .subscribe(
+          () => this.getViewsInfo(),
+          error => ErrorService.set(error)
+        )
+    }
+    reader.readAsDataURL(this.importedFile);
+  }
+
   exportTemplate(template: Template): void {
     this.saving = true;
     this.api.exportTemplate(this.courseID, template.id)
@@ -258,6 +280,10 @@ export class ViewsComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  onFileSelected(files: FileList): void {
+    this.importedFile = files.item(0);
+  }
 
   isReadyToSubmit(type: 'page' | 'template') {
     let isValid = function (text) {

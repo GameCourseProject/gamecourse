@@ -74,7 +74,8 @@
         </div>
       </div>
 
-      <div class="action-buttons" style="width:30px">
+      <div class="action-buttons">
+        <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
         <div class="icon add_icon" title="New" (click)="mode = 'add'; clear(); isTemplateModalOpen = true;"></div>
       </div>
     </div>
@@ -217,3 +218,32 @@
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-template'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="saving"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .txt file to be imported</div>
+  <app-input-file
+    [id]="'import_template'"
+    [accept]="'.txt'"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importTemplate()">Import Template</button>
+  </div>
+
+</ng-template>

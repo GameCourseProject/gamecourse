@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS=0;
+
 /** -----------------------------------
   * -- Drop Triggers
   * ----------------------------------- */
@@ -9,8 +11,6 @@ DROP TRIGGER IF EXISTS viewDelete;
 /** -----------------------------------
   * -- Drop Tables  
   * ----------------------------------- */
-  
-DROP TABLE IF EXISTS aspect_class;
 
 DROP TABLE IF EXISTS auth;
 
@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS dependency;
 DROP TABLE IF EXISTS dictionary_function;
 DROP TABLE IF EXISTS dictionary_library;
 DROP TABLE IF EXISTS dictionary_variable;
+DROP TABLE IF EXISTS dictionary_view_type;
 
 DROP TABLE IF EXISTS game_course_user;
 
@@ -75,14 +76,13 @@ DROP TABLE IF EXISTS user_role;
 DROP TABLE IF EXISTS user_xp;
 
 DROP TABLE IF EXISTS view;
-DROP TABLE IF EXISTS view_parameter;
 DROP TABLE IF EXISTS view_template;
 
 
 /** -----------------------------------
   * -- Create Tables
   * ----------------------------------- */
-  
+
 CREATE TABLE game_course_user(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(50) NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE auth(
 	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
 	game_course_user_id         int unsigned NOT NULL,
 	username                    varchar(50),
-	authentication_service      enum ('fenix', 'google', 'facebook', 'linkedin'),
+	authentication_service      ENUM ('fenix', 'google', 'facebook', 'linkedin'),
 
 	UNIQUE key(username, authentication_service),
 	FOREIGN key(game_course_user_id) REFERENCES game_course_user(id) ON DELETE CASCADE
@@ -167,6 +167,12 @@ CREATE TABLE course_module(
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
+CREATE TABLE dictionary_view_type(
+   id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
+   name                         varchar(50) UNIQUE NOT NULL,
+   description                  varchar(255)
+);
+
 CREATE TABLE dictionary_library(
 	id	                        int unsigned AUTO_INCREMENT PRIMARY KEY,
 	moduleId                    varchar(50),
@@ -193,7 +199,6 @@ CREATE TABLE dictionary_variable(
 	libraryId                   int unsigned NULL,
 	name                        varchar(50) UNIQUE,
 	returnType                  varchar(50) NOT NULL,
-	returnName                  varchar(50),
 	description                 varchar(1000),
 
 	FOREIGN key(libraryId) REFERENCES dictionary_library(id) ON DELETE CASCADE
@@ -258,58 +263,71 @@ CREATE TABLE award_participation(
 );
 
 CREATE TABLE view(
-	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-	viewId                      int unsigned,
-	#aspectClass int unsigned,
-	role                        varchar(100) DEFAULT 'role.Default',
-	partType                    enum ('block', 'text', 'image', 'table', 'headerRow', 'row', 'header', 'chart'),
-	#parent int unsigned,
-	#viewIndex int unsigned,
-	label                       varchar(50),
-	loopData                    varchar(200),
-	variables                   varchar(500),
-	value                       varchar(200),
-	class                       varchar(50),
-	cssId                       varchar(50),
-	style                       varchar(200),
-	link                        varchar(100),
-	visibilityCondition         varchar(200),
-	visibilityType              enum ('visible', 'invisible', 'conditional'),
-	events                      varchar(500),
-	info                        varchar(500)
+    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+    viewId                      int unsigned,
+    type                        ENUM ('text', 'image', 'header', 'block', 'table', 'row', 'chart'),
+    role                        varchar(100) DEFAULT 'role.Default',
+    style                       varchar(200),
+    cssId                       varchar(50),
+    class                       varchar(50),
+    label                       varchar(50),
+    visibilityType              ENUM ('visible', 'invisible', 'conditional'),
+    visibilityCondition         varchar(200),
+    loopData                    varchar(200),
+    variables                   varchar(500),
+    events                      varchar(500)
+);
 
-	#FOREIGN key (aspectClass) REFERENCES aspect_class(aspectClass) on delete set null
-	#FOREIGN key (parent) REFERENCES view(id) ON DELETE CASCADE
+CREATE TABLE view_text(
+     id                          int unsigned NOT NULL PRIMARY KEY,
+     value                       varchar(500) NOT NULL,
+     link                        varchar(200),
+
+     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_image(
+     id                          int unsigned NOT NULL PRIMARY KEY,
+     src                         varchar(200) NOT NULL,
+     link                        varchar(200),
+
+     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_header(
+     id                          int unsigned NOT NULL PRIMARY KEY,
+     image                       int unsigned NOT NULL,
+     title                       int unsigned NOT NULL,
+
+     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE,
+     FOREIGN key(image) REFERENCES view(id) ON DELETE CASCADE,
+     FOREIGN key(title) REFERENCES view(id) ON DELETE CASCADE
 );
 
 CREATE TABLE view_parent(
-	parentId                    int unsigned,
-	childId                     int unsigned,
-	viewIndex                   int unsigned,
+    parentId                    int unsigned,
+    childId                     int unsigned,
+    viewIndex                   int unsigned,
 
-	#PRIMARY key(parentId,childId),
-	FOREIGN key(parentId) REFERENCES view(id) ON DELETE CASCADE
-	#FOREIGN key(childId) REFERENCES view(viewId) ON DELETE CASCADE
+    FOREIGN key(parentId) REFERENCES view(id) ON DELETE CASCADE
 );
 
 CREATE TABLE page(
 	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
 	course                      int unsigned NOT NULL,
-	#roleType enum('ROLE_SINGLE','ROLE_INTERACTION') DEFAULT 'ROLE_SINGLE',
 	name                        varchar(50) NOT NULL,
 	theme                       varchar(50),
 	viewId                      int unsigned,
 	isEnabled                   boolean DEFAULT FALSE,
 	seqId                       int unsigned NOT NULL,
 
-	#FOREIGN key(viewId) REFERENCES view(id) on delete set null,
 	FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template(
 	id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
 	name                        varchar(100) NOT NULL,
-	roleType                    enum('ROLE_SINGLE','ROLE_INTERACTION') DEFAULT 'ROLE_SINGLE',
+	roleType                    ENUM ('ROLE_SINGLE','ROLE_INTERACTION') DEFAULT 'ROLE_SINGLE',
 	course                      int unsigned NOT NULL,
 	isGlobal                    boolean DEFAULT FALSE,
 
@@ -321,10 +339,9 @@ CREATE TABLE view_template(
 	templateId                  int unsigned,
 
 	FOREIGN key (templateId) REFERENCES template(id) ON DELETE CASCADE
-	#FOREIGN key (viewId) REFERENCES view(viewId) ON DELETE CASCADE
 );
 
-CREATE TABLE autogame( #table used for gamerules related info
+CREATE TABLE autogame(
 	course 	                    int unsigned NOT NULL PRIMARY KEY,
 	startedRunning              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	finishedRunning             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -334,7 +351,6 @@ CREATE TABLE autogame( #table used for gamerules related info
 );
 
 
-SET FOREIGN_KEY_CHECKS=0;
 INSERT INTO autogame (course, isRunning) values (0, FALSE);
 SET FOREIGN_KEY_CHECKS=1;
 

@@ -21,7 +21,7 @@ export class SidebarComponent implements OnInit {
     this.route.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
       this.initNavigation();
-    }).unsubscribe();
+    });
   }
 
   initNavigation() {

@@ -18,7 +18,6 @@
        [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
        [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
 
-    <bb-header *ngIf="view.header" [view]="view.header | as : ViewHeader"></bb-header>
     <div [classList]="ViewBlock.BLOCK_CHILDREN_CLASS">
       <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>

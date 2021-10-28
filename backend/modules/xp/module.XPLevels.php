@@ -6,8 +6,8 @@ use GameCourse\Module;
 use GameCourse\Core;
 use GameCourse\ModuleLoader;
 use GameCourse\Course;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
-use GameCourse\Views\ViewHandler;
 
 class XPLevels extends Module
 {
@@ -161,10 +161,10 @@ class XPLevels extends Module
         $courseId = $course->getId();
         $this->setupData($courseId);
 
-        ViewHandler::registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
+        Dictionary::registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
 
         //xp.allLevels returns collection of level objects
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getAllLevels',
             function () use ($courseId)/*use ($levelWhere, $levelTable)*/ {
@@ -172,7 +172,7 @@ class XPLevels extends Module
                 $table = "level";
                 $where = ["course" => $courseId];
                 $levels = Core::$systemDB->selectMultiple($table, $where);
-                return $this->createNode($levels, 'xp', "collection");
+                return Dictionary::createNode($levels, 'xp', "collection");
             },
             'Returns a collection with all the levels on a Course.',
             'collection',
@@ -181,7 +181,7 @@ class XPLevels extends Module
             null
         );
         //xp.getLevel(user,number,goal) returns level object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getLevel',
             function ($user = null, int $number = null, string $goal = null) use ($courseId) {
@@ -211,7 +211,7 @@ class XPLevels extends Module
                 $level = Core::$systemDB->select($table, $where);
                 if (empty($level))
                     throw new Exception("In function xp.getLevel(...): couldn't find level with the given information");
-                return $this->createNode($level, 'xp');
+                return Dictionary::createNode($level, 'xp');
             },
             "Returns a level object. The optional parameters can be used to find levels that specify a given combination of conditions:\nuser: The id of a GameCourseUser.\nnumber: The number to which the level corresponds to.\ngoal: The goal required to achieve the target level.",
             'object',
@@ -220,7 +220,7 @@ class XPLevels extends Module
             null
         );
         //xp.getBadgesXP(user) returns value of badge xp for user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getBadgesXP',
             function ($user) use ($courseId) {
@@ -235,7 +235,7 @@ class XPLevels extends Module
             null
         );
         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getBonusBadgesXP',
             function ($user) use ($courseId) {
@@ -250,7 +250,7 @@ class XPLevels extends Module
             null
         );
         //xp.getXPByType(user, type) returns value xp of a type of award for user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getXPByType',
             function ($user, $type) use ($courseId) {
@@ -265,7 +265,7 @@ class XPLevels extends Module
             null
         );
         //xp.getSkillTreeXP(user) returns value of skill xp for user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getSkillTreeXP',
             function ($user) use ($courseId) {
@@ -280,7 +280,7 @@ class XPLevels extends Module
             null
         );
         //xp.getXP(user) returns value of xp for user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'getXP',
             function ($user) use ($courseId) {
@@ -294,11 +294,11 @@ class XPLevels extends Module
             null
         );
         //%level.description
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'description',
             function ($level) {
-                return $this->basicGetterFunction($level, "description");
+                return Dictionary::basicGetterFunction($level, "description");
             },
             'Returns a string with information regarding the level.',
             'string',
@@ -307,11 +307,11 @@ class XPLevels extends Module
             'level'
         );
         //%level.goal
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'goal',
             function ($level) {
-                return $this->basicGetterFunction($level, "goal");
+                return Dictionary::basicGetterFunction($level, "goal");
             },
             'Returns a string with the goal regarding the level.',
             'string',
@@ -320,11 +320,11 @@ class XPLevels extends Module
             'level'
         );
         //%level.number
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'xp',
             'number',
             function ($level) {
-                return $this->basicGetterFunction($level, "number");
+                return Dictionary::basicGetterFunction($level, "number");
             },
             'Returns a string with the number regarding the level.',
             'string',

@@ -151,26 +151,32 @@ export class NavbarComponent implements OnInit {
       const courseInfo = await this.getCourseInfo();
       this.course = courseInfo.course;
       this.activePages = courseInfo.activePages;
-      this.courseNavigation = buildCourseNavigation(this.course.id, this.activePages);
+      this.courseNavigation = buildCourseNavigation(this.user, this.course.id, this.activePages);
     }
     return this.courseNavigation;
 
-    function buildCourseNavigation(courseID: number, activePages: Page[]): Navigation[] {
+    function buildCourseNavigation(user: User, courseID: number, activePages: Page[]): Navigation[] {
       const path = '/courses/' + courseID + '/';
-      const fixed = [
-        {link: path + 'users', name: 'Users'},
-        {link: path + 'settings', name: 'Course Settings', children: [
-            {link: path + 'settings/global', name: 'This Course'},
-            {link: path + 'settings/roles', name: 'Roles'},
-            {link: path + 'settings/modules', name: 'Modules'},
-            {link: path + 'settings/rules', name: 'Rules'},
-            {link: path + 'settings/views', name: 'Views'}
-        ]}
-      ];
+
       const pages = activePages.map(page => {
         return {link: path + 'pages/' + page.id, name: page.name};
       });
-      return pages.concat(fixed);
+
+      if (user.isAdmin) {
+        const fixed = [
+          {link: path + 'users', name: 'Users'},
+          {link: path + 'settings', name: 'Course Settings', children: [
+              {link: path + 'settings/global', name: 'This Course'},
+              {link: path + 'settings/roles', name: 'Roles'},
+              {link: path + 'settings/modules', name: 'Modules'},
+              {link: path + 'settings/rules', name: 'Rules'},
+              {link: path + 'settings/views', name: 'Views'}
+            ]}
+        ];
+        return pages.concat(fixed);
+      }
+
+      return pages;
     }
   }
 

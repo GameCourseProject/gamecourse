@@ -121,8 +121,8 @@ export class ApiHttpService {
 
   public getLoggedUser(): Observable<User> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'getUserInfo');
+      qs.push('module', 'user');
+      qs.push('request', 'getLoggedUserInfo');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -135,8 +135,8 @@ export class ApiHttpService {
 
   public getUserActiveCourses(): Observable<Course[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'getUserActiveCourses');
+      qs.push('module', 'user');
+      qs.push('request', 'getLoggedUserActiveCourses');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -678,7 +678,7 @@ export class ApiHttpService {
       "id": "825",
       "viewId": "825",
       "parentId": "806",
-      "partType": "text",
+      "type": "text",
       "role": "role.Default",
       "edit": true,
       "value": "Joana Sesinando",
@@ -688,7 +688,7 @@ export class ApiHttpService {
       "id": "826",
       "viewId": "826",
       "parentId": "806",
-      "partType": "text",
+      "type": "text",
       "role": "role.Default",
       "edit": true,
       "value": "Show"
@@ -697,16 +697,16 @@ export class ApiHttpService {
       "id": "818",
       "viewId": "818",
       "parentId": "816",
-      "partType": "image",
+      "type": "image",
       "role": "role.Default",
       "edit": true,
-      "value": "photos/ist181583.png",
+      "src": "photos/ist181583.png",
     };
     const header: ViewHeaderDatabase = {
       "id": "818",
       "viewId": "818",
       "parentId": "816",
-      "partType": "header",
+      "type": "header",
       "role": "role.Default",
       "edit": true,
       "image": image,
@@ -716,7 +716,7 @@ export class ApiHttpService {
       "id": "818",
       "viewId": "818",
       "parentId": "816",
-      "partType": "row",
+      "type": "row",
       "role": "role.Default",
       "edit": true,
       "values": [
@@ -728,7 +728,7 @@ export class ApiHttpService {
       "id": "818",
       "viewId": "818",
       "parentId": "816",
-      "partType": "row",
+      "type": "row",
       "role": "role.Default",
       "edit": true,
       "values": [
@@ -740,7 +740,7 @@ export class ApiHttpService {
       "id": "807",
       "viewId": "807",
       "parentId": "806",
-      "partType": "table",
+      "type": "table",
       "role": "role.Default",
       "edit": true,
       "headerRows": [
@@ -755,14 +755,13 @@ export class ApiHttpService {
       "id": "806",
       "viewId": "806",
       "parentId": null,
-      "partType": "block",
+      "type": "block",
       "role": "role.Default",
       "edit": true,
       "children": [
         text,
         text2
-      ],
-      "header": header
+      ]
     };
 
     // return of(buildView(text));
@@ -1041,7 +1040,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
+      qs.push('module', 'module');
       qs.push('request', 'setModuleState');
     };
 
@@ -1080,7 +1079,7 @@ export class ApiHttpService {
       courseId: courseID,
       pageName: page.name,
       viewId: page.viewId,
-      isEnabled: page.isEnabled
+      isEnabled: page.isEnabled ? 1 : 0
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -1145,7 +1144,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public editTemplate(courseID: number, template: Template): Observable<void> {
+  public editTemplateBasicInfo(courseID: number, template: Template): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: template.id,
@@ -1155,7 +1154,7 @@ export class ApiHttpService {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
-      qs.push('request', 'editTemplate');
+      qs.push('request', 'editTemplateBasicInfo');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -1208,6 +1207,22 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => 'data:text;charset=utf-8,' + encodeURIComponent(res['data']['template'])) );
+  }
+
+  public importTemplate(courseID: number, file: string | ArrayBuffer): Observable<void> {
+    const data = {
+      courseId: courseID,
+      file,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'importTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

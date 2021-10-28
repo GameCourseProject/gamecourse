@@ -1,12 +1,10 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
-import {ViewHeader, ViewHeaderDatabase} from "./view-header";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
 
 export class ViewBlock extends View {
 
   private _children: View[];
-  private _header?: ViewHeader; // FIXME: should be a child as well
 
   static readonly BLOCK_CLASS = 'block';
   static readonly BLOCK_CHILDREN_CLASS = 'block_children';
@@ -14,13 +12,12 @@ export class ViewBlock extends View {
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,
               variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, header?: ViewHeader) {
+              visibilityCondition?: any, events?: any) {
 
     super(id, viewId, parentId, ViewType.BLOCK, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);
 
     this.children = children;
-    if (header) this.header = header;
   }
 
   get children(): View[] {
@@ -29,14 +26,6 @@ export class ViewBlock extends View {
 
   set children(value: View[]) {
     this._children = value;
-  }
-
-  get header(): ViewHeader {
-    return this._header;
-  }
-
-  set header(value: ViewHeader) {
-    this._header = value;
   }
 
   static fromDatabase(obj: ViewBlockDatabase): ViewBlock {
@@ -56,13 +45,11 @@ export class ViewBlock extends View {
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
-      parsedObj.events,
-      obj.header ? buildView(obj.header) as ViewHeader : null
+      parsedObj.events
     );
   }
 }
 
 export interface ViewBlockDatabase extends ViewDatabase {
   children: ViewDatabase[];
-  header?: ViewHeaderDatabase
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
 import {ErrorService} from "../../../../_services/error.service";
@@ -27,9 +27,8 @@ export class PageComponent implements OnInit {
       this.route.params.subscribe(params => {
         this.pageID = parseInt(params.id);
         this.getPage();
-
-      }).unsubscribe();
-    }).unsubscribe();
+      });
+    });
   }
 
 
@@ -38,6 +37,7 @@ export class PageComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   getPage(): void {
+    this.pageView = null; // NOTE: Important - Forces view to completely refresh
     this.api.getLoggedUser()
       .subscribe(user => {
           this.api.renderPage(this.courseID, this.pageID, user.id)

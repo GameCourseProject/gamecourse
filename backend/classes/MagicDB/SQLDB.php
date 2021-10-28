@@ -69,7 +69,7 @@ class SQLDB
 
     //functions to construct and execute sql querys
 
-    public function insert($table, $data = [])
+    public function insert($table, $data = []): int
     {
         //example: insert into user set name="Example",id=80000,username=ist1800000;
 
@@ -232,8 +232,17 @@ class SQLDB
         $result = $this->executeQuery("show columns from " . $table . " like '" . $column . "';");
         return $result->fetch()[0];
     }
-    public function tableExists($table)
+    public function tableExists($table): bool
     {
-        return $this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        return !empty($this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public function activateForeignKeyChecks()
+    {
+        $this->executeQuery("SET FOREIGN_KEY_CHECKS=1;");
+    }
+    public function deactivateForeignKeyChecks()
+    {
+        $this->executeQuery("SET FOREIGN_KEY_CHECKS=0;");
     }
 }

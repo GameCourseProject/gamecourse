@@ -2,8 +2,6 @@
 
 namespace GameCourse;
 
-use GameCourse\Views\Expression\ValueNode;
-
 abstract class Module
 {
     private $id;
@@ -300,90 +298,6 @@ abstract class Module
             return $user["value"]["id"];
         else
             return $id = $user;
-    }
-    //create value node of an object or collection
-    public function createNode($value, $lib = null, $type = "object", $parent = null)
-    {
-        if ($type == "collection") {
-            foreach ($value as &$v) {
-                if ($parent !== null)
-                    $v["parent"] = $parent;
-                if (is_array($v) && ($lib !== null || !array_key_exists("libraryOfVariable", $v)))
-                    $v["libraryOfVariable"] = $lib;
-            }
-        } else if (is_array($value) && ($lib !== null || !array_key_exists("libraryOfVariable", $value))) {
-            $value["libraryOfVariable"] = $lib;
-        }
-        return new ValueNode(["type" => $type, "value" => $value]);
-    }
-    //get award or participations from DB, moduleInstance can be name or id
-    public function getAwardOrParticipation($courseId, $user, $type, $moduleInstance = null, $initialDate = null, $finalDate = null, $where = [], $object = "award", $activeUser = true, $activeItem = true)
-    {
-        if ($user !== null) {
-            $where["user"] = $this->getUserId($user);
-        }
-        //expected date format DD/MM/YYY needs to be converted to YYYY-MM-DD
-        $whereDate = [];
-        if ($initialDate !== null) {
-            $date = implode("-", array_reverse(explode("/", $initialDate)));
-            array_push($whereDate, ["date", ">", $date]);
-        }
-        if ($finalDate !== null) {
-            //tecnically the final date on the results will be the day before the one given
-            //because the timestamp is of that day at midnigth
-            $date = implode("-", array_reverse(explode("/", $finalDate)));
-            array_push($whereDate, ["date", "<", $date]);
-        }
-
-        if ($activeUser) {
-            $where["cu.isActive"] = true;
-        }
-
-        if ($type !== null) {
-            $where["type"] = $type;
-            //should only use module instance if the type is specified (so we know if we should use skils or badges)
-            if ($moduleInstance !== null && $object == "award" && ($type == "badge" || $type == "skill")) {
-                if (is_numeric($moduleInstance)) {
-                    $where["moduleInstance"] = $moduleInstance;
-                } else {
-                    $where["name"] = $moduleInstance;
-                }
-
-                if ($activeItem) {
-                    $where["m.isActive"] = true;
-                }
-
-                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user and cu.course = a.course";
-                $field = "a.*,m.name";
-            } else {
-                $field = "a.*";
-                $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
-            }
-        } else {
-            $field = "*";
-            $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
-        }
-
-        $where["a.course"] = $courseId;
-        return Core::$systemDB->selectMultiple($table, $where, $field, null, [], $whereDate);
-    }
-    //checks if object/collection array is correctly formated, may also check if a parameter belongs to an object
-    public static function checkArray($array, $type, $functionName, $parameter = null)
-    {
-        if (!is_array($array) || !array_key_exists("type", $array) || $array["type"] != $type) {
-            throw new \Exception("The function '." . $functionName . "' must be called on " . $type);
-        }
-        if ($parameter !== null) {
-            if ($type == "object" && !array_key_exists($parameter, $array["value"])) {
-                throw new \Exception("In function '." . $functionName . "': the object does not contain " . $parameter);
-            }
-        }
-    }
-    //return valuenode of the field of the object
-    public function basicGetterFunction($object, $field)
-    {
-        $this->checkArray($object, "object", $field, $field);
-        return new ValueNode($object["value"][$field]);
     }
 
     //functions for the module configuration page

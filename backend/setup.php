@@ -7,6 +7,7 @@ ini_set('display_errors', '1');
 
 include 'classes/ClassLoader.class.php';
 
+use GameCourse\Views\Dictionary;
 use MagicDB\SQLDB;
 
 require_once 'config.php';
@@ -16,6 +17,7 @@ if (!defined('CONNECTION_STRING'))
     return;
 
 session_start();
+Core::init();
 
 // Setup already done; Delete file setup.done to allow
 if (!Core::requireSetup(false))
@@ -34,8 +36,8 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     $courseId = 1;
     $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
     \Utils::deleteDirectory(COURSE_DATA_FOLDER, array(COURSE_DATA_FOLDER . DIRECTORY_SEPARATOR . 'defaultData'), false);
-    $dataFolder = \GameCourse\Course::createCourseDataFolder($courseId, $courseName);
-    $roleId = \GameCourse\Course::insertBasicCourseData($db, $courseId);
+    $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
+    $roleId = Course::insertBasicCourseData($db, $courseId);
 
     $userId = $db->insert("game_course_user", [
         "studentNumber" => $teacherId,
@@ -72,6 +74,7 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     file_put_contents($metadataFile, "");
     file_put_contents($logsFile, "");
 
+    Dictionary::init(true);
     file_put_contents('setup.done', '');
 
     unset($_SESSION['user']); // if the user was logged and the config folder was destroyed..

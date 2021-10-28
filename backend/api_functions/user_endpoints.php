@@ -11,6 +11,42 @@ $MODULE = 'user';
 
 
 /*** --------------------------------------------- ***/
+/*** ---------------- Logged User ---------------- ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Get logged user information.
+ */
+API::registerFunction($MODULE, 'getLoggedUserInfo', function() {
+    $user = Core::getLoggedUser();
+    $userInfo = $user->getData();
+    $userInfo['username'] = $user->getUsername();
+    $userInfo['authenticationService'] = User::getUserAuthenticationService($userInfo['username']);
+    $userInfo['hasImage'] = User::hasImage($user->getUsername());
+    API::response(array('userInfo' => $userInfo));
+});
+
+/**
+ * Get list of active courses for logged user.
+ */
+API::registerFunction($MODULE, 'getLoggedUserActiveCourses', function() {
+    $user = Core::getLoggedUser();
+    $coursesId = $user->getCourses();
+
+    $courses = [];
+    foreach($coursesId as $cid){
+        $course = Core::getCourse($cid);
+        if ($course["isActive"]) {
+            $courses[] = $course;
+        }
+    }
+
+    API::response(array('userActiveCourses' => $courses));
+});
+
+
+
+/*** --------------------------------------------- ***/
 /*** ------------------ General ------------------ ***/
 /*** --------------------------------------------- ***/
 

@@ -9,6 +9,7 @@ use GameCourse\ModuleLoader;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\RuleSystem;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\Views;
@@ -203,7 +204,7 @@ class Skills extends Module
         $restrictions["d.superSkillId"] = $superSkill["value"]["id"];
 
         $skills = Core::$systemDB->selectMultiple($table, $restrictions, "s.*,t.*", null, [], [], "s.id");
-        return $this->createNode($skills, 'skillTrees', "collection", $parent);
+        return Dictionary::createNode($skills, 'skillTrees', "collection", $parent);
     }
     public function getSkillsAux($restrictions, $joinOn, $parentSkill, $parentTree)
     {
@@ -218,9 +219,9 @@ class Skills extends Module
             "s.id"
         );
         if ($parentTree === null)
-            return $this->createNode($skills, 'skillTrees', "collection", $parentSkill);
+            return Dictionary::createNode($skills, 'skillTrees', "collection", $parentSkill);
         else
-            return $this->createNode($skills, 'skillTrees', "collection", $parentTree);
+            return Dictionary::createNode($skills, 'skillTrees', "collection", $parentTree);
     }
     //returns collection of skills that depend of the given skill
     public function getSkillsDependantof($skill, $restrictions = [], $parent = false)
@@ -247,7 +248,7 @@ class Skills extends Module
         if (is_array($skill)) //$skill can be object or id
             $skillId = $skill["value"]["id"];
         else $skillId = $skill;
-        $award = $this->getAwardOrParticipation($courseId, $user, "skill", (int) $skillId, null, null, [], "award", false, false);
+        $award = Dictionary::getAwardOrParticipation($courseId, $user, "skill", (int) $skillId, null, null, [], "award", false, false);
         return (!empty($award));
     }
     //check if skill is unlocked to the user
@@ -323,16 +324,16 @@ class Skills extends Module
         $this->setupData($courseId);
 
         //functions for the expression language
-        ViewHandler::registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
+        Dictionary::registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
 
         //skillTrees.getTree(id), returns tree object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getTree',
             function (int $id) {
                 //this is slightly pointless if the skill tree only has id and course
                 //but it could eventualy have more atributes
-                return $this->createNode(Core::$systemDB->select("skill_tree", ["id" => $id]), 'skillTrees');
+                return Dictionary::createNode(Core::$systemDB->select("skill_tree", ["id" => $id]), 'skillTrees');
             },
             'Returns the object skillTree with the id id.',
             'object',
@@ -342,11 +343,11 @@ class Skills extends Module
         );
 
         //skillTrees.trees, returns collection w all trees
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'trees',
             function () use ($courseId) {
-                return $this->createNode(Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]), 'skillTrees', "collection");
+                return Dictionary::createNode(Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]), 'skillTrees', "collection");
             },
             'Returns a collection will all the Skill Trees in the Course.',
             'collection',
@@ -356,7 +357,7 @@ class Skills extends Module
         );
 
         //skillTrees.getAllSkills(...) returns collection
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getAllSkills',
             function ($tree = null, $tier = null, $dependsOn = null, $requiredBy = null, $isActive = true) use ($courseId) {
@@ -387,7 +388,7 @@ class Skills extends Module
                 } else if ($requiredBy !== null) {
                     return $this->getSkillsRequiredBy($dependsOn, $skillWhere, $parent);
                 }
-                return $this->createNode(Core::$systemDB->selectMultiple(
+                return Dictionary::createNode(Core::$systemDB->selectMultiple(
                     "skill s natural join skill_tier t join skill_tree tr on tr.id=treeId",
                     $skillWhere,
                     "s.*,t.*"
@@ -400,7 +401,7 @@ class Skills extends Module
             null
         );
         //%tree.getAllSkills(...) returns collection
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getAllSkills',
             function ($tree = null, $tier = null, $dependsOn = null, $requiredBy = null, $isActive = true) use ($courseId) {
@@ -431,7 +432,7 @@ class Skills extends Module
                 } else if ($requiredBy !== null) {
                     return $this->getSkillsRequiredBy($dependsOn, $skillWhere, $parent);
                 }
-                return $this->createNode(Core::$systemDB->selectMultiple(
+                return Dictionary::createNode(Core::$systemDB->selectMultiple(
                     "skill s natural join skill_tier t join skill_tree tr on tr.id=treeId",
                     $skillWhere,
                     "s.*,t.*"
@@ -445,11 +446,11 @@ class Skills extends Module
         );
 
         //%tree.getSkill(name), returns skill object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getSkill',
             function ($tree, string $name) {
-                $this->checkArray($tree, "object", "getSkill()");
+                Dictionary::checkArray($tree, "object", "getSkill()");
                 $skill = Core::$systemDB->select(
                     "skill natural join skill_tier",
                     ["treeId" => $tree["value"]["id"], "name" => $name]
@@ -457,7 +458,7 @@ class Skills extends Module
                 if (empty($skill)) {
                     throw new \Exception("In function getSkill(...): No skill found with name=" . $name);
                 }
-                return $this->createNode($skill, 'skillTrees');
+                return Dictionary::createNode($skill, 'skillTrees');
             },
             'Returns a skill object from a skillTree with a specific name.',
             'object',
@@ -466,7 +467,7 @@ class Skills extends Module
             'tree'
         );
         //%tree.getTier(number), returns tier object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getTier',
             function ($tree, int $number) {
@@ -477,7 +478,7 @@ class Skills extends Module
                 if (empty($tier)) {
                     throw new \Exception("In function getTier(...): No tier found with number=" . $number);
                 }
-                return $this->createNode($tier, 'skillTrees');
+                return Dictionary::createNode($tier, 'skillTrees');
             },
             'Returns a tier object with a specific number from a skillTree.',
             'object',
@@ -486,11 +487,11 @@ class Skills extends Module
             'tree'
         );
         //%tree.tiers, returns collection w all tiers of the tree
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'tiers',
             function ($tree) {
-                return $this->createNode(
+                return Dictionary::createNode(
                     Core::$systemDB->selectMultiple(
                         "skill_tier",
                         ["treeId" => $tree["value"]["id"]],
@@ -509,11 +510,11 @@ class Skills extends Module
             'tree'
         );
         //%tier.skills(isActive), returns collection w all skills of the tier
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'skills',
             function ($tier, bool $isActive = true) {
-                $this->checkArray($tier, "object", "skills");
+                Dictionary::checkArray($tier, "object", "skills");
 
                 $where = [
                     "s.treeId" => $tier["value"]["treeId"],
@@ -530,7 +531,7 @@ class Skills extends Module
                     "s.*",
                     "s.seqId asc"
                 );
-                return $this->createNode(
+                return Dictionary::createNode(
                     $skills,
                     'skillTrees',
                     "collection",
@@ -544,7 +545,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.nextTier, returns tier object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'nextTier',
             function ($tier) {
@@ -554,7 +555,7 @@ class Skills extends Module
                 );
                 if (empty($nexttier))
                     throw new \Exception("In function .nextTier: Couldn't findo tier after tier nº" . $tier["value"]["tier"]);
-                return $this->createNode($nexttier, 'skillTrees');
+                return Dictionary::createNode($nexttier, 'skillTrees');
             },
             'Returns the next tier object from a skillTree.',
             'object',
@@ -563,7 +564,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.previousTier, returns tier object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'previousTier',
             function ($tier) {
@@ -573,7 +574,7 @@ class Skills extends Module
                 );
                 if (empty($prevtier))
                     throw new \Exception("In function .previousTier: Couldn't findo tier before tier nº" . $tier["value"]["tier"]);
-                return $this->createNode($prevtier, 'skillTrees');
+                return Dictionary::createNode($prevtier, 'skillTrees');
             },
             'Returns the previous tier object from a skillTree.',
             'object',
@@ -582,11 +583,11 @@ class Skills extends Module
             'tier'
         );
         //%tier.reward
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'reward',
             function ($arg) {
-                return $this->basicGetterFunction($arg, "reward");
+                return Dictionary::basicGetterFunction($arg, "reward");
             },
             'Returns a string with the reward of completing a skill from that tier.',
             'string',
@@ -595,7 +596,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.usedWildcards
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'usedWildcards',
             function ($arg, $user) {
@@ -610,7 +611,7 @@ class Skills extends Module
             'tier'
         );
         //%tier.hasWildcards
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'hasWildcards',
             function ($arg) {
@@ -625,11 +626,11 @@ class Skills extends Module
             'tier'
         );
         //%tier.tier
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'tier',
             function ($arg) {
-                return $this->basicGetterFunction($arg, "tier");
+                return Dictionary::basicGetterFunction($arg, "tier");
             },
             'Returns a string with the numeric value of the tier.',
             'string',
@@ -639,11 +640,11 @@ class Skills extends Module
         );
 
         //%skill.tier
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'tier',
             function ($arg) {
-                return $this->basicGetterFunction($arg, "tier");
+                return Dictionary::basicGetterFunction($arg, "tier");
             },
             'Returns a string with the numeric value of the tier.',
             'string',
@@ -653,11 +654,11 @@ class Skills extends Module
         );
 
         //%skill.color
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'color',
             function ($skill) {
-                return $this->basicGetterFunction($skill, "color");
+                return Dictionary::basicGetterFunction($skill, "color");
             },
             'Returns a string with the reference of the color in hexadecimal of the skill.',
             'string',
@@ -666,11 +667,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.name
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'name',
             function ($skill) {
-                return $this->basicGetterFunction($skill, "name");
+                return Dictionary::basicGetterFunction($skill, "name");
             },
             'Returns a string with the name of the skill.',
             'string',
@@ -679,11 +680,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.isActive
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'isActive',
             function ($skill) {
-                return $this->basicGetterFunction($skill, "isActive");
+                return Dictionary::basicGetterFunction($skill, "isActive");
             },
             'Returns true if the skill is active, and false otherwise.',
             'boolean',
@@ -692,11 +693,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.getPost(user)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getPost',
             function ($skill, $user) use ($courseId) {
-                $this->checkArray($skill, "object", "getPost()");
+                Dictionary::checkArray($skill, "object", "getPost()");
                 $userId = $this->getUserId($user);
 
                 $columns = "award left join award_participation on award.id=award_participation.award left join participation on award_participation.participation=participation.id";
@@ -721,11 +722,11 @@ class Skills extends Module
         );
 
         //%skill.isUnlocked(user), returns true if skill is available to the user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'isUnlocked',
             function ($skill, $user) use ($courseId) {
-                $this->checkArray($skill, "object", "isUnlocked(...)");
+                Dictionary::checkArray($skill, "object", "isUnlocked(...)");
                 return new ValueNode($this->isSkillUnlocked($skill, $user, $courseId));
             },
             'Returns a boolean regarding whether the GameCourseUser identified by user has unlocked a skill.',
@@ -735,11 +736,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.isCompleted(user), returns true if skill has been achieved by the user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'isCompleted',
             function ($skill, $user) use ($courseId) {
-                $this->checkArray($skill, "object", "isCompleted(...)");
+                Dictionary::checkArray($skill, "object", "isCompleted(...)");
                 return new ValueNode($this->isSkillCompleted($skill, $user, $courseId));
             },
             'Returns a boolean regarding whether the GameCourseUser identified by user has completed a skill.',
@@ -749,11 +750,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.completedBy(), returns a collection with the users that completed the skill
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'completedBy',
             function ($skill) use ($courseId) {
-                return $this->createNode($this->skillCompletedBy($skill['value']['id'], $courseId), 'users', "collection");
+                return Dictionary::createNode($this->skillCompletedBy($skill['value']['id'], $courseId), 'users', "collection");
             },
             'Returns a collection of the users that completed the skill.',
             'collection',
@@ -762,13 +763,13 @@ class Skills extends Module
             'skill'
         );
         //%skill.dependsOn,return colection of dependencies, each has a colection of skills
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'dependsOn',
             function ($skill) {
-                $this->checkArray($skill, "object", "dependsOn");
+                Dictionary::checkArray($skill, "object", "dependsOn");
                 $dep = Core::$systemDB->selectMultiple("dependency", ["superSkillId" => $skill["value"]["id"]]);
-                return $this->createNode($dep, 'skillTrees', "collection", $skill);
+                return Dictionary::createNode($dep, 'skillTrees', "collection", $skill);
             },
             'Returns a collection of dependency objects that require the skill on any dependency.',
             'collection',
@@ -777,11 +778,11 @@ class Skills extends Module
             'skill'
         );
         //%skill.requiredBy, returns collection of skills that depend on the given skill
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'requiredBy',
             function ($skill) {
-                $this->checkArray($skill, "object", "requiredBy");
+                Dictionary::checkArray($skill, "object", "requiredBy");
                 return $this->getSkillsDependantof($skill);
             },
             'Returns a collection of skill objects that are required by the skill on any dependency.',
@@ -791,17 +792,17 @@ class Skills extends Module
             'skill'
         );
         //%dependency.simpleSkills, returns collection of the required/normal/simple skills of a dependency
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'simpleSkills',
             function ($dep) {
-                $this->checkArray($dep, "object", "simpleSkills");
+                Dictionary::checkArray($dep, "object", "simpleSkills");
                 $depSkills = Core::$systemDB->selectMultiple(
                     "skill_dependency join skill s on s.id=normalSkillId",
                     ["dependencyId" => $dep["value"]["id"]],
                     "s.*"
                 );
-                return $this->createNode($depSkills, 'skillTrees', "collection", $dep);
+                return Dictionary::createNode($depSkills, 'skillTrees', "collection", $dep);
             },
             'Returns a collection of skills that are required to unlock a super skill from a dependency.',
             'collection',
@@ -810,7 +811,7 @@ class Skills extends Module
             'dependency'
         );
         //%dependency.dependencies, returns names of the required/normal/simple skills/tiers of a dependency
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'dependencies',
             function ($dep) {
@@ -830,7 +831,7 @@ class Skills extends Module
                         array_push($depSkills, $tier);
                     }
                 }
-                return $this->createNode($depSkills, 'skillTrees', "collection", $dep);
+                return Dictionary::createNode($depSkills, 'skillTrees', "collection", $dep);
             },
             'Returns the names of skills and tiers that are required to unlock a super skill from a dependency.',
             'collection',
@@ -839,12 +840,12 @@ class Skills extends Module
             'dependency'
         );
         //%dependency.superSkill, returns skill object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'superSkill',
             function ($dep) {
-                $this->checkArray($dep, "object", "superSkill", "superSkill");
-                return $this->createNode($dep["value"]["superSkill"], 'skillTrees');
+                Dictionary::checkArray($dep, "object", "superSkill", "superSkill");
+                return Dictionary::createNode($dep["value"]["superSkill"], 'skillTrees');
             },
             'Returns the super skill of a dependency.',
             'object',
@@ -854,11 +855,11 @@ class Skills extends Module
         );
 
         //%skill.getStyle(user)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'getStyle',
             function ($skill, $user) use ($courseId) {
-                $this->checkArray($skill, "object", "getStyle");
+                Dictionary::checkArray($skill, "object", "getStyle");
                 $style = "background-color: ";
                 if ($this->isSkillUnlocked($skill, $user, $courseId)) {
                     $style .= $skill["value"]["color"] . ";";
@@ -877,11 +878,11 @@ class Skills extends Module
             'skill'
         );
         //skillTrees.wildcardAvailable(tierName,user)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'skillTrees',
             'wildcardAvailable',
             function ($skill, $tier, $user) use ($courseId) {
-                return $this->createNode($this->getAvailableWildcards($skill, $tier, $user, $courseId), "skillTrees", "object");
+                return Dictionary::createNode($this->getAvailableWildcards($skill, $tier, $user, $courseId), "skillTrees", "object");
             },
             'Returns a boolean regarding whether the GameCourseUser identified by user has "wildcards" to use from a certain tier.',
             'boolean',
@@ -890,7 +891,7 @@ class Skills extends Module
         );
 
         if (!Views::templateExists(self::SKILL_TREE_TEMPLATE, $this->getCourseId())) {
-            Views::setTemplate(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId(),true);
+            Views::setTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId());
         }
 
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)

@@ -6,6 +6,7 @@ use GameCourse\API;
 
 include('api_functions/core_endpoints.php');
 include('api_functions/course_endpoints.php');
+include('api_functions/module_endpoints.php');
 include('api_functions/user_endpoints.php');
 include('api_functions/views_endpoints.php');
 

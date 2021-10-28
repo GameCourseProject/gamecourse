@@ -22,7 +22,7 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.getCourse(parseInt(params.id));
-    }).unsubscribe();
+    });
   }
 
   getCourse(courseID: number): void {

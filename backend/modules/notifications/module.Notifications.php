@@ -3,7 +3,7 @@
 use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-use GameCourse\Views\ViewHandler;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
 
 class Notifications extends Module
@@ -79,63 +79,10 @@ class Notifications extends Module
             }
         }
 
-        ViewHandler::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
-        /*  $viewHandler->registerFunction(
-            'notifications',
-            'checkNotifications',
-            function (int $userId) {
-                $pendingNotifications = $this->notificationList;
-
-                //$courseId = $this->getParent()->getId();
-                //$pendingNotifications = Core::$systemDB->selectMultiple("notification",["course"=>$courseId,"student"=>$userId]);
-                return new \Modules\Views\Expression\ValueNode(count($pendingNotifications) > 0);
-            },
-            '',
-            'integer',
-            null,
-            'library',
-            null
-        );
-       
-        $viewHandler->registerFunction(
-            'notifications',
-            'getNotifications',
-            'library',
-            function (int $userId) {
-                $pendingNotifications = $this->notificationList;
-                //$courseId = $this->getParent()->getId();
-                //$pendingNotifications = Core::$systemDB->selectMultiple("notification natural join award",
-                //                                                    ["course"=>$courseId,"student"=>$userId]);
-
-                //$notifications = array();
-            //foreach($pendingNotifications as $id => $notification) {
-            //    $notifications[$id] = GameCourse\DataRetrieverContinuation::buildForArray($notification);
-            //}
-
-            return GameCourse\DataRetrieverContinuation::buildForArray($notifications);
-                return new \Modules\Views\Expression\ValueNode($pendingNotifications);
-            },
-            '',
-            'collection',
-            null,
-            'library',
-            null
-        );
-         */
-
-        // API::registerFunction('notifications', 'removeNotification', function () {
-        //     /*$id = API::getValue('notification');
-        //     $userId = Core::getLoggedUser()->getId();
-        //     $moduleData = $this->getData();
-        //     $notifications = $moduleData->getWrapped('list')->get($istID);
-        //     if (array_key_exists($id, $notifications)) {
-        //         unset($notifications[$id]);
-        //         $moduleData->getWrapped('list')->set($istID, $notifications);
-        //     }*/
-        // });
+        Dictionary::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
 
         if (!Views::templateExists('Notifications Profile - by notifications', $this->getCourseId()))
-            Views::setTemplate('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId(),true);
+            Views::setTemplateFromFile('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId());
     }
 
     public function is_configurable()

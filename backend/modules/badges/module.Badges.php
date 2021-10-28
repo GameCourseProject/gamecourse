@@ -3,6 +3,7 @@
 namespace Modules\Badges;
 
 use GameCourse\Core;
+use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Views\Views;
 use GameCourse\Views\ViewHandler;
@@ -51,7 +52,7 @@ class Badges extends Module
                 throw new \Exception("In function badges.getBadge(name): couldn't find badge with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return $this->createNode($badgeArray, 'badges', $type);
+        return Dictionary::createNode($badgeArray, 'badges', $type);
     }
 
     public function getLevel($levelNum, $badge)
@@ -84,7 +85,7 @@ class Badges extends Module
             $level["libraryOfVariable"] = "badges";
             $level = array_merge($badge["value"], $level);
         }
-        return $this->createNode($level, 'badges', $type, $parent);
+        return Dictionary::createNode($level, 'badges', $type, $parent);
     }
 
     public function getLevelNum($badge, $user)
@@ -133,16 +134,16 @@ class Badges extends Module
         $users = $course->getUsers($active);
         foreach ($users as $user) {
             $userId = $user["id"];
-            $userObj = $this->createNode($course->getUser($userId)->getAllData(), 'users');
+            $userObj = Dictionary::createNode($course->getUser($userId)->getAllData(), 'users');
             //print_r($userObj);
             $userLevel = $this->getLevelNum($badge, $userId);
-            $levelNum = $this->basicGetterFunction($level, "number")->getValue();
+            $levelNum = Dictionary::basicGetterFunction($level, "number")->getValue();
             if ($userLevel >= $levelNum) {
                 array_push($usersWithBadge, $userObj->getValue()["value"]);
             }
         }
 
-        return $this->createNode($usersWithBadge, 'users', "collection");
+        return Dictionary::createNode($usersWithBadge, 'users', "collection");
     }
     public function moduleConfigJson($courseId)
     {
@@ -231,10 +232,10 @@ class Badges extends Module
         $courseId = $this->getParent()->getId();
         $this->setupData($courseId);
 
-        ViewHandler::registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
+        Dictionary::registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
 
         //badges.getAllBadges(isExtra,isBragging,isActive)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'getAllBadges',
             function (bool $isExtra = null, bool $isBragging = null, bool $isActive = true) {
@@ -254,7 +255,7 @@ class Badges extends Module
 
         );
         //badges.getBadge(name)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'getBadge',
             function (string $name = null) {
@@ -267,7 +268,7 @@ class Badges extends Module
             null
         );
         //badges.getBadgesCount(user) returns num of badges of user (if specified) or of course 
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'getBadgesCount',
             function ($user = null) {
@@ -280,7 +281,7 @@ class Badges extends Module
             null
         );
         //badges.doesntHaveBadge(%badge, %level, %active) returns True if there are no students with this badge, False otherwise
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'doesntHaveBadge',
             function ($badge, $level, $active = true) {
@@ -294,7 +295,7 @@ class Badges extends Module
             null
         );
         //users.getUsersWithBadge(%badge, %level, %active) returns an object with all users that earned that badge on that level
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'users',
             'getUsersWithBadge',
             function ($badge, $level, $active = true) {
@@ -308,11 +309,11 @@ class Badges extends Module
             null
         );
         //%badge.description
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'description',
             function ($arg) {
-                return $this->basicGetterFunction($arg, "description");
+                return Dictionary::basicGetterFunction($arg, "description");
             },
             "Returns a string with information regarding the name of the badge, the goal to obtain it and the reward associated to it.",
             'string',
@@ -321,11 +322,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.name
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'name',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "name");
+                return Dictionary::basicGetterFunction($badge, "name");
             },
             "Returns a string with the name of the badge.",
             'string',
@@ -334,11 +335,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.maxLevel
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'maxLevel',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "maxLevel");
+                return Dictionary::basicGetterFunction($badge, "maxLevel");
             },
             "Returns a Level object corresponding to the maximum Level from that badge.",
             'object',
@@ -347,11 +348,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.isExtra
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'isExtra',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "isExtra");
+                return Dictionary::basicGetterFunction($badge, "isExtra");
             },
             "Returns a boolean regarding whether the badge provides reward.",
             'boolean',
@@ -360,11 +361,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.isCount
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'isCount',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "isCount");
+                return Dictionary::basicGetterFunction($badge, "isCount");
             },
             '',
             'boolean',
@@ -373,11 +374,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.isPost
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'isPost',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "isPost");
+                return Dictionary::basicGetterFunction($badge, "isPost");
             },
             '',
             'boolean',
@@ -386,11 +387,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.isBragging
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'isBragging',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "isBragging");
+                return Dictionary::basicGetterFunction($badge, "isBragging");
             },
             "Returns a boolean regarding whether the badge provides no reward.",
             'boolean',
@@ -399,11 +400,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.isActive
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'isActive',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "isActive");
+                return Dictionary::basicGetterFunction($badge, "isActive");
             },
             "Returns a boolean regarding whether the badge is active.",
             'boolean',
@@ -412,7 +413,7 @@ class Badges extends Module
             'badge'
         );
         //%badge.renderPicture(number) return expression for the image of the badge in the specified level
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'renderPicture',
             function ($badge, $level) {
@@ -431,11 +432,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.levels returns collection of level objects
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'levels',
             function ($badge) {
-                $this->checkArray($badge, "object", 'levels');
+                Dictionary::checkArray($badge, "object", 'levels');
                 return $this->getLevel(null, $badge);
             },
             'Returns a collection of Level objects from that badge.',
@@ -445,12 +446,12 @@ class Badges extends Module
             'badge'
         );
         //%badge.getLevel(number) returns level object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'getLevel',
             function ($badge, $level) {
-                $this->checkArray($badge, "object", 'getLevel');
-                $this->checkArray($level, "object", 'getLevel');
+                Dictionary::checkArray($badge, "object", 'getLevel');
+                Dictionary::checkArray($level, "object", 'getLevel');
                 return $this->getLevel($level, $badge);
             },
             'Returns a Level object corresponding to Level number from that badge.',
@@ -460,11 +461,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.currLevel(%user) returns object of the current level of user
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'currLevel',
             function ($badge, int $user) {
-                $this->checkArray($badge, "object", 'currLevel');
+                Dictionary::checkArray($badge, "object", 'currLevel');
                 $levelNum = $this->getLevelNum($badge, $user);
                 return $this->getLevel($levelNum, $badge);
             },
@@ -475,11 +476,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.nextLevel(user) %level.nextLevel  returns level object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'nextLevel',
             function ($arg, $user = null) {
-                $this->checkArray($arg, "object", 'nextLevel');
+                Dictionary::checkArray($arg, "object", 'nextLevel');
                 if ($user === null) { //arg is a level
                     $levelNum = $arg["value"]["number"];
                 } else { //arg is badge
@@ -494,11 +495,11 @@ class Badges extends Module
             'badge'
         );
         //%badge.previousLevel(user) %level.previousLevel  returns level object
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'previousLevel',
             function ($arg, $user = null) {
-                $this->checkArray($arg, "object", 'previousLevel');
+                Dictionary::checkArray($arg, "object", 'previousLevel');
                 if ($user === null) { //arg is a level
                     $levelNum = $arg["value"]["number"];
                 } else { //arg is badge
@@ -514,14 +515,14 @@ class Badges extends Module
         );
 
         //badges.badgeProgression(badge,user)
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'badgeProgression',
 
             function ($badge, int $user) {
 
                 $badgeParticipation = $this->getBadgeProgression($badge, $user);
-                return $this->createNode($badgeParticipation, 'badges', 'collection');
+                return Dictionary::createNode($badgeParticipation, 'badges', 'collection');
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that badge.',
             'collection',
@@ -531,11 +532,11 @@ class Badges extends Module
         );
 
         //%badgeProgression.post
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'post',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "post");
+                return Dictionary::basicGetterFunction($badge, "post");
             },
             'Returns a post from a collection of badge progression participations.',
             'string',
@@ -545,11 +546,11 @@ class Badges extends Module
         );
 
         //%badgeProgression.description
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'description',
             function ($badge) {
-                return $this->basicGetterFunction($badge, "description");
+                return Dictionary::basicGetterFunction($badge, "description");
             },
             'Returns a post description from a collection of badge progression participations.',
             'string',
@@ -559,7 +560,7 @@ class Badges extends Module
         );
 
         //%collection.countBadgesProgress  returns size of the collection or points obtained
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'countBadgesProgress',
             function ($collection, $badge) {
@@ -574,11 +575,11 @@ class Badges extends Module
 
 
         //%level.goal
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'goal',
             function ($level) {
-                return $this->basicGetterFunction($level, "goal");
+                return Dictionary::basicGetterFunction($level, "goal");
             },
             'Returns a string with the goal of the Level.',
             'string',
@@ -587,11 +588,11 @@ class Badges extends Module
             'level'
         );
         //%level.reward
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'reward',
             function ($level) {
-                return $this->basicGetterFunction($level, "reward");
+                return Dictionary::basicGetterFunction($level, "reward");
             },
             'Returns a string with the reward of the Level.',
             'string',
@@ -600,11 +601,11 @@ class Badges extends Module
             'level'
         );
         //%level.number
-        ViewHandler::registerFunction(
+        Dictionary::registerFunction(
             'badges',
             'number',
             function ($level) {
-                return $this->basicGetterFunction($level, "number");
+                return Dictionary::basicGetterFunction($level, "number");
             },
             'Returns a string with the number of the Level.',
             'string',
@@ -614,7 +615,7 @@ class Badges extends Module
         );
 
         if (!Views::templateExists(self::BADGES_TEMPLATE_NAME, $this->getCourseId()))
-            Views::setTemplate(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getCourseId(),true);
+            Views::setTemplateFromFile(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getCourseId());
     }
 
     public function saveMaxReward($max, $courseId)
