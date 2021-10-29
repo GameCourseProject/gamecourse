@@ -42,10 +42,7 @@ export class PageComponent implements OnInit {
       .subscribe(user => {
           this.api.renderPage(this.courseID, this.pageID, user.id)
             .subscribe(
-              view => {
-                console.log(view)
-                this.pageView = view
-              },
+              view => this.pageView = view,
               error => ErrorService.set(error)
             );
       }, error => ErrorService.set(error));

@@ -4,6 +4,7 @@ import {Course} from "../../../_domain/courses/course";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {ErrorService} from "../../../_services/error.service";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-main',
@@ -27,10 +28,8 @@ export class MainComponent implements OnInit {
 
   getUserActiveCourses(): void {
     this.api.getUserActiveCourses()
-      .subscribe(courses => {
-        this.activeCourses = courses;
-        this.loading = false;
-      },
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(courses => this.activeCourses = courses,
         error => ErrorService.set(error));
   }
 

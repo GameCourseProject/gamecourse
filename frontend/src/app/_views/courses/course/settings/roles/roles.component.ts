@@ -5,6 +5,7 @@ import {Role} from "../../../../../_domain/roles/role";
 import {ErrorService} from "../../../../../_services/error.service";
 import {Page} from "../../../../../_domain/pages & templates/page";
 import {exists} from "../../../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-roles',
@@ -50,6 +51,7 @@ export class RolesComponent implements OnInit {
 
   getRoles(courseId: number): void {
     this.api.getRoles(courseId)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(res => {
         this.roles = res.roles;
         this.roles.forEach(role => this.selectedPage[role.name] = role.landingPage);
@@ -57,7 +59,6 @@ export class RolesComponent implements OnInit {
       },
         error => ErrorService.set(error),
         () => {
-        this.loading = false;
         setTimeout(() => {
           const dd = $('#roles-config');
           // @ts-ignore
@@ -134,16 +135,16 @@ export class RolesComponent implements OnInit {
     this.loading = true;
     // @ts-ignore
     this.api.saveRoles(this.courseID, this.roles, $('#roles-config').nestable('serialize'))
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => this.getRoles(this.courseID),
-        error => ErrorService.set(error),
-        () => {
-          this.loading = false;
+        res => {
+          this.getRoles(this.courseID);
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("Role hierarchy changed!");
           successBox.show().delay(3000).fadeOut();
-        })
+        },
+        error => ErrorService.set(error))
   }
 
   saveLandingPage(role: Role): void {

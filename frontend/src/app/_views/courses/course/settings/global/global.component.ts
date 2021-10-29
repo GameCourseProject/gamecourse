@@ -103,12 +103,12 @@ export class GlobalComponent implements OnInit {
   createStyleFile(): void {
     this.saving = true;
     this.api.createCourseStyleFile(this.info.id)
+      .pipe( finalize(() => this.saving = false) )
       .subscribe(url => {
         this.style = {contents: '', url: url};
         this.hasStyleFile = true;
         setTimeout(() => this.styleLoaded.next(), 0);
-      }, error => ErrorService.set(error),
-        () => this.saving = false);
+      }, error => ErrorService.set(error));
   }
 
   saveStyleFile(): void {
@@ -116,6 +116,7 @@ export class GlobalComponent implements OnInit {
     const updatedStyle = this.styleInput;
 
     this.api.updateStyleFile(this.info.id, updatedStyle)
+      .pipe( finalize(() => this.saving = false) )
       .subscribe(url => {
         this.isSuccessModalOpen = true;
         this.style = {contents: updatedStyle, url: url};
@@ -125,9 +126,7 @@ export class GlobalComponent implements OnInit {
         $('#css-file').remove();
         if (this.style.url && this.style.contents !== '')
           $('head').append('<link id="css-file" rel="stylesheet" type="text/css" href="' + ApiEndpointsService.API_ENDPOINT + '/' + url + '">');
-      },
-        error => ErrorService.set(error),
-        () => this.saving = false)
+      }, error => ErrorService.set(error));
   }
 
 

@@ -7,6 +7,7 @@ import {ErrorService} from "../../../_services/error.service";
 import {Module} from "../../../_domain/modules/module";
 import {DownloadManager} from "../../../_utils/download/download-manager";
 import {Reduce} from "../../../_utils/display/reduce";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-modules',
@@ -42,13 +43,13 @@ export class ModulesComponent implements OnInit {
   getModules(): void {
     this.loading = true;
     this.api.getModulesAvailable()
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
         modules => {
           this.allModules = modules;
           this.reduceList();
           },
-          error => ErrorService.set(error),
-        () => this.loading = false
+          error => ErrorService.set(error)
   )
 }
 
@@ -74,13 +75,13 @@ export class ModulesComponent implements OnInit {
     reader.onload = (e) => {
       const importedModule = reader.result;
       this.api.importModule({file: importedModule, fileName: this.importedFile.name})
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loading = false
+        }) )
         .subscribe(
           res => this.getModules(),
-          error => ErrorService.set(error),
-          () => {
-            this.isImportModalOpen = false;
-            this.loading = false;
-          }
+          error => ErrorService.set(error)
         )
     }
     reader.readAsDataURL(this.importedFile);
@@ -90,9 +91,9 @@ export class ModulesComponent implements OnInit {
     // FIXME: not working
     this.loading = true;
     this.api.exportModules()
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
-        error => ErrorService.set(error),
-      () => this.loading = false
+        error => ErrorService.set(error)
       )
   }
 

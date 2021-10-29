@@ -19,6 +19,7 @@ import {Reduce} from "../../../../_utils/display/reduce";
 
 import _ from 'lodash';
 import {exists} from "../../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-users',
@@ -143,12 +144,11 @@ export class UsersComponent implements OnInit {
 
   getNonCourseUsers(courseId: number): void {
     this.api.getNotCourseUsers(courseId)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(users => {
         this.allNonUsers = users;
         this.reduceListNonUsers();
-        this.loading = false;
-      },
-        error => ErrorService.set(error))
+      }, error => ErrorService.set(error));
   }
 
 
@@ -197,8 +197,9 @@ export class UsersComponent implements OnInit {
     user.isActive = !user.isActive;
 
     this.api.setCourseUserActive(this.course.id, user.id, user.isActive)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-        res => this.loadingAction = false,
+        res => {},
         error => ErrorService.set(error)
       );
   }
@@ -212,19 +213,19 @@ export class UsersComponent implements OnInit {
     this.newUser.roles = this.selectedUserRoles || [];
 
     this.api.createCourseUser(this.course.id, this.newUser)
+      .pipe( finalize(() => {
+        this.isUserModalOpen = false;
+        this.clearObject(this.newUser);
+        this.loadingAction = false;
+      }) )
       .subscribe(
-        () => this.getCourseUsers(this.course.id),
-        error => ErrorService.set(error),
         () => {
-          this.isUserModalOpen = false;
-          this.clearObject(this.newUser);
-          this.loadingAction = false;
+          this.getCourseUsers(this.course.id);
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New user created");
           successBox.show().delay(3000).fadeOut();
-        }
-      )
+        }, error => ErrorService.set(error));
   }
 
   async editUser(): Promise<void> {
@@ -237,61 +238,60 @@ export class UsersComponent implements OnInit {
     this.newUser.roles = this.selectedUserRoles || [];
 
     this.api.editCourseUser(this.course.id, this.newUser)
+      .pipe( finalize(() => {
+        this.isUserModalOpen = false;
+        this.clearObject(this.newUser);
+        this.loadingAction = false;
+      }) )
       .subscribe(
         () => {
           this.getCourseUsers(this.course.id);
           if (this.user.id === this.newUser.id && this.newUser.image)
             this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isUserModalOpen = false;
-          this.clearObject(this.newUser);
-          this.loadingAction = false;
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("User: " + this.userToEdit.name + " edited");
           successBox.show().delay(3000).fadeOut();
-        }
-      )
+        }, error => ErrorService.set(error));
   }
 
   submitUsers(): void {
     this.api.addUsersToCourse(this.course.id, this.selectedUsers, this.selectedUserRole)
-      .subscribe(() => this.getCourseUsers(this.course.id),
-        error => ErrorService.set(error),
-        () => {
-          this.isSelectUserModalOpen = false;
-          this.selectedUserRole = null;
-          this.selectedUsers = null;
-          this.loadingAction = false;
+      .pipe( finalize(() => {
+        this.isSelectUserModalOpen = false;
+        this.selectedUserRole = null;
+        this.selectedUsers = null;
+        this.loadingAction = false;
+      }) )
+      .subscribe(() => {
+        this.getCourseUsers(this.course.id);
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New User(s) added");
           successBox.show().delay(3000).fadeOut();
-        })
+        }, error => ErrorService.set(error));
   }
 
   deleteUser(user: User): void {
     this.loadingAction = true;
     this.api.deleteCourseUser(this.course.id, user.id)
+      .pipe( finalize(() => {
+        this.isDeleteVerificationModalOpen = false;
+        this.loadingAction = false
+      }) )
       .subscribe(
         () => {
           const index = this.allUsers.findIndex(el => el.id === user.id);
           this.allUsers.splice(index, 1);
           this.reduceList();
           this.getNonCourseUsers(this.course.id);
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isDeleteVerificationModalOpen = false;
-          this.loadingAction = false
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("User: " + user.name  + ' - ' + user.studentNumber + " removed from this course");
           successBox.show().delay(3000).fadeOut();
-        }
-      )
+        }, error => ErrorService.set(error));
   }
 
   importUsers(replace: boolean): void {
@@ -301,6 +301,10 @@ export class UsersComponent implements OnInit {
     reader.onload = (e) => {
       const importedUsers = reader.result;
       this.api.importCourseUsers(this.course.id, {file: importedUsers, replace})
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loadingAction = false;
+        }) )
         .subscribe(
           nUsers => {
             this.getCourseUsers(this.course.id);
@@ -310,10 +314,6 @@ export class UsersComponent implements OnInit {
             successBox.show().delay(3000).fadeOut();
           },
           error => ErrorService.set(error),
-          () => {
-            this.isImportModalOpen = false;
-            this.loadingAction = false;
-          }
         )
     }
     reader.readAsDataURL(this.importedFile);
@@ -323,10 +323,10 @@ export class UsersComponent implements OnInit {
     this.saving = true;
 
     this.api.exportCourseUsers(this.course.id)
+      .pipe( finalize(() => this.saving = false) )
       .subscribe(
         contents => DownloadManager.downloadAsCSV('Users - ' + this.course.name + ' ' + this.course.year, contents),
-        error => ErrorService.set(error),
-        () => this.saving = false
+        error => ErrorService.set(error)
       )
   }
 

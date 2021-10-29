@@ -14,6 +14,7 @@ import Pickr from "@simonwep/pickr";
 
 import _ from 'lodash';
 import {exists} from "../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-main',
@@ -97,6 +98,7 @@ export class CoursesComponent implements OnInit {
 
   getCourses(): void {
     this.api.getUserCourses()
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(courses => {
         this.allCourses = courses;
 
@@ -106,7 +108,6 @@ export class CoursesComponent implements OnInit {
 
         this.order.active = this.user.isAdmin ? { orderBy: this.orderBy.admin[0], sort: Sort.ASCENDING } : { orderBy: this.orderBy.nonAdmin[0], sort: Sort.ASCENDING };
         this.reduceList(undefined, this.user.isAdmin ? _.cloneDeep(this.filters.admin) : _.cloneDeep(this.filters.nonAdmin));
-        this.loading = false;
       },
         error => ErrorService.set(error));
   }
@@ -167,8 +168,9 @@ export class CoursesComponent implements OnInit {
     course.isActive = !course.isActive;
 
     this.api.setCourseActive(course.id, course.isActive)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-      res => this.loadingAction = false,
+      res => {},
       error => ErrorService.set(error)
       );
   }
@@ -180,8 +182,9 @@ export class CoursesComponent implements OnInit {
     course.isVisible = !course.isVisible;
 
     this.api.setCourseVisible(course.id, course.isVisible)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-        res => this.loadingAction = false,
+        res => {},
         error => ErrorService.set(error)
       );
   }
@@ -190,22 +193,23 @@ export class CoursesComponent implements OnInit {
     this.loadingAction = true;
 
     this.api.createCourse(this.newCourse)
+      .pipe( finalize(() => {
+        this.isCourseModalOpen = false;
+        this.clearObject(this.newCourse);
+        this.loadingAction = false;
+      }) )
       .subscribe(
         res => {
           this.allCourses.push(res);
           this.exportOptions[res.id] = { users: true, awards: true, modules: true };
           this.reduceList();
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isCourseModalOpen = false;
-          this.clearObject(this.newCourse);
-          this.loadingAction = false;
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New course created");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
@@ -223,22 +227,23 @@ export class CoursesComponent implements OnInit {
     }
 
     this.api.duplicateCourse(this.newCourse)
+      .pipe( finalize(() => {
+        this.isCourseModalOpen = false;
+        this.clearObject(this.newCourse);
+        this.loadingAction = false;
+      }) )
       .subscribe(
         res => {
           this.allCourses.push(res);
           this.exportOptions[res.id] = { users: true, awards: true, modules: true };
           this.reduceList();
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isCourseModalOpen = false;
-          this.clearObject(this.newCourse);
-          this.loadingAction = false;
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New course created from " + course.name);
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
@@ -247,40 +252,43 @@ export class CoursesComponent implements OnInit {
     this.newCourse['id'] = this.courseToEdit.id;
 
     this.api.editCourse(this.newCourse)
+      .pipe( finalize(() => {
+        this.isCourseModalOpen = false;
+        this.clearObject(this.newCourse);
+        this.loadingAction = false;
+      }) )
       .subscribe(
-        res => this.getCourses(),
-        error => ErrorService.set(error),
-        () => {
-          this.isCourseModalOpen = false;
-          this.clearObject(this.newCourse);
-          this.loadingAction = false;
+        res => {
+          this.getCourses();
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("Course: "+ this.courseToEdit.name + " edited");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
   deleteCourse(course: Course): void {
     this.loadingAction = true;
     this.api.deleteCourse(course.id)
+      .pipe( finalize(() => {
+        this.isDeleteVerificationModalOpen = false;
+        this.loadingAction = false
+      }) )
       .subscribe(
         res => {
           const index = this.allCourses.findIndex(el => el.id === course.id);
           this.allCourses.splice(index, 1);
           this.exportOptions[course.id] = null;
           this.reduceList();
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isDeleteVerificationModalOpen = false;
-          this.loadingAction = false
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("Course: " + course.name + " deleted");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
@@ -291,6 +299,10 @@ export class CoursesComponent implements OnInit {
     reader.onload = (e) => {
       const importedCourses = reader.result;
       this.api.importCourses({file: importedCourses, replace})
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loadingAction = false;
+        }) )
         .subscribe(
           nCourses => {
             this.getCourses();
@@ -299,11 +311,7 @@ export class CoursesComponent implements OnInit {
             successBox.append(nCourses + " Course" + (nCourses > 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           },
-          error => ErrorService.set(error),
-          () => {
-            this.isImportModalOpen = false;
-            this.loadingAction = false;
-          }
+          error => ErrorService.set(error)
         )
     }
     reader.readAsDataURL(this.importedFile);
@@ -313,13 +321,13 @@ export class CoursesComponent implements OnInit {
     this.saving = true;
 
     this.api.exportCourses(course?.id || null, this.exportOptions[course?.id] || null)
+      .pipe( finalize(() => {
+        this.isIndividualExportModalOpen = false;
+        this.saving = false
+      }) )
       .subscribe(
         zip => DownloadManager.downloadAsZip(zip, ApiEndpointsService.API_ENDPOINT),
-        error => ErrorService.set(error),
-        () => {
-          this.isIndividualExportModalOpen = false;
-          this.saving = false
-        }
+        error => ErrorService.set(error)
       )
   }
 

@@ -3,6 +3,7 @@ import {Course} from "../../../../_domain/courses/course";
 import {ActivatedRoute} from "@angular/router";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {ErrorService} from "../../../../_services/error.service";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-main',
@@ -27,10 +28,10 @@ export class MainComponent implements OnInit {
 
   getCourse(courseID: number): void {
     this.api.getCourse(courseID)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
         course => this.course = course,
-        error => ErrorService.set(error),
-        () => this.loading = false
+        error => ErrorService.set(error)
       );
   }
 }

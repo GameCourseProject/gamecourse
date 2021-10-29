@@ -3,6 +3,7 @@ import {ApiHttpService} from "../../_services/api/api-http.service";
 import {Moment} from "moment";
 import {Router} from "@angular/router";
 import {ErrorService} from "../../_services/error.service";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-footer',
@@ -22,11 +23,11 @@ export class FooterComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.api.getRulesSystemLastRun(this.getCourseId())
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
         date => this.lastRun = date,
-        error => ErrorService.set(error),
-        () => this.loading = false
-        );
+        error => ErrorService.set(error)
+      );
   }
 
   getCourseId(): number {

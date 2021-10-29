@@ -10,6 +10,7 @@ import {User} from "../../../_domain/users/user";
 import {ImageManager} from "../../../_utils/images/image-manager";
 import {AuthType} from "../../../_domain/auth/auth-type";
 import {exists} from "../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
 
 
 @Component({
@@ -49,6 +50,7 @@ export class MyInfoComponent implements OnInit {
 
   getUserInfo(): void {
     this.api.getLoggedUser()
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(user => {
         this.user = user;
 
@@ -63,8 +65,6 @@ export class MyInfoComponent implements OnInit {
         };
         this.originalPhoto = user.photoUrl;
         this.photo.set(user.photoUrl);
-
-        this.loading = false;
       },
         error => ErrorService.set(error))
   }
@@ -91,17 +91,17 @@ export class MyInfoComponent implements OnInit {
       await ImageManager.getBase64(this.photoToAdd).then(data => this.editUser.image = data);
 
     this.api.editSelfInfo(this.editUser)
+      .pipe( finalize(() => {
+        this.saving = false;
+        this.isEditModalOpen = false;
+        this.photoToAdd = null;
+      }) )
       .subscribe(res => {
           this.getUserInfo();
           if (this.editUser.image)
             this.updateManager.triggerUpdate(UpdateType.AVATAR) // Trigger change on navbar
         },
-        error => ErrorService.set(error),
-        () => {
-          this.saving = false;
-          this.isEditModalOpen = false;
-          this.photoToAdd = null;
-        })
+        error => ErrorService.set(error))
   }
 
 }

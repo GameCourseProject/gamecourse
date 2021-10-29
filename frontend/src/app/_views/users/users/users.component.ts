@@ -16,6 +16,7 @@ import {Reduce} from "../../../_utils/display/reduce";
 
 import _ from 'lodash';
 import {exists} from "../../../_utils/misc/misc";
+import {finalize} from "rxjs/operators";
 
 
 @Component({
@@ -92,13 +93,12 @@ export class UsersComponent implements OnInit {
 
   getUsers(): void {
     this.api.getUsers()
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(data => {
           this.allUsers = data;
 
           this.order.active = { orderBy: this.orderBy[0], sort: Sort.ASCENDING };
           this.reduceList(undefined, _.cloneDeep(this.filters));
-
-          this.loading = false;
         },
         error => ErrorService.set(error));
   }
@@ -149,8 +149,9 @@ export class UsersComponent implements OnInit {
     user.isAdmin = !user.isAdmin;
 
     this.api.setUserAdmin(user.id, user.isAdmin)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-        res => this.loadingAction = false,
+        res => {},
         error => ErrorService.set(error)
       );
   }
@@ -162,8 +163,9 @@ export class UsersComponent implements OnInit {
     user.isActive = !user.isActive;
 
     this.api.setUserActive(user.id, user.isActive)
+      .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
-        res => this.loadingAction = false,
+        res => {},
         error => ErrorService.set(error)
       );
   }
@@ -175,21 +177,22 @@ export class UsersComponent implements OnInit {
       await ImageManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
 
     this.api.createUser(this.newUser)
+      .pipe( finalize(() => {
+        this.isUserModalOpen = false;
+        this.clearObject(this.newUser);
+        this.loadingAction = false;
+      }) )
       .subscribe(
         res => {
           this.allUsers.push(res);
           this.reduceList();
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isUserModalOpen = false;
-          this.clearObject(this.newUser);
-          this.loadingAction = false;
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("New user created");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
@@ -201,43 +204,45 @@ export class UsersComponent implements OnInit {
       await ImageManager.getBase64(this.photoToAdd).then(data => this.newUser.image = data);
 
     this.api.editUser(this.newUser)
+      .pipe( finalize(() => {
+        this.isUserModalOpen = false;
+        this.clearObject(this.newUser);
+        this.loadingAction = false;
+      }) )
       .subscribe(
         res => {
           this.getUsers();
           if (this.user.id === this.newUser.id && this.newUser.image)
             this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isUserModalOpen = false;
-          this.clearObject(this.newUser);
-          this.loadingAction = false;
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("User: " + this.userToEdit.name + " edited");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
   deleteUser(user: User): void {
     this.loadingAction = true;
     this.api.deleteUser(user.id)
+      .pipe( finalize(() => {
+        this.isDeleteVerificationModalOpen = false;
+        this.loadingAction = false
+      }) )
       .subscribe(
         res => {
           const index = this.allUsers.findIndex(el => el.id === user.id);
           this.allUsers.splice(index, 1);
           this.reduceList();
-        },
-        error => ErrorService.set(error),
-        () => {
-          this.isDeleteVerificationModalOpen = false;
-          this.loadingAction = false
+
           const successBox = $('#action_completed');
           successBox.empty();
           successBox.append("User: " + user.name  + ' - ' + user.studentNumber + " deleted");
           successBox.show().delay(3000).fadeOut();
-        }
+        },
+        error => ErrorService.set(error)
       )
   }
 
@@ -248,6 +253,10 @@ export class UsersComponent implements OnInit {
     reader.onload = (e) => {
       const importedUsers = reader.result;
       this.api.importUsers({file: importedUsers, replace})
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loadingAction = false;
+        }) )
         .subscribe(
           nUsers => {
             this.getUsers();
@@ -256,11 +265,7 @@ export class UsersComponent implements OnInit {
             successBox.append(nUsers + " Users" + (nUsers > 1 ? 's' : '') + " Imported");
             successBox.show().delay(3000).fadeOut();
           },
-          error => ErrorService.set(error),
-          () => {
-            this.isImportModalOpen = false;
-            this.loadingAction = false;
-          }
+          error => ErrorService.set(error)
         )
     }
     reader.readAsDataURL(this.importedFile);
@@ -270,10 +275,10 @@ export class UsersComponent implements OnInit {
     this.saving = true;
 
     this.api.exportUsers()
+      .pipe( finalize(() => this.saving = false) )
       .subscribe(
         contents => DownloadManager.downloadAsCSV('users', contents),
-        error => ErrorService.set(error),
-        () => this.saving = false
+        error => ErrorService.set(error)
       )
   }
 
