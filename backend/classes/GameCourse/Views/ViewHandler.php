@@ -36,24 +36,6 @@ class ViewHandler
                 self::prepareViewForDatabase($aspect);
                 self::insertView($aspect);
 
-                if (isset($aspect["children"])) {
-                    foreach ($aspect["children"] as &$child) {
-                        // Set parentId for all aspects of child
-                        foreach ($child as &$childAspect) {
-                            $childAspect["parentId"] = $aspect["id"];
-                        }
-
-                        self::updateView($child);
-
-                        // Insert into 'view_parent'
-                        Core::$systemDB->insert("view_parent", [
-                            "parentId" => $child[0]["parentId"], // parentId is the same for all aspects of child
-                            "childId" => $child[0]["viewId"],    // viewId is the same for all aspects of child
-                            "viewIndex" => count(Core::$systemDB->selectMultiple("view_parent", ["parentId" => $child[0]["parentId"]]))
-                        ]);
-                    }
-                }
-
                 if (!$viewId && isset($aspect["viewId"])) $viewId = $aspect["viewId"];
             }
         }
@@ -107,6 +89,7 @@ class ViewHandler
         if ($view["type"] == 'text') self::insertViewText($view);
         if ($view["type"] == 'image') self::insertViewImage($view);
         if ($view["type"] == 'header') self::insertViewHeader($view);
+        if ($view["type"] == 'block') self::insertViewBlock($view);
         // NOTE: insert here other types of views
     }
 
@@ -156,6 +139,32 @@ class ViewHandler
     }
 
     /**
+     * Insert a view of type 'block' into the database.
+     *
+     * @param $view
+     */
+    private static function insertViewBlock($view)
+    {
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                // Set parentId for all aspects of child
+                foreach ($child as &$childAspect) {
+                    $childAspect["parentId"] = $view["id"];
+                }
+
+                self::updateView($child);
+
+                // Insert into 'view_parent'
+                Core::$systemDB->insert("view_parent", [
+                    "parentId" => $child[0]["parentId"], // parentId is the same for all aspects of child
+                    "childId" => $child[0]["viewId"],    // viewId is the same for all aspects of child
+                    "viewIndex" => count(Core::$systemDB->selectMultiple("view_parent", ["parentId" => $child[0]["parentId"]]))
+                ]);
+            }
+        }
+    }
+
+    /**
      * Deletes view from database.
      * This includes all aspects of the view and also children.
      *
@@ -168,22 +177,10 @@ class ViewHandler
             if ($aspect["type"] == 'text') self::deleteViewText($aspect);
             if ($aspect["type"] == 'image') self::deleteViewImage($aspect);
             if ($aspect["type"] == 'header') self::deleteViewHeader($aspect);
+            if ($aspect["type"] == 'block') self::deleteViewBlock($aspect);
             // NOTE: insert here other types of views
 
             Core::$systemDB->delete('view', ["id" => $aspect["id"]]);
-
-            $children = Core::$systemDB->selectMultiple(
-                "view v left join view_parent vp on v.viewId=vp.childId",
-                ["parentId" => $aspect["id"]],
-                "v.*"
-            );
-
-            if (!empty($children)) {
-                Core::$systemDB->delete("view_parent", ["parentId" => $aspect["id"]]);
-                foreach ($children as $child) {
-                    self::deleteView($child);
-                }
-            }
         }
     }
 
@@ -219,6 +216,27 @@ class ViewHandler
         self::deleteView($view["title"]);
 
         Core::$systemDB->delete("view_header", ["id" => $view["id"]]);
+    }
+
+    /**
+     * Delete view of type 'block' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewBlock($view)
+    {
+        $children = Core::$systemDB->selectMultiple(
+            "view v left join view_parent vp on v.viewId=vp.childId",
+            ["parentId" => $view["id"]],
+            "v.*"
+        );
+
+        if (!empty($children)) {
+            Core::$systemDB->delete("view_parent", ["parentId" => $view["id"]]);
+            foreach ($children as $child) {
+                self::deleteView([$child]); // NOTE: don't need to group per aspect
+            }
+        }
     }
 
 
@@ -317,13 +335,8 @@ class ViewHandler
             if ($aspect["type"] == 'text') self::buildViewText($aspect);
             if ($aspect["type"] == 'image') self::buildViewImage($aspect);
             if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy);
+            if ($aspect["type"] == 'block') self::buildViewBlock($aspect, $toExport, $rolesHierarchy);
             // NOTE: insert here other types of views
-
-            $children = Core::$systemDB->selectMultiple(
-                "view v left join view_parent vp on v.viewId=vp.childId",
-                ["parentId" => $aspect["id"]],
-                "v.*"
-            );
 
             if ($toExport) {
                 // Delete ids
@@ -334,19 +347,6 @@ class ViewHandler
 
             // Filter null values
             $aspect = array_filter($aspect, function ($value) { return !is_null($value); });
-
-            if (!empty($children)) {
-                // Group children from same aspect
-                $childrenViews = [];
-                foreach ($children as $child) {
-                    $childrenViews[$child["viewId"]][] = $child;
-                }
-
-                foreach ($childrenViews as &$childView) {
-                    self::buildView($childView, $toExport, $rolesHierarchy);
-                    $aspect["children"][] = $childView;
-                }
-            }
         }
     }
 
@@ -392,6 +392,35 @@ class ViewHandler
         self::buildView($viewTitle, $toExport, $rolesHierarchy);
         if ($rolesHierarchy) $view["title"] = $viewTitle[0];
         else $view["title"] = $viewTitle;
+    }
+
+    /**
+     * Build a view of type 'block' from the database.
+     *
+     * @param $view
+     * @param bool $toExport
+     * @param null $rolesHierarchy
+     */
+    public static function buildViewBlock(&$view, bool $toExport = false, $rolesHierarchy = null)
+    {
+        $children = Core::$systemDB->selectMultiple(
+            "view v left join view_parent vp on v.viewId=vp.childId",
+            ["parentId" => $view["id"]],
+            "v.*"
+        );
+
+        if (!empty($children)) {
+            // Group children from same aspect
+            $childrenViews = [];
+            foreach ($children as $child) {
+                $childrenViews[$child["viewId"]][] = $child;
+            }
+
+            foreach ($childrenViews as &$childView) {
+                self::buildView($childView, $toExport, $rolesHierarchy);
+                $view["children"][] = $childView;
+            }
+        }
     }
 
     /**
