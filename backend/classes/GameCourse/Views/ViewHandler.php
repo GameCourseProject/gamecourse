@@ -106,11 +106,7 @@ class ViewHandler
         // Insert into view_<type> table depending on type
         if ($view["type"] == 'text') self::insertViewText($view);
         if ($view["type"] == 'image') self::insertViewImage($view);
-        if ($view["type"] == 'header') {
-            self::insertView($view["image"]);
-            self::insertView($view["title"]);
-            self::insertViewHeader($view);
-        }
+        if ($view["type"] == 'header') self::insertViewHeader($view);
         // NOTE: insert here other types of views
     }
 
@@ -149,10 +145,13 @@ class ViewHandler
      */
     private static function insertViewHeader($view)
     {
+        self::updateView($view["image"]);
+        self::updateView($view["title"]);
+
         Core::$systemDB->insert("view_header", [
             "id" => $view["id"],
-            "image" => $view["image"]["id"],
-            "title" => $view["title"]["id"]
+            "image" => $view["image"][0]["viewId"],
+            "title" => $view["title"][0]["viewId"]
         ]);
     }
 
@@ -165,8 +164,12 @@ class ViewHandler
     public static function deleteView($view)
     {
         foreach ($view as $aspect) {
-            if (Core::$systemDB->tableExists('view_' . $aspect["type"]))
-                Core::$systemDB->delete('view_' . $aspect["type"], ["id" => $aspect["id"]]);
+            // Delete from view_<type> table depending on type
+            if ($aspect["type"] == 'text') self::deleteViewText($aspect);
+            if ($aspect["type"] == 'image') self::deleteViewImage($aspect);
+            if ($aspect["type"] == 'header') self::deleteViewHeader($aspect);
+            // NOTE: insert here other types of views
+
             Core::$systemDB->delete('view', ["id" => $aspect["id"]]);
 
             $children = Core::$systemDB->selectMultiple(
@@ -177,12 +180,45 @@ class ViewHandler
 
             if (!empty($children)) {
                 Core::$systemDB->delete("view_parent", ["parentId" => $aspect["id"]]);
-
                 foreach ($children as $child) {
-                    self::deleteView([$child]); // NOTE: not caring if they're grouped in aspects
+                    self::deleteView($child);
                 }
             }
         }
+    }
+
+    /**
+     * Delete view of type 'text' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewText($view)
+    {
+        Core::$systemDB->delete("view_text", ["id" => $view["id"]]);
+    }
+
+    /**
+     * Delete view of type 'image' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewImage($view)
+    {
+        Core::$systemDB->delete("view_image", ["id" => $view["id"]]);
+    }
+
+    /**
+     * Delete view of type 'header' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewHeader($view)
+    {
+        self::buildViewHeader($view);
+        self::deleteView($view["image"]);
+        self::deleteView($view["title"]);
+
+        Core::$systemDB->delete("view_header", ["id" => $view["id"]]);
     }
 
 
@@ -280,7 +316,7 @@ class ViewHandler
             self::prepareViewFromDatabase($aspect);
             if ($aspect["type"] == 'text') self::buildViewText($aspect);
             if ($aspect["type"] == 'image') self::buildViewImage($aspect);
-            if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport);
+            if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy);
             // NOTE: insert here other types of views
 
             $children = Core::$systemDB->selectMultiple(
@@ -346,14 +382,16 @@ class ViewHandler
     public static function buildViewHeader(&$view, bool $toExport = false, $rolesHierarchy = null)
     {
         $viewHeader = Core::$systemDB->select("view_header", ["id" => $view["id"]]);
-        $viewImage = Core::$systemDB->selectMultiple("view", ["id" => $viewHeader["image"]]);
-        $viewTitle = Core::$systemDB->selectMultiple("view", ["id" => $viewHeader["title"]]);
+        $viewImage = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["image"]]);
+        $viewTitle = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["title"]]);
 
         self::buildView($viewImage, $toExport, $rolesHierarchy);
-        $view["image"] = $viewImage[0];
+        if ($rolesHierarchy) $view["image"] = $viewImage[0];
+        else $view["image"] = $viewImage;
 
         self::buildView($viewTitle, $toExport, $rolesHierarchy);
-        $view["title"] = $viewTitle[0];
+        if ($rolesHierarchy) $view["title"] = $viewTitle[0];
+        else $view["title"] = $viewTitle;
     }
 
     /**

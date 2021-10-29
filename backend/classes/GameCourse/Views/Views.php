@@ -15,6 +15,18 @@ class Views
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Gets page by ID
+     *
+     * @param int $courseId
+     * @param int $pageId
+     * @return mixed
+     */
+    public static function getPage(int $courseId, int $pageId)
+    {
+        return Core::$systemDB->select("page", ["id" => $pageId, "course" => $courseId]);
+    }
+
+    /**
      * Renders a page.
      *
      * @param int $courseId

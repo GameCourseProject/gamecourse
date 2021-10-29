@@ -64,6 +64,14 @@ API::registerFunction($MODULE, 'renderPage', function () {
     $pageId = API::getValue('pageId');
     $userId = API::getValue('userId');
 
+    $page = Views::getPage($courseId, $pageId);
+
+    if (!$page)
+        API::error('Page with id = ' . $pageId . ' is doesn\'t exist.');
+
+    if (!$page["isEnabled"])
+        API::error('Page \'' . $page["name"] . '\' (id = ' . $pageId . ') is not enabled.');
+
     API::response(['view' => Views::renderPage($courseId, $pageId, $userId)]);
 });
 
@@ -105,7 +113,7 @@ API::registerFunction($MODULE, 'deletePage', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'pageId');
 
-    Views::deletePage(API::getValue('courseId'), API::getValue('pageId'));
+    Views::deletePage((int)API::getValue('courseId'), (int)API::getValue('pageId'));
 });
 
 
