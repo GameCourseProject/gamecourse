@@ -58,20 +58,19 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
     // If page isn't supposed to be shown to any of the user roles, then remove
     $filteredPages = [];
     foreach ($activePages as $page) {
-        $view = Core::$systemDB->select("view", ["viewId" => $page["viewId"]]);
-        $template = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $view["viewId"], "course" => $courseId], "id,name,roleType");
-        $aspects = Core::$systemDB->selectMultiple("view", ["viewId" => $view["viewId"]]);
+        $aspects = Core::$systemDB->selectMultiple("view", ["viewId" => $page["viewId"]]);
+        $roleType = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $aspects[0]["viewId"], "course" => $courseId], "roleType");
 
         $showPage = false;
         foreach ($aspects as $aspect) {
-            if ($template["roleType"] == "ROLE_SINGLE") {
+            if ($roleType == "ROLE_SINGLE") {
                 $viewerRole = explode(".", $aspect["role"])[1];
                 if (($viewerRole == "Default" || $courseUser->hasRole($viewerRole))) {
                     $showPage = true;
                     break;
                 }
 
-            } else if ($template["roleType"] == "ROLE_INTERACTION") {
+            } else if ($roleType == "ROLE_INTERACTION") {
                 $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
                 $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
                 if (($viewerRole == "Default" && ($courseUser->hasRole($userRole) || $userRole == "Default"))
@@ -79,7 +78,6 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
                     $showPage = true;
                     break;
                 }
-
             }
         }
         if ($showPage) $filteredPages[] = $page;

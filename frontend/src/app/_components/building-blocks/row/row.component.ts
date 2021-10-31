@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ViewTable} from "../../../_domain/views/view-table";
+import {ViewRow} from "../../../_domain/views/view-row";
 import {exists, requireValues} from "../../../_utils/misc/misc";
 import {ViewMode} from "../../../_domain/views/view";
 import {Event} from "../../../_domain/events/event";
@@ -10,32 +10,25 @@ import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
 
 @Component({
-  selector: 'bb-table',
-  templateUrl: './table.component.html'
+  selector: 'bb-row',
+  templateUrl: './row.component.html'
 })
-export class TableComponent implements OnInit {
+export class RowComponent implements OnInit {
 
-  @Input() view: ViewTable;
+  @Input() view: ViewRow;
   edit: boolean;
   isEditingLayout: boolean;
 
   constructor() { }
 
   ngOnInit(): void {
-    requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
-    this.edit = this.view.mode === ViewMode.EDIT;
-
+    requireValues(this.view, [this.view.children]);
     if (!!this.view.events?.click) this.view.class += ' clickable';
-    this.view.headerRows.forEach(row => row.children.forEach(header => {
-      if (!!header.events?.click) header.class += ' clickable';
-    }));
-    this.view.rows.forEach(row => row.children.forEach(r => {
-      if(!!r.events?.click) r.class += ' clickable';
-    }));
+    this.edit = this.view.mode === ViewMode.EDIT;
   }
 
-  get ViewTable(): typeof ViewTable {
-    return ViewTable;
+  get ViewRow(): typeof ViewRow {
+    return ViewRow;
   }
 
 

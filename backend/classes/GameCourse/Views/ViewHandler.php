@@ -27,7 +27,7 @@ class ViewHandler
     public static function updateView(&$view) {
         $viewId = null; // used to set the same viewId for all aspects of the view
         foreach ($view as &$aspect) {
-            if (array_key_exists("id", $aspect)) { // Already in database, update
+            if (isset($aspect["id"])) { // Already in database, update
                 // TODO: when doing view editor
 
             } else { // Not in database, insert
@@ -41,22 +41,6 @@ class ViewHandler
         }
     }
 
-    /**
-     * Prepare view params for database.
-     * This is intended for params that are not basic types such
-     * as string or integers and need to be encoded first.
-     *
-     * @param $view
-     */
-    private static function prepareViewForDatabase(&$view)
-    {
-        // Params that need to be encoded
-        $toEncode = ['events', 'loopData', 'variables', 'visibilityCondition'];
-        foreach ($toEncode as $param) {
-            if (isset($view[$param]))
-                $view[$param] = json_encode($view[$param]);
-        }
-    }
 
     /**
      * Insert a view into the database.
@@ -85,11 +69,13 @@ class ViewHandler
         if (!isset($view["viewId"])) $view["viewId"] = $view["id"];
         Core::$systemDB->update("view", ["viewId" => $view["viewId"]], ["id" => $view["id"]]);
 
-        // Insert into view_<type> table depending on type
+        // Insert into database depending on type
         if ($view["type"] == 'text') self::insertViewText($view);
         if ($view["type"] == 'image') self::insertViewImage($view);
         if ($view["type"] == 'header') self::insertViewHeader($view);
+        if ($view["type"] == 'table') self::insertViewTable($view);
         if ($view["type"] == 'block') self::insertViewBlock($view);
+        if ($view["type"] == 'row') self::insertViewRow($view);
         // NOTE: insert here other types of views
     }
 
@@ -139,6 +125,36 @@ class ViewHandler
     }
 
     /**
+     * Insert a view of type 'table' into the database.
+     *
+     * @param $view
+     */
+    private static function insertViewTable($view)
+    {
+        // Insert header rows
+        foreach ($view["headerRows"] as &$headerRow) {
+            self::updateView($headerRow);
+
+            Core::$systemDB->insert("view_table_header", [
+                "id" => $view["id"],
+                "headerRow" => $headerRow[0]["viewId"],
+                "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_header", ["id" => $view["id"]]))
+            ]);
+        }
+
+        // Insert body rows
+        foreach ($view["rows"] as &$row) {
+            self::updateView($row);
+
+            Core::$systemDB->insert("view_table_row", [
+                "id" => $view["id"],
+                "row" => $row[0]["viewId"],
+                "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_row", ["id" => $view["id"]]))
+            ]);
+        }
+    }
+
+    /**
      * Insert a view of type 'block' into the database.
      *
      * @param $view
@@ -165,6 +181,19 @@ class ViewHandler
     }
 
     /**
+     * Insert a view of type 'row' into the database.
+     *
+     * @param $view
+     */
+    private static function insertViewRow($view)
+    {
+        // Similar to view type 'block',
+        // they both only carry children views
+        self::insertViewBlock($view);
+    }
+
+
+    /**
      * Deletes view from database.
      * This includes all aspects of the view and also children.
      *
@@ -173,11 +202,13 @@ class ViewHandler
     public static function deleteView($view)
     {
         foreach ($view as $aspect) {
-            // Delete from view_<type> table depending on type
+            // Delete from database depending on type
             if ($aspect["type"] == 'text') self::deleteViewText($aspect);
             if ($aspect["type"] == 'image') self::deleteViewImage($aspect);
             if ($aspect["type"] == 'header') self::deleteViewHeader($aspect);
+            if ($aspect["type"] == 'table') self::deleteViewTable($aspect);
             if ($aspect["type"] == 'block') self::deleteViewBlock($aspect);
+            if ($aspect["type"] == 'row') self::deleteViewRow($aspect);
             // NOTE: insert here other types of views
 
             Core::$systemDB->delete('view', ["id" => $aspect["id"]]);
@@ -219,6 +250,28 @@ class ViewHandler
     }
 
     /**
+     * Delete view of type 'table' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewTable($view)
+    {
+        self::buildViewTable($view);
+
+        // Delete header rows
+        foreach ($view["headerRows"] as $headerRow) {
+            self::deleteView($headerRow);
+            Core::$systemDB->delete("view_table_header", ["headerRow" => $headerRow[0]["viewId"]]);
+        }
+
+        // Delete body rows
+        foreach ($view["rows"] as $row) {
+            self::deleteView($row);
+            Core::$systemDB->delete("view_table_row", ["row" => $row[0]["viewId"]]);
+        }
+    }
+
+    /**
      * Delete view of type 'block' from database.
      *
      * @param $view
@@ -237,6 +290,18 @@ class ViewHandler
                 self::deleteView([$child]); // NOTE: don't need to group per aspect
             }
         }
+    }
+
+    /**
+     * Delete view of type 'row' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewRow($view)
+    {
+        // Similar to view type 'block',
+        // they both only carry children views
+        self::deleteViewBlock($view);
     }
 
 
@@ -284,11 +349,14 @@ class ViewHandler
 
         // Pick a specific aspect and build it
         self::buildView($view, false, $rolesHierarchy);
-        $view = $view[0];
+        if (count($view) == 1) $view = $view[0];
+        else if (count($view) == 0) API::error('There\'s no aspect to render for current view and roles.');
+        else if (count($view) > 1) API::error('Should have only one aspect but got more.');
 
         self::parseView($view);
         self::processView($view, ["course" => $course->getId(), "viewer" => $viewer->getId()]);
     }
+
 
     /**
      * Builds a view coming from database.
@@ -328,6 +396,9 @@ class ViewHandler
                 }
                 if ($foundAspect) break;
             }
+
+            // No aspect available w/ current rolesHierarchy
+            if (!$foundAspect) $view = [];
         }
 
         foreach ($view as &$aspect) {
@@ -335,7 +406,9 @@ class ViewHandler
             if ($aspect["type"] == 'text') self::buildViewText($aspect);
             if ($aspect["type"] == 'image') self::buildViewImage($aspect);
             if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy);
+            if ($aspect["type"] == 'table') self::buildViewTable($aspect, $toExport, $rolesHierarchy);
             if ($aspect["type"] == 'block') self::buildViewBlock($aspect, $toExport, $rolesHierarchy);
+            if ($aspect["type"] == 'row') self::buildViewRow($aspect, $toExport, $rolesHierarchy);
             // NOTE: insert here other types of views
 
             if ($toExport) {
@@ -348,6 +421,9 @@ class ViewHandler
             // Filter null values
             $aspect = array_filter($aspect, function ($value) { return !is_null($value); });
         }
+
+        if ($rolesHierarchy && count($view) > 1)
+            API::error('Should have only one aspect but got more.');
     }
 
     /**
@@ -386,12 +462,58 @@ class ViewHandler
         $viewTitle = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["title"]]);
 
         self::buildView($viewImage, $toExport, $rolesHierarchy);
-        if ($rolesHierarchy) $view["image"] = $viewImage[0];
-        else $view["image"] = $viewImage;
+        if (count($viewImage) == 0)
+            API::error('There\'s no aspect for header image for current view and roles.');
+        if ($rolesHierarchy) $viewImage = $viewImage[0];
+        $view["image"] = $viewImage;
 
         self::buildView($viewTitle, $toExport, $rolesHierarchy);
-        if ($rolesHierarchy) $view["title"] = $viewTitle[0];
-        else $view["title"] = $viewTitle;
+        if (count($viewTitle) == 0)
+            API::error('There\'s no aspect for header title for current view and roles.');
+        if ($rolesHierarchy) $viewTitle = $viewTitle[0];
+        $view["title"] = $viewTitle;
+    }
+
+    /**
+     * Build a view of type 'table' from the database.
+     *
+     * @param $view
+     * @param bool $toExport
+     * @param null $rolesHierarchy
+     */
+    public static function buildViewTable(&$view, bool $toExport = false, $rolesHierarchy = null)
+    {
+        $viewTableHeaderRows = Core::$systemDB->selectMultiple(
+            "view v left join view_table_header th on v.viewId=th.headerRow",
+            ["th.id" => $view["id"]],
+            "v.*, th.viewIndex",
+            "viewIndex ASC"
+        );
+        $viewTableRows = Core::$systemDB->selectMultiple(
+            "view v left join view_table_row tr on v.viewId=tr.row",
+            ["tr.id" => $view["id"]],
+            "v.*, tr.viewIndex",
+            "viewIndex ASC"
+        );
+
+        $viewTableHeaderRows = self::groupViewsByAspect($viewTableHeaderRows, ["viewIndex"]);
+        $viewTableRows = self::groupViewsByAspect($viewTableRows, ["viewIndex"]);
+
+        foreach ($viewTableHeaderRows as &$headerRow) {
+            self::buildView($headerRow, $toExport, $rolesHierarchy);
+            if (count($headerRow) != 0) {
+                if ($rolesHierarchy) $headerRow = $headerRow[0];
+                $view["headerRows"][] = $headerRow;
+            }
+        }
+
+        foreach ($viewTableRows as &$row) {
+            self::buildView($row, $toExport, $rolesHierarchy);
+            if (count($row) != 0) {
+                if ($rolesHierarchy) $row = $row[0];
+                $view["rows"][] = $row;
+            }
+        }
     }
 
     /**
@@ -406,38 +528,34 @@ class ViewHandler
         $children = Core::$systemDB->selectMultiple(
             "view v left join view_parent vp on v.viewId=vp.childId",
             ["parentId" => $view["id"]],
-            "v.*"
+            "v.*, vp.viewIndex",
+            "viewIndex ASC"
         );
 
         if (!empty($children)) {
-            // Group children from same aspect
-            $childrenViews = [];
-            foreach ($children as $child) {
-                $childrenViews[$child["viewId"]][] = $child;
-            }
-
+            $childrenViews = self::groupViewsByAspect($children, ["viewIndex"]);
             foreach ($childrenViews as &$childView) {
                 self::buildView($childView, $toExport, $rolesHierarchy);
-                $view["children"][] = $childView;
+                if (count($childView) != 0) {
+                    if ($rolesHierarchy) $childView = $childView[0];
+                    $view["children"][] = $childView;
+                }
             }
         }
     }
 
     /**
-     * Prepare view params from database.
-     * This is intended for params that are not basic types such
-     * as string or integers and need to be decoded.
+     * Build a view of type 'row' from the database.
      *
      * @param $view
+     * @param bool $toExport
+     * @param null $rolesHierarchy
      */
-    private static function prepareViewFromDatabase(&$view)
+    public static function buildViewRow(&$view, bool $toExport = false, $rolesHierarchy = null)
     {
-        // Params that need to be decoded
-        $toDecode = ['events', 'loopData', 'variables', 'visibilityCondition'];
-        foreach ($toDecode as $param) {
-            if (isset($view[$param]))
-                $view[$param] = json_decode($view[$param]);
-        }
+        // Similar to view type 'block',
+        // they both only carry children views
+        self::buildViewBlock($view, $toExport, $rolesHierarchy);
     }
 
 
@@ -480,7 +598,7 @@ class ViewHandler
         if (!array_key_exists($type, Dictionary::$viewTypes))
             API::error('Part ' . $type . ' is not defined');
 
-        $func = Dictionary::$viewTypes[$type][2];
+        $func = Dictionary::$viewTypes[$type][0];
         if ($func != null)
             $func(...$args);
     }
@@ -540,7 +658,7 @@ class ViewHandler
         if (!array_key_exists($type, Dictionary::$viewTypes))
             API::error('Part ' . $type . ' is not defined');
 
-        $func = Dictionary::$viewTypes[$type][3];
+        $func = Dictionary::$viewTypes[$type][1];
         if ($func != null)
             $func(...$args);
     }
@@ -629,6 +747,59 @@ class ViewHandler
     /*** ---------------------------------------------------- ***/
     /*** --------------------- Utilities -------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    /**
+     * Prepare view params for database.
+     * This is intended for params that are not basic types such
+     * as string or integers and need to be encoded first.
+     *
+     * @param $view
+     */
+    private static function prepareViewForDatabase(&$view)
+    {
+        // Params that need to be encoded
+        $toEncode = ['events', 'loopData', 'variables', 'visibilityCondition'];
+        foreach ($toEncode as $param) {
+            if (isset($view[$param]))
+                $view[$param] = json_encode($view[$param]);
+        }
+    }
+
+    /**
+     * Prepare view params from database.
+     * This is intended for params that are not basic types such
+     * as string or integers and need to be decoded.
+     *
+     * @param $view
+     */
+    private static function prepareViewFromDatabase(&$view)
+    {
+        // Params that need to be decoded
+        $toDecode = ['events', 'loopData', 'variables', 'visibilityCondition'];
+        foreach ($toDecode as $param) {
+            if (isset($view[$param]))
+                $view[$param] = json_decode($view[$param]);
+        }
+    }
+
+    /**
+     * Group views from same aspect.
+     *
+     * @param $views
+     * @param array $unsetParams
+     * @return array
+     */
+    private static function groupViewsByAspect(&$views, array $unsetParams = []): array
+    {
+        $groupedViews = [];
+        foreach ($views as &$view) {
+            foreach ($unsetParams as $param) {
+                unset($view[$param]);
+            }
+            $groupedViews[$view["viewId"]][] = $view;
+        }
+        return $groupedViews;
+    }
 
     /**
      * Receives a role string and returns the role type.

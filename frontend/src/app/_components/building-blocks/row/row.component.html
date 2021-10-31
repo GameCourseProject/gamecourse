@@ -1,0 +1,27 @@
+<ng-container
+  [ngTemplateOutlet]="SIMPLE">
+</ng-container>
+
+
+<!------------------------------------------------>
+<!------------------ VARIATIONS ------------------>
+<!------------------------------------------------>
+
+<ng-template #SIMPLE>
+  <div [attr.id]="view.cssId"
+       [classList]="view.class" [ngClass]="view.children.length === 0 ? ViewRow.ROW_EMPTY_CLASS : ''"
+       [attr.style]="view.style"
+       [attr.data-viewId]="view.viewId"
+       [attr.data-role]="edit ? view.role : null"
+       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
+       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
+       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
+       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
+
+    <div [classList]="ViewRow.ROW_CHILDREN_CLASS">
+      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
+    </div>
+
+    <div *ngIf="edit && isEditingLayout" class="add-child"></div>
+  </div>
+</ng-template>

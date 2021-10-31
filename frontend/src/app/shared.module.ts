@@ -25,6 +25,7 @@ import {GoToPageDirective} from "./_directives/events/go-to-page.directive";
 import {HideViewDirective} from "./_directives/events/hide-view.directive";
 import {ShowViewDirective} from "./_directives/events/show-view.directive";
 import {ToggleViewDirective} from "./_directives/events/toggle-view.directive";
+import {RowComponent} from "./_components/building-blocks/row/row.component";
 
 
 @NgModule({
@@ -41,6 +42,7 @@ import {ToggleViewDirective} from "./_directives/events/toggle-view.directive";
     FooterComponent,
     InputCodeComponent,
     BlockComponent,
+    RowComponent,
     TextComponent,
     ImageComponent,
     TableComponent,

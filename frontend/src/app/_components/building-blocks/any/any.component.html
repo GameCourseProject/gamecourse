@@ -4,4 +4,5 @@
   <bb-header *ngIf="view.type === ViewType.HEADER" [view]="view | as : ViewHeader"></bb-header>
   <bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable"></bb-table>
   <bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock"></bb-block>
+  <bb-row *ngIf="view.type === ViewType.ROW" [view]="view | as : ViewRow"></bb-row>
 </ng-container>

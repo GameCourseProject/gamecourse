@@ -4,26 +4,28 @@ import {buildView} from "./build-view";
 
 export class ViewRow extends View {
 
-  private _values: View[];
+  private _children: View[];
 
   static readonly ROW_CLASS = 'row';
+  static readonly ROW_CHILDREN_CLASS = 'row_children';
+  static readonly ROW_EMPTY_CLASS = 'row_empty';
 
-  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, values: View[], loopData?: any,
+  constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,
               variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
               visibilityCondition?: any, events?: any) {
 
     super(id, viewId, parentId, ViewType.ROW, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);
 
-    this.values = values;
+    this.children = children;
   }
 
-  get values(): View[] {
-    return this._values;
+  get children(): View[] {
+    return this._children;
   }
 
-  set values(value: View[]) {
-    this._values = value;
+  set children(value: View[]) {
+    this._children = value;
   }
 
   static fromDatabase(obj: ViewRowDatabase): ViewRow {
@@ -34,12 +36,12 @@ export class ViewRow extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.values.map(view => buildView(view.value)),
+      obj.children.map(child => buildView(child)),
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
       parsedObj.cssId,
-      parsedObj.class,
+      parsedObj.class + ' ' + this.ROW_CLASS,
       parsedObj.label,
       parsedObj.visibilityType,
       parsedObj.visibilityCondition,
@@ -49,5 +51,5 @@ export class ViewRow extends View {
 }
 
 export interface ViewRowDatabase extends ViewDatabase {
-  values: {value: ViewDatabase}[];
+  children: ViewDatabase[];
 }

@@ -65,8 +65,6 @@ class Dictionary
         self::registerViewType(
             'text',
             'This type displays text using expressions to show the output.',
-            null,
-            null,
             function (&$view) { //parse function
                 if (isset($view["link"])) ViewHandler::parseSelf($view['link']);
                 ViewHandler::parseSelf($view["value"]);
@@ -80,8 +78,6 @@ class Dictionary
         self::registerViewType(
             'image',
             'This type is similar to the Text type. However it produces an image instead of text.',
-            null,
-            null,
             function (&$view) { //parse function
                 if (isset($view["link"])) ViewHandler::parseSelf($view['link']);
                 ViewHandler::parseSelf($view["src"]);
@@ -95,8 +91,6 @@ class Dictionary
         self::registerViewType(
             'header',
             'Displays an image and a text.',
-            null,
-            null,
             function (&$view) { //parse function
                 ViewHandler::parseView($view['image']);
                 ViewHandler::parseView($view['title']);
@@ -110,33 +104,62 @@ class Dictionary
         self::registerViewType(
             'table',
             'This type is a table with columns and rows. The row and column options appear after pressing the ‘edit layout’ button on the table part.',
-            function (&$table, &$savePart) {
-                $this->breakTableRows($table['headerRows'], $savePart);
-                $this->breakTableRows($table['rows'], $savePart);
+            function (&$view) { //parse function
+                if (isset($view["headerRows"])) {
+                    foreach ($view["headerRows"] as &$headerRow) {
+                        ViewHandler::parseView($headerRow);
+                    }
+                }
+                if (isset($view["rows"])) {
+                    foreach ($view["rows"] as &$row) {
+                        ViewHandler::parseView($row);
+                    }
+                }
             },
-            function (&$table, &$getPart) {
-                $this->putTogetherRows($table['headerRows'], $getPart);
-                $this->putTogetherRows($table['rows'], $getPart);
-            },
-            function (&$table) { //parse function
-                $this->parseTableRows($table['headerRows']);
-                $this->parseTableRows($table['rows']);
-            },
-            function (&$table, $viewParams, $visitor) { //processing function
-                $this->processTableRows($table['headerRows'], $viewParams, $visitor);
-                $this->processTableRows($table['rows'], $viewParams, $visitor);
+            function (&$view, $viewParams, $visitor) { //processing function
+                if (isset($view["headerRows"])) {
+                    foreach ($view["headerRows"] as &$headerRow) {
+                        ViewHandler::processView($headerRow, $viewParams);
+                    }
+                }
+                if (isset($view["rows"])) {
+                    foreach ($view["rows"] as &$row) {
+                        ViewHandler::processView($row, $viewParams);
+                    }
+                }
             },
             !$setup
         );
         self::registerViewType(
             'block',
-            'This type is a view that can contain other views.',
-            null,
-            null,
+            'This type is a view that can contain other views in a vertical order.',
             function (&$view) { //parse function
                 if (isset($view["children"])) {
                     foreach ($view['children'] as &$child) {
-                        $child = $child[0]; // only one aspect
+                        ViewHandler::parseView($child);
+                    }
+                }
+            },
+            function (&$view, $viewParams, $visitor) { //processing function
+                if (isset($view["children"])) {
+                    if (isset($view["loopData"])) {
+                        ViewHandler::processLoop($view['children'], $viewParams, $visitor);
+
+                    } else {
+                        foreach ($view['children'] as &$child) {
+                            ViewHandler::processView($child, $viewParams);
+                        }
+                    }
+                }
+            },
+            !$setup
+        );
+        self::registerViewType(
+            'row',
+            'This type is a view that can contain other views in an horizontal order.',
+            function (&$view) { //parse function
+                if (isset($view["children"])) {
+                    foreach ($view['children'] as &$child) {
                         ViewHandler::parseView($child);
                     }
                 }
@@ -1203,15 +1226,14 @@ class Dictionary
      * @param $processFunc
      * @param bool $init
      */
-    public static function registerViewType(string $type, string $description, $breakFunc, $putTogetherFunc, $parseFunc, $processFunc, bool $init = false)
+    public static function registerViewType(string $type, string $description, $parseFunc, $processFunc, bool $init = false)
     {
-        // FIXME: breakFunc and putTogetherFunc might not be used after refactor; remove if not
         if (!$init) {
             if (!empty(Core::$systemDB->select("dictionary_view_type", ["name" => $type])))
                 API::error('Part ' . $type . ' already exists');
             Core::$systemDB->insert("dictionary_view_type", ["name" => $type, "description" => $description]);
         }
-        self::$viewTypes[$type] = array($breakFunc, $putTogetherFunc, $parseFunc, $processFunc);
+        self::$viewTypes[$type] = array($parseFunc, $processFunc);
     }
 
     /**

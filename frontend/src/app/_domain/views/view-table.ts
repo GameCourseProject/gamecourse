@@ -26,7 +26,7 @@ export class ViewTable extends View {
 
     this.headerRows = headerRows;
     this.rows = rows;
-    this.nrColumns = headerRows.length > 0 ? headerRows[0].values.length : rows.length > 0 ? rows[0].values.length : 0;
+    this.nrColumns = headerRows.length > 0 ? headerRows[0].children.length : rows.length > 0 ? rows[0].children.length : 0;
   }
 
   get headerRows(): ViewRow[] {
@@ -60,12 +60,12 @@ export class ViewTable extends View {
    * @param rows
    */
   private check(headerRows: ViewRow[], rows: ViewRow[]) {
-    const nrColumns = headerRows[0].values.length;
+    const nrColumns = headerRows[0].children.length;
 
-    if (!headerRows.every(row => row.values.length === nrColumns))
+    if (!headerRows.every(row => row.children.length === nrColumns))
       ErrorService.set('Error: Couldn\'t create table - header rows don\'t have the same number of columns. (view-table.ts)');
 
-    if (!rows.every(row => row.values.length === nrColumns))
+    if (!rows.every(row => row.children.length === nrColumns))
       ErrorService.set('Error: Couldn\'t create table - rows don\'t have the same number of columns. (view-table.ts)');
   }
 
@@ -73,9 +73,9 @@ export class ViewTable extends View {
     const parsedObj = View.parse(obj);
 
     const headerRows = obj.headerRows.map(row => buildView(row)) as ViewRow[];
-    headerRows.forEach(row => row.values.forEach(header => header.class += ' ' + this.TABLE_HEADER_CLASS));
+    headerRows.forEach(row => row.children.forEach(header => header.class += ' ' + this.TABLE_HEADER_CLASS));
     const rows = obj.rows.map(row => buildView(row)) as ViewRow[];
-    rows.forEach(row => row.values.forEach(r => r.class += ' ' + this.TABLE_BODY_CLASS));
+    rows.forEach(row => row.children.forEach(r => r.class += ' ' + this.TABLE_BODY_CLASS));
 
     return new ViewTable(
       parsedObj.id,

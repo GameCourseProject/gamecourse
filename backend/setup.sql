@@ -1,5 +1,3 @@
-SET FOREIGN_KEY_CHECKS=0;
-
 /** -----------------------------------
   * -- Drop Triggers
   * ----------------------------------- */
@@ -299,9 +297,23 @@ CREATE TABLE view_header(
      image                       int unsigned NOT NULL,
      title                       int unsigned NOT NULL,
 
-     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE,
-     FOREIGN key(image) REFERENCES view(id) ON DELETE CASCADE,
-     FOREIGN key(title) REFERENCES view(id) ON DELETE CASCADE
+     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_table_header(
+    id                          int unsigned NOT NULL,
+    headerRow                   int unsigned NOT NULL,
+    viewIndex                   int unsigned NOT NULL,
+
+    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+);
+
+CREATE TABLE view_table_row(
+    id                          int unsigned NOT NULL,
+    row                         int unsigned NOT NULL,
+    viewIndex                   int unsigned NOT NULL,
+
+    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
 );
 
 CREATE TABLE view_parent(
@@ -351,6 +363,7 @@ CREATE TABLE autogame(
 );
 
 
+SET FOREIGN_KEY_CHECKS=0;
 INSERT INTO autogame (course, isRunning) values (0, FALSE);
 SET FOREIGN_KEY_CHECKS=1;
 

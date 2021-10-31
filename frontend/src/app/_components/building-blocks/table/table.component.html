@@ -28,7 +28,7 @@
         </tr>
 
         <tr *ngFor="let row of view.headerRows">
-          <th *ngFor="let header of row.values">
+          <th *ngFor="let header of row.children">
             <bb-any [view]="header"></bb-any>
           </th>
 
@@ -41,7 +41,7 @@
       <!-- Body -->
       <tbody>
         <tr *ngFor="let row of view.rows">
-          <td *ngFor="let item of row.values">
+          <td *ngFor="let item of row.children">
             <bb-any [view]="item"></bb-any>
           </td>
 

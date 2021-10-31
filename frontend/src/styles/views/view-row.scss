@@ -4,17 +4,16 @@
  * ----------------------------
  */
 
-.view.block {
-  .block_children {
+.view.row {
+  .row_children {
     display: flex;
-    flex-direction: column;
 
     & > * {
-      margin-bottom: 20px;
+      margin-right: 20px;
     }
 
     & > *:last-child {
-      margin-bottom: 0;
+      margin-right: 0;
     }
   }
 }
@@ -27,16 +26,16 @@
  */
 
 .editor {
-  .view.block {
+  .view.row {
     border-radius: 5px;
 
-    .block_children {
+    .row_children {
       & > * {
-        margin-bottom: initial !important;
+        margin-right: initial !important;
       }
     }
 
-    &.block_empty {
+    &.row_empty {
       padding: 20px;
     }
 

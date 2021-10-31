@@ -719,10 +719,11 @@ export class ApiHttpService {
       "type": "row",
       "role": "role.Default",
       "edit": true,
-      "values": [
-        {value: text},
-        {value: image},
-        {value: text}]
+      "children": [
+        text,
+        image,
+        text
+      ]
     }
     const row : ViewRowDatabase = {
       "id": "818",
@@ -731,10 +732,11 @@ export class ApiHttpService {
       "type": "row",
       "role": "role.Default",
       "edit": true,
-      "values": [
-        {value: text},
-        {value: image},
-        {value: header}]
+      "children": [
+        text,
+        image,
+        header
+      ]
     }
     const table: ViewTableDatabase = {
       "id": "807",

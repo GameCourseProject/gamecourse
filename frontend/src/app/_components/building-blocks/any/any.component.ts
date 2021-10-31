@@ -6,6 +6,7 @@ import { ViewImage } from 'src/app/_domain/views/view-image';
 import { ViewHeader } from 'src/app/_domain/views/view-header';
 import { ViewTable } from 'src/app/_domain/views/view-table';
 import { ViewBlock } from 'src/app/_domain/views/view-block';
+import { ViewRow } from 'src/app/_domain/views/view-row';
 
 @Component({
   selector: 'bb-any',
@@ -46,6 +47,10 @@ export class AnyComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  get ViewRow(): typeof ViewRow {
+    return ViewRow;
   }
 
 }
