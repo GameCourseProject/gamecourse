@@ -1223,32 +1223,41 @@ class Views extends Module
             'participations',
             'getResourceViews',
 
-            function (int $user) use ($courseId) {
+            function (int $user, $nameSubstring = null) use ($courseId) {
                 $table = "participation";
 
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
-                $likeParams = ["description" => "Lecture % Slides"];
+                if ($nameSubstring == null) {
+                    $likeParams = ["description" => "%"];
+                }
+                else {
+                    $likeParams = ["description" => $nameSubstring];
+                }
+                $resourceViews = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
 
-                $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
-
-                return $this->createNode($skillTreeParticipation, "participation", "collection");
+                return $this->createNode($resourceViews, "participation", "collection");
             },
-            "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.",
+            "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify the resource.Ex:'Lecture $ Slides'",
             'collection',
             'participation',
             'library'
         );
 
-        //participations.getVideoViews(user, nameSubstring)
+        //participations.getLinkViews(user, nameSubstring)
         $this->viewHandler->registerFunction(
             'participations',
             'getLinkViews',
 
-            function (int $user, $nameSubstring) use ($courseId) {
+            function (int $user, $nameSubstring = null) use ($courseId) {
                 $table = "participation";
 
                 $where = ["user" => $user, "type" => "url viewed", "course" => $courseId];
-                $likeParams = ["description" => $nameSubstring];
+                if ($nameSubstring == null) {
+                    $likeParams = ["description" => "%"];
+                }
+                else {
+                    $likeParams = ["description" => $nameSubstring];
+                }
 
                 $participations = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
 
