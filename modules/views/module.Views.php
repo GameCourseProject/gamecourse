@@ -1242,7 +1242,7 @@ class Views extends Module
         //participations.getVideoViews(user, nameSubstring)
         $this->viewHandler->registerFunction(
             'participations',
-            'getVideoViews',
+            'getLinkViews',
 
             function (int $user, $nameSubstring) use ($courseId) {
                 $table = "participation";
@@ -1254,7 +1254,7 @@ class Views extends Module
 
                 return $this->createNode($participations, "participation", "collection");
             },
-            "Returns a collection of unique url views for videos. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify videos.Ex:'[Video]%'",
+            "Returns a collection of unique url views. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify the url.Ex:'[Video]%'",
             'collection',
             'participation',
             'library'
