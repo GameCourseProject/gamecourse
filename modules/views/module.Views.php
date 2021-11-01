@@ -1239,7 +1239,7 @@ class Views extends Module
             'library'
         );
 
-        //participations.getVideoViews(user, nameSubstring)
+        //participations.getLinkViews(user, nameSubstring)
         $this->viewHandler->registerFunction(
             'participations',
             'getLinkViews',
