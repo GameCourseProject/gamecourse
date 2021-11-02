@@ -90,7 +90,7 @@ class Course
             $where = ["r.course" => $this->cid, "r.name" => $role, "cu.isActive" => true];
         }
         $result = Core::$systemDB->selectMultiple(
-            "course_user cu left join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on r.id=ur.role join auth a on u.id=a.game_course_user_id",
+            "course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on r.id=ur.role and r.course=cu.course join auth a on u.id=a.game_course_user_id",
             $where,
             "u.*,cu.lastActivity, cu.previousActivity,a.username,r.name as role"
         );
@@ -481,7 +481,7 @@ class Course
             $newRolesByName = array_combine(array_column($newRoles, "name"), $newRoles);
             $newRoleOfOldId = function ($id) use ($newRolesByName, $oldRolesByName) {
                 //return $newRolesByName[$oldRolesById[$id]["name"]]["id"];
-                return $newRolesByName[$oldRolesByName[$id]["name"]]["id"];
+                return $newRolesByName[$oldRolesByName[$id]["name"]]["name"];
             };
             Core::$systemDB->insert("user_role", ["id" => $currentUserId, "course" => $courseId, "role" => $newRolesByName["Teacher"]["id"]]);
 
@@ -501,54 +501,12 @@ class Course
             if (in_array("views", $enabledModules)) {
                 $viewModule = ModuleLoader::getModule("views");
                 $handler = $viewModule["factory"]();
+                $handler->setParent($course);
                 $viewHandler = new ViewHandler($handler);
 
-                $pages = Core::$systemDB->selectMultiple("page", ["course" => $copyFrom]);
+
+
                 $handler = $copyFromCourse->getModule("views")->getViewHandler();
-                foreach ($pages as $p) {
-                    $p['course'] = $courseId;
-                    unset($p['id']);
-                    $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    $views = $handler->getViewWithParts($view["viewId"]);
-
-                    $defaultAspectId = null;
-                    // if (sizeof($views) > 1) {
-                    //     Core::$systemDB->insert("aspect_class");
-                    //     $aspectClass = Core::$systemDB->getLastId();
-                    // } else $aspectClass = null;
-                    //set view
-                    foreach ($views as $v) {
-                        unset($v["id"]);
-                        //$v["aspectClass"] = $aspectClass;
-                        //need to convert the roles of the aspects to the new roles
-                        if ($p["roleType"] == "ROLE_INTERACTION") {
-                            $roles = explode(">", $v["role"]);
-                        } else {
-                            $roles = [$v["role"]];
-                        }
-                        foreach ($roles as &$role) {
-                            $specificationName = explode(".", $role);
-                            if ($specificationName[0] == "role" && $specificationName[1] != "Default") {
-                                $role = "role." . $newRoleOfOldId($specificationName[1]);
-                            }
-                        }
-                        $v["role"] = implode(">", $roles);
-
-                        $copy = $v;
-                        unset($copy["children"]);
-                        Core::$systemDB->insert("view", $copy);
-                        $aspectId = Core::$systemDB->getLastId();
-                        if ($defaultAspectId == null) {
-                            $defaultAspectId = $aspectId;
-                        }
-
-                        $v["id"] = $aspectId;
-                        $handler->updateViewAndChildren($v, null, true);
-                    }
-                    $p["viewId"] = $defaultAspectId;
-
-                    Core::$systemDB->insert("page", $p);
-                }
 
                 //templates
                 $templates = Core::$systemDB->selectMultiple("template", ["course" => $copyFrom, "isGlobal" => 0]);
@@ -559,41 +517,59 @@ class Course
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
                     );
-                    $views = $viewHandler->getViewWithParts($aspect["viewId"]);
+
+                    $views = $handler->getViewWithParts($aspect["viewId"], null, true);
 
                     $arrTemplate = array("roleType" => $t["roleType"], "name" => $t["name"], "views" => $views);
                     array_push($tempTemplates, $arrTemplate);
                 }
 
+
                 //import
                 foreach ($tempTemplates as $template) {
                     $aspects = $template["views"];
-                    //$aspectClass = null;
-                    // if (sizeof($aspects) > 1) {
-                    //     Core::$systemDB->insert("aspect_class");
-                    //     $aspectClass = Core::$systemDB->getLastId();
-                    // }
-                    $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
-                    $content = null;
 
-                    foreach ($aspects as &$aspect) {
-                        //$aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
-                        $aspect["id"] = Core::$systemDB->getLastId();
-                        //print_r($aspect);
-                        if ($content) {
-                            $aspect["children"][] = $content;
-                        }
-                        $viewHandler->updateViewAndChildren($aspect, false, true);
-                    }
-                    // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
-                    // if ($existingTemplate) {
-                    //     $id = $existingTemplate["id"];
-                    //     Core::$systemDB->delete("template", ["id" => $id]);
-                    // }
                     Core::$systemDB->insert("template", ["course" => $courseId, "name" => $template["name"], "roleType" => $template["roleType"]]);
-                    $templateId = Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
+
+                    foreach ($aspects as $aspect) {
+
+                        $viewHandler->resetParentsAndViewIds($aspect);
+                        unset($aspect["id"]);
+                        unset($aspect['viewId']);
+                        //need to convert the roles of the aspects to the new roles
+                        if ($template["roleType"] == 'ROLE_INTERACTION') {
+                            $roles = explode(">", $aspect["role"]);
+                        } else {
+                            $roles = [$aspect["role"]];
+                        }
+                        foreach ($roles as &$role) {
+                            $specificationName = explode(".", $role);
+                            if ($specificationName[0] == "role" && $specificationName[1] != "Default") {
+                                $role = "role." . $newRoleOfOldId($specificationName[1]);
+                            }
+                        }
+                        $aspect["role"] = implode(">", $roles);
+
+
+                        $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                    }
+
+                    //------ DEAL WITH PAGES ----- 
+                    //get info from page of the source course
+                    $templateIdCopyFrom = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $copyFrom], "id");
+                    $viewIdCopyFrom = Core::$systemDB->select('view_template', ['templateId' => $templateIdCopyFrom], 'viewId');
+
+                    $pageWithView = Core::$systemDB->select("page", ["course" => $copyFrom, "viewId" => $viewIdCopyFrom]);
+
+                    if ($pageWithView) {
+                        unset($pageWithView['id']);
+                        //insert new page with course and viewId updated
+                        $templateId = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $courseId], "id");
+                        $viewId = Core::$systemDB->select('view_template', ['templateId' => $templateId], 'viewId');
+                        $pageWithView['course'] = $courseId;
+                        $pageWithView['viewId'] = $viewId;
+                        Core::$systemDB->insert('page', $pageWithView);
+                    }
                 }
             }
 
@@ -623,7 +599,7 @@ class Course
             foreach ($modules as $mod) {
                 Core::$systemDB->insert("course_module", ["course" => $courseId, "moduleId" => $mod["moduleId"]]);
             }
-            
+
             // autogame configs
             $rulesfolder = join("/", array($dataFolder, "rules"));
             $functionsFolder = "autogame/imported-functions/" . $courseId;
@@ -725,10 +701,10 @@ class Course
                 foreach ($pages as $p) {
                     $p['course'] = $course;
                     unset($p['id']);
-                    $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
+                    //$view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
                     //$views = $viewHandler->getViewWithParts($view["id"]);
 
-                    $arrPage = array("name" => $p["name"], "theme" => $p["theme"], "viewId" => $view["viewId"]);
+                    $arrPage = array("name" => $p["name"], "theme" => $p["theme"], "viewId" => $p["viewId"], "seqId" => $p["seqId"], "isEnabled" => $p['isEnabled']);
                     array_push($tempPages, $arrPage);
                 }
 
@@ -738,8 +714,6 @@ class Course
                 foreach ($templates as $t) {
                     $t['course'] = $course;
                     //will get all the aspects (and contents) of the template
-                    // $view = Core::$systemDB->select("view", ["id" => $p["viewId"]]);
-                    // var_dump($view["id"]);
                     $aspect = Core::$systemDB->select(
                         "view_template vt join view v on vt.viewId=v.viewId",
                         ["templateId" => $t["id"]]
@@ -802,7 +776,7 @@ class Course
 
                 //data folder
                 $toFolder = Course::getCourseDataFolder($courseObj->cid, $course->name);
-                $fromFolder = $course->courseId . "-" . $course->name;
+                $fromFolder = $course->courseId . "-" . preg_replace("/[^a-zA-Z0-9_ ]/", "", $course->name);
 
                 for ($i = 0; $i < $zip->numFiles; $i++) {
                     $name = $zip->getNameIndex($i);
@@ -866,63 +840,33 @@ class Course
                 }
                 $viewModule = ModuleLoader::getModule("views");
                 $handler = $viewModule["factory"]();
+                $handler->setParent($courseObj);
                 $viewHandler = new ViewHandler($handler);
 
                 //pages
                 foreach ($course->page as $page) {
-                    $aspects = json_decode(json_encode($page->views), true);
-                    // $aspectClass = null;
-                    // if (sizeof($aspects) > 1) {
-                    //     Core::$systemDB->insert("aspect_class");
-                    //     $aspectClass = Core::$systemDB->getLastId();
-                    // }
-                    $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
-                    $content = null;
-
-                    foreach ($aspects as $key => &$aspect) {
-                        // $aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
-                        $aspect["id"] = Core::$systemDB->getLastId();
-                        if ($content) {
-                            $aspect["children"][] = $content;
-                        }
-                        $viewHandler->updateViewAndChildren($aspect);
-                        $existingPage = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType]);
-                        if ($existingPage) {
-                            Core::$systemDB->delete("page", ["id" => $existingPage["id"]]);
-                        }
-                        Core::$systemDB->insert("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId" => $aspect["id"], "seqId" => $key + 1]);
-                    }
+                    Core::$systemDB->insert("page", ["course" => $courseObj->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId" => $page->viewId, "seqId" => $page->seqId, "isEnabled" => $page->isEnabled]);
                 }
 
                 //templates
                 foreach ($course->template as $template) {
                     $aspects = json_decode(json_encode($template->views), true);
-                    // $aspectClass = null;
-                    // if (sizeof($aspects) > 1) {
-                    //     Core::$systemDB->insert("aspect_class");
-                    //     $aspectClass = Core::$systemDB->getLastId();
-                    // }
-                    $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
-                    $content = null;
 
-                    foreach ($aspects as &$aspect) {
-                        // $aspect["aspectClass"] = $aspectClass;
-                        Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
-                        $aspect["id"] = Core::$systemDB->getLastId();
-                        if ($content) {
-                            $aspect["children"][] = $content;
-                        }
-                        $viewHandler->updateViewAndChildren($aspect, false, true);
-                    }
-                    // $existingTemplate = Core::$systemDB->select("page", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
-                    // if ($existingTemplate) {
-                    //     $id = $existingTemplate["id"];
-                    //     Core::$systemDB->delete("template", ["id" => $id]);
-                    // }
                     Core::$systemDB->insert("template", ["course" => $courseObj->cid, "name" => $template->name, "roleType" => $template->roleType]);
-                    $templateId = Core::$systemDB->getLastId();
-                    Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
+
+                    $pageWithView = Core::$systemDB->select('page', ['viewId' => $aspects[0]['viewId'], 'course' => $courseObj->cid]);
+                    foreach ($aspects as &$aspect) {
+                        $viewHandler->resetParentsAndViewIds($aspect);
+                        unset($aspect["id"]);
+                        unset($aspect['viewId']);
+
+                        $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                    }
+                    if ($pageWithView) {
+                        $templateId = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $courseObj->cid], "id");
+                        $newViewId = Core::$systemDB->select('view_template', ['templateId' => $templateId], 'viewId');
+                        Core::$systemDB->update('page', ['viewId' => $newViewId], ['viewId' => $pageWithView['viewId'], 'course' => $courseObj->cid]);
+                    }
                 }
 
                 //awards
@@ -965,64 +909,52 @@ class Course
 
                     $viewModule = ModuleLoader::getModule("views");
                     $handler = $viewModule["factory"]();
+                    $handler->setParent($courseObjEdit);
                     $viewHandler = new ViewHandler($handler);
+                    $tempPages = array();
 
                     //pages
                     foreach ($course->page as $page) {
-                        $aspects = json_decode(json_encode($page->views), true);
-                        $aspectClass = null;
-                        if (sizeof($aspects) > 1) {
-                            Core::$systemDB->insert("aspect_class");
-                            $aspectClass = Core::$systemDB->getLastId();
-                        }
-                        $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
-                        $content = null;
 
-                        foreach ($aspects as $key => &$aspect) {
-                            $aspect["aspectClass"] = $aspectClass;
-                            Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"], "aspectClass" => $aspectClass]);
-                            $aspect["id"] = Core::$systemDB->getLastId();
-                            if ($content) {
-                                $aspect["children"][] = $content;
-                            }
-                            $viewHandler->updateViewAndChildren($aspect);
-                            $existingPage = Core::$systemDB->select("page", ["course" => $courseEdit->cid, "name" => $page->name, "roleType" => $page->roleType]);
-                            if ($existingPage) {
-                                Core::$systemDB->delete("page", ["id" => $existingPage["id"]]);
-                            }
-                            Core::$systemDB->insert("page", ["course" => $courseEdit->cid, "name" => $page->name, "roleType" => $page->roleType, "viewId" => $aspect["id"], "seqId" => $key + 1]);
+                        $existingPage = Core::$systemDB->select("page", ["course" => $courseEdit->cid, "name" => $page->name, "roleType" => $page->roleType]);
+                        if ($existingPage) {
+                            Core::$systemDB->delete("page", ["id" => $existingPage["id"]]);
                         }
+                        $tempPages[$page['viewId']][] = $page;
                     }
 
                     //templates
                     foreach ($course->template as $template) {
                         $aspects = json_decode(json_encode($template->views), true);
-                        // $aspectClass = null;
-                        // if (sizeof($aspects) > 1) {
-                        //     Core::$systemDB->insert("aspect_class");
-                        //     $aspectClass = Core::$systemDB->getLastId();
-                        // }
-                        $roleType = $viewHandler->getRoleType($aspects[0]["role"]);
-                        $content = null;
 
-                        foreach ($aspects as &$aspect) {
-                            // $aspect["aspectClass"] = $aspectClass;
-                            Core::$systemDB->insert("view", ["role" => $aspect["role"], "partType" => $aspect["partType"]]);
-                            $aspect["id"] = Core::$systemDB->getLastId();
-                            //print_r($aspect);
-                            if ($content) {
-                                $aspect["children"][] = $content;
-                            }
-                            $viewHandler->updateViewAndChildren($aspect, false, true);
-                        }
                         $existingTemplate = Core::$systemDB->select("template", ["course" => $courseEdit->cid, "name" => $template->name, "roleType" => $template->roleType]);
                         if ($existingTemplate) {
                             $id = $existingTemplate["id"];
                             Core::$systemDB->delete("template", ["id" => $id]);
                         }
-                        Core::$systemDB->insert("template", ["course" => $courseEdit->cid, "name" => $template->name, "roleType" => $template->roleType]);
-                        $templateId = Core::$systemDB->getLastId();
-                        Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
+                        Core::$systemDB->insert("template", ["course" => $courseEdit->cid, "name" => $template["name"], "roleType" => $template["roleType"]]);
+
+                        $pageWithView = null;
+                        if (array_key_exists($aspects[0]['viewId'], $tempPages)) {
+                            $pageWithView = $tempPages[$aspects[0]['viewId']];
+                        }
+                        foreach ($aspects as &$aspect) {
+                            $viewHandler->resetParentsAndViewIds($aspect);
+                            unset($aspect["id"]);
+                            unset($aspect['viewId']);
+
+                            $viewHandler->updateViewAndChildren($aspect, null, true, $template['name']);
+                        }
+
+
+                        //------ DEAL WITH PAGES ----- 
+                        //if there is a page that contains this template, update viewId to the new viewId that may have changed 
+                        if ($pageWithView) {
+                            $templateId = Core::$systemDB->select("template", ["name" => $template["name"], 'course' => $courseEdit->cid], "id");
+                            $viewId = Core::$systemDB->select('view_template', ['templateId' => $templateId], 'viewId');
+                            $pageWithView['viewId'] = $viewId;
+                            Core::$systemDB->insert("page", $pageWithView);
+                        }
                     }
                 }
             }

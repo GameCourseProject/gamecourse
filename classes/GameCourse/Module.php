@@ -79,6 +79,11 @@ abstract class Module
     {
     }
 
+    public function setParent($course)
+    {
+        $this->parent = $course;
+    }
+
     public function addResources(...$files)
     {
         $this->resources = array_unique(array_merge($this->resources, \Utils::discoverFiles($this->dir, ...$files)));
@@ -89,7 +94,8 @@ abstract class Module
         return $this->resources;
     }
 
-    public function getConfigJson(){
+    public function getConfigJson()
+    {
         return $this->configJson;
     }
 
@@ -165,9 +171,9 @@ abstract class Module
         file_put_contents($path, $fileContents);
 
         $toPath = "modules";
-        if($name != "modules"){
-            $toPath = "modules/".$name;
-            if(is_dir($toPath)){
+        if ($name != "modules") {
+            $toPath = "modules/" . $name;
+            if (is_dir($toPath)) {
                 Module::rrmdir($toPath);
             }
             mkdir($toPath, 0777, true);
@@ -176,12 +182,13 @@ abstract class Module
         $zip = new \ZipArchive;
         if ($zip->open($path) === TRUE) {
             //mudar depois pra modules
-            $zip->extractTo($toPath. "/");
+            $zip->extractTo($toPath . "/");
             $zip->close();
         }
-        unlink($path); 
+        unlink($path);
     }
-    public static function exportModuleConfig($name, $courses){
+    public static function exportModuleConfig($name, $courses)
+    {
         $moduleArr = array();
         $module = ModuleLoader::getModule($name);
         $handler = $module["factory"]();
@@ -195,9 +202,9 @@ abstract class Module
                         $moduleArr[$course["id"]] = $moduleArray;
                     }
                 }
-            } 
+            }
         }
-        if($moduleArr){
+        if ($moduleArr) {
             file_put_contents("modules/" . $name . "/config.json", json_encode($moduleArr));
         }
     }
@@ -212,23 +219,23 @@ abstract class Module
 
         $courses = Core::$systemDB->selectMultiple("course");
         $modules = Core::$systemDB->selectMultiple("module");
-        if(!$all){
-            $rootPath = realpath("modules/".$name);
-            $zipName = $name.".zip";
+        if (!$all) {
+            $rootPath = realpath("modules/" . $name);
+            $zipName = $name . ".zip";
             Module::exportModuleConfig($name, $courses);
-        }else{
+        } else {
             foreach ($modules as $module) {
                 Module::exportModuleConfig($module["moduleId"], $courses);
             }
         }
 
         if ($zip->open($zipName, \ZipArchive::CREATE) == TRUE) {
-            
+
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($rootPath),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             foreach ($files as $name => $file) {
                 if (!$file->isDir()) {
                     $filePath = $file->getRealPath();
@@ -242,14 +249,15 @@ abstract class Module
         //remove config files
         foreach ($modules as $module) {
             $file = "modules/" . $module["moduleId"] . "/config.json";
-            if(file_exists($file)){
+            if (file_exists($file)) {
                 unlink($file);
             }
         }
         return $zipName;
     }
 
-    public static function deleteModule($moduleId){
+    public static function deleteModule($moduleId)
+    {
         $module = ModuleLoader::getModule($moduleId);
         $moduleObj = $module["factory"]();
         //disable desse módulo em todos os cursos
@@ -259,9 +267,9 @@ abstract class Module
         //apagar o module da BD
         Core::$systemDB->delete("module", ["moduleId" => $moduleId]);
         //apagar a pasta do module
-        Module::rrmdir("modules/".$moduleId);
+        Module::rrmdir("modules/" . $moduleId);
     }
-    
+
     public function deleteDataRows($courseId)
     {
     }
@@ -333,7 +341,7 @@ abstract class Module
             array_push($whereDate, ["date", "<", $date]);
         }
 
-        if ($activeUser){
+        if ($activeUser) {
             $where["cu.isActive"] = true;
         }
 
@@ -347,17 +355,19 @@ abstract class Module
                     $where["name"] = $moduleInstance;
                 }
 
-                if ($activeItem){
+                if ($activeItem) {
                     $where["m.isActive"] = true;
                 }
 
-                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user";
+                $table = $object . " a join " . $type . " m on moduleInstance=m.id join course_user cu on cu.id=a.user and cu.course = a.course";
                 $field = "a.*,m.name";
+            } else {
+                $field = "a.*";
+                $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
             }
-        }
-        else {
+        } else {
             $field = "*";
-            $table = $object . " a join course_user cu on cu.id=a.user";
+            $table = $object . " a join course_user cu on cu.id=a.user and cu.course = a.course";
         }
 
         $where["a.course"] = $courseId;
@@ -383,17 +393,39 @@ abstract class Module
     }
 
     //functions for the module configuration page
-    public function is_configurable(){ return false; } //default is false
+    public function is_configurable()
+    {
+        return false;
+    } //default is false
 
-     
-    public function has_personalized_config (){ return false; } //default is false
-    public function get_personalized_function(){}
-    
-    public function has_general_inputs (){ return false; } //default is false
-    public function get_general_inputs ($courseId){}
-    public function save_general_inputs($generalInputs,$courseId){}
 
-    public function has_listing_items (){ return false; } //default is false
-    public function get_listing_items ($courseId){}
-    public function save_listing_item ($actiontype, $listingItem, $courseId){}
+    public function has_personalized_config()
+    {
+        return false;
+    } //default is false
+    public function get_personalized_function()
+    {
+    }
+
+    public function has_general_inputs()
+    {
+        return false;
+    } //default is false
+    public function get_general_inputs($courseId)
+    {
+    }
+    public function save_general_inputs($generalInputs, $courseId)
+    {
+    }
+
+    public function has_listing_items()
+    {
+        return false;
+    } //default is false
+    public function get_listing_items($courseId)
+    {
+    }
+    public function save_listing_item($actiontype, $listingItem, $courseId)
+    {
+    }
 }

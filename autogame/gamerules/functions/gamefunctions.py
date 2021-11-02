@@ -238,7 +238,32 @@ def award_grade(target, item, contributions=None, extra=None):
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 
+@rule_function
+def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ignore_case=None, extra=None):
+	""" 
+	Awards a quiz grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_quiz_grade(target, contributions, xp_per_quiz, max_grade, ignore_case, extra)
+	return
 
+@rule_function
+def award_post_grade(target, contributions=None, xp_per_post=1, max_grade=1, forum=None):
+	""" 
+	Awards a post grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_post_grade(target, contributions, xp_per_post, max_grade, forum)
+	return
+
+@rule_function
+def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_grade=1):
+	""" 
+	Awards an assignment grade (XP) to "target". Grades awarded will depend on the logs passed
+	, which contain the XP reward to be awarded. 
+	"""
+	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
+	return
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## GameCourse Wrapper Functions

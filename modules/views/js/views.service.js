@@ -38,7 +38,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.requestEdit = function (view, pageOrTemp, params, func) {
         $rootScope.templateId = view;
-        //console.log(view);
+        //  console.log(params);
         $smartboards.request('views', 'getEdit', $.extend({ view: view, pageOrTemp: pageOrTemp }, params), function (data, err) {
             if (err) {
                 func(undefined, err);
@@ -226,6 +226,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
     this.build = function (scope, what, options) {
         var part = $parse(what)(scope);
+        console.log(what);
         return this.buildElement(scope, part, options);
     };
 
@@ -255,6 +256,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             //element.attr("style", "background-color: #ddedeb; ");//#881111
         }
         else {
+
             if (this.registeredPartType[part.partType] == undefined) {
                 console.error('Unknown part type: ' + part.partType);
                 return;
@@ -312,7 +314,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         if (options.edit)
             return;
 
-        if (part.class !== undefined) {
+        if (part.class != undefined) {
             if (part.class.includes(';')) {
                 $.each(part.class.split(';'), function (i, item) {
                     element.addClass(item);
@@ -320,12 +322,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             } else
                 element.addClass(part.class);
         }
-        if (part.cssId !== undefined) {
+        if (part.cssId != undefined) {
             element.attr('id', part.cssId);
         }
-        if (part.style !== undefined)
+        if (part.style != undefined)
             element.attr('style', part.style);
-        if (part.label !== undefined)
+        if (part.label != undefined)
             element.attr('label-for-events', part.label);
 
         //add events attribute so they can acess functions of events directive
@@ -480,7 +482,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             scopeToConfig.curr_variables = {};
                             scopeToConfig.hierarchyLoops = [];
                             scopeToConfig.preview_function = {};
-                            //console.log(data);
+                            console.log(data);
                         });
 
                         var container = $('<div id="edit-container">');
@@ -692,14 +694,17 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     }
                                 }
                             }
-                            vars = thisPart.variables;
-                            if (Object.keys(vars).length != 0) {
-                                for (var key in vars) {
-                                    allVars.push([key, vars[key]]);
+                            if (thisPart.variables) {
+                                vars = thisPart.variables;
+                                if (Object.keys(vars).length != 0) {
+                                    for (var key in vars) {
+                                        allVars.push([key, vars[key]]);
+                                    }
                                 }
                             }
 
-                            if (thisPart.loopData != "{}") {
+
+                            if (thisPart.loopData != "{}" && thisPart.loopData != undefined) {
                                 var itemReturnName;
                                 if (!thisPart.loopData.startsWith("{%")) {
                                     itemReturnName = optionsScope.functions.filter(el => el["keyword"] == thisPart.loopData.replace(/[{}]/g, '').replace(/\([0-9A-Za-z,"'_%\. ]*\)/g, '').split(".")[1])[0]["returnName"];
@@ -900,7 +905,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             optionsScope.$apply(optionsScope.currentReturnType = null);
 
-                            if (optionsScope.part.partType != 'text') {
+                            if (toolbarOptions.overlayOptions.allowDataLoop) {
                                 // --------- LOOP DATA EDITOR ---------
                                 optionsScope.buildCodeMirrorBox('loopData');
                             }
@@ -947,7 +952,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                             textBefore = cm.doc.getLine(line).substr(0, ch);
 
                             //variables
-                            if (textBefore.match(/{%[A-Za-z0-9]*$/)) {
+                            if (textBefore.match(/{%[A-Za-z0-9]*(?!.*{%[A-Za-z0-9])$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -958,7 +963,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 optionsScope.$apply(optionsScope.curr_functions = {});
                                 optionsScope.$apply(optionsScope.curr_variables = varlist.concat(hierarchyVars));
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
-                                gccomp = textBefore.split("{");
+                                var text = textBefore.match(/{%[A-Za-z0-9]*(?!.*{%[A-Za-z0-9])$/)[0];
+                                gccomp = text.split("{");
                                 var_typed = gccomp[gccomp.length - 1];
 
                                 if (var_typed != "") {
@@ -986,7 +992,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //libraries
-                            if (textBefore.match(/{[A-Za-z]*$/)) {
+                            if (textBefore.match(/{[A-Za-z]*(?!.*{[A-Za-z]*)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -997,7 +1003,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 optionsScope.$apply(optionsScope.curr_functions = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
                                 optionsScope.$apply(optionsScope.curr_libraries = optionsScope.available(textArea).lib);
-                                gccomp = textBefore.split("{");
+                                var text = textBefore.match(/{[A-Za-z]*(?!.*{[A-Za-z]*)$/)[0];
+                                gccomp = text.split("{");
                                 module_typed = gccomp[gccomp.length - 1];
 
                                 if (module_typed != "") {
@@ -1014,7 +1021,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //functions for libraries or over other functions
-                            if (textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+$/g)) {
+                            if (textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+(?!.*{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -1023,9 +1030,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 $(".var-list-item").css("color", "#333");
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
-                                gcfunc = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                var text = textBefore.match(/{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+(?!.*{[A-Za-z]+\.([0-9A-Za-z,"'_ %\.]*\(?\)?\.?)+)$/)[0];
+                                gcfunc = text.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
                                 function_typed = gcfunc[gcfunc.length - 1];
-                                functionWithArgs = textBefore.match(new RegExp("" + gcfunc[gcfunc.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                functionWithArgs = text.match(new RegExp("" + gcfunc[gcfunc.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
                                 if (functionWithArgs)
                                     function_typed = functionWithArgs[0];
                                 func_module = gcfunc[0].split("{")[1];
@@ -1117,7 +1125,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                             }
                             //props and functions of vars
-                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+$/)) {
+                            if (textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?(?!.*{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?)$/)) {
                                 $(".func-list-item").css("font-weight", "normal");
                                 $(".func-list-item").css("color", "#333");
                                 $("#func-info").hide();
@@ -1126,13 +1134,16 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                 $(".var-list-item").css("color", "#333");
                                 optionsScope.$apply(optionsScope.curr_libraries = {});
                                 optionsScope.$apply(optionsScope.curr_variables = {});
-                                gcvar = textBefore.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
+                                var text = textBefore.match(/{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?(?!.*{%[A-Za-z0-9]*\.([A-Za-z]*\(?[0-9A-Za-z,"'_% \.]*\)?\.?)+}?)$/)[0];
+
+                                gcvar = text.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, '').split("."); // does not include args
                                 function_typed = gcvar[gcvar.length - 1];
-                                functionWithArgs = textBefore.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
+                                functionWithArgs = text.match(new RegExp("" + gcvar[gcvar.length - 1] + "\\([0-9A-Za-z,\"'_% \\.]*\\)?", "g"));
                                 if (functionWithArgs)
                                     function_typed = functionWithArgs[0];
                                 var_typed = gcvar[0].split("{")[1];
                                 lastobject = gcvar[gcvar.length - 2];//.replace(/\([0-9A-Za-z,"'_ %]*\)?/g, '');
+                                //console.log(gcvar);
 
                                 let variable = varlist.concat(hierarchyVars).filter(el => el["name"] == var_typed)[0]; // %{var} 
                                 let object = variable; // %{var}.(...) ; variable over which the function will be applied
@@ -1147,8 +1158,9 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     bias = gcvar.length - 1;
                                     object["returnName"] = optionsScope.hierarchyLoops[optionsScope.hierarchyLoops.length - bias]["returnName"];
                                 }
+                                var moduleName = variable["returnValue"].split('.')[0];
                                 optionsScope.$apply(optionsScope.currentReturnType = object["returnType"]);
-                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')));
 
                                 if (function_typed != "") {
                                     var func = optionsScope.curr_functions.filter(el => el["keyword"] == function_typed.replace(/\([0-9A-Za-z,"'_ %\.]*\)?/g, ''));
@@ -1206,7 +1218,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     }
                                 }
                                 else {
-                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func);
+                                    var moduleName = variable["returnValue"].split('.')[0];
+                                    optionsScope.$apply(optionsScope.curr_functions = optionsScope.available(textArea, "", variable["returnName"] ? variable["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')));
                                 }
                                 //removes parent when there is no more hierarchy
                                 if (gcvar.length > optionsScope.hierarchyLoops.length) {
@@ -1227,7 +1240,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     var options = optionsScope.getOptions(cm, []);
                                     cm.showHint(options);
                                 } else {
-                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", object["returnName"] ? object["returnName"] : "").func.map(value => value["keyword"]));
+                                    var moduleName = variable["returnValue"].split('.')[0];
+                                    var options = optionsScope.getOptions(cm, optionsScope.available(textArea, "", variable["returnName"] ? variable["returnName"] : "").func.filter(el => el.moduleId == moduleName && !moduleName.includes('%')).map(value => value["keyword"])); //filter : vars can be defined as other vars props
                                     cm.showHint(options);
                                 }
 
@@ -1433,10 +1447,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                         giveMessage(errorMsg);
                                         shouldSave = false;
                                     } else
-                                        optionsScope.loopData = value;
+                                        optionsScope.part.loopData = value;
                                 }
                                 else if (textArea == 'value')
-                                    optionsScope.value = value;
+                                    optionsScope.part.value = value;
                                 else if (textArea.includes('events')) {
                                     let eventType = textArea.split(".")[1];
                                     if (!(value.startsWith("{") && value.endsWith("}"))) {
@@ -1449,13 +1463,13 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                                     let variable = textArea.split(".")[1];
                                     optionsScope.part.variables[variable] = value;
                                 } else if (textArea == 'link') {
-                                    optionsScope.link = value;
+                                    optionsScope.part.link = value;
                                 } else if (textArea == 'visibilityCondition') {
                                     if (!(value.startsWith("{") && value.endsWith("}"))) {
                                         giveMessage(errorMsg);
                                         shouldSave = false;
                                     } else
-                                        optionsScope.visibilityCondition = value;
+                                        optionsScope.part.visibilityCondition = value;
                                 }
                             }
                             if (shouldSave) {
@@ -1486,7 +1500,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                         $timeout(function () {
                             optionsScope.buildCodeMirrorBoxes();
-                        }, 250);
+                        }, 500);
 
                         $timeout(function () {
                             if (optionsScope.part.partType == "image" || optionsScope.part.partType == "text") {
@@ -2227,7 +2241,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                     const viewRoles = $sbviews.findRolesOfView(part.viewId);
                     modal.parent().attr("id", "aspects_modal");
                     modal.append($('<button class="close_btn icon" value="#aspects_modal" ng-click="closeOverlay()"</button>'));
-                    modal.append($('<div class="title">Edit aspect for this view: </div>'));
+                    modal.append($('<div class="title">Manage aspects: </div>'));
                     modalContent = $("<div class='content'></div>");
 
                     edit_roles_selection = $('<div id="edit_roles_selection"></div>');
@@ -2470,8 +2484,8 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
         var otherViews = $("[data-viewid=" + childViewId + "]").toArray();
         //find the right view to show for the globally selected role
         this.findViewsForRole(otherViews, currentGlobalViewerRole);
-        const rolesToCheck = roleViewer != currentGlobalViewerRole ? [roleViewer, currentGlobalViewerRole] : [roleViewer];
-
+        let rolesToCheck = roleViewer != currentGlobalViewerRole ? [roleViewer, currentGlobalViewerRole] : [roleViewer];
+        rolesToCheck = rolesToCheck.filter(role => role);
         rolesToCheck.forEach(role => {
             if (($("[data-role=" + role + "]").toArray().length == 0 || $("[data-role*='>" + role + "']").toArray().length == 0) && role != "Default") {
                 const roles = this.buildRolesHierarchyForOneRole(role);
@@ -2560,12 +2574,11 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
     };
 
     //finds the right views to show for the targetRole
-    this.findViewsForRole = function (viewAspects, targetRole) {
+    this.findViewsForRole = function (viewAspects, targetRole, targetUser = null) {
         $(".highlight").click(); // removes the highligh and the toolbar that can be seen as a child
         //if (roletype == ROLE_SINGLE)
-        // console.log(viewAspects);
-
-        if (Array.from(viewAspects).some(el => $(el).hasClass('content'))) {
+        //console.log(viewAspects);
+        if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).hasClass('table') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('svg') || $(el).is('text')) || viewAspects.length != 1) {
             const components = Array.from(viewAspects);
             for (component of components) {
                 const children = Array.from(component.children);
@@ -2581,20 +2594,23 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                 // console.log(aspectChildren);
                 aspectChildren.forEach(aspects => {
-                    this.findViewsForRole(aspects, targetRole);
+                    this.findViewsForRole(aspects, targetRole, targetUser);
                 });
             }
 
         }
 
         //if there is only one aspect available
-        if (viewAspects.length == 1 && viewAspects[0].getAttribute('data-role') == targetRole) {
-            $(viewAspects[0]).removeClass('aspect_hide');
-            if ($(viewAspects[0]).hasClass('diff_aspect')) {
-                $(viewAspects[0]).removeClass('diff_aspect');
+        else if (viewAspects.length == 1 && !$(viewAspects[0]).hasClass('header')) {
+            if (($rootScope.roleType == 'ROLE_SINGLE' && viewAspects[0].getAttribute('data-role') == targetRole) ||
+                ($rootScope.roleType == 'ROLE_INTERACTION' && getViewerFromRole(viewAspects[0].getAttribute('data-role'), true) == targetRole && getUserFromRole(viewAspects[0].getAttribute('data-role'), true) == targetUser)) {
+                $(viewAspects[0]).removeClass('aspect_hide');
+                if ($(viewAspects[0]).hasClass('diff_aspect')) {
+                    $(viewAspects[0]).removeClass('diff_aspect');
+                }
+                // if ($(view).hasClass('highlight'))
+                //     $(view).click();
             }
-            // if ($(view).hasClass('highlight'))
-            //     $(view).click();
         }
 
         if (viewAspects.length == 1 && viewAspects[0].children && Array.from(viewAspects[0].children).length != 0 && !$(viewAspects[0]).hasClass('image')) {
@@ -2602,10 +2618,10 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             //in case is the content of a block (with or w/o header)
             if (children.some(el => $(el).hasClass('header'))) {
                 $.each(children, (idx, el) => {
-                    this.findViewsForRole([el], targetRole);
+                    this.findViewsForRole([el], targetRole, targetUser);
                 })
             } else if (children.some(el => $(el).hasClass('content'))) {
-                this.findViewsForRole(viewAspects[0].children, targetRole);
+                this.findViewsForRole(viewAspects[0].children, targetRole, targetUser);
             } else {
                 // console.log(children);
                 const viewIdsArray = [...new Set(children.map(x => x.getAttribute('data-viewid')))];
@@ -2620,7 +2636,7 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
 
                 // console.log(aspectChildren);
                 aspectChildren.forEach(aspects => {
-                    this.findViewsForRole(aspects, targetRole);
+                    this.findViewsForRole(aspects, targetRole, targetUser);
                 });
             }
 
@@ -2633,7 +2649,15 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
             }
         }
 
+        // these tags do not have role and we do not want to do nothing when the element(s) are one of these html tags
+        // tags from table and chart
+        else if (Array.from(viewAspects).some(el => $(el).hasClass('content') || $(el).is('td') || $(el).is('tr') || $(el).is('th') || $(el).is('thead') || $(el).is('tbody') || $(el).is('table') || $(el).is('svg') || $(el).is('text'))) {
+            ;
+        }
+
+
         else {
+            viewAspects = Object.values(viewAspects);
             const rolesForTargetRole = this.buildRolesHierarchyForOneRole(targetRole);
             // console.log(rolesForTargetRole);
             //search from the most specific role to the least one
@@ -2648,11 +2672,12 @@ angular.module('module.views').service('$sbviews', function ($smartboards, $root
                         return el.getAttribute('data-role') == role.name;
                     });
                 } else {
+                    //console.log(viewAspects);
                     otherViews = viewAspects.filter(function (el) {
-                        return getViewerFromRole(el.getAttribute('data-role'), true) != role.name;
+                        return getViewerFromRole(el.getAttribute('data-role'), true) != role.name || getUserFromRole(el.getAttribute('data-role'), true) != targetUser;
                     });
                     view = viewAspects.filter(function (el) {
-                        return getViewerFromRole(el.getAttribute('data-role'), true) == role.name;
+                        return getViewerFromRole(el.getAttribute('data-role'), true) == role.name && getUserFromRole(el.getAttribute('data-role'), true) == targetUser;
                     });
                 }
 

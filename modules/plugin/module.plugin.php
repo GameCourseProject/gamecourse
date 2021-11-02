@@ -50,7 +50,7 @@ class Plugin extends Module
                 "db" => "moodle",
                 "dbport" => "3306",
                 "prefix" => "mdl_",
-                "time" => "",
+                "time" => 0,
                 "course" => "",
                 "user" => "",
                 "periodicityNumber" => 0,

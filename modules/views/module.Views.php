@@ -328,7 +328,7 @@ class Views extends Module
                                 'index' => $i
                             );
                             $visitor = new EvaluateVisitor($viewParams, $this->viewHandler);
-                            $value = $object->accept($visitor)->getValue();
+                            $value = $key->accept($visitor)->getValue();
 
                             $object["sortVariable" . $i] = $value;
                         }
@@ -358,6 +358,40 @@ class Views extends Module
                 return new ValueNode($collection);
             },
             'Returns the collection with objects sorted in a specific order by variables keys, from left to right separated by a ;. Any key may be an expression.',
+            'collection',
+            null,
+            'collection'
+        );
+        //%collection.getKNeighbors, returns k neighbors
+        $this->viewHandler->registerFunction(
+            null,
+            'getKNeighbors',
+            function ($collection, $user, $k) use ($courseId) {
+                $key = array_search($user, array_column($collection['value'], 'id'));
+                $nElements = count($collection['value']);
+                $result = [];
+                // elements before
+                for ($i = $k; $i > 0; $i--){
+                    if($key - $i >= 0){
+                        $collection['value'][$key - $i]["rank"] = $key - $i;
+                        $result[] = $collection['value'][$key - $i];
+                    }
+                }
+                // add student
+                $collection['value'][$key]["rank"] = $key;
+                $result[] = $collection['value'][$key];
+                
+                
+                // elements after
+                for ($i = 1; $i <= $k and $key + $i < $nElements; $i++){
+                    $collection['value'][$key + $i]["rank"] = $key + $i;
+                    $result[] = $collection['value'][$key + $i];
+                }
+
+                return $this->createNode($result, 'users', "collection");
+
+            },
+            "Returns a collection with k neighbors.\nk: The number of neighbors to return. Ex: k = 3 will return the 3 users before and the 3 users after the user viewing the page.",
             'collection',
             null,
             'collection'
@@ -437,6 +471,22 @@ class Views extends Module
             },
             "Returns a collection with all GameCourseUsers. The optional parameters can be used to find GameCourseUsers that specify a given combination of conditions:\ncourse: The id of a Course.\nrole: The role the GameCourseUser has.",
             'object',
+            'user',
+            'library'
+        );
+        //users.hasPicture(user) returns boolean
+        $this->viewHandler->registerFunction(
+            'users',
+            'hasPicture',
+            function (int $user) {
+                $username = Core::$systemDB->select("auth", ["game_course_user_id" => $user], "username");
+                if (file_exists("photos/" . $username . ".png")) {
+                    return new ValueNode(true);
+                }
+                return new ValueNode(false);
+            },
+            "Returns a boolean whether the user has a picture in the system or not.",
+            'boolean',
             'user',
             'library'
         );
@@ -608,6 +658,19 @@ class Views extends Module
             },
             'Returns the picture of the profile of the GameCourseUser.',
             'picture',
+            null,
+            'object',
+            'user'
+        );
+        //%user.rank
+        $this->viewHandler->registerFunction(
+            'users',
+            'rank',
+            function ($user) {
+                return $this->basicGetterFunction($user, "rank");
+            },
+            'Returns a string with the position of the user on a collection. To be used with getKNeighbors',
+            'string',
             null,
             'object',
             'user'
@@ -1176,6 +1239,27 @@ class Views extends Module
             'library'
         );
 
+        //participations.getLinkViews(user, nameSubstring)
+        $this->viewHandler->registerFunction(
+            'participations',
+            'getLinkViews',
+
+            function (int $user, $nameSubstring) use ($courseId) {
+                $table = "participation";
+
+                $where = ["user" => $user, "type" => "url viewed", "course" => $courseId];
+                $likeParams = ["description" => $nameSubstring];
+
+                $participations = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
+
+                return $this->createNode($participations, "participation", "collection");
+            },
+            "Returns a collection of unique url views. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify the url.Ex:'[Video]%'",
+            'collection',
+            'participation',
+            'library'
+        );
+
 
         //participations.getForumParticipationsuser, forum)
         $this->viewHandler->registerFunction(
@@ -1635,8 +1719,8 @@ class Views extends Module
             $templateId = API::getValue('id');
             //get aspect
             $templateView = Core::$systemDB->select(
-                "view_template vt join view v on vt.viewId=v.id",
-                ["partType" => "block", "parent" => null, "templateId" => $templateId]
+                "view_template vt join view v on vt.viewId=v.viewId",
+                ["templateId" => $templateId]
             );
             //will get all the aspects (and contents) of the template
             $views = $this->viewHandler->getViewWithParts($templateView["id"], null, true);
@@ -1672,10 +1756,12 @@ class Views extends Module
             }
 
             $templates = $this->getTemplates();
-            $templates = array_filter($templates, function ($var, $key) use ($viewType) {
-                // returns whether the input integer is even
-                return $var["roleType"] == $viewType;
-            }, ARRAY_FILTER_USE_BOTH);
+            if ($viewType == 'ROLE_SINGLE') {
+                $templates = array_filter($templates, function ($var, $key) use ($viewType) {
+                    // returns whether the input integer is even
+                    return $var["roleType"] == $viewType;
+                }, ARRAY_FILTER_USE_BOTH);
+            }
             $templates = array_values($templates);
             //removes the template itself
             if (($key = array_search($viewSettings["viewId"], array_column($templates, 'viewId'))) !== FALSE) {
@@ -1766,7 +1852,6 @@ class Views extends Module
                 $params['viewer'] = $viewerId;
                 $this->viewHandler->processView($view, $params);
                 $testDone = true;
-                //print_r("here");
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1873,16 +1958,35 @@ class Views extends Module
         if (!$saving) {
             $viewParams = [
                 'course' => (string)$data["courseId"],
-                'viewer' => $roles['viewerRole']
             ];
+            if ($roles['viewerRole'] == 'Default')
+                $viewParams['viewer'] = Core::$systemDB->select(
+                    "course_user",
+                    ["course" => $course->getId()],
+                )['id'];
+            else {
+                $viewParams['viewer'] = Core::$systemDB->select(
+                    "user_role ur join role r on ur.course=r.course and ur.role=r.id",
+                    ["ur.course" => $course->getId(), 'r.name' => $roles['viewerRole']],
+                )['ur.id'];
+            }
 
             if ($viewType == "ROLE_SINGLE") {
                 $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole']);
             } else if ($viewType == "ROLE_INTERACTION") {
-                $viewParams['user'] = $roles['userRole'];
-                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['viewerRole'] . '>' . $roles['userRole']);
+                if ($roles['userRole'] == 'Default')
+                    $viewParams['user'] = Core::$systemDB->select(
+                        "course_user",
+                        ["course" => $course->getId()],
+                    )['id'];
+                else {
+                    $viewParams['user'] = Core::$systemDB->select(
+                        "user_role ur join role r on ur.course=r.course and ur.role=r.id",
+                        ["ur.course" => $course->getId(), 'r.name' => $roles['userRole']],
+                    )['ur.id'];
+                }
+                $userView = $this->viewHandler->getViewWithParts($viewCopy[0]["viewId"], $roles['userRole'] . '>' . $roles['viewerRole']);
             }
-
             $this->viewHandler->parseView($userView);
             $this->viewHandler->processView($userView, $viewParams);
             API::response(array('view' => $userView));
@@ -2038,9 +2142,9 @@ class Views extends Module
         Core::$systemDB->insert("template", ["course" => $courseId, "name" => $name, "roleType" => $roleType]);
         $templateId = Core::$systemDB->getLastId();
 
-        if ($fromModule)
-            Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
-        //print_r($aspects);
+        // if ($fromModule)
+        //     Core::$systemDB->insert("view_template", ["viewId" => $aspects[0]["viewId"], "templateId" => $templateId]);
+
         foreach ($aspects as &$aspect) {
             //print_r($aspect);
 
@@ -2068,7 +2172,7 @@ class Views extends Module
             //     }
             // }
             if ($fromModule)
-                $this->viewHandler->updateViewAndChildren($aspect, false, true);
+                $this->viewHandler->updateViewAndChildren($aspect, false, true, $name, $fromModule);
             else
                 $this->viewHandler->updateViewAndChildren($aspect, false, true, $name);
         }

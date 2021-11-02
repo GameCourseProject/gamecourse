@@ -1,0 +1,589 @@
+[
+  {
+    "id": "1000",
+    "viewId": "1000",
+    "role": "role.Default",
+    "partType": "block",
+    "parentId": null,
+    "viewIndex": "0",
+    "label": null,
+    "loopData": "{}",
+    "variables": [],
+    "value": null,
+    "class": null,
+    "style": null,
+    "link": null,
+    "visibilityCondition": "{}",
+    "visibilityType": "conditional",
+    "events": [],
+    "info": null,
+    "children": [
+      {
+        "id": "1001",
+        "viewId": "1001",
+        "role": "role.Default",
+        "partType": "table",
+        "parentId": "1000",
+        "viewIndex": "0",
+        "label": null,
+        "value": null,
+        "loopData": "{}",
+        "class": "leaderboard-table",
+        "style": null,
+        "link": null,
+        "visibilityCondition": "{}",
+        "visibilityType": "conditional",
+        "info": null,
+        "children": [],
+        "variables": [],
+        "events": [],
+        "rows": [
+          {
+            "events": {
+              "click": "{actions.goToPage(\"Profile\",%item)}"
+            },
+            "id": "1012",
+            "viewId": "1012",
+            "loopData": "{users.getAllUsers(\"student\",%course).sort( \"descending\",\"xp.getXP(%item);badges.getBadgesCount(%item)\").getKNeighbors(%viewer, 3)}",
+            "variables": {
+              "userXP": {
+                "value": "{xp.getXP(%item)}"
+              }
+            },
+            "role": "role.Default",
+            "partType": "row",
+            "parentId": "1001",
+            "viewIndex": "1",
+            "label": null,
+            "value": null,
+            "class": null,
+            "style": null,
+            "link": null,
+            "visibilityCondition": "{}",
+            "visibilityType": "conditional",
+            "info": null,
+            "values": [
+              {
+                "value": {
+                  "id": "1013",
+                  "viewId": "1013",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1012",
+                  "viewIndex": "0",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "{%item.rank+1}",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1014",
+                  "viewId": "1014",
+                  "role": "role.Default",
+                  "partType": "image",
+                  "parentId": "1012",
+                  "viewIndex": "1",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "{%item.picture}",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1016",
+                  "viewId": "1016",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1012",
+                  "viewIndex": "3",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "{%item.studentNumber}",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1016",
+                  "viewId": "1016",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1012",
+                  "viewIndex": "3",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "{%item.name}",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1015",
+                  "viewId": "1015",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1012",
+                  "viewIndex": "2",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "{%item.major}",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1017",
+                  "viewId": "1017",
+                  "role": "role.Default",
+                  "partType": "block",
+                  "parentId": "1012",
+                  "viewIndex": "4",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": null,
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": [
+                    {
+                      "id": "1018",
+                      "viewId": "1018",
+                      "role": "role.Default",
+                      "partType": "text",
+                      "parentId": "1017",
+                      "viewIndex": "0",
+                      "label": null,
+                      "loopData": "{}",
+                      "variables": [],
+                      "value": "{%userXP} XP",
+                      "class": null,
+                      "style": null,
+                      "link": null,
+                      "visibilityCondition": "{}",
+                      "visibilityType": "conditional",
+                      "events": [],
+                      "info": null,
+                      "children": []
+                    },
+                    {
+                      "id": "1019",
+                      "viewId": "1019",
+                      "role": "role.Default",
+                      "partType": "chart",
+                      "parentId": "1017",
+                      "viewIndex": "1",
+                      "label": null,
+                      "loopData": "{}",
+                      "variables": {
+                        "user": {
+                          "value": "{%item.id}"
+                        }
+                      },
+                      "value": "line",
+                      "class": null,
+                      "style": null,
+                      "link": null,
+                      "visibilityCondition": "{}",
+                      "visibilityType": "conditional",
+                      "events": [],
+                      "info": {
+                        "provider": "xpEvolution",
+                        "spark": ""
+                      },
+                      "chartType": "line",
+                      "children": []
+                    }
+                  ]
+                }
+              },
+              {
+                "value": {
+                  "id": "1020",
+                  "viewId": "1020",
+                  "role": "role.Default",
+                  "partType": "block",
+                  "parentId": "1012",
+                  "viewIndex": "5",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": {
+                    "lvl": {
+                      "value": "{xp.getLevel(%item)}"
+                    }
+                  },
+                  "value": null,
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": [
+                    {
+                      "id": "1021",
+                      "viewId": "1021",
+                      "role": "role.Default",
+                      "partType": "text",
+                      "parentId": "1020",
+                      "viewIndex": "0",
+                      "label": null,
+                      "loopData": "{}",
+                      "variables": [],
+                      "value": "{%lvl.number} - {%lvl.description}",
+                      "class": null,
+                      "style": null,
+                      "link": null,
+                      "visibilityCondition": "{}",
+                      "visibilityType": "conditional",
+                      "events": [],
+                      "info": null,
+                      "children": []
+                    },
+                    {
+                      "id": "1022",
+                      "viewId": "1022",
+                      "role": "role.Default",
+                      "partType": "text",
+                      "parentId": "1020",
+                      "viewIndex": "1",
+                      "label": null,
+                      "loopData": "{}",
+                      "variables": [],
+                      "value": "{1000 - (%userXP % 1000)} for L{%lvl.number.int + 1} at {(%lvl.number.int + 1) * 1000} XP",
+                      "class": "xpNeeded",
+                      "style": null,
+                      "link": null,
+                      "visibilityCondition": "{%lvl.number<20}",
+                      "visibilityType": "conditional",
+                      "events": [],
+                      "info": null,
+                      "children": []
+                    }
+                  ]
+                }
+              },
+              {
+                "value": {
+                  "id": "1023",
+                  "viewId": "1023",
+                  "role": "role.Default",
+                  "partType": "chart",
+                  "parentId": "1012",
+                  "viewIndex": "6",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "progress",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": {
+                    "provider": "",
+                    "value": "{badges.getBadgesCount(%item)}",
+                    "max": "{badges.getBadgesCount}"
+                  },
+                  "chartType": "progress",
+                  "children": []
+                }
+              }
+            ]
+          }
+        ],
+        "headerRows": [
+          {
+            "id": "1024",
+            "viewId": "1024",
+            "role": "role.Default",
+            "partType": "headerRow",
+            "parentId": "1001",
+            "viewIndex": "0",
+            "label": null,
+            "loopData": "{}",
+            "variables": [],
+            "value": null,
+            "class": null,
+            "style": null,
+            "link": null,
+            "visibilityCondition": "{}",
+            "visibilityType": "conditional",
+            "events": [],
+            "info": null,
+            "values": [
+              {
+                "value": {
+                  "id": "1025",
+                  "viewId": "1025",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "0",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "#",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1026",
+                  "viewId": "1026",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "1",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Photo",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },     
+              {
+                "value": {
+                  "id": "1028",
+                  "viewId": "1028",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "3",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Num",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },         
+              {
+                "value": {
+                  "id": "1028",
+                  "viewId": "1028",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "3",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Name",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1027",
+                  "viewId": "1027",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "2",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Major",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1029",
+                  "viewId": "1029",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "4",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Experience",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1030",
+                  "viewId": "1030",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "5",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Level",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              },
+              {
+                "value": {
+                  "id": "1031",
+                  "viewId": "1031",
+                  "role": "role.Default",
+                  "partType": "text",
+                  "parentId": "1024",
+                  "viewIndex": "6",
+                  "label": null,
+                  "loopData": "{}",
+                  "variables": [],
+                  "value": "Badges",
+                  "class": null,
+                  "style": null,
+                  "link": null,
+                  "visibilityCondition": "{}",
+                  "visibilityType": "conditional",
+                  "events": [],
+                  "info": null,
+                  "children": []
+                }
+              }
+            ]
+          }
+        ],
+        "columns": 7
+      }
+    ],
+    "header": {
+      "image": {
+        "id": "1045",
+        "viewId": "1045",
+        "role": "role.Default",
+        "partType": "image",
+        "parentId": "2754",
+        "viewIndex": "0",
+        "label": null,
+        "loopData": "{}",
+        "variables": [],
+        "value": "images\/leaderboard.svg",
+        "class": null,
+        "style": null,
+        "link": null,
+        "visibilityCondition": "{}",
+        "visibilityType": "conditional",
+        "events": [],
+        "info": null,
+        "children": []
+      },
+      "title": {
+        "id": "1046",
+        "viewId": "1046",
+        "role": "role.Default",
+        "partType": "text",
+        "parentId": "2754",
+        "viewIndex": "1",
+        "label": null,
+        "loopData": "{}",
+        "variables": [],
+        "value": "Leaderboard",
+        "class": null,
+        "style": null,
+        "link": null,
+        "visibilityCondition": "{}",
+        "visibilityType": "conditional",
+        "events": [],
+        "info": null,
+        "children": []
+      }
+    }
+  }
+]

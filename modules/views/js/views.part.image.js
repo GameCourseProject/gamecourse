@@ -37,14 +37,14 @@ angular.module('module.views').run(function ($sbviews, $compile) {
             if (options.edit) {
                 root.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role.includes('>')) {
-                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
-                        if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
-                            element.addClass('aspect_hide');
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1]) || (scope.role.split('>')[0] != parseRole(part.role.split('>')[0]))) {
+                        if (part.parentId != null && !("header" in scope.$parent.part && part in scope.$parent.part.header) || part.parentId === null)
+                            root.addClass('aspect_hide');
                     }
                 } else {
                     if (scope.role != parseRole(part.role)) {
-                        if (part.parentId != null && !("header" in scope.$parent.part) || part.parentId === null)
-                            element.addClass('aspect_hide');
+                        if (part.parentId != null && !("header" in scope.$parent.part && part in scope.$parent.part.header) || part.parentId === null)
+                            root.addClass('aspect_hide');
                     }
                 }
                 if (part.class === null || part.class === undefined)

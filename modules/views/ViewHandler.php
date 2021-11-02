@@ -72,7 +72,7 @@ class ViewHandler
     }
     //receives view and updates the DB with its info, propagates changes in the main view to all its children
     //$basicUpdate -> u only update basic view atributes(ignores view parameters and deletion of viewparts), used for change in aspectclass
-    public function updateViewAndChildren($viewPart, $basicUpdate = false, $ignoreIds = false, $templateName = null, &$partsInDB = null)
+    public function updateViewAndChildren($viewPart, $basicUpdate = false, $ignoreIds = false, $templateName = null, $fromModule = false, &$partsInDB = null)
     {
 
         if ($viewPart["parentId"] == null) {
@@ -83,7 +83,7 @@ class ViewHandler
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
-            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]])) && !$fromModule) {
                 // if we save twice in view editor, to not insert again
                 $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
                 Core::$systemDB->update("view", $copy, ["id" => $id]);
@@ -104,14 +104,18 @@ class ViewHandler
                     }
                 } else {
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $copy["viewId"]], '*', null, [['id', $viewId]]));
-                    if ($viewIdExists && $templateName != null) { //we only want to change viewId if we are saving as template
+                    if ($viewIdExists && $templateName != null && !$fromModule) { //we only want to change viewId if we are saving as template
+                        Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
+                        $viewPart["viewId"] = $viewId;
+                    } else if ($viewIdExists  && $fromModule && empty(Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $copy['viewId'], 'course' => $this->getCourseId()]))) {
+                        // if we are creating in other course, we want to change
                         Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
                         $viewPart["viewId"] = $viewId;
                     } else
                         $viewPart["viewId"] = $copy["viewId"];
                 }
-                if ($templateName != null) {
-                    $templateId = Core::$systemDB->select("template", ["name" => $templateName], "id");
+                if (($templateName != null && !$fromModule) || ($fromModule  && empty(Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $viewPart['viewId'], 'course' => $this->getCourseId()])))) {
+                    $templateId = Core::$systemDB->select("template", ["name" => $templateName, 'course' => $this->getCourseId()], "id");
                     Core::$systemDB->insert("view_template", ["viewId" => $viewPart["viewId"], "templateId" => $templateId]);
                 }
             }
@@ -125,7 +129,7 @@ class ViewHandler
                 if (!$basicUpdate) {
                     unset($partsInDB[$viewPart["id"]]);
                 }
-            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]]))) {
+            } else if (array_key_exists("viewId", $viewPart) && !empty(Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]])) && !$fromModule) {
                 // if we save twice in view editor, to not insert again
                 $id = Core::$systemDB->select("view", ["viewId" => $copy["viewId"], "role" => $copy["role"]], "id");
                 Core::$systemDB->update("view", $copy, ["id" => $id]);
@@ -138,7 +142,8 @@ class ViewHandler
                     if (!isset($copy["viewId"])) {
                         $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $viewId], '*', null, [['id', $viewId]]));
                         if ($viewIdExists) {
-                            $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                            $tmp = Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc');
+                            $lastViewId = intval(end($tmp)['viewId']) + 1;
                             Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $viewId]);
                             $viewPart["viewId"] = $lastViewId;
                         } else {
@@ -194,6 +199,9 @@ class ViewHandler
             }
             unset($viewPart["rows"]);
             unset($viewPart["headerRows"]);
+
+            //readjust keys to start at 0
+            $viewPart["children"] = array_combine(range(0, count($viewPart["children"]) - 1), $viewPart["children"]);
         }
         // if (isset($viewPart["isTemplateRef"]) && !$basicUpdate) { //update orignial template of the reference
         //     //$type = $this->getRoleType($viewPart["role"]); //type of viewPart (templateRef)
@@ -262,7 +270,6 @@ class ViewHandler
                 $children = Core::$systemDB->selectMultiple("view v join view_parent vp on v.viewId=vp.childId", ["parentId" => $viewPart["id"]], "*", null, [["partType", "header"]]);
                 $children = array_combine(array_column($children, "id"), $children);
             }
-
             foreach ($viewPart["children"] as $key => &$child) {
                 if ($key == 0) {
                     $currentViewId = $child["viewId"];
@@ -276,7 +283,7 @@ class ViewHandler
                     $currentIdx += 1;
                 }
                 $child["viewIndex"] = $currentIdx;
-                $this->updateViewAndChildren($child, $basicUpdate, $ignoreIds, null, $children);
+                $this->updateViewAndChildren($child, $basicUpdate, $ignoreIds, null, $fromModule, $children);
             }
 
             if (!$basicUpdate) {
@@ -296,7 +303,8 @@ class ViewHandler
                     $headerId = Core::$systemDB->getLastId();
                     $viewIdExists = !empty(Core::$systemDB->selectMultiple("view", ["viewId" => $headerId], '*', null, [['id', $headerId]]));
                     if ($viewIdExists) {
-                        $lastViewId = intval(end(Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc'))['viewId']) + 1;
+                        $tmp = Core::$systemDB->selectMultiple("view", null, 'viewId', 'viewId asc');
+                        $lastViewId = intval(end($tmp)['viewId']) + 1;
                         Core::$systemDB->update("view", ["viewId" => $lastViewId], ['id' => $headerId]);
                         $headerViewId = $lastViewId;
                     } else {
@@ -348,9 +356,14 @@ class ViewHandler
             } else if (!empty($header) && !$basicUpdate) { //delete header in db
                 Core::$systemDB->delete("view", ["viewId" => $header["viewId"], "partType" => "header"]);
                 //delete header from the view_parent table
-                Core::$systemDB->delete("view_parent", ["childId" => $header["viewId"], "parenId" => $viewPart["id"]]);
-                //delete image & title (from header) from the view_parent table
+                Core::$systemDB->delete("view_parent", ["childId" => $header["viewId"], "parentId" => $viewPart["id"]]);
+
+                $childrenHeader = Core::$systemDB->selectMultiple("view join view_parent", ["parentId" => $header["id"]], "id");
+                //delete image & title (from header) from the view_parent table and view table
                 Core::$systemDB->delete("view_parent", ["parentId" => $header["id"]]);
+                foreach ($childrenHeader as $c) {
+                    Core::$systemDB->delete("view", ["id" => $c["id"]]);
+                }
             }
             if ($basicUpdate && !empty($header)) { //ToDo
                 Core::$systemDB->update(
@@ -358,6 +371,32 @@ class ViewHandler
                     ["role" => $viewPart["role"]],
                     ["viewId" => $header["viewId"]]
                 );
+            }
+        }
+    }
+
+    public function resetParentsAndViewIds(&$view)
+    {
+        if ($view['parentId'] != null)
+            $view['parentId'] = 0;
+        $view['viewId'] = null;
+        if ($view["partType"] == "table") {
+            foreach ($view["headerRows"] as &$headRow) {
+                $this->resetParentsAndViewIds($headRow);
+                foreach ($headRow["values"] as &$rowElement) {
+                    $this->resetParentsAndViewIds($rowElement['value']);
+                }
+            }
+            foreach ($view["rows"] as &$row) {
+                $this->resetParentsAndViewIds($row);
+                foreach ($row["values"] as &$rowElement) {
+                    $this->resetParentsAndViewIds($rowElement['value']);
+                }
+            }
+        }
+        if (array_key_exists("children", $view)) {
+            foreach ($view["children"] as &$child) {
+                $this->resetParentsAndViewIds($child);
             }
         }
     }
@@ -712,12 +751,25 @@ class ViewHandler
         if (is_array($userRoles)) {
             //search from the most specific role to the least onde
             foreach ($userRoles as $role) {
-                $key = array_search("role." . $role, array_column($viewAspects, 'role'));
+                if (strpos($role, '>')) {
+                    $user = explode('>', $role)[0];
+                    $viewer = explode('>', $role)[1];
+                    $fullRole = 'role.' . $user . '>' . 'role.' . $viewer;
+                    $key = array_search($fullRole, array_column($viewAspects, 'role'));
+                } else
+                    $key = array_search("role." . $role, array_column($viewAspects, 'role'));
+
                 if ($key !== false) {
                     return $key;
                 }
             }
         } else {
+            if (strpos($userRoles, '>')) {
+                $user = explode('>', $userRoles)[0];
+                $viewer = explode('>', $userRoles)[1];
+                $role = 'role.' . $user . '>' . 'role.' . $viewer;
+                return $key = array_search($role, array_column($viewAspects, 'role'));
+            }
             return $key = array_search("role." . $userRoles, array_column($viewAspects, 'role'));
         }
 
@@ -762,6 +814,8 @@ class ViewHandler
                 if ($a["name"] > $b["name"]) return 1;
                 return -1;
             });
+
+            $roles = array_combine(range(0, count($roles) - 1), $roles);
             return $roles;
         } else {
             $viewerRoles = [];
@@ -806,6 +860,9 @@ class ViewHandler
                 if ($a["name"] > $b["name"]) return 1;
                 return -1;
             });
+
+            $vRoles = array_combine(range(0, count($vRoles) - 1), $vRoles);
+            $uRoles = array_combine(range(0, count($uRoles) - 1), $uRoles);
 
             return [$uRoles, $vRoles];
         }
@@ -1387,6 +1444,9 @@ class ViewHandler
             if (array_key_exists('class', $part)) {
                 $part['class'] = $part['class']->accept($visitor)->getValue();
             }
+            if (array_key_exists('cssId', $part)) {
+                $part['cssId'] = $part['cssId']->accept($visitor)->getValue();
+            }
             $this->processEvents($part, $visitor);
 
             $this->callPartProcess($part['partType'], $part, $viewParams, $visitor);
@@ -1450,6 +1510,9 @@ class ViewHandler
         if (array_key_exists('class', $part)) {
             $this->parseSelf($part['class']);
         }
+        if (array_key_exists('cssId', $part)) {
+            $this->parseSelf($part['cssId']);
+        }
         if (array_key_exists("label", $part)) {
             $this->parseSelf($part['label']);
         }
@@ -1503,7 +1566,6 @@ class ViewHandler
         // add Default as the last choice
         array_push($userRolesHierarchy, "Default");
         $viewType = $view["roleType"];
-        $roleOne = $roleTwo = null;
         $viewId = Core::$systemDB->select("page", ["id" => $view["id"]], "viewId");
 
         //TODO check if everything works with the roles in the handle helper (test w user w multiple roles, and child roles)
@@ -1513,23 +1575,30 @@ class ViewHandler
             //     $roles = explode('>', $roleInteraction);
             //     $roleArray[$roles[0]][] = $roles[1];
             // }
-            $userRoles = $course->getUser($viewParams["user"])->getRolesNames();
-            $roleOne = $this->handleHelper(array_keys($roleArray), $course, $userRoles);
-            $roleArray = $roleArray[$roleOne];
-
-            if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
-                $roleTwo = 'special.Own';
-            } else {
-                $loggedUserRoles = $courseUser->getRolesNames();
-                $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
+            $userRoles = $course->getUser($viewParams["user"])->getUserRolesByHierarchy();
+            array_push($userRoles, "Default");
+            $viewerRoles = $userRolesHierarchy;
+            foreach ($viewerRoles as $vr) {
+                foreach ($userRoles as $ur) {
+                    $roleArray[] = $ur . '>' . $vr;
+                }
             }
-            $userView = $this->getViewWithParts($viewId, $roleOne . '>' . $roleTwo);
+            // $roleOne = $this->handleHelper(array_keys($roleArray), $course, $userRoles);
+            // $roleArray = $roleArray[$roleOne];
+
+            // // if (in_array('special.Own', $roleArray) && $viewParams["user"] == (string)Core::getLoggedUser()->getId()) {
+            // //     $roleTwo = 'special.Own';
+            // // } else {
+            // $loggedUserRoles = $courseUser->getRolesNames();
+            // $roleTwo = $this->handleHelper($roleArray, $course, $loggedUserRoles);
+            // // }
+            $userView = $this->getViewWithParts($viewId, $roleArray);
         } else if ($viewType == "ROLE_SINGLE") {
             //$userRoles = $course->getLoggedUser()->getRolesNames();
             //$roleOne = $this->handleHelper($viewRoles, $course, $userRoles);
             $userView = $this->getViewWithParts($viewId, $userRolesHierarchy);
         }
-
+        //print_r($userView);
         $this->parseView($userView);
         $this->processView($userView, $viewParams);
 

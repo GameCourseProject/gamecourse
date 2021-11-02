@@ -36,15 +36,19 @@ class CronJob
                     $periodStr = "*/" . $number . " * * * *";
                 } else if ($time == "Hours") {
                     $periodStr = "0 */" . $number . " * * *";
-                } else if ($time == "Months") {
-                    $periodStr = "* * */" . $number . " * *";
+                } else if ($time == "Day") {
+                    $periodStr = "0 0 */" . $number . " * *";
+                } else if ($time == "Daily"){
+                    $periodStr = "0 " . $number . " * * *"; //assim so da para horas certas
+                } else if ($time == "Weekly") {
+                    $periodStr = "* * * * " . $number;  //falta definir as horas
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            if(file_exists($cronFile)){
-                file_put_contents($cronFile, $toWrite);
-                echo exec('crontab /var/www/html/gamecourse/crontab.txt');
-            }
+            //if(file_exists($cronFile)){
+            file_put_contents($cronFile, $toWrite);
+            echo exec('crontab /var/www/html/gamecourse/crontab.txt');
+            //}
         }
     }
 }

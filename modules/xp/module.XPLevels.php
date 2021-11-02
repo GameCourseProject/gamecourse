@@ -20,10 +20,7 @@ class XPLevels extends Module
     {
 
         Core::$systemDB->delete("user_xp", ["course" => $courseId]);
-        $lvls = Core::$systemDB->selectMultiple("level", ["course" => $courseId]);
-        foreach ($lvls as $lvl) {
-            Core::$systemDB->delete("level", ["id" => $lvl["id"]]);
-        }
+        Core::$systemDB->delete("level", ["course" => $courseId]);
     }
 
     public function calculateBonusBadgeXP($userId, $courseId)
@@ -96,7 +93,7 @@ class XPLevels extends Module
         $xp["xp"] = array_sum($xp);
         return $xp;
     }
-    //calculates total xp of an user
+    //calculates total xp of a user
     public function calculateXP($user, $courseId)
     {
         $userId = $this->getUserId($user);
@@ -113,6 +110,13 @@ class XPLevels extends Module
             [["type", "skill"], ["type", "badge"]]
         ); //where not
         return $badgeXP + $skillXP + $otherXP;
+    }
+    //calculates a user's total xp for a type of award
+    public function calculateXPByType($user, $courseId, $type)
+    {
+        $userId = $this->getUserId($user);
+        $xp = Core::$systemDB->select("award", ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
+        return $xp;
     }
 
     //returns the total xp from user_xp table for the course user
@@ -240,6 +244,21 @@ class XPLevels extends Module
                 return new ValueNode($badgeXP);
             },
             'Returns the sum of XP that all Bonus Badges provide as reward from a GameCourseUser identified by user.',
+            'integer',
+            null,
+            'library',
+            null
+        );
+        //xp.getXPByType(user, type) returns value xp of a type of award for user
+        $viewHandler->registerFunction(
+            'xp',
+            'getXPByType',
+            function ($user, $type) use ($courseId) {
+                $userId = $this->getUserId($user);
+                $xp = $this->calculateXPByType($userId, $courseId, $type);
+                return new ValueNode($xp);
+            },
+            'Returns the sum of XP that a type of award provide as reward from a GameCourseUser identified by user.',
             'integer',
             null,
             'library',
@@ -374,6 +393,12 @@ class XPLevels extends Module
         return $levels;
     }
 
+    public function insertLevels($string){
+        $sql = "insert into level (number, course, description, goal) values ";
+        $sql .= $string . ";";
+        Core::$systemDB->executeQuery($sql);
+    }
+
     public function newLevel($level, $courseId){
         $levelData = ["number"=>$level['goal'] / 1000,
                     "course"=>$courseId,"description"=>$level['description'],
@@ -431,8 +456,9 @@ class XPLevels extends Module
     }
 
     public static function importItems($course, $fileData, $replace = true){
-        $courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("xp");
+        /*$courseObject = Course::getCourse($course, false);
+        $moduleObject = $courseObject->getModule("xp");*/
+        $moduleObject = new XPLevels();
 
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
@@ -451,6 +477,7 @@ class XPLevels extends Module
                 $goalIndex = array_search("Minimum XP", $firstLine);
             }
         }
+        $toInsert = "";
         foreach ($lines as $line) {
             $line = trim($line);
             $item = explode(";", $line);
@@ -473,12 +500,15 @@ class XPLevels extends Module
                             $moduleObject->editLevel($levelData, $course);
                         }
                     } else {
-                        $moduleObject->newLevel($levelData, $course);
+                        $toInsert .= "(" . $levelData['goal'] / 1000 . "," . $course . ",\"" . $levelData['description'] . "\"," . $levelData['goal'] . "),";
                         $newItemNr++;
                     }
                 }
             }
             $i++;
+        }
+        if($newItemNr > 0) {
+            $moduleObject->insertLevels(rtrim($toInsert , ","));
         }
         return $newItemNr;
     }

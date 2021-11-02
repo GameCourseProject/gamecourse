@@ -21,7 +21,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
             if (options.edit) {
                 table.attr('data-role', parseRole(part.role)).attr('data-viewId', part.viewId);
                 if (scope.role.includes('>')) {
-                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1])) {
+                    if (scope.role.split('>')[1] != parseRole(part.role.split('>')[1]) || (scope.role.split('>')[0] != parseRole(part.role.split('>')[0]))) {
                         table.addClass('aspect_hide');
                     }
                 } else {
@@ -93,6 +93,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     }
                 });
             }
+            console.log("akjdbvsidjvbc");
 
             var thead = $(document.createElement('thead'));
             for (var ridx in part.headerRows) {
@@ -108,6 +109,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
                     columnEl.append($sbviews.build(scope, 'part.headerRows[' + ridx + '].values[' + cidx + '].value', childOptions));
+                    console.log("JHAVDAH");
                     rowEl.append(columnEl);
                 }
 
@@ -142,7 +144,9 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     var columnEl = $(document.createElement('td'));
                     row.values[cidx].value.role = part.role;
                     //$sbviews.applyCommonFeatures(scope, column, columnEl, options);
+                    console.log(part);
                     columnEl.append($sbviews.build(scope, 'part.rows[' + ridx + '].values[' + cidx + '].value', childOptions));
+                    console.log("JHAVassasDAH");
                     rowEl.append(columnEl);
                 }
 
@@ -307,7 +311,7 @@ angular.module('module.views').run(function ($sbviews, $compile, $parse) {
                     for (var cid = 0; cid < part.columns; cid++) {
                         var newPart = $sbviews.defaultPart('text');
                         newPart.role = part.role;
-                        newPart.viewId = nextViewId.toString();;
+                        newPart.viewId = nextViewId.toString();
                         row.values.push({ value: newPart });
                         $sbviews.setDefaultParamters(row);
                         newRowEl.append($(document.createElement(header ? 'th' : 'td')).append($sbviews.buildElement(scope, newPart, childOptions)));
