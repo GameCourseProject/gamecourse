@@ -128,15 +128,37 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     action_buttons.append( $("<div class='icon export_icon' title='Export' ng-click='exportModules()'></div>"));
     $compile(action_buttons)($scope);
 
+    // Modules Section
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules"></div>')
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'GameElement\'"></div>')
     module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text no-status">{{module.description}}</div>'));
     modules.append(module_card);
     //error section
     modules.append( $("<div class='error_box'><div id='empty_search' class='error_msg'></div></div>"));
-    
+
+    var modulesection = createSection($($element), 'Game Elements');
+    tabContent.append($compile(modulesection)($scope));
+
+    tabContent.append($compile(search)($scope));
+    tabContent.append($compile(modules)($scope));
+
+    // DataSource Section
+    dsmodules = $('<div id="modules"></div>');
+    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'DataSource\'"></div>')
+    dsmodule_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
+    dsmodule_card.append($('<div class="header">{{module.name}}</div>'));
+    dsmodule_card.append($('<div class="text no-status">{{module.description}}</div>'));
+    dsmodules.append(dsmodule_card);
+    //error section
+    dsmodules.append( $("<div class='error_box'><div id='empty_search' class='error_msg'></div></div>"));
+
+    var dsmodulesection = createSection($($element), 'Data Sources');
+    tabContent.append($compile(dsmodulesection)($scope));
+    tabContent.append($compile(dsmodules)($scope));
+
+
     //the import modal
     importModal = $("<div class='modal' id='import-module'></div>");
     verification = $("<div class='verification modal_content'></div>");
@@ -150,13 +172,9 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
     importModal.append(verification);
     tabContent.append(importModal);
     
-    $compile(modules)($scope);
-    $compile(search)($scope);
     $compile(importModal)($scope);
-    tabContent.append(search);
     tabContent.append(action_buttons);
-    tabContent.append(modules);
-    
+
 
     $smartboards.request('settings', 'modules', {}, function(data, err) {
         if (err) {

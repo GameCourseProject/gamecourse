@@ -11,8 +11,22 @@
     width: 105px;
     display: inline-block;
 }
+#configPage .plugin_row .enable_button {
+    margin-top: 20px;
+    background-color: darkgreen;
+}
+#configPage .plugin_row .disable_button {
+    margin-top: 20px;
+    background-color: red;
+}
+
 #configPage .plugin_row .button {
     margin-top: 10px;
+}
+
+#configPage .plugin_row .buttonUA {
+    margin-top: 10px;
+
 }
 
 #configPage .column{
@@ -35,6 +49,7 @@
 #configPage .input_with_button{
     width: calc(100% - 155px);
 }
+
 #configPage .input_with_button .button {
     margin-left: 20px;
 }
@@ -45,7 +60,8 @@
 #configPage .periodicity select {
     width: 165px;
     margin-right: 20px;
-    margin-left: 0;
+    margin-left: 180px;
+    margin-top: -30px;
 }
 #configPage input[type="file"].config_input.plugin {
     border: none;

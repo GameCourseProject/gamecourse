@@ -12,6 +12,7 @@
     display: inline-block;
 }
 #gSConfigPage .plugin_row .button {
+    position: relative;
     margin-top: 10px;
 }
 

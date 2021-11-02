@@ -12,7 +12,7 @@ app.stateProvider.state('course.settings.plugin', {
 });
 
 function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
-    /*
+
     $scope.changeLimit = function (plugin) {
 
         var periodicity1 = document.getElementById(plugin + "Periodicidade1");
@@ -33,9 +33,9 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         }
 
         if (setValue) {
-            if (plugin == "moodle") {
+            /*if (plugin == "moodle") {
                 $scope.moodleVarsPeriodicity.number = setValue;
-            } else if (plugin == "classCheck") {
+            } else */if (plugin == "classCheck") {
                 $scope.classCheckVarsPeriodicity.number = setValue;
             } else if (plugin == "googleSheets") {
                 $scope.googleSheetsVarsPeriodicity.number = setValue;
@@ -44,7 +44,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         periodicity1.setAttribute("max", maxLimit);
 
     }
-    */
+
 
     //uma funcao de submit para cada
 
@@ -68,7 +68,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
     $scope.saveFenix = function () {
         $smartboards.request('settings', 'coursePlugin', { fenix: lines, course: $scope.course }, alertUpdate);
     }
-/*
+
 
     var fileCredentialsUploaded;
     var googleSheetsCredentials = [];
@@ -101,7 +101,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 window.open(data.authUrl, 'Authenticate', 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
             }
         });
-    }
+    }/*
     $scope.saveMoodle = function () {
         console.log("save moodle");
         $smartboards.request('settings', 'coursePlugin', { moodle: $scope.moodleVars, course: $scope.course }, alertUpdate);
@@ -109,7 +109,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
     $scope.enableMoodle = function () {
         console.log($scope.moodleVarsPeriodicity);
         $smartboards.request('settings', 'coursePlugin', { moodlePeriodicity: $scope.moodleVarsPeriodicity, course: $scope.course }, alertUpdate);
-    };
+    };*/
     $scope.enableClassCheck = function () {
         console.log($scope.classCheckVarsPeriodicity);
         $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdate);
@@ -118,9 +118,10 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         console.log($scope.googleSheetsVarsPeriodicity);
         $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
+    /*
    $scope.disableMoodle = function () {
         $smartboards.request('settings', 'coursePlugin', { disableMoodlePeriodicity: true, course: $scope.course }, alertUpdate);
-    };
+    };*/
     $scope.disableClassCheck = function () {
         $smartboards.request('settings', 'coursePlugin', { disableClassCheckPeriodicity: true, course: $scope.course }, alertUpdate);
     };
@@ -154,7 +155,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         //inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname'+ $scope.numberGoogleSheets +'"><select class="config_input" ng-options="user.username as user.name for user in googleSheetsVars.professors track by user.username" ng-model="names" id="ownername'+ $scope.numberGoogleSheets +'"></div>');
         inputsButton.prepend('<div style="width:100%;"><input class="config_input" type:"text" id="sheetname' + $scope.numberGoogleSheets + '"><input class="config_input" type:"text" id="ownername' + $scope.numberGoogleSheets + '"></div>');
     }
-*/
+
 
     $smartboards.request('settings', 'coursePlugin', { course: $scope.course }, function (data, err) {
         if (err) {
@@ -163,15 +164,14 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         }
 
         $scope.fenixVars = data.fenixVars;
-        /*
-        $scope.moodleVars = data.moodleVars;
-        $scope.moodleVarsPeriodicity = data.moodleVarsPeriodicity;
+      /*  $scope.moodleVars = data.moodleVars;
+        $scope.moodleVarsPeriodicity = data.moodleVarsPeriodicity;*/
         $scope.classCheckVarsPeriodicity = data.classCheckVarsPeriodicity;
         $scope.googleSheetsVarsPeriodicity = data.googleSheetsVarsPeriodicity;
         $scope.classCheckVars = data.classCheckVars;
         $scope.googleSheetsVars = data.googleSheetsVars;
         $scope.googleSheetsAuthUrl = data.authUrl;
-*/
+
 
         var configurationSection = $($element);
 
@@ -187,10 +187,10 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         action_buttons.append('<button class="button small" ng-click="saveFenix()">Save Fenix Vars</button><br>');
         fenixconfigurationSection.append(action_buttons);
 
-        /*
+
 
         //moodle
-
+/*
         var moodleconfigurationSection = createSection(configurationSection, 'Moodle Variables');
         moodleconfigSectionInputs = $('<div class="multiple_inputs" ></div>');
         moodleVars = ["dbserver", "dbuser", "dbpass", "db", "dbport", "prefix", "time", "course", "user"];
@@ -238,7 +238,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         action_buttons = $("<div class='config_save_button'></div>");
         action_buttons.append('<button class="button small" ng-click="saveMoodle()">Save Moodle Vars</button><br>');
         moodleconfigurationSection.append(action_buttons);
-
+*/
         if ($scope.classCheckVars.periodicityTime == "Minutes") {
             $scope.classCheckVars.periodicityTimeId = 1;
         } else if ($scope.classCheckVars.periodicityTime == "Hours") {
@@ -269,8 +269,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="classCheckVarsPeriodicity.number" ng-model="classCheckVarsPeriodicity.number" type="number" id="classCheckPeriodicidade1" min="0" max="59">');
         row2.append('<select class="form-control config_input" ng-model="classCheckVarsPeriodicity.time" id="classCheckPeriodicidade2" ng-options="option.name for option in classCheckVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(classCheckVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableClassCheck()">Enable Class Check</button>');
-        row2.append('<button class="button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
+        row2.append('<button style="margin-right:2px" class="enable_button small" ng-click="enableClassCheck()">Enable Class Check</button>');
+        row2.append('<button class="disable_button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
         classCheckconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");
@@ -286,10 +286,10 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
             model = googleSheetsVars[index];
             title = googleSheetsTitles[index];
             row = $("<div class='plugin_row'></div>");
-            row.append('<span >' + title + '</span>');
+            row.append('<span style="width: 115px;" >' + title + '</span>');
             if (model == "credentials") {
                 row.append('<input class="config_input plugin" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
-                row.append('<button class="button small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
+                row.append('<button class="buttonUA small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
             } else if (model == "sheetName") {
                 row.attr('id', 'sheet_names_row');
                 $scope.numberGoogleSheets = 0;
@@ -311,7 +311,8 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
                 inputsButton.append('<button class="button small" ng-click="addExtraField()">Add another sheet</button>');
                 row.append(inputsButton);
             } else {
-                row.append('<input class="config_input" type:"text" id="newList" ng-model="googleSheetsVars.' + model + '"><br>');
+                row.attr('id', 'sheet_names_row');
+                row.append('<div style="width:85%;"><input class="config_input" type:"text" id="newList" ng-model="googleSheetsVars.' + model + '"></div>');
             }
             googleSheetsconfigurationSection.append(row);
         });
@@ -338,15 +339,15 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="googleSheetsVarsPeriodicity.number" ng-model="googleSheetsVarsPeriodicity.number" type="number" id="googleSheetsPeriodicidade1" min="0" max="59">');
         row2.append('<select class="form-control config_input" ng-model="googleSheetsVarsPeriodicity.time" id="googleSheetsPeriodicidade2" ng-options="option.name for option in googleSheetsVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(googleSheetsVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button>');
-        row2.append('<button class="button small" ng-click="disableGoogleSheets()">Disable Google Sheets</button><br>');
+        row2.append('<button style="margin-right:2px" class="enable_button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button>');
+        row2.append('<button class="disable_button small" ng-click="disableGoogleSheets()">Disable Google Sheets</button><br>');
         googleSheetsconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");
         action_buttons.append('<button class="button small" ng-click="saveGoogleSheets()">Save Google Sheets Vars</button><br>');
         googleSheetsconfigurationSection.append(action_buttons);
 
-        */
+
 
         $compile(configurationSection)($scope);
 

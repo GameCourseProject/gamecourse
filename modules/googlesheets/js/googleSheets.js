@@ -128,7 +128,7 @@ function googleSheetsPersonalizedConfig($scope, $element, $smartboards, $compile
             row.append('<span >' + title + '</span>');
             if (model == "credentials") {
                 row.append('<input class="config_input plugin" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
-                row.append('<button class="button small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
+                row.append('<button class="button small" style="margin-left: 250px; margin-top: -35px" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
             } else if (model == "sheetName") {
                 row.attr('id', 'sheet_names_row');
                 $scope.numberGoogleSheets = 0;
@@ -176,9 +176,9 @@ function googleSheetsPersonalizedConfig($scope, $element, $smartboards, $compile
         row2 = $("<div class='plugin_row periodicity'></div>");
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="googleSheetsVarsPeriodicity.number" ng-model="googleSheetsVarsPeriodicity.number" type="number" id="googleSheetsPeriodicidade1" min="0" max="59">');
-        row2.append('<select class="form-control config_input" ng-model="googleSheetsVarsPeriodicity.time" id="googleSheetsPeriodicidade2" ng-options="option.name for option in googleSheetsVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(googleSheetsVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button style="margin-right:2px" class="button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button>');
-        row2.append('<button class="button small" ng-click="disableGoogleSheets()">Disable Google Sheets</button><br>');
+        row2.append('<select class="form-control config_input" style="margin-left: 180px; margin-top: -30px" ng-model="googleSheetsVarsPeriodicity.time" id="googleSheetsPeriodicidade2" ng-options="option.name for option in googleSheetsVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(googleSheetsVarsPeriodicity.plugin)" ></select >');
+        row2.append('<button style="margin-right:2px;background-color:green; margin-top: 30px" class="button small" ng-click="enableGoogleSheets()">Enable Google Sheets</button>');
+        row2.append('<button class="button small" style= "background-color:red;margin-top: 30px" ng-click="disableGoogleSheets()">Disable Google Sheets</button><br>');
         googleSheetsconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");
