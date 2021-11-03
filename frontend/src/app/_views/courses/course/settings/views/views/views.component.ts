@@ -65,6 +65,14 @@ export class ViewsComponent implements OnInit {
     });
   }
 
+  get Page(): typeof Page {
+    return Page;
+  }
+
+  get Template(): typeof Template {
+    return Template;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -294,21 +302,13 @@ export class ViewsComponent implements OnInit {
       return isValid(this.pageSelected.name) && isValid(this.pageSelected.viewId);
 
     } else {
-      return isValid(this.templateSelected.name) && isValid(this.templateSelected.roleTypeId);
+      return isValid(this.templateSelected.name) && isValid(this.templateSelected.roleType);
     }
   }
 
   clear(): void {
     this.pageSelected = new Page(null, null, null, null, null, null, null);
-    this.templateSelected = new Template(null, null, null, null, null, null, null);
-  }
-
-  get Page(): typeof Page {
-    return Page;
-  }
-
-  get Template(): typeof Template {
-    return Template;
+    this.templateSelected = new Template(null, null, null, null, null, null);
   }
 
 }

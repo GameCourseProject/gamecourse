@@ -36,7 +36,7 @@ export class ViewBlock extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.children.map(child => buildView(child)),
+      obj.children ? obj.children.map(child => buildView(child)) : [],
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
@@ -51,5 +51,5 @@ export class ViewBlock extends View {
 }
 
 export interface ViewBlockDatabase extends ViewDatabase {
-  children: ViewDatabase[];
+  children?: ViewDatabase[];
 }

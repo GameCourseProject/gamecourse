@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
@@ -26,11 +26,14 @@ export class ViewsEditorComponent implements OnInit {
   user: User;
 
   courseRoles: Role[];
-  fields: any[];
   rolesHierarchy: Role[];
-  templates: Template[]
+  templateRoles: {viewerRole: Role, userRole?: Role}[];
+
   view: View;
-  viewRoles: Role[];
+  viewerRole: Role;
+  selectedViewerRole: string;
+  userRole: Role;
+  selectedUserRole: string;
 
   help: boolean = false;
   clickedHelpOnce: boolean = false;
@@ -59,7 +62,7 @@ export class ViewsEditorComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Helpers ------------------ ***/
+  /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
   getTemplate(templateId: number): void {
@@ -68,32 +71,59 @@ export class ViewsEditorComponent implements OnInit {
       .subscribe(
         template => {
           this.template = template;
+          this.getTemplateEditInfo(this.template)
           // if (part.isTemplateRef) //TODO: templateRef
           //   $('#warning_ref').show();
         },
-        error => ErrorService.set(error),
-        () => this.getEditInfo(this.template)
+        error => ErrorService.set(error)
       )
   }
 
-  getEditInfo(template: Template): void {
+  getTemplateEditInfo(template: Template): void {
     this.loading = true;
+    this.api.getTemplateEditInfo(this.courseID, template.id)
+      .subscribe(
+        data => {
+          this.courseRoles = data.courseRoles;
+          this.rolesHierarchy = data.rolesHierarchy;
 
-    const roleParsed = Role.parse(template.role);
-    const roles = template.roleTypeId === RoleTypeId.ROLE_SINGLE ?
-      { viewerRole: roleParsed } :
-      { viewerRole: roleParsed.split('>')[1], userRole: roleParsed.split('>')[0] }
+          // Set template roles
+          this.templateRoles = [];
+          data.templateRoles.forEach(role => {
+            let roleObj: {viewerRole: Role, userRole?: Role };
+            if (template.roleType === RoleTypeId.ROLE_SINGLE) {
+              roleObj = { viewerRole: Role.fromDatabase({name: role.split('>')[0]}) };
 
-    this.api.getEdit(this.courseID, template, roles)
+            } else if (template.roleType === RoleTypeId.ROLE_INTERACTION) {
+              roleObj = {
+                viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
+                userRole: Role.fromDatabase({name: role.split('>')[0]})
+              };
+            }
+
+            if (!this.templateRoles.find(el => el.viewerRole === roleObj.viewerRole && el.userRole === roleObj.userRole))
+              this.templateRoles.push(roleObj)
+          });
+
+          // Set selected roles
+          this.selectedViewerRole = "Default";
+          if (template.roleType == RoleTypeId.ROLE_INTERACTION) this.selectedUserRole = "Default";
+
+          // Get view
+          this.getTemplateEditView(template, this.selectedViewerRole, this.selectedUserRole);
+        },
+        error => ErrorService.set(error)
+      )
+  }
+
+  getTemplateEditView(template: Template, viewerRole: string, userRole?: string): void {
+    this.loading = true;
+    this.api.getTemplateEditView(this.courseID, template.id, viewerRole, userRole)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => {
-          this.courseRoles = res.courseRoles;
-          this.fields = res.fields;
-          this.rolesHierarchy = res.rolesHierarchy;
-          this.templates = res.templates;
-          this.view = res.view;
-          this.viewRoles = res.viewRoles;
+        view => {
+          this.view = view;
+          console.log(this.view)
         },
         error => ErrorService.set(error)
       )
@@ -103,6 +133,20 @@ export class ViewsEditorComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  getRoles(type: 'viewer' | 'user'): Role[] {
+    const roles: Role[] = [];
+    this.templateRoles.forEach(role => {
+      if (!roles.find(el => type === 'viewer' ? el.name === role.viewerRole.name : el.name === role.userRole.name))
+        roles.push(type === 'viewer' ? role.viewerRole : role.userRole);
+    })
+
+    const index = roles.findIndex(el => el.name === 'Default');
+    if (index !== -1) roles.splice(index, 1);
+    roles.unshift(new Role(null, 'Default', null, null));
+
+    return roles;
+  }
 
   goToViews(): void {
     this.router.navigate(['settings/views'], {relativeTo: this.route.parent});

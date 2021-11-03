@@ -777,36 +777,22 @@ export class ApiHttpService {
   /*** ---------------- Views Editor --------------- ***/
   /*** --------------------------------------------- ***/
 
-  public getEdit(courseID: number, template: Template, roles: {viewerRole: string, userRole?: string}):
-    Observable<{view: View, fields: any[], templates: Template[], courseRoles: Role[], viewRoles: Role[], rolesHierarchy: Role[]}> {
+  public getTemplateEditInfo(courseID: number, templateID: number): Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[]}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'views');
-      qs.push('request', 'getEdit');
-    };
-
-    const data = {
-      course: courseID,
-      pageOrTemp: 'template', // FIXME: this is deprecated code
-      view: template.id,
-      roles: roles
+      qs.push('request', 'getTemplateEditInfo');
+      qs.push('courseId', courseID);
+      qs.push('templateId', templateID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
-    return this.post(url, data, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
-        const templates = Object.values(res['data']['templates']).map(obj => Template.fromDatabase(obj as TemplateDatabase));
-        const allRoles: Role[] = res['data']['courseRoles'].map(obj => Role.fromDatabase(obj));
-        let viewRoles: Role[];
-        if (template.roleTypeId === RoleTypeId.ROLE_SINGLE) {
-          viewRoles = res['data']['viewRoles'].map(obj => Role.fromDatabase(obj));
-        } else if (template.roleTypeId === RoleTypeId.ROLE_INTERACTION) {
-          viewRoles = res['data']['viewRoles'].map(arr => arr.map(obj => Role.fromDatabase(obj)))[0];
-        }
-        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
-
-        return {view: buildView(res['data']['view'][0]), fields: res['data']['fields'], templates, courseRoles: allRoles, viewRoles, rolesHierarchy}
+        const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
+        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
+        return {courseRoles, rolesHierarchy, templateRoles: res['data']['templateRoles']}
       }) );
   }
 
@@ -825,6 +811,22 @@ export class ApiHttpService {
 
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
+  }
+
+  public getTemplateEditView(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', 'views');
+      qs.push('request', 'getTemplateEditView');
+      qs.push('courseId', courseID);
+      qs.push('templateId', templateID);
+      qs.push('viewerRole', viewerRole);
+      if (userRole) qs.push('userRole', userRole);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['view'] ? buildView(res['data']['view']) : null) );
   }
 
 
@@ -953,7 +955,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getRoles(courseID: number): Observable<{ pages: Page[], roles: Role[], rolesHierarchy: Role[] }> {
+  public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', 'course');
       qs.push('request', 'roles');
@@ -966,7 +968,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => {
         const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
         const roles = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
-        return {pages: res['data']['pages'].map(obj => Page.fromDatabase(obj)), roles: allRoles, rolesHierarchy: roles}
+        return {roles: allRoles, rolesHierarchy: roles}
       }) );
   }
 
@@ -1133,7 +1135,7 @@ export class ApiHttpService {
     const data = {
       courseId: courseID,
       templateName: template.name,
-      roleType: template.roleTypeId,
+      roleType: template.roleType,
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -1151,7 +1153,7 @@ export class ApiHttpService {
       courseId: courseID,
       templateId: template.id,
       templateName: template.name,
-      roleType: template.roleTypeId,
+      roleType: template.roleType,
     };
 
     const params = (qs: QueryStringParameters) => {

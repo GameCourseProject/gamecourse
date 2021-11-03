@@ -9,6 +9,7 @@ import {
 
 import * as $ from "jquery";
 import '@extensions/string.extensions';
+import '@extensions/array.extensions';
 
 @Component({
   selector: 'app-root',

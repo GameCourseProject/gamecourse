@@ -21,24 +21,25 @@
       <span class="clickable" (click)="goToViews()">Templates</span>
       <div class="go_back icon"></div>
 
-      <span *ngIf="template">{{template.name}}</span>
-      <span id="warning_ref">The selected view is a reference for a template!</span>
+      <span>{{template.name}}</span>
+      <span id="warning_ref">The selected view is a reference for a template!</span> <!-- TODO -->
     </div>
 
     <!-- Action buttons -->
-    <div class="action-buttons" id="view_editor_actions">
-      <div class="editor-roles">
+    <div class="action-buttons" id="view_editor_actions"
+         [ngStyle]="{'width': template.roleType === RoleTypeId.ROLE_SINGLE ? '450px' : '650px'}">
 
-        <ng-container *ngIf="template && template.roleTypeId === RoleTypeId.ROLE_INTERACTION">
+      <div class="editor-roles">
+        <ng-container *ngIf="template.roleType === RoleTypeId.ROLE_INTERACTION">
           <div style="margin-right:5px;">User: </div>
-          <select id="user_role" onchange="selectViews()" ng-model="selectedURole">
-            <option *ngFor="let role of courseRoles" [ngValue]="role.id">{{role.name}}</option>
+          <select id="user_role" [(ngModel)]="selectedUserRole" (ngModelChange)="getTemplateEditView(template, selectedViewerRole, selectedUserRole)">
+            <option *ngFor="let role of getRoles('user')" [ngValue]="role.name">{{role.name}}</option>
           </select>
         </ng-container>
 
         <div style="margin-right:5px;">View as: </div>
-        <select id="viewer_role" onchange="selectViews()" ng-model="selectedVRole">
-          <option *ngFor="let role of viewRoles" [ngValue]="role.id">{{role.name}}</option>
+        <select id="viewer_role" [(ngModel)]="selectedViewerRole" (ngModelChange)="getTemplateEditView(template, selectedViewerRole, selectedUserRole)">
+          <option *ngFor="let role of getRoles('viewer')" [ngValue]="role.name">{{role.name}}</option>
         </select>
       </div>
 
@@ -51,7 +52,8 @@
 
     <!-- Editor -->
     <div class="editor">
-      <bb-any [view]="view"></bb-any>
+      <bb-any *ngIf="view" [view]="view"></bb-any>
+      <div class="no-view" *ngIf="!view">(Empty view)</div>
     </div>
 
   </ng-container>

@@ -1,11 +1,10 @@
 export class Role {
-  private _id?: number;
+  private _id?: number; // FIXME: should use id to deal with roles; is using name
   private _name?: string;
   private _landingPage?: string;
   private _children?: Role[];
 
   constructor(id?: number, name?: string, landingPage?: string, children?: Role[]) {
-
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;

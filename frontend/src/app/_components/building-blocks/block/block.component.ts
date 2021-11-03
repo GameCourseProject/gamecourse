@@ -20,6 +20,8 @@ export class BlockComponent implements OnInit {
   edit: boolean;
   isEditingLayout: boolean;
 
+  readonly DEFAULT = '(Empty block)';
+
   constructor() { }
 
   ngOnInit(): void {

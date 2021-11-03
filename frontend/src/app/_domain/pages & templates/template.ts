@@ -1,22 +1,20 @@
+import {RoleTypeId} from "../roles/role-type";
+
 export class Template {
   private _id: number;
   private _name: string;
   private _courseId: number;
   private _isGlobal: boolean;
-  private _roleTypeId: string;
+  private _roleType: RoleTypeId;
   private _viewId: number;
-  private _role: string; // FIXME: should be something else
 
-  constructor(id: number, name: string, courseId: number, isGlobal: boolean, roleTypeId: string, viewId: number,
-              role: string) {
-
-    this._id = id;
-    this._name = name;
-    this._courseId = courseId;
-    this._isGlobal = isGlobal;
-    this._roleTypeId = roleTypeId;
-    this._viewId = viewId;
-    this._role = role;
+  constructor(id: number, name: string, courseId: number, isGlobal: boolean, roleType: RoleTypeId, viewId: number) {
+    this.id = id;
+    this.name = name;
+    this.courseId = courseId;
+    this.isGlobal = isGlobal;
+    this.roleType = roleType;
+    this.viewId = viewId;
   }
 
   get id(): number {
@@ -51,12 +49,12 @@ export class Template {
     this._isGlobal = value;
   }
 
-  get roleTypeId(): string {
-    return this._roleTypeId;
+  get roleType(): RoleTypeId {
+    return this._roleType;
   }
 
-  set roleTypeId(value: string) {
-    this._roleTypeId = value;
+  set roleType(value: RoleTypeId) {
+    this._roleType = value;
   }
 
   get viewId(): number {
@@ -67,23 +65,14 @@ export class Template {
     this._viewId = value;
   }
 
-  get role(): string {
-    return this._role;
-  }
-
-  set role(value: string) {
-    this._role = value;
-  }
-
   static fromDatabase(obj: TemplateDatabase): Template {
     return new Template(
-      parseInt(obj.id) || null,
+      parseInt(obj.id),
       obj.name,
-      parseInt(obj.course) || null,
+      parseInt(obj.course),
       !!parseInt(obj.isGlobal),
-      obj.roleType,
-      parseInt(obj.viewId) || null,
-      obj.role
+      obj.roleType as RoleTypeId,
+      parseInt(obj.viewId)
     );
   }
 }
@@ -95,5 +84,4 @@ export interface TemplateDatabase {
   isGlobal: string;
   roleType: string;
   viewId: string;
-  role: string;
 }

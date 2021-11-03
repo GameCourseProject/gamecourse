@@ -1,5 +1,5 @@
 <ng-container
-  [ngTemplateOutlet]="SIMPLE">
+  [ngTemplateOutlet]="view.children.length === 0 ? EMPTY : SIMPLE">
 </ng-container>
 
 
@@ -9,7 +9,7 @@
 
 <ng-template #SIMPLE>
   <div [attr.id]="view.cssId"
-       [classList]="view.class" [ngClass]="view.children.length === 0 ? ViewBlock.BLOCK_EMPTY_CLASS : ''"
+       [classList]="view.class"
        [attr.style]="view.style"
        [attr.data-viewId]="view.viewId"
        [attr.data-role]="edit ? view.role : null"
@@ -22,6 +22,22 @@
       <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>
 
+    <div *ngIf="edit && isEditingLayout" class="add-child"></div>
+  </div>
+</ng-template>
+
+<ng-template #EMPTY>
+  <div [attr.id]="view.cssId"
+       [classList]="view.class + ' ' + ViewBlock.BLOCK_EMPTY_CLASS"
+       [attr.style]="view.style"
+       [attr.data-viewId]="view.viewId"
+       [attr.data-role]="edit ? view.role : null"
+       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
+       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
+       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
+       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
+
+    {{DEFAULT}}
     <div *ngIf="edit && isEditingLayout" class="add-child"></div>
   </div>
 </ng-template>

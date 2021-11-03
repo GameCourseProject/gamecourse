@@ -1,10 +1,10 @@
 export class RoleType {
   private _id: RoleTypeId;
-  private _name: string;
+  private _name?: string;
 
-  constructor(id: string, name: string) {
-    this._id = RoleTypeId[id];
-    this._name = name;
+  constructor(id: string, name?: string) {
+    this.id = RoleTypeId[id];
+    if (name) this.name = name;
   }
 
   get id(): RoleTypeId {
@@ -26,7 +26,7 @@ export class RoleType {
   static fromDatabase(obj: RoleTypeDatabase): RoleType {
     return new RoleType(
       obj.id,
-      obj.name
+      obj.name || null
     );
   }
 }
@@ -38,5 +38,5 @@ export enum RoleTypeId {
 
 interface RoleTypeDatabase {
   id: string;
-  name: string;
+  name?: string;
 }

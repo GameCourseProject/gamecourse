@@ -34,6 +34,7 @@ export class UsersComponent implements OnInit {
   user: User;
   course: Course;
   roles: Role[];
+  rolesHierarchy: Role[];
 
   allUsers: User[];
   allNonUsers: User[];
@@ -119,11 +120,12 @@ export class UsersComponent implements OnInit {
   }
 
   getCourseRoles(courseId: number): void {
-    this.api.getCourseRoles(courseId)
+    this.api.getRoles(courseId)
       .subscribe(
-        roles => {
-          this.roles = roles;
-          this.filters = roles.map(role => role.name);
+        data => {
+          this.roles = data.roles;
+          this.rolesHierarchy = data.rolesHierarchy
+          this.filters = this.roles.map(role => role.name);
           this.getCourseUsers(courseId);
         },
         error => ErrorService.set(error));
@@ -246,8 +248,14 @@ export class UsersComponent implements OnInit {
       .subscribe(
         () => {
           this.getCourseUsers(this.course.id);
-          if (this.user.id === this.newUser.id && this.newUser.image)
-            this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
+
+          if (this.user.id === this.newUser.id) {
+            if (this.newUser.image)
+              this.updateManager.triggerUpdate(UpdateType.AVATAR); // Trigger change on navbar
+
+            if (!this.userToEdit.roles.map(role => role.name).isEqual(this.newUser.roles))
+              this.updateManager.triggerUpdate(UpdateType.ACTIVE_PAGES); // Trigger change on pages
+          }
 
           const successBox = $('#action_completed');
           successBox.empty();
@@ -398,14 +406,49 @@ export class UsersComponent implements OnInit {
 
   addRole(role: string): void {
     if (!this.selectedUserRoles) this.selectedUserRoles = [];
-
-    if (!this.selectedUserRoles.find(el => el === role))
-      this.selectedUserRoles.push(role);
+    this.traverseRoles(this.rolesHierarchy, role, 'add');
   }
 
   removeRole(role: string): void {
-    const index = this.selectedUserRoles.findIndex(el => el === role);
-    this.selectedUserRoles.splice(index, 1);
+    this.traverseRoles(this.rolesHierarchy, role, 'remove');
+  }
+
+  traverseRoles(roles: Role[], roleName: string, action: 'add' | 'remove'): boolean {
+    for (const role of roles) {
+
+      // Reached role
+      if (role.name === roleName) {
+        takeAction(action, this.selectedUserRoles, roleName);
+        if (action === 'remove' && role.children?.length > 0) {
+          for (const child of role.children) {
+            if (this.selectedUserRoles.includes(child.name))
+              this.traverseRoles(role.children, child.name, action);
+          }
+        }
+        return true;
+      }
+
+      // Traverse children
+      if (role.children?.length > 0) {
+        const tookAction = this.traverseRoles(role.children, roleName, action);
+        if (tookAction) { // Take action on parent role as well
+          if (action === 'add') takeAction(action, this.selectedUserRoles, role.name);
+          return true;
+        }
+      }
+    }
+    return false;
+
+    function takeAction(action: 'add' | 'remove', selectedRoles: string[], role: string): void {
+      if (action === 'add') {
+        if (!selectedRoles.find(el => el === role))
+          selectedRoles.push(role);
+
+      } else if (action === 'remove') {
+        const index = selectedRoles.findIndex(el => el === role);
+        selectedRoles.splice(index, 1);
+      }
+    }
   }
 
   filterRoles(): Role[] {

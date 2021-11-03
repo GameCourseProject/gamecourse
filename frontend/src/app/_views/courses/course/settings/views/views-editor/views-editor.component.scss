@@ -130,7 +130,6 @@
 }
 
 #view_editor_actions {
-  width: 450px;
   top: 20px;
 
   .undo_icon.disabled,
@@ -167,4 +166,12 @@
 
 .editor {
   margin: 10px;
+
+  .no-view {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(211, 11, 11);
+    text-align: center;
+    margin-top: 20px;
+  }
 }

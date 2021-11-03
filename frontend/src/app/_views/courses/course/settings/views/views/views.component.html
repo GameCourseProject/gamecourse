@@ -191,7 +191,7 @@
       </div>
 
       <!-- Role Type -->
-      <select class="form__input pages_info" id="new_view_role" [(ngModel)]="templateSelected.roleTypeId">
+      <select class="form__input pages_info" id="new_view_role" [(ngModel)]="templateSelected.roleType">
         <option [ngValue]="null" disabled selected>Select a role type *</option>
         <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
       </select>

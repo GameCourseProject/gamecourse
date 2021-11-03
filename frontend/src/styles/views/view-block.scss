@@ -17,6 +17,13 @@
       margin-bottom: 0;
     }
   }
+
+  &.block_empty {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(211, 11, 11);
+    text-align: center;
+  }
 }
 
 
