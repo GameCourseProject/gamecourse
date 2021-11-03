@@ -5,6 +5,7 @@ namespace GameCourse\Views;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
+use GameCourse\CourseUser;
 
 
 class Views
@@ -24,30 +25,6 @@ class Views
     public static function getPage(int $courseId, int $pageId)
     {
         return Core::$systemDB->select("page", ["id" => $pageId, "course" => $courseId]);
-    }
-
-    /**
-     * Renders a page.
-     *
-     * @param int $courseId
-     * @param int $pageId
-     * @param int|null $userId (optional)
-     * @return mixed
-     */
-    public static function renderPage(int $courseId, int $pageId, int $userId = null)
-    {
-        $viewId = Core::$systemDB->select("page", ["course" => $courseId, "id" => $pageId], 'viewId');
-        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
-
-        $course = Course::getCourse($courseId, false);
-        $viewer = $course->getLoggedUser();
-        $viewer->refreshActivity();
-
-        $user = null;
-        if ($userId) $user = $course->getUser($userId);
-
-        ViewHandler::renderView($view, $course, $viewer, $user);
-        return $view;
     }
 
     /**
@@ -86,9 +63,63 @@ class Views
         Core::$systemDB->update("page", $newView, ['id' => $pageId]);
     }
 
+    /**
+     * Deletes an existing page on course.
+     *
+     * @param int $courseId
+     * @param int $pageId
+     */
     public static function deletePage(int $courseId, int $pageId)
     {
         Core::$systemDB->delete("page", ["course" => $courseId, "id" => $pageId]);
+    }
+
+    /**
+     * Renders a page.
+     *
+     * @param int $courseId
+     * @param int $pageId
+     * @param int|null $userId (optional)
+     * @return mixed
+     */
+    public static function renderPage(int $courseId, int $pageId, int $userId = null)
+    {
+        $viewId = Core::$systemDB->select("page", ["course" => $courseId, "id" => $pageId], 'viewId');
+        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
+
+        $course = Course::getCourse($courseId, false);
+        $viewer = $course->getLoggedUser();
+        $viewer->refreshActivity();
+
+        $user = null;
+        if ($userId) $user = $course->getUser($userId);
+
+        // Get viewer roles hierarchy
+        $viewerRolesHierarchy = $viewer->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
+        array_push($viewerRolesHierarchy, "Default"); // add Default as the last choice
+
+        $roleType = ViewHandler::getRoleType($view[0]["role"]);
+        $rolesHierarchy = [];
+
+        if ($roleType == 'ROLE_SINGLE') {
+            $rolesHierarchy = $viewerRolesHierarchy;
+
+        } else if ($roleType == 'ROLE_INTERACTION') {
+            if (!$user) API::error('Missing user to render view with role type = \'ROLE_INTERACTION\'');
+
+            // Get user roles hierarchy
+            $userRolesHierarchy = $user->getUserRolesByHierarchy();   // [0]=>role more specific, [1]=>role less specific...
+            array_push($userRolesHierarchy, "Default"); // add Default as the last choice
+
+            foreach ($viewerRolesHierarchy as $viewerRole) {
+                foreach ($userRolesHierarchy as $userRole) {
+                    $rolesHierarchy[] = $userRole . '>' . $viewerRole;
+                }
+            }
+        }
+
+        ViewHandler::renderView($view, $rolesHierarchy, ["course" => $courseId, "viewer" => $viewer->getId()]);
+        return $view;
     }
 
 
@@ -100,19 +131,20 @@ class Views
     /**
      * Gets template by ID
      *
-     * @param int $courseId
      * @param int|null $templateId
      * @param string|null $name
      * @return mixed
      */
-    public static function getTemplate(int $courseId, int $templateId = null, string $name = null)
+    public static function getTemplate(int $templateId = null, string $name = null)
     {
-        $tables = "template t join view_template vt on templateId=id join view v on v.viewId=vt.viewId";
-        $where = ['course' => $courseId];
+        $where = [];
         if ($templateId) $where["t.id"] = $templateId;
         else $where["name"] = $name;
-        $fields = "t.id,name,course,isGlobal,roleType,vt.viewId,role";
-        return Core::$systemDB->select($tables, $where, $fields);
+        return Core::$systemDB->select(
+            "view_template vt join template t on templateId=id",
+            $where,
+            "t.id, name, roleType, course, isGlobal, vt.viewId"
+        );
     }
 
     /**
@@ -142,21 +174,33 @@ class Views
     }
 
     /**
-     * Gets template contents.
+     * Gets template roles.
+     * Option to get roles parsed (e.g. 'Default' or 'Default>Default'),
+     * or unparsed (e.g. 'role.Default' or 'role.Default>role.Default')
      *
      * @param int $templateId
-     * @return mixed
+     * @param bool $parse
+     * @return array
      */
-    public static function getTemplateContents(int $templateId)
+    public static function getTemplateRoles(int $templateId, bool $parse = true): array
     {
-        $template = Core::$systemDB->select(
-            "view_template vt join view v on vt.viewId=v.viewId",
-            ["templateId" => $templateId]
-        );
+        $roleType = Core::$systemDB->select("template", ["id" => $templateId], "roleType");
+        return array_map(function ($item) use ($parse, $roleType) {
+            if ($parse) {
+                $role = null;
+                if ($roleType == "ROLE_SINGLE") {
+                    $role = explode(".", $item["role"])[1];
 
-        // It returns the 'container' block and we want to return only the inner views
-        return ViewHandler::getViewWithParts($template["viewId"], null, true);
-    } // TODO: check
+                } else if ($roleType == "ROLE_INTERACTION") {
+                    $viewerRole = explode(".", explode(">", $item["role"])[1])[1];
+                    $userRole = explode(".", explode(">", $item["role"])[0])[1];
+                    $role = $userRole . '>' . $viewerRole;
+                }
+                return $role;
+
+            } else return $item["role"];
+        }, Core::$systemDB->selectMultiple("template_role", ["templateId" => $templateId], "role"));
+    }
 
     /**
      * Sets a new template from a .txt file.
@@ -167,11 +211,11 @@ class Views
      * @param int $courseId
      * @param bool $fromModule
      */
-    public static function setTemplateFromFile(string $name, string $contents, int $courseId): void
+    public static function createTemplateFromFile(string $name, string $contents, int $courseId): void
     {
         $view = json_decode($contents, true); // format: [aspect1, aspect2, ...], where aspect = view object
         $roleType = ViewHandler::getRoleType($view[0]["role"]); // role type must be the same for all aspects
-        Views::setTemplate($view, $courseId, $name, $roleType);
+        Views::createTemplate($view, $courseId, $name, $roleType);
     }
 
     /**
@@ -184,14 +228,14 @@ class Views
      * @param false $fromModule
      * @return array
      */
-    public static function setTemplate($view, int $courseId, string $name, string $roleType): array
+    public static function createTemplate($view, int $courseId, string $name, string $roleType): array
     {
         // Add entry on 'template' table
         Core::$systemDB->insert("template", ["name" => $name, "roleType" => $roleType, "course" => $courseId]);
         $templateId = Core::$systemDB->getLastId();
 
         // Add view to database (including all aspects and children)
-        ViewHandler::updateView($view);
+        ViewHandler::updateView($view, $templateId);
 
         // Add entry on 'view_template'
         $viewId = $view[0]["viewId"]; // viewId is the same for all aspects
@@ -208,7 +252,7 @@ class Views
      */
     public static function deleteTemplate(int $courseId, int $templateId): void
     {
-        Core::$systemDB->deactivateForeignKeyChecks();
+        Core::$systemDB->setForeignKeyChecks(false);
 
         $viewId = Core::$systemDB->select("view_template", ["templateId" => $templateId], 'viewId');
         $view = Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
@@ -222,31 +266,54 @@ class Views
         // Delete entry on 'template' table
         Core::$systemDB->delete('template', ["course" => $courseId, "id" => $templateId]);
 
-        Core::$systemDB->activateForeignKeyChecks();
+        // Delete entries on 'template_role' table
+        Core::$systemDB->delete('template_role', ["templateId" => $templateId]);
+
+        Core::$systemDB->setForeignKeyChecks(true);
     }
 
     /**
-     * Delete templates.
+     * Renders a template on the editor based on viewer and user roles.
      *
-     * @param bool $isTemplate
+     * @param int $courseId
      * @param int $templateId
-     * @param $role
-     * @param bool $isRoleExact
+     * @param string $viewerRole
+     * @param string|null $userRole
+     * @return mixed
      */
-    public static function deleteTemplateRefs(bool $isTemplate, int $templateId, $role, bool $isRoleExact = true)
+    public static function renderTemplate(int $courseId, int $templateId, string $viewerRole, string $userRole = null)
     {
-        if ($isTemplate) {
-            $deleteTempRefTable = "view_template left join view on viewId=id";
-            if ($isRoleExact) {
-                $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef", "role" => $role], "id");
-            } else {
-                $viewDelete = Core::$systemDB->selectMultiple($deleteTempRefTable, ["templateId" => $templateId, "partType" => "templateRef"], "id", null, [], [], null, ["role" => $role]);
-            }
-            foreach ($viewDelete as $view) {
-                Core::$systemDB->delete("view", ["id" => $view["id"]]);
+        $course = Course::getCourse($courseId, false);
+        $template = self::getTemplate($templateId);
+        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $template["viewId"]]);
+
+        $roleType = ViewHandler::getRoleType($view[0]["role"]);
+        $rolesHierarchy = [];
+
+        // Get viewer rolesHierarchy
+        $viewerRolesHierarchy = array_merge([$viewerRole], self::getRoleParents($course, $viewerRole));
+        if (!in_array("Default", $viewerRolesHierarchy)) $viewerRolesHierarchy[] = "Default";
+
+        if ($roleType == 'ROLE_SINGLE') {
+            $rolesHierarchy = $viewerRolesHierarchy;
+
+        } else if ($roleType == 'ROLE_INTERACTION') {
+            if (!$userRole) API::error('Missing user role to render view with role type = \'ROLE_INTERACTION\'');
+
+            // Get user rolesHierarchy
+            $userRolesHierarchy = array_merge([$userRole], self::getRoleParents($course, $userRole));
+            if (!in_array("Default", $userRolesHierarchy)) $userRolesHierarchy[] = "Default";
+
+            foreach ($viewerRolesHierarchy as $viewerRole) {
+                foreach ($userRolesHierarchy as $userRole) {
+                    $rolesHierarchy[] = $userRole . '>' . $viewerRole;
+                }
             }
         }
-    } // TODO: check
+
+        ViewHandler::renderView($view, $rolesHierarchy, null, true);
+        return $view;
+    }
 
     /**
      * Checks if a template with a given name exists in the database
@@ -264,6 +331,7 @@ class Views
      * Exports a template from the system.
      *
      * @param int $templateId
+     * @return mixed
      */
     public static function exportTemplate(int $templateId)
     {
@@ -282,6 +350,31 @@ class Views
     /*** ---------------------------------------------------- ***/
     /*** ------------------ Miscellaneous ------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    private static function getRoleParents(Course $course, string $role): array
+    {
+        $parents = [];
+        self::traverseRoles($course->getRolesHierarchy(), $role, $parents);
+        return $parents;
+    }
+
+    private static function traverseRoles(array $roles, string $roleName, &$parents)
+    {
+        foreach ($roles as $role) {
+            if ($role["name"] == $roleName) return true;
+
+            if (isset($role["children"])) {
+                $foundRole = self::traverseRoles($role["children"], $roleName, $parents);
+                if ($foundRole) {
+                    $parents[] = $role["name"];
+                    return true;
+                }
+            }
+        }
+    }
+
+
+
 
     // TODO: refactor to new structure (everything underneath)
 
@@ -478,7 +571,7 @@ class Views
             $viewSettings["roleType"] = Core::$systemDB->select("view_template vt join template t on vt.templateId=t.id", ["viewId" => $viewId, "course" => $courseId], "roleType");
 
         } else { //template
-            $viewSettings = Views::getTemplate($courseId, $id);
+            $viewSettings = Views::getTemplate($id);
         }
 
         if (empty($viewSettings)) {

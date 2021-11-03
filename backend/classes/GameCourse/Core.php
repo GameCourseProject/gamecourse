@@ -35,8 +35,6 @@ $GLOBALS['_LINKEDIN'] = $_LINKEDIN;
 class Core
 {
     public static $systemDB;
-    //public static $active_courses = array();
-    //public static $courses = array();
     public static $theme = 'default';
 
     private static $loggedUser = null;

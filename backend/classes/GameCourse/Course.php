@@ -509,7 +509,7 @@ class Course
                     "v.*"
                 );
                 ViewHandler::buildView($view, true);
-                [$templateId, $viewId] = Views::setTemplate($view, $courseId, $t["name"], $t["roleType"]);
+                [$templateId, $viewId] = Views::createTemplate($view, $courseId, $t["name"], $t["roleType"]);
 
                 $pagesOfTemplate = Core::$systemDB->selectMultiple("page", ["viewId" => $t["viewId"]]);
                 foreach ($pagesOfTemplate as $page) {

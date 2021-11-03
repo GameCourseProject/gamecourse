@@ -1,10 +1,14 @@
 <?php
 
 namespace MagicDB;
-//This class is responsible for the interaction with the DB
+
+/**
+ * This class is responsible for the interaction with the database.
+ */
 class SQLDB
 {
     private $db;
+
     public function __construct($dsn, $username = '', $password = '')
     {
         try {
@@ -15,6 +19,12 @@ class SQLDB
             echo ("Could not connect to database.\n");
         }
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------- Query Execution ------------------ ***/
+    /*** ---------------------------------------------------- ***/
+
     public function executeQuery($sql)
     {
         try {
@@ -25,6 +35,7 @@ class SQLDB
         }
         return $result;
     }
+
     public function executeQueryWithParams($sql, $data)
     {
         try {
@@ -38,9 +49,19 @@ class SQLDB
         return $stmt;
     }
 
-    public function dataToQuery(&$sql, &$data, $separator, $whereNot = [], $whereCompare = [], $add = false)
+    /**
+     * Takes an array and creates a string with $key=$value(,&)....
+     * then adds to sql query str
+     *
+     * @param $sql
+     * @param $data
+     * @param $separator
+     * @param array $whereNot
+     * @param array $whereCompare
+     * @param false $add
+     */
+    private function dataToQuery(&$sql, &$data, $separator, array $whereNot = [], array $whereCompare = [], bool $add = false)
     {
-        //takes an array and creates a string with $key=$value(,&).... then adds to sql query str        
         foreach ($data as $key => $value) {
             if ($add)
                 $sql .= $key . '= ' . $key . ' + ' . $value . $separator;
@@ -67,12 +88,22 @@ class SQLDB
         $sql = substr($sql, 0, - (strlen($separator)));
     }
 
-    //functions to construct and execute sql querys
 
-    public function insert($table, $data = []): int
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Inserting -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Inserts data into database table.
+     * @example "insert into user set name="Example",id=80000,username=ist1800000";
+     *
+     * @param string $table
+     * @param array $data
+     * @return int
+     */
+    public function insert(string $table, array $data = []): int
     {
-        //example: insert into user set name="Example",id=80000,username=ist1800000;
-
         $sql = "insert into " . $table;
         if ($data == []) {
             $sql .= " values(default)";
@@ -85,7 +116,62 @@ class SQLDB
         return $this->getLastId();
     }
 
-    public function delete($table, $where, $likeParams = null, $whereNot = [], $whereCompare = [])
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Updating --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Updates data from database table.
+     * @example "update user set name="Example", email="a@a.a" where id=80000;"
+     *
+     * @param string $table
+     * @param array $data
+     * @param array|null $where
+     * @param array $whereNot
+     * @param array $whereCompare
+     */
+    public function update(string $table, array $data, array $where = null, array $whereNot = [], array $whereCompare = [])
+    {
+        $sql = "update " . $table . " set ";
+        $this->dataToQuery($sql, $data, ',');
+        if ($where) {
+            $sql .= " where ";
+            $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
+            $data = array_merge($data, $where);
+        }
+        $sql .= ';';
+        $this->executeQueryWithParams($sql, $data);
+    }
+
+    public function updateAdd($table, $collumQuantity, $where, $whereNot = [], $whereCompare = [])
+    {
+        //example: update user set n=n+1 where id=80000;
+        $sql = "update " . $table . " set ";
+        $this->dataToQuery($sql, $collumQuantity, ',', [], true);
+        $sql .= " where ";
+        $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
+        $sql .= ';';
+        $this->executeQueryWithParams($sql, $where);
+    }
+
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Deleting --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Deletes data from database table.
+     *
+     * @param string $table
+     * @param array $where
+     * @param null $likeParams
+     * @param array $whereNot
+     * @param array $whereCompare
+     */
+    public function delete(string $table, array $where, $likeParams = null, array $whereNot = [], array $whereCompare = [])
     {
         $sql = "delete from " . $table . " where ";
         $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
@@ -99,46 +185,47 @@ class SQLDB
         $this->executeQueryWithParams($sql, $where);
     }
 
-    public function deleteAll($table)
+    /**
+     * Deletes all data from database table.
+     *
+     * @param string $table
+     */
+    public function deleteAll(string $table)
     {
         $sql = "delete from " . $table . ";";
         $this->executeQuery($sql);
     }
-    
-    public function update($table, $data, $where = null, $whereNot = [], $whereCompare = [])
+
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** -------------------- Selecting --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Selects data from database table.
+     * @example select id from user where username='ist181205';
+     *
+     * @param string $table
+     * @param array|null $where
+     * @param string $field
+     * @param string|null $orderBy
+     * @param array $whereNot
+     * @param array $whereCompare
+     * @return mixed|void
+     */
+    public function select(string $table, array $where = null, string $field = '*', string $orderBy = null, array $whereNot = [], array $whereCompare = [])
     {
-        //example: update user set name="Example", email="a@a.a" where id=80000;
-        $sql = "update " . $table . " set ";
-        $this->dataToQuery($sql, $data, ',');
+        //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
+        $sql = "select " . $field . " from " . $table;
         if ($where) {
             $sql .= " where ";
             $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
-            $data = array_merge($data, $where);
         }
-        $sql .= ';';
-        $this->executeQueryWithParams($sql, $data);
-    }
-    public function updateAdd($table, $collumQuantity, $where, $whereNot = [], $whereCompare = [])
-    {
-        //example: update user set n=n+1 where id=80000;
-        $sql = "update " . $table . " set ";
-        $this->dataToQuery($sql, $collumQuantity, ',', [], true);
-        $sql .= " where ";
-        $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
-        $sql .= ';';
-        $this->executeQueryWithParams($sql, $where);
-    }
-
-    public function select($table, $where, $field = '*', $orderBy = null, $whereNot = [], $whereCompare = [])
-    {
-        //ToDo: devia juntar as 2 funçoes select, devia aceitar array de fields,
-        //example: select id from user where username='ist181205';
-        $sql = "select " . $field . " from " . $table;
-        $sql .= " where ";
-        $this->dataToQuery($sql, $where, '&&', $whereNot, $whereCompare);
         if ($orderBy) {
             $sql .= " order by " . $orderBy;
         }
+
         $sql .= ';';
         $result = $this->executeQueryWithParams($sql, $where);
         $returnVal = $result->fetch(\PDO::FETCH_ASSOC);
@@ -156,6 +243,7 @@ class SQLDB
             return $returnVal;
         }
     }
+
     public function selectMultiple($table, $where = null, $field = '*', $orderBy = null, $whereNot = [], $whereCompare = [], $group = null, $likeParams = null)
     {
         //example: select * from course where isActive=true;
@@ -220,29 +308,55 @@ class SQLDB
         $result = $this->executeQuery($sql);
         return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
-    //this returns the last auto_increment id after an insertion in the DB
-    public function getLastId()
+
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Utilities -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets the last auto_increment id after an insertion in the database
+     *
+     * @return int
+     */
+    public function getLastId(): int
     {
         $result = $this->executeQuery("SELECT LAST_INSERT_ID();");
-        return $result->fetch()[0];
+        return intval($result->fetch()[0]);
     }
 
-    public function columnExists($table, $column)
+    /**
+     * Checks if given column exists in database table.
+     *
+     * @param string $table
+     * @param string $column
+     * @return bool
+     */
+    public function columnExists(string $table, string $column): bool
     {
         $result = $this->executeQuery("show columns from " . $table . " like '" . $column . "';");
-        return $result->fetch()[0];
+        return $result->fetch()[0] == $column;
     }
-    public function tableExists($table): bool
+
+    /**
+     * Checks if given table exists in database.
+     *
+     * @param string $table
+     * @return bool
+     */
+    public function tableExists(string $table): bool
     {
         return !empty($this->executeQuery("show tables like '" . $table . "';")->fetchAll(\PDO::FETCH_ASSOC));
     }
 
-    public function activateForeignKeyChecks()
+    /**
+     * Sets foreign key checks.
+     *
+     * @param bool $status
+     */
+    public function setForeignKeyChecks(bool $status)
     {
-        $this->executeQuery("SET FOREIGN_KEY_CHECKS=1;");
-    }
-    public function deactivateForeignKeyChecks()
-    {
-        $this->executeQuery("SET FOREIGN_KEY_CHECKS=0;");
+        $this->executeQuery("SET FOREIGN_KEY_CHECKS=" . ($status ? 1 : 0) .";");
     }
 }

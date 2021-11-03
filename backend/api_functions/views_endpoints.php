@@ -132,7 +132,7 @@ API::registerFunction($MODULE, 'getTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateId');
 
-    $template = Views::getTemplate(API::getValue("courseId"), API::getValue("templateId"));
+    $template = Views::getTemplate(API::getValue("templateId"));
     API::response(array('template' => $template));
 });
 
@@ -156,7 +156,7 @@ API::registerFunction($MODULE, 'createTemplate', function () {
     $view = [["type" => "block", "role" => $defaultRole]];
 
     // Set template
-    Views::setTemplate($view, API::getValue('courseId'), API::getValue('templateName'), $roleType);
+    Views::createTemplate($view, API::getValue('courseId'), API::getValue('templateName'), $roleType);
 });
 
 /**
@@ -219,13 +219,13 @@ API::registerFunction($MODULE, 'importTemplate', function () {
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
 
-    Views::setTemplateFromFile('Imported Template', $fileContents, $courseId);
+    Views::createTemplateFromFile('Imported Template', $fileContents, $courseId);
 });
 
 /**
  * Export template to a .txt file.
  * It needs to either be imported, or manually moved to a module folder and
- * call setTemplateFromFile() on init function of module.
+ * call createTemplateFromFile() on init function of module.
  *
  * @param int $courseId
  * @param int $templateId
@@ -236,6 +236,56 @@ API::registerFunction($MODULE, 'exportTemplate', function () {
 
     $templateView = Views::exportTemplate(API::getValue('templateId'));
     API::response(array('template' => json_encode($templateView)));
+});
+
+
+
+/*** ---------------------------------------------------- ***/
+/*** ---------------------- Editor ---------------------- ***/
+/*** ---------------------------------------------------- ***/
+
+/**
+ * Get course roles, roles hierarchy and template roles.
+ *
+ * @param int $courseId
+ * @param int $templateId
+ */
+API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues("courseId", "templateId");
+
+    $templateId = API::getValue("templateId");
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    API::response(array(
+        'courseRoles' => $course->getRoles('id, name, landingPage'),
+        'rolesHierarchy' => $course->getRolesHierarchy(),
+        'templateRoles' => Views::getTemplateRoles($templateId),
+    ));
+});
+
+/**
+ * Get a view by viewer and user roles to show on editor.
+ *
+ * @param int $courseId
+ * @param int $templateId
+ * @param string $viewerRole
+ * @param string $userRole (optional)
+ */
+API::registerFunction($MODULE, 'getTemplateEditView', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues("courseId", "templateId", "viewerRole");
+
+    $courseId = API::getValue('courseId');
+    $templateId = API::getValue("templateId");
+    $viewerRole = API::getValue("viewerRole");
+    $userRole = API::getValue("userRole");
+
+    API::response(array('view' => Views::renderTemplate($courseId, $templateId, $viewerRole, $userRole)));
 });
 
 
@@ -256,45 +306,6 @@ API::registerFunction($MODULE, 'createAspectView', function () {
     );
 
     http_response_code(201);
-    return;
-});
-//Delete an aspect view of a page or template
-API::registerFunction($MODULE, 'deleteAspectView', function () {
-    $data = $this->getViewSettings();
-    $viewSettings = $data["viewSettings"];
-    $type = $viewSettings['roleType'];
-    API::requireValues('info');
-    $info = API::getValue('info');
-
-    if (!array_key_exists('roleOne', $info)) {
-        API::error('Missing roleOne in info');
-    }
-    $aspects = $this->viewHandler->getAspects($viewSettings["viewId"]);
-
-    $isTemplate = $data["pageOrTemp"] == "template";
-    if ($type == "ROLE_INTERACTION" && !array_key_exists('roleTwo', $info)) {
-        $role = ["role" => $info['roleOne'] . '>%'];
-        $this->deleteTemplateRefs($isTemplate, $data["id"], $info['roleOne'] . '>%', false);
-        //This is assuming that there is always an undeletable default aspect
-        Core::$systemDB->delete("view", ["partType" => "block", "parent" => null], $role);
-    } else {
-        $aspectsByRole = array_combine(array_column($aspects, "role"), $aspects);
-        if ($type == "ROLE_SINGLE") {
-            $role = $info["roleOne"];
-            $this->deleteTemplateRefs($isTemplate, $data["id"], "%>" . $role, false);
-        } else if ($type == "ROLE_INTERACTION") {
-            $role = $info['roleOne'] . '>' . $info['roleTwo'];
-            $this->deleteTemplateRefs($isTemplate, $data["id"], $info['roleTwo'], true);
-        }
-        $aspect = $aspectsByRole[$role];
-        $this->deleteTemplateRefs($isTemplate, $data["id"], $role, true);
-
-        Core::$systemDB->delete("view", ["id" => $aspect["id"]]);
-    }
-    // if(sizeof($aspects)==2){//only 1 aspect after deletion -> aspectClass becomes null
-    //     Core::$systemDB->delete("aspect_class",["aspectClass"=>$aspects[0]["aspectClass"]]);
-    // }
-    http_response_code(200);
     return;
 });
 
@@ -351,40 +362,6 @@ API::registerFunction($MODULE, 'getInfo', function () {
     $response["pageOrTemp"] = $data["pageOrTemp"];
     API::response($response);
 });
-
-//gets contents of template to put it in the view being edited
-API::registerFunction($MODULE, 'getTemplateContent', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('id');
-    $templateView = $this->getTemplateContents(API::getValue("id"));
-    // if (sizeOf($templateView["children"]) > 1) {
-    //     $block = $templateView;
-    //     $block["partType"] = "block";
-    //     unset($block["id"]);
-    // } else {
-    //     $block = $templateView["children"][0];
-    // }
-    API::response(array('template' => $templateView));
-});
-//gets
-API::registerFunction($MODULE, 'getTemplateReference', function () {
-    API::requireCourseAdminPermission(); //course/id/isglobal/name/role/roletype/viewid
-    API::requireValues('viewId', 'id');
-
-    $templateView = $this->getTemplateContents(API::getValue("viewId"));
-
-    //$view = Core::$systemDB->select("view", ["id" => $referenceId], "parent,role");
-    //$parentId = Core::$systemDB->select("view", ["viewId" => $view["parent"], "role" => $view["role"]], "id");
-    //$templateView =  $this->getTemplateContents($parentId, true, API::getValue("role"));
-
-    //$templateView = $this->getTemplateContents(API::getValue("role"), $templateId, API::getValue("course"), API::getValue("roleType"));
-    $templateView["partType"] = "templateRef";
-    $templateView["templateId"] = API::getValue("id");
-    //is this needed??? aspectId
-    //$templateView["aspectId"] = $templateView["id"];
-    API::response(array('template' => $templateView));
-});
-
 
 //save a part of the view as a template or templateRef while editing the view
 API::registerFunction($MODULE, 'saveTemplate', function () {
@@ -473,55 +450,6 @@ API::registerFunction($MODULE, "copyGlobalTemplate", function () {
     return;
 });
 
-//get contents of a view with a specific aspect, for the edit page
-API::registerFunction($MODULE, 'getEdit', function () {
-    API::requireCourseAdminPermission();
-    $data = $this->getViewSettings();
-    $course = $data["course"];
-    $courseId = $course->getId();
-    $viewSettings = $data["viewSettings"];
-    $viewType = $viewSettings['roleType'];
-    API::requireValues('roles');
-    $roles = API::getValue('roles');
-    $rolesHierarchy = $course->getRolesHierarchy(); // more specific --> less specific
-    // although Default is not the more specific, we need to include it, so it goes as the 'role 0' in the first position
-    array_unshift($rolesHierarchy, ["name" => "Default", "id" => "0"]);
-    if ($viewType == "ROLE_SINGLE") {
-        //print_r($viewSettings);
-        // if (!array_key_exists('role', $info)) {
-        //     API::error('Missing role');
-        // }
-        //When entering the view editor, starts always with Default
-        $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['viewerRole'], true);
-    } else if ($viewType == "ROLE_INTERACTION") {
-        // if (!array_key_exists('roleOne', $roles) || !array_key_exists('roleTwo', $roles)) {
-        //     API::error('Missing roleOne and/or roleTwo in info');
-        // }
-        $view = $this->viewHandler->getViewWithParts($viewSettings["viewId"], $roles['userRole'] . '>' . $roles['viewerRole'], true);
-    }
-
-    $templates = $this->getTemplates();
-    if ($viewType == 'ROLE_SINGLE') {
-        $templates = array_filter($templates, function ($var, $key) use ($viewType) {
-            // returns whether the input integer is even
-            return $var["roleType"] == $viewType;
-        }, ARRAY_FILTER_USE_BOTH);
-    }
-    $templates = array_filter($templates, function ($var, $key) use ($viewType) {
-        // returns whether the input integer is even
-        return $var["roleType"] == $viewType;
-    }, ARRAY_FILTER_USE_BOTH);
-    $templates = array_values($templates);
-    //removes the template itself
-    if (($key = array_search($viewSettings["viewId"], array_column($templates, 'viewId'))) !== FALSE) {
-        unset($templates[$key]);
-    }
-    $courseRoles = $course->getRolesData("id,name");
-    //include Default as a role
-    array_unshift($courseRoles, ["id" => "0", "name" => "Default"]);
-    $viewRoles = array_values($this->viewHandler->getViewRoles($viewSettings["viewId"], $courseRoles, $viewType));
-    API::response(array('view' => $view, 'courseId' => $courseId, 'fields' => [], 'templates' => $templates, 'courseRoles' => $courseRoles, 'viewRoles' => $viewRoles, 'rolesHierarchy' => $rolesHierarchy));
-});
 //getDictionary
 API::registerFunction($MODULE, 'getDictionary', function () {
     API::requireCourseAdminPermission();

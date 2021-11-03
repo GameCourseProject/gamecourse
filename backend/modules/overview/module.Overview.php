@@ -20,7 +20,7 @@ class Overview extends Module {
         //$viewHandler->createPageOrTemplateIfNew('Overview',"page","ROLE_SINGLE");
 
         if (!Views::templateExists(self::USERS_OVERVIEW_TEMPLATE_NAME, $this->getCourseId()))
-            Views::setTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'), $this->getCourseId());
+            Views::createTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'), $this->getCourseId());
     }
     public function is_configurable(){
         return false;

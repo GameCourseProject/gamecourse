@@ -56,10 +56,10 @@ class AwardList extends Module
         );*/
 
         if (!Views::templateExists(self::AWARDS_PROFILE_TEMPLATE, $this->getCourseId()))
-            Views::setTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $this->getCourseId(), true);
+            Views::createTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $this->getCourseId(), true);
 
         if (!Views::templateExists(self::FULL_AWARDS_TEMPLATE, $this->getCourseId()))
-            Views::setTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $this->getCourseId(), true);
+            Views::createTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $this->getCourseId(), true);
     }
 
     public function is_configurable()

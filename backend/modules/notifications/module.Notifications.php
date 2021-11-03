@@ -82,7 +82,7 @@ class Notifications extends Module
         Dictionary::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
 
         if (!Views::templateExists('Notifications Profile - by notifications', $this->getCourseId()))
-            Views::setTemplateFromFile('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId());
+            Views::createTemplateFromFile('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId());
     }
 
     public function is_configurable()

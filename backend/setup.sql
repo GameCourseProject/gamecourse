@@ -347,10 +347,17 @@ CREATE TABLE template(
 );
 
 CREATE TABLE view_template(
-	viewId                      int unsigned PRIMARY KEY,
-	templateId                  int unsigned,
+	viewId                      int unsigned NOT NULL ,
+	templateId                  int unsigned NOT NULL ,
 
-	FOREIGN key (templateId) REFERENCES template(id) ON DELETE CASCADE
+	FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_role(
+    templateId                  int unsigned NOT NULL,
+    role                        varchar(100),
+
+    FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
 );
 
 CREATE TABLE autogame(

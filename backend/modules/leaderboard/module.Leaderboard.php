@@ -16,10 +16,10 @@ class Leaderboard extends Module {
 
     public function init() {
         if (!Views::templateExists(self::LEADERBOARD_TEMPLATE_NAME, $this->getCourseId())) {
-            Views::setTemplateFromFile(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), $this->getCourseId());
+            Views::createTemplateFromFile(self::LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/leaderboard.txt'), $this->getCourseId());
         }
         if (!Views::templateExists(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, $this->getCourseId())) {
-            Views::setTemplateFromFile(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), $this->getCourseId());
+            Views::createTemplateFromFile(self::RELATIVE_LEADERBOARD_TEMPLATE_NAME, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), $this->getCourseId());
         }
     }
 

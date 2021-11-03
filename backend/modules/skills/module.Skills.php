@@ -891,7 +891,7 @@ class Skills extends Module
         );
 
         if (!Views::templateExists(self::SKILL_TREE_TEMPLATE, $this->getCourseId())) {
-            Views::setTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId());
+            Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId());
         }
 
         //if ($viewsModule->getTemplate(self::SKILLS_OVERVIEW_TEMPLATE) == NULL)

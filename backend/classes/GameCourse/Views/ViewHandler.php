@@ -23,8 +23,9 @@ class ViewHandler
      * This includes all aspects of the view and also children.
      *
      * @param $view
+     * @param int $templateId
      */
-    public static function updateView(&$view) {
+    public static function updateView(&$view, int $templateId) {
         $viewId = null; // used to set the same viewId for all aspects of the view
         foreach ($view as &$aspect) {
             if (isset($aspect["id"])) { // Already in database, update
@@ -34,7 +35,11 @@ class ViewHandler
                 if ($viewId) $aspect["viewId"] = $viewId;
 
                 self::prepareViewForDatabase($aspect);
-                self::insertView($aspect);
+                self::insertView($aspect, $templateId);
+
+                // Add aspect role to template roles
+                if (!in_array($aspect["role"], Views::getTemplateRoles($templateId, false)))
+                    Core::$systemDB->insert("template_role", ["templateId" => $templateId, "role" => $aspect["role"]]);
 
                 if (!$viewId && isset($aspect["viewId"])) $viewId = $aspect["viewId"];
             }
@@ -46,8 +51,9 @@ class ViewHandler
      * Insert a view into the database.
      *
      * @param $view
+     * @param int $templateId
      */
-    private static function insertView(&$view)
+    private static function insertView(&$view, int $templateId)
     {
         // Insert into 'view' table
         Core::$systemDB->insert("view", [
@@ -72,10 +78,10 @@ class ViewHandler
         // Insert into database depending on type
         if ($view["type"] == 'text') self::insertViewText($view);
         if ($view["type"] == 'image') self::insertViewImage($view);
-        if ($view["type"] == 'header') self::insertViewHeader($view);
-        if ($view["type"] == 'table') self::insertViewTable($view);
-        if ($view["type"] == 'block') self::insertViewBlock($view);
-        if ($view["type"] == 'row') self::insertViewRow($view);
+        if ($view["type"] == 'header') self::insertViewHeader($view, $templateId);
+        if ($view["type"] == 'table') self::insertViewTable($view, $templateId);
+        if ($view["type"] == 'block') self::insertViewBlock($view, $templateId);
+        if ($view["type"] == 'row') self::insertViewRow($view, $templateId);
         // NOTE: insert here other types of views
     }
 
@@ -111,11 +117,12 @@ class ViewHandler
      * Insert a view of type 'header' into the database.
      *
      * @param $view
+     * @param int $templateId
      */
-    private static function insertViewHeader($view)
+    private static function insertViewHeader($view, int $templateId)
     {
-        self::updateView($view["image"]);
-        self::updateView($view["title"]);
+        self::updateView($view["image"], $templateId);
+        self::updateView($view["title"], $templateId);
 
         Core::$systemDB->insert("view_header", [
             "id" => $view["id"],
@@ -128,12 +135,13 @@ class ViewHandler
      * Insert a view of type 'table' into the database.
      *
      * @param $view
+     * @param int $templateId
      */
-    private static function insertViewTable($view)
+    private static function insertViewTable($view, int $templateId)
     {
         // Insert header rows
         foreach ($view["headerRows"] as &$headerRow) {
-            self::updateView($headerRow);
+            self::updateView($headerRow, $templateId);
 
             Core::$systemDB->insert("view_table_header", [
                 "id" => $view["id"],
@@ -144,7 +152,7 @@ class ViewHandler
 
         // Insert body rows
         foreach ($view["rows"] as &$row) {
-            self::updateView($row);
+            self::updateView($row, $templateId);
 
             Core::$systemDB->insert("view_table_row", [
                 "id" => $view["id"],
@@ -158,8 +166,9 @@ class ViewHandler
      * Insert a view of type 'block' into the database.
      *
      * @param $view
+     * @param int $templateId
      */
-    private static function insertViewBlock($view)
+    private static function insertViewBlock($view, int $templateId)
     {
         if (isset($view["children"])) {
             foreach ($view["children"] as &$child) {
@@ -168,7 +177,7 @@ class ViewHandler
                     $childAspect["parentId"] = $view["id"];
                 }
 
-                self::updateView($child);
+                self::updateView($child, $templateId);
 
                 // Insert into 'view_parent'
                 Core::$systemDB->insert("view_parent", [
@@ -184,12 +193,13 @@ class ViewHandler
      * Insert a view of type 'row' into the database.
      *
      * @param $view
+     * @param int $templateId
      */
-    private static function insertViewRow($view)
+    private static function insertViewRow($view, int $templateId)
     {
         // Similar to view type 'block',
         // they both only carry children views
-        self::insertViewBlock($view);
+        self::insertViewBlock($view, $templateId);
     }
 
 
@@ -312,49 +322,29 @@ class ViewHandler
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Builds a view to be rendered on a page.
-     * It populates the view with actual data, not just view
-     * specifications.
+     * Builds a view to be rendered, either on a page or on editor.
      *
      * @param $view
-     * @param Course $course
-     * @param CourseUser $viewer
-     * @param CourseUser|null $user (optional)
+     * @param $rolesHierarchy
+     * @param $viewParams (optional)
+     * @param bool $edit (optional)
      */
-    public static function renderView(&$view, Course $course, CourseUser $viewer, CourseUser $user = null)
+    public static function renderView(&$view, $rolesHierarchy, $viewParams = null, bool $edit = false)
     {
-        // Get viewer roles hierarchy
-        $viewerRolesHierarchy = $viewer->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
-        array_push($viewerRolesHierarchy, "Default"); // add Default as the last choice
-
-        $roleType = self::getRoleType($view[0]["role"]);
-        $rolesHierarchy = [];
-
-        if ($roleType == 'ROLE_SINGLE') {
-            $rolesHierarchy = $viewerRolesHierarchy;
-
-        } else if ($roleType == 'ROLE_INTERACTION') {
-            if (!$user) API::error('Missing user to render view with role type = \'ROLE_INTERACTION\'');
-
-            // Get user roles hierarchy
-            $userRolesHierarchy = $user->getUserRolesByHierarchy();      // [0]=>role more specific, [1]=>role less specific...
-            array_push($userRolesHierarchy, "Default"); // add Default as the last choice
-
-            foreach ($viewerRolesHierarchy as $viewerRole) {
-                foreach ($userRolesHierarchy as $userRole) {
-                    $rolesHierarchy[] = $userRole . '>' . $viewerRole;
-                }
-            }
-        }
-
         // Pick a specific aspect and build it
-        self::buildView($view, false, $rolesHierarchy);
+        self::buildView($view, false, $rolesHierarchy, $edit);
         if (count($view) == 1) $view = $view[0];
-        else if (count($view) == 0) API::error('There\'s no aspect to render for current view and roles.');
+        else if (count($view) == 0) {
+            if (!$edit) API::error('There\'s no aspect to render for current view and roles.');
+            else $view = null;
+        }
         else if (count($view) > 1) API::error('Should have only one aspect but got more.');
 
-        self::parseView($view);
-        self::processView($view, ["course" => $course->getId(), "viewer" => $viewer->getId()]);
+        if (!$edit) {
+            // Populate view with actual data, not just view specifications.
+            self::parseView($view);
+            self::processView($view, $viewParams);
+        }
     }
 
 
@@ -368,47 +358,20 @@ class ViewHandler
      * @param $view
      * @param bool $toExport
      * @param null $rolesHierarchy
+     * @param bool $edit
      */
-    public static function buildView(&$view, bool $toExport = false, $rolesHierarchy = null) {
-        if ($rolesHierarchy) {
-            $roleType = self::getRoleType($rolesHierarchy[0]);
-
-            // Pick the most specific aspect available on view
-            $foundAspect = false;
-            foreach ($rolesHierarchy as $role) {
-                foreach ($view as $aspect) {
-                    $aspectRole = null;
-
-                    if ($roleType == 'ROLE_SINGLE') {
-                        $aspectRole = explode(".", $aspect["role"])[1];
-
-                    } else if ($roleType == 'ROLE_INTERACTION') {
-                        $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
-                        $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
-                        $aspectRole = $userRole . '>' . $viewerRole;
-                    }
-
-                    if ($aspectRole == $role) {
-                        $foundAspect = true;
-                        $view = [$aspect];
-                        break;
-                    }
-                }
-                if ($foundAspect) break;
-            }
-
-            // No aspect available w/ current rolesHierarchy
-            if (!$foundAspect) $view = [];
-        }
+    public static function buildView(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false) {
+        if ($rolesHierarchy)
+            self::filterViewByRoles($view, $rolesHierarchy);
 
         foreach ($view as &$aspect) {
             self::prepareViewFromDatabase($aspect);
             if ($aspect["type"] == 'text') self::buildViewText($aspect);
             if ($aspect["type"] == 'image') self::buildViewImage($aspect);
-            if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy);
-            if ($aspect["type"] == 'table') self::buildViewTable($aspect, $toExport, $rolesHierarchy);
-            if ($aspect["type"] == 'block') self::buildViewBlock($aspect, $toExport, $rolesHierarchy);
-            if ($aspect["type"] == 'row') self::buildViewRow($aspect, $toExport, $rolesHierarchy);
+            if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy, $edit);
+            if ($aspect["type"] == 'table') self::buildViewTable($aspect, $toExport, $rolesHierarchy, $edit);
+            if ($aspect["type"] == 'block') self::buildViewBlock($aspect, $toExport, $rolesHierarchy, $edit);
+            if ($aspect["type"] == 'row') self::buildViewRow($aspect, $toExport, $rolesHierarchy, $edit);
             // NOTE: insert here other types of views
 
             if ($toExport) {
@@ -417,6 +380,8 @@ class ViewHandler
                 unset($aspect["viewId"]);
                 unset($aspect["parentId"]);
             }
+
+            if ($edit) $aspect["edit"] = true;
 
             // Filter null values
             $aspect = array_filter($aspect, function ($value) { return !is_null($value); });
@@ -454,20 +419,21 @@ class ViewHandler
      * @param $view
      * @param bool $toExport
      * @param null $rolesHierarchy
+     * @param bool $edit
      */
-    public static function buildViewHeader(&$view, bool $toExport = false, $rolesHierarchy = null)
+    public static function buildViewHeader(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false)
     {
         $viewHeader = Core::$systemDB->select("view_header", ["id" => $view["id"]]);
         $viewImage = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["image"]]);
         $viewTitle = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["title"]]);
 
-        self::buildView($viewImage, $toExport, $rolesHierarchy);
+        self::buildView($viewImage, $toExport, $rolesHierarchy, $edit);
         if (count($viewImage) == 0)
             API::error('There\'s no aspect for header image for current view and roles.');
         if ($rolesHierarchy) $viewImage = $viewImage[0];
         $view["image"] = $viewImage;
 
-        self::buildView($viewTitle, $toExport, $rolesHierarchy);
+        self::buildView($viewTitle, $toExport, $rolesHierarchy, $edit);
         if (count($viewTitle) == 0)
             API::error('There\'s no aspect for header title for current view and roles.');
         if ($rolesHierarchy) $viewTitle = $viewTitle[0];
@@ -480,8 +446,9 @@ class ViewHandler
      * @param $view
      * @param bool $toExport
      * @param null $rolesHierarchy
+     * @param bool $edit
      */
-    public static function buildViewTable(&$view, bool $toExport = false, $rolesHierarchy = null)
+    public static function buildViewTable(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false)
     {
         $viewTableHeaderRows = Core::$systemDB->selectMultiple(
             "view v left join view_table_header th on v.viewId=th.headerRow",
@@ -500,7 +467,7 @@ class ViewHandler
         $viewTableRows = self::groupViewsByAspect($viewTableRows, ["viewIndex"]);
 
         foreach ($viewTableHeaderRows as &$headerRow) {
-            self::buildView($headerRow, $toExport, $rolesHierarchy);
+            self::buildView($headerRow, $toExport, $rolesHierarchy, $edit);
             if (count($headerRow) != 0) {
                 if ($rolesHierarchy) $headerRow = $headerRow[0];
                 $view["headerRows"][] = $headerRow;
@@ -508,7 +475,7 @@ class ViewHandler
         }
 
         foreach ($viewTableRows as &$row) {
-            self::buildView($row, $toExport, $rolesHierarchy);
+            self::buildView($row, $toExport, $rolesHierarchy, $edit);
             if (count($row) != 0) {
                 if ($rolesHierarchy) $row = $row[0];
                 $view["rows"][] = $row;
@@ -522,8 +489,9 @@ class ViewHandler
      * @param $view
      * @param bool $toExport
      * @param null $rolesHierarchy
+     * @param bool $edit
      */
-    public static function buildViewBlock(&$view, bool $toExport = false, $rolesHierarchy = null)
+    public static function buildViewBlock(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false)
     {
         $children = Core::$systemDB->selectMultiple(
             "view v left join view_parent vp on v.viewId=vp.childId",
@@ -535,7 +503,7 @@ class ViewHandler
         if (!empty($children)) {
             $childrenViews = self::groupViewsByAspect($children, ["viewIndex"]);
             foreach ($childrenViews as &$childView) {
-                self::buildView($childView, $toExport, $rolesHierarchy);
+                self::buildView($childView, $toExport, $rolesHierarchy, $edit);
                 if (count($childView) != 0) {
                     if ($rolesHierarchy) $childView = $childView[0];
                     $view["children"][] = $childView;
@@ -550,12 +518,13 @@ class ViewHandler
      * @param $view
      * @param bool $toExport
      * @param null $rolesHierarchy
+     * @param bool $edit
      */
-    public static function buildViewRow(&$view, bool $toExport = false, $rolesHierarchy = null)
+    public static function buildViewRow(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false)
     {
         // Similar to view type 'block',
         // they both only carry children views
-        self::buildViewBlock($view, $toExport, $rolesHierarchy);
+        self::buildViewBlock($view, $toExport, $rolesHierarchy, $edit);
     }
 
 
@@ -780,6 +749,58 @@ class ViewHandler
             if (isset($view[$param]))
                 $view[$param] = json_decode($view[$param]);
         }
+    }
+
+    /**
+     * Filters view by rolesHierarchy, where the more specific
+     * roles come first than the more general ones
+     * ([0]=>role more specific, [1]=>role less specific...).
+     *
+     * @example ['Teacher_Assistant', 'Teacher', 'Default']
+     * @example ['Teacher_Assistant>Teacher_Assistant',
+     *           'Teacher>Teacher_Assistant',
+     *           'Default>Teacher_Assistant',
+     *           'Teacher_Assistant>Teacher',
+     *           'Teacher>Teacher',
+     *           'Default>Teacher',
+     *           'Teacher_Assistant>Default',
+     *           'Teacher>Default',
+     *           'Default>Default'
+     *          ]
+     *
+     * @param $view
+     * @param array $rolesHierarchy
+     */
+    private static function filterViewByRoles(&$view, array $rolesHierarchy)
+    {
+        $roleType = self::getRoleType($rolesHierarchy[0]);
+
+        // Pick the most specific aspect available on view
+        $foundAspect = false;
+        foreach ($rolesHierarchy as $role) {
+            foreach ($view as $aspect) {
+                $aspectRole = null;
+
+                if ($roleType == 'ROLE_SINGLE') {
+                    $aspectRole = explode(".", $aspect["role"])[1];
+
+                } else if ($roleType == 'ROLE_INTERACTION') {
+                    $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
+                    $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
+                    $aspectRole = $userRole . '>' . $viewerRole;
+                }
+
+                if ($aspectRole == $role) {
+                    $foundAspect = true;
+                    $view = [$aspect];
+                    break;
+                }
+            }
+            if ($foundAspect) break;
+        }
+
+        // No aspect available w/ current rolesHierarchy
+        if (!$foundAspect) $view = [];
     }
 
     /**
