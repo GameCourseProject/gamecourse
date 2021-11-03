@@ -6,6 +6,9 @@ export class ViewBlock extends View {
 
   private _children: View[];
 
+  // Edit only params
+  private _isEditingLayout?: boolean;
+
   static readonly BLOCK_CLASS = 'block';
   static readonly BLOCK_CHILDREN_CLASS = 'block_children';
   static readonly BLOCK_EMPTY_CLASS = 'block_empty';
@@ -28,6 +31,14 @@ export class ViewBlock extends View {
     this._children = value;
   }
 
+  get isEditingLayout(): boolean {
+    return this._isEditingLayout;
+  }
+
+  set isEditingLayout(value: boolean) {
+    this._isEditingLayout = value;
+  }
+
   static fromDatabase(obj: ViewBlockDatabase): ViewBlock {
     const parsedObj = View.parse(obj);
     return new ViewBlock(
@@ -36,7 +47,7 @@ export class ViewBlock extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.children ? obj.children.map(child => buildView(child)) : [],
+      obj.children?.length > 0 ? obj.children.map(child => buildView(child)) : [],
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,

@@ -31,7 +31,6 @@ export abstract class View {
   private _label?: string;  // FIXME: use label or delete
 
   private _visibilityType?: VisibilityType;
-
   private _events?: {[key in EventType]?: Event};
 
   // Edit only params
@@ -224,7 +223,7 @@ export interface ViewDatabase {
   parentId: string;
   type: string;
   role: string;
-  edit: boolean;
+  edit?: boolean;
   loopData?: string;
   variables?: any;
   style?: string;
@@ -233,6 +232,6 @@ export interface ViewDatabase {
   label?: string;
   visibilityType?: string;
   visibilityCondition?: string;
-  events?: string; // format: '{[key in EventType]?: string}'
+  events?: {[key in EventType]?: string};
 }
 

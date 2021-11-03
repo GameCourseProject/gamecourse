@@ -3,6 +3,7 @@ interface String {
   isEmpty(): boolean;
   swapNonENChars(): string;
   noWhiteSpace(): string;
+  containsWord(word: string): boolean;
 }
 
 /**
@@ -52,4 +53,14 @@ String.prototype.swapNonENChars = function(): string {
  */
 String.prototype.noWhiteSpace = function(): string {
   return this.replace(/\s*/g, '');
+}
+
+
+/**
+ * Checks if a string contains a given word.
+ *
+ * @return string
+ */
+String.prototype.containsWord = function(word: string): boolean {
+  return this.match(new RegExp("\\b" + word + "\\b")) != null;
 }

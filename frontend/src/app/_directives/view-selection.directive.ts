@@ -1,4 +1,4 @@
-import {Directive, ElementRef, HostListener, Input} from '@angular/core';
+import {Directive, HostListener, Input} from '@angular/core';
 import {View, ViewMode} from "../_domain/views/view";
 import {ViewSelectionService} from "../_services/view-selection.service";
 
@@ -15,14 +15,12 @@ export class ViewSelectionDirective {
 
   @HostListener('click', ['$event'])
   onClick(event: any) {
-    // Makes sure click only works on closest view
-    event.stopPropagation();
+    if (this.view.mode === ViewMode.EDIT) {
+      // Makes sure click only works on closest view
+      event.stopPropagation();
 
-    console.log(event.target)
-    console.log(this.view)
-
-    if (this.view.mode !== ViewMode.EDIT) return;
-    this.selection.update(event, this.view);
+      this.selection.update(event.target, this.view);
+    }
   }
 
 }

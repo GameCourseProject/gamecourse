@@ -11,6 +11,9 @@ import {Role} from "../../../../../../_domain/roles/role";
 import {User} from "../../../../../../_domain/users/user";
 import {View} from "../../../../../../_domain/views/view";
 import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
+import { ViewType } from 'src/app/_domain/views/view-type';
+import {ViewBlock} from "../../../../../../_domain/views/view-block";
+import {ViewTable} from "../../../../../../_domain/views/view-table";
 
 @Component({
   selector: 'app-view-editor',
@@ -38,15 +41,25 @@ export class ViewsEditorComponent implements OnInit {
   help: boolean = false;
   clickedHelpOnce: boolean = false;
 
+  isEditing: boolean;
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private router: Router,
-    private selection: ViewSelectionService
+    public selection: ViewSelectionService
   ) { }
 
   get RoleTypeId(): typeof RoleTypeId {
     return RoleTypeId;
+  }
+
+  get ViewType(): typeof ViewType {
+    return ViewType;
+  }
+
+  get ViewBlock(): typeof ViewBlock {
+    return ViewBlock;
   }
 
   ngOnInit(): void {
@@ -123,7 +136,7 @@ export class ViewsEditorComponent implements OnInit {
       .subscribe(
         view => {
           this.view = view;
-          console.log(this.view)
+          this.selection.clear();
         },
         error => ErrorService.set(error)
       )
@@ -158,5 +171,9 @@ export class ViewsEditorComponent implements OnInit {
 
   canRedo(): boolean {
     return false;
+  }
+
+  toggleEditLayout(view: View): void {
+    (view as ViewBlock | ViewTable).isEditingLayout = !(view as ViewBlock | ViewTable).isEditingLayout;
   }
 }

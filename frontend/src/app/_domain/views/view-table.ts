@@ -10,6 +10,9 @@ export class ViewTable extends View {
   private _rows: ViewRow[];
   private _nrColumns: number;
 
+  // Edit only params
+  private _isEditingLayout?: boolean;
+
   static readonly TABLE_CLASS = 'table';
   static readonly TABLE_HEADER_CLASS = 'table_header';
   static readonly TABLE_BODY_CLASS = 'table_body';
@@ -51,6 +54,14 @@ export class ViewTable extends View {
 
   set nrColumns(value: number) {
     this._nrColumns = value;
+  }
+
+  get isEditingLayout(): boolean {
+    return this._isEditingLayout;
+  }
+
+  set isEditingLayout(value: boolean) {
+    this._isEditingLayout = value;
   }
 
   /**

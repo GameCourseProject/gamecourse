@@ -5,7 +5,7 @@ import {Moment} from "moment/moment";
 
 export function requireValues(view: View, values: any[]) {
   values.forEach(value => {
-    if (value === null || value === undefined)
+    if (!exists(value))
       ErrorService.set('Error: View ' + view.type + ' doesn\'t have all required fields. View: ' + view);
   });
 }

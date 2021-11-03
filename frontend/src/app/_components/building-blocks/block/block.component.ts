@@ -9,6 +9,7 @@ import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
 import { EventHideView } from 'src/app/_domain/events/event-hide-view';
 import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
+import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 
 @Component({
   selector: 'bb-block',
@@ -18,7 +19,6 @@ export class BlockComponent implements OnInit {
 
   @Input() view: ViewBlock;
   edit: boolean;
-  isEditingLayout: boolean;
 
   readonly DEFAULT = '(Empty block)';
 
@@ -36,6 +36,10 @@ export class BlockComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  get ViewSelectionService(): typeof ViewSelectionService {
+    return ViewSelectionService;
   }
 
 

@@ -70,7 +70,8 @@ import {RowComponent} from "./_components/building-blocks/row/row.component";
         BlockComponent,
         AnyComponent,
         TableComponent,
-        AsPipe
+        AsPipe,
+        ClickedOutsideDirective
     ],
   imports: [
     CommonModule,

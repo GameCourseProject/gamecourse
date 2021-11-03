@@ -22,7 +22,7 @@
       <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>
 
-    <div *ngIf="edit && isEditingLayout" class="add-child"></div>
+    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"></div>
   </div>
 </ng-template>
 
@@ -38,6 +38,6 @@
        [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
 
     {{DEFAULT}}
-    <div *ngIf="edit && isEditingLayout" class="add-child"></div>
+    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"></div>
   </div>
 </ng-template>

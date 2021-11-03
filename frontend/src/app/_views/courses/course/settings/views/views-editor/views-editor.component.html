@@ -51,9 +51,37 @@
     </div>
 
     <!-- Editor -->
-    <div class="editor">
+    <div class="editor" clickedOutside (clickedOutside)="!isEditing ? selection.clear() : null">
       <bb-any *ngIf="view" [view]="view"></bb-any>
-      <div class="no-view" *ngIf="!view">(Empty view)</div>
+      <div *ngIf="!view" class="no-view">(Empty view)</div>
+
+      <!-- Toolbar -->
+      <div *ngIf="selection.hasSelection()" class="edit-toolbar">
+        <div class="tool btn" title="Edit" (click)="isEditing = !isEditing">
+          <img src="assets/icons/edit_icon.svg" alt="">
+        </div>
+        <div *ngIf="selection.get().type === ViewType.BLOCK || selection.get().type === ViewType.TABLE"
+             class="tool btn" title="Edit Layout" [ngClass]="{'red': (selection.get() | as : ViewBlock).isEditingLayout}"
+             (click)="isEditing = !isEditing; toggleEditLayout(selection.get())">
+          <img src="assets/icons/layout_editor_icon.svg" alt="">
+        </div>
+        <div class="tool btn" title="Remove" (click)="isEditing = !isEditing">
+          <img src="assets/icons/delete_icon.svg" alt="">
+        </div>
+        <div class="tool btn" title="Switch" (click)="isEditing = !isEditing">
+          <img src="assets/icons/switch_part_icon.svg" alt="">
+        </div>
+        <div class="tool btn" title="Duplicate" (click)="isEditing = !isEditing">
+          <img src="assets/icons/duplicate_icon.svg" alt="">
+        </div>
+        <div class="tool btn" title="Save as template" (click)="isEditing = !isEditing">
+          <img src="assets/icons/save_icon.svg" alt="">
+        </div>
+        <div class="tool btn" title="Manage Aspects" (click)="isEditing = !isEditing">
+          <img src="assets/icons/aspects_icon.svg" alt="">
+        </div>
+        <span id="editing_role">View Aspect: <br> {{selectedViewerRole}}{{selectedUserRole ? '>' + selectedUserRole : ''}}</span> <!-- FIXME -->
+      </div>
     </div>
 
   </ng-container>
