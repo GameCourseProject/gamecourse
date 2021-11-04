@@ -245,7 +245,8 @@ API::registerFunction($MODULE, 'exportTemplate', function () {
 /*** ---------------------------------------------------- ***/
 
 /**
- * Get course roles, roles hierarchy and template roles.
+ * Get essential info for editor like course roles, roles hierarchy,
+ * template roles, template views by aspect and template view tree.
  *
  * @param int $courseId
  * @param int $templateId
@@ -261,10 +262,24 @@ API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
 
+    $templateRoles = Views::getTemplateRoles($templateId);
+    $roleType = Views::getRoleType($templateRoles[0]);
+    $templateViewsByAspect = array();
+
+    // Get template views by aspect
+    foreach ($templateRoles as $role) {
+        $viewerRole = Views::splitRole($role)["viewerRole"];
+        $userRole = null;
+        if ($roleType == "ROLE_INTERACTION") $userRole = Views::splitRole($role)["userRole"];
+        $templateViewsByAspect[$role] = Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole);
+    }
+
     API::response(array(
         'courseRoles' => $course->getRoles('id, name, landingPage'),
         'rolesHierarchy' => $course->getRolesHierarchy(),
-        'templateRoles' => Views::getTemplateRoles($templateId),
+        'templateRoles' => $templateRoles,
+        'templateViewsByAspect' => $templateViewsByAspect,
+        'templateViewTree' => Views::renderTemplate($templateId),
     ));
 });
 

@@ -4,12 +4,15 @@ namespace GameCourse\Views;
 
 use GameCourse\API;
 use GameCourse\Core;
-use GameCourse\Course;
-use GameCourse\CourseUser;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\Expression\ExpressionEvaluatorBase;
 use GameCourse\Views\Expression\ValueNode;
 
+/**
+ * This class is responsible for handling views (not pages or templates!).
+ * It has functions that deal with updating and rendering views
+ * to/from database.
+ */
 class ViewHandler
 {
 
@@ -424,8 +427,8 @@ class ViewHandler
     public static function buildViewHeader(&$view, bool $toExport = false, $rolesHierarchy = null, bool $edit = false)
     {
         $viewHeader = Core::$systemDB->select("view_header", ["id" => $view["id"]]);
-        $viewImage = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["image"]]);
-        $viewTitle = Core::$systemDB->selectMultiple("view", ["viewId" => $viewHeader["title"]]);
+        $viewImage = Views::getViewByViewId($viewHeader["image"]);
+        $viewTitle = Views::getViewByViewId($viewHeader["title"]);
 
         self::buildView($viewImage, $toExport, $rolesHierarchy, $edit);
         if (count($viewImage) == 0)
@@ -773,20 +776,17 @@ class ViewHandler
      */
     private static function filterViewByRoles(&$view, array $rolesHierarchy)
     {
-        $roleType = self::getRoleType($rolesHierarchy[0]);
+        $roleType = Views::getRoleType($rolesHierarchy[0]);
 
         // Pick the most specific aspect available on view
         $foundAspect = false;
         foreach ($rolesHierarchy as $role) {
             foreach ($view as $aspect) {
-                $aspectRole = null;
+                $viewerRole = Views::splitRole($aspect["role"])["viewerRole"];
+                $aspectRole = $viewerRole;
 
-                if ($roleType == 'ROLE_SINGLE') {
-                    $aspectRole = explode(".", $aspect["role"])[1];
-
-                } else if ($roleType == 'ROLE_INTERACTION') {
-                    $viewerRole = explode(".", explode(">", $aspect["role"])[1])[1];
-                    $userRole = explode(".", explode(">", $aspect["role"])[0])[1];
+                if ($roleType == 'ROLE_INTERACTION') {
+                    $userRole = Views::splitRole($aspect["role"])["userRole"];
                     $aspectRole = $userRole . '>' . $viewerRole;
                 }
 
@@ -820,20 +820,6 @@ class ViewHandler
             $groupedViews[$view["viewId"]][] = $view;
         }
         return $groupedViews;
-    }
-
-    /**
-     * Receives a role string and returns the role type.
-     * Input format: 'role.Default' or 'role.Default>role.Default'
-     * Output options: ROLE_SINGLE & ROLE_INTERACTION
-     *
-     * @param string $role
-     * @return string
-     */
-    public static function getRoleType(string $role): string
-    {
-        if (strpos($role, '>') !== false) return "ROLE_INTERACTION";
-        else return "ROLE_SINGLE";
     }
 
     public static function callFunction($funcLib, $funcName, $args, $context = null)

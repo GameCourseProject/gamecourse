@@ -5,9 +5,11 @@ namespace GameCourse\Views;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\CourseUser;
 
-
+/**
+ * This class has functions that manage pages and templates.
+ * It also has some utility functions about views and roles.
+ */
 class Views
 {
 
@@ -85,7 +87,7 @@ class Views
     public static function renderPage(int $courseId, int $pageId, int $userId = null)
     {
         $viewId = Core::$systemDB->select("page", ["course" => $courseId, "id" => $pageId], 'viewId');
-        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
+        $view = self::getViewByViewId($viewId);
 
         $course = Course::getCourse($courseId, false);
         $viewer = $course->getLoggedUser();
@@ -98,7 +100,7 @@ class Views
         $viewerRolesHierarchy = $viewer->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
         array_push($viewerRolesHierarchy, "Default"); // add Default as the last choice
 
-        $roleType = ViewHandler::getRoleType($view[0]["role"]);
+        $roleType = self::getRoleType($view[0]["role"]);
         $rolesHierarchy = [];
 
         if ($roleType == 'ROLE_SINGLE') {
@@ -187,13 +189,10 @@ class Views
         $roleType = Core::$systemDB->select("template", ["id" => $templateId], "roleType");
         return array_map(function ($item) use ($parse, $roleType) {
             if ($parse) {
-                $role = null;
-                if ($roleType == "ROLE_SINGLE") {
-                    $role = explode(".", $item["role"])[1];
-
-                } else if ($roleType == "ROLE_INTERACTION") {
-                    $viewerRole = explode(".", explode(">", $item["role"])[1])[1];
-                    $userRole = explode(".", explode(">", $item["role"])[0])[1];
+                $viewerRole = self::splitRole($item["role"])["viewerRole"];
+                $role = $viewerRole;
+                if ($roleType == "ROLE_INTERACTION") {
+                    $userRole = self::splitRole($item["role"])["userRole"];
                     $role = $userRole . '>' . $viewerRole;
                 }
                 return $role;
@@ -209,23 +208,21 @@ class Views
      * @param string $name
      * @param string $contents
      * @param int $courseId
-     * @param bool $fromModule
      */
     public static function createTemplateFromFile(string $name, string $contents, int $courseId): void
     {
         $view = json_decode($contents, true); // format: [aspect1, aspect2, ...], where aspect = view object
-        $roleType = ViewHandler::getRoleType($view[0]["role"]); // role type must be the same for all aspects
+        $roleType = self::getRoleType($view[0]["role"]); // role type must be the same for all aspects
         Views::createTemplate($view, $courseId, $name, $roleType);
     }
 
     /**
      * Sets a new template and all its views.
      *
-     * @param $aspects
+     * @param $view
      * @param int $courseId
      * @param string $name
      * @param string $roleType
-     * @param false $fromModule
      * @return array
      */
     public static function createTemplate($view, int $courseId, string $name, string $roleType): array
@@ -255,7 +252,7 @@ class Views
         Core::$systemDB->setForeignKeyChecks(false);
 
         $viewId = Core::$systemDB->select("view_template", ["templateId" => $templateId], 'viewId');
-        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
+        $view = self::getViewByViewId($viewId);
 
         // Delete entry on 'view_template'
         Core::$systemDB->delete('view_template', ["viewId" => $viewId, "templateId" => $templateId]);
@@ -273,7 +270,22 @@ class Views
     }
 
     /**
-     * Renders a template on the editor based on viewer and user roles.
+     * Renders a complete template view with all aspects.
+     *
+     * @param int $templateId
+     * @return mixed
+     */
+    public static function renderTemplate(int $templateId)
+    {
+        $template = self::getTemplate($templateId);
+        $view = self::getViewByViewId($template["viewId"]);
+
+        ViewHandler::buildView($view, false, null, true);
+        return $view;
+    }
+
+    /**
+     * Renders a template based on viewer and user roles.
      *
      * @param int $courseId
      * @param int $templateId
@@ -281,13 +293,13 @@ class Views
      * @param string|null $userRole
      * @return mixed
      */
-    public static function renderTemplate(int $courseId, int $templateId, string $viewerRole, string $userRole = null)
+    public static function renderTemplateByAspect(int $courseId, int $templateId, string $viewerRole, string $userRole = null)
     {
         $course = Course::getCourse($courseId, false);
         $template = self::getTemplate($templateId);
-        $view = Core::$systemDB->selectMultiple("view", ["viewId" => $template["viewId"]]);
+        $view = self::getViewByViewId($template["viewId"]);
 
-        $roleType = ViewHandler::getRoleType($view[0]["role"]);
+        $roleType = self::getRoleType($view[0]["role"]);
         $rolesHierarchy = [];
 
         // Get viewer rolesHierarchy
@@ -348,8 +360,51 @@ class Views
 
 
     /*** ---------------------------------------------------- ***/
-    /*** ------------------ Miscellaneous ------------------- ***/
+    /*** ----------------------- Roles ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+    // FIXME: should be in its own class
+
+    /**
+     * Receives a role string and returns the role type.
+     * Input format: 'role.Default', 'Default' or 'role.Default>role.Default', 'Default>Default'
+     * Output options: ROLE_SINGLE & ROLE_INTERACTION
+     *
+     * @param string $role
+     * @return string
+     */
+    public static function getRoleType(string $role): string
+    {
+        if (strpos($role, '>') !== false) return "ROLE_INTERACTION";
+        else return "ROLE_SINGLE";
+    }
+
+    /**
+     * Receives a role string and returns the viewer and user roles.
+     * Input format: 'role.Default', 'Default' or 'role.Default>role.Default', 'Default>Default'
+     * Output: ["viewerRole" => ____, "userRole" => ____]
+     *
+     * @param string $role
+     * @return array
+     */
+    public static function splitRole(string $role): ?array
+    {
+        $roleType = self::getRoleType($role);
+        if ($roleType == "ROLE_SINGLE") {
+            if (strpos($role, 'role.') !== false) return ["viewerRole" => explode('.', $role)[1]];
+            return ["viewerRole" => $role];
+
+        } else if ($roleType == "ROLE_INTERACTION") {
+            if (strpos($role, 'role.') !== false) return [
+                "viewerRole" => explode('.', explode('>', $role)[1])[1],
+                "userRole" => explode('.', explode('>', $role)[0])[1]
+            ];
+            return [
+                "viewerRole" => explode('>', $role)[1],
+                "userRole" => explode('>', $role)[0]
+            ];
+        }
+        return null;
+    }
 
     private static function getRoleParents(Course $course, string $role): array
     {
@@ -358,7 +413,7 @@ class Views
         return $parents;
     }
 
-    private static function traverseRoles(array $roles, string $roleName, &$parents)
+    private static function traverseRoles(array $roles, string $roleName, &$parents): bool
     {
         foreach ($roles as $role) {
             if ($role["name"] == $roleName) return true;
@@ -371,8 +426,38 @@ class Views
                 }
             }
         }
+        return false;
     }
 
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------------- Utilities -------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets view by its unique database id.
+     * Doesn't build the view, just returns entry from 'view' table.
+     *
+     * @param int $id
+     * @return mixed
+     */
+    public static function getViewById(int $id)
+    {
+        return Core::$systemDB->select("view", ["id" => $id]);
+    }
+
+    /**
+     * Gets view by viewId.
+     * Doesn't build the view, just returns entries from 'view' table.
+     *
+     * @param int $viewId
+     * @return mixed
+     */
+    public static function getViewByViewId(int $viewId)
+    {
+        return Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
+    }
 
 
 
