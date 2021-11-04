@@ -182,6 +182,8 @@ export abstract class View {
     this._events = value;
   }
 
+  abstract updateView(newView: View);
+
   /**
    * Parses a view object into one where all fields are in the
    * correct type and format.

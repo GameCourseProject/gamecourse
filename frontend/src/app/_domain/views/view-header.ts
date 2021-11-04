@@ -3,6 +3,8 @@ import {ViewText, ViewTextDatabase} from "./view-text";
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
+import {copyObject} from "../../_utils/misc/misc";
+import {ViewSelectionService} from "../../_services/view-selection.service";
 
 export class ViewHeader extends View{
 
@@ -38,6 +40,30 @@ export class ViewHeader extends View{
 
   set title(value: ViewText) {
     this._title = value;
+  }
+
+  updateView(newView: View): ViewHeader {
+    if (this.id === newView.id) {
+      const copy = copyObject(newView);
+      ViewSelectionService.unselect(copy);
+      return copy as ViewHeader;
+    }
+
+    // Check if image
+    const newImage = this.image.updateView(newView);
+    if (newImage !== null) {
+      this.image = newImage;
+      return this;
+    }
+
+    // Check if title
+    const newTitle = this.title.updateView(newView);
+    if (newTitle !== null) {
+      this.title = newTitle;
+      return this;
+    }
+
+    return null;
   }
 
   static fromDatabase(obj: ViewHeaderDatabase): ViewHeader {

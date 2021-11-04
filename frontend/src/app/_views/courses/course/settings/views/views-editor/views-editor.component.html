@@ -47,7 +47,7 @@
         <div id="undo_icon" class="icon undo_icon" [ngClass]="{'disabled': !canUndo()}" title="Redo"></div>
         <div id="redo_icon" class="icon redo_icon" [ngClass]="{'disabled': !canRedo()}" title="Redo"></div>
 
-        <button>Save Changes</button>
+        <button (click)="saveChanges()">Save Changes</button>
         <button (click)="previewView()">Preview</button>
       </ng-container>
 
@@ -55,8 +55,7 @@
     </div>
 
     <!-- Editor -->
-    <div [ngClass]="{'editor': !isPreviewingView, 'preview': isPreviewingView}"
-         clickedOutside (clickedOutside)="!isPreviewingView && !hasModalOpen && !isEditingLayout ? selection.clear() : null;">
+    <div [ngClass]="{'editor': !isPreviewingView, 'preview': isPreviewingView}" clickedOutside (clickedOutside)="clearSelection()">
 
       <bb-any *ngIf="(!isPreviewingView && viewToShow) || (isPreviewingView && viewToPreview)" [view]="isPreviewingView ? viewToPreview : viewToShow"></bb-any>
       <div *ngIf="!isPreviewingView && !viewToShow" class="no-view">(Empty view)</div>
@@ -86,7 +85,7 @@
         <div class="tool btn" title="Manage Aspects" (click)="toolbarBtnClicked('manage-aspects')">
           <img src="assets/icons/aspects_icon.svg" alt="">
         </div>
-        <span id="editing_role">View Aspect: <br> {{selectedViewerRole}}{{selectedUserRole ? '>' + selectedUserRole : ''}}</span> <!-- FIXME -->
+        <span id="editing_role">View Aspect: <br> {{selection.get().role}}</span>
       </div>
     </div>
 
@@ -123,36 +122,29 @@
         <div class="divider"><div class="title"><span>Styling/Misc</span></div></div>
 
         <!-- Style -->
-        <div class="content">
-          <div class="sb-expression">
-            <label for="style">Style</label>
-            <textarea id="style" title="Define CSS code for the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.style"></textarea>
-          </div>
-        </div>
+        <ng-container
+          [ngTemplateOutlet]="expressionInput"
+          [ngTemplateOutletContext]="{label: 'style', title: 'Define CSS code for the element', viewParam: 'style'}">
+        </ng-container>
 
         <!-- ID -->
-        <div class="content">
-          <div class="sb-expression">
-            <label for="cssId">ID</label>
-            <textarea id="cssId" title="Define the HTML id of the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.cssId"></textarea>
-          </div>
-        </div>
+        <ng-container
+          [ngTemplateOutlet]="expressionInput"
+          [ngTemplateOutletContext]="{label: 'cssId', title: 'Define the HTML id of the element', viewParam: 'cssId'}">
+        </ng-container>
 
         <!-- Class -->
-        <div class="content">
-          <div class="sb-expression">
-            <label for="class">Class</label>
-            <textarea id="class" title="Define the HTML class of the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.class"></textarea>
-          </div>
-        </div>
+        <ng-container
+          [ngTemplateOutlet]="expressionInput"
+          [ngTemplateOutletContext]="{label: 'class', title: 'Define the HTML class of the element', viewParam: 'class'}">
+        </ng-container>
 
         <!-- Label -->
-        <div class="content">
-          <div class="sb-expression">
-            <label for="label">Label</label>
-            <textarea id="label" title="Define a label for the part that can be used in events" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.label"></textarea>
-          </div>
-        </div>
+        <ng-container
+          [ngTemplateOutlet]="expressionInput"
+          [ngTemplateOutletContext]="{label: 'label', title: 'Define a label for the part that can be used in events', viewParam: 'label'}">
+        </ng-container>
+
       </div>
     </div>
 
@@ -179,6 +171,15 @@
 
 </ng-template>
 
+<ng-template #expressionInput let-label='label' let-title='title' let-param='viewParam'>
+  <div class="content">
+    <div class="sb-expression">
+      <label [for]="label">{{capitalize(label)}}</label>
+      <textarea [id]="label" [title]="title" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit[param]"></textarea>
+    </div>
+  </div>
+</ng-template>
+
 
 <!-- Preview Expression Modal -->
 <ng-container *ngIf="isPreviewExpressionModalOpen">
@@ -193,4 +194,20 @@
 
 <ng-template #previewExpressionModal>
 
+</ng-template>
+
+
+<!-- Verification Modal -->
+<app-modal
+  [isModalOpen]="isVerificationModalOpen"
+  [id]="'message-api-box'"
+  [classList]="'verification'"
+  [templateRef]="verificationModal">
+</app-modal>
+
+<ng-template #verificationModal>
+  <div class="message_warning warning">{{verificationText}}</div>
+  <div class="confirmation_btns">
+    <button (click)="isVerificationModalOpen = false">Confirm</button>
+  </div>
 </ng-template>

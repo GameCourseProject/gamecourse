@@ -1,6 +1,8 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
+import {copyObject} from "../../_utils/misc/misc";
+import {ViewSelectionService} from "../../_services/view-selection.service";
 
 export class ViewBlock extends View {
 
@@ -37,6 +39,26 @@ export class ViewBlock extends View {
 
   set isEditingLayout(value: boolean) {
     this._isEditingLayout = value;
+  }
+
+  updateView(newView: View): ViewBlock {
+    if (this.id === newView.id) {
+      const copy = copyObject(newView);
+      ViewSelectionService.unselect(copy);
+      return copy as ViewBlock;
+    }
+
+    // Check if child
+    for (let i = 0; i < this.children.length; i++) {
+      const child = this.children[i];
+      const newChild = child.updateView(newView);
+      if (newChild !== null) {
+        this.children[i] = newChild;
+        return this;
+      }
+    }
+
+    return null;
   }
 
   static fromDatabase(obj: ViewBlockDatabase): ViewBlock {

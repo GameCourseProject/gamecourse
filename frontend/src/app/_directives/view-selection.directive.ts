@@ -19,7 +19,7 @@ export class ViewSelectionDirective {
       // Makes sure click only works on closest view
       event.stopPropagation();
 
-      this.selection.update(event.target, this.view);
+      this.selection.update(this.view, event.target);
     }
   }
 

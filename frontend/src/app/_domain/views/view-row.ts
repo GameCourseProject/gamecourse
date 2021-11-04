@@ -1,6 +1,8 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
+import {copyObject} from "../../_utils/misc/misc";
+import {ViewSelectionService} from "../../_services/view-selection.service";
 
 export class ViewRow extends View {
 
@@ -26,6 +28,26 @@ export class ViewRow extends View {
 
   set children(value: View[]) {
     this._children = value;
+  }
+
+  updateView(newView: View): ViewRow {
+    if (this.id === newView.id) {
+      const copy = copyObject(newView);
+      ViewSelectionService.unselect(copy);
+      return copy as ViewRow;
+    }
+
+    // Check if child
+    for (let i = 0; i < this.children.length; i++) {
+      const child = this.children[i];
+      const newChild = child.updateView(newView);
+      if (newChild !== null) {
+        this.children[i] = newChild;
+        return this;
+      }
+    }
+
+    return null;
   }
 
   static fromDatabase(obj: ViewRowDatabase): ViewRow {

@@ -3,6 +3,8 @@ import {ViewType} from "./view-type";
 import {buildView} from "./build-view";
 import {ErrorService} from "../../_services/error.service";
 import {ViewRow, ViewRowDatabase} from "./view-row";
+import {copyObject} from "../../_utils/misc/misc";
+import {ViewSelectionService} from "../../_services/view-selection.service";
 
 export class ViewTable extends View {
 
@@ -78,6 +80,36 @@ export class ViewTable extends View {
 
     if (!rows.every(row => row.children.length === nrColumns))
       ErrorService.set('Error: Couldn\'t create table - rows don\'t have the same number of columns. (view-table.ts)');
+  }
+
+  updateView(newView: View): ViewTable {
+    if (this.id === newView.id) {
+      const copy = copyObject(newView);
+      ViewSelectionService.unselect(copy);
+      return copy as ViewTable;
+    }
+
+    // Check if header row
+    for (let i = 0; i < this.headerRows.length; i++) {
+      const headerRow = this.headerRows[i];
+      const newHeaderRow = headerRow.updateView(newView);
+      if (newHeaderRow !== null) {
+        this.headerRows[i] = newHeaderRow;
+        return this;
+      }
+    }
+
+    // Check if body row
+    for (let i = 0; i < this.rows.length; i++) {
+      const row = this.rows[i];
+      const newRow = row.updateView(newView);
+      if (newRow !== null) {
+        this.rows[i] = newRow;
+        return this;
+      }
+    }
+
+    return null;
   }
 
   static fromDatabase(obj: ViewTableDatabase): ViewTable {

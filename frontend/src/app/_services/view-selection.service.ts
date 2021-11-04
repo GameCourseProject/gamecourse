@@ -23,36 +23,36 @@ export class ViewSelectionService {
     return this.selected;
   }
 
-  public update(target: HTMLElement, view: View) {
-    if (target.classList.contains(ViewSelectionService.IGNORE_SELECTION_CLASS)) return;
+  public update(view: View, target?: HTMLElement) {
+    if (target && target.classList.contains(ViewSelectionService.IGNORE_SELECTION_CLASS))
+      return;
 
     if (this.isSelected(view)) { // Same view
-      this.unselect(view);
+      ViewSelectionService.unselect(view);
       this.selected = null;
 
     } else { // Different view
-      if (this.selected) this.unselect(this.selected);
-      this.select(view);
+      if (this.selected) ViewSelectionService.unselect(this.selected);
+      ViewSelectionService.select(view);
       this.selected = view;
     }
   }
 
   public clear() {
-    if (this.selected) {
-      this.unselect(this.selected);
-      this.selected = null;
-    }
+    if (this.selected) ViewSelectionService.unselect(this.selected);
+    this.selected = null;
   }
 
   private isSelected(view: View): boolean {
-    return view.class.containsWord(ViewSelectionService.SELECTION_CLASS);
+    return this.selected && view.id === this.selected.id &&
+      view.class.containsWord(ViewSelectionService.SELECTION_CLASS);
   }
 
-  private select(view: View): void {
+  private static select(view: View): void {
     view.class += ' ' + ViewSelectionService.SELECTION_CLASS;
   }
 
-  private unselect(view: View): void {
+  public static unselect(view: View): void {
     const split = view.class.split(' ');
     const index = split.findIndex(cl => cl === ViewSelectionService.SELECTION_CLASS);
     split.splice(index, 1);

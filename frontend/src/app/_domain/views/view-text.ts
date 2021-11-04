@@ -1,5 +1,7 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
+import {copyObject} from "../../_utils/misc/misc";
+import {ViewSelectionService} from "../../_services/view-selection.service";
 
 export class ViewText extends View {
 
@@ -33,6 +35,15 @@ export class ViewText extends View {
 
   set link(value: string) {
     this._link = value;
+  }
+
+  updateView(newView: View): ViewText {
+    if (this.id === newView.id) {
+      const copy = copyObject(newView);
+      ViewSelectionService.unselect(copy);
+      return copy as ViewText;
+    }
+    return null;
   }
 
   static fromDatabase(obj: ViewTextDatabase): ViewText {

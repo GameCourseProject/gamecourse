@@ -1,9 +1,28 @@
 interface String {
-  toFlat(): string;
-  isEmpty(): boolean;
-  swapNonENChars(): string;
-  noWhiteSpace(): string;
+  capitalize(): string;
   containsWord(word: string): boolean;
+  isEmpty(): boolean;
+  noWhiteSpace(): string;
+  swapNonENChars(): string;
+  toFlat(): string;
+}
+
+/**
+ * Capitalizes string.
+ *
+ * @return string
+ */
+String.prototype.capitalize = function(): string {
+  return this[0].toUpperCase() + this.substr(1);
+}
+
+/**
+ * Checks if a string contains a given word.
+ *
+ * @return string
+ */
+String.prototype.containsWord = function(word: string): boolean {
+  return this.match(new RegExp("\\b" + word + "\\b")) != null;
 }
 
 /**
@@ -16,17 +35,14 @@ String.prototype.isEmpty = function (): boolean {
   return this.replace(/\s*/g, '') === '';
 }
 
-
 /**
- * Flattens a string to a lowercase and English characters
- * only string.
+ * Removes whitespace from a string.
  *
  * @return string
  */
-String.prototype.toFlat = function(): string {
-  return this.toLowerCase().swapNonENChars();
+String.prototype.noWhiteSpace = function(): string {
+  return this.replace(/\s*/g, '');
 }
-
 
 /**
  * Replaces non-English characters by their English counterparts.
@@ -45,22 +61,12 @@ String.prototype.swapNonENChars = function(): string {
     .replace(/æ/ig, 'ae');
 }
 
-
 /**
- * Removes whitespace from a string.
+ * Flattens a string to a lowercase and English characters
+ * only string.
  *
  * @return string
  */
-String.prototype.noWhiteSpace = function(): string {
-  return this.replace(/\s*/g, '');
-}
-
-
-/**
- * Checks if a string contains a given word.
- *
- * @return string
- */
-String.prototype.containsWord = function(word: string): boolean {
-  return this.match(new RegExp("\\b" + word + "\\b")) != null;
+String.prototype.toFlat = function(): string {
+  return this.toLowerCase().swapNonENChars();
 }

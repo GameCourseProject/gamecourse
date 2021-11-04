@@ -14,8 +14,6 @@ import {ViewSelectionService} from "../../../../../../_services/view-selection.s
 import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
 import {copyObject} from "../../../../../../_utils/misc/misc";
-import {ViewTable} from "../../../../../../_domain/views/view-table";
-import {ViewHeader} from "../../../../../../_domain/views/view-header";
 
 @Component({
   selector: 'app-view-editor',
@@ -42,20 +40,25 @@ export class ViewsEditorComponent implements OnInit {
   selectedUserRole: string;
   selectedRole: string;
 
-  isEditingLayout: boolean;
-  saving: boolean;
-
   hasModalOpen: boolean;
   isEditSettingsModalOpen: boolean;
   viewToEdit: View;
 
   isPreviewExpressionModalOpen: boolean;
 
+  isEditingLayout: boolean;
+  saving: boolean;
+
   isPreviewingView: boolean;
   viewToPreview: View;
 
   help: boolean = false;
   clickedHelpOnce: boolean = false;
+
+  hasUnsavedChanges: boolean;
+
+  isVerificationModalOpen: boolean;
+  verificationText: string;
 
   constructor(
     private api: ApiHttpService,
@@ -74,6 +77,10 @@ export class ViewsEditorComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  capitalize(str: string): string {
+    return str.capitalize();
   }
 
   ngOnInit(): void {
@@ -150,10 +157,10 @@ export class ViewsEditorComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  changeViewToShow(): void {
+  changeViewToShow(clearSelection: boolean = true): void {
     this.selectedRole = this.template.roleType == RoleTypeId.ROLE_INTERACTION ? this.selectedUserRole + '>' + this.selectedViewerRole: this.selectedViewerRole;
     this.viewToShow = this.viewsByAspects[this.selectedRole];
-    this.selection.clear();
+    if (clearSelection) this.selection.clear();
   }
 
   toolbarBtnClicked(btn: string): void {
@@ -170,47 +177,37 @@ export class ViewsEditorComponent implements OnInit {
     // TODO
 
     if (btn !== 'edit-layout') this.hasModalOpen = true;
-  } // TODO
+  }
 
   saveEdit() {
-    // TODO
-    console.log(this.viewToEdit)
-    // this.view = this.updateView(this.view, this.viewToEdit);
-    console.log(this.viewToShow);
-  } // TODO
+    this.isEditSettingsModalOpen = false;
+    this.hasModalOpen = false;
+    this.updateView(this.viewToEdit);
+    this.verificationText = 'Saved!';
+    this.isVerificationModalOpen = true;
+  }
 
-  updateView(view: View, newView: View): View {
-    if (view.id === newView.id) {
-      return newView;
+  updateView(newView: View): void {
+    this.loading = true;
 
-    } else if (view.type === ViewType.BLOCK) {
-      for (let child of (view as ViewBlock).children) {
-        child = this.updateView(child, newView);
+    // Change on all aspects
+    const aspects = Object.keys(this.viewsByAspects);
+    for (const aspect of aspects) {
+      const newAspect = this.viewsByAspects[aspect].updateView(newView);
+      if (newAspect !== null) {
+        this.viewsByAspects[aspect] = newAspect;
+        this.hasUnsavedChanges = true;
       }
-
-    } else if (view.type === ViewType.TABLE) {
-      for (const headerRow of (view as ViewTable).headerRows) {
-        for (const row of headerRow.children) {
-          const viewFound = this.updateView(row, newView);
-          if (viewFound) return viewFound;
-        }
-      }
-
-      for (const bodyRow of (view as ViewTable).rows) {
-        for (const row of bodyRow.children) {
-          const viewFound = this.updateView(row, newView);
-          if (viewFound) return viewFound;
-        }
-      }
-
-    } else if (view.type === ViewType.HEADER) {
-      let viewFound = this.updateView((view as ViewHeader).image, newView);
-      if (!viewFound) viewFound = this.updateView((view as ViewHeader).title, newView);
-      if (viewFound) return viewFound;
     }
 
-    return view;
-  } // TODO
+    this.changeViewToShow(false);
+    this.loading = false;
+  }
+
+  saveChanges() {
+    console.log(this.viewsByAspects)
+    // TODO: build view tree
+  }
 
   previewView() {
     this.loading = true;
@@ -239,7 +236,11 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   goToViews(): void {
-    this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
+    if (this.hasUnsavedChanges) {
+      if (confirm('There are unsaved changes. Leave page without saving?')) {
+        this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
+      }
+    }
   }
 
   canUndo(): boolean {
@@ -249,4 +250,9 @@ export class ViewsEditorComponent implements OnInit {
   canRedo(): boolean {
     return false;
   } // TODO
+
+  clearSelection() {
+    if (!this.isPreviewingView && !this.hasModalOpen && !this.isEditingLayout)
+      this.selection.clear();
+  }
 }
