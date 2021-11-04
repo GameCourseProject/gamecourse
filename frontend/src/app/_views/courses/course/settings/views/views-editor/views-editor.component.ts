@@ -11,9 +11,11 @@ import {Role} from "../../../../../../_domain/roles/role";
 import {User} from "../../../../../../_domain/users/user";
 import {View} from "../../../../../../_domain/views/view";
 import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
-import { ViewType } from 'src/app/_domain/views/view-type';
+import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
+import {copyObject} from "../../../../../../_utils/misc/misc";
 import {ViewTable} from "../../../../../../_domain/views/view-table";
+import {ViewHeader} from "../../../../../../_domain/views/view-header";
 
 @Component({
   selector: 'app-view-editor',
@@ -31,17 +33,29 @@ export class ViewsEditorComponent implements OnInit {
   courseRoles: Role[];
   rolesHierarchy: Role[];
   templateRoles: {viewerRole: Role, userRole?: Role}[];
+  viewsByAspects: {[key: string]: View};
+  viewTree;
 
-  view: View;
-  viewerRole: Role;
+  viewToShow: View;
+
   selectedViewerRole: string;
-  userRole: Role;
   selectedUserRole: string;
+  selectedRole: string;
+
+  isEditingLayout: boolean;
+  saving: boolean;
+
+  hasModalOpen: boolean;
+  isEditSettingsModalOpen: boolean;
+  viewToEdit: View;
+
+  isPreviewExpressionModalOpen: boolean;
+
+  isPreviewingView: boolean;
+  viewToPreview: View;
 
   help: boolean = false;
   clickedHelpOnce: boolean = false;
-
-  isEditing: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -95,17 +109,20 @@ export class ViewsEditorComponent implements OnInit {
   getTemplateEditInfo(template: Template): void {
     this.loading = true;
     this.api.getTemplateEditInfo(this.courseID, template.id)
+      .pipe( finalize(() => this.loading = false) )
       .subscribe(
         data => {
           this.courseRoles = data.courseRoles;
           this.rolesHierarchy = data.rolesHierarchy;
+          this.viewsByAspects = data.templateViewsByAspect;
+          this.viewTree = data.templateViewTree;
 
           // Set template roles
           this.templateRoles = [];
           data.templateRoles.forEach(role => {
             let roleObj: {viewerRole: Role, userRole?: Role };
             if (template.roleType === RoleTypeId.ROLE_SINGLE) {
-              roleObj = { viewerRole: Role.fromDatabase({name: role.split('>')[0]}) };
+              roleObj = { viewerRole: Role.fromDatabase({name: role}) };
 
             } else if (template.roleType === RoleTypeId.ROLE_INTERACTION) {
               roleObj = {
@@ -113,31 +130,96 @@ export class ViewsEditorComponent implements OnInit {
                 userRole: Role.fromDatabase({name: role.split('>')[0]})
               };
             }
-
-            if (!this.templateRoles.find(el => el.viewerRole === roleObj.viewerRole && el.userRole === roleObj.userRole))
-              this.templateRoles.push(roleObj)
+            this.templateRoles.push(roleObj)
           });
 
           // Set selected roles
-          this.selectedViewerRole = "Default";
-          if (template.roleType == RoleTypeId.ROLE_INTERACTION) this.selectedUserRole = "Default";
+          this.selectedViewerRole = this.templateRoles.length !== 0 ? this.templateRoles[0].viewerRole.name : 'Default';
+          if (template.roleType == RoleTypeId.ROLE_INTERACTION)
+            this.selectedUserRole = this.templateRoles.length !== 0 ? this.templateRoles[0].userRole.name : 'Default';
 
-          // Get view
-          this.getTemplateEditView(template, this.selectedViewerRole, this.selectedUserRole);
+          // Set view to show
+          this.changeViewToShow();
         },
         error => ErrorService.set(error)
       )
   }
 
-  getTemplateEditView(template: Template, viewerRole: string, userRole?: string): void {
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  changeViewToShow(): void {
+    this.selectedRole = this.template.roleType == RoleTypeId.ROLE_INTERACTION ? this.selectedUserRole + '>' + this.selectedViewerRole: this.selectedViewerRole;
+    this.viewToShow = this.viewsByAspects[this.selectedRole];
+    this.selection.clear();
+  }
+
+  toolbarBtnClicked(btn: string): void {
+    const viewSelected = this.selection.get();
+
+    if (btn === 'edit-settings') {
+      this.viewToEdit = copyObject(viewSelected);
+      this.isEditSettingsModalOpen = true;
+
+    } else if (btn === 'edit-layout') {
+      this.isEditingLayout = !this.isEditingLayout;
+      (viewSelected as ViewBlock).isEditingLayout = !(viewSelected as ViewBlock).isEditingLayout;
+    }
+    // TODO
+
+    if (btn !== 'edit-layout') this.hasModalOpen = true;
+  } // TODO
+
+  saveEdit() {
+    // TODO
+    console.log(this.viewToEdit)
+    // this.view = this.updateView(this.view, this.viewToEdit);
+    console.log(this.viewToShow);
+  } // TODO
+
+  updateView(view: View, newView: View): View {
+    if (view.id === newView.id) {
+      return newView;
+
+    } else if (view.type === ViewType.BLOCK) {
+      for (let child of (view as ViewBlock).children) {
+        child = this.updateView(child, newView);
+      }
+
+    } else if (view.type === ViewType.TABLE) {
+      for (const headerRow of (view as ViewTable).headerRows) {
+        for (const row of headerRow.children) {
+          const viewFound = this.updateView(row, newView);
+          if (viewFound) return viewFound;
+        }
+      }
+
+      for (const bodyRow of (view as ViewTable).rows) {
+        for (const row of bodyRow.children) {
+          const viewFound = this.updateView(row, newView);
+          if (viewFound) return viewFound;
+        }
+      }
+
+    } else if (view.type === ViewType.HEADER) {
+      let viewFound = this.updateView((view as ViewHeader).image, newView);
+      if (!viewFound) viewFound = this.updateView((view as ViewHeader).title, newView);
+      if (viewFound) return viewFound;
+    }
+
+    return view;
+  } // TODO
+
+  previewView() {
     this.loading = true;
-    this.api.getTemplateEditView(this.courseID, template.id, viewerRole, userRole)
+    this.isPreviewingView = true;
+    this.viewToPreview = null;
+    this.api.previewTemplate(this.courseID, this.template.id, this.selectedViewerRole, this.selectedUserRole)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        view => {
-          this.view = view;
-          this.selection.clear();
-        },
+        view => this.viewToPreview = view,
         error => ErrorService.set(error)
       )
   }
@@ -153,11 +235,6 @@ export class ViewsEditorComponent implements OnInit {
       if (!roles.find(el => type === 'viewer' ? el.name === role.viewerRole.name : el.name === role.userRole.name))
         roles.push(type === 'viewer' ? role.viewerRole : role.userRole);
     })
-
-    const index = roles.findIndex(el => el.name === 'Default');
-    if (index !== -1) roles.splice(index, 1);
-    roles.unshift(new Role(null, 'Default', null, null));
-
     return roles;
   }
 
@@ -167,13 +244,9 @@ export class ViewsEditorComponent implements OnInit {
 
   canUndo(): boolean {
     return false;
-  }
+  } // TODO
 
   canRedo(): boolean {
     return false;
-  }
-
-  toggleEditLayout(view: View): void {
-    (view as ViewBlock | ViewTable).isEditingLayout = !(view as ViewBlock | ViewTable).isEditingLayout;
-  }
+  } // TODO
 }

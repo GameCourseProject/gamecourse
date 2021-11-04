@@ -431,7 +431,9 @@ select:focus {
 }
 
 .action-buttons :only-child {
-  width: 100%;
+  width: 30%;
+  position: absolute;
+  right: 0;
 }
 
 .action-buttons.database {
@@ -752,4 +754,362 @@ input:checked+.slider:before {
 #delete-verification-file .cancel {
   opacity: 0.7;
   background: green;
+}
+
+.sb-menu .title {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.sb-input,
+.sb-expression,
+.sb-component {
+  margin-top: 4px;
+  width: calc(100% - 40px);
+  display: flex;
+  justify-content: start;
+  align-items: baseline;
+}
+
+.sb-menu .form__input {
+  margin: 0 0 10px;
+  line-height: 20px;
+  height: 35px;
+  padding: 5px 10px;
+}
+
+.sb-menu .add_button {
+  top: -40px;
+  right: 40px;
+  border: none;
+  width: 52px;
+}
+
+
+.sb-menu .visibility-options {
+  display: flex;
+  justify-content: flex-start;
+  width: calc(100% - 40px);
+  margin: 15px 0;
+}
+
+.sb-menu .condition {
+  min-height: 1px;
+}
+
+.sb-menu .visibility-options .option {
+  margin-right: 30px;
+}
+
+.sb-menu .visibility-options .option input {
+  margin: 0 5px 0 0;
+}
+
+.sb-component {
+  margin-top: 4px;
+}
+
+.sb-component select.form__input {
+  width: 40%;
+  margin: 0 20px 0 4px;
+  padding: 5px 10px;
+}
+
+.sb-input,
+.sb-checkbox,
+.sb-expression {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.sb-input input,
+.sb-checkbox input,
+.sb-expression input,
+.sb-input textarea,
+.sb-checkbox textarea,
+.sb-expression textarea,
+.sb-input label,
+.sb-checkbox label,
+.sb-expression label,
+.sb-input select,
+.sb-checkbox select,
+.sb-expression select,
+.sb-input button,
+.sb-checkbox button,
+.sb-expression button {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.sb-input label,
+.sb-checkbox label,
+.sb-expression label,
+.sb-component label {
+  min-width: 100px;
+  display: inline-block;
+}
+
+.sb-checkbox {
+  padding-bottom: 10px;
+}
+
+.sb-checkbox>.content {
+  margin-top: 15px;
+  padding: 0;
+}
+
+.sb-checkbox>input {
+  margin: 0;
+  margin-right: 5px;
+}
+
+.sb-checkbox>label {
+  min-width: inherit;
+}
+
+.sb-checkbox .sb-expression {
+  width: 100%;
+}
+
+.sb-checkbox .sb-expression textarea {
+  margin: 0;
+}
+
+.sb-checkbox>a>.info,
+.sb-checkbox>.info {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+
+.sb-checkbox>a>.info:hover,
+.sb-checkbox>.info:hover {
+  -webkit-transition: opacity 1s;
+  -moz-transition: opacity 1s;
+  -ms-transition: opacity 1s;
+  -o-transition: opacity 1s;
+  transition: opacity 1s;
+  opacity: 0.8;
+}
+
+.sb-input>.content {
+  display: inline-block;
+  width: auto;
+  padding: 0;
+}
+
+.sb-input>.form__input {
+  margin-right: 20px;
+  width: 40%
+}
+
+.sb-input>.content button {
+  margin-bottom: 2px;
+}
+
+.sb-expression>.content button {
+  margin-left: 20px;
+  margin-bottom: 2px;
+}
+
+.sb-expression {
+  position: relative;
+}
+
+.sb-expression>textarea {
+  background-position: right;
+  background-repeat: no-repeat;
+  background-size: 25px;
+  /* background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAABlBMVEUA/wD///9vvVhRAAAAFklEQVQY02NgxAAMjAxoYFQIvxAGAAAuwgBFVY3c5wAAAABJRU5ErkJggg==); */
+}
+
+/* .sb-expression>textarea.err {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAABlBMVEX/AAD///9BHTQRAAAAFklEQVQY02NgxAAMjAxoYFQIvxAGAAAuwgBFVY3c5wAAAABJRU5ErkJggg==);
+} */
+
+.sb-expression>.expression-field-search {
+  background: rgba(0, 0, 0, 0.05);
+  margin: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sb-expression>.expression-field-search img {
+  width: 16px;
+  float: right;
+}
+
+.sb-expression>.suggestions {
+  margin-top: 1px;
+  background-color: #aaaaaa;
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  z-index: 99999;
+  /*max-height: 300px;
+    overflow-y: auto;
+    overflow-y: auto;*/
+}
+
+.sb-expression>.suggestions>div {
+  min-width: 250px;
+  position: relative;
+  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sb-expression>.suggestions>div:last-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sb-expression>.suggestions>div:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sb-expression>.suggestions>div .field {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.sb-expression>.suggestions>div .description {
+  font-size: 10px;
+}
+
+.sb-expression>.suggestions>div .example {
+  font-size: 10px;
+  position: absolute;
+  bottom: 1px;
+  right: 0;
+}
+
+.sb-expression>.content {
+  display: inline-block;
+  width: auto;
+  padding: 0 0 15px 0;
+  align-self: center;
+}
+
+.side_helper {
+  color: black;
+  width: auto;
+  position: fixed;
+  top: 200px;
+  left: 0;
+  z-index: 3;
+  font-size: 14px;
+}
+
+.side_helper #open_helper {
+  background-color: lightgrey;
+  width: 53px;
+  display: flex;
+  font-weight: bold;
+  border: 2px solid grey;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.side_helper #helper_content {
+  position: absolute;
+  left: -200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.side_helper .help {
+  height: 35px;
+  width: 25px;
+  background-image: url("~src/assets/icons/help_icon.svg");
+  background-position: center;
+}
+
+.side_helper .open {
+  height: 20px;
+  width: 20px;
+  background-image: url("~src/assets/icons/arrow_foward.svg");
+  background-position: center;
+  transform: rotate(0deg);
+  transition: transform 1s;
+}
+
+.side_helper .open.closed {
+  transform: rotate(180deg);
+}
+
+.side_helper #helper_content.visible {
+  display: flex;
+  flex-direction: column;
+  animation: slide 1s forwards;
+}
+
+.side_helper #helper_content.invisible {
+  animation: slide_inv 1s forwards;
+}
+
+.side_helper #helper_content span {
+  background-color: lightgrey;
+  border: 2px solid grey;
+  text-align: center;
+  margin-top: -2px;
+}
+
+.side_helper #helper_content span a {
+  text-decoration: none;
+  padding: 10px;
+  color: inherit;
+  display: block;
+  white-space: nowrap;
+}
+
+@keyframes slide {
+  0% {
+    left: -200px;
+  }
+
+  100% {
+    left: 0;
+  }
+}
+
+@keyframes slide_inv {
+  0% {
+    left: 0;
+  }
+
+  100% {
+    left: -200px;
+  }
+}
+
+
+.autocomplete_box {
+  position: absolute;
+  border: 2px solid grey;
+  display: none;
+  flex-direction: column;
+  background-color: lightgray;
+  padding: 5px 0px;
+  top: 40px;
+  z-index: 3;
+  border-radius: 5px;
+  width: calc(100% - 4px);
+}
+
+.autocomplete_box span {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.form__input.pages_info {
+  color: rgb(106, 106, 106);
+}
+
+
+/* CODE MIRROR BOXES */
+
+#edit_part .CodeMirror {
+  height: 2em;
+}
+
+.sb-menu .content {
+  margin: 0;
 }

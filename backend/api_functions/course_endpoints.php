@@ -1203,21 +1203,6 @@ API::registerFunction('settings', 'getRulesFromCourse', function () {
 /*** --------------------------------------------- ***/
 
 /**
- * Create course style file.
- *
- * @param int $courseId
- */
-API::registerFunction($MODULE, 'createCourseStyleFile', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('courseId');
-
-    $course = API::getValue('courseId');
-    $courseObject = Course::getCourse($course, false);
-    $result = $courseObject->createStyleFile();
-    API::response(array('url' => $result));
-});
-
-/**
  * Get course style file.
  *
  * @param int $courseId
@@ -1234,6 +1219,21 @@ API::registerFunction($MODULE, 'getCourseStyleFile', function () {
         API::response(array('styleFile' => $response[0], 'url' => $response[1]));
     else
         API::response(array('styleFile' => $response));
+});
+
+/**
+ * Create course style file.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'createCourseStyleFile', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId');
+
+    $course = API::getValue('courseId');
+    $courseObject = Course::getCourse($course, false);
+    $result = $courseObject->createStyleFile();
+    API::response(array('url' => $result));
 });
 
 /**

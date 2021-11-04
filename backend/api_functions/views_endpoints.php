@@ -279,42 +279,35 @@ API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
         'rolesHierarchy' => $course->getRolesHierarchy(),
         'templateRoles' => $templateRoles,
         'templateViewsByAspect' => $templateViewsByAspect,
-        'templateViewTree' => Views::renderTemplate($templateId),
+        'templateViewTree' => Views::buildTemplate($templateId),
     ));
 });
 
 /**
- * Get a view by viewer and user roles to show on editor.
+ * Get a parsed and processed template to show on editor preview.
  *
  * @param int $courseId
  * @param int $templateId
  * @param string $viewerRole
  * @param string $userRole (optional)
  */
-API::registerFunction($MODULE, 'getTemplateEditView', function () {
+API::registerFunction($MODULE, 'previewTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues("courseId", "templateId", "viewerRole");
 
-    $courseId = API::getValue('courseId');
     $templateId = API::getValue("templateId");
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
     $viewerRole = API::getValue("viewerRole");
-    $userRole = API::getValue("userRole");
+    $userRole = null;
+    if (API::hasKey("userRole")) $userRole = API::getValue("userRole");
 
-    API::response(array('view' => Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole)));
-}); // TODO: prob delete
-
-/**
- * Get complete template view .
- *
- * @param int $courseId
- * @param int $templateId
- */
-API::registerFunction($MODULE, 'getTemplateView', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues("courseId", 'templateId');
-
-    API::response(array('view' => Views::renderTemplate(API::getValue('templateId'))));
-}); // TODO: prob delete
+    API::response(array('view' => Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole, false)));
+});
 
 
 

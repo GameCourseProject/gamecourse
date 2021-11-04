@@ -29,55 +29,61 @@
     <div class="action-buttons" id="view_editor_actions"
          [ngStyle]="{'width': template.roleType === RoleTypeId.ROLE_SINGLE ? '450px' : '650px'}">
 
-      <div class="editor-roles">
-        <ng-container *ngIf="template.roleType === RoleTypeId.ROLE_INTERACTION">
-          <div style="margin-right:5px;">User: </div>
-          <select id="user_role" [(ngModel)]="selectedUserRole" (ngModelChange)="getTemplateEditView(template, selectedViewerRole, selectedUserRole)">
-            <option *ngFor="let role of getRoles('user')" [ngValue]="role.name">{{role.name}}</option>
+      <ng-container *ngIf="!isPreviewingView">
+        <div class="editor-roles">
+          <ng-container *ngIf="template.roleType === RoleTypeId.ROLE_INTERACTION">
+            <div style="margin-right:5px;">User: </div>
+            <select id="user_role" [(ngModel)]="selectedUserRole" (ngModelChange)="changeViewToShow()">
+              <option *ngFor="let role of getRoles('user')" [ngValue]="role.name">{{role.name}}</option>
+            </select>
+          </ng-container>
+
+          <div style="margin-right:5px;">View as: </div>
+          <select id="viewer_role" [(ngModel)]="selectedViewerRole" (ngModelChange)="changeViewToShow()">
+            <option *ngFor="let role of getRoles('viewer')" [ngValue]="role.name">{{role.name}}</option>
           </select>
-        </ng-container>
+        </div>
 
-        <div style="margin-right:5px;">View as: </div>
-        <select id="viewer_role" [(ngModel)]="selectedViewerRole" (ngModelChange)="getTemplateEditView(template, selectedViewerRole, selectedUserRole)">
-          <option *ngFor="let role of getRoles('viewer')" [ngValue]="role.name">{{role.name}}</option>
-        </select>
-      </div>
+        <div id="undo_icon" class="icon undo_icon" [ngClass]="{'disabled': !canUndo()}" title="Redo"></div>
+        <div id="redo_icon" class="icon redo_icon" [ngClass]="{'disabled': !canRedo()}" title="Redo"></div>
 
-      <div id="undo_icon" class="icon undo_icon" [ngClass]="{'disabled': !canUndo()}" title="Redo"></div>
-      <div id="redo_icon" class="icon redo_icon" [ngClass]="{'disabled': !canRedo()}" title="Redo"></div>
+        <button>Save Changes</button>
+        <button (click)="previewView()">Preview</button>
+      </ng-container>
 
-      <button>Save Changes</button>
-      <button>Preview</button>
+      <button *ngIf="isPreviewingView" (click)="isPreviewingView = false;">Close<br> Preview</button>
     </div>
 
     <!-- Editor -->
-    <div class="editor" clickedOutside (clickedOutside)="!isEditing ? selection.clear() : null">
-      <bb-any *ngIf="view" [view]="view"></bb-any>
-      <div *ngIf="!view" class="no-view">(Empty view)</div>
+    <div [ngClass]="{'editor': !isPreviewingView, 'preview': isPreviewingView}"
+         clickedOutside (clickedOutside)="!isPreviewingView && !hasModalOpen && !isEditingLayout ? selection.clear() : null;">
+
+      <bb-any *ngIf="(!isPreviewingView && viewToShow) || (isPreviewingView && viewToPreview)" [view]="isPreviewingView ? viewToPreview : viewToShow"></bb-any>
+      <div *ngIf="!isPreviewingView && !viewToShow" class="no-view">(Empty view)</div>
 
       <!-- Toolbar -->
-      <div *ngIf="selection.hasSelection()" class="edit-toolbar">
-        <div class="tool btn" title="Edit" (click)="isEditing = !isEditing">
+      <div *ngIf="!isPreviewingView && selection.hasSelection()" class="edit-toolbar">
+        <div class="tool btn" title="Edit part settings" (click)="toolbarBtnClicked('edit-settings')">
           <img src="assets/icons/edit_icon.svg" alt="">
         </div>
         <div *ngIf="selection.get().type === ViewType.BLOCK || selection.get().type === ViewType.TABLE"
              class="tool btn" title="Edit Layout" [ngClass]="{'red': (selection.get() | as : ViewBlock).isEditingLayout}"
-             (click)="isEditing = !isEditing; toggleEditLayout(selection.get())">
+             (click)="toolbarBtnClicked('edit-layout')">
           <img src="assets/icons/layout_editor_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Remove" (click)="isEditing = !isEditing">
+        <div class="tool btn" title="Remove" (click)="toolbarBtnClicked('remove')">
           <img src="assets/icons/delete_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Switch" (click)="isEditing = !isEditing">
+        <div class="tool btn" title="Switch part" (click)="toolbarBtnClicked('switch')">
           <img src="assets/icons/switch_part_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Duplicate" (click)="isEditing = !isEditing">
+        <div class="tool btn" title="Duplicate" (click)="toolbarBtnClicked('duplicate')">
           <img src="assets/icons/duplicate_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Save as template" (click)="isEditing = !isEditing">
+        <div class="tool btn" title="Save as template" (click)="toolbarBtnClicked('save-as-template')">
           <img src="assets/icons/save_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Manage Aspects" (click)="isEditing = !isEditing">
+        <div class="tool btn" title="Manage Aspects" (click)="toolbarBtnClicked('manage-aspects')">
           <img src="assets/icons/aspects_icon.svg" alt="">
         </div>
         <span id="editing_role">View Aspect: <br> {{selectedViewerRole}}{{selectedUserRole ? '>' + selectedUserRole : ''}}</span> <!-- FIXME -->
@@ -91,3 +97,100 @@
     <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
   </div>
 </div>
+
+
+<!-- Edit Settings Modal -->
+<ng-container *ngIf="isEditSettingsModalOpen">
+  <app-modal
+    [isModalOpen]="isEditSettingsModalOpen"
+    [id]="'edit_part'"
+    [templateRef]="editSettingsModal"
+    (closeBtnClicked)="isEditSettingsModalOpen = false; hasModalOpen = false;"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #editSettingsModal>
+
+  <div id="edit-container">
+
+    <!-- Settings -->
+    <div class="settings-overlay">
+      <div class="title">Edit Part Settings:</div>
+
+      <!-- Styling/Misc -->
+      <div class="sb-menu section">
+        <div class="divider"><div class="title"><span>Styling/Misc</span></div></div>
+
+        <!-- Style -->
+        <div class="content">
+          <div class="sb-expression">
+            <label for="style">Style</label>
+            <textarea id="style" title="Define CSS code for the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.style"></textarea>
+          </div>
+        </div>
+
+        <!-- ID -->
+        <div class="content">
+          <div class="sb-expression">
+            <label for="cssId">ID</label>
+            <textarea id="cssId" title="Define the HTML id of the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.cssId"></textarea>
+          </div>
+        </div>
+
+        <!-- Class -->
+        <div class="content">
+          <div class="sb-expression">
+            <label for="class">Class</label>
+            <textarea id="class" title="Define the HTML class of the element" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.class"></textarea>
+          </div>
+        </div>
+
+        <!-- Label -->
+        <div class="content">
+          <div class="sb-expression">
+            <label for="label">Label</label>
+            <textarea id="label" title="Define a label for the part that can be used in events" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit.label"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Helper -->
+    <div class="help-right-box">
+
+      <div class="help-box">
+        <div style="margin-bottom: .5rem"><span style="font-size: 16px; font-weight: 500;">Helper</span></div>
+        <div id="expression-functions">
+          <!-- TODO -->
+        </div>
+      </div>
+
+      <div class="preview-box">
+        <button id="preview-exp-button" (click)="isPreviewExpressionModalOpen = true">Preview Expression</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirmation_btns">
+    <button class="cancel" (click)="isEditSettingsModalOpen = false; hasModalOpen = false;">Cancel</button>
+    <button (click)="saveEdit()">Save</button>
+  </div>
+
+</ng-template>
+
+
+<!-- Preview Expression Modal -->
+<ng-container *ngIf="isPreviewExpressionModalOpen">
+  <app-modal
+    [isModalOpen]="isPreviewExpressionModalOpen"
+    [id]="'open-preview'"
+    [templateRef]="previewExpressionModal"
+    (closeBtnClicked)="isPreviewExpressionModalOpen = false"
+    [actionInProgress]="saving">
+  </app-modal>
+</ng-container>
+
+<ng-template #previewExpressionModal>
+
+</ng-template>

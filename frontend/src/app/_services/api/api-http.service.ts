@@ -30,7 +30,7 @@ import {ViewHeaderDatabase} from "../../_domain/views/view-header";
 import {ViewTableDatabase} from "../../_domain/views/view-table";
 import {ViewBlockDatabase} from "../../_domain/views/view-block";
 import {ViewRowDatabase} from "../../_domain/views/view-row";
-import {dateFromDatabase} from "../../_utils/misc/misc";
+import {dateFromDatabase, objectMap} from "../../_utils/misc/misc";
 
 @Injectable({
   providedIn: 'root'
@@ -1216,7 +1216,8 @@ export class ApiHttpService {
 
 
   // Editor
-  public getTemplateEditInfo(courseID: number, templateID: number): Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[]}> {
+  public getTemplateEditInfo(courseID: number, templateID: number):
+    Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[], templateViewsByAspect: {[key: string]: View}, templateViewTree}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);
@@ -1231,15 +1232,17 @@ export class ApiHttpService {
       .pipe( map((res: any) => {
         const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
         const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
-        return {courseRoles, rolesHierarchy, templateRoles: res['data']['templateRoles']}
+        const templateRoles = res['data']['templateRoles'];
+        const templateViewsByAspect = objectMap(res['data']['templateViewsByAspect'], (view) => buildView(view));
+        const templateViewTree = res['data']['templateViewTree'];
+        return {courseRoles, rolesHierarchy, templateRoles, templateViewsByAspect, templateViewTree}
       }) );
   }
 
-  // FIXME: prob delete
-  public getTemplateEditView(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
+  public previewTemplate(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);
-      qs.push('request', 'getTemplateEditView');
+      qs.push('request', 'previewTemplate');
       qs.push('courseId', courseID);
       qs.push('templateId', templateID);
       qs.push('viewerRole', viewerRole);
@@ -1249,9 +1252,8 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['view'] ? buildView(res['data']['view']) : null) );
+      .pipe( map((res: any) => buildView(res['data']['view'])) );
   }
-
 
 
   /*** --------------------------------------------- ***/

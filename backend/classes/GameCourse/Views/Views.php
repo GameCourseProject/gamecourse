@@ -270,12 +270,12 @@ class Views
     }
 
     /**
-     * Renders a complete template view with all aspects.
+     * Builds a complete template view with all aspects.
      *
      * @param int $templateId
      * @return mixed
      */
-    public static function renderTemplate(int $templateId)
+    public static function buildTemplate(int $templateId)
     {
         $template = self::getTemplate($templateId);
         $view = self::getViewByViewId($template["viewId"]);
@@ -291,9 +291,10 @@ class Views
      * @param int $templateId
      * @param string $viewerRole
      * @param string|null $userRole
+     * @param bool $edit
      * @return mixed
      */
-    public static function renderTemplateByAspect(int $courseId, int $templateId, string $viewerRole, string $userRole = null)
+    public static function renderTemplateByAspect(int $courseId, int $templateId, string $viewerRole, string $userRole = null, bool $edit = true)
     {
         $course = Course::getCourse($courseId, false);
         $template = self::getTemplate($templateId);
@@ -323,7 +324,7 @@ class Views
             }
         }
 
-        ViewHandler::renderView($view, $rolesHierarchy, null, true);
+        ViewHandler::renderView($view, $rolesHierarchy, null, $edit);
         return $view;
     }
 

@@ -3,7 +3,6 @@
 namespace APIFunctions;
 
 use GameCourse\API;
-use GameCourse\Views\Views;
 
 include('api_functions/core_endpoints.php');
 include('api_functions/course_endpoints.php');
@@ -18,8 +17,4 @@ $MODULE = 'api';
 API::registerFunction($MODULE, 'getAPIEndpoints', function () {
     // FIXME: return functions args and description as well
     API::response(array('endpoints' => API::getAllFunctions()));
-});
-
-API::registerFunction($MODULE, 'testing', function () {
-    API::response(array('test' => Views::splitRole('role.Default>role.Default')["viewerRole"]));
 });

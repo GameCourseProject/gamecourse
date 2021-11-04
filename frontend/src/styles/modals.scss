@@ -577,3 +577,189 @@ button {
   margin-bottom: 0;
   margin-right: 5px;
 }
+
+#edit_part {
+  .modal_content {
+    margin-top: 50px;
+    width: 80% !important;
+
+    .confirmation_btns {
+      display: flex;
+      justify-content: flex-end;
+
+      .cancel {
+        background-color: tomato;
+        margin-right: 15px;
+      }
+    }
+  }
+
+  .icon {
+    height: 23px;
+    width: 23px;
+    opacity: 0.8;
+    margin-left: 10px;
+  }
+
+  .warning {
+    font-size: 14px;
+    color: gray;
+    opacity: 0.5;
+    font-weight: normal;
+    margin-top: 5px;
+  }
+
+  .section {
+    margin-bottom: 20px;
+  }
+
+  #edit-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .help-right-box {
+    float:right;
+    margin-left: 12px;
+    width: 32%;
+    padding-left: 1em;
+    border-left: 1px solid #999;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #typing-help {
+    color: #656565;
+    padding: 1em 0.2rem 1rem 0.5rem;
+    font-style: italic;
+    font-size: 0.9em;
+
+    p {
+      margin-bottom: 0.8em;
+      text-align: justify;
+      margin-block-start: 0.8em;
+      margin-block-end: 0;
+    }
+  }
+
+  .hlink {
+    color: #07a;
+    font-weight: bold;
+  }
+
+  #expression-functions, #preview-expressions {
+    width: inherit;
+    line-height: 1em;
+    padding: 0.2em;
+    margin: 0.4em;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    color: #333;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    flex: 1;
+  }
+
+  #expression-functions {
+    min-height: 40vh;
+    max-height: 80vh;
+    overflow-y: scroll;
+  }
+
+  #preview-expressions {
+    min-height: 15vh;
+    max-height: 25vh;
+    overflow-y: scroll;
+  }
+
+  #expression-functions ul, #preview-expressions ul {
+    padding-inline-start: 0;
+    margin-block-start: 0;
+    margin-block-end: 0;
+  }
+}
+
+#edit_part #func-info, #edit_part #var-info {
+  margin-top: 0.6em;
+}
+
+#edit_part #func-info-args {
+  margin: 1em 0 0 0;
+  padding-bottom: 1em;
+}
+
+#edit_part .arg-list-item strong {
+  color: chocolate;
+}
+
+#edit_part .lib-list-item, #edit_part .func-list-item, #edit_part .var-list-item {
+  list-style-type: none;
+  line-height: 2.2em;
+  padding-left: 1em;
+  padding-right: 1em;
+  border-bottom: 1px solid lightgrey;
+  font-size: 0.8em;
+}
+
+
+#edit_part .arg-list-item {
+  list-style-type: square;
+  font-style: italic;
+  padding-left: 10px;
+  list-style-position: inside;
+}
+
+#edit_part .arguments-div {
+  margin: 0.2em 1em 0.2em 1em;
+}
+
+#edit_part .return-div {
+  margin: 0.6em 1em 0.2em 1em;
+  border-bottom: 1px solid lightgrey;
+  padding-bottom: 1em;
+}
+
+#edit_part .function-description {
+  margin: 0 1em 0 1em;
+  font-size: 14px;
+  text-align: justify;
+  white-space:pre-wrap;
+  color: #454545;
+  max-height: 35vh;
+  overflow-y: scroll;
+  padding: 0.9em;
+}
+
+#edit_part .var-warning {
+  margin: 1em;
+  font-size: 14px;
+  text-align: justify;
+  color: tomato;
+}
+
+#edit_part .optional {
+  font-weight: bold;
+  color: chocolate;
+  font-style: normal;
+}
+
+#edit_part .CodeMirror {
+  height: 2em;
+}
+
+#edit_part .settings-overlay {
+  width: 65%;
+  background-color: rgba(255, 255, 255, 50%);
+}
+
+#help-box, #preview-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-box {
+  align-self: center;
+  margin-top: 1.6rem;
+  margin-bottom: 2rem;
+}
