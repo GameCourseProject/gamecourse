@@ -22,6 +22,10 @@ export function objectMap(obj, fn) {
   );
 }
 
+export function copyObject(obj: any) {
+  return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
+}
+
 export function dateFromDatabase(date: string): Moment {
   const FORMAT = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/g;
   return FORMAT.test(date) ? moment(date).subtract(1, 'hours') : null; // FIXME: check utc and local

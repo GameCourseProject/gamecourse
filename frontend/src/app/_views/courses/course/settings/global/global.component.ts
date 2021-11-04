@@ -64,7 +64,7 @@ export class GlobalComponent implements OnInit {
   }
 
   getStyleFile(courseID: number): void {
-    this.api.getStyleFile(courseID)
+    this.api.getCourseStyleFile(courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         data => {
@@ -115,7 +115,7 @@ export class GlobalComponent implements OnInit {
     this.saving = true;
     const updatedStyle = this.styleInput;
 
-    this.api.updateStyleFile(this.info.id, updatedStyle)
+    this.api.updateCourseStyleFile(this.info.id, updatedStyle)
       .pipe( finalize(() => this.saving = false) )
       .subscribe(url => {
         this.isSuccessModalOpen = true;

@@ -300,8 +300,21 @@ API::registerFunction($MODULE, 'getTemplateEditView', function () {
     $viewerRole = API::getValue("viewerRole");
     $userRole = API::getValue("userRole");
 
-    API::response(array('view' => Views::renderTemplate($courseId, $templateId, $viewerRole, $userRole)));
-});
+    API::response(array('view' => Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole)));
+}); // TODO: prob delete
+
+/**
+ * Get complete template view .
+ *
+ * @param int $courseId
+ * @param int $templateId
+ */
+API::registerFunction($MODULE, 'getTemplateView', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues("courseId", 'templateId');
+
+    API::response(array('view' => Views::renderTemplate(API::getValue('templateId'))));
+}); // TODO: prob delete
 
 
 

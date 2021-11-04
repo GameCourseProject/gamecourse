@@ -20,8 +20,8 @@ import {ImportModulesData} from "../../_views/settings/modules/modules.component
 import {Moment} from "moment/moment";
 import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/pages & templates/page";
-import {Template, TemplateDatabase} from "../../_domain/pages & templates/template";
-import {RoleType, RoleTypeId} from "../../_domain/roles/role-type";
+import {Template} from "../../_domain/pages & templates/template";
+import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view";
 import {ViewTextDatabase} from "../../_domain/views/view-text";
@@ -41,6 +41,13 @@ export class ApiHttpService {
     headers: new HttpHeaders(),
     withCredentials: true
   };
+
+  static readonly CORE: string = 'core';
+  static readonly COURSE: string = 'course';
+  static readonly MODULE: string = 'module';
+  static readonly USER: string = 'user';
+  static readonly VIEWS: string = 'views';
+
 
   constructor(
     private http: HttpClient,
@@ -81,6 +88,7 @@ export class ApiHttpService {
   }
 
 
+
   /*** --------------------------------------------- ***/
   /*** -------------- Authentication --------------- ***/
   /*** --------------------------------------------- ***/
@@ -115,13 +123,597 @@ export class ApiHttpService {
   }
 
 
+
   /*** --------------------------------------------- ***/
-  /*** ---------------- User related --------------- ***/
+  /*** -------------------- Core ------------------- ***/
   /*** --------------------------------------------- ***/
 
+  // Themes
+  public getThemeSettings(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'getThemeSettings');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+
+  // Modules
+  public getModulesAvailable(): Observable<Module[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'getModules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+  public importModule(importData: ImportModulesData): Observable<void> {
+    const data = {
+      file: importData.file,
+      fileName: importData.fileName
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'importModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public exportModules(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'exportModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['file']) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Course ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  // General
+  public getCourse(courseID: number): Observable<Course> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourse');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+  }
+
+  public getCourseWithInfo(courseID: number): Observable<{course: Course, activePages: Page[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseWithInfo');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          course: Course.fromDatabase(res['data']['course']),
+          activePages: res['data']['activePages'].map(page => Page.fromDatabase(page)),
+        }
+      }));
+  }
+
+  public getCourseGlobal(courseID: number): Observable<{ name: string, activeUsers: number, awards: number, participations: number }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseGlobal');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          name: res['data']['name'],
+          activeUsers: res['data']['activeUsers'],
+          awards: res['data']['awards'],
+          participations: res['data']['participations'],
+        };
+      }) );
+  }
+
+  public getCourseRoles(courseID: number): Observable<Role[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseRoles');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['courseRoles']).map(role => Role.fromDatabase(role))) );
+  }
+
+  public static getCourseResources(courseID: number): Observable<{name: string, files: string[]}[]> {
+    const module = ApiHttpService.COURSE;
+    const request = 'getCourseResources';
+
+    const url = ApiEndpointsService.API_ENDPOINT + '/info.php?module=' + module + '&request=' + request + '&courseId=' + courseID;
+
+    const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
+    return httpClient.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['resources']));
+  }
+
+  public importCourses(importData: ImportCoursesData): Observable<number> {
+    const data = {
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'importCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
+  }
+
+  public exportCourses(courseID: number = null, options = null): Observable<string> {
+    const data = {
+      courseId: courseID,
+      options: options
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'exportCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['courses']) );
+  }
+
+
+  // Course Manipulation
+  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANK): Observable<Course> {
+    const data = {
+      courseName: courseData.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''),
+      creationMode: creationMode,
+      courseShort: courseData.short,
+      courseYear: courseData.year,
+      courseColor: courseData.color,
+      courseIsVisible: courseData.isVisible ? 1 : 0,
+      courseIsActive: courseData.isActive ? 1 : 0,
+    }
+
+    if (creationMode === CreationMode.SIMILAR)
+      data['copyFrom'] = courseData.id;
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'createCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+  }
+
+  public duplicateCourse(courseData: CourseData): Observable<Course> {
+    return this.createCourse(courseData, CreationMode.SIMILAR);
+  }
+
+  public editCourse(courseData: CourseData): Observable<void> {
+    const data = {
+      courseId: courseData.id,
+      courseName: courseData.name,
+      courseShort: courseData.short,
+      courseYear: courseData.year,
+      courseColor: courseData.color,
+      courseIsVisible: courseData.isVisible ? 1 : 0,
+      courseIsActive: courseData.isActive ? 1 : 0,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'editCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteCourse(courseID: number): Observable<void> {
+    const data = { courseId: courseID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'deleteCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setCourseVisible(courseID: number, isVisible: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      isVisible: isVisible ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setCourseVisibility');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setCourseActive(courseID: number, isActive: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      isActive: isActive ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setCourseActiveState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Course Users
+  public getCourseUsers(courseID: number): Observable<User[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseUsers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['userList']).map(obj => User.fromDatabase(obj))) );
+  }
+
+  public getNotCourseUsers(courseID: number): Observable<User[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseNonUsers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['notCourseUsers']).map(obj => User.fromDatabase(obj))) );
+  }
+
+  public createCourseUser(courseID: number, userData: UserData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      userName: userData.name,
+      userStudentNumber: userData.studentNumber,
+      userNickname: userData.nickname,
+      userUsername: userData.username,
+      userEmail: userData.email,
+      userMajor: userData.major,
+      userRoles: userData.roles,
+      userAuthService: userData.auth,
+      userHasImage: !!userData.image,
+      userImage: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'createCourseUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public addUsersToCourse(courseID: number, users: User[], role: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      role,
+      users: users.map(user => {
+        return { id: user.id, name: user.name, studentNumber: user.studentNumber }
+      }),
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'addUsersToCourse');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editCourseUser(courseID: number, userData: UserData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      userId: userData.id,
+      userName: userData.name,
+      userStudentNumber: userData.studentNumber,
+      userNickname: userData.nickname,
+      userUsername: userData.username,
+      userEmail: userData.email,
+      userMajor: userData.major,
+      userRoles: userData.roles,
+      userAuthService: userData.auth,
+      userHasImage: !!userData.image,
+      userImage: userData.image,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'editCourseUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteCourseUser(courseID: number, userID: number): Observable<void> {
+    const data = { courseId: courseID, userId: userID };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'removeCourseUser');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public setCourseUserActive(courseID: number, userID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "userId": userID,
+      "isActive": isActive ? 1 : 0
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'setCourseUserActiveState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public importCourseUsers(courseID: number, importData: ImportUsersData): Observable<number> {
+    const data = {
+      courseId: courseID,
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'importCourseUsers');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+  }
+
+  public exportCourseUsers(courseID: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'exportCourseUsers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
+  }
+
+
+  // Modules
+  public getCourseModules(courseID: number): Observable<Module[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseModules');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+
+  // Roles
+  public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[] }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'roles');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
+        const roles = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
+        return {roles: allRoles, rolesHierarchy: roles}
+      }) );
+  }
+
+  public saveRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {
+    const data = {
+      courseId: courseID,
+      updateRoleHierarchy: true,
+      hierarchy,
+      roles: roles.map(role => {
+        return {name: role.name, id: role.id ? role.id.toString() : null, landingPage: role.landingPage}
+      })
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'roles');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Rules System
+  public getRulesSystemLastRun(courseID: number): Observable<Moment> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getRulesSystemLastRun');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => dateFromDatabase(res['data']['ruleSystemLastRun'])));
+  }
+
+
+  // Styles
+  public getCourseStyleFile(courseID: number): Observable<{styleFile: string, url: string}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseStyleFile');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
+  }
+
+  public createCourseStyleFile(courseID: number): Observable<string> {
+    const data = {
+      courseId: courseID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'createCourseStyleFile');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['url']) );
+  }
+
+  public updateCourseStyleFile(courseID: number, content: string): Observable<string> {
+    const data = {
+      courseId: courseID,
+      content: content
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'updateCourseStyleFile');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['url']) );
+  }
+
+
+  // Database Manipulation
+  public getTableData(courseID: number, table: string): Observable<{entries: any[], columns: any}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getTableData');
+      qs.push('courseId', courseID);
+      qs.push('table', table);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Module ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  // General
+  public setModuleEnabled(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      "isEnabled": isEnabled
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'setModuleState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- User ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  // Logged User
   public getLoggedUser(): Observable<User> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getLoggedUserInfo');
     };
 
@@ -135,7 +727,7 @@ export class ApiHttpService {
 
   public getUserActiveCourses(): Observable<Course[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getLoggedUserActiveCourses');
     };
 
@@ -147,42 +739,11 @@ export class ApiHttpService {
       ) );
   }
 
-  public getUserCourses(): Observable<Course[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'getUserCourses');
-    };
 
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['courses']).map(obj => Course.fromDatabase(obj))) );
-  }
-
-  public editSelfInfo(userData: UserData): Observable<any> {
-    const data = {
-      userName: userData.name,
-      userNickname: userData.nickname,
-      userStudentNumber: userData.studentNumber,
-      userEmail: userData.email,
-      userAuthService: userData.auth,
-      userUsername: userData.username,
-      userHasImage: !!userData.image,
-      userImage: userData.image
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'editSelfInfo');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions).pipe();
-  }
-
+  // General
   public getUsers(): Observable<User[]> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'getUsers');
     };
 
@@ -192,38 +753,47 @@ export class ApiHttpService {
       .pipe( map((res: any) => (res['data']['users']).map(obj => User.fromDatabase(obj))) );
   }
 
-  public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
+  public getUserCourses(): Observable<Course[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUserCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['courses']).map(obj => Course.fromDatabase(obj))) );
+  }
+
+  public importUsers(importData: ImportUsersData): Observable<number> {
     const data = {
-      "userId": userID,
-      "isAdmin": isAdmin ? 1 : 0
+      file: importData.file,
+      replace: importData.replace
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'setUserAdminPermission');
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'importUsers');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
   }
 
-  public setUserActive(userID: number, isActive: boolean): Observable<void> {
-    const data = {
-      "userId": userID,
-      "isActive": isActive ? 1 : 0
-    }
-
+  public exportUsers(): Observable<string> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'setUserActiveState');
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'exportUsers');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
   }
 
+
+  // User Manipulation
   public createUser(userData: UserData): Observable<User> {
     const data = {
       userName: userData.name,
@@ -240,7 +810,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'createUser');
     };
 
@@ -266,7 +836,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'editUser');
     };
 
@@ -275,11 +845,32 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public editSelfInfo(userData: UserData): Observable<any> {
+    const data = {
+      userName: userData.name,
+      userNickname: userData.nickname,
+      userStudentNumber: userData.studentNumber,
+      userEmail: userData.email,
+      userAuthService: userData.auth,
+      userUsername: userData.username,
+      userHasImage: !!userData.image,
+      userImage: userData.image
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'editSelfInfo');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe();
+  }
+
   public deleteUser(userID: number): Observable<void> {
     const data = { userId: userID };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
+      qs.push('module', ApiHttpService.USER);
       qs.push('request', 'deleteUser');
     };
 
@@ -288,55 +879,49 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public exportUsers(): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'exportUsers');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['users'])) );
-  }
-
-  public importUsers(importData: ImportUsersData): Observable<number> {
+  public setUserAdmin(userID: number, isAdmin: boolean): Observable<void> {
     const data = {
-      file: importData.file,
-      replace: importData.replace
+      "userId": userID,
+      "isAdmin": isAdmin ? 1 : 0
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'user');
-      qs.push('request', 'importUsers');
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'setUserAdminPermission');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+      .pipe( map((res: any) => res) );
   }
 
+  public setUserActive(userID: number, isActive: boolean): Observable<void> {
+    const data = {
+      "userId": userID,
+      "isActive": isActive ? 1 : 0
+    }
 
-  /*** --------------------------------------------- ***/
-  /*** -------------- Course related --------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getCourse(courseID: number): Observable<Course> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourse');
-      qs.push('courseId', courseID);
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'setUserActiveState');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
-  public getCourseWithInfo(courseID: number): Observable<{course: Course, activePages: Page[]}> {
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Views ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  // General
+  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseWithInfo');
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'listViews');
       qs.push('courseId', courseID);
     };
 
@@ -345,326 +930,19 @@ export class ApiHttpService {
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => {
         return {
-          course: Course.fromDatabase(res['data']['course']),
-          activePages: res['data']['activePages'].map(page => Page.fromDatabase(page)),
+          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
+          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
+          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
+          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
         }
-      }));
-  }
-
-  static getCourseResources(courseID: number): Observable<{name: string, files: string[]}[]> {
-    const module = 'course';
-    const request = 'getCourseResources';
-
-    // FIXME: why couldn't it be like other requests?
-    const url = ApiEndpointsService.API_ENDPOINT + '/info.php?module=' + module + '&request=' + request + '&courseId=' + courseID;
-
-    const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
-    return httpClient.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['resources']));
-  }
-
-  public getCourseUsers(courseID: number): Observable<User[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseUsers');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['userList']).map(obj => User.fromDatabase(obj))) );
-  }
-
-  public getNotCourseUsers(courseID: number): Observable<User[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseNonUsers');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['notCourseUsers']).map(obj => User.fromDatabase(obj))) );
-  }
-
-  public getCourseRoles(courseID: number): Observable<Role[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseRoles');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => (res['data']['courseRoles']).map(role => Role.fromDatabase(role))) );
-  }
-
-  public setCourseActive(courseID: number, isActive: boolean): Observable<void> {
-    const data = {
-      courseId: courseID,
-      isActive: isActive ? 1 : 0
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'setCourseActiveState');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public setCourseVisible(courseID: number, isVisible: boolean): Observable<void> {
-    const data = {
-      courseId: courseID,
-      isVisible: isVisible ? 1 : 0
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'setCourseVisibility');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public setCourseUserActive(courseID: number, userID: number, isActive: boolean): Observable<void> {
-    const data = {
-      "courseId": courseID,
-      "userId": userID,
-      "isActive": isActive ? 1 : 0
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'setCourseUserActiveState');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public createCourse(courseData: CourseData, creationMode: CreationMode = CreationMode.BLANK): Observable<Course> {
-    const data = {
-      courseName: courseData.name + (creationMode === CreationMode.SIMILAR ? ' - Copy' : ''),
-      creationMode: creationMode,
-      courseShort: courseData.short,
-      courseYear: courseData.year,
-      courseColor: courseData.color,
-      courseIsVisible: courseData.isVisible ? 1 : 0,
-      courseIsActive: courseData.isActive ? 1 : 0,
-    }
-
-    if (creationMode === CreationMode.SIMILAR)
-      data['copyFrom'] = courseData.id;
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'createCourse');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Course.fromDatabase(res['data']['course'])) );
-  }
-
-  public duplicateCourse(courseData: CourseData): Observable<Course> {
-    return this.createCourse(courseData, CreationMode.SIMILAR);
-  }
-
-  public editCourse(courseData: CourseData): Observable<void> {
-    const data = {
-      courseId: courseData.id,
-      courseName: courseData.name,
-      courseShort: courseData.short,
-      courseYear: courseData.year,
-      courseColor: courseData.color,
-      courseIsVisible: courseData.isVisible ? 1 : 0,
-      courseIsActive: courseData.isActive ? 1 : 0,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'editCourse');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public deleteCourse(courseID: number): Observable<void> {
-    const data = { courseId: courseID };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'deleteCourse');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public exportCourses(courseID: number = null, options = null): Observable<string> {
-   const data = {
-     courseId: courseID,
-     options: options
-   }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'exportCourses');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['courses']) );
-  }
-
-  public importCourses(importData: ImportCoursesData): Observable<number> {
-    const data = {
-      file: importData.file,
-      replace: importData.replace
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'importCourses');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
-  }
-
-  public addUsersToCourse(courseID: number, users: User[], role: string): Observable<void> {
-    const data = {
-      courseId: courseID,
-      role,
-      users: users.map(user => {
-        return { id: user.id, name: user.name, studentNumber: user.studentNumber }
-      }),
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'addUsersToCourse');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public createCourseUser(courseID: number, userData: UserData): Observable<void> {
-    const data = {
-      courseId: courseID,
-      userName: userData.name,
-      userStudentNumber: userData.studentNumber,
-      userNickname: userData.nickname,
-      userUsername: userData.username,
-      userEmail: userData.email,
-      userMajor: userData.major,
-      userRoles: userData.roles,
-      userAuthService: userData.auth,
-      userHasImage: !!userData.image,
-      userImage: userData.image,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'createCourseUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public editCourseUser(courseID: number, userData: UserData): Observable<void> {
-    const data = {
-      courseId: courseID,
-      userId: userData.id,
-      userName: userData.name,
-      userStudentNumber: userData.studentNumber,
-      userNickname: userData.nickname,
-      userUsername: userData.username,
-      userEmail: userData.email,
-      userMajor: userData.major,
-      userRoles: userData.roles,
-      userAuthService: userData.auth,
-      userHasImage: !!userData.image,
-      userImage: userData.image,
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'editCourseUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public deleteCourseUser(courseID: number, userID: number): Observable<void> {
-    const data = { courseId: courseID, userId: userID };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'removeCourseUser');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public exportCourseUsers(courseID: number): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'exportCourseUsers');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['courseUsers'])) );
-  }
-
-  public importCourseUsers(courseID: number, importData: ImportUsersData): Observable<number> {
-    const data = {
-      courseId: courseID,
-      file: importData.file,
-      replace: importData.replace
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'importCourseUsers');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrUsers'])) );
+      }) );
   }
 
 
-  /*** --------------------------------------------- ***/
-  /*** ------------------- Views ------------------- ***/
-  /*** --------------------------------------------- ***/
-
+  // Pages
   public renderPage(courseID: number, pageID: number,  userID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'renderPage');
       qs.push('courseId', courseID);
       qs.push('pageId', pageID);
@@ -680,9 +958,7 @@ export class ApiHttpService {
       "parentId": "806",
       "type": "text",
       "role": "role.Default",
-      "edit": true,
       "value": "Joana Sesinando",
-      "events": '{"click": "toggleView(826)"}'
     };
     const text2: ViewTextDatabase = {
       "id": "826",
@@ -754,328 +1030,18 @@ export class ApiHttpService {
       ]
     };
     const block: ViewBlockDatabase = {
-      "id": "806",
-      "viewId": "806",
-      "parentId": null,
-      "type": "block",
-      "role": "role.Default",
-      "edit": true,
-      "children": [
-        text,
-        text2
-      ]
+      id: "806",
+      viewId: "806",
+      parentId: null,
+      type: "block",
+      role: "role.Default",
+      events: {click: "goToPage(2)"}
     };
 
-    // return of(buildView(text));
+    // return of(buildView(block));
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => buildView(res['data']['view'])));
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ---------------- Views Editor --------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getTemplateEditInfo(courseID: number, templateID: number): Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[]}> {
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'getTemplateEditInfo');
-      qs.push('courseId', courseID);
-      qs.push('templateId', templateID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
-        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
-        return {courseRoles, rolesHierarchy, templateRoles: res['data']['templateRoles']}
-      }) );
-  }
-
-  public getTemplate(courseID: number, templateID: number): Observable<Template> {
-    const data = {
-      courseId: courseID,
-      templateId: templateID
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'getTemplate');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
-  }
-
-  public getTemplateEditView(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'getTemplateEditView');
-      qs.push('courseId', courseID);
-      qs.push('templateId', templateID);
-      qs.push('viewerRole', viewerRole);
-      if (userRole) qs.push('userRole', userRole);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['view'] ? buildView(res['data']['view']) : null) );
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ---------------- Rules System --------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getRulesSystemLastRun(courseID: number): Observable<Moment> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getRulesSystemLastRun');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => dateFromDatabase(res['data']['ruleSystemLastRun'])));
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------- General Settings -------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getThemeSettings(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'getThemeSettings');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  public getModulesAvailable(): Observable<Module[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'getModules');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
-  }
-
-  public importModule(importData: ImportModulesData): Observable<void> {
-    const data = {
-      file: importData.file,
-      fileName: importData.fileName
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'importModule');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  public exportModules(): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'core');
-      qs.push('request', 'exportModule');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['file']) );
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** -------------- Course Settings -------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getStyleFile(courseID: number): Observable<{styleFile: string, url: string}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseStyleFile');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => { return {styleFile: res['data']['styleFile'] === false ? '' : res['data']['styleFile'], url: res['data']['url']} }) );
-  }
-
-  public getCourseGlobal(courseID: number): Observable<{ name: string, activeUsers: number, awards: number, participations: number }> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseGlobal');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {
-          name: res['data']['name'],
-          activeUsers: res['data']['activeUsers'],
-          awards: res['data']['awards'],
-          participations: res['data']['participations'],
-        };
-      }) );
-  }
-
-  public getTableData(courseID: number, table: string): Observable<{entries: any[], columns: any}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getTableData');
-      qs.push('courseId', courseID);
-      qs.push('table', table);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  public getRoles(courseID: number): Observable<{ roles: Role[], rolesHierarchy: Role[] }> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'roles');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        const allRoles: Role[] = res['data']['roles_obj'].map(obj => Role.fromDatabase(obj));
-        const roles = Role.parseHierarchy(res['data']['rolesHierarchy'], allRoles);
-        return {roles: allRoles, rolesHierarchy: roles}
-      }) );
-  }
-
-  public saveRoles(courseID: number, roles: Role[], hierarchy: any): Observable<void> {
-    const data = {
-      courseId: courseID,
-      updateRoleHierarchy: true,
-      hierarchy,
-      roles: roles.map(role => {
-        return {name: role.name, id: role.id ? role.id.toString() : null, landingPage: role.landingPage}
-      })
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'roles');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public createCourseStyleFile(courseID: number): Observable<string> {
-    const data = {
-      courseId: courseID
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'createCourseStyleFile');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['url']) );
-  }
-
-  public updateStyleFile(courseID: number, content: string): Observable<string> {
-    const data = {
-      courseId: courseID,
-      content: content
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'updateCourseStyleFile');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['url']) );
-  }
-
-  public getCourseModules(courseID: number): Observable<Module[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'course');
-      qs.push('request', 'getCourseModules');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
-  }
-
-  public setModuleEnabled(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
-    const data = {
-      "courseId": courseID,
-      "moduleId": moduleID,
-      "isEnabled": isEnabled
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'module');
-      qs.push('request', 'setModuleState');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** -------------- Views settings --------------- ***/
-  /*** --------------------------------------------- ***/
-
-  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'listViews');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {
-          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
-          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
-          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
-          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
-        }
-      }) );
   }
 
   public createPage(courseID: number, page: Partial<Page>): Observable<void> {
@@ -1087,7 +1053,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'createPage');
     };
 
@@ -1106,7 +1072,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'editPage');
     };
 
@@ -1122,13 +1088,32 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'deletePage');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+
+  // Templates
+  public getTemplate(courseID: number, templateID: number): Observable<Template> {
+    const data = {
+      courseId: courseID,
+      templateId: templateID
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'getTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Template.fromDatabase(res['data']['template'])) );
   }
 
   public createTemplate(courseID: number, template: Partial<Template>): Observable<void> {
@@ -1139,7 +1124,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'createTemplate');
     };
 
@@ -1157,7 +1142,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'editTemplateBasicInfo');
     };
 
@@ -1173,7 +1158,7 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'deleteTemplate');
     };
 
@@ -1190,8 +1175,24 @@ export class ApiHttpService {
     };
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'setGlobalState');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public importTemplate(courseID: number, file: string | ArrayBuffer): Observable<void> {
+    const data = {
+      courseId: courseID,
+      file,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'importTemplate');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -1201,7 +1202,7 @@ export class ApiHttpService {
 
   public exportTemplate(courseID: number, templateId: number): Observable<string> {
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
+      qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'exportTemplate');
       qs.push('courseId', courseID);
       qs.push('templateId', templateId);
@@ -1213,21 +1214,44 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text;charset=utf-8,' + encodeURIComponent(res['data']['template'])) );
   }
 
-  public importTemplate(courseID: number, file: string | ArrayBuffer): Observable<void> {
-    const data = {
-      courseId: courseID,
-      file,
-    }
+
+  // Editor
+  public getTemplateEditInfo(courseID: number, templateID: number): Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[]}> {
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', 'views');
-      qs.push('request', 'importTemplate');
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'getTemplateEditInfo');
+      qs.push('courseId', courseID);
+      qs.push('templateId', templateID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        const courseRoles: Role[] = (res['data']['courseRoles']).map(obj => Role.fromDatabase(obj));
+        const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
+        return {courseRoles, rolesHierarchy, templateRoles: res['data']['templateRoles']}
+      }) );
   }
+
+  // FIXME: prob delete
+  public getTemplateEditView(courseID: number, templateID: number, viewerRole: string, userRole?: string): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'getTemplateEditView');
+      qs.push('courseId', courseID);
+      qs.push('templateId', templateID);
+      qs.push('viewerRole', viewerRole);
+      if (userRole) qs.push('userRole', userRole);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['view'] ? buildView(res['data']['view']) : null) );
+  }
+
 
 
   /*** --------------------------------------------- ***/
@@ -1259,6 +1283,7 @@ export class ApiHttpService {
           })
       });
   }
+
 
 
   /*** --------------------------------------------- ***/
