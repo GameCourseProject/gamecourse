@@ -61,6 +61,9 @@ export class ViewsEditorComponent implements OnInit {
   isVerificationModalOpen: boolean;
   verificationText: string;
 
+  hasWarning: boolean;
+  warningMsg: string;
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -221,6 +224,8 @@ export class ViewsEditorComponent implements OnInit {
 
   previewView() {
     this.loading = true;
+    this.hasWarning = true;
+    this.warningMsg = 'You need to save changes first for them to appear!';
     this.isPreviewingView = true;
     this.viewToPreview = null;
     this.api.previewTemplate(this.courseID, this.template.id, this.selectedViewerRole, this.selectedUserRole)

@@ -22,7 +22,8 @@
       <div class="go_back icon"></div>
 
       <span>{{template.name}}</span>
-      <span id="warning_ref">The selected view is a reference for a template!</span> <!-- TODO -->
+      <span *ngIf="hasWarning" class="warning">{{warningMsg}}</span>
+<!--      <span *ngIf="hasWarning" class="warning">The selected view is a reference for a template!</span> &lt;!&ndash; TODO &ndash;&gt;-->
     </div>
 
     <!-- Action buttons -->
@@ -51,7 +52,7 @@
         <button (click)="previewView()">Preview</button>
       </ng-container>
 
-      <button *ngIf="isPreviewingView" (click)="isPreviewingView = false;">Close<br> Preview</button>
+      <button *ngIf="isPreviewingView" (click)="isPreviewingView = false; hasWarning = false; warningMsg = null">Close<br> Preview</button>
     </div>
 
     <!-- Editor -->
