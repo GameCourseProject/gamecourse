@@ -303,8 +303,7 @@ API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
         'courseRoles' => $course->getRoles('id, name, landingPage'),
         'rolesHierarchy' => $course->getRolesHierarchy(),
         'templateRoles' => $templateRoles,
-        'templateViewsByAspect' => $templateViewsByAspect,
-        'templateViewTree' => Views::buildTemplate($templateId),
+        'templateViewsByAspect' => $templateViewsByAspect
     ));
 });
 
