@@ -746,6 +746,7 @@ class ViewHandler
             if ($view['visibilityCondition']->accept($visitor)->getValue() == true)
                 $ret = true;
             unset($view['visibilityCondition']);
+            $view["visibilityType"] = $ret ? 'visible' : 'invisible';
             return $ret;
         }
     }

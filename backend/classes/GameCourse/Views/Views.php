@@ -103,11 +103,14 @@ class Views
         $roleType = self::getRoleType($view[0]["role"]);
         $rolesHierarchy = [];
 
+        $viewParams = null;
         if ($roleType == 'ROLE_SINGLE') {
             $rolesHierarchy = $viewerRolesHierarchy;
+            $viewParams = ["course" => $courseId, "viewer" => $viewer->getId()];
 
         } else if ($roleType == 'ROLE_INTERACTION') {
             if (!$user) API::error('Missing user to render view with role type = \'ROLE_INTERACTION\'');
+            $viewParams = ["course" => $courseId, "viewer" => $viewer->getId(), "user" => $userId];
 
             // Get user roles hierarchy
             $userRolesHierarchy = $user->getUserRolesByHierarchy();   // [0]=>role more specific, [1]=>role less specific...
@@ -120,7 +123,7 @@ class Views
             }
         }
 
-        ViewHandler::renderView($view, $rolesHierarchy, ["course" => $courseId, "viewer" => $viewer->getId()]);
+        ViewHandler::renderView($view, $rolesHierarchy, $viewParams);
         return $view;
     }
 
