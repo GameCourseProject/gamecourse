@@ -70,8 +70,8 @@ class Dictionary
                 ViewHandler::parseSelf($view["value"]);
             },
             function (&$view, $viewParams, $visitor) { //processing function
-                if (isset($view["link"])) $view['link'] = $view['link']->accept($visitor)->getValue();
-                $view["value"] = $view["value"]->accept($visitor)->getValue();
+                if (isset($view["link"])) ViewHandler::processSelf($view["link"], $visitor);
+                ViewHandler::processSelf($view["value"], $visitor);
             },
             !$setup
         );
@@ -83,8 +83,8 @@ class Dictionary
                 ViewHandler::parseSelf($view["src"]);
             },
             function (&$view, $viewParams, $visitor) { //processing function
-                if (isset($view["link"])) $image['link'] = $view['link']->accept($visitor)->getValue();
-                $view["src"] = $view["src"]->accept($visitor)->getValue();
+                if (isset($view["link"])) ViewHandler::processSelf($view["link"], $visitor);
+                ViewHandler::processSelf($view["src"], $visitor);
             },
             !$setup
         );

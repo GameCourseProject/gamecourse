@@ -619,20 +619,6 @@ class ViewHandler
     /*** ------------------ Parsing views ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function parse($exp)
-    {
-        static $parser;
-        if ($parser == null) $parser = new ExpressionEvaluatorBase();
-        if (trim($exp) == '') return new ValueNode('');
-
-        return $parser->parse($exp);
-    }
-
-    public static function parseSelf(&$exp)
-    {
-        $exp = self::parse($exp);
-    }
-
     public static function parseView(&$view)
     {
         if (isset($view['style'])) self::parseSelf($view['style']);
@@ -656,6 +642,20 @@ class ViewHandler
         $func = Dictionary::$viewTypes[$type][0];
         if ($func != null)
             $func(...$args);
+    }
+
+    public static function parse($exp)
+    {
+        static $parser;
+        if ($parser == null) $parser = new ExpressionEvaluatorBase();
+        if (trim($exp) == '') return new ValueNode('');
+
+        return $parser->parse($exp);
+    }
+
+    public static function parseSelf(&$exp)
+    {
+        $exp = self::parse($exp);
     }
 
     public static function parseVariables(&$view)
@@ -686,11 +686,6 @@ class ViewHandler
     /*** ----------------- Processing views ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function processSelf(&$view, $visitor)
-    {
-        $view->accept($visitor)->getValue();
-    }
-
     public static function processView(&$view, $viewParams)
     {
         $visitor = new EvaluateVisitor($viewParams);
@@ -716,6 +711,11 @@ class ViewHandler
         $func = Dictionary::$viewTypes[$type][1];
         if ($func != null)
             $func(...$args);
+    }
+
+    public static function processSelf(&$view, $visitor)
+    {
+        $view = $view->accept($visitor)->getValue();
     }
 
     public static function processVariables(&$view, $viewParams, $visitor)
