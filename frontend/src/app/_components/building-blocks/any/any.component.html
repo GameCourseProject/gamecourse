@@ -1,4 +1,4 @@
-<ng-container *ngIf="view.visibilityType === VisibilityType.VISIBLE">
+<ng-container *ngIf="view.mode === ViewMode.EDIT || view.visibilityType === VisibilityType.VISIBLE">
   <bb-text *ngIf="view.type === ViewType.TEXT" [view]="view | as : ViewText" [viewSelection]="view"></bb-text>
   <bb-image *ngIf="view.type === ViewType.IMAGE" [view]="view | as : ViewImage" [viewSelection]="view"></bb-image>
   <bb-header *ngIf="view.type === ViewType.HEADER" [view]="view | as : ViewHeader" [viewSelection]="view"></bb-header>

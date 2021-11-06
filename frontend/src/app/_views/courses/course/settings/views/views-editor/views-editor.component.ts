@@ -9,7 +9,7 @@ import {Template} from "../../../../../../_domain/pages & templates/template";
 import {RoleTypeId} from "../../../../../../_domain/roles/role-type";
 import {Role} from "../../../../../../_domain/roles/role";
 import {User} from "../../../../../../_domain/users/user";
-import {View} from "../../../../../../_domain/views/view";
+import {View, VisibilityType} from "../../../../../../_domain/views/view";
 import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
 import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
@@ -78,6 +78,10 @@ export class ViewsEditorComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  get VisibilityType(): typeof VisibilityType {
+    return VisibilityType;
   }
 
   capitalize(str: string): string {
@@ -204,16 +208,16 @@ export class ViewsEditorComponent implements OnInit {
     this.loading = false;
   }
 
-  saveChanges() { // TODO: needs testing
+  saveChanges() {
     this.loading = true;
     const viewTree = buildViewTree(Object.values(this.viewsByAspects));
     this.api.saveTemplate(this.courseID, this.template.id, viewTree)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => {},
+        res => this.hasUnsavedChanges = false,
         error => ErrorService.set(error)
       )
-  }
+  } // TODO: needs testing
 
   previewView() {
     this.loading = true;
@@ -225,6 +229,11 @@ export class ViewsEditorComponent implements OnInit {
         view => this.viewToPreview = view,
         error => ErrorService.set(error)
       )
+  }
+
+  changeVisibility(): void {
+    if (this.viewToEdit.visibilityType !== VisibilityType.CONDITIONAL)
+      this.viewToEdit.visibilityCondition = null;
   }
 
 
@@ -241,12 +250,17 @@ export class ViewsEditorComponent implements OnInit {
     return roles;
   }
 
+  getVisibilityTypes(): string[] {
+    return Object.values(VisibilityType);
+  }
+
   goToViews(): void {
     if (this.hasUnsavedChanges) {
       if (confirm('There are unsaved changes. Leave page without saving?')) {
         this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
       }
     }
+    this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
   }
 
   canUndo(): boolean {

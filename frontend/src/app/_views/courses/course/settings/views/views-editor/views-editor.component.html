@@ -113,7 +113,6 @@
 
   <div id="edit-container">
 
-    <!-- Settings -->
     <div class="settings-overlay">
       <div class="title">Edit Part Settings:</div>
 
@@ -145,6 +144,27 @@
           [ngTemplateOutletContext]="{label: 'label', title: 'Define a label for the part that can be used in events', viewParam: 'label'}">
         </ng-container>
 
+      </div>
+
+      <!-- Visibility -->
+      <div class="sb-menu section">
+        <div class="divider"><div class="title"><span>Visibility</span></div></div>
+
+        <!-- Options -->
+        <div class="visibility-options">
+          <div *ngFor="let option of getVisibilityTypes()" class="option">
+            <input id="option-{{option}}" type="radio" name="visibility" class="clickable" [(ngModel)]="viewToEdit.visibilityType" (ngModelChange)="changeVisibility()" [value]="option">
+            <label for="option-{{option}}" class="clickable">{{option != VisibilityType.CONDITIONAL ? capitalize(option) : 'Visible by condition'}}</label>
+          </div>
+        </div>
+
+        <!-- Condition -->
+        <div *ngIf="viewToEdit.visibilityType === VisibilityType.CONDITIONAL">
+          <ng-container
+            [ngTemplateOutlet]="expressionInput"
+            [ngTemplateOutletContext]="{label: 'condition', title: 'Define a condition that needs to be true for the element to appear', viewParam: 'visibilityCondition'}">
+          </ng-container>
+        </div>
       </div>
     </div>
 

@@ -20,7 +20,7 @@ export abstract class View {
 
   private _id: number;          // Unique view id
   private _viewId: number;      // All aspects of the view have same viewId
-  private _parentId: number;
+  private _parentId: number;  // FIXME: prob not using for anything in frontend, delete
   private _type: ViewType;
   private _role: string;
   private _mode: ViewMode;
@@ -203,7 +203,7 @@ export abstract class View {
       cssId: view.cssId || null,
       class: view.class.split(' ').filter(cl => !cl.startsWith('gc-')).join(' ') || null,
       label: view.label || null,
-      visibilityType: view.visibilityType ,
+      visibilityType: view.visibilityType,
       events: view.events,
       loopData: view.loopData,
       variables: view.variables,
@@ -221,9 +221,6 @@ export abstract class View {
     loopData?: any, variables?: any, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
     visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
 
-    const visibilityType = obj.visibilityType === VisibilityType.CONDITIONAL || !(obj.visibilityType as VisibilityType) ?
-      VisibilityType.VISIBLE : obj.visibilityType as VisibilityType; // FIXME: transform to correct format in backend (curerntly returning 'conditional')
-
     return {
       id: parseInt(obj.id),
       viewId: parseInt(obj.viewId),
@@ -237,9 +234,8 @@ export abstract class View {
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
       class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
       label: (obj.label && !obj.label.isEmpty()) ? obj.label : null,
-      visibilityType,
-      visibilityCondition: obj.visibilityType === VisibilityType.CONDITIONAL && obj.visibilityCondition &&
-                           !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
+      visibilityType: obj.visibilityType ? obj.visibilityType as VisibilityType : VisibilityType.VISIBLE,
+      visibilityCondition: obj.visibilityType === VisibilityType.CONDITIONAL && obj.visibilityCondition && !obj.visibilityCondition.isEmpty() ? obj.visibilityCondition : null,
       events: obj.events && !!Object.keys(obj.events).length ?
               objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
     }
