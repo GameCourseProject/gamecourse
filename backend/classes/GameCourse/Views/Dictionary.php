@@ -183,7 +183,7 @@ class Dictionary
         /*** ----------------------------------------------- ***/
         /*** ------------------ Functions ------------------ ***/
         /*** ----------------------------------------------- ***/
-        // TODO: need to be checked
+        // TODO: need to be checked (views' refactor)
 
         // Functions of Expression Language
         self::registerFunction('system', 'if', function (&$condition, &$ifTrue, &$ifFalse) {
@@ -1082,18 +1082,25 @@ class Dictionary
             "object",
             "participation", !$setup
         );
-        //participations.getVideoViews(user, nameSubstring)
+        //participations.getLinkViews(user, nameSubstring)
         self::registerFunction(
             'participations',
-            'getVideoViews',
-            function (int $courseId, int $user, $nameSubstring) {
+            'getLinkViews',
+            function (int $courseId, int $user, $nameSubstring = null) {
                 $table = "participation";
+
                 $where = ["user" => $user, "type" => "url viewed", "course" => $courseId];
-                $likeParams = ["description" => $nameSubstring];
+                if ($nameSubstring == null) {
+                    $likeParams = ["description" => "%"];
+                }
+                else {
+                    $likeParams = ["description" => $nameSubstring];
+                }
+
                 $participations = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
                 return self::createNode($participations, "participation", "collection");
             },
-            "Returns a collection of unique url views for videos. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify videos.Ex:'[Video]%'",
+            "Returns a collection of unique url views. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify the url.Ex:'[Video]%'",
             'collection',
             'participation',
             'library', null, !$setup
@@ -1103,17 +1110,17 @@ class Dictionary
             'participations',
             'getResourceViews',
 
-            function (int $courseId, int $user) {
+            function (int $courseId, int $user, $nameSubstring = null) {
                 $table = "participation";
 
                 $where = ["user" => $user, "type" => "resource view", "course" => $courseId];
-                $likeParams = ["description" => "Lecture % Slides"];
+                if ($nameSubstring == null) $likeParams = ["description" => "%"];
+                else $likeParams = ["description" => $nameSubstring];
+                $resourceViews = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
 
-                $skillTreeParticipation = Core::$systemDB->selectMultiple($table, $where, '*', null, [], [], "description", $likeParams);
-
-                return self::createNode($skillTreeParticipation, "participation", "collection");
+                return self::createNode($resourceViews, "participation", "collection");
             },
-            "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.",
+            "Returns a collection of unique resource views for Lecture Slides. The parameter can be used to find participations for a user:\nuser: id of a GameCourseUser that participated.\nnameSubstring: how to identify the resource.Ex:'Lecture $ Slides'",
             'collection',
             'participation',
             'library', null, !$setup

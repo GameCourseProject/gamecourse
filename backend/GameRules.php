@@ -30,7 +30,8 @@ class GameRules{
 	public function __construct($courseId, $all, $targets, $testMode=False)
     {
         $this->courseId = $courseId;
-		$this->rulePath = self::ROOT_FOLDER . Course::getCourseDataFolder($courseId);
+        $name = Core::$systemDB->select("course", ["id" => $courseId], "name");
+        $this->rulePath = self::ROOT_FOLDER . Course::getCourseDataFolder($courseId, $name);
 		if ($all) {
 			$this->all = True;
 		}
