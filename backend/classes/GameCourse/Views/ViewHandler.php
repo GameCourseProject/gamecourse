@@ -26,126 +26,194 @@ class ViewHandler
      * This includes all aspects of the view and also children.
      *
      * @param $view
-     * @param int $templateId
+     * @return array
      */
-    public static function updateView(&$view, int $templateId) {
+    public static function updateView(&$view): array
+    {
         $viewId = null; // used to set the same viewId for all aspects of the view
+        $templateRoles = []; // used to get template view roles
+
         foreach ($view as &$aspect) {
-            if (isset($aspect["id"])) { // Already in database, update
-                // TODO: when doing view editor
-
-            } else { // Not in database, insert
-                if ($viewId) $aspect["viewId"] = $viewId;
-
+            if (isset($aspect["id"])) { // Already in database, UPDATE
+                $mode = 'UPDATE';
                 self::prepareViewForDatabase($aspect);
-                self::insertView($aspect, $templateId);
 
-                // Add aspect role to template roles
-                if (!in_array($aspect["role"], Views::getTemplateRoles($templateId, false)))
-                    Core::$systemDB->insert("template_role", ["templateId" => $templateId, "role" => $aspect["role"]]);
+                // Update view in 'view' table
+                Core::$systemDB->update("view", [
+                    "viewId" => $aspect["viewId"],
+                    "type" => $aspect["type"],
+                    "role" => $aspect["role"],
+                    "style" => $aspect["style"] ?? null,
+                    "cssId" => $aspect["cssId"] ?? null,
+                    "class" => $aspect["class"] ?? null,
+                    "label" => $aspect["label"] ?? null,
+                    "visibilityType" => $aspect["visibilityType"] ?? null,
+                    "visibilityCondition" => $aspect["visibilityCondition"] ?? null,
+                    "loopData" => $aspect["loopData"] ?? null,
+                    "variables" => $aspect["variables"] ?? null,
+                    "events" => $aspect["events"] ?? null
+                ], ["id" => $aspect["id"]]);
+
+            } else { // Not in database, INSERT
+                $mode = 'INSERT';
+                if ($viewId) $aspect["viewId"] = $viewId;
+                self::prepareViewForDatabase($aspect);
+
+                // Insert into 'view' table
+                Core::$systemDB->insert("view", [
+                    "type" => $aspect["type"],
+                    "role" => $aspect["role"],
+                    "style" => $aspect["style"] ?? null,
+                    "cssId" => $aspect["cssId"] ?? null,
+                    "class" => $aspect["class"] ?? null,
+                    "label" => $aspect["label"] ?? null,
+                    "visibilityType" => $aspect["visibilityType"] ?? null,
+                    "visibilityCondition" => $aspect["visibilityCondition"] ?? null,
+                    "loopData" => $aspect["loopData"] ?? null,
+                    "variables" => $aspect["variables"] ?? null,
+                    "events" => $aspect["events"] ?? null
+                ]);
+
+                // Update ids
+                $aspect["id"] = Core::$systemDB->getLastId();
+                if (!isset($aspect["viewId"])) $aspect["viewId"] = $aspect["id"];
+                Core::$systemDB->update("view", ["viewId" => $aspect["viewId"]], ["id" => $aspect["id"]]);
 
                 if (!$viewId && isset($aspect["viewId"])) $viewId = $aspect["viewId"];
             }
+
+            // Update view depending on type
+            $viewRoles = [];
+            if ($aspect["type"] == 'text') $viewRoles = self::updateViewText($aspect, $mode);
+            if ($aspect["type"] == 'image') $viewRoles = self::updateViewImage($aspect, $mode);
+            if ($aspect["type"] == 'header') $viewRoles = self::updateViewHeader($aspect, $mode);
+            if ($aspect["type"] == 'table') $viewRoles = self::updateViewTable($aspect, $mode);
+            if ($aspect["type"] == 'block') $viewRoles = self::updateViewBlock($aspect, $mode);
+            if ($aspect["type"] == 'row') $viewRoles = self::updateViewRow($aspect, $mode);
+            // NOTE: insert here other types of views
+
+            // Add view roles to template roles
+            foreach ($viewRoles as $role) {
+                if (!in_array($role, $templateRoles)) $templateRoles[] = $role;
+            }
         }
+        return $templateRoles;
     }
 
 
     /**
-     * Insert a view into the database.
+     * Update a view of type 'text' in the database.
      *
      * @param $view
-     * @param int $templateId
+     * @param string $mode
+     * @return array
      */
-    private static function insertView(&$view, int $templateId)
+    private static function updateViewText($view, string $mode): array
     {
-        // Insert into 'view' table
-        Core::$systemDB->insert("view", [
-            "type" => $view["type"],
-            "role" => $view["role"],
-            "style" => $view["style"] ?? null,
-            "cssId" => $view["cssId"] ?? null,
-            "class" => $view["class"] ?? null,
-            "label" => $view["label"] ?? null,
-            "visibilityType" => $view["visibilityType"] ?? null,
-            "visibilityCondition" => $view["visibilityCondition"] ?? null,
-            "loopData" => $view["loopData"] ?? null,
-            "variables" => $view["variables"] ?? null,
-            "events" => $view["events"] ?? null
-        ]);
+        if ($mode == 'INSERT') {
+            Core::$systemDB->insert("view_text", [
+                "id" => $view["id"],
+                "value" => $view["value"],
+                "link" => $view["link"] ?? null
+            ]);
 
-        // Update ids
-        $view["id"] = Core::$systemDB->getLastId();
-        if (!isset($view["viewId"])) $view["viewId"] = $view["id"];
-        Core::$systemDB->update("view", ["viewId" => $view["viewId"]], ["id" => $view["id"]]);
-
-        // Insert into database depending on type
-        if ($view["type"] == 'text') self::insertViewText($view);
-        if ($view["type"] == 'image') self::insertViewImage($view);
-        if ($view["type"] == 'header') self::insertViewHeader($view, $templateId);
-        if ($view["type"] == 'table') self::insertViewTable($view, $templateId);
-        if ($view["type"] == 'block') self::insertViewBlock($view, $templateId);
-        if ($view["type"] == 'row') self::insertViewRow($view, $templateId);
-        // NOTE: insert here other types of views
+        } else if ($mode == 'UPDATE') {
+            Core::$systemDB->update("view_text", [
+                "value" => $view["value"],
+                "link" => $view["link"] ?? null
+            ], ["id" => $view["id"]]);
+        }
+        return [$view["role"]];
     }
 
     /**
-     * Insert a view of type 'text' into the database.
+     * Update a view of type 'image' in the database.
      *
      * @param $view
+     * @param string $mode
+     * @return array
      */
-    private static function insertViewText($view)
+    private static function updateViewImage($view, string $mode): array
     {
-        Core::$systemDB->insert("view_text", [
-            "id" => $view["id"],
-            "value" => $view["value"],
-            "link" => $view["link"] ?? null
-        ]);
+        if ($mode == 'INSERT') {
+            Core::$systemDB->insert("view_image", [
+                "id" => $view["id"],
+                "src" => $view["src"],
+                "link" => $view["link"] ?? null
+            ]);
+
+        } else if ($mode == 'UPDATE') {
+            Core::$systemDB->update("view_image", [
+                "src" => $view["src"],
+                "link" => $view["link"] ?? null
+            ], ["id" => $view["id"]]);
+        }
+        return [$view["role"]];
     }
 
     /**
-     * Insert a view of type 'image' into the database.
+     * Update a view of type 'header' in the database.
      *
      * @param $view
+     * @param string $mode
+     * @return array
      */
-    private static function insertViewImage($view)
+    private static function updateViewHeader($view, string $mode): array
     {
-        Core::$systemDB->insert("view_image", [
-            "id" => $view["id"],
-            "src" => $view["src"],
-            "link" => $view["link"] ?? null
-        ]);
+        $imageRoles = self::updateView($view["image"]);
+        $titleRoles = self::updateView($view["title"]);
+
+        if ($mode == 'INSERT') {
+            Core::$systemDB->insert("view_header", [
+                "id" => $view["id"],
+                "image" => $view["image"][0]["viewId"],
+                "title" => $view["title"][0]["viewId"]
+            ]);
+
+        } else if ($mode == 'UPDATE') {
+            Core::$systemDB->update("view_header", [
+                "image" => $view["image"][0]["viewId"],
+                "title" => $view["title"][0]["viewId"]
+            ], ["id" => $view["id"]]);
+        }
+
+        // Merge view roles
+        $viewRoles = [$view["role"]];
+        foreach($imageRoles as $imageRole) {
+            if (!in_array($imageRole, $viewRoles)) $viewRoles[] = $imageRole;
+        }
+        foreach($titleRoles as $titleRole) {
+            if (!in_array($titleRole, $viewRoles)) $viewRoles[] = $titleRole;
+        }
+        return $viewRoles;
     }
 
     /**
-     * Insert a view of type 'header' into the database.
+     * Update a view of type 'table' in the database.
      *
      * @param $view
-     * @param int $templateId
+     * @param string $mode
+     * @return array
      */
-    private static function insertViewHeader($view, int $templateId)
+    private static function updateViewTable($view, string $mode): array
     {
-        self::updateView($view["image"], $templateId);
-        self::updateView($view["title"], $templateId);
+        $viewRoles = [$view["role"]];
 
-        Core::$systemDB->insert("view_header", [
-            "id" => $view["id"],
-            "image" => $view["image"][0]["viewId"],
-            "title" => $view["title"][0]["viewId"]
-        ]);
-    }
+        // Clean header rows & body rows
+        // This ensures the order is correct if changed
+        if ($mode == 'UPDATE') {
+            Core::$systemDB->delete("view_table_header", ["id" => $view["id"]]);
+            Core::$systemDB->delete("view_table_row", ["id" => $view["id"]]);
+        }
 
-    /**
-     * Insert a view of type 'table' into the database.
-     *
-     * @param $view
-     * @param int $templateId
-     */
-    private static function insertViewTable($view, int $templateId)
-    {
-        // Insert header rows
+        // Update header rows
         foreach ($view["headerRows"] as &$headerRow) {
-            self::updateView($headerRow, $templateId);
+            $headerRoles = self::updateView($headerRow);
+            foreach ($headerRoles as $headerRole){
+                if (!in_array($headerRole, $viewRoles)) $viewRoles[] = $headerRole;
+            }
 
+            // Insert into 'view_table_header'
             Core::$systemDB->insert("view_table_header", [
                 "id" => $view["id"],
                 "headerRow" => $headerRow[0]["viewId"],
@@ -153,56 +221,71 @@ class ViewHandler
             ]);
         }
 
-        // Insert body rows
+        // Update body rows
         foreach ($view["rows"] as &$row) {
-            self::updateView($row, $templateId);
+            $bodyRoles = self::updateView($row);
+            foreach ($bodyRoles as $bodyRole){
+                if (!in_array($bodyRole, $viewRoles)) $viewRoles[] = $bodyRole;
+            }
 
+            // Insert into 'view_table_row'
             Core::$systemDB->insert("view_table_row", [
                 "id" => $view["id"],
                 "row" => $row[0]["viewId"],
                 "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_row", ["id" => $view["id"]]))
             ]);
         }
+
+        return $viewRoles;
     }
 
     /**
-     * Insert a view of type 'block' into the database.
+     * Update a view of type 'block' in the database.
      *
      * @param $view
-     * @param int $templateId
+     * @param string $mode
+     * @return array
      */
-    private static function insertViewBlock($view, int $templateId)
+    private static function updateViewBlock($view, string $mode): array
     {
-        if (isset($view["children"])) {
-            foreach ($view["children"] as &$child) {
-                // Set parentId for all aspects of child
-                foreach ($child as &$childAspect) {
-                    $childAspect["parentId"] = $view["id"];
-                }
+        $viewRoles = [$view["role"]];
 
-                self::updateView($child, $templateId);
+        if (isset($view["children"])) {
+            // Clean children
+            // This ensures the order is correct if changed
+            if ($mode == 'UPDATE')
+                Core::$systemDB->delete("view_parent", ["parentId" => $view["id"]]);
+
+            foreach ($view["children"] as &$child) {
+                $childRoles = self::updateView($child);
+                foreach ($childRoles as $childRole){
+                    if (!in_array($childRole, $viewRoles)) $viewRoles[] = $childRole;
+                }
 
                 // Insert into 'view_parent'
                 Core::$systemDB->insert("view_parent", [
-                    "parentId" => $child[0]["parentId"], // parentId is the same for all aspects of child
-                    "childId" => $child[0]["viewId"],    // viewId is the same for all aspects of child
-                    "viewIndex" => count(Core::$systemDB->selectMultiple("view_parent", ["parentId" => $child[0]["parentId"]]))
+                    "parentId" => $view["id"],
+                    "childId" => $child[0]["viewId"],   // viewId is the same for all aspects of child
+                    "viewIndex" => count(Core::$systemDB->selectMultiple("view_parent", ["parentId" => $view["id"]]))
                 ]);
             }
         }
+
+        return $viewRoles;
     }
 
     /**
-     * Insert a view of type 'row' into the database.
+     * Update a view of type 'row' in the database.
      *
      * @param $view
-     * @param int $templateId
+     * @param string $mode
+     * @return array
      */
-    private static function insertViewRow($view, int $templateId)
+    private static function updateViewRow($view, string $mode): array
     {
         // Similar to view type 'block',
         // they both only carry children views
-        self::insertViewBlock($view, $templateId);
+        return self::updateViewBlock($view, $mode);
     }
 
 

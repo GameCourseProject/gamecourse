@@ -232,13 +232,41 @@ class Views
         $templateId = Core::$systemDB->getLastId();
 
         // Add view to database (including all aspects and children)
-        ViewHandler::updateView($view, $templateId);
+        $templateRoles = ViewHandler::updateView($view);
+
+        // Add template roles to 'template_role' table
+        foreach ($templateRoles as $role) {
+            Core::$systemDB->insert("template_role", ["templateId" => $templateId, "role" => $role]);
+        }
 
         // Add entry on 'view_template'
         $viewId = $view[0]["viewId"]; // viewId is the same for all aspects
         Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
 
         return array($templateId, $viewId);
+    }
+
+    /**
+     * Edits a template and all its views.
+     *
+     * @param $view
+     * @param int $templateId
+     */
+    public static function editTemplate($view, int $templateId)
+    {
+        // Update view in database (including all aspects and children)
+        $templateRoles = ViewHandler::updateView($view);
+
+        // Update template roles in 'template_role' table
+        // Clean and insert again
+        Core::$systemDB->delete("template_role", ["templateId" => $templateId]);
+        foreach ($templateRoles as $role) {
+            Core::$systemDB->insert("template_role", ["templateId" => $templateId, "role" => $role]);
+        }
+
+        // Update entry on 'view_template'
+        $viewId = $view[0]["viewId"]; // viewId is the same for all aspects
+        Core::$systemDB->update("view_template", ["viewId" => $viewId], ["templateId" => $templateId]);
     }
 
     /**
@@ -329,15 +357,20 @@ class Views
     }
 
     /**
-     * Checks if a template with a given name exists in the database
+     * Checks if a template with a given id or name exists in the database.
      *
-     * @param string $name
+     * @param string|null $name
+     * @param int|null $id
      * @param int $courseId
      * @return bool
      */
-    public static function templateExists(string $name, int $courseId): bool
+    public static function templateExists(int $courseId, string $name = null, int $id = null): bool
     {
-        return !empty(Core::$systemDB->select('template', ['name' => $name, 'course' => $courseId]));
+        if ($name)
+            return !empty(Core::$systemDB->select('template', ['name' => $name, 'course' => $courseId]));
+        else if ($id)
+            return !empty(Core::$systemDB->select('template', ['id' => $id, 'course' => $courseId]));
+        return false;
     }
 
     /**

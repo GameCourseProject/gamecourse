@@ -55,10 +55,10 @@ class AwardList extends Module
             null
         );*/
 
-        if (!Views::templateExists(self::AWARDS_PROFILE_TEMPLATE, $this->getCourseId()))
+        if (!Views::templateExists($this->getCourseId(), self::AWARDS_PROFILE_TEMPLATE))
             Views::createTemplate(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $this->getCourseId(), true);
 
-        if (!Views::templateExists(self::FULL_AWARDS_TEMPLATE, $this->getCourseId()))
+        if (!Views::templateExists($this->getCourseId(), self::FULL_AWARDS_TEMPLATE))
             Views::createTemplate(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $this->getCourseId(), true);
     }
 

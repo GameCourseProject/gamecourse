@@ -14,7 +14,7 @@ class SideView extends Module {
     }
 
     public function init() {
-        if (!Views::templateExists(self::SIDE_VIEW_TEMPLATE, $this->getCourseId())) {
+        if (!Views::templateExists($this->getCourseId(), self::SIDE_VIEW_TEMPLATE)) {
             Views::createTemplateFromFile(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), $this->getCourseId());
         }
         

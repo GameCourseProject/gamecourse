@@ -890,7 +890,7 @@ class Skills extends Module
             'library'
         );
 
-        if (!Views::templateExists(self::SKILL_TREE_TEMPLATE, $this->getCourseId())) {
+        if (!Views::templateExists($this->getCourseId(), self::SKILL_TREE_TEMPLATE)) {
             Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $this->getCourseId());
         }
 

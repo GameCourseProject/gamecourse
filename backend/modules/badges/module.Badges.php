@@ -614,7 +614,7 @@ class Badges extends Module
             'level'
         );
 
-        if (!Views::templateExists(self::BADGES_TEMPLATE_NAME, $this->getCourseId()))
+        if (!Views::templateExists($this->getCourseId(), self::BADGES_TEMPLATE_NAME))
             Views::createTemplateFromFile(self::BADGES_TEMPLATE_NAME, file_get_contents(__DIR__ . '/badges.txt'), $this->getCourseId());
     }
 

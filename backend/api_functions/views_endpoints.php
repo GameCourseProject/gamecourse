@@ -132,8 +132,13 @@ API::registerFunction($MODULE, 'getTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateId');
 
-    $template = Views::getTemplate(API::getValue("templateId"));
-    API::response(array('template' => $template));
+    $courseId = API::getValue("courseId");
+    $templateId = API::getValue("templateId");
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
+    API::response(array('template' => Views::getTemplate($templateId)));
 });
 
 /**
@@ -171,9 +176,14 @@ API::registerFunction($MODULE, 'editTemplateBasicInfo', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateId', 'templateName', 'roleType');
 
-    $newView = ["name" => API::getValue('templateName'), "course" => API::getValue('courseId')];
-    $newView["roleType"] = API::getValue('roleType');
-    Core::$systemDB->update("template", $newView, ['id' => API::getValue('templateId')]);
+    $courseId = API::getValue("courseId");
+    $templateId = API::getValue("templateId");
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
+    $newTemplate = ["name" => API::getValue('templateName'), "course" => $courseId, "roleType" => API::getValue('roleType')];
+    Core::$systemDB->update("template", $newTemplate, ['id' => $templateId]);
 });
 
 /**
@@ -186,7 +196,13 @@ API::registerFunction($MODULE, 'deleteTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateId');
 
-    Views::deleteTemplate(API::getValue('courseId'), API::getValue('templateId'));
+    $courseId = API::getValue("courseId");
+    $templateId = API::getValue("templateId");
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
+    Views::deleteTemplate($courseId, $templateId);
 });
 
 /**
@@ -234,7 +250,13 @@ API::registerFunction($MODULE, 'exportTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateId');
 
-    $templateView = Views::exportTemplate(API::getValue('templateId'));
+    $courseId = API::getValue("courseId");
+    $templateId = API::getValue("templateId");
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
+    $templateView = Views::exportTemplate($templateId);
     API::response(array('template' => json_encode($templateView)));
 });
 
@@ -261,6 +283,9 @@ API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
 
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
 
     $templateRoles = Views::getTemplateRoles($templateId);
     $roleType = Views::getRoleType($templateRoles[0]);
@@ -302,12 +327,41 @@ API::registerFunction($MODULE, 'previewTemplate', function () {
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
 
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
     $viewerRole = API::getValue("viewerRole");
     $userRole = null;
     if (API::hasKey("userRole")) $userRole = API::getValue("userRole");
 
     API::response(array('view' => Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole, false)));
 });
+
+/**
+ * Save template to database.
+ *
+ * @param int $courseId
+ * @param int $tempalteId
+ * @param $template
+ */
+API::registerFunction($MODULE, 'saveTemplate', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues("courseId", "templateId", "template");
+
+    $templateId = API::getValue("templateId");
+    $template = API::getValue("template");
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    if (!Views::templateExists($courseId, null, $templateId))
+        API::error('There is no template with id = ' . $templateId);
+
+    Views::editTemplate($template, $templateId);
+});
+
 
 
 
@@ -385,7 +439,7 @@ API::registerFunction($MODULE, 'getInfo', function () {
 });
 
 //save a part of the view as a template or templateRef while editing the view
-API::registerFunction($MODULE, 'saveTemplate', function () {
+API::registerFunction($MODULE, 'saveTemplateOld', function () {
     API::requireCourseAdminPermission();
     API::requireValues('course', 'name', 'parts', 'isRef');
     $templateName = API::getValue('name');

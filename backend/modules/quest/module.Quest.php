@@ -459,7 +459,7 @@ class Quest extends Module {
             }*/
         });
 
-        if (!Views::templateExists('Quest Announce - by quest', $this->getCourseId()))
+        if (!Views::templateExists($this->getCourseId(), 'Quest Announce - by quest'))
             Views::createTemplateFromFile('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')), $this->getCourseId());
     }
 
