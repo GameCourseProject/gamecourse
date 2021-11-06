@@ -59,6 +59,21 @@ export class Role {
   }
 
   /**
+   * Unparses a role from the format 'Default' to 'role.Default',
+   * or 'Default>Default' to 'role.Default>role.Default'
+   *
+   * @param role
+   */
+  static unparse(role: string): string {
+    if (role.includes(">")) {
+      const viewer = role.split(">")[1];
+      const user = role.split(">")[0];
+      return 'role.' + user + ">" + 'role.' + viewer;
+
+    } else return 'role.' + role;
+  }
+
+  /**
    * Parses roles hierarchy coming from backend to an appropriate
    * format with nested roles.
    *

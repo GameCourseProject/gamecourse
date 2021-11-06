@@ -23,7 +23,7 @@ import {Page} from "../../_domain/pages & templates/page";
 import {Template} from "../../_domain/pages & templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
-import {buildView} from "../../_domain/views/build-view";
+import {buildView} from "../../_domain/views/build-view/build-view";
 import {ViewTextDatabase} from "../../_domain/views/view-text";
 import {ViewImageDatabase} from "../../_domain/views/view-image";
 import {ViewHeaderDatabase} from "../../_domain/views/view-header";
@@ -1253,6 +1253,23 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => buildView(res['data']['view'])) );
+  }
+
+  public saveTemplate(courseID: number, templateID: number, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      templateId: templateID,
+      template: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'saveTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

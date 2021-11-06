@@ -4,8 +4,8 @@
  * ----------------------------
  */
 
-.view.row {
-  .row_children {
+.gc-view.gc-row {
+  .gc-row_children {
     display: flex;
 
     & > * {
@@ -26,16 +26,16 @@
  */
 
 .editor {
-  .view.row {
+  .gc-view.gc-row {
     border-radius: 5px;
 
-    .row_children {
+    .gc-row_children {
       & > * {
         margin-right: initial !important;
       }
     }
 
-    &.row_empty {
+    &.gc-row_empty {
       padding: 20px;
     }
 

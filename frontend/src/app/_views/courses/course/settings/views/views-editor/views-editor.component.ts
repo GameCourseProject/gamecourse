@@ -14,6 +14,7 @@ import {ViewSelectionService} from "../../../../../../_services/view-selection.s
 import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
 import {copyObject} from "../../../../../../_utils/misc/misc";
+import {buildViewTree} from "../../../../../../_domain/views/build-view-tree/build-view-tree";
 
 @Component({
   selector: 'app-view-editor',
@@ -168,6 +169,7 @@ export class ViewsEditorComponent implements OnInit {
 
     if (btn === 'edit-settings') {
       this.viewToEdit = copyObject(viewSelected);
+      // TODO: don't show gamecourse classes on input
       this.isEditSettingsModalOpen = true;
 
     } else if (btn === 'edit-layout') {
@@ -179,17 +181,7 @@ export class ViewsEditorComponent implements OnInit {
     if (btn !== 'edit-layout') this.hasModalOpen = true;
   }
 
-  saveEdit() {
-    this.isEditSettingsModalOpen = false;
-    this.hasModalOpen = false;
-    this.updateView(this.viewToEdit);
-    this.verificationText = 'Saved!';
-    this.isVerificationModalOpen = true;
-  }
-
   updateView(newView: View): void {
-    this.loading = true;
-
     // Change on all aspects
     const aspects = Object.keys(this.viewsByAspects);
     for (const aspect of aspects) {
@@ -199,14 +191,28 @@ export class ViewsEditorComponent implements OnInit {
         this.hasUnsavedChanges = true;
       }
     }
-
     this.changeViewToShow(false);
+  } // TODO: needs testing
+
+  saveEdit() {
+    this.loading = true;
+    this.isEditSettingsModalOpen = false;
+    this.hasModalOpen = false;
+    this.updateView(this.viewToEdit);
+    this.verificationText = 'Saved!';
+    this.isVerificationModalOpen = true;
     this.loading = false;
   }
 
-  saveChanges() {
-    console.log(this.viewsByAspects)
-    // TODO: build view tree
+  saveChanges() { // TODO: needs testing
+    this.loading = true;
+    const viewTree = buildViewTree(Object.values(this.viewsByAspects));
+    this.api.saveTemplate(this.courseID, this.template.id, viewTree)
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(
+        res => {},
+        error => ErrorService.set(error)
+      )
   }
 
   previewView() {

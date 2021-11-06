@@ -1,8 +1,9 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
-import {buildView} from "./build-view";
+import {buildView} from "./build-view/build-view";
 import {copyObject} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
+import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
 
 export class ViewBlock extends View {
 
@@ -11,9 +12,9 @@ export class ViewBlock extends View {
   // Edit only params
   private _isEditingLayout?: boolean;
 
-  static readonly BLOCK_CLASS = 'block';
-  static readonly BLOCK_CHILDREN_CLASS = 'block_children';
-  static readonly BLOCK_EMPTY_CLASS = 'block_empty';
+  static readonly BLOCK_CLASS = 'gc-block';
+  static readonly BLOCK_CHILDREN_CLASS = 'gc-block_children';
+  static readonly BLOCK_EMPTY_CLASS = 'gc-block_empty';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,
               variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
@@ -44,6 +45,7 @@ export class ViewBlock extends View {
   updateView(newView: View): ViewBlock {
     if (this.id === newView.id) {
       const copy = copyObject(newView);
+      copy.children = this.children; // Keep same children
       ViewSelectionService.unselect(copy);
       return copy as ViewBlock;
     }
@@ -61,6 +63,47 @@ export class ViewBlock extends View {
     return null;
   }
 
+  buildViewTree() {
+    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
+      const copy = copyObject(this);
+      copy.children = []; // Strip children
+
+      if (this.parentId !== null) { // Has parent
+        const parent = viewsAdded.get(this.parentId);
+        parent.addChildViewToViewTree(copy);
+
+      } else viewTree.push(copy); // Is root
+      viewsAdded.set(copy.id, copy);
+    }
+
+    // Build children into view tree
+    for (const child of this.children) {
+      child.buildViewTree();
+    }
+  }
+
+  addChildViewToViewTree(view: View) {
+    for (const child of this.children) {
+      if ((child as any as View[])[0].viewId === view.viewId) { // Found aspect it belongs
+        (child as any as View[]).push(view);
+        return;
+      }
+    }
+    (this.children as any as View[][]).push([view]);  // No aspect found
+  }
+
+  /**
+   * Custom way to stringify this class.
+   * This is needed so that the output of JSON.stringify()
+   * doesn't have '_' on attributes
+   */
+  toJSON(){
+    const obj = View.toJson(this);
+    return Object.assign(obj, {
+      children: this.children
+    });
+  }
+
   static fromDatabase(obj: ViewBlockDatabase): ViewBlock {
     const parsedObj = View.parse(obj);
     return new ViewBlock(
@@ -69,7 +112,7 @@ export class ViewBlock extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.children?.length > 0 ? obj.children.map(child => buildView(child)) : [],
+      obj.children?.length > 0 ? obj.children.map(child => buildView(Object.assign(child, {parentId: obj.id}))) : [],
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,

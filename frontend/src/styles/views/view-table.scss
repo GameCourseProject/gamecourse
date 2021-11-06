@@ -4,7 +4,7 @@
  * ----------------------------
  */
 
-.view.table {
+.gc-view.gc-table {
   position: relative;
   border-radius: 5px;
   overflow: auto;
@@ -28,11 +28,11 @@
       }
     }
 
-    .table_header {
+    .gc-table_header {
       font-size: 14px;
     }
 
-    .table_body {
+    .gc-table_body {
       font-size: 13px;
     }
 
@@ -51,7 +51,7 @@
  */
 
 .editor {
-  .view.table {
+  .gc-view.gc-table {
 
     table {
       padding: 0;
@@ -65,12 +65,12 @@
       th {
         padding-left: 15px;
 
-        .view:first-of-type {
+        .gc-view:first-of-type {
           margin: 0;
         }
       }
 
-      .table_toolbar {
+      .gc-table_toolbar {
         border: none;
 
         div:first-of-type {

@@ -7,12 +7,12 @@
 
 
 .editor {
-  .view {
+  .gc-view {
     border: 2px solid lightgray;
     margin: 15px;
     cursor: pointer;
 
-    &.view-highlight {
+    &.gc-view-highlight {
       border: 2px solid grey;
     }
   }

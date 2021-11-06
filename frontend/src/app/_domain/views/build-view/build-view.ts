@@ -1,14 +1,15 @@
-import {View, ViewDatabase} from "./view";
-import {ViewType} from "./view-type";
-import {ViewText, ViewTextDatabase} from "./view-text";
-import {ViewImage, ViewImageDatabase} from "./view-image";
-import {ViewTable, ViewTableDatabase} from "./view-table";
-import {ViewBlock, ViewBlockDatabase} from "./view-block";
-import {ViewHeader, ViewHeaderDatabase} from "./view-header";
-import {ViewRow, ViewRowDatabase} from "./view-row";
+import {View, ViewDatabase} from "../view";
+import {ViewType} from "../view-type";
+import {ViewText, ViewTextDatabase} from "../view-text";
+import {ViewImage, ViewImageDatabase} from "../view-image";
+import {ViewTable, ViewTableDatabase} from "../view-table";
+import {ViewBlock, ViewBlockDatabase} from "../view-block";
+import {ViewHeader, ViewHeaderDatabase} from "../view-header";
+import {ViewRow, ViewRowDatabase} from "../view-row";
 
 /**
- * Builds a view from an object according to whatever type the view is.
+ * Builds a view from an object coming from the database
+ * according to whatever type the view is.
  *
  * This function needs to be outside view.ts so as not to create a
  * Circular Dependency between View and its children.

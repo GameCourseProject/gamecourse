@@ -47,7 +47,7 @@
         <div id="undo_icon" class="icon undo_icon" [ngClass]="{'disabled': !canUndo()}" title="Redo"></div>
         <div id="redo_icon" class="icon redo_icon" [ngClass]="{'disabled': !canRedo()}" title="Redo"></div>
 
-        <button (click)="saveChanges()">Save Changes</button>
+        <button [disabled]="!hasUnsavedChanges" (click)="saveChanges()">Save Changes</button>
         <button (click)="previewView()">Preview</button>
       </ng-container>
 
@@ -202,7 +202,8 @@
   [isModalOpen]="isVerificationModalOpen"
   [id]="'message-api-box'"
   [classList]="'verification'"
-  [templateRef]="verificationModal">
+  [templateRef]="verificationModal"
+  (closeBtnClicked)="isVerificationModalOpen = false">
 </app-modal>
 
 <ng-template #verificationModal>

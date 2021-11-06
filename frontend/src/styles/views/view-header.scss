@@ -4,17 +4,17 @@
  * ----------------------------
  */
 
-.view.header {
+.gc-view.gc-header {
   width: fit-content;
   margin-bottom: 20px;
 
-  .header_image {
+  .gc-header_image {
     width: 45px;
     height: 45px;
     vertical-align: middle;
   }
 
-  .header_title {
+  .gc-header_title {
     vertical-align: middle;
     margin-left: 8px;
     font-size: 16px;
@@ -30,10 +30,10 @@
  */
 
 .editor {
-  .view.header {
+  .gc-view.gc-header {
     border-radius: 5px;
 
-    .header_title {
+    .gc-header_title {
       padding: 10px;
       font-weight: 600;
     }

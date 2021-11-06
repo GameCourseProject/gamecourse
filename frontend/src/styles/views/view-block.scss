@@ -4,8 +4,8 @@
  * ----------------------------
  */
 
-.view.block {
-  .block_children {
+.gc-view.gc-block {
+  .gc-block_children {
     display: flex;
     flex-direction: column;
 
@@ -18,7 +18,7 @@
     }
   }
 
-  &.block_empty {
+  &.gc-block_empty {
     font-size: 18px;
     font-weight: bold;
     color: rgb(211, 11, 11);
@@ -34,16 +34,16 @@
  */
 
 .editor {
-  .view.block {
+  .gc-view.gc-block {
     border-radius: 5px;
 
-    .block_children {
+    .gc-block_children {
       & > * {
         margin-bottom: initial !important;
       }
     }
 
-    &.block_empty {
+    &.gc-block_empty {
       padding: 20px;
     }
 

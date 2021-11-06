@@ -4,7 +4,7 @@
  * ----------------------------
  */
 
-.view.text {
+.gc-view.gc-text {
   position: relative;
   display: inline-block;
   font-size: 13px;
@@ -18,7 +18,7 @@
  */
 
 .editor {
-  .view.text {
+  .gc-view.gc-text {
     padding: 10px 5px;
   }
 }

@@ -38,7 +38,7 @@ export abstract class View {
   private _variables?: any;
   private _visibilityCondition?: any;
 
-  static readonly VIEW_CLASS = 'view';
+  static readonly VIEW_CLASS = 'gc-view';
 
 
   protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
@@ -183,6 +183,33 @@ export abstract class View {
   }
 
   abstract updateView(newView: View);
+
+  abstract buildViewTree();
+
+  abstract addChildViewToViewTree(view: View, options?: any);
+
+  /**
+   * Custom way to stringify this class.
+   * This is needed so that the output of JSON.stringify()
+   * doesn't have '_' on attributes
+   */
+  static toJson(view: View) {
+    return {
+      id: view.id > 0 ? view.id : null, // don't send fake ids used only for editing
+      viewId: view.viewId > 0 ? view.viewId : null,
+      type: view.type,
+      role: Role.unparse(view.role),
+      style: view.style || null,
+      cssId: view.cssId || null,
+      class: view.class.split(' ').filter(cl => !cl.startsWith('gc-')).join(' ') || null,
+      label: view.label || null,
+      visibilityType: view.visibilityType ,
+      events: view.events,
+      loopData: view.loopData,
+      variables: view.variables,
+      visibilityCondition: view.visibilityCondition
+    }
+  }
 
   /**
    * Parses a view object into one where all fields are in the

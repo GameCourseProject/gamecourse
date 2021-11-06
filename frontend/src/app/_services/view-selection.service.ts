@@ -7,7 +7,7 @@ import {exists} from "../_utils/misc/misc";
 })
 export class ViewSelectionService {
 
-  static readonly SELECTION_CLASS = 'view-highlight';
+  static readonly SELECTION_CLASS = 'gc-view-highlight';
   static readonly IGNORE_SELECTION_CLASS = 'ignore-selection';
 
   private selected: View;
