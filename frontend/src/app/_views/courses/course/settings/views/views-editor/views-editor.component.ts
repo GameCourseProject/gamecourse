@@ -33,7 +33,6 @@ export class ViewsEditorComponent implements OnInit {
   rolesHierarchy: Role[];
   templateRoles: {viewerRole: Role, userRole?: Role}[];
   viewsByAspects: {[key: string]: View};
-  viewTree;
 
   viewToShow: View;
 
@@ -130,7 +129,6 @@ export class ViewsEditorComponent implements OnInit {
           this.courseRoles = data.courseRoles;
           this.rolesHierarchy = data.rolesHierarchy;
           this.viewsByAspects = data.templateViewsByAspect;
-          this.viewTree = data.templateViewTree;
 
           // Set template roles
           this.templateRoles = [];

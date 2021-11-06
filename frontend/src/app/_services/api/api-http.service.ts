@@ -1217,7 +1217,7 @@ export class ApiHttpService {
 
   // Editor
   public getTemplateEditInfo(courseID: number, templateID: number):
-    Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[], templateViewsByAspect: {[key: string]: View}, templateViewTree}> {
+    Observable<{courseRoles: Role[], rolesHierarchy: Role[], templateRoles: string[], templateViewsByAspect: {[key: string]: View}}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);
@@ -1234,8 +1234,7 @@ export class ApiHttpService {
         const rolesHierarchy: Role[] = Role.parseHierarchy(res['data']['rolesHierarchy'], courseRoles);
         const templateRoles = res['data']['templateRoles'];
         const templateViewsByAspect = objectMap(res['data']['templateViewsByAspect'], (view) => buildView(view));
-        const templateViewTree = res['data']['templateViewTree'];
-        return {courseRoles, rolesHierarchy, templateRoles, templateViewsByAspect, templateViewTree}
+        return {courseRoles, rolesHierarchy, templateRoles, templateViewsByAspect}
       }) );
   }
 
