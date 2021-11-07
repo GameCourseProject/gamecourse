@@ -18,4 +18,8 @@ export class EventShowView extends Event {
   set viewId(value: number) {
     this._viewId = value;
   }
+
+  print(): string {
+    return EventAction.SHOW_VIEW + '(' + this.viewId + ')';
+  }
 }

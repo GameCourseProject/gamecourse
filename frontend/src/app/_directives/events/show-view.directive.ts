@@ -1,6 +1,7 @@
 import {Directive, HostListener, Input} from '@angular/core';
 import {EventShowView} from "../../_domain/events/event-show-view";
 import {exists} from "../../_utils/misc/misc";
+import {ViewMode} from "../../_domain/views/view";
 
 @Directive({
   selector: '[showView]'
@@ -8,6 +9,7 @@ import {exists} from "../../_utils/misc/misc";
 export class ShowViewDirective {
 
   @Input('showView') event: EventShowView;
+  @Input() mode: ViewMode;
 
   constructor() { }
 
@@ -30,7 +32,7 @@ export class ShowViewDirective {
   @HostListener('wheel', ['$event'])
   @HostListener('drag', ['$event'])
   onEvent(event: Event) {
-    if (!exists(this.event)) return;
+    if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
       this.showView(this.event.viewId);
   }

@@ -26,4 +26,6 @@ export abstract class Event {
   set action(value: EventAction) {
     this._action = value;
   }
+
+  abstract print(): string;
 }

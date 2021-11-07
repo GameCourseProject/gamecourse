@@ -13,8 +13,11 @@ import {View, VisibilityType} from "../../../../../../_domain/views/view";
 import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
 import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
-import {copyObject} from "../../../../../../_utils/misc/misc";
+import {copyObject, objectMap} from "../../../../../../_utils/misc/misc";
 import {buildViewTree} from "../../../../../../_domain/views/build-view-tree/build-view-tree";
+import {EventType} from "../../../../../../_domain/events/event-type";
+import {Event} from "../../../../../../_domain/events/event";
+import {buildEvent} from "../../../../../../_domain/events/build-event";
 
 @Component({
   selector: 'app-view-editor',
@@ -43,6 +46,8 @@ export class ViewsEditorComponent implements OnInit {
   hasModalOpen: boolean;
   isEditSettingsModalOpen: boolean;
   viewToEdit: View;
+  eventToAdd: EventType;
+  viewToEditEvents: {[key in EventType]?: string};
 
   isPreviewExpressionModalOpen: boolean;
 
@@ -174,6 +179,7 @@ export class ViewsEditorComponent implements OnInit {
 
     if (btn === 'edit-settings') {
       this.viewToEdit = copyObject(viewSelected);
+      this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
       // TODO: don't show gamecourse classes on input
       this.isEditSettingsModalOpen = true;
 
@@ -203,7 +209,12 @@ export class ViewsEditorComponent implements OnInit {
     this.loading = true;
     this.isEditSettingsModalOpen = false;
     this.hasModalOpen = false;
+
+    this.viewToEditEvents = Object.fromEntries(Object.entries(this.viewToEditEvents).filter(([k, v]) => !!v && v != '{}'));
+    this.viewToEdit.events = Object.keys(this.viewToEditEvents).length > 0 ? copyObject(objectMap(this.viewToEditEvents, (eventStr, type) => buildEvent(type, eventStr))) : null;
+
     this.updateView(this.viewToEdit);
+
     this.verificationText = 'Saved!';
     this.isVerificationModalOpen = true;
     this.loading = false;
@@ -239,6 +250,15 @@ export class ViewsEditorComponent implements OnInit {
       this.viewToEdit.visibilityCondition = null;
   }
 
+  addEvent(): void {
+    this.viewToEditEvents[this.eventToAdd] = '{}';
+    this.eventToAdd = null;
+  }
+
+  deleteEvent(type: string): void {
+    this.viewToEditEvents[type] = null;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -255,6 +275,14 @@ export class ViewsEditorComponent implements OnInit {
 
   getVisibilityTypes(): string[] {
     return Object.values(VisibilityType);
+  }
+
+  getEventsAvailableToAdd(): EventType[] {
+    return Object.values(EventType).filter(type => !this.viewToEditEvents.hasOwnProperty(type)).sort();
+  }
+
+  getEvents(): string[] {
+    return Object.keys(this.viewToEditEvents);
   }
 
   goToViews(): void {

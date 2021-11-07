@@ -1,6 +1,7 @@
 import {Directive, HostListener, Input} from '@angular/core';
 import {EventHideView} from "../../_domain/events/event-hide-view";
 import {exists} from "../../_utils/misc/misc";
+import {ViewMode} from "../../_domain/views/view";
 
 @Directive({
   selector: '[hideView]'
@@ -8,6 +9,7 @@ import {exists} from "../../_utils/misc/misc";
 export class HideViewDirective {
 
   @Input('hideView') event: EventHideView;
+  @Input() mode: ViewMode;
 
   constructor() { }
 
@@ -30,7 +32,7 @@ export class HideViewDirective {
   @HostListener('wheel', ['$event'])
   @HostListener('drag', ['$event'])
   onEvent(event: Event) {
-    if (!exists(this.event)) return;
+    if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
       this.hideView(this.event.viewId);
   }

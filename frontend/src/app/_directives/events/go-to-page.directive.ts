@@ -2,6 +2,7 @@ import {Directive, HostListener, Input} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {EventGoToPage} from "../../_domain/events/event-go-to-page";
 import {exists} from "../../_utils/misc/misc";
+import {ViewMode} from "../../_domain/views/view";
 
 @Directive({
   selector: '[goToPage]'
@@ -9,6 +10,7 @@ import {exists} from "../../_utils/misc/misc";
 export class GoToPageDirective {
 
   @Input('goToPage') event: EventGoToPage;
+  @Input() mode: ViewMode;
 
   constructor(
     private router: Router,
@@ -33,7 +35,7 @@ export class GoToPageDirective {
   @HostListener('wheel', ['$event'])
   @HostListener('drag', ['$event'])
   onEvent(event: Event) {
-    if (!exists(this.event)) return;
+    if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
       this.goToPage(this.event.pageId);
   }

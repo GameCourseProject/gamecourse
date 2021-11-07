@@ -18,4 +18,8 @@ export class EventToggleView extends Event {
   set viewId(value: number) {
     this._viewId = value;
   }
+
+  print(): string {
+    return EventAction.TOGGLE_VIEW + '(' + this.viewId + ')';
+  }
 }

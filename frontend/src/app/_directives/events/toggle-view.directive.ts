@@ -1,6 +1,7 @@
 import {Directive, HostListener, Input} from '@angular/core';
 import {EventToggleView} from "../../_domain/events/event-toggle-view";
 import {exists} from "../../_utils/misc/misc";
+import {ViewMode} from "../../_domain/views/view";
 
 @Directive({
   selector: '[toggleView]'
@@ -8,6 +9,7 @@ import {exists} from "../../_utils/misc/misc";
 export class ToggleViewDirective {
 
   @Input('toggleView') event: EventToggleView;
+  @Input() mode: ViewMode;
 
   constructor() { }
 
@@ -32,7 +34,7 @@ export class ToggleViewDirective {
   @HostListener('drag', ['$event'])
   onEvent(event: Event) {
     if (!exists(this.event)) return;
-    if (event.type === this.event.type)
+    if (event.type === this.event.type || this.mode === ViewMode.EDIT)
       this.toggleView(this.event.viewId);
   }
 }

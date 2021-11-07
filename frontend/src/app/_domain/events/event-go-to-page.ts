@@ -28,4 +28,8 @@ export class EventGoToPage extends Event {
   set userId(value: number) {
     this._userId = value;
   }
+
+  print(): string {
+    return EventAction.GO_TO_PAGE + '(' + this.pageId + (this.userId ? ',' + this.userId : '') + ')';
+  }
 }

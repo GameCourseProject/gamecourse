@@ -114,59 +114,18 @@
 
   <div id="edit-container">
 
+    <!-- Settings -->
     <div class="settings-overlay">
       <div class="title">Edit Part Settings:</div>
 
       <!-- Styling/Misc -->
-      <div class="sb-menu section">
-        <div class="divider"><div class="title"><span>Styling/Misc</span></div></div>
-
-        <!-- Style -->
-        <ng-container
-          [ngTemplateOutlet]="expressionInput"
-          [ngTemplateOutletContext]="{label: 'style', title: 'Define CSS code for the element', viewParam: 'style'}">
-        </ng-container>
-
-        <!-- ID -->
-        <ng-container
-          [ngTemplateOutlet]="expressionInput"
-          [ngTemplateOutletContext]="{label: 'cssId', title: 'Define the HTML id of the element', viewParam: 'cssId'}">
-        </ng-container>
-
-        <!-- Class -->
-        <ng-container
-          [ngTemplateOutlet]="expressionInput"
-          [ngTemplateOutletContext]="{label: 'class', title: 'Define the HTML class of the element', viewParam: 'class'}">
-        </ng-container>
-
-        <!-- Label -->
-        <ng-container
-          [ngTemplateOutlet]="expressionInput"
-          [ngTemplateOutletContext]="{label: 'label', title: 'Define a label for the part that can be used in events', viewParam: 'label'}">
-        </ng-container>
-
-      </div>
+      <ng-container [ngTemplateOutlet]="stylingAndMisc"></ng-container>
 
       <!-- Visibility -->
-      <div class="sb-menu section">
-        <div class="divider"><div class="title"><span>Visibility</span></div></div>
+      <ng-container [ngTemplateOutlet]="visibility"></ng-container>
 
-        <!-- Options -->
-        <div class="visibility-options">
-          <div *ngFor="let option of getVisibilityTypes()" class="option">
-            <input id="option-{{option}}" type="radio" name="visibility" class="clickable" [(ngModel)]="viewToEdit.visibilityType" (ngModelChange)="changeVisibility()" [value]="option">
-            <label for="option-{{option}}" class="clickable">{{option != VisibilityType.CONDITIONAL ? capitalize(option) : 'Visible by condition'}}</label>
-          </div>
-        </div>
-
-        <!-- Condition -->
-        <div *ngIf="viewToEdit.visibilityType === VisibilityType.CONDITIONAL">
-          <ng-container
-            [ngTemplateOutlet]="expressionInput"
-            [ngTemplateOutletContext]="{label: 'condition', title: 'Define a condition that needs to be true for the element to appear', viewParam: 'visibilityCondition'}">
-          </ng-container>
-        </div>
-      </div>
+      <!-- Events -->
+      <ng-container [ngTemplateOutlet]="events"></ng-container>
     </div>
 
     <!-- Helper -->
@@ -190,6 +149,87 @@
     <button (click)="saveEdit()">Save</button>
   </div>
 
+</ng-template>
+
+<ng-template #stylingAndMisc>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Styling/Misc</span></div></div>
+
+    <!-- Style -->
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: 'style', title: 'Define CSS code for the element', viewParam: 'style'}">
+    </ng-container>
+
+    <!-- ID -->
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: 'cssId', title: 'Define the HTML id of the element', viewParam: 'cssId'}">
+    </ng-container>
+
+    <!-- Class -->
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: 'class', title: 'Define the HTML class of the element', viewParam: 'class'}">
+    </ng-container>
+
+    <!-- Label -->
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: 'label', title: 'Define a label for the part that can be used in events', viewParam: 'label'}">
+    </ng-container>
+
+  </div>
+</ng-template>
+
+<ng-template #visibility>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Visibility</span></div></div>
+
+    <!-- Options -->
+    <div class="visibility-options">
+      <div *ngFor="let option of getVisibilityTypes()" class="option">
+        <input id="option-{{option}}" type="radio" name="visibility" class="clickable" [(ngModel)]="viewToEdit.visibilityType" (ngModelChange)="changeVisibility()" [value]="option">
+        <label for="option-{{option}}" class="clickable">{{option != VisibilityType.CONDITIONAL ? capitalize(option) : 'Visible by condition'}}</label>
+      </div>
+    </div>
+
+    <!-- Condition -->
+    <div *ngIf="viewToEdit.visibilityType === VisibilityType.CONDITIONAL">
+      <ng-container
+        [ngTemplateOutlet]="expressionInput"
+        [ngTemplateOutletContext]="{label: 'condition', title: 'Define a condition that needs to be true for the element to appear', viewParam: 'visibilityCondition'}">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #events>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Events</span></div></div>
+
+    <!-- Events -->
+    <div *ngIf="getEvents().length > 0">
+      <div *ngFor="let type of getEvents()">
+        <div class="content">
+          <div class="sb-expression">
+            <label [for]="type">{{type}}</label>
+            <textarea [id]="type" [title]="'Define the behaviour triggered by an event'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditEvents[type]"></textarea>
+            <div class="content"><div class="icon delete_icon" (click)="deleteEvent(type)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add event -->
+    <div *ngIf="getEventsAvailableToAdd().length > 0" class="sb-component">
+      <label for="events-missing">Add Event:</label>
+      <select class="form__input" id="events-missing" [(ngModel)]="eventToAdd">
+        <option *ngFor="let eventType of getEventsAvailableToAdd()" [label]="eventType" [value]="eventType">{{eventType}}</option>
+      </select>
+      <button [disabled]="!eventToAdd" (click)="addEvent()">Add</button>
+    </div>
+  </div>
 </ng-template>
 
 <ng-template #expressionInput let-label='label' let-title='title' let-param='viewParam'>

@@ -18,4 +18,8 @@ export class EventHideView extends Event {
   set viewId(value: number) {
     this._viewId = value;
   }
+
+  print(): string {
+    return EventAction.HIDE_VIEW + '(' + this.viewId + ')';
+  }
 }

@@ -204,7 +204,7 @@ export abstract class View {
       class: view.class.split(' ').filter(cl => !cl.startsWith('gc-')).join(' ') || null,
       label: view.label || null,
       visibilityType: view.visibilityType,
-      events: view.events,
+      events: view.events ? objectMap(view.events, event => '{actions.' + (event as Event).print() + '}') : null,
       loopData: view.loopData,
       variables: view.variables,
       visibilityCondition: view.visibilityCondition

@@ -17,7 +17,8 @@
        [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
        [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
        [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView">
+       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
+       [mode]="view.mode">
     <table>
 
       <!-- Header -->

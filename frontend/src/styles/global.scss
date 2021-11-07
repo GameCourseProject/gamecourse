@@ -430,7 +430,7 @@ select:focus {
   opacity: 0.8;
 }
 
-.action-buttons :only-child {
+#viewEditor .action-buttons :only-child {
   width: 30%;
   position: absolute;
   right: 0;
