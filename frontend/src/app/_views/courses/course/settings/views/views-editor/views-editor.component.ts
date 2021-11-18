@@ -226,6 +226,10 @@ export class ViewsEditorComponent implements OnInit {
         (this.viewToEdit as ViewText|ViewImage).link = null;
     }
 
+    // Loop Data
+    if (!exists(this.viewToEdit.loopData) || this.viewToEdit.loopData.isEmpty())
+      this.viewToEdit.loopData = null;
+
     this.updateView(this.viewToEdit);
 
     this.verificationText = 'Saved!';

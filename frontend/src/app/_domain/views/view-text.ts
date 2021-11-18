@@ -84,7 +84,7 @@ export class ViewText extends View {
       parsedObj.parentId,
       parsedObj.role,
       parsedObj.mode,
-      obj.value,
+      obj.value.toString(),
       parsedObj.loopData,
       parsedObj.variables,
       parsedObj.style,
@@ -100,6 +100,6 @@ export class ViewText extends View {
 }
 
 export interface ViewTextDatabase extends ViewDatabase {
-  value: string;
+  value: string|number;
   link?: string;
 }

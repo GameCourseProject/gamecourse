@@ -696,7 +696,6 @@ class ViewHandler
         if (isset($view['label'])) self::processSelf($view['label'], $visitor);
 
         if (isset($view['events'])) self::processEvents($view, $visitor);
-        if (isset($view['loopData'])) self::processLoop($view, $viewParams, $visitor);
         if (isset($view['variables'])) self::processVariables($view, $viewParams, $visitor);
         if (isset($view['visibilityCondition'])) self::processVisibilityCondition($view, $visitor);
 
@@ -751,51 +750,52 @@ class ViewHandler
         }
     }
 
-    public static function processLoop(&$container, $viewParams, $visitor)
+    public static function processLoop(&$view, $viewParams, $visitor)
     {
-        foreach ($container as &$child) {
-            $repeatKey = "item";
-            $value = $child['loopData']->accept($visitor)->getValue();
+        // Process loop data
+        ViewHandler::processSelf($view["loopData"], $visitor);
+        $value = $view["loopData"]["value"];
+        if (is_null($value)) $value = [];
+        if (!is_array($value)) API::error('Loop Data must have an object or collection.');
 
-            if (is_null($value))
-                $value = [];
-            if (!is_array($value)) {
-                throw new \Exception('Data Loop must have an object or collection.');
-            }
-            $value = $value["value"];
-            //if the $value array is associative it will be put in a sequential array
-            $isNumericArray = true;
-            foreach (array_keys($value) as $key) {
-                if (!is_int($key)) {
-                    $isNumericArray = false;
-                    break;
-                }
-            }
-            if (!$isNumericArray)
-                $value = [$value];
-
-            $repeatParams = $value;
-
-            $i = 0;
-            foreach ($repeatParams as &$params) {
-                $params = [$repeatKey => $params];
-                $i++;
-            }
-
-            $repeatParams = array_values($repeatParams);
-
-            for ($p = 0; $p < sizeof($repeatParams); $p++) {
-                $value = $repeatParams[$p][$repeatKey];
-                if (!is_array($value))
-                    $loopParam = [$repeatKey => $value];
-                else
-                    $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
-
-                $paramsForEvaluator = array_merge($viewParams, $loopParam, array("index" => $p));
-
-                self::processView($child, $paramsForEvaluator);
+        // If $value array is associative it will be put in a sequential array
+        $isNumericArray = true;
+        foreach (array_keys($value) as $key) {
+            if (!is_int($key)) {
+                $isNumericArray = false;
+                break;
             }
         }
+        if (!$isNumericArray) $value = [$value];
+
+        // Format with repeat key
+        $repeatKey = "item";
+        $repeatParams = $value;
+        foreach ($repeatParams as &$params) {
+            $params = [$repeatKey => $params];
+        }
+        $repeatParams = array_values($repeatParams);
+
+        // Repeat children
+        $newChildren = [];
+        for ($i = 0; $i < sizeof($repeatParams); $i++) {
+
+            // Process child data
+            $repeatedValues = [];
+            foreach ($view["children"] as $child) {
+                $value = $repeatParams[$i][$repeatKey];
+                if (!is_array($value)) $loopParam = [$repeatKey => $value];
+                else $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
+
+                $paramsForEvaluator = array_merge($viewParams, $loopParam, array("index" => $i));
+                self::processView($child, $paramsForEvaluator);
+                $repeatedValues[] = $child;
+            }
+            $newChildren = array_merge($newChildren, $repeatedValues);
+        }
+
+        $view["children"] = $newChildren;
+        unset($view["loopData"]);
     }
 
 

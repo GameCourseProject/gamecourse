@@ -34,14 +34,14 @@ export abstract class View {
   private _events?: {[key in EventType]?: Event};
 
   // Edit only params
-  private _loopData?: any;
+  private _loopData?: string;
   private _variables?: any;
   private _visibilityCondition?: any;
 
   static readonly VIEW_CLASS = 'gc-view';
 
 
-  protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: any,
+  protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: string,
                         variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
                         visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
@@ -110,11 +110,11 @@ export abstract class View {
     this._mode = value;
   }
 
-  get loopData(): any {
+  get loopData(): string {
     return this._loopData;
   }
 
-  set loopData(value: any) {
+  set loopData(value: string) {
     this._loopData = value;
   }
 
@@ -228,7 +228,7 @@ export abstract class View {
       type: obj.type as ViewType,
       role: Role.parse(obj.role),
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
-      loopData: obj.loopData || null,
+      loopData: (obj.loopData && !obj.loopData.isEmpty()) ? obj.loopData : null,
       variables: obj.variables || null,
       style: (obj.style && !obj.style.isEmpty()) ? obj.style : null,
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
