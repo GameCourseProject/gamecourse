@@ -355,7 +355,7 @@ class Views
             }
         }
 
-        ViewHandler::renderView($view, $rolesHierarchy, null, $edit);
+        ViewHandler::renderView($view, $rolesHierarchy, array('course' => $courseId), $edit);
         return $view;
     }
 

@@ -143,7 +143,7 @@ class Dictionary
             function (&$view, $viewParams, $visitor) { //processing function
                 if (isset($view["children"])) {
                     if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view['children'], $viewParams, $visitor);
+                        ViewHandler::processLoop($view, $viewParams, $visitor);
 
                     } else {
                         foreach ($view['children'] as &$child) {
@@ -167,7 +167,7 @@ class Dictionary
             function (&$view, $viewParams, $visitor) { //processing function
                 if (isset($view["children"])) {
                     if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view['children'], $viewParams, $visitor);
+                        ViewHandler::processLoop($view, $viewParams, $visitor);
 
                     } else {
                         foreach ($view['children'] as &$child) {
