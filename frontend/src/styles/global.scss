@@ -38,7 +38,8 @@ select:focus {
   text-align: center;
 }
 
-.clickable {
+.clickable,
+.gc-clickable {
   cursor: pointer;
 }
 

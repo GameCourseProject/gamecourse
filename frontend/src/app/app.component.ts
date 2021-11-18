@@ -1,13 +1,9 @@
 import { Component } from '@angular/core';
-import {ErrorService} from "./_services/error.service";
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationStart,
-  Router
-} from "@angular/router";
+import { ErrorService } from "./_services/error.service";
+import { NavigationCancel, NavigationEnd, NavigationStart, Router } from "@angular/router";
 
 import * as $ from "jquery";
+
 import '@extensions/string.extensions';
 import '@extensions/array.extensions';
 
@@ -16,7 +12,6 @@ import '@extensions/array.extensions';
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  title = 'gamecourse-v2';
   loading: boolean = true;
 
   constructor(private router: Router) {
@@ -31,7 +26,8 @@ export class AppComponent {
   }
 
   hasNavbar(): boolean {
-    return this.router.url !== '/login' && this.router.url !== '/setup';
+    const noNavbar = ['/login', '/setup'];
+    return !noNavbar.includes(this.router.url);
   }
 
   hasFooter(): boolean {

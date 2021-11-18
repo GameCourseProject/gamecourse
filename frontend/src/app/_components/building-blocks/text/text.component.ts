@@ -26,7 +26,7 @@ export class TextComponent implements OnInit {
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.value]);
-    if (!!this.view.events?.click) this.view.class += ' clickable';
+    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
     this.isEmpty = this.view.value.isEmpty();
   }

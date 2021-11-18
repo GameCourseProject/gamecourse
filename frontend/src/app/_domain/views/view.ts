@@ -28,7 +28,7 @@ export abstract class View {
   private _style?: string;
   private _cssId?: string;
   private _class?: string;
-  private _label?: string;  // FIXME: use label or delete
+  private _label?: string;  // FIXME: use label in events or delete
 
   private _visibilityType?: VisibilityType;
   private _events?: {[key in EventType]?: Event};

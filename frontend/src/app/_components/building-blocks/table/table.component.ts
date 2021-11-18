@@ -25,12 +25,12 @@ export class TableComponent implements OnInit {
     requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
     this.edit = this.view.mode === ViewMode.EDIT;
 
-    if (!!this.view.events?.click) this.view.class += ' clickable';
+    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
     this.view.headerRows.forEach(row => row.children.forEach(header => {
-      if (!!header.events?.click) header.class += ' clickable';
+      if (!!header.events?.click) header.class += ' gc-clickable';
     }));
     this.view.rows.forEach(row => row.children.forEach(r => {
-      if(!!r.events?.click) r.class += ' clickable';
+      if(!!r.events?.click) r.class += ' gc-clickable';
     }));
   }
 

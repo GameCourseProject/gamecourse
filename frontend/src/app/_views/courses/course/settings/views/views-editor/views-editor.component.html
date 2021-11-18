@@ -118,6 +118,17 @@
     <div class="settings-overlay">
       <div class="title">Edit Part Settings:</div>
 
+      <!-- Loop Data -->
+      <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK || viewToEdit.type === ViewType.ROW"
+        [ngTemplateOutlet]="loopData">
+      </ng-container>
+
+      <!-- Content -->
+      <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE"
+        [ngTemplateOutlet]="content"
+        [ngTemplateOutletContext]="{type: viewToEdit.type === ViewType.TEXT ? 'text' : 'image'}">
+      </ng-container>
+
       <!-- Styling/Misc -->
       <ng-container [ngTemplateOutlet]="stylingAndMisc"></ng-container>
 
@@ -151,6 +162,39 @@
 
 </ng-template>
 
+<ng-template #loopData>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Loop Data</span></div></div>
+
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: 'data', title: 'Data allows to repeat the element, for example to make lists', viewParam: 'loopData'}">
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #content let-type='type'>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Content</span></div></div>
+
+    <!-- Value -->
+    <ng-container
+      [ngTemplateOutlet]="expressionInput"
+      [ngTemplateOutletContext]="{label: type === 'text' ? 'value' : 'source', title: 'Define the contents of the view using the expression language', viewParam: type === 'text' ? 'value' : 'src'}">
+    </ng-container>
+
+    <!-- Link -->
+    <div class="sb-checkbox">
+      <input id="cb-link" type="checkbox" [(ngModel)]="linkEnabled">
+      <label for="cb-link">Enable Link</label>
+      <ng-container *ngIf="linkEnabled"
+        [ngTemplateOutlet]="expressionInput"
+        [ngTemplateOutletContext]="{label: 'link', title: 'Define the link url', viewParam: 'link'}">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
 <ng-template #stylingAndMisc>
   <div class="sb-menu section">
     <div class="divider"><div class="title"><span>Styling/Misc</span></div></div>
@@ -164,7 +208,7 @@
     <!-- ID -->
     <ng-container
       [ngTemplateOutlet]="expressionInput"
-      [ngTemplateOutletContext]="{label: 'cssId', title: 'Define the HTML id of the element', viewParam: 'cssId'}">
+      [ngTemplateOutletContext]="{label: 'ID', title: 'Define the HTML id of the element', viewParam: 'cssId'}">
     </ng-container>
 
     <!-- Class -->

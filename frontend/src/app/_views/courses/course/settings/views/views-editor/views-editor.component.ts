@@ -13,11 +13,13 @@ import {View, VisibilityType} from "../../../../../../_domain/views/view";
 import {ViewSelectionService} from "../../../../../../_services/view-selection.service";
 import {ViewType} from 'src/app/_domain/views/view-type';
 import {ViewBlock} from "../../../../../../_domain/views/view-block";
-import {copyObject, objectMap} from "../../../../../../_utils/misc/misc";
+import {copyObject, exists, objectMap} from "../../../../../../_utils/misc/misc";
 import {buildViewTree} from "../../../../../../_domain/views/build-view-tree/build-view-tree";
 import {EventType} from "../../../../../../_domain/events/event-type";
 import {Event} from "../../../../../../_domain/events/event";
 import {buildEvent} from "../../../../../../_domain/events/build-event";
+import {ViewText} from "../../../../../../_domain/views/view-text";
+import {ViewImage} from "../../../../../../_domain/views/view-image";
 
 @Component({
   selector: 'app-view-editor',
@@ -46,6 +48,7 @@ export class ViewsEditorComponent implements OnInit {
   hasModalOpen: boolean;
   isEditSettingsModalOpen: boolean;
   viewToEdit: View;
+  linkEnabled: boolean;
   eventToAdd: EventType;
   viewToEditEvents: {[key in EventType]?: string};
 
@@ -180,6 +183,8 @@ export class ViewsEditorComponent implements OnInit {
     if (btn === 'edit-settings') {
       this.viewToEdit = copyObject(viewSelected);
       this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
+      if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE)
+        this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
       // TODO: don't show gamecourse classes on input
       this.isEditSettingsModalOpen = true;
 
@@ -210,8 +215,16 @@ export class ViewsEditorComponent implements OnInit {
     this.isEditSettingsModalOpen = false;
     this.hasModalOpen = false;
 
+    // Events
     this.viewToEditEvents = Object.fromEntries(Object.entries(this.viewToEditEvents).filter(([k, v]) => !!v && v != '{}'));
     this.viewToEdit.events = Object.keys(this.viewToEditEvents).length > 0 ? copyObject(objectMap(this.viewToEditEvents, (eventStr, type) => buildEvent(type, eventStr))) : null;
+
+    // Link
+    if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE) {
+      const link = (this.viewToEdit as ViewText|ViewImage).link;
+      if (!this.linkEnabled || !exists(link) || link.isEmpty())
+        (this.viewToEdit as ViewText|ViewImage).link = null;
+    }
 
     this.updateView(this.viewToEdit);
 

@@ -24,9 +24,9 @@ export class HeaderComponent implements OnInit {
     requireValues(this.view, [this.view.image, this.view.title]);
     this.edit = this.view.mode === ViewMode.EDIT;
 
-    if (!!this.view.events?.click) this.view.class += ' clickable';
-    if (!!this.view.image.events?.click) this.view.image.class += ' clickable';
-    if (!!this.view.title.events?.click) this.view.title.class += ' clickable';
+    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
+    if (!!this.view.image.events?.click) this.view.image.class += ' gc-clickable';
+    if (!!this.view.title.events?.click) this.view.title.class += ' gc-clickable';
   }
 
 

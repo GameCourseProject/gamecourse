@@ -23,8 +23,8 @@
   </span>
 </ng-template>
 
-<ng-template #LINK>
-  <a href="{{view.link}}"
+<ng-template #LINK> <!-- FIXME: target should be an option -->
+  <a [href]="edit ? 'javascript:void(0)' : view.link" [target]="edit ? '_self' : '_blank'"
      [attr.id]="view.cssId"
      [classList]="view.class" [ngClass]="{'red': isEmpty}"
      [attr.style]="view.style"
