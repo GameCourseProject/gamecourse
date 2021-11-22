@@ -848,7 +848,7 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 		# add last quiz
 		if len(contributions) == 1:
 			number = int(contributions[0].description.split()[1]) # get the number
-			grade = (int(contributions[0].rating)/ max_grade) * xp_per_quiz
+			grade = 0 if int(contributions[0].rating) <= 0 else (int(contributions[0].rating)/ max_grade) * xp_per_quiz
 			found = False
 			for row in table:
 				if row[0] == number:
@@ -877,7 +877,7 @@ def award_quiz_grade(target, contributions=None, xp_per_quiz=1, max_grade=1, ign
 			if ignore_case != None and ignore_case in line.description:
 				continue
 			
-			grade = (int(line.rating) / max_grade) * xp_per_quiz
+			grade = 0 if int(line.rating) <= 0 else (int(line.rating) / max_grade) * xp_per_quiz
 			nums = [int(s) for s in line.description.split() if s.isdigit()]
 			number = nums[0]
 
