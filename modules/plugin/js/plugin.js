@@ -23,7 +23,7 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         if (selectedOption == "Minutes") {
             maxLimit = 59;
         } else if (selectedOption == "Hours") {
-            maxLimit = 23;
+            maxLimit = 2
         } else if (selectedOption == "Day") {
             maxLimit = 1;
         }
@@ -118,6 +118,19 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         console.log($scope.googleSheetsVarsPeriodicity);
         $smartboards.request('settings', 'coursePlugin', { googleSheetsPeriodicity: $scope.googleSheetsVarsPeriodicity, course: $scope.course }, alertUpdate);
     };
+
+    var dealClassCheckPeriodicity = true;
+
+    $scope.dealClassCheck = function () {
+
+        if (dealClassCheckPeriodicity == true){
+            console.log($scope.classCheckVarsPeriodicity);
+            $smartboards.request('settings', 'coursePlugin', { classCheckPeriodicity: $scope.classCheckVarsPeriodicity, course: $scope.course }, alertUpdate);
+        } else {
+            $smartboards.request('settings', 'coursePlugin', { disableClassCheckPeriodicity: true, course: $scope.course }, alertUpdate);
+        }
+
+    }
     /*
    $scope.disableMoodle = function () {
         $smartboards.request('settings', 'coursePlugin', { disableMoodlePeriodicity: true, course: $scope.course }, alertUpdate);
@@ -266,11 +279,20 @@ function pluginPersonalizedConfig($scope, $element, $smartboards, $compile) {
         row.append('<input class="config_input" type:"text" id="newList" ng-model="classCheckVars.tsvCode"><br>');
         classCheckconfigurationSection.append(row);
         row2 = $("<div class='plugin_row periodicity'></div>");
-        row2.append('<span>Periodicity: </span>');
+        row2.append('<span>Periodicity: </span><label class="switch"><input id="active" type="checkbox" ng-model="DealClassCheckPeriodicity" ng-click="dealClassCheck()"><span class="slider round" style="width: 50px; margin-left:90px"></span></label>');
         row2.append('<input class="config_input" ng-init="classCheckVarsPeriodicity.number" ng-model="classCheckVarsPeriodicity.number" type="number" id="classCheckPeriodicidade1" min="0" max="59">');
         row2.append('<select class="form-control config_input" ng-model="classCheckVarsPeriodicity.time" id="classCheckPeriodicidade2" ng-options="option.name for option in classCheckVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(classCheckVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button style="margin-right:2px" class="enable_button small" ng-click="enableClassCheck()">Enable Class Check</button>');
-        row2.append('<button class="disable_button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
+
+
+        row2.append($('<div class= "on_off" style="margin-top: 20px" ><label class="switch"><input id="active" type="checkbox" ng-model="DealClassCheckPeriodicity" ng-click="dealClassCheck()"><span class="slider round" style="width: 40px"></span></label></div>'))
+
+
+       // row2.append('<button style="margin-right:2px" class="enable_button small" ng-click="dealClassCheck()">Enable Class Check</button>');
+
+
+       // row2.append('<button style="margin-right:2px" class="enable_button small" ng-click="enableClassCheck()">Enable Class Check</button>');
+       // row2.append('<button class="disable_button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
+       
         classCheckconfigurationSection.append(row2);
 
         action_buttons = $("<div class='config_save_button'></div>");

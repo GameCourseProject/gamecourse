@@ -66,3 +66,14 @@
 #configPage input[type="file"].config_input.plugin {
     border: none;
 }
+
+.on_off {
+    display: flex;
+    align-items: center;
+    margin-right: 40px;
+}
+
+.on_off span {
+    padding-right: 10px;
+    line-height: 26px;
+}
