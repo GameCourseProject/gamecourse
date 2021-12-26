@@ -159,12 +159,12 @@ def filter_quiz(logs, desc):
 	filtered_logs = []
 
 	for line in logs:
-		if line.description != desc or line.description != "Dry Run":
+		if desc not in line.description:
 			filtered_logs.append(line)	
 	return filtered_logs
 
 @rule_function
-def exclude_worst(logs, last):
+def exclude_worst(logs, last, n_tests):
 	"""
 	Will calculate the adjustment for getting rid of the
 	worst quiz in the bunch
@@ -173,13 +173,28 @@ def exclude_worst(logs, last):
 	worst = int(config.metadata["quiz_max_grade"])
 	fix = last
 
-	if len(logs) == 9:
+	if len(logs) == n_tests:
 		for line in logs:
 			worst = min(int(line.rating), worst)
 
+		worst = worst if worst > 0 else 0
 		if len(last) == 1:
 			last_quiz = max(int(last[0].rating) - worst, 0)
 			fix[0].rating = last_quiz
+	
+	return fix
+
+
+@rule_function
+def compare_exam(total_quiz_grade, exam):
+	"""
+	Will calculate the adjustment for after the exam.
+	Decides between sum of quizzes or exam grade, and claculates adjustment.
+	"""
+	fix = 0
+	if len(exam) == 1:
+		adjustment = max(int(exam[0].rating) - total_quiz_grade, 0)
+		fix = adjustment
 	
 	return fix
 	
@@ -221,11 +236,11 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 	return result
 
 @rule_effect
-def award_prize(target, reward_name, xp, contributions=None):
+def award_prize(target, reward_name, xp, typeof="bonus"):
 	""" 
 	returns the output of a skill and writes the award to database
 	"""
-	connector.award_prize(target, reward_name, xp, contributions)
+	connector.award_prize(target, reward_name, xp, typeof)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
 
