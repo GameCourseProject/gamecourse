@@ -94,11 +94,11 @@ def filter_excellence(logs, tiers, classes):
 
 
 @rule_function
-def award_prize(target, reward_name, xp, contributions=None):
+def award_prize(target, reward_name, xp, typeof="bonus"):
 	""" 
 	Awards a prize called "reward_name" of "xp" points to students.
 	"""
-	connector.award_prize(target, reward_name, xp, contributions)
+	connector.award_prize(target, reward_name, xp, typeof)
 	return
 
 

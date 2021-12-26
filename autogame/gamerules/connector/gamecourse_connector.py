@@ -668,7 +668,7 @@ def award_skill(target, skill, rating, contributions=None, use_wildcard=False, w
 
 
 
-def award_prize(target, reward_name, xp, contributions=None):
+def award_prize(target, reward_name, xp, typeof="bonus"):
 	# -----------------------------------------------------------	
 	# Writes 'award' table with reward that is not a badge or a
 	# skill. Will not retract effects, but will not award twice
@@ -680,7 +680,6 @@ def award_prize(target, reward_name, xp, contributions=None):
 	cursor = cnx.cursor(prepared=True)
 
 	course = config.course
-	typeof = "bonus"
 	reward = int(xp)
 
 	if config.test_mode:
