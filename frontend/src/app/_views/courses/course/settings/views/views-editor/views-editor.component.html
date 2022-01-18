@@ -116,7 +116,7 @@
 
     <!-- Settings -->
     <div class="settings-overlay">
-      <div class="title">Edit Part Settings:</div>
+      <div class="title">Edit {{capitalize(viewToEdit.type)}} Settings:</div>
 
       <!-- Loop Data -->
       <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK || viewToEdit.type === ViewType.ROW"
@@ -127,9 +127,9 @@
       <ng-container [ngTemplateOutlet]="variables"></ng-container>
 
       <!-- Content -->
-      <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE"
+      <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE || viewToEdit.type === ViewType.HEADER"
         [ngTemplateOutlet]="content"
-        [ngTemplateOutletContext]="{type: viewToEdit.type === ViewType.TEXT ? 'text' : 'image'}">
+        [ngTemplateOutletContext]="{type: viewToEdit.type === ViewType.TEXT ? 'text' : viewToEdit.type === ViewType.IMAGE ? 'image' : 'header'}">
       </ng-container>
 
       <!-- Styling/Misc -->
@@ -206,21 +206,40 @@
   <div class="sb-menu section">
     <div class="divider"><div class="title"><span>Content</span></div></div>
 
-    <!-- Value -->
-    <ng-container
-      [ngTemplateOutlet]="expressionInput"
-      [ngTemplateOutletContext]="{label: type === 'text' ? 'value' : 'source', title: 'Define the contents of the view using the expression language', viewParam: type === 'text' ? 'value' : 'src'}">
+    <ng-container *ngIf="type === 'text' || type === 'image'">
+      <!-- Value -->
+      <ng-container
+        [ngTemplateOutlet]="expressionInput"
+        [ngTemplateOutletContext]="{label: type === 'text' ? 'value' : 'source', title: 'Define the contents of the view using the expression language', viewParam: type === 'text' ? 'value' : 'src'}">
+      </ng-container>
+
+      <!-- Link -->
+      <div class="sb-checkbox">
+        <input id="cb-link" type="checkbox" [(ngModel)]="linkEnabled">
+        <label for="cb-link">Enable Link</label>
+        <ng-container *ngIf="linkEnabled"
+                      [ngTemplateOutlet]="expressionInput"
+                      [ngTemplateOutletContext]="{label: 'link', title: 'Define the link url', viewParam: 'link'}">
+        </ng-container>
+      </div>
     </ng-container>
 
-    <!-- Link -->
-    <div class="sb-checkbox">
-      <input id="cb-link" type="checkbox" [(ngModel)]="linkEnabled">
-      <label for="cb-link">Enable Link</label>
-      <ng-container *ngIf="linkEnabled"
-        [ngTemplateOutlet]="expressionInput"
-        [ngTemplateOutletContext]="{label: 'link', title: 'Define the link url', viewParam: 'link'}">
-      </ng-container>
-    </div>
+    <ng-container *ngIf="type === 'header'">
+      <!-- Image -->
+      <div class="sb-expression">
+        <label [for]="'image'">Image</label>
+        <textarea [id]="'image'" [title]="'Define the header image'" class="expression form__input" placeholder="Expression"
+                  [(ngModel)]="viewToEdit['image'].src"></textarea>
+      </div>
+
+      <!-- Title -->
+      <div class="sb-expression">
+        <label [for]="'title'">Title</label>
+        <textarea [id]="'title'" [title]="'Define the header title'" class="expression form__input" placeholder="Expression"
+                  [(ngModel)]="viewToEdit['title'].value"></textarea>
+      </div>
+    </ng-container>
+
   </div>
 </ng-template>
 
