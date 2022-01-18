@@ -123,6 +123,9 @@
         [ngTemplateOutlet]="loopData">
       </ng-container>
 
+      <!-- Variables -->
+      <ng-container [ngTemplateOutlet]="variables"></ng-container>
+
       <!-- Content -->
       <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE"
         [ngTemplateOutlet]="content"
@@ -170,6 +173,32 @@
       [ngTemplateOutlet]="expressionInput"
       [ngTemplateOutletContext]="{label: 'data', title: 'Data allows to repeat the element, for example to make lists', viewParam: 'loopData'}">
     </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #variables>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Variables</span></div></div>
+
+    <!-- Variables -->
+    <div *ngIf="getVariables().length > 0">
+      <div *ngFor="let name of getVariables()">
+        <div class="content">
+          <div class="sb-expression">
+            <label [for]="name">{{name}}</label>
+            <textarea [id]="name" [title]="'Define the value of a variables for the element'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditVariables[name]"></textarea>
+            <div class="content"><div class="icon delete_icon" (click)="deleteVariable(name)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add variable -->
+    <div class="sb-input">
+      <label for="new-variable">New Key: %</label>
+      <input class="form__input" id="new-variable" type="text" [(ngModel)]="variableToAdd">
+      <button [disabled]="!variableToAdd" (click)="addVariable()">Add</button>
+    </div>
   </div>
 </ng-template>
 

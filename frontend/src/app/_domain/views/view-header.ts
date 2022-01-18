@@ -6,6 +6,9 @@ import {buildView} from "./build-view/build-view";
 import {copyObject} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
 import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {EventType} from "../events/event-type";
+import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
 
 export class ViewHeader extends View{
 
@@ -17,8 +20,8 @@ export class ViewHeader extends View{
   static readonly TITLE_CLASS = 'gc-header_title';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, image: ViewImage, title: ViewText,
-              loopData?: any, variables?: any, style?: string, cssId?: string, cl?: string, label?: string,
-              visibilityType?: VisibilityType, visibilityCondition?: any, events?: any) {
+              loopData?: any, variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string,
+              visibilityType?: VisibilityType, visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     super(id, viewId, parentId, ViewType.HEADER, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);

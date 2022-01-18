@@ -1,6 +1,7 @@
 <?php
 namespace GameCourse\Views;
 
+// TODO: refactor or delete
 class ViewEditHandler {
     static function breakValue(&$value, &$savePart) {
         $savePart($value);

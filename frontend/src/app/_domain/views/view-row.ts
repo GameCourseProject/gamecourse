@@ -4,6 +4,9 @@ import {buildView} from "./build-view/build-view";
 import {copyObject} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
 import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {EventType} from "../events/event-type";
+import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
 
 export class ViewRow extends View {
 
@@ -14,8 +17,8 @@ export class ViewRow extends View {
   static readonly ROW_EMPTY_CLASS = 'gc-row_empty';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,
-              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any) {
+              variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     super(id, viewId, parentId, ViewType.ROW, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);

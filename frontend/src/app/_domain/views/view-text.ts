@@ -3,6 +3,9 @@ import {ViewType} from "./view-type";
 import {copyObject} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
 import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {EventType} from "../events/event-type";
+import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
 
 export class ViewText extends View {
 
@@ -12,8 +15,8 @@ export class ViewText extends View {
   static readonly TEXT_CLASS = 'gc-text';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, value: string, loopData?: any,
-              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any, link?: any) {
+              variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: {[key in EventType]?: Event}, link?: any) {
 
     super(id, viewId, parentId, ViewType.TEXT, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);

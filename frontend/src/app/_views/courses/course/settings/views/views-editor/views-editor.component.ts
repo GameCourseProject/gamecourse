@@ -20,6 +20,7 @@ import {Event} from "../../../../../../_domain/events/event";
 import {buildEvent} from "../../../../../../_domain/events/build-event";
 import {ViewText} from "../../../../../../_domain/views/view-text";
 import {ViewImage} from "../../../../../../_domain/views/view-image";
+import {Variable} from "../../../../../../_domain/variables/variable";
 
 @Component({
   selector: 'app-view-editor',
@@ -51,6 +52,8 @@ export class ViewsEditorComponent implements OnInit {
   linkEnabled: boolean;
   eventToAdd: EventType;
   viewToEditEvents: {[key in EventType]?: string};
+  variableToAdd: string;
+  viewToEditVariables: {[name: string]: string};
 
   isPreviewExpressionModalOpen: boolean;
 
@@ -182,6 +185,7 @@ export class ViewsEditorComponent implements OnInit {
 
     if (btn === 'edit-settings') {
       this.viewToEdit = copyObject(viewSelected);
+      this.viewToEditVariables = this.viewToEdit.variables ? objectMap(copyObject(this.viewToEdit.variables), variable => variable.value) : {};
       this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
       if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE)
         this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
@@ -214,6 +218,10 @@ export class ViewsEditorComponent implements OnInit {
     this.loading = true;
     this.isEditSettingsModalOpen = false;
     this.hasModalOpen = false;
+
+    // Variables
+    this.viewToEditVariables = Object.fromEntries(Object.entries(this.viewToEditVariables).filter(([k, v]) => !!v && v != '{}'));
+    this.viewToEdit.variables = Object.keys(this.viewToEditVariables).length > 0 ? copyObject(objectMap(this.viewToEditVariables, (value, name) => new Variable(name, value))) : null;
 
     // Events
     this.viewToEditEvents = Object.fromEntries(Object.entries(this.viewToEditEvents).filter(([k, v]) => !!v && v != '{}'));
@@ -276,6 +284,15 @@ export class ViewsEditorComponent implements OnInit {
     this.viewToEditEvents[type] = null;
   }
 
+  addVariable(): void {
+    this.viewToEditVariables[this.variableToAdd] = '{}';
+    this.variableToAdd = null;
+  }
+
+  deleteVariable(name: string): void {
+    this.viewToEditVariables[name] = null;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -300,6 +317,10 @@ export class ViewsEditorComponent implements OnInit {
 
   getEvents(): string[] {
     return Object.keys(this.viewToEditEvents);
+  }
+
+  getVariables(): string[] {
+    return Object.keys(this.viewToEditVariables);
   }
 
   goToViews(): void {

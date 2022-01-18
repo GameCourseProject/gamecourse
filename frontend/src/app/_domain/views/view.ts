@@ -2,6 +2,7 @@ import {Role} from "../roles/role";
 import {EventType} from "../events/event-type";
 import {ViewType} from "./view-type";
 import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
 import {buildEvent} from "../events/build-event";
 import {objectMap} from "../../_utils/misc/misc";
 
@@ -35,14 +36,14 @@ export abstract class View {
 
   // Edit only params
   private _loopData?: string;
-  private _variables?: any;
+  private _variables?: {[name: string]: Variable};
   private _visibilityCondition?: any;
 
   static readonly VIEW_CLASS = 'gc-view';
 
 
   protected constructor(id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode, loopData?: string,
-                        variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+                        variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
                         visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     this.id = id;
@@ -118,11 +119,11 @@ export abstract class View {
     this._loopData = value;
   }
 
-  get variables(): any {
+  get variables(): {[name: string]: Variable} {
     return this._variables;
   }
 
-  set variables(value: any) {
+  set variables(value: {[name: string]: Variable}) {
     this._variables = value;
   }
 
@@ -203,11 +204,11 @@ export abstract class View {
       cssId: view.cssId || null,
       class: view.class.split(' ').filter(cl => !cl.startsWith('gc-')).join(' ') || null,
       label: view.label || null,
-      visibilityType: view.visibilityType,
+      visibilityType: view.visibilityType || null,
       events: view.events ? objectMap(view.events, event => '{actions.' + (event as Event).print() + '}') : null,
-      loopData: view.loopData,
-      variables: view.variables,
-      visibilityCondition: view.visibilityCondition
+      loopData: view.loopData || null,
+      variables: view.variables ? objectMap(view.variables, variable => variable.value) : null,
+      visibilityCondition: view.visibilityCondition || null
     }
   }
 
@@ -218,7 +219,7 @@ export abstract class View {
    * @param obj
    */
   static parse(obj: ViewDatabase): {id: number, viewId: number, parentId: number, type: ViewType, role: string, mode: ViewMode,
-    loopData?: any, variables?: any, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
+    loopData?: any, variables?: {[name: string]: Variable}, style?: string, cssId?: string, class?: string, label?: string, visibilityType?: VisibilityType,
     visibilityCondition?: any, events?: {[key in EventType]?: Event}} {
 
     return {
@@ -229,7 +230,8 @@ export abstract class View {
       role: Role.parse(obj.role),
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
       loopData: (obj.loopData && !obj.loopData.isEmpty()) ? obj.loopData : null,
-      variables: obj.variables || null,
+      variables: obj.variables && !!Object.keys(obj.variables).length ?
+              objectMap(obj.variables, (value, name) => new Variable(name, value)) : null,
       style: (obj.style && !obj.style.isEmpty()) ? obj.style : null,
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
       class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
@@ -250,7 +252,7 @@ export interface ViewDatabase {
   role: string;
   edit?: boolean;
   loopData?: string;
-  variables?: any;
+  variables?: {[name: string]: string};
   style?: string;
   cssId?: string;
   class?: string;

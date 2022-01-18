@@ -10,8 +10,7 @@ use GameCourse\Views\Expression\ValueNode;
 
 /**
  * This class is responsible for handling views (not pages or templates!).
- * It has functions that deal with updating and rendering views
- * to/from database.
+ * It has functions that deal with updating and rendering views to/from database.
  */
 class ViewHandler
 {
@@ -660,8 +659,8 @@ class ViewHandler
 
     public static function parseVariables(&$view)
     {
-        foreach ($view['variables'] as $k => &$v) {
-            self::parseSelf($v['value']);
+        foreach ($view['variables'] as $name => &$variable) {
+            self::parseSelf($variable);
         }
     }
 
@@ -717,14 +716,10 @@ class ViewHandler
         $view = $view->accept($visitor)->getValue();
     }
 
-    public static function processVariables(&$view, $viewParams, $visitor)
+    public static function processVariables(&$view, $visitor)
     {
-        $actualVisitor = $visitor;
-        $params = $viewParams;
-        foreach ($view['variables'] as $k => &$v) {
-            $params[$k] = $v['value']->accept($actualVisitor)->getValue();
-            if ($params != $viewParams)
-                $actualVisitor = new EvaluateVisitor($params);
+        foreach ($view['variables'] as $name => &$variable) {
+            $variable = $variable->accept($visitor)->getValue();
         }
     }
 

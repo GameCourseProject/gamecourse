@@ -6,6 +6,9 @@ import {ViewRow, ViewRowDatabase} from "./view-row";
 import {copyObject} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
 import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {EventType} from "../events/event-type";
+import {Event} from "../events/event";
+import {Variable} from "../variables/variable";
 
 export class ViewTable extends View {
 
@@ -22,8 +25,8 @@ export class ViewTable extends View {
   static readonly TABLE_TOOLBAR_CLASS = 'gc-table_toolbar';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, headerRows: ViewRow[], rows: ViewRow[], loopData?: any,
-              variables?: any, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
-              visibilityCondition?: any, events?: any) {
+              variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
+              visibilityCondition?: any, events?: {[key in EventType]?: Event}) {
 
     super(id, viewId, parentId, ViewType.TABLE, role, mode, loopData, variables, style, cssId, cl, label, visibilityType,
       visibilityCondition, events);
