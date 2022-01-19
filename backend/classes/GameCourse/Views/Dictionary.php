@@ -122,9 +122,14 @@ class Dictionary
                         ViewHandler::processView($headerRow, $viewParams);
                     }
                 }
+
                 if (isset($view["rows"])) {
-                    foreach ($view["rows"] as &$row) {
-                        ViewHandler::processView($row, $viewParams);
+                    if (isset($view["loopData"])) {
+                        ViewHandler::processLoop($view, $viewParams, $visitor);
+                    } else {
+                        foreach ($view["rows"] as &$row) {
+                            ViewHandler::processView($row, $viewParams);
+                        }
                     }
                 }
             },
@@ -166,13 +171,8 @@ class Dictionary
             },
             function (&$view, $viewParams, $visitor) { //processing function
                 if (isset($view["children"])) {
-                    if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view, $viewParams, $visitor);
-
-                    } else {
-                        foreach ($view['children'] as &$child) {
-                            ViewHandler::processView($child, $viewParams);
-                        }
+                    foreach ($view['children'] as &$child) {
+                        ViewHandler::processView($child, $viewParams);
                     }
                 }
             },

@@ -695,7 +695,7 @@ class ViewHandler
         if (isset($view['label'])) self::processSelf($view['label'], $visitor);
 
         if (isset($view['events'])) self::processEvents($view, $visitor);
-        if (isset($view['variables'])) self::processVariables($view, $viewParams, $visitor);
+        if (isset($view['variables'])) self::processVariables($view, $visitor);
         if (isset($view['visibilityCondition'])) self::processVisibilityCondition($view, $visitor);
 
         self::processViewType($view["type"], $view, $viewParams, $visitor);
@@ -771,25 +771,27 @@ class ViewHandler
         }
         $repeatParams = array_values($repeatParams);
 
-        // Repeat children
-        $newChildren = [];
+        // Repeat views
+        $container = $view["type"] == 'block' ? "children" : "rows";
+        $newViews = [];
         for ($i = 0; $i < sizeof($repeatParams); $i++) {
 
-            // Process child data
+            // Process view data
             $repeatedValues = [];
-            foreach ($view["children"] as $child) {
+            foreach ($view[$container] as $v) {
                 $value = $repeatParams[$i][$repeatKey];
                 if (!is_array($value)) $loopParam = [$repeatKey => $value];
                 else $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
 
                 $paramsForEvaluator = array_merge($viewParams, $loopParam, array("index" => $i));
-                self::processView($child, $paramsForEvaluator);
-                $repeatedValues[] = $child;
+                self::processView($v, $paramsForEvaluator);
+                $repeatedValues[] = $v;
             }
-            $newChildren = array_merge($newChildren, $repeatedValues);
+            $newViews = array_merge($newViews, $repeatedValues);
         }
 
-        $view["children"] = $newChildren;
+        $view[$container] = $newViews;
+
         unset($view["loopData"]);
     }
 

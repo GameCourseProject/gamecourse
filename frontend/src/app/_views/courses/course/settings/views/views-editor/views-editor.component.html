@@ -119,7 +119,7 @@
       <div class="title">Edit {{capitalize(viewToEdit.type)}} Settings:</div>
 
       <!-- Loop Data -->
-      <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK || viewToEdit.type === ViewType.ROW"
+      <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK || viewToEdit.type === ViewType.TABLE"
         [ngTemplateOutlet]="loopData">
       </ng-container>
 
