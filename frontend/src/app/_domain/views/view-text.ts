@@ -13,6 +13,7 @@ export class ViewText extends View {
   private _link?: string;
 
   static readonly TEXT_CLASS = 'gc-text';
+  static readonly TEXT_EMPTY_CLASS = 'gc-text_empty';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, value: string, loopData?: any,
               variables?: {[name: string]: Variable}, style?: string, cssId?: string, cl?: string, label?: string, visibilityType?: VisibilityType,
@@ -64,6 +65,14 @@ export class ViewText extends View {
 
   addChildViewToViewTree(view: View) {
     // Doesn't have children, do nothing
+  }
+
+  /**
+   * Gets a default view.
+   */
+  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewText {
+    return new ViewText(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
+      View.VIEW_CLASS + ' ' + this.TEXT_CLASS + (!!cl ? ' ' + cl : ''));
   }
 
   /**

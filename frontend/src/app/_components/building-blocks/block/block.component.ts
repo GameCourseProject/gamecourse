@@ -10,6 +10,7 @@ import { EventHideView } from 'src/app/_domain/events/event-hide-view';
 import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
+import {EditorAction, ViewEditorService} from "../../../_services/view-editor.service";
 
 @Component({
   selector: 'bb-block',
@@ -22,7 +23,7 @@ export class BlockComponent implements OnInit {
 
   readonly DEFAULT = '(Empty block)';
 
-  constructor() { }
+  constructor(public actionManager: ViewEditorService) { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.children]);
@@ -40,6 +41,10 @@ export class BlockComponent implements OnInit {
 
   get ViewSelectionService(): typeof ViewSelectionService {
     return ViewSelectionService;
+  }
+
+  get EditorAction(): typeof EditorAction {
+    return EditorAction;
   }
 
 

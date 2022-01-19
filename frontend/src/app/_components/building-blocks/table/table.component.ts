@@ -8,6 +8,7 @@ import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
 import { EventHideView } from 'src/app/_domain/events/event-hide-view';
 import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
+import {EditorAction, ViewEditorService} from "../../../_services/view-editor.service";
 
 @Component({
   selector: 'bb-table',
@@ -17,9 +18,8 @@ export class TableComponent implements OnInit {
 
   @Input() view: ViewTable;
   edit: boolean;
-  isEditingLayout: boolean;
 
-  constructor() { }
+  constructor(public actionManager: ViewEditorService) { }
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
@@ -36,6 +36,10 @@ export class TableComponent implements OnInit {
 
   get ViewTable(): typeof ViewTable {
     return ViewTable;
+  }
+
+  get EditorAction(): typeof EditorAction {
+    return EditorAction;
   }
 
 

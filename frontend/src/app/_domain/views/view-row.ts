@@ -7,6 +7,7 @@ import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
 import {EventType} from "../events/event-type";
 import {Event} from "../events/event";
 import {Variable} from "../variables/variable";
+import {ViewText} from "./view-text";
 
 export class ViewRow extends View {
 
@@ -82,6 +83,16 @@ export class ViewRow extends View {
       }
     }
     (this.children as any as View[][]).push([view]);  // No aspect found
+  }
+
+  /**
+   * Gets a default view.
+   */
+  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewRow {
+    return new ViewRow(id, id, parentId, role, ViewMode.EDIT,
+      [ViewText.getDefault(id - 1, id, role)],
+      null, null, null, null,
+      View.VIEW_CLASS + ' ' + this.ROW_CLASS + (!!cl ? ' ' + cl : ''));
   }
 
   /**

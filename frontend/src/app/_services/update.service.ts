@@ -31,5 +31,5 @@ export class UpdateService {
 
 export enum UpdateType {
   AVATAR,
-  ACTIVE_PAGES
+  ACTIVE_PAGES,
 }

@@ -67,7 +67,7 @@
           <img src="assets/icons/edit_icon.svg" alt="">
         </div>
         <div *ngIf="selection.get().type === ViewType.BLOCK || selection.get().type === ViewType.TABLE"
-             class="tool btn" title="Edit Layout" [ngClass]="{'red': (selection.get() | as : ViewBlock).isEditingLayout}"
+             class="tool btn" title="Edit Layout" [ngClass]="{'red': (selection.get() | as : ViewBlock).isEditingLayout || (selection.get() | as : ViewTable).isEditingLayout}"
              (click)="toolbarBtnClicked('edit-layout')">
           <img src="assets/icons/layout_editor_icon.svg" alt="">
         </div>
@@ -347,6 +347,75 @@
 
 <ng-template #previewExpressionModal>
 
+</ng-template>
+
+
+<!-- Add Part Modal -->
+<ng-container *ngIf="isAddingPartModalOpen">
+  <app-modal
+    [isModalOpen]="isAddingPartModalOpen"
+    [id]="'add_part'"
+    [templateRef]="addPartModal"
+    (closeBtnClicked)="isAddingPartModalOpen = false; partToAdd = null">
+  </app-modal>
+</ng-container>
+
+<ng-template #addPartModal>
+  <div class="content">
+    <div id="parts_selection">
+      <div value="text" class="part_option" (click)="partToAdd = 'text'" [ngStyle]="{'opacity': partToAdd === 'text' ? 1 : 0.5}">
+        <img [src]="'assets/icons/text_part_icon.svg'">
+        <div class="part_label">Text</div>
+      </div>
+      <div value="block" class="part_option" (click)="partToAdd = 'block'" [ngStyle]="{'opacity': partToAdd === 'block' ? 1 : 0.5}">
+        <img [src]="'assets/icons/block_part_icon2.svg'">
+        <div class="part_label">Block</div>
+      </div>
+      <div value="image" class="part_option" (click)="partToAdd = 'image'" [ngStyle]="{'opacity': partToAdd === 'image' ? 1 : 0.5}">
+        <img [src]="'assets/icons/image_part_icon.svg'">
+        <div class="part_label">Image</div>
+      </div>
+      <div value="header" class="part_option" (click)="partToAdd = 'header'" [ngStyle]="{'opacity': partToAdd === 'header' ? 1 : 0.5}">
+        <img [src]="'assets/icons/header_part_icon.svg'">
+        <div class="part_label">Header</div>
+      </div>
+      <div value="table" class="part_option" (click)="partToAdd = 'table'" [ngStyle]="{'opacity': partToAdd === 'table' ? 1 : 0.5}">
+        <img [src]="'assets/icons/table_part_icon.svg'">
+        <div class="part_label">Table</div>
+      </div>
+      <div value="chart" class="part_option" (click)="partToAdd = 'chart'" [ngStyle]="{'opacity': partToAdd === 'chart' ? 1 : 0.5}">
+        <img [src]="'assets/icons/chart_part_icon.svg'">
+        <div class="part_label">Chart</div>
+      </div>
+      <div value="chart" class="part_option" (click)="partToAdd = 'template'" [ngStyle]="{'opacity': partToAdd === 'template' ? 1 : 0.5}">
+        <img [src]="'assets/icons/template_part_icon.svg'">
+        <div class="part_label"> Template</div>
+      </div>
+    </div>
+
+    <span id="warningTemplates" style="display: none;">There are no templates!</span>
+    <div class="add-parts">
+      <select id="partList" style="display: none;">
+        <option value="" disabled="" selected="">Part Type</option>
+        <option value="part:text">Text</option>
+        <option value="part:block">Block</option>
+        <option value="part:image">Image</option>
+        <option value="part:table">Table</option>
+        <option value="part:chart">Chart</option>
+        <option value="temp:">Template</option>
+      </select>
+      <div id="template_selection" style="display: none;">
+        <select id="templateList" class="form__input">
+          <option disabled="">Select a template</option>
+          <option value="temp:1">Relative Leaderboard - by leaderboard (3)</option>
+          <option value="temp:2">Test (11)</option>
+        </select>
+        <div class="on_off"><span>Use Template by reference </span><label class="switch"><input id="isRef" type="checkbox"><span class="slider round"></span></label></div>
+      </div>
+    </div>
+
+    <button [disabled]="!partToAdd" class="save_btn" (click)="editLayout('block')">Add Item</button>
+  </div>
 </ng-template>
 
 

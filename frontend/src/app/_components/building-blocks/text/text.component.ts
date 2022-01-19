@@ -18,8 +18,6 @@ export class TextComponent implements OnInit {
   @Input() view: ViewText;
   edit: boolean;
 
-  isEmpty: boolean;
-
   readonly DEFAULT = '(Empty value)';
 
   constructor() { }
@@ -28,7 +26,9 @@ export class TextComponent implements OnInit {
     requireValues(this.view, [this.view.value]);
     if (!!this.view.events?.click) this.view.class += ' gc-clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
-    this.isEmpty = this.view.value.isEmpty();
+
+    if (this.view.value.isEmpty()) this.view.class += ' ' + ViewText.TEXT_EMPTY_CLASS;
+    else this.view.class = this.view.class.removeWord(ViewText.TEXT_EMPTY_CLASS);
   }
 
 

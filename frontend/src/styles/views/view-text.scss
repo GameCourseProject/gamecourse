@@ -8,6 +8,11 @@
   position: relative;
   display: inline-block;
   font-size: 13px;
+
+  &.gc-text_empty {
+    font-weight: bold;
+    color: rgb(211, 11, 11);
+  }
 }
 
 

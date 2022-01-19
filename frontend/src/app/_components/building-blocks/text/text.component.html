@@ -9,7 +9,7 @@
 
 <ng-template #SIMPLE>
   <span [attr.id]="view.cssId"
-        [classList]="view.class" [ngClass]="{'red': isEmpty}"
+        [classList]="view.class"
         [attr.style]="view.style"
         [attr.data-id]="view.id"
         [attr.data-viewId]="view.viewId"
@@ -19,14 +19,14 @@
         [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
         [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
         [mode]="view.mode">
-    {{view.value}}
+    {{view.value || DEFAULT}}
   </span>
 </ng-template>
 
 <ng-template #LINK> <!-- FIXME: target should be an option -->
   <a [href]="edit ? 'javascript:void(0)' : view.link" [target]="edit ? '_self' : '_blank'"
      [attr.id]="view.cssId"
-     [classList]="view.class" [ngClass]="{'red': isEmpty}"
+     [classList]="view.class"
      [attr.style]="view.style"
      [attr.data-id]="view.id"
      [attr.data-viewId]="view.viewId"
@@ -36,6 +36,6 @@
      [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
      [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
      [mode]="view.mode">
-    {{view.value}}
+    {{view.value || DEFAULT}}
   </a>
 </ng-template>

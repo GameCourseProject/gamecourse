@@ -3,6 +3,7 @@ interface String {
   containsWord(word: string): boolean;
   isEmpty(): boolean;
   noWhiteSpace(): string;
+  removeWord(word: string): string;
   swapNonENChars(): string;
   toFlat(): string;
 }
@@ -42,6 +43,15 @@ String.prototype.isEmpty = function (): boolean {
  */
 String.prototype.noWhiteSpace = function(): string {
   return this.replace(/\s*/g, '');
+}
+
+/**
+ * Removes specific word from string.
+ *
+ * @return string
+ */
+String.prototype.removeWord = function(word: string): string {
+  return this.replace(word, '');
 }
 
 /**

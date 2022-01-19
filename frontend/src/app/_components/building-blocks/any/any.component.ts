@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {View, ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-type";
 import { ViewText } from 'src/app/_domain/views/view-text';

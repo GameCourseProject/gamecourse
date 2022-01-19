@@ -102,6 +102,17 @@ export class ViewHeader extends View{
   }
 
   /**
+   * Gets a default view.
+   */
+  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewHeader {
+    return new ViewHeader(id, id, parentId, role, ViewMode.EDIT,
+      ViewImage.getDefault(id - 1, id, role, this.IMAGE_CLASS),
+      ViewText.getDefault(id - 2, id, role, this.TITLE_CLASS),
+      null, null, null, null,
+      View.VIEW_CLASS + ' ' + this.HEADER_CLASS + (!!cl ? ' ' + cl : ''));
+  }
+
+  /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
    * doesn't have '_' on attributes

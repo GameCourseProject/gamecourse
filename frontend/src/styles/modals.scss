@@ -759,3 +759,31 @@ button {
   margin-top: 1.6rem;
   margin-bottom: 2rem;
 }
+
+#add_part{
+  #parts_selection {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    text-transform: capitalize;
+    align-items: baseline;
+    margin-bottom: 60px;
+    margin-top: 20px;
+
+    .part_option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+
+      img {
+        height: 45px;
+        margin-bottom: 10px;
+      }
+
+      .part_label {
+        font-size: 18px;
+      }
+    }
+  }
+}

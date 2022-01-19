@@ -67,6 +67,14 @@ export class ViewImage extends View {
   }
 
   /**
+   * Gets a default view.
+   */
+  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewImage {
+    return new ViewImage(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
+      View.VIEW_CLASS + ' ' + this.IMAGE_CLASS + (!!cl ? ' ' + cl : ''));
+  }
+
+  /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
    * doesn't have '_' on attributes

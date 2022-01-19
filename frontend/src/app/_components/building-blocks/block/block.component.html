@@ -24,7 +24,8 @@
       <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>
 
-    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"></div>
+    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"
+      (click)="actionManager.triggerAction({action: EditorAction.BLOCK_ADD_CHILD})"></div>
   </div>
 </ng-template>
 
@@ -42,6 +43,7 @@
        [mode]="view.mode">
 
     {{DEFAULT}}
-    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"></div>
+    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"
+         (click)="actionManager.triggerAction({action: EditorAction.BLOCK_ADD_CHILD})"></div>
   </div>
 </ng-template>

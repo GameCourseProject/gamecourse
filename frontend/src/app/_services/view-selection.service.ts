@@ -11,6 +11,7 @@ export class ViewSelectionService {
   static readonly IGNORE_SELECTION_CLASS = 'ignore-selection';
 
   private selected: View;
+  private disabled: boolean;
 
   constructor() {
   }
@@ -24,6 +25,7 @@ export class ViewSelectionService {
   }
 
   public update(view: View, target?: HTMLElement) {
+    if (this.disabled) return;
     if (target && target.classList.contains(ViewSelectionService.IGNORE_SELECTION_CLASS))
       return;
 
@@ -57,5 +59,9 @@ export class ViewSelectionService {
     const index = split.findIndex(cl => cl === ViewSelectionService.SELECTION_CLASS);
     split.splice(index, 1);
     view.class = split.join(' ');
+  }
+
+  public toggleState(): void {
+    this.disabled = !this.disabled;
   }
 }

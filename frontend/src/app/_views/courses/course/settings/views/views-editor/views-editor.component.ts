@@ -21,6 +21,9 @@ import {buildEvent} from "../../../../../../_domain/events/build-event";
 import {ViewText} from "../../../../../../_domain/views/view-text";
 import {ViewImage} from "../../../../../../_domain/views/view-image";
 import {Variable} from "../../../../../../_domain/variables/variable";
+import {ViewTable} from 'src/app/_domain/views/view-table';
+import {ViewHeader} from "../../../../../../_domain/views/view-header";
+import {EditorAction, ViewEditorService} from "../../../../../../_services/view-editor.service";
 
 @Component({
   selector: 'app-view-editor',
@@ -58,6 +61,10 @@ export class ViewsEditorComponent implements OnInit {
   isPreviewExpressionModalOpen: boolean;
 
   isEditingLayout: boolean;
+  isAddingPartModalOpen: boolean;
+  partToAdd: string;
+  fakeIDMin: number = 0; // need negative fake IDs for views that are being added and not in DB yet
+
   saving: boolean;
 
   isPreviewingView: boolean;
@@ -78,7 +85,8 @@ export class ViewsEditorComponent implements OnInit {
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private router: Router,
-    public selection: ViewSelectionService
+    public selection: ViewSelectionService,
+    private actionManager: ViewEditorService
   ) { }
 
   get RoleTypeId(): typeof RoleTypeId {
@@ -91,6 +99,10 @@ export class ViewsEditorComponent implements OnInit {
 
   get ViewBlock(): typeof ViewBlock {
     return ViewBlock;
+  }
+
+  get ViewTable(): typeof ViewTable {
+    return ViewTable;
   }
 
   get VisibilityType(): typeof VisibilityType {
@@ -109,6 +121,11 @@ export class ViewsEditorComponent implements OnInit {
       this.route.params.subscribe(childParams => {
         this.getTemplate(childParams.id);
       });
+    });
+
+    this.actionManager.action.subscribe(action => {
+      if (action.action === EditorAction.BLOCK_ADD_CHILD) this.isAddingPartModalOpen = true;
+      else this.editLayout('table', action);
     });
   }
 
@@ -180,23 +197,27 @@ export class ViewsEditorComponent implements OnInit {
     if (clearSelection) this.selection.clear();
   }
 
-  toolbarBtnClicked(btn: string): void {
-    const viewSelected = this.selection.get();
+  toolbarBtnClicked(btn: string, viewSelected?: View): void {
+    if (!viewSelected) viewSelected = this.selection.get();
 
-    if (btn === 'edit-settings') {
+    if (btn === 'edit-layout') {
       this.viewToEdit = copyObject(viewSelected);
-      this.viewToEditVariables = this.viewToEdit.variables ? objectMap(copyObject(this.viewToEdit.variables), variable => variable.value) : {};
-      this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
-      if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE)
-        this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
-      // TODO: don't show gamecourse classes on input
-      this.isEditSettingsModalOpen = true;
-
-    } else if (btn === 'edit-layout') {
       this.isEditingLayout = !this.isEditingLayout;
-      (viewSelected as ViewBlock).isEditingLayout = !(viewSelected as ViewBlock).isEditingLayout;
+      (viewSelected as ViewBlock|ViewTable).isEditingLayout = !(viewSelected as ViewBlock|ViewTable).isEditingLayout;
+      this.selection.toggleState();
+
+    } else if (!this.isEditingLayout) {
+      if (btn === 'edit-settings') {
+        this.viewToEdit = copyObject(viewSelected);
+        this.viewToEditVariables = this.viewToEdit.variables ? objectMap(copyObject(this.viewToEdit.variables), variable => variable.value) : {};
+        this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
+        if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE)
+          this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
+        // TODO: don't show gamecourse classes on input
+        this.isEditSettingsModalOpen = true;
+      }
+      // TODO
     }
-    // TODO
 
     if (btn !== 'edit-layout') this.hasModalOpen = true;
   }
@@ -291,6 +312,45 @@ export class ViewsEditorComponent implements OnInit {
 
   deleteVariable(name: string): void {
     this.viewToEditVariables[name] = null;
+  }
+
+  editLayout(type: string, action?: {action: EditorAction, params?: any}): void {
+    if (type === 'block') {
+      // Create view
+      let defaultView;
+      if (this.partToAdd === 'text') defaultView = ViewText.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+      else if (this.partToAdd === 'image') defaultView = ViewImage.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+      else if (this.partToAdd === 'block') defaultView = ViewBlock.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+      else if (this.partToAdd === 'header') { defaultView = ViewHeader.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole); this.fakeIDMin -= 2; }
+      else if (this.partToAdd === 'table') { defaultView = ViewTable.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole); this.fakeIDMin -= 4; }
+
+      // Update view
+      (this.viewToEdit as ViewBlock).children.push(defaultView);
+
+      this.partToAdd = null;
+      this.isAddingPartModalOpen = false;
+
+    } else if (type === 'table') {
+      const actionType = action.action;
+      if (actionType === EditorAction.TABLE_INSERT_LEFT) this.fakeIDMin -= (this.viewToEdit as ViewTable).insertColumn('left', action.params, this.fakeIDMin);
+      else if (actionType === EditorAction.TABLE_INSERT_RIGHT) this.fakeIDMin -= (this.viewToEdit as ViewTable).insertColumn('right', action.params, this.fakeIDMin);
+      else if (actionType === EditorAction.TABLE_INSERT_UP) this.fakeIDMin -= (this.viewToEdit as ViewTable).insertRow(action.params.type, 'up', action.params.row, this.fakeIDMin);
+      else if (actionType === EditorAction.TABLE_INSERT_DOWN) this.fakeIDMin -= (this.viewToEdit as ViewTable).insertRow(action.params.type, 'down', action.params.row, this.fakeIDMin);
+      else if (actionType === EditorAction.TABLE_DELETE_COLUMN) (this.viewToEdit as ViewTable).deleteColumn(action.params);
+      else if (actionType === EditorAction.TABLE_DELETE_ROW) (this.viewToEdit as ViewTable).deleteRow(action.params.type, action.params.row);
+      else if (actionType === EditorAction.TABLE_MOVE_LEFT) (this.viewToEdit as ViewTable).moveColumn('left', action.params);
+      else if (actionType === EditorAction.TABLE_MOVE_RIGHT) (this.viewToEdit as ViewTable).moveColumn('right', action.params);
+      else if (actionType === EditorAction.TABLE_MOVE_UP) (this.viewToEdit as ViewTable).moveRow(action.params.type, 'up', action.params.row);
+      else if (actionType === EditorAction.TABLE_MOVE_DOWN) (this.viewToEdit as ViewTable).moveRow(action.params.type, 'down', action.params.row);
+    }
+
+
+    this.updateView(this.viewToEdit);
+    this.toolbarBtnClicked('edit-layout');
+
+    if (type === 'table' && action.action === EditorAction.TABLE_EDIT_ROW) this.toolbarBtnClicked('edit-settings', action.params.type === 'header' ?
+      (this.viewToEdit as ViewTable).headerRows[action.params.row] :
+      (this.viewToEdit as ViewTable).rows[action.params.row]);
   }
 
 
