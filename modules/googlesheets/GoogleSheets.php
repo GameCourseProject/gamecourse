@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Plugin;
+namespace Modules\GoogleSheets;
 
 use GameCourse\GoogleHandler;
 use GameCourse\Core;
@@ -8,7 +8,7 @@ use GameCourse\Module;
 use GameCourse\User;
 use GameCourse\CourseUser;
 
-class GoogleSheets
+class GoogleSheetsModule
 {
     private $courseId;
     private $spreadsheetId;

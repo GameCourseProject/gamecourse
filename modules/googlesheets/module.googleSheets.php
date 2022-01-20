@@ -141,7 +141,7 @@ class GoogleSheets extends Module
         } else {
             $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
             if ($googleSheetsVars){
-                $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
+                $result = GoogleSheetsModule::checkConnection($googleSheetsVars["course"]);
                 if ($result) {
                     new CronJob("GoogleSheets", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_google_sheets", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);

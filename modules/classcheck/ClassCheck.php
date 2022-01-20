@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Plugin;
+namespace Modules\ClassCheck;
 
 use GameCourse\Core;
 use GameCourse\User;
@@ -8,7 +8,7 @@ use GameCourse\CourseUser;
 use GameCourse\Course;
 
 
-class ClassCheck
+class ClassCheckModule
 {
     private $courseId;
 

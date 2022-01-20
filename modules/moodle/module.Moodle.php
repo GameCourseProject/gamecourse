@@ -98,7 +98,7 @@ class Moodle extends Module
             $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
             if ($moodleVars){
                 //verificar ligaçao à bd
-                $result = \Modules\Plugin\Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
+                $result = MoodleModule::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
                 if($result){
                     new CronJob("Moodle", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_moodle", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);

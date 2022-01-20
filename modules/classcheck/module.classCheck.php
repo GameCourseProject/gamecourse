@@ -69,7 +69,7 @@ class ClassCheck extends Module
 
             $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
             if ($classCheckVars){
-                $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
+                $result = ClassCheckModule::checkConnection($classCheckVars["tsvCode"]);
                 if ($result){
                     new CronJob("ClassCheck", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_class_check", ["isEnabled" => 1, "periodicityNumber" =>$vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);

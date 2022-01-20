@@ -79,7 +79,7 @@ class GoogleSheets
         $token = $this->getTokenFromDB();
         return GoogleHandler::checkToken($credentials, $token, $code, $this->courseId);
     }
-
+/*
     public function saveTokenToDB($code = null)
     {
         $response = $this->handleToken($code);
@@ -97,7 +97,7 @@ class GoogleSheets
             );
             Core::$systemDB->update("config_google_sheets", $arrayToDB, ["course" => $this->courseId]);
         }
-    }
+    }*/
 
     public function getDBConfigValues()
     {
