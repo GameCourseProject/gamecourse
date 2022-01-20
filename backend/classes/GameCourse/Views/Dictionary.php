@@ -1253,7 +1253,7 @@ class Dictionary
     public static function registerLibrary(?string $moduleId, string $libraryName, string $description)
     {
         $query = ["name" => $libraryName];
-        if ($moduleId) $query[] = ["moduleId" => $moduleId];
+        if ($moduleId) $query = array_merge($query, ["moduleId" => $moduleId]);
 
         $data = [
             "moduleId" => $moduleId,
