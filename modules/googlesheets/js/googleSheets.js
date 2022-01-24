@@ -128,7 +128,7 @@ function googleSheetsPersonalizedConfig($scope, $element, $smartboards, $compile
             row.append('<span >' + title + '</span>');
             if (model == "credentials") {
                 row.append('<input class="config_input plugin" type="file" id="newList2" onchange="angular.element(this).scope().uploadCredentials()">');
-                row.append('<button class="button small" style="margin-left: 250px; margin-top: -35px" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
+                row.append('<button class="button small" ng-click="saveCredentials()">Upload and Authenticate</button><br>');
             } else if (model == "sheetName") {
                 row.attr('id', 'sheet_names_row');
                 $scope.numberGoogleSheets = 0;

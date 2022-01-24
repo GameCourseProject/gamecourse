@@ -103,8 +103,8 @@ function moodlePersonalizedConfig($scope, $element, $smartboards, $compile) {
         row2.append('<span>Periodicity: </span>');
         row2.append('<input class="config_input" ng-init="moodleVarsPeriodicity.number" ng-model="moodleVarsPeriodicity.number" type="number" id="moodlePeriodicidade1"  min="0" max="59">');
         row2.append('<select class="form-control config_input" style="margin-left: 180px; margin-top: -30px" ng-model="moodleVarsPeriodicity.time" id="moodlePeriodicidade2" ng-options="option.name for option in moodleVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(moodleVarsPeriodicity.plugin)" ></select >');
-        row2.append('<button style="margin-right:2px;background-color:green; margin-top: 30px" class="button small" ng-click="enableMoodle()">Enable Moodle</button>');
-        row2.append('<button class="button small" style= "background-color:red;margin-top: 30px" ng-click="disableMoodle()">Disable Moodle</button><br>');
+        row2.append('<button style="margin-right:2px; margin-top: 30px" class="button small" ng-click="enableMoodle()">Enable Moodle</button>');
+        row2.append('<button class="button small" style= "margin-top: 30px" ng-click="disableMoodle()">Disable Moodle</button><br>');
         moodleconfigSectionPeriodicity.append(row2);
         moodleconfigurationSection.append(moodleconfigSectionPeriodicity);
 
