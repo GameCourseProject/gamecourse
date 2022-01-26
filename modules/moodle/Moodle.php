@@ -11,7 +11,7 @@ use GameCourse\CourseUser;
 use GameCourse\Course;
 use mysqli;
 
-class MoodleModule
+class Moodle
 {
     private $dbserver; //"db.rnl.tecnico.ulisboa.pt";
     private $dbuser; //"pcm_moodle";

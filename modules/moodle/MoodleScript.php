@@ -14,7 +14,7 @@ use GameCourse\Course;
 
 Core::init();
 
-$moodle = new MoodleModule($argv[1]);
+$moodle = new Moodle($argv[1]);
 
 //logs primeiro porque é o que tem mais registos
 $values = $moodle->getLogsNew();

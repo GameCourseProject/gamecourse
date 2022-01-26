@@ -8,7 +8,7 @@ use GameCourse\CourseUser;
 use GameCourse\Course;
 
 
-class ClassCheckModule
+class ClassCheck
 {
     private $courseId;
 

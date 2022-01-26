@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Plugin;
+namespace Modules\GoogleSheets;
 
 chdir('/var/www/html/gamecourse');
 include 'classes/ClassLoader.class.php';
@@ -10,11 +10,10 @@ include 'modules/googlesheets/GoogleSheets.php';
 
 use GameCourse\Core;
 use GameCourse\Course;
-use Modules\GoogleSheets\GoogleSheetsModule;
 
 Core::init();
 
-$googleSheets = new GoogleSheetsModule($argv[1]);
+$googleSheets = new GoogleSheets($argv[1]);
 if($googleSheets->readGoogleSheets()){
     Course::newExternalData($argv[1]);
 }

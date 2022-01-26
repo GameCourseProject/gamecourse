@@ -11,7 +11,7 @@ use GameCourse\CourseUser;
 use GameCourse\User;
 use GameCourse\CronJob;
 
-class Moodle extends Module
+class MoodleModule extends Module
 {
     private $moodle;
 
@@ -98,7 +98,7 @@ class Moodle extends Module
             $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
             if ($moodleVars){
                 //verificar ligaçao à bd
-                $result = MoodleModule::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
+                $result = Moodle::checkConnection($moodleVars["dbServer"], $moodleVars["dbUser"], $moodleVars["dbPass"], $moodleVars["dbName"], $moodleVars["dbPort"]);
                 if($result){
                     new CronJob("Moodle", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_moodle", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
@@ -190,7 +190,7 @@ class Moodle extends Module
     public function init(){
 
         $this->addTables("moodle", "config_moodle", "ConfigMoodle");
-        $this->moodle = new Moodle(API::getValue('course'));
+        $this->moodle = new MoodleModule(API::getValue('course'));
 
          API::registerFunction('settings', 'courseMoodle', function () {
              API::requireCourseAdminPermission();
@@ -279,7 +279,7 @@ ModuleLoader::registerModule(array(
         array('id' => 'views', 'mode' => 'hard')
     ),
     'factory' => function() {
-        return new Moodle();
+        return new MoodleModule();
     }
 ));
 

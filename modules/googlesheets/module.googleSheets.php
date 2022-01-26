@@ -12,7 +12,7 @@ use GameCourse\CourseUser;
 use GameCourse\User;
 use GameCourse\CronJob;
 
-class GoogleSheets extends Module
+class GoogleSheetsModule extends Module
 {
     private $googleSheets;
 
@@ -141,7 +141,7 @@ class GoogleSheets extends Module
         } else {
             $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
             if ($googleSheetsVars){
-                $result = GoogleSheetsModule::checkConnection($googleSheetsVars["course"]);
+                $result = GoogleSheets::checkConnection($googleSheetsVars["course"]);
                 if ($result) {
                     new CronJob("GoogleSheets", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_google_sheets", ["isEnabled" => 1, "periodicityNumber" => $vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
@@ -232,7 +232,7 @@ class GoogleSheets extends Module
     {
 
         $this->addTables("googlesheets", "config_google_sheets", "ConfigGoogleSheets");
-        $this->googleSheets = new GoogleSheets(API::getValue('course'));
+        $this->googleSheets = new GoogleSheetsModule(API::getValue('course'));
 
         API::registerFunction('settings', 'courseGoogleSheets', function () {
             API::requireCourseAdminPermission();
@@ -241,7 +241,7 @@ class GoogleSheets extends Module
             if (API::hasKey('googleSheetsPeriodicity')) {
                 $googleSheets = API::getValue('googleSheetsPeriodicity');
                 //place to verify input values
-                if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
+                if ($this->setCronJob( $courseId, $googleSheets)) {
                     API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
                 } else {
                     API::error("Please select a periodicity");
@@ -251,7 +251,7 @@ class GoogleSheets extends Module
             if (API::hasKey('disableGoogleSheetsPeriodicity')) {
                 $googleSheets = API::getValue('googleSheetsPeriodicity');
                 //place to verify input values
-                if ($this->removeCronJob("GoogleSheets", $courseId)) {
+                if ($this->removeCronJob( $courseId)) {
                     API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
                 } else {
                     API::error("Please select a periodicity");
@@ -342,7 +342,7 @@ ModuleLoader::registerModule(array(
         array('id' => 'views', 'mode' => 'hard')
     ),
     'factory' => function () {
-        return new GoogleSheets();
+        return new GoogleSheetsModule();
     }
 ));
 

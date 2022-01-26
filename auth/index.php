@@ -6,7 +6,7 @@ chdir('..');
 include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
-use Modules\GoogleSheets\GoogleSheetsModule;
+use Modules\GoogleSheets\GoogleSheets;
 
 Core::denyCLI();
 if (Core::requireSetup(false))
@@ -17,7 +17,7 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
     $code = $_GET["code"];
     if ($receivedCourse && $code) {
         Core::init();
-        $gs = new GoogleSheetsModule($receivedCourse); // alterar para GoogleSheets se quisermos meter o plugin
+        $gs = new GoogleSheets($receivedCourse); // alterar para GoogleSheets se quisermos meter o plugin
         $gs->saveTokenToDB($code);
     }
     echo "<script>window.close();window.opener.location.reload(false);</script>";

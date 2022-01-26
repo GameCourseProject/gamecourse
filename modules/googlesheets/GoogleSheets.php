@@ -8,7 +8,7 @@ use GameCourse\Module;
 use GameCourse\User;
 use GameCourse\CourseUser;
 
-class GoogleSheetsModule
+class GoogleSheets
 {
     private $courseId;
     private $spreadsheetId;

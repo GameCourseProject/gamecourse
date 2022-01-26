@@ -11,9 +11,10 @@ use GameCourse\CourseUser;
 use GameCourse\User;
 use GameCourse\CronJob;
 
-class ClassCheck extends Module
+class ClassCheckModule extends Module
 {
     private $classCheck;
+
 
     private function getClassCheckVars($courseId)
     {
@@ -69,7 +70,7 @@ class ClassCheck extends Module
 
             $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
             if ($classCheckVars){
-                $result = ClassCheckModule::checkConnection($classCheckVars["tsvCode"]);
+                $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
                 if ($result){
                     new CronJob("ClassCheck", $courseId, $vars['number'], $vars['time']['name']);
                     Core::$systemDB->update("config_class_check", ["isEnabled" => 1, "periodicityNumber" =>$vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
@@ -167,7 +168,7 @@ class ClassCheck extends Module
              if (API::hasKey('classCheckPeriodicity')) {
                  $classCheck = API::getValue('classCheckPeriodicity');
                  //place to verify input values
-                 $response = $this->setCronJob("ClassCheck", $courseId, $classCheck);
+                 $response = $this->setCronJob( $courseId, $classCheck);
                  if ($response["result"]) {
                      API::response(["updatedData" => ["Plugin Class Check enabled"]]);
                  } else {
@@ -177,7 +178,7 @@ class ClassCheck extends Module
              }
              if (API::hasKey('disableClassCheckPeriodicity')) {
                  //place to verify input values
-                 $response = $this->removeCronJob("ClassCheck", $courseId);
+                 $response = $this->removeCronJob($courseId);
                  if ($response["result"]) {
                      API::response(["updatedData" => ["Plugin Class Check disabled"]]);
                  } else {
@@ -247,7 +248,7 @@ ModuleLoader::registerModule(array(
         array('id' => 'views', 'mode' => 'hard')
     ),
     'factory' => function() {
-        return new ClassCheck();
+        return new ClassCheckModule();
     }
 ));
 

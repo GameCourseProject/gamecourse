@@ -14,7 +14,7 @@ use GameCourse\Course;
 
 Core::init();
 
-$cc = new ClassCheckModule($argv[1]);
+$cc = new ClassCheck($argv[1]);
 $code = $cc->getDBConfigValues();
 if ($code != null) {
     if($cc->readAttendance($code)){
