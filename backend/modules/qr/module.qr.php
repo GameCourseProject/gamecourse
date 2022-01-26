@@ -6,52 +6,70 @@ use GameCourse\Core;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
-class QR extends Module {
-    
+class QR extends Module
+{
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function init() {
+        $this->setupData();
+        $this->initDictionary();
+    }
+
+    public function initDictionary()
+    {
+        // FIXME: shouldn't be here; this is for Dictionary functions
+        API::registerFunction('settings', 'qrError', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+            $errors = Core::$systemDB->selectMultiple("qr_error q left join game_course_user u on q.user = u.id",
+                ["course" => $courseId],
+                "date, studentNumber, msg, qrkey",
+                "date DESC");
+            API::response(["errors" => $errors]);
+        });
+    }
+
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/');
     }
 
-    public function init() {
+    public function setupData(){
         $this->addTables("qr", "qr_code");
-
-        API::registerFunction('settings', 'qrError', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-            $errors = Core::$systemDB->selectMultiple("qr_error q left join game_course_user u on q.user = u.id", 
-            ["course" => $courseId], 
-            "date, studentNumber, msg, qrkey", 
-            "date DESC");
-            API::response(["errors" => $errors]);
-        });
     }
-    public function is_configurable(){
-        return true;
-    }
-    public function has_personalized_config (){ return true;}
-    public function get_personalized_function(){
-        return "qrPersonalizedConfig";
-    }
-    
-    public function has_general_inputs (){ return false; }
-    public function has_listing_items (){ return  false; }
 
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
     }
 
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Module Config ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function is_configurable(): bool {
+        return true;
+    }
+
+    public function has_personalized_config(): bool
+    {
+        return true;
+    }
+
+    public function get_personalized_function(): string
+    {
+        return "qrPersonalizedConfig";
+    }
+
     public function deleteDataRows($courseId){
         
     }
-
-    public function dropTables($moduleName)
-    {
-        parent::dropTables($moduleName);
-    }
-    
 }
+
 ModuleLoader::registerModule(array(
     'id' => 'qr',
     'name' => 'QR',

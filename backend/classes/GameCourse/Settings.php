@@ -3,6 +3,7 @@ namespace GameCourse;
 
 class Settings {
 
+    // FIXME: prob can delete; after refactor not being used
     public static function addTab($item) {
         static::$tabs[] = $item;
     }

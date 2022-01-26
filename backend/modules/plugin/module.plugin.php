@@ -1,5 +1,4 @@
 <?php
-
 namespace Modules\Plugin;
 
 use GameCourse\Module;
@@ -38,7 +37,310 @@ class Plugin extends Module
     // private $range = 'A1:E18'; //$range = 'Folha1!A1:B2';
 
 
-    private function getMoodleVars($courseId)
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function init()
+    {
+        $this->setupData();
+        $this->initDictionary();
+    }
+
+    public function initDictionary()
+    {
+        // FIXME: shouldn't be here; only Dictionary functions
+        //do not touch bellow
+        //settings page
+        API::registerFunction('settings', 'coursePlugin', function () {
+            API::requireCourseAdminPermission();
+            $courseId = API::getValue('course');
+
+            if (API::hasKey('fenix')) {
+                $fenix = API::getValue('fenix');
+                $lastFileUploaded = count($fenix) - 1;
+                if(count($fenix) == 0){
+                    API::error("Please fill the mandatory fields");
+                }
+                //place to verify input values
+                $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
+                if (!$resultFenix) {
+                    API::response(["updatedData" => ["Variables for fenix saved"]]);
+                } else {
+                    API::error($resultFenix);
+                }
+
+                return;
+            }
+            if (API::hasKey('moodle')) {
+                $moodle = API::getValue('moodle');
+                //place to verify input values
+                if ($this->setMoodleVars($courseId, $moodle)) {
+                    API::response(["updatedData" => ["Variables for moodle saved"]]);
+                } else {
+                    API::error("Please fill the mandatory fields");
+                }
+                return;
+            }
+            if (API::hasKey('moodlePeriodicity')) {
+                $moodle = API::getValue('moodlePeriodicity');
+                //place to verify input values
+                $response = $this->setCronJob("Moodle", $courseId, $moodle);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Moodle enabled"]]);
+                } else {
+                    API::error($response["errorMessage"]);
+                }
+                return;
+            }
+            if (API::hasKey('classCheckPeriodicity')) {
+                $classCheck = API::getValue('classCheckPeriodicity');
+                //place to verify input values
+                $response = $this->setCronJob("ClassCheck", $courseId, $classCheck);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Class Check enabled"]]);
+                } else {
+                    API::error($response["errorMessage"]);
+                }
+                return;
+            }
+            if (API::hasKey('googleSheetsPeriodicity')) {
+                $googleSheets = API::getValue('googleSheetsPeriodicity');
+                //place to verify input values
+                if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
+                    API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                } else {
+                    API::error("Please select a periodicity");
+                }
+                return;
+            }
+            if (API::hasKey('disableMoodlePeriodicity')) {
+                $moodle = API::getValue('moodlePeriodicity');
+                //place to verify input values
+                $response = $this->removeCronJob("Moodle", $courseId);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Moodle disabled"]]);
+                } else {
+                    API::error($response["errorMessage"]);
+                }
+                return;
+            }
+            if (API::hasKey('disableClassCheckPeriodicity')) {
+                //place to verify input values
+                $response = $this->removeCronJob("ClassCheck", $courseId);
+                if ($response["result"]) {
+                    API::response(["updatedData" => ["Plugin Class Check disabled"]]);
+                } else {
+                    API::error([$response["errorMessage"]]);
+                }
+                return;
+            }
+            if (API::hasKey('disableGoogleSheetsPeriodicity')) {
+                $googleSheets = API::getValue('googleSheetsPeriodicity');
+                //place to verify input values
+                if ($this->removeCronJob("GoogleSheets", $courseId)) {
+                    API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
+                } else {
+                    API::error("Please select a periodicity");
+                }
+                return;
+            }
+            if (API::hasKey('classCheck')) {
+                $classCheck = API::getValue('classCheck');
+                //place to verify input values
+                if ($this->setClassCheckVars($courseId, $classCheck)) {
+                    API::response(["updatedData" => ["Variables for Class check saved"]]);
+                } else {
+                    API::error("Please fill the mandatory fields");
+                }
+
+                return;
+            }
+            if (API::hasKey('credentials')) {
+                $credentials = API::getValue('credentials');
+                if ($this->setGSCredentials($courseId, $credentials)) {
+                    API::response(["authUrl" => $this->getAuthUrl($courseId)]);
+                } else {
+                    API::error("Please select a JSON file");
+                }
+                return;
+            }
+
+
+            if (API::hasKey('googleSheets')) {
+
+
+                $googleSheets = API::getValue('googleSheets');
+                //place to verify input values
+                if ($this->setGoogleSheetsVars($courseId, $googleSheets)) {
+                    API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
+                } else {
+                    API::error("Please fill the mandatory fields");
+                }
+
+                return;
+            }
+
+            //All variables
+            $moodleVars = $this->getMoodleVars($courseId);
+            $classCheckVars = $this->getClassCheckVars($courseId);
+            $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
+            API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
+        });
+    }
+
+    public function setupResources()
+    {
+        parent::addResources('js/');
+        parent::addResources('css/');
+    }
+
+    public function setupData(){
+        //if classcheck is enabled
+        $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
+        $this->classCheck = new ClassCheck(API::getValue('course'));
+
+        //if googleSheets is enabled
+        $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
+        $this->googleSheets = new GoogleSheets(API::getValue('course'));
+
+        //if moodle is enabled
+        $this->addTables("plugin", "config_moodle", "ConfigMoodle");
+        $this->moodle = new Moodle(API::getValue('course'));
+    }
+
+    public function update_module($module)
+    {
+        //obter o ficheiro de configuração do module para depois o apagar
+        $configFile = "modules/plugin/config.json";
+        $contents = array();
+        if (file_exists($configFile)) {
+            $contents = json_decode(file_get_contents($configFile));
+            unlink($configFile);
+        }
+        //verificar compatibilidade
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Module Config ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function moduleConfigJson($courseId): array
+    {
+        $pluginArr = array();
+
+        if (Core::$systemDB->tableExists("config_moodle")) {
+            $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $courseId], "*");
+            if ($moodleVarsDB_) {
+                $moodleArray = array();
+                foreach ($moodleVarsDB_ as $moodleVarsDB) {
+                    unset($moodleVarsDB["course"]);
+                    unset($moodleVarsDB["id"]);
+                    array_push($moodleArray, $moodleVarsDB);
+                }
+                $pluginArr["config_moodle"] = $moodleArray;
+            }
+        }
+        if (Core::$systemDB->tableExists("config_class_check")) {
+            $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $courseId], "*");
+            if ($classCheckDB_) {
+                $ccArray = array();
+                foreach ($classCheckDB_ as $classCheckDB) {
+                    unset($classCheckDB["id"]);
+                    array_push($ccArray, $classCheckDB);
+                }
+                $pluginArr["config_class_check"] = $ccArray;
+            }
+        }
+        if (Core::$systemDB->tableExists("config_google_sheets")) {
+            $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $courseId], "*");
+            if ($googleSheetsDB_) {
+                $gcArray = array();
+                foreach ($googleSheetsDB_ as $googleSheetsDB) {
+                    unset($googleSheetsDB["id"]);
+                    array_push($gcArray, $googleSheetsDB);
+                }
+                $pluginArr["config_google_sheets"] = $gcArray;
+            }
+        }
+        return $pluginArr;
+    }
+
+    public function readConfigJson($courseId, $tables, $update=false): bool
+    {
+        $tableName = array_keys($tables);
+        $i = 0;
+        foreach ($tables as $table) {
+            foreach ($table as $entry) {
+                $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
+                if($update && $existingCourse){
+                    Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
+                }else{
+                    $entry["course"] = $courseId;
+                    Core::$systemDB->insert($tableName[$i], $entry);
+                }
+            }
+            $i++;
+        }
+        return false;
+    }
+
+    public function is_configurable(): bool
+    {
+        return true;
+    }
+
+    public function has_personalized_config(): bool
+    {
+        return true;
+    }
+
+    public function get_personalized_function(): string
+    {
+        return "pluginPersonalizedConfig";
+    }
+
+    public function has_general_inputs(): bool
+    {
+        return false;
+    }
+
+    public function has_listing_items(): bool {
+        return  false;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------ Database Manipulation ------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    public function deleteDataRows($courseId)
+    {
+        new CronJob("Moodle", $courseId, null, null, true);
+        new CronJob("ClassCheck", $courseId, null, null, true);
+        new CronJob("GoogleSheets", $courseId, null, null, true);
+
+        Core::$systemDB->delete("config_google_sheets", ["course" => $courseId]);
+        Core::$systemDB->delete("config_class_check", ["course" => $courseId]);
+        Core::$systemDB->delete("config_moodle", ["course" => $courseId]);
+    }
+
+    public function dropTables($moduleName)
+    {
+        $courseId = API::getValue('course');
+        new CronJob("Moodle", $courseId, null, null, true);
+        new CronJob("ClassCheck", $courseId, null, null, true);
+        new CronJob("GoogleSheets", $courseId, null, null, true);
+        parent::dropTables($moduleName);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    private function getMoodleVars($courseId): array
     {
         $moodleVarsDB = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
 
@@ -80,7 +382,8 @@ class Plugin extends Module
 
         return $moodleVars;
     }
-    private function getClassCheckVars($courseId)
+
+    private function getClassCheckVars($courseId): array
     {
         $classCheckDB = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
 
@@ -106,11 +409,13 @@ class Plugin extends Module
 
         return  $classCheckVars;
     }
+
     private function getAuthUrl($courseId)
     {
         return Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "authUrl");
     }
-    private function getGoogleSheetsVars($courseId)
+
+    private function getGoogleSheetsVars($courseId): array
     {
         $googleSheetsDB = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
 
@@ -155,8 +460,7 @@ class Plugin extends Module
         return  $googleSheetsVars;
     }
 
-
-    private function setFenixVars($courseId, $fenix)
+    private function setFenixVars($courseId, $fenix): string
     {
         $course = new Course($courseId);
         $year = $course->getData("year");
@@ -237,7 +541,8 @@ class Plugin extends Module
         }
         return "";
     }
-    private function setMoodleVars($courseId, $moodleVar)
+
+    private function setMoodleVars($courseId, $moodleVar): bool
     {
         $moodleVars = Core::$systemDB->select("config_moodle", ["course" => $courseId], "*");
 
@@ -266,7 +571,7 @@ class Plugin extends Module
         }
     }
 
-    private function setClassCheckVars($courseId, $classCheck)
+    private function setClassCheckVars($courseId, $classCheck): bool
     {
         $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
 
@@ -283,7 +588,8 @@ class Plugin extends Module
             return true;
         }
     }
-    private function setGSCredentials($courseId, $gsCredentials)
+
+    private function setGSCredentials($courseId, $gsCredentials): bool
     {
         if(!$gsCredentials){
             return false;
@@ -318,7 +624,8 @@ class Plugin extends Module
             return true;
         }
     }
-    private function setGoogleSheetsVars($courseId, $googleSheets)
+
+    private function setGoogleSheetsVars($courseId, $googleSheets): bool
     {
         $googleSheetsVars = Core::$systemDB->select("config_google_sheets", ["course" => $courseId], "*");
         $names = "";
@@ -408,7 +715,8 @@ class Plugin extends Module
         }
     }
 
-    private function removeCronJob($script, $courseId){
+    private function removeCronJob($script, $courseId): array
+    {
         $tableName = "";
         if ($script == "Moodle") {
             $tableName = "config_moodle";
@@ -446,268 +754,8 @@ class Plugin extends Module
             }
         }
     }
-
-    public function setupResources()
-    {
-        parent::addResources('js/');
-        parent::addResources('css/');
-    }
-
-    public function moduleConfigJson($courseId){
-        $pluginArr = array();
-        
-        if (Core::$systemDB->tableExists("config_moodle")) {
-            $moodleVarsDB_ = Core::$systemDB->selectMultiple("config_moodle", ["course" => $courseId], "*");
-            if ($moodleVarsDB_) {
-                $moodleArray = array();
-                foreach ($moodleVarsDB_ as $moodleVarsDB) {
-                    unset($moodleVarsDB["course"]);
-                    unset($moodleVarsDB["id"]);
-                    array_push($moodleArray, $moodleVarsDB);
-                }
-                $pluginArr["config_moodle"] = $moodleArray;
-            }
-        }
-        if (Core::$systemDB->tableExists("config_class_check")) {
-            $classCheckDB_ = Core::$systemDB->selectMultiple("config_class_check", ["course" => $courseId], "*");
-            if ($classCheckDB_) {
-                $ccArray = array();
-                foreach ($classCheckDB_ as $classCheckDB) {
-                    unset($classCheckDB["id"]);
-                    array_push($ccArray, $classCheckDB);
-                }
-                $pluginArr["config_class_check"] = $ccArray;
-            }
-        }
-        if (Core::$systemDB->tableExists("config_google_sheets")) {
-            $googleSheetsDB_ = Core::$systemDB->selectMultiple("config_google_sheets", ["course" => $courseId], "*");
-            if ($googleSheetsDB_) {
-                $gcArray = array();
-                foreach ($googleSheetsDB_ as $googleSheetsDB) {
-                    unset($googleSheetsDB["id"]);
-                    array_push($gcArray, $googleSheetsDB);
-                }
-                $pluginArr["config_google_sheets"] = $gcArray;
-            }
-        }
-        return $pluginArr;
-    }
-
-    public function readConfigJson($courseId, $tables, $update=false){
-        $tableName = array_keys($tables);
-        $i = 0;
-        foreach ($tables as $table) {
-            foreach ($table as $entry) {
-                $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
-                if($update && $existingCourse){
-                    Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
-                }else{
-                    $entry["course"] = $courseId;
-                    Core::$systemDB->insert($tableName[$i], $entry);
-                }
-            }
-        $i++;
-        }
-        return false;
-    }
-
-    public function init()
-    {
-        //if classcheck is enabled
-        $this->addTables("plugin", "config_class_check", "ConfigClassCheck");
-        $this->classCheck = new ClassCheck(API::getValue('course'));
-        
-        //if googleSheets is enabled
-        $this->addTables("plugin", "config_google_sheets", "ConfigGoogleSheets");
-        $this->googleSheets = new GoogleSheets(API::getValue('course'));
-        
-        //if moodle is enabled
-        $this->addTables("plugin", "config_moodle", "ConfigMoodle");
-        $this->moodle = new Moodle(API::getValue('course'));
-
-        //do not touch bellow
-        //settings page
-        API::registerFunction('settings', 'coursePlugin', function () {
-            API::requireCourseAdminPermission();
-            $courseId = API::getValue('course');
-
-            if (API::hasKey('fenix')) {
-                $fenix = API::getValue('fenix');
-                $lastFileUploaded = count($fenix) - 1;
-                if(count($fenix) == 0){
-                    API::error("Please fill the mandatory fields");
-                }
-                //place to verify input values
-                $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
-                if (!$resultFenix) {
-                    API::response(["updatedData" => ["Variables for fenix saved"]]);
-                } else {
-                    API::error($resultFenix);
-                }
-
-                return;
-            }
-            if (API::hasKey('moodle')) {
-                $moodle = API::getValue('moodle');
-                //place to verify input values
-                if ($this->setMoodleVars($courseId, $moodle)) {
-                    API::response(["updatedData" => ["Variables for moodle saved"]]);
-                } else {
-                    API::error("Please fill the mandatory fields");
-                }
-                return;
-            }
-            if (API::hasKey('moodlePeriodicity')) {
-                $moodle = API::getValue('moodlePeriodicity');
-                //place to verify input values
-                $response = $this->setCronJob("Moodle", $courseId, $moodle);
-                if ($response["result"]) {
-                    API::response(["updatedData" => ["Plugin Moodle enabled"]]);
-                } else {
-                    API::error($response["errorMessage"]);
-                }
-                return;
-            }
-            if (API::hasKey('classCheckPeriodicity')) {
-                $classCheck = API::getValue('classCheckPeriodicity');
-                //place to verify input values
-                $response = $this->setCronJob("ClassCheck", $courseId, $classCheck);
-                if ($response["result"]) {
-                    API::response(["updatedData" => ["Plugin Class Check enabled"]]);
-                } else {
-                    API::error($response["errorMessage"]);
-                }
-                return;
-            }
-            if (API::hasKey('googleSheetsPeriodicity')) {
-                $googleSheets = API::getValue('googleSheetsPeriodicity');
-                //place to verify input values
-                if ($this->setCronJob("GoogleSheets", $courseId, $googleSheets)) {
-                    API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
-                } else {
-                    API::error("Please select a periodicity");
-                }
-                return;
-            }
-             if (API::hasKey('disableMoodlePeriodicity')) {
-                $moodle = API::getValue('moodlePeriodicity');
-                //place to verify input values
-                $response = $this->removeCronJob("Moodle", $courseId);
-                if ($response["result"]) {
-                    API::response(["updatedData" => ["Plugin Moodle disabled"]]);
-                } else {
-                    API::error($response["errorMessage"]);
-                }
-                return;
-            }
-            if (API::hasKey('disableClassCheckPeriodicity')) {
-                //place to verify input values
-                $response = $this->removeCronJob("ClassCheck", $courseId);
-                if ($response["result"]) {
-                    API::response(["updatedData" => ["Plugin Class Check disabled"]]);
-                } else {
-                    API::error([$response["errorMessage"]]);
-                }
-                return;
-            }
-            if (API::hasKey('disableGoogleSheetsPeriodicity')) {
-                $googleSheets = API::getValue('googleSheetsPeriodicity');
-                //place to verify input values
-                if ($this->removeCronJob("GoogleSheets", $courseId)) {
-                    API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
-                } else {
-                    API::error("Please select a periodicity");
-                }
-                return;
-            }
-            if (API::hasKey('classCheck')) {
-                $classCheck = API::getValue('classCheck');
-                //place to verify input values
-                if ($this->setClassCheckVars($courseId, $classCheck)) {
-                    API::response(["updatedData" => ["Variables for Class check saved"]]);
-                } else {
-                    API::error("Please fill the mandatory fields");
-                }
-
-                return;
-            }
-            if (API::hasKey('credentials')) {
-                $credentials = API::getValue('credentials');
-                if ($this->setGSCredentials($courseId, $credentials)) {
-                    API::response(["authUrl" => $this->getAuthUrl($courseId)]);
-                } else {
-                    API::error("Please select a JSON file");
-                }
-                return;
-            }
-
-
-            if (API::hasKey('googleSheets')) {
-
-
-                $googleSheets = API::getValue('googleSheets');
-                //place to verify input values
-                if ($this->setGoogleSheetsVars($courseId, $googleSheets)) {
-                    API::response(["updatedData" => ["Variables for Google Sheets saved"]]);
-                } else {
-                    API::error("Please fill the mandatory fields");
-                }
-
-                return;
-            }
-
-            //All variables
-            $moodleVars = $this->getMoodleVars($courseId);
-            $classCheckVars = $this->getClassCheckVars($courseId);
-            $googleSheetsVars = $this->getGoogleSheetsVars($courseId);
-            API::response(array('moodleVars' => $moodleVars, 'classCheckVars' => $classCheckVars, 'googleSheetsVars' => $googleSheetsVars));
-        });
-    }
-
-    public function update_module($module)
-    {
-        //obter o ficheiro de configuração do module para depois o apagar
-        $configFile = "modules/plugin/config.json";
-        $contents = array();
-        if (file_exists($configFile)) {
-            $contents = json_decode(file_get_contents($configFile));
-            unlink($configFile);
-        }
-        //verificar compatibilidade
-    }
-
-    public function dropTables($moduleName)
-    {
-        $courseId = API::getValue('course');
-        new CronJob("Moodle", $courseId, null, null, true);
-        new CronJob("ClassCheck", $courseId, null, null, true);
-        new CronJob("GoogleSheets", $courseId, null, null, true);
-        parent::dropTables($moduleName);
-    }
-
-    public function deleteDataRows($courseId)
-    {
-        new CronJob("Moodle", $courseId, null, null, true);
-        new CronJob("ClassCheck", $courseId, null, null, true);
-        new CronJob("GoogleSheets", $courseId, null, null, true);
-
-        Core::$systemDB->delete("config_google_sheets", ["course" => $courseId]);
-        Core::$systemDB->delete("config_class_check", ["course" => $courseId]);
-        Core::$systemDB->delete("config_moodle", ["course" => $courseId]);
-    }
-    
-    public function is_configurable(){
-        return true;
-    }
-    public function has_personalized_config (){ return true;}
-    public function get_personalized_function(){
-        return "pluginPersonalizedConfig";
-    }
-    
-    public function has_general_inputs (){ return false; }
-    public function has_listing_items (){ return  false; }
-
 }
+
 ModuleLoader::registerModule(array(
     'id' => 'plugin',
     'name' => 'Plugin',

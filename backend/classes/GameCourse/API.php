@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse;
 
+use GameCourse\Views\Dictionary;
+
 class API {
     private static $functions = array();
     private static $requestModule;
@@ -42,16 +44,8 @@ class API {
     public static function gatherRequestInfo() {
         $values = null;
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (array_key_exists('uploadFile', $_GET)) {
-                if ($_SERVER['CONTENT_LENGTH'] <= 5000000)
-                    static::$uploadedFile = file_get_contents('php://input');
-                else {
-                    API::error('File too big, limit: 5MB', 413);
-                }
-            } else
-                $values = json_decode(file_get_contents('php://input'), true);
-        }
+        if ($_SERVER['REQUEST_METHOD'] == 'POST')
+            $values = json_decode(file_get_contents('php://input'), true);
                     
         if (!array_key_exists('module', $_GET))
             API::error('Must specify a module!');
@@ -67,12 +61,12 @@ class API {
         $values = ($values == null) ? $_GET : array_merge($values, $_GET);
            
         static::$values = $values;
- 
-        if (API::hasKey('course') && (is_int(API::getValue('course')) || ctype_digit(API::getValue('course')))) {
-            Course::getCourse(API::getValue('course'));
+
+        if (API::hasKey('courseId') && (is_int(API::getValue('courseId')) || ctype_digit(API::getValue('courseId')))) {
+            $courseId = API::getValue('courseId');
+            Course::getCourse($courseId);
+            Dictionary::$courseId = $courseId;
         }
-        
-        //Course::getCourse(1); // initializes the course
     }
 
     public static function processRequest() {

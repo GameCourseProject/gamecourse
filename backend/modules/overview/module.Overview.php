@@ -1,29 +1,33 @@
 <?php
+namespace Modules\Overview;
 
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Views;
 
-class Overview extends Module {
+class Overview extends Module
+{
+    const USERS_OVERVIEW_TEMPLATE = 'Users Overview - by overview';
 
-    const USERS_OVERVIEW_TEMPLATE_NAME = 'Users Overview - by overview';
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function init() {
+        $this->initTemplates();
+    }
+
+    public function initTemplates()
+    {
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::USERS_OVERVIEW_TEMPLATE))
+            Views::createTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/usersOverview.txt'), $courseId);
+    }
 
     public function setupResources() {
         parent::addResources('js/');
-    }
-
-    public function init() {
-        //page only meant for teachers
-        //Core::addNavigation( 'Overview', 'course.overview', true,true);
-
-        //$viewHandler = $viewsModule->getViewHandler();
-        //$viewHandler->createPageOrTemplateIfNew('Overview',"page","ROLE_SINGLE");
-
-        if (!Views::templateExists($this->getCourseId(), self::USERS_OVERVIEW_TEMPLATE_NAME))
-            Views::createTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE_NAME, file_get_contents(__DIR__ . '/usersOverview.txt'), $this->getCourseId());
-    }
-    public function is_configurable(){
-        return false;
     }
 
     public function update_module($compatibleVersions)

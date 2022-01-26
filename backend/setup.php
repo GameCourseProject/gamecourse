@@ -9,6 +9,7 @@ include 'classes/ClassLoader.class.php';
 
 use GameCourse\Views\Dictionary;
 use MagicDB\SQLDB;
+use Utils;
 
 require_once 'config.php';
 require_once 'cors.php';
@@ -35,7 +36,7 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
 
     $courseId = 1;
     $db->insert("course", ["name" => $courseName, "id" => $courseId, "color" => $courseColor]);
-    \Utils::deleteDirectory(COURSE_DATA_FOLDER, array(COURSE_DATA_FOLDER . DIRECTORY_SEPARATOR . 'defaultData'), false);
+    Utils::deleteDirectory(COURSE_DATA_FOLDER, array(COURSE_DATA_FOLDER . DIRECTORY_SEPARATOR . 'defaultData'), false);
     $dataFolder = Course::createCourseDataFolder($courseId, $courseName);
     $roleId = Course::insertBasicCourseData($db, $courseId);
 
@@ -63,14 +64,14 @@ if (array_key_exists('course-name', $_POST) && array_key_exists('teacher-id', $_
     $metadataFile = "autogame/config/config_" . strval($courseId) . ".txt";
     $logsFile = "logs/log_course_" . strval($courseId) . ".txt";
     mkdir($rulesfolder);
-    \Utils::deleteDirectory('logs');
+    Utils::deleteDirectory('logs');
     mkdir($logsFolder);
-    \Utils::deleteDirectory('autogame/imported-functions', array(), false);
+    Utils::deleteDirectory('autogame/imported-functions', array(), false);
     file_put_contents($functionsFileDefault, $defaults);
     mkdir($functionsFolder);
 
     file_put_contents($functionsFolder . $defaultFunctionsFile, $defaults);
-    \Utils::deleteDirectory('autogame/config', array('autogame/config' . DIRECTORY_SEPARATOR . 'samples'), false);
+    Utils::deleteDirectory('autogame/config', array('autogame/config' . DIRECTORY_SEPARATOR . 'samples'), false);
     file_put_contents($metadataFile, "");
     file_put_contents($logsFile, "");
 

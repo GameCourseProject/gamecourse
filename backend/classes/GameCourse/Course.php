@@ -7,6 +7,7 @@ include 'GameRules.php';
 use GameRules;
 use GameCourse\Views\Views;
 use GameCourse\Views\ViewHandler;
+use Utils;
 
 class Course
 {
@@ -320,7 +321,7 @@ class Course
     //goes from higher in the hierarchy to lower (eg: Teacher > Student), maybe shoud add option to use reverse order
     public function goThroughRoles($func, &...$data)
     {
-        \Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
+        Utils::goThroughRoles($this->getRolesHierarchy(), $func, ...$data);
     }
 
     public static function getCourse($cid, $initModules = true): Course

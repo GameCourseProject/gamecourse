@@ -2,6 +2,7 @@
 
 namespace GameCourse;
 
+use Utils;
 use ZipArchive;
 
 class RuleSystem
@@ -464,7 +465,7 @@ class RuleSystem
     public function clearRuleOutput() {
         // clears the output file used by the rule testing mechanism to
         // return errors
-        Module::rrmdir($this->ruletestfolder);
+        Utils::deleteDirectory($this->ruletestfolder);
     }
 
     // -------------- RULE OPERATIONS --------------

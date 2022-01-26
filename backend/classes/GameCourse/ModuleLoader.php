@@ -75,7 +75,7 @@ class ModuleLoader {
         static::$firstScan = true;
     }
 
-    public static function initModules($course) {
+    public static function initModules(Course $course) {
         if (!static::$firstScan)
             static::scanModules(); 
             
@@ -150,20 +150,24 @@ class ModuleLoader {
         foreach ($loadedModules as $moduleId => $module) {
             $moduleInfo = static::$modules[$moduleId];
             $module = $moduleInfo['factory']();
-            $module->parent = $course;
-
-            $module->id = $moduleInfo['id'];
-            $module->dir = $moduleInfo['dir'];
-            $module->name = $moduleInfo['name'];
-            $module->description = $moduleInfo['description'];
-            $module->version = $moduleInfo['version'];
-            $module->compatibleVersions = $moduleInfo['compatibleVersions'];
-            $module->dependencies = $moduleInfo['dependencies'];
+            self::setModuleInfo($module, $moduleInfo, $course);
 
             $module->init($course->getId());
             $module->setupResources();
             $course->addModule($module);
         }
+    }
+
+    public static function setModuleInfo(Module $module, array $info, Course $course)
+    {
+        $module->parent = $course;
+        $module->id = $info['id'];
+        $module->dir = $info['dir'];
+        $module->name = $info['name'];
+        $module->description = $info['description'];
+        $module->version = $info['version'];
+        $module->compatibleVersions = $info['compatibleVersions'];
+        $module->dependencies = $info['dependencies'];
     }
 
     public static function getModule($moduleId) {

@@ -11,157 +11,27 @@ use GameCourse\Views\Expression\ValueNode;
 
 class XPLevels extends Module
 {
-    
-    public function setupResources() {
-        parent::addResources('js/');
-        parent::addResources('css/user-awards.css');
-    }
 
-    public function deleteDataRows($courseId)
-    {
-
-        Core::$systemDB->delete("user_xp", ["course" => $courseId]);
-        Core::$systemDB->delete("level", ["course" => $courseId]);
-    }
-
-    public function calculateBonusBadgeXP($userId, $courseId)
-    {
-        $table = "award a join badge b on moduleInstance=b.id";
-        $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
-        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
-        $value = min($bonusBadgeXP, $maxBonusXP);
-        return (is_null($value))? 0 : $value;
-    }
-    public function calculateBadgeXP($userId, $courseId)
-    {
-        //badges XP (bonus badges have a maximum value of XP)
-        $table = "award a join badge b on moduleInstance=b.id";
-        $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
-        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
-        $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
-        return $badgeXP;
-    }
-    public function calculateSkillXP($userId, $courseId, $isActive = true)
-    {
-        //skills XP (skill trees have a maximum value of XP)
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]);
-        $skillTreeXP = 0;
-        foreach ($skillTrees as $tree) {
-            $where = ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]];
-            if ($isActive){
-                $where["isActive"] = true;
-            }
-            $fullTreeXP = Core::$systemDB->select(
-                "award a join skill s on moduleInstance=s.id",
-                $where,
-                "sum(reward)"
-            );
-            $skillTreeXP += min($fullTreeXP, $tree["maxReward"]);
-        }
-        return $skillTreeXP;
-    }
-
-    public function calculateXPComponents($user, $courseId)
-    {
-        $userId = $this->getUserId($user);
-        $xp = [];
-        //badge XP
-        $xp["badgeXP"] = $this->calculateBadgeXP($userId, $courseId);
-        //skills XP 
-        $xp["skillXP"] = $this->calculateSkillXP($userId, $courseId);
-
-        $xp["labXP"] = Core::$systemDB->select(
-            "award",
-            ["course" => $courseId, "user" => $userId, "type" => "labs"],
-            "sum(reward)"
-        );
-        $xp["quizXP"] = Core::$systemDB->select(
-            "award",
-            ["course" => $courseId, "user" => $userId, "type" => "quiz"],
-            "sum(reward)"
-        );
-        $xp["presentationXP"] = Core::$systemDB->select(
-            "award",
-            ["course" => $courseId, "user" => $userId, "type" => "presentation"],
-            "sum(reward)"
-        );
-        $xp["bonusXP"] = Core::$systemDB->select(
-            "award",
-            ["course" => $courseId, "user" => $userId, "type" => "bonus"],
-            "sum(reward)"
-        );
-        $xp["xp"] = array_sum($xp);
-        return $xp;
-    }
-    //calculates total xp of a user
-    public function calculateXP($user, $courseId)
-    {
-        $userId = $this->getUserId($user);
-        //badge XP
-        $badgeXP = $this->calculateBadgeXP($userId, $courseId);
-        //skills XP 
-        $skillXP = $this->calculateSkillXP($userId, $courseId);
-        //XP of everything else
-        $otherXP = Core::$systemDB->select(
-            "award",
-            ["course" => $courseId, "user" => $userId],
-            "sum(reward)",
-            null, //where
-            [["type", "skill"], ["type", "badge"]]
-        ); //where not
-        return $badgeXP + $skillXP + $otherXP;
-    }
-    //calculates a user's total xp for a type of award
-    public function calculateXPByType($user, $courseId, $type)
-    {
-        $userId = $this->getUserId($user);
-        $xp = Core::$systemDB->select("award", ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
-        return $xp;
-    }
-
-    //returns the total xp from user_xp table for the course user
-    public function getUserXP($user, $courseId)
-    {
-        $userId = $this->getUserId($user);
-        $totalXP = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "xp");
-        return $totalXP;
-    }
-
-    //returns the current level from user_xp table for the course user
-    public function getUserLevel($user, $courseId)
-    {
-        $userId = $this->getUserId($user);
-        $level = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "level");
-        return Core::$systemDB->select("level", ["id" => $level]);
-    }
-
-    public function setupData($courseId){
-        $this->addTables("xp", "level");
-
-        //create level zero
-        $levelZero = Core::$systemDB->select("level", ["course" => $courseId, "number" => 0], "id");
-        if(empty($levelZero))
-            $levelZero = Core::$systemDB->insert("level", ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
-
-        //create first entry for every user of the course so that we only have to update later
-        $course = new Course($courseId);
-        $students = $course->getUsersWithRole("Student");
-        foreach ($students as $student){
-            $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
-            if(!$entry)
-                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
-        }
-    }
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
 
     public function init()
     {
+        $this->setupData($this->getCourseId());
+        $this->initDictionary();
+    }
 
-        $course = $this->getParent();
-        $courseId = $course->getId();
-        $this->setupData($courseId);
+    public function initDictionary()
+    {
+        $courseId = $this->getCourseId();
+
+        /*** ------------ Libraries ------------ ***/
 
         Dictionary::registerLibrary("xp", "xp", "This library provides information regarding XP and Levels. It is provided by the xp module.");
+
+
+        /*** ------------ Functions ------------ ***/
 
         //xp.allLevels returns collection of level objects
         Dictionary::registerFunction(
@@ -178,8 +48,10 @@ class XPLevels extends Module
             'collection',
             'level',
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getLevel(user,number,goal) returns level object
         Dictionary::registerFunction(
             'xp',
@@ -191,7 +63,7 @@ class XPLevels extends Module
                 if ($user !== null) {
                     //calculate the level of the user
                     $xp = $this->getUserXP($user, $where["course"]);
-                    
+
                     /*$goal = Core::$systemDB->select(
                         $table,
                         $where,
@@ -217,8 +89,10 @@ class XPLevels extends Module
             'object',
             'level',
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getBadgesXP(user) returns value of badge xp for user
         Dictionary::registerFunction(
             'xp',
@@ -232,8 +106,10 @@ class XPLevels extends Module
             'integer',
             null,
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getBonusBadgesXP(user) returns value xp of extra credit badges for user
         Dictionary::registerFunction(
             'xp',
@@ -247,8 +123,10 @@ class XPLevels extends Module
             'integer',
             null,
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getXPByType(user, type) returns value xp of a type of award for user
         Dictionary::registerFunction(
             'xp',
@@ -262,8 +140,10 @@ class XPLevels extends Module
             'integer',
             null,
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getSkillTreeXP(user) returns value of skill xp for user
         Dictionary::registerFunction(
             'xp',
@@ -277,8 +157,10 @@ class XPLevels extends Module
             'integer',
             null,
             'library',
-            null
+            null,
+            true
         );
+
         //xp.getXP(user) returns value of xp for user
         Dictionary::registerFunction(
             'xp',
@@ -291,8 +173,10 @@ class XPLevels extends Module
             'integer',
             null,
             'library',
-            null
+            null,
+            true
         );
+
         //%level.description
         Dictionary::registerFunction(
             'xp',
@@ -304,8 +188,10 @@ class XPLevels extends Module
             'string',
             null,
             'object',
-            'level'
+            'level',
+            true
         );
+
         //%level.goal
         Dictionary::registerFunction(
             'xp',
@@ -317,8 +203,10 @@ class XPLevels extends Module
             'string',
             null,
             'object',
-            'level'
+            'level',
+            true
         );
+
         //%level.number
         Dictionary::registerFunction(
             'xp',
@@ -330,11 +218,45 @@ class XPLevels extends Module
             'string',
             null,
             'object',
-            'level'
-        );  
+            'level',
+            true
+        );
     }
 
-    public function moduleConfigJson($courseId)
+    public function setupResources() {
+        parent::addResources('js/');
+        parent::addResources('css/user-awards.css');
+    }
+
+    public function setupData(int $courseId){
+        $this->addTables("xp", "level");
+
+        //create level zero
+        $levelZero = Core::$systemDB->select("level", ["course" => $courseId, "number" => 0], "id");
+        if(empty($levelZero))
+            $levelZero = Core::$systemDB->insert("level", ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
+
+        //create first entry for every user of the course so that we only have to update later
+        $course = new Course($courseId);
+        $students = $course->getUsersWithRole("Student");
+        foreach ($students as $student){
+            $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
+            if(!$entry)
+                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
+        }
+    }
+
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Module Config ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function moduleConfigJson(int $courseId)
     {
         $xpArray = array();
         $xpArr = array();
@@ -354,7 +276,7 @@ class XPLevels extends Module
         }
     }
 
-    public function readConfigJson($courseId, $tables, $update)
+    public function readConfigJson(int $courseId, array $tables, bool $update): array
     {
         $levelIds = array();
         if($tables) {
@@ -378,59 +300,24 @@ class XPLevels extends Module
         }
         return $levelIds;
     }
-    
-    public function is_configurable(){
+
+    public function is_configurable(): bool
+    {
         return true;
     }
 
-    public function getLevels($courseId){
-        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],"*", "number");
-
-        foreach($levels as &$lvl){
-            $lvl["goal"] = intval($lvl["goal"]);
-        }
-        
-        return $levels;
-    }
-
-    public function insertLevels($string){
-        $sql = "insert into level (number, course, description, goal) values ";
-        $sql .= $string . ";";
-        Core::$systemDB->executeQuery($sql);
-    }
-
-    public function newLevel($level, $courseId){
-        $levelData = ["number"=>$level['goal'] / 1000,
-                    "course"=>$courseId,"description"=>$level['description'],
-                    "goal"=> $level['goal']];
-
-        Core::$systemDB->insert("level",$levelData);
-    }
-
-    public function editLevel($level, $courseId){
-
-        $levelData = ["number"=> $level['goal'] / 1000,
-                    "course"=>$courseId,
-                    "description"=>$level['description'],
-                    "goal"=> $level['goal']];
-        Core::$systemDB->update("level",$levelData,["id"=>$level["id"]]);
-    }
-
-
-    public function deleteLevel($level, $courseId){
-        Core::$systemDB->delete("level",["id"=>$level['id']]);
-    }
-
-    public function dropTables($moduleName)
+    public function has_general_inputs(): bool
     {
-        parent::dropTables($moduleName);
+        return false;
     }
 
-    public function has_general_inputs (){ return false; }
+    public function has_listing_items(): bool
+    {
+        return  true;
+    }
 
-    public function has_listing_items (){ return  true; }
-
-    public function get_listing_items ($courseId){
+    public function get_listing_items (int $courseId): array
+    {
         //tenho de dar header
         $header = ['Level', 'Title', 'Minimum XP'] ;
         $displayAtributes = ['number', 'description', 'goal'];
@@ -443,7 +330,8 @@ class XPLevels extends Module
         ];
         return array( 'listName'=> 'Levels', 'itemName'=> 'Level','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
     }
-    public function save_listing_item ($actiontype, $listingItem, $courseId){
+
+    public function save_listing_item (string $actiontype, array $listingItem, int $courseId){
         if($actiontype == 'new'){
             $this->newLevel($listingItem, $courseId);
         }
@@ -455,7 +343,24 @@ class XPLevels extends Module
         }
     }
 
-    public static function importItems($course, $fileData, $replace = true){
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------ Database Manipulation ------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    public function deleteDataRows(int $courseId)
+    {
+        Core::$systemDB->delete("user_xp", ["course" => $courseId]);
+        Core::$systemDB->delete("level", ["course" => $courseId]);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Import / Export --------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public static function importItems(int $course, string $fileData, bool $replace = true): int
+    {
         /*$courseObject = Course::getCourse($course, false);
         $moduleObject = $courseObject->getModule("xp");*/
         $moduleObject = new XPLevels();
@@ -493,7 +398,7 @@ class XPLevels extends Module
                     $levelData = [
                         "description"=>$item[$descriptionIndex],
                         "goal"=>$item[$goalIndex]
-                        ];
+                    ];
                     if ($itemId){
                         if ($replace) {
                             $levelData["id"] = $itemId;
@@ -513,7 +418,7 @@ class XPLevels extends Module
         return $newItemNr;
     }
 
-    public static function exportItems($course)
+    public static function exportItems(int $course): array
     {
         $courseInfo = Core::$systemDB->select("course", ["id"=>$course]);
         $listOfLevels = Core::$systemDB->selectMultiple("level", ["course"=> $course], '*');
@@ -532,9 +437,192 @@ class XPLevels extends Module
         return ["Levels - " . $courseInfo["name"], $file];
     }
 
-    public function update_module($compatibleVersions)
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /*** ------------ XP ------------ ***/
+
+    public function calculateBonusBadgeXP(int $userId, int $courseId): int
     {
-        //verificar compatibilidade
+        $table = "award a join badge b on moduleInstance=b.id";
+        $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
+        $maxBonusXP = Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
+        $bonusBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => true, "isActive" => true]), "sum(reward)");
+        $value = min($bonusBadgeXP, $maxBonusXP);
+        return (is_null($value))? 0 : $value;
+    }
+
+    public function calculateBadgeXP(int $userId, int $courseId): int
+    {
+        //badges XP (bonus badges have a maximum value of XP)
+        $table = "award a join badge b on moduleInstance=b.id";
+        $where = ["a.course" => $courseId, "user" => $userId, "type" => "badge"];
+        $normalBadgeXP = Core::$systemDB->select($table, array_merge($where, ["isExtra" => false, "isActive" => true]), "sum(reward)");
+        $badgeXP = $normalBadgeXP + $this->calculateBonusBadgeXP($userId, $courseId);
+        return $badgeXP;
+    }
+
+    public function calculateSkillXP(int$userId, int $courseId, bool $isActive = true): int
+    {
+        //skills XP (skill trees have a maximum value of XP)
+        $skillTrees = Core::$systemDB->selectMultiple("skill_tree", ["course" => $courseId]);
+        $skillTreeXP = 0;
+        foreach ($skillTrees as $tree) {
+            $where = ["a.course" => $courseId, "user" => $userId, "type" => "skill", "treeId" => $tree["id"]];
+            if ($isActive){
+                $where["isActive"] = true;
+            }
+            $fullTreeXP = Core::$systemDB->select(
+                "award a join skill s on moduleInstance=s.id",
+                $where,
+                "sum(reward)"
+            );
+            $skillTreeXP += min($fullTreeXP, $tree["maxReward"]);
+        }
+        return $skillTreeXP;
+    }
+
+    public function calculateXPComponents($user, int $courseId): array
+    {
+        $userId = $this->getUserId($user);
+        $xp = [];
+        //badge XP
+        $xp["badgeXP"] = $this->calculateBadgeXP($userId, $courseId);
+        //skills XP 
+        $xp["skillXP"] = $this->calculateSkillXP($userId, $courseId);
+
+        $xp["labXP"] = Core::$systemDB->select(
+            "award",
+            ["course" => $courseId, "user" => $userId, "type" => "labs"],
+            "sum(reward)"
+        );
+        $xp["quizXP"] = Core::$systemDB->select(
+            "award",
+            ["course" => $courseId, "user" => $userId, "type" => "quiz"],
+            "sum(reward)"
+        );
+        $xp["presentationXP"] = Core::$systemDB->select(
+            "award",
+            ["course" => $courseId, "user" => $userId, "type" => "presentation"],
+            "sum(reward)"
+        );
+        $xp["bonusXP"] = Core::$systemDB->select(
+            "award",
+            ["course" => $courseId, "user" => $userId, "type" => "bonus"],
+            "sum(reward)"
+        );
+        $xp["xp"] = array_sum($xp);
+        return $xp;
+    }
+
+    /**
+     * Calculates total XP of a user.
+     *
+     * @param $user
+     * @param int $courseId
+     * @return int
+     */
+    public function calculateXP($user, int $courseId): int
+    {
+        $userId = $this->getUserId($user);
+        //badge XP
+        $badgeXP = $this->calculateBadgeXP($userId, $courseId);
+        //skills XP 
+        $skillXP = $this->calculateSkillXP($userId, $courseId);
+        //XP of everything else
+        $otherXP = Core::$systemDB->select(
+            "award",
+            ["course" => $courseId, "user" => $userId],
+            "sum(reward)",
+            null, //where
+            [["type", "skill"], ["type", "badge"]]
+        ); //where not
+        return $badgeXP + $skillXP + $otherXP;
+    }
+
+    /**
+     * Calculates a user's total XP for a type of award.
+     *
+     * @param $user
+     * @param int $courseId
+     * @param string $type
+     * @return int
+     */
+    public function calculateXPByType($user, int $courseId, string $type): int
+    {
+        $userId = $this->getUserId($user);
+        $xp = Core::$systemDB->select("award", ["course" => $courseId, "user" => $userId, "type" => $type], "sum(reward)");
+        return $xp;
+    }
+
+    /**
+     * Returns the total XP from user_xp table for the course user.
+     *
+     * @param $user
+     * @param int $courseId
+     * @return int
+     */
+    public function getUserXP($user, int $courseId): int
+    {
+        $userId = $this->getUserId($user);
+        $totalXP = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "xp");
+        return $totalXP;
+    }
+
+
+    /*** ---------- Levels ---------- ***/
+
+    /**
+     * Returns the current level from user_xp table for the course user.
+     *
+     * @param $user
+     * @param int $courseId
+     * @return mixed
+     */
+    public function getUserLevel($user, int $courseId)
+    {
+        $userId = $this->getUserId($user);
+        $level = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "level");
+        return Core::$systemDB->select("level", ["id" => $level]);
+    }
+
+    public function getLevels(int $courseId) {
+        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],"*", "number");
+
+        foreach($levels as &$lvl){
+            $lvl["goal"] = intval($lvl["goal"]);
+        }
+        
+        return $levels;
+    }
+
+    public function insertLevels(string $string){
+        $sql = "insert into level (number, course, description, goal) values ";
+        $sql .= $string . ";";
+        Core::$systemDB->executeQuery($sql);
+    }
+
+    public function newLevel($level, int $courseId){
+        $levelData = ["number"=>$level['goal'] / 1000,
+                    "course"=>$courseId,"description"=>$level['description'],
+                    "goal"=> $level['goal']];
+
+        Core::$systemDB->insert("level",$levelData);
+    }
+
+    public function editLevel($level, int $courseId){
+
+        $levelData = ["number"=> $level['goal'] / 1000,
+                    "course"=>$courseId,
+                    "description"=>$level['description'],
+                    "goal"=> $level['goal']];
+        Core::$systemDB->update("level",$levelData,["id"=>$level["id"]]);
+    }
+
+    public function deleteLevel($level, int $courseId){
+        Core::$systemDB->delete("level",["id"=>$level['id']]);
     }
 }
 

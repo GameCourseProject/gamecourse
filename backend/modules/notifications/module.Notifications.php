@@ -1,4 +1,5 @@
 <?php
+namespace Modules\Notifications;
 
 use GameCourse\Core;
 use GameCourse\Module;
@@ -8,15 +9,14 @@ use GameCourse\Views\Views;
 
 class Notifications extends Module
 {
+    const NOTIFICATIONS_PROFILE_TEMPLATE = 'Notifications Profile - by notifications';
 
     public $notificationList = []; //contains an array of notfics of current user
 
-    public function setupResources()
-    {
-        parent::addResources('js/');
-        parent::addResources('css/notifications.css');
-        parent::addResources('imgs/');
-    }
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
 
     public function init()
     {
@@ -79,15 +79,30 @@ class Notifications extends Module
             }
         }
 
-        Dictionary::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
-
-        if (!Views::templateExists($this->getCourseId(), 'Notifications Profile - by notifications'))
-            Views::createTemplateFromFile('Notifications Profile - by notifications', file_get_contents(__DIR__ . '/notifications.txt'), $this->getCourseId());
+        $this->initTemplates();
+        $this->initDictionary();
     }
 
-    public function is_configurable()
+    public function initTemplates()
     {
-        return false;
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::NOTIFICATIONS_PROFILE_TEMPLATE))
+            Views::createTemplateFromFile(self::NOTIFICATIONS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/notifications.txt'), $courseId);
+    }
+
+    public function initDictionary()
+    {
+        /*** ------------ Libraries ------------ ***/
+
+        Dictionary::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
+    }
+
+    public function setupResources()
+    {
+        parent::addResources('js/');
+        parent::addResources('css/notifications.css');
+        parent::addResources('imgs/');
     }
 
     public function update_module($compatibleVersions)

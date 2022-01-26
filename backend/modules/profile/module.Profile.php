@@ -1,35 +1,39 @@
 <?php
+namespace Modules\Profile;
 
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Views;
 
-class Profile extends Module {
-
+class Profile extends Module
+{
     const STUDENT_SUMMARY_TEMPLATE = 'Student Summary - by profile';
-    const STUDENT_AWARD_LIST = 'User Awards - by profile';
+    const STUDENT_AWARD_LIST_TEMPLATE = 'User Awards - by profile';
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function init() {
+        $this->initTemplates();
+    }
+
+    public function initTemplates()
+    {
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::STUDENT_SUMMARY_TEMPLATE))
+            Views::createTemplateFromFile(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $courseId);
+
+        if (!Views::templateExists($courseId, self::STUDENT_AWARD_LIST_TEMPLATE))
+            Views::createTemplateFromFile(self::STUDENT_AWARD_LIST_TEMPLATE, file_get_contents(__DIR__ . '/userAwards.txt'), $courseId);
+    }
 
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/profile.css');
         parent::addResources('imgs');
-    }
-
-    public function init() {
-        $user = $this->getParent()->getLoggedUser();
-
-        if (!Views::templateExists($this->getCourseId(), self::STUDENT_SUMMARY_TEMPLATE))
-            Views::createTemplateFromFile(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $this->getCourseId());
-
-        if (!Views::templateExists($this->getCourseId(), self::STUDENT_AWARD_LIST))
-            Views::createTemplateFromFile(self::STUDENT_AWARD_LIST, file_get_contents(__DIR__ . '/userAwards.txt'), $this->getCourseId());
-       
-    }
-
-    public function initSettingsTabs() {
-    }
-    public function is_configurable(){
-        return false;
     }
     
     public function update_module($compatibleVersions)

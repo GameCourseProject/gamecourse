@@ -1,24 +1,5 @@
 <?php
-
-function comparePNGImages($img, $img2) {
-    $width = imagesx($img);
-    $height = imagesy($img);
-    $width2 = imagesx($img2);
-    $height2 = imagesy($img2);
-
-    if ($width != $width2 || $height != $height2) {
-        return false;
-    }
-
-    for ($x = 0; $x < $width; ++$x) {
-        for ($y = 0; $y < $height; ++$y) {
-            if (imagecolorat($img, $x, $y) != imagecolorat($img2, $x, $y)) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
+namespace Modules\Quest;
 
 use GameCourse\API;
 use GameCourse\Core;
@@ -26,14 +7,15 @@ use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Views;
 
-class Quest extends Module {
+class Quest extends Module
+{
     const LEVEL_NO_EXIST = 'Hummm.. This level does not seem to exist.';
+    const QUEST_ANNOUNCE_TEMPLATE = 'Quest Announce - by quest';
 
-    public function setupResources() {
-        parent::addResources('js/');
-        parent::addResources('css/quest.css');
-        parent::addResources('css/jquery.datetimepicker.css');
-    }
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
 
     public function init() {
         $user = $this->getParent()->getLoggedUser();
@@ -66,6 +48,21 @@ class Quest extends Module {
             Core::addNavigation( 'Quest', 'course.quest', true);
         }*/
 
+        $this->initTemplates();
+        $this->initDictionary();
+    }
+
+    public function initTemplates()
+    {
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::QUEST_ANNOUNCE_TEMPLATE))
+            Views::createTemplateFromFile(self::QUEST_ANNOUNCE_TEMPLATE, file_get_contents(__DIR__ . '/quest_announce.txt'), $courseId);
+    }
+
+    public function initDictionary()
+    {
+        // FIXME: shouldn't be here; this is for Dictionary functions
 
         API::registerFunction('quest', 'level', function() {
             API::requireValues('level');
@@ -76,75 +73,75 @@ class Quest extends Module {
             $activeQuest = $quest['activeQuest'];
             $resourceFolder = MODULES_FOLDER . '/quest/resources/' . $activeQuest . '/';
             if ($activeQuest < 0)*/
-                API::response(array('error' => 'No quest running!'));
-/*
-            $quest = $quest['quests'][$activeQuest];
+            API::response(array('error' => 'No quest running!'));
+            /*
+                        $quest = $quest['quests'][$activeQuest];
 
-            $globalUser = Core::getLoggedUser();
-            $user = $this->getParent()->getLoggedUser();
-            $isTeacher = $user->hasRole('Teacher') || ($globalUser != null && $globalUser->isAdmin());
+                        $globalUser = Core::getLoggedUser();
+                        $user = $this->getParent()->getLoggedUser();
+                        $isTeacher = $user->hasRole('Teacher') || ($globalUser != null && $globalUser->isAdmin());
 
-            $isQuestLive = $activeQuest >= 0 && $quest['startTime'] < time() && $quest['endTime'] > time();
-            if (!$isQuestLive && !$isTeacher)
-                API::response(array('error' => 'No quest running!'));
+                        $isQuestLive = $activeQuest >= 0 && $quest['startTime'] < time() && $quest['endTime'] > time();
+                        if (!$isQuestLive && !$isTeacher)
+                            API::response(array('error' => 'No quest running!'));
 
-            $questWrapped = $this->getData()->getWrapped('quests')->getWrapped($activeQuest);
-            $timeout = $quest['timeout'];
-            $rateLimit = $quest['rateLimit'];
+                        $questWrapped = $this->getData()->getWrapped('quests')->getWrapped($activeQuest);
+                        $timeout = $quest['timeout'];
+                        $rateLimit = $quest['rateLimit'];
 
-            $levelKeyworld = API::getValue('level');
-            if (array_key_exists($levelKeyworld, $quest['levels'])) {
-                $level = $quest['levels'][$levelKeyworld];
+                        $levelKeyworld = API::getValue('level');
+                        if (array_key_exists($levelKeyworld, $quest['levels'])) {
+                            $level = $quest['levels'][$levelKeyworld];
 
-                if ($level <= $quest['currentLevel']) {
-                    $currentUnlocked = $quest['levelsInfo'][$quest['currentLevel']]['keyword'];
+                            if ($level <= $quest['currentLevel']) {
+                                $currentUnlocked = $quest['levelsInfo'][$quest['currentLevel']]['keyword'];
 
-                    $levelInfo = $quest['levelsInfo'][$level];
+                                $levelInfo = $quest['levelsInfo'][$level];
 
-                    $this->saveVisit($questWrapped, $userId, time(), $levelKeyworld);
-                    $page = str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page']) . ($quest['currentLevel'] == $level ? '' : '<div class="quest-next">Current unlocked level: <a ui-sref="course.questLevel({level: \'' . $currentUnlocked . '\'})" style="color: white;">' . $currentUnlocked .'</a></div>');
-                    API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => $page));
-                } else if ($quest['currentLevel'] + 1 == $level) {
-                    if (!$this->canTry($quest, $userId, $rateLimit)) {
-                        $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'breakButCorrect');
-                        API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
-                    }
+                                $this->saveVisit($questWrapped, $userId, time(), $levelKeyworld);
+                                $page = str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page']) . ($quest['currentLevel'] == $level ? '' : '<div class="quest-next">Current unlocked level: <a ui-sref="course.questLevel({level: \'' . $currentUnlocked . '\'})" style="color: white;">' . $currentUnlocked .'</a></div>');
+                                API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => $page));
+                            } else if ($quest['currentLevel'] + 1 == $level) {
+                                if (!$this->canTry($quest, $userId, $rateLimit)) {
+                                    $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'breakButCorrect');
+                                    API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
+                                }
 
-                    $levelInfo = $quest['levelsInfo'][$level];
-                    if ($levelInfo['requiresValidation']) {
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'required', false);
-                        API::response(array('validation' => 'png'));
-                    }
+                                $levelInfo = $quest['levelsInfo'][$level];
+                                if ($levelInfo['requiresValidation']) {
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'required', false);
+                                    API::response(array('validation' => 'png'));
+                                }
 
-                    $lastSolution = $this->getLastSolution($quest);
-                    if (time() < ($lastSolution + $timeout)) {
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitRateLimit', false);
-                        API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
-                    }
+                                $lastSolution = $this->getLastSolution($quest);
+                                if (time() < ($lastSolution + $timeout)) {
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitRateLimit', false);
+                                    API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
+                                }
 
-                    $this->saveSolution($questWrapped, $userId, $level, time(), 'notRequired', true);
+                                $this->saveSolution($questWrapped, $userId, $level, time(), 'notRequired', true);
 
-                    // unlock level
-                    $questWrapped->set('currentLevel', $level);
-                    API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
-                } else {
-                    if (!$this->canTry($quest, $userId, $rateLimit)) {
-                        $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
-                        API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
-                    }
+                                // unlock level
+                                $questWrapped->set('currentLevel', $level);
+                                API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
+                            } else {
+                                if (!$this->canTry($quest, $userId, $rateLimit)) {
+                                    $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
+                                    API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
+                                }
 
-                    $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
-                    API::response(array('error' => self::LEVEL_NO_EXIST));
-                }
-            } else {
-                if (!$this->canTry($quest, $userId, $rateLimit)) {
-                    $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
-                    API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
-                }
+                                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
+                                API::response(array('error' => self::LEVEL_NO_EXIST));
+                            }
+                        } else {
+                            if (!$this->canTry($quest, $userId, $rateLimit)) {
+                                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
+                                API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
+                            }
 
-                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
-                API::response(array('error' => self::LEVEL_NO_EXIST));
-            }*/
+                            $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
+                            API::response(array('error' => self::LEVEL_NO_EXIST));
+                        }*/
         });
 
         API::registerFunction('quest', 'questSolution', function() {
@@ -158,72 +155,72 @@ class Quest extends Module {
             $resourceFolder = MODULES_FOLDER . '/quest/resources/' . $activeQuest . '/';
 
             if ($activeQuest < 0)*/
-                API::response(array('error' => 'No quest running!'));
-/*
-            $quest = $quest['quests'][$activeQuest];
-            $questWrapped = $this->getData()->getWrapped('quests')->getWrapped($activeQuest);
-            $timeout = $quest['timeout'];
-            $rateLimit = $quest['rateLimit'];
+            API::response(array('error' => 'No quest running!'));
+            /*
+                        $quest = $quest['quests'][$activeQuest];
+                        $questWrapped = $this->getData()->getWrapped('quests')->getWrapped($activeQuest);
+                        $timeout = $quest['timeout'];
+                        $rateLimit = $quest['rateLimit'];
 
-            if (!$this->canTry($quest, $userId, $rateLimit)) {
-                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
-                API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
-            }
-
-            if (!array_key_exists($levelKeyword, $quest['levels'])) {
-                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
-                API::response(array('error' => self::LEVEL_NO_EXIST));
-            }
-
-            $level = $quest['levels'][$levelKeyword];
-
-            if ($level <= $quest['currentLevel']) {
-                $this->saveVisit($questWrapped, $userId, time(), $levelKeyword);
-                $levelInfo = $quest['levelsInfo'][$level];
-                API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
-            } else if ($quest['currentLevel'] + 1 == $level) {
-                $levelInfo = $quest['levelsInfo'][$level];
-                if ($levelInfo['requiresValidation']) {
-                    // validate level
-                    $img = imagecreatefrompng($resourceFolder . $levelInfo['validation']['solution']);
-                    $img2 = @imagecreatefromstring(API::getUploadedFile());
-                    if ($img2 === FALSE) {
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'proofUnsupported', false);
-                        API::response(array('error' => 'Unsupported file type!'));
-                    }
-
-                    if (comparePNGImages($img, $img2)) {
-                        $lastSolution = $this->getLastSolution($quest);
-                        if (time() < ($lastSolution + $timeout)) {
-                            $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitTimeout', false);
-                            API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
+                        if (!$this->canTry($quest, $userId, $rateLimit)) {
+                            $this->saveTry($questWrapped, $userId, time(), API::getValue('level'), 'break');
+                            API::response(array('control' => 'Hold on adventurer! You tried to unlock this level so many times in the last hour. You should take a break and try again later.'));
                         }
 
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'proofCorrect', true);
-                        // unlock level
-                        $this->getData()->getWrapped('quests')->getWrapped($activeQuest)->set('currentLevel', $level);
-                        API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
-                    } else {
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'proofIncorrect', false);
-                        API::response(array('error' => 'The solution does not match!'));
-                    }
+                        if (!array_key_exists($levelKeyword, $quest['levels'])) {
+                            $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
+                            API::response(array('error' => self::LEVEL_NO_EXIST));
+                        }
 
-                } else {
-                    $lastSolution = $this->getLastSolution($quest);
-                    if (time() < ($lastSolution + $timeout)) {
-                        $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitTimeout', false);
-                        API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
-                    }
+                        $level = $quest['levels'][$levelKeyword];
 
-                    $this->saveSolution($questWrapped, $userId, $level, time(), 'notRequired', true);
-                    // unlock level through upload but no validation?  its a bit wierd but ok
-                    $this->getData()->getWrapped('quests')->getWrapped($activeQuest)->set('currentLevel', $level);
-                    API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
-                }
-            } else {
-                $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
-                API::response(array('error' => self::LEVEL_NO_EXIST));
-            }*/
+                        if ($level <= $quest['currentLevel']) {
+                            $this->saveVisit($questWrapped, $userId, time(), $levelKeyword);
+                            $levelInfo = $quest['levelsInfo'][$level];
+                            API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
+                        } else if ($quest['currentLevel'] + 1 == $level) {
+                            $levelInfo = $quest['levelsInfo'][$level];
+                            if ($levelInfo['requiresValidation']) {
+                                // validate level
+                                $img = imagecreatefrompng($resourceFolder . $levelInfo['validation']['solution']);
+                                $img2 = @imagecreatefromstring(API::getUploadedFile());
+                                if ($img2 === FALSE) {
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'proofUnsupported', false);
+                                    API::response(array('error' => 'Unsupported file type!'));
+                                }
+
+                                if (comparePNGImages($img, $img2)) {
+                                    $lastSolution = $this->getLastSolution($quest);
+                                    if (time() < ($lastSolution + $timeout)) {
+                                        $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitTimeout', false);
+                                        API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
+                                    }
+
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'proofCorrect', true);
+                                    // unlock level
+                                    $this->getData()->getWrapped('quests')->getWrapped($activeQuest)->set('currentLevel', $level);
+                                    API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
+                                } else {
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'proofIncorrect', false);
+                                    API::response(array('error' => 'The solution does not match!'));
+                                }
+
+                            } else {
+                                $lastSolution = $this->getLastSolution($quest);
+                                if (time() < ($lastSolution + $timeout)) {
+                                    $this->saveSolution($questWrapped, $userId, $level, time(), 'correctWaitTimeout', false);
+                                    API::response(array('control' => 'Hold on adventurer! The solution is correct, however you must wait ' . round(($lastSolution + $timeout) - time()) . ' seconds to explore what lies ahead.'));
+                                }
+
+                                $this->saveSolution($questWrapped, $userId, $level, time(), 'notRequired', true);
+                                // unlock level through upload but no validation?  its a bit wierd but ok
+                                $this->getData()->getWrapped('quests')->getWrapped($activeQuest)->set('currentLevel', $level);
+                                API::response(array('level' => ($level + 1), 'title' => $levelInfo['title'], 'page' => str_replace('$$resource_dir$$', $resourceFolder, $levelInfo['page'])));
+                            }
+                        } else {
+                            $this->saveTry($questWrapped, $userId, time(), API::getValue('level'));
+                            API::response(array('error' => self::LEVEL_NO_EXIST));
+                        }*/
         });
 
         API::registerFunction('quest', 'questInfo', function() {
@@ -231,10 +228,10 @@ class Quest extends Module {
             API::requireValues('quest');
 
             $selectedQuest = API::getValue('quest');
-/*
-            $questModuleData = $this->getData()->getValue();
-            if (!array_key_exists($selectedQuest, $questModuleData['quests']))
-             */   API::error('Unknown quest', 404);
+            /*
+                        $questModuleData = $this->getData()->getValue();
+                        if (!array_key_exists($selectedQuest, $questModuleData['quests']))
+                         */   API::error('Unknown quest', 404);
 
             /*$quest = $questModuleData['quests'][$selectedQuest];
 
@@ -458,9 +455,12 @@ class Quest extends Module {
                 API::response(array('activeQuest' => $activeQuest, 'quests' => $quests));
             }*/
         });
+    }
 
-        if (!Views::templateExists($this->getCourseId(), 'Quest Announce - by quest'))
-            Views::createTemplateFromFile('Quest Announce - by quest', (file_get_contents(__DIR__ . '/quest_announce.vt')), $this->getCourseId());
+    public function setupResources() {
+        parent::addResources('js/');
+        parent::addResources('css/quest.css');
+        parent::addResources('css/jquery.datetimepicker.css');
     }
 
     public function cleanModuleData() {
@@ -471,16 +471,15 @@ class Quest extends Module {
         $this->getData()->setValue($questData);*/
     }
 
-    public function initSettingsTabs() {
-        /*$quest = $this->getData()->getValue();
-        $quests = array_keys($quest['quests']);
-        $questsTabs = array();
-        foreach($quests as $q) {
-            $questsTabs[] = Settings::buildTabItem('Quest ' . ($q + 1), 'course.settings.quest.info({quest:\'' . ($q + 1) . '\'})', true);
-        }
-
-        Settings::addTab(Settings::buildTabItem('Quests', 'course.settings.quest', true, $questsTabs));*/
+    public function update_module($compatibleVersions)
+    {
+        //verificar compatibilidade
     }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Utils -------------------- ***/
+    /*** ----------------------------------------------- ***/
 
     public function getLastSolution($quest) {
         return $quest['info']['lastSolution'];
@@ -539,13 +538,25 @@ class Quest extends Module {
         $solution[$level][] = array($user, $time, $verification);
         $quest->set('info', $questInfo);*/
     }
-    public function is_configurable(){
-        return false;
-    }
 
-    public function update_module($compatibleVersions)
-    {
-        //verificar compatibilidade
+    private function comparePNGImages($img, $img2) {
+        $width = imagesx($img);
+        $height = imagesy($img);
+        $width2 = imagesx($img2);
+        $height2 = imagesy($img2);
+
+        if ($width != $width2 || $height != $height2) {
+            return false;
+        }
+
+        for ($x = 0; $x < $width; ++$x) {
+            for ($y = 0; $y < $height; ++$y) {
+                if (imagecolorat($img, $x, $y) != imagecolorat($img2, $x, $y)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 

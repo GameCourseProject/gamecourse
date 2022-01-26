@@ -67,7 +67,7 @@ API::registerFunction($MODULE, 'renderPage', function () {
     $page = Views::getPage($courseId, $pageId);
 
     if (!$page)
-        API::error('Page with id = ' . $pageId . ' is doesn\'t exist.');
+        API::error('Page with id = ' . $pageId . ' doesn\'t exist.');
 
     if (!$page["isEnabled"])
         API::error('Page \'' . $page["name"] . '\' (id = ' . $pageId . ') is not enabled.');

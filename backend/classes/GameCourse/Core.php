@@ -175,7 +175,7 @@ class Core
                 return true;
             } else if ($redirect) {
                 $_SESSION = [];
-                API::error('Access denied.', 401);
+                API::error('Access denied.', 403);
             }
         }
         return false;

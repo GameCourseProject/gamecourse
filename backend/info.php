@@ -16,16 +16,15 @@ Core::denyCLI();
 Core::init();
 
 if (!Core::requireLogin(false))
-    API::error("Not logged in!", 400);
+    API::error("Not logged in!", 401);
 
 if (Core::requireSetup(false))
-    API::error("GameCourse is not yet setup.", 400);
+    API::error("GameCourse is not yet setup.", 409);
 
 if (!Core::checkAccess(false))
-    API::error("Access denied.", 400);
+    API::error("Access denied.", 403);
 
 ModuleLoader::scanModules();
-Dictionary::init();
-
 API::gatherRequestInfo();
+Dictionary::init();
 API::processRequest();

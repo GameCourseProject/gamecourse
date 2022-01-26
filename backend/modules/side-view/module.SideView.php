@@ -1,4 +1,5 @@
 <?php
+namespace Modules\SideView;
 
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
@@ -8,19 +9,26 @@ class SideView extends Module {
 
     const SIDE_VIEW_TEMPLATE = 'Side View - by sideview';
 
+
+    /*** ----------------------------------------------- ***/
+    /*** -------------------- Setup -------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function init() {
+        $this->initTemplates();
+    }
+
+    public function initTemplates()
+    {
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::SIDE_VIEW_TEMPLATE))
+            Views::createTemplateFromFile(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), $courseId);
+    }
+
     public function setupResources() {
         parent::addResources('js/');
         parent::addResources('css/side-view.css');
-    }
-
-    public function init() {
-        if (!Views::templateExists($this->getCourseId(), self::SIDE_VIEW_TEMPLATE)) {
-            Views::createTemplateFromFile(self::SIDE_VIEW_TEMPLATE, file_get_contents(__DIR__ . '/sideview.txt'), $this->getCourseId());
-        }
-        
-    }
-    public function is_configurable(){
-        return false;
     }
 
     public function update_module($compatibleVersions)
