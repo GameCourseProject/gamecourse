@@ -12,8 +12,8 @@ class RuleSystem
     private $rulesdir;
     private $ruletestpath;
     private $ruletestoutput;
-    private $templateRulePath = "modules/skills/rules/rule_skill_template_basic.txt";
-    private $templateWildcardRulePath = "modules/skills/rules/rule_skill_template_wildcard.txt";
+    private $templateRulePath = MODULES_FOLDER . "/skills/rules/rule_skill_template_basic.txt";
+    private $templateWildcardRulePath = MODULES_FOLDER . "/skills/rules/rule_skill_template_wildcard.txt";
     private $rules = array();
     private $tags = array();
 

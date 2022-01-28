@@ -54,7 +54,7 @@ if(isset($_REQUEST["quantos"]) && isset($_REQUEST["course"]) ){
             $separator = ';';
             $key = $datagen.$separator.$uid;
             //$url = "http://web.ist.utl.pt/daniel.j.goncalves/pcm/index.php?key=".$key;
-            $url = "http://".$_SERVER['HTTP_HOST'] .'/'. BASE . "/modules/qr/index.php?course=".$courseId."&key=".$key;
+            $url = "http://".$_SERVER['HTTP_HOST'] .'/'. BASE . "/" . MODULES_FOLDER . "/qr/index.php?course=".$courseId."&key=".$key;
 
             $tinyurl = getTinyURL($url);
             // Inserir Base de Dados

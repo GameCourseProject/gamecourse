@@ -170,7 +170,7 @@ abstract class Module
         //apagar o module da BD
         Core::$systemDB->delete("module", ["moduleId" => $moduleId]);
         //apagar a pasta do module
-        Utils::deleteDirectory("modules/" . $moduleId);
+        Utils::deleteDirectory(MODULES_FOLDER . "/" . $moduleId);
     }
 
 
@@ -227,7 +227,7 @@ abstract class Module
     {
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
         if (empty($table)) {
-            Core::$systemDB->executeQuery(file_get_contents("modules/" . $moduleName . "/create" . $children . ".sql"));
+            Core::$systemDB->executeQuery(file_get_contents(MODULES_FOLDER . "/" . $moduleName . "/create" . $children . ".sql"));
             return true;
         }
         return false;
@@ -238,7 +238,7 @@ abstract class Module
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
         if (empty($table)) {
             $query = $this->createQuery($tableName, $columns);
-            $fileName = "modules/plugin/create" . $tableName . ".sql";
+            $fileName = MODULES_FOLDER . "/plugin/create" . $tableName . ".sql";
             file_put_contents($fileName, $query);
             Core::$systemDB->executeQuery(file_get_contents($fileName));
         }
@@ -262,7 +262,7 @@ abstract class Module
 
     public function dropTables(string $moduleName)
     {
-        $file = "modules/" . $moduleName . "/delete.sql";
+        $file = MODULES_FOLDER . "/" . $moduleName . "/delete.sql";
         if (file_exists($file)) {
             Core::$systemDB->executeQuery(file_get_contents($file));
         }
@@ -279,9 +279,9 @@ abstract class Module
         $path = time() . ".zip";
         file_put_contents($path, $fileContents);
 
-        $toPath = "modules";
-        if ($name != "modules") {
-            $toPath = "modules/" . $name;
+        $toPath = MODULES_FOLDER;
+        if ($name != MODULES_FOLDER) {
+            $toPath = MODULES_FOLDER . "/" . $name;
             if (is_dir($toPath)) {
                 Utils::deleteDirectory($toPath);
             }
@@ -302,13 +302,13 @@ abstract class Module
         $name = "badges";
         $zip = new \ZipArchive();
 
-        $rootPath = realpath("modules");
+        $rootPath = realpath(MODULES_FOLDER);
         $zipName = "modules.zip";
 
         $courses = Core::$systemDB->selectMultiple("course");
         $modules = Core::$systemDB->selectMultiple("module");
         if (!$all) {
-            $rootPath = realpath("modules/" . $name);
+            $rootPath = realpath(MODULES_FOLDER . "/" . $name);
             $zipName = $name . ".zip";
             Module::exportModuleConfig($name, $courses);
         } else {
@@ -336,7 +336,7 @@ abstract class Module
 
         //remove config files
         foreach ($modules as $module) {
-            $file = "modules/" . $module["moduleId"] . "/config.json";
+            $file = MODULES_FOLDER . "/" . $module["moduleId"] . "/config.json";
             if (file_exists($file)) {
                 unlink($file);
             }
@@ -362,7 +362,7 @@ abstract class Module
             }
         }
         if ($moduleArr) {
-            file_put_contents("modules/" . $name . "/config.json", json_encode($moduleArr));
+            file_put_contents(MODULES_FOLDER . "/" . $name . "/config.json", json_encode($moduleArr));
         }
     }
 
