@@ -1,8 +1,8 @@
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
-import {copyObject} from "../../_utils/misc/misc";
+import {copyObject, exists} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
-import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {baseFakeId, viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
 import {EventType} from "../events/event-type";
 import {Event} from "../events/event";
 import {Variable} from "../variables/variable";
@@ -51,6 +51,8 @@ export class ViewImage extends View {
   }
 
   buildViewTree() {
+    if (exists(baseFakeId)) this.replaceWithFakeIds();
+
     if (!viewsAdded.has(this.id)) { // View hasn't been added yet
       const copy = copyObject(this);
       if (this.parentId !== null) { // Has parent
@@ -64,6 +66,26 @@ export class ViewImage extends View {
 
   addChildViewToViewTree(view: View) {
     // Doesn't have children, do nothing
+  }
+
+  removeChildView(childViewId: number) {
+    // Doesn't have children, do nothing
+  }
+
+  replaceWithFakeIds() {
+    this.id = View.calculateFakeId(baseFakeId, this.id);
+    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
+    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+  }
+
+  findParent(parentId: number): View {
+    // Doesn't have children, cannot be parent
+    return null;
+  }
+
+  findView(viewId: number): View {
+    if (this.viewId === viewId) return this;
+    return null;
   }
 
   /**

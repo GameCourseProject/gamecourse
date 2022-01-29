@@ -3,9 +3,9 @@ import {ViewText, ViewTextDatabase} from "./view-text";
 import {View, ViewDatabase, ViewMode, VisibilityType} from "./view";
 import {ViewType} from "./view-type";
 import {buildView} from "./build-view/build-view";
-import {copyObject} from "../../_utils/misc/misc";
+import {copyObject, exists} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
-import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {baseFakeId, viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
 import {EventType} from "../events/event-type";
 import {Event} from "../events/event";
 import {Variable} from "../variables/variable";
@@ -73,6 +73,8 @@ export class ViewHeader extends View{
   }
 
   buildViewTree() {
+    if (exists(baseFakeId)) this.replaceWithFakeIds();
+
     if (!viewsAdded.has(this.id)) { // View hasn't been added yet
       const copy = copyObject(this);
 
@@ -99,6 +101,47 @@ export class ViewHeader extends View{
 
     if (view.type === ViewType.TEXT)
       (this.title as any as View[]).push(view);
+  }
+
+  removeChildView(childViewId: number) {
+    // Doesn't have children, do nothing
+  }
+
+  replaceWithFakeIds() {
+    // Replace IDs in image & title
+    this.image.replaceWithFakeIds();
+    this.title.replaceWithFakeIds();
+
+    this.id = View.calculateFakeId(baseFakeId, this.id);
+    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
+    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+  }
+
+  findParent(parentId: number): View {
+    if (this.id === parentId)  // Found parent
+      return this;
+
+    // Look for parent in image & title
+    let parent = this.image.findParent(parentId);
+    if (parent) return parent;
+
+    parent = this.title.findParent(parentId);
+    if (parent) return parent;
+
+    return null;
+  }
+
+  findView(viewId: number): View {
+    if (this.viewId === viewId) return this;
+
+    // Look for view in image & title
+    let found = this.image.findView(viewId);
+    if (found) return this.image;
+
+    found = this.title.findView(viewId);
+    if (found) return this.title;
+
+    return null;
   }
 
   /**

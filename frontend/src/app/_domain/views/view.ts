@@ -21,7 +21,7 @@ export abstract class View {
 
   private _id: number;          // Unique view id
   private _viewId: number;      // All aspects of the view have same viewId
-  private _parentId: number;  // FIXME: prob not using for anything in frontend, delete
+  private _parentId: number;
   private _type: ViewType;
   private _role: string;
   private _mode: ViewMode;
@@ -189,6 +189,14 @@ export abstract class View {
 
   abstract addChildViewToViewTree(view: View, options?: any);
 
+  abstract removeChildView(childViewId: number);
+
+  abstract replaceWithFakeIds();
+
+  abstract findParent(parentId: number): View;
+
+  abstract findView(viewId: number): View;
+
   /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
@@ -241,6 +249,19 @@ export abstract class View {
       events: obj.events && !!Object.keys(obj.events).length ?
               objectMap(obj.events, (eventStr, type) => buildEvent(type as EventType, eventStr)) : null,
     }
+  }
+
+  /**
+   * Calculates a unique fake ID based on the minimum fake ID used
+   * so far, and the ID given.
+   *
+   * @param min
+   * @param id
+   * @return number
+   */
+  static calculateFakeId(min: number, id: number): number {
+    if (id <= 0) return id;
+    return -id + min;
   }
 }
 

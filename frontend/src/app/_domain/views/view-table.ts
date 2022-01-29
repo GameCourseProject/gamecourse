@@ -3,9 +3,9 @@ import {ViewType} from "./view-type";
 import {buildView} from "./build-view/build-view";
 import {ErrorService} from "../../_services/error.service";
 import {ViewRow, ViewRowDatabase} from "./view-row";
-import {copyObject} from "../../_utils/misc/misc";
+import {copyObject, exists} from "../../_utils/misc/misc";
 import {ViewSelectionService} from "../../_services/view-selection.service";
-import {viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
+import {baseFakeId, viewsAdded, viewTree} from "./build-view-tree/build-view-tree";
 import {EventType} from "../events/event-type";
 import {Event} from "../events/event";
 import {Variable} from "../variables/variable";
@@ -120,6 +120,8 @@ export class ViewTable extends View {
   }
 
   buildViewTree() {
+    if (exists(baseFakeId)) this.replaceWithFakeIds();
+
     if (!viewsAdded.has(this.id)) { // View hasn't been added yet
       const copy = copyObject(this);
 
@@ -164,6 +166,55 @@ export class ViewTable extends View {
       }
       (this.rows as any as View[][]).push([view]);  // No aspect found
     }
+  }
+
+  removeChildView(childViewId: number) {
+    // Table has its own editor, do nothing
+  }
+
+  replaceWithFakeIds() {
+    // Replace IDs in children
+    for (const headerRow of this.headerRows) {
+      headerRow.replaceWithFakeIds();
+    }
+    for (const row of this.rows) {
+      row.replaceWithFakeIds();
+    }
+
+    this.id = View.calculateFakeId(baseFakeId, this.id);
+    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
+    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+  }
+
+  findParent(parentId: number): View {
+    if (this.id === parentId)  // Found parent
+      return this;
+
+    // Look for parent in children
+    for (const headerRow of this.headerRows) {
+      const parent = headerRow.findParent(parentId);
+      if (parent) return parent;
+    }
+    for (const row of this.rows) {
+      const parent = row.findParent(parentId);
+      if (parent) return parent;
+    }
+    return null;
+  }
+
+  findView(viewId: number): View {
+    if (this.viewId === viewId) return this;
+
+    // Look for view in children
+    for (const headerRow of this.headerRows) {
+      const found = headerRow.findView(viewId);
+      if (found) return headerRow;
+    }
+    for (const row of this.rows) {
+      const found = row.findView(viewId);
+      if (found) return row;
+    }
+    return null;
   }
 
   insertColumn(to: 'left'|'right', of: number, minID: number): number {

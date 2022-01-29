@@ -65,6 +65,11 @@ export class ViewsEditorComponent implements OnInit {
   partToAdd: string;
   fakeIDMin: number = 0; // need negative fake IDs for views that are being added and not in DB yet
 
+  isSavingPartAsTemplate: boolean;
+  viewToSave: View;
+  templateName: string;
+  useByRef: boolean;
+
   saving: boolean;
 
   isPreviewingView: boolean;
@@ -199,27 +204,39 @@ export class ViewsEditorComponent implements OnInit {
 
   toolbarBtnClicked(btn: string, viewSelected?: View): void {
     if (!viewSelected) viewSelected = this.selection.get();
+    this.viewToEdit = copyObject(viewSelected);
 
-    if (btn === 'edit-layout') {
-      this.viewToEdit = copyObject(viewSelected);
+    if (btn === 'edit-layout') {  // Edit layout
       this.isEditingLayout = !this.isEditingLayout;
       (viewSelected as ViewBlock|ViewTable).isEditingLayout = !(viewSelected as ViewBlock|ViewTable).isEditingLayout;
       this.selection.toggleState();
 
     } else if (!this.isEditingLayout) {
-      if (btn === 'edit-settings') {
-        this.viewToEdit = copyObject(viewSelected);
+      if (btn === 'edit-settings') {  // Edit view
         this.viewToEditVariables = this.viewToEdit.variables ? objectMap(copyObject(this.viewToEdit.variables), variable => variable.value) : {};
         this.viewToEditEvents = this.viewToEdit.events ? objectMap(copyObject(this.viewToEdit.events), event => '{actions.' + (event as Event).print() + '}') : {};
         if (this.viewToEdit.type === ViewType.TEXT || this.viewToEdit.type === ViewType.IMAGE)
           this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
         // TODO: don't show gamecourse classes on input
         this.isEditSettingsModalOpen = true;
+
+      } else if (btn === 'remove') {  // Delete view
+        // FIXME: not deleting view from DB, just unlinking (if not linked to anything, delete)
+        // Delete view on all aspects
+        for (const aspect of Object.values(this.viewsByAspects)) {
+          const parent = aspect.findParent(this.viewToEdit.parentId);
+          parent.removeChildView(this.viewToEdit.viewId);
+        }
+        this.hasUnsavedChanges = true;
+
+      } else if (btn === 'save-as-template') {  // Save view as template
+        this.viewToSave = this.viewToEdit;
+        this.isSavingPartAsTemplate = true;
       }
-      // TODO
     }
 
-    if (btn !== 'edit-layout') this.hasModalOpen = true;
+    const noModal = ['edit-layout', 'remove'];
+    if (!noModal.includes(btn)) this.hasModalOpen = true;
   }
 
   updateView(newView: View): void {
@@ -272,7 +289,11 @@ export class ViewsEditorComponent implements OnInit {
     this.api.saveTemplate(this.courseID, this.template.id, viewTree)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
-        res => this.hasUnsavedChanges = false,
+        res => {
+          this.hasUnsavedChanges = false;
+          this.fakeIDMin = 0;
+          this.getTemplateEditInfo(this.template);
+        },
         error => ErrorService.set(error)
       )
   } // TODO: needs testing
@@ -351,6 +372,46 @@ export class ViewsEditorComponent implements OnInit {
     if (type === 'table' && action.action === EditorAction.TABLE_EDIT_ROW) this.toolbarBtnClicked('edit-settings', action.params.type === 'header' ?
       (this.viewToEdit as ViewTable).headerRows[action.params.row] :
       (this.viewToEdit as ViewTable).rows[action.params.row]);
+  }
+
+  saveAsTemplate(): void {
+    this.useByRef = !!this.useByRef;
+
+    // Check if already in DB if isRef, otherwise there's no view to link to
+    if (!!this.useByRef && this.hasUnsavedChanges) {
+      alert('You need to save your changes first.')
+      this.isSavingPartAsTemplate = false;
+      this.viewToSave = null;
+      this.templateName = null;
+      this.useByRef = null;
+      return;
+    }
+
+    this.loading = true;
+
+    // Find all view aspects
+    const aspects = [];
+    for (const aspect of Object.values(this.viewsByAspects)) {
+      const view = aspect.findView(this.viewToSave.viewId);
+      if (view) {
+        view.parentId = null;
+        aspects.push(view);
+      }
+    }
+
+    // Build view tree & save
+    const viewTree = buildViewTree(aspects, !!this.useByRef ? null : this.fakeIDMin);
+    this.api.saveViewAsTemplate(this.courseID, this.templateName, viewTree, this.template.roleType, this.useByRef)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(
+        res => {
+          this.isSavingPartAsTemplate = false;
+          this.viewToSave = null;
+          this.templateName = null;
+          this.useByRef = null;
+        },
+        error => ErrorService.set(error)
+      )
   }
 
 

@@ -23,7 +23,7 @@ String.prototype.capitalize = function(): string {
  * @return string
  */
 String.prototype.containsWord = function(word: string): boolean {
-  return this.match(new RegExp("\\b" + word + "\\b")) != null;
+  return this.match(new RegExp(word )) != null;
 }
 
 /**

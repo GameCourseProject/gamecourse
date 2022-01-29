@@ -419,6 +419,43 @@
 </ng-template>
 
 
+<!-- Save View As Template Modal -->
+<ng-container *ngIf="isSavingPartAsTemplate">
+  <app-modal
+    [isModalOpen]="isSavingPartAsTemplate"
+    [id]="'save_as_template'"
+    [templateRef]="saveViewAsTemplateModal"
+    (closeBtnClicked)="isSavingPartAsTemplate = false; viewToSave = null; templateName = null">
+  </app-modal>
+</ng-container>
+
+<ng-template #saveViewAsTemplateModal>
+  <div class="content">
+    <div class="title">Save Part as Template: </div>
+
+    <div class="content">
+
+      <!-- Template name -->
+      <div class="full">
+        <input type="text" class="form__input" id="templateName" placeholder="Template Name *" [(ngModel)]="templateName">
+        <label for="templateName" class="form__label">Template Name</label>
+      </div>
+
+      <!-- Save as ref -->
+      <div class="on_off">
+        <span>Save as reference </span>
+        <label class="switch">
+          <input id="isRef2" type="checkbox" [(ngModel)]="useByRef">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <button [disabled]="!templateName" class="save_btn" (click)="saveAsTemplate()">Save</button>
+    </div>
+  </div>
+</ng-template>
+
+
 <!-- Verification Modal -->
 <app-modal
   [isModalOpen]="isVerificationModalOpen"

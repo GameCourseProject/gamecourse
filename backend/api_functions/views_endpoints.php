@@ -361,6 +361,20 @@ API::registerFunction($MODULE, 'saveTemplate', function () {
     Views::editTemplate($template, $templateId);
 });
 
+API::registerFunction($MODULE, 'saveViewAsTemplate', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'templateName', 'view', 'roleType', 'isRef');
+
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    // Set template
+    Views::createTemplate(API::getValue("view"), $courseId, API::getValue('templateName'), API::getValue('roleType'));
+});
+
 
 
 

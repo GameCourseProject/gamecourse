@@ -1271,6 +1271,25 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public saveViewAsTemplate(courseID: number, templateName: string, viewTree, roleType: string, isRef: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      templateName,
+      view: viewTree,
+      roleType,
+      isRef
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIEWS);
+      qs.push('request', 'saveViewAsTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/
