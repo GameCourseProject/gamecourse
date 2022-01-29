@@ -273,7 +273,8 @@ class Views
     }
 
     /**
-     * Deletes a template and all its views.
+     * Deletes a template and all its views (only if they are not referenced
+     * in other views).
      *
      * @param int $courseId
      * @param int $templateId
@@ -288,8 +289,10 @@ class Views
         // Delete entry on 'view_template'
         Core::$systemDB->delete('view_template', ["viewId" => $viewId, "templateId" => $templateId]);
 
-        // Delete view from database (including all aspects and children)
-        ViewHandler::deleteView($view);
+        // Delete view from database (including all aspects and children), if only usage
+        $onlyUsage = empty(Core::$systemDB->select("view_template", ["viewId" => $viewId])) &&
+                     empty(Core::$systemDB->select("view_parent", ["childId" => $viewId]));
+        if ($onlyUsage) ViewHandler::deleteView($view);
 
         // Delete entry on 'template' table
         Core::$systemDB->delete('template', ["course" => $courseId, "id" => $templateId]);
