@@ -456,18 +456,31 @@
 </ng-template>
 
 
-<!-- Verification Modal -->
+<!-- Message Modal -->
 <app-modal
-  [isModalOpen]="isVerificationModalOpen"
+  [isModalOpen]="isMessageModalOpen"
   [id]="'message-api-box'"
   [classList]="'verification'"
-  [templateRef]="verificationModal"
-  (closeBtnClicked)="isVerificationModalOpen = false">
+  [templateRef]="messageModal"
+  (closeBtnClicked)="isMessageModalOpen = false">
 </app-modal>
 
-<ng-template #verificationModal>
-  <div class="message_warning warning">{{verificationText}}</div>
+<ng-template #messageModal>
+  <div class="message_warning warning">{{messageText}}</div>
   <div class="confirmation_btns">
-    <button (click)="isVerificationModalOpen = false">Confirm</button>
+    <button (click)="isMessageModalOpen = false">Confirm</button>
   </div>
 </ng-template>
+
+
+<!-- Verification Modal -->
+<app-verification-modal
+  [isModalOpen]="isVerificationModalOpen"
+  [id]="'submit_delete_view'"
+  [text]="verificationText"
+  [positiveBtnText]="'Delete'"
+  (positiveBtnClicked)="deleteView(viewToEdit)"
+  (negativeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"
+  (closeBtnClicked)="verificationText = null; isVerificationModalOpen = false; hasModalOpen = false;"
+>
+</app-verification-modal>

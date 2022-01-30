@@ -290,9 +290,7 @@ class Views
         Core::$systemDB->delete('view_template', ["viewId" => $viewId, "templateId" => $templateId]);
 
         // Delete view from database (including all aspects and children), if only usage
-        $onlyUsage = empty(Core::$systemDB->select("view_template", ["viewId" => $viewId])) &&
-                     empty(Core::$systemDB->select("view_parent", ["childId" => $viewId]));
-        if ($onlyUsage) ViewHandler::deleteView($view);
+        self::deleteViewIfNotUsed($view);
 
         // Delete entry on 'template' table
         Core::$systemDB->delete('template', ["course" => $courseId, "id" => $templateId]);
@@ -497,6 +495,21 @@ class Views
     public static function getViewByViewId(int $viewId)
     {
         return Core::$systemDB->selectMultiple("view", ["viewId" => $viewId]);
+    }
+
+    /**
+     * Delete view from database (including all aspects and children),
+     * if it is not being used anywhere else.
+     *
+     * @param $view
+     * @return void
+     */
+    public static function deleteViewIfNotUsed($view)
+    {
+        $viewId = $view[0]["viewId"];
+        $onlyUsage = empty(Core::$systemDB->select("view_template", ["viewId" => $viewId])) &&
+            empty(Core::$systemDB->select("view_parent", ["childId" => $viewId]));
+        if ($onlyUsage) ViewHandler::deleteView($view);
     }
 
 

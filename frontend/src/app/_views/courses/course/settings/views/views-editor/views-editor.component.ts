@@ -81,6 +81,9 @@ export class ViewsEditorComponent implements OnInit {
   hasUnsavedChanges: boolean;
   viewsDeleted: number[] = []; // viewIds of views that were deleted; check if need to be deleted from database
 
+  isMessageModalOpen: boolean;
+  messageText: string;
+
   isVerificationModalOpen: boolean;
   verificationText: string;
 
@@ -222,16 +225,9 @@ export class ViewsEditorComponent implements OnInit {
         this.isEditSettingsModalOpen = true;
 
       } else if (btn === 'remove') {  // Delete view
-        // Delete view on all aspects
-        for (const aspect of Object.values(this.viewsByAspects)) {
-          const parent = aspect.findParent(this.viewToEdit.parentId);
-          if (parent) parent.removeChildView(this.viewToEdit.viewId);
-        }
-
-        if (!this.viewsDeleted.includes(this.viewToEdit.viewId))
-          this.viewsDeleted.push(this.viewToEdit.viewId);
-
-        this.hasUnsavedChanges = true;
+        this.verificationText = 'Are you sure you want to delete this view and all its aspects?';
+        this.isVerificationModalOpen = true;
+        console.log(this.isVerificationModalOpen)
 
       } else if (btn === 'save-as-template') {  // Save view as template
         this.viewToSave = this.viewToEdit;
@@ -239,7 +235,7 @@ export class ViewsEditorComponent implements OnInit {
       }
     }
 
-    const noModal = ['edit-layout', 'remove'];
+    const noModal = ['edit-layout'];
     if (!noModal.includes(btn)) this.hasModalOpen = true;
   }
 
@@ -282,8 +278,8 @@ export class ViewsEditorComponent implements OnInit {
 
     this.updateView(this.viewToEdit);
 
-    this.verificationText = 'Saved!';
-    this.isVerificationModalOpen = true;
+    this.messageText = 'Saved!';
+    this.isMessageModalOpen = true;
     this.loading = false;
   }
 
@@ -417,6 +413,22 @@ export class ViewsEditorComponent implements OnInit {
         },
         error => ErrorService.set(error)
       )
+  }
+
+  deleteView(viewToDelete: View): void {
+    // Delete view on all aspects
+    for (const aspect of Object.values(this.viewsByAspects)) {
+      const parent = aspect.findParent(viewToDelete.parentId);
+      if (parent) parent.removeChildView(viewToDelete.viewId);
+    }
+
+    if (!this.viewsDeleted.includes(viewToDelete.viewId))
+      this.viewsDeleted.push(viewToDelete.viewId);
+
+    this.hasUnsavedChanges = true;
+    this.isVerificationModalOpen = false;
+    this.verificationText = null;
+    this.hasModalOpen = false;
   }
 
 

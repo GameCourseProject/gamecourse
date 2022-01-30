@@ -342,6 +342,7 @@ API::registerFunction($MODULE, 'previewTemplate', function () {
  * @param int $courseId
  * @param int $tempalteId
  * @param $template
+ * @param array $viewsDeleted (optional)
  */
 API::registerFunction($MODULE, 'saveTemplate', function () {
     API::requireCourseAdminPermission();
@@ -358,7 +359,17 @@ API::registerFunction($MODULE, 'saveTemplate', function () {
     if (!Views::templateExists($courseId, null, $templateId))
         API::error('There is no template with id = ' . $templateId);
 
+    // Save template
     Views::editTemplate($template, $templateId);
+
+    // Delete views not being used from database
+    if (API::hasKey("viewsDeleted")) {
+        $viewIdsDeleted = API::getValue("viewsDeleted");
+        foreach ($viewIdsDeleted as $viewId) {
+            $view = Views::getViewByViewId($viewId);
+            Views::deleteViewIfNotUsed($view);
+        }
+    }
 });
 
 API::registerFunction($MODULE, 'saveViewAsTemplate', function () {
