@@ -328,7 +328,26 @@
   <div class="content">
     <div class="sb-expression">
       <label [for]="label">{{capitalize(label)}}</label>
-      <textarea [id]="label" [title]="title" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit[param]"></textarea>
+      <div id="expression-input" style="width: calc(100% - 90px)">
+        <app-input-code
+          [id]="label"
+          [title]="title"
+          [classList]="'expression form__input'"
+          [placeholder]="'Expression'"
+          [mode]="'gc/exp-lang'"
+          [options]="{
+            lineNumbers: false,
+            styleActiveLine: true,
+            autohint: true,
+            lineWrapping: true,
+            theme: 'default'
+          }"
+          [init]="viewToEdit[param]"
+          [canInit]="viewLoaded"
+          (valueChange)="viewToEdit[param] = $event">
+        </app-input-code>
+      </div>
+<!--      <textarea [id]="label" [title]="title" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit[param]"></textarea>-->
     </div>
   </div>
 </ng-template>

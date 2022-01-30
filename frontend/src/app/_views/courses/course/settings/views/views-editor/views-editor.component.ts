@@ -24,6 +24,7 @@ import {Variable} from "../../../../../../_domain/variables/variable";
 import {ViewTable} from 'src/app/_domain/views/view-table';
 import {ViewHeader} from "../../../../../../_domain/views/view-header";
 import {EditorAction, ViewEditorService} from "../../../../../../_services/view-editor.service";
+import {Subject} from "rxjs";
 
 @Component({
   selector: 'app-view-editor',
@@ -54,6 +55,7 @@ export class ViewsEditorComponent implements OnInit {
   hasModalOpen: boolean;
   isEditSettingsModalOpen: boolean;
   viewToEdit: View;
+  viewLoaded: Subject<void> = new Subject<void>();
   linkEnabled: boolean;
   eventToAdd: EventType;
   viewToEditEvents: {[key in EventType]?: string};
@@ -210,6 +212,7 @@ export class ViewsEditorComponent implements OnInit {
           this.linkEnabled = exists((this.viewToEdit as ViewText|ViewImage).link);
         // TODO: don't show gamecourse classes on input
         this.isEditSettingsModalOpen = true;
+        setTimeout(() => this.viewLoaded.next(), 0);
 
       } else if (btn === 'remove') {  // Delete view
         this.verificationText = 'Are you sure you want to delete this view and all its aspects?';

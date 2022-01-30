@@ -22,6 +22,7 @@ export class InputCodeComponent implements OnInit {
   @Input() canInit: Observable<void>;         // Trigger init
 
   // Extras
+  @Input() title?: string;                    // Textarea title
   @Input() options?: any;                     // Codemirror options
   @Input() classList?: string;                // Classes to add
   @Input() disabled?: boolean;                // Make it disabled
@@ -56,16 +57,16 @@ export class InputCodeComponent implements OnInit {
     }
 
     this.options['mode'] = this.mode;
-    this.options['value'] = !this.init.isEmpty() ? this.init : null;
+    this.options['value'] = !this.init?.isEmpty() ? this.init : null;
 
     const textarea = $('#' + this.id)[0] as HTMLTextAreaElement;
     this.codemirror = CodeMirror.fromTextArea(textarea, this.options);
 
+    const that = this;
     this.codemirror.on("keyup", function (cm, event) {
-      cm.showHint(CodeMirror.hint.css);
+      cm.showHint(CodeMirror.hint[that.mode]);
     });
 
-    const that = this;
     this.codemirror.on("change", function (cm, event) {
       that.valueChange.emit(that.codemirror.getValue());
     });
