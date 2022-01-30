@@ -1254,12 +1254,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => buildView(res['data']['view'])) );
   }
 
-  public saveTemplate(courseID: number, templateID: number, viewTree): Observable<void> {
+  public saveTemplate(courseID: number, templateID: number, viewTree, viewsDeleted?: number[]): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       template: viewTree
     }
+    if (viewsDeleted?.length > 0) data['viewsDeleted'] = viewsDeleted;
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);

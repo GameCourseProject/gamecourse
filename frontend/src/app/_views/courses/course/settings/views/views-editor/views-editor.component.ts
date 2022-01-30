@@ -79,6 +79,7 @@ export class ViewsEditorComponent implements OnInit {
   clickedHelpOnce: boolean = false;
 
   hasUnsavedChanges: boolean;
+  viewsDeleted: number[] = []; // viewIds of views that were deleted; check if need to be deleted from database
 
   isVerificationModalOpen: boolean;
   verificationText: string;
@@ -221,12 +222,15 @@ export class ViewsEditorComponent implements OnInit {
         this.isEditSettingsModalOpen = true;
 
       } else if (btn === 'remove') {  // Delete view
-        // FIXME: not deleting view from DB, just unlinking (if not linked to anything, delete)
         // Delete view on all aspects
         for (const aspect of Object.values(this.viewsByAspects)) {
           const parent = aspect.findParent(this.viewToEdit.parentId);
-          parent.removeChildView(this.viewToEdit.viewId);
+          if (parent) parent.removeChildView(this.viewToEdit.viewId);
         }
+
+        if (!this.viewsDeleted.includes(this.viewToEdit.viewId))
+          this.viewsDeleted.push(this.viewToEdit.viewId);
+
         this.hasUnsavedChanges = true;
 
       } else if (btn === 'save-as-template') {  // Save view as template
@@ -286,12 +290,13 @@ export class ViewsEditorComponent implements OnInit {
   saveChanges() {
     this.loading = true;
     const viewTree = buildViewTree(Object.values(this.viewsByAspects));
-    this.api.saveTemplate(this.courseID, this.template.id, viewTree)
+    this.api.saveTemplate(this.courseID, this.template.id, viewTree, this.viewsDeleted.length > 0 ? this.viewsDeleted : null)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         res => {
           this.hasUnsavedChanges = false;
           this.fakeIDMin = 0;
+          this.viewsDeleted = [];
           this.getTemplateEditInfo(this.template);
         },
         error => ErrorService.set(error)
