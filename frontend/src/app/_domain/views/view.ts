@@ -191,7 +191,7 @@ export abstract class View {
 
   abstract removeChildView(childViewId: number);
 
-  abstract replaceWithFakeIds();
+  abstract replaceWithFakeIds(base?: number);
 
   abstract findParent(parentId: number): View;
 

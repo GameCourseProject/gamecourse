@@ -72,10 +72,11 @@ export class ViewImage extends View {
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds() {
-    this.id = View.calculateFakeId(baseFakeId, this.id);
-    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
-    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+  replaceWithFakeIds(base?: number) {
+    const baseId = exists(base) ? base : baseFakeId;
+    this.id = View.calculateFakeId(baseId, this.id);
+    this.viewId = View.calculateFakeId(baseId, this.viewId);
+    this.parentId = View.calculateFakeId(baseId, this.parentId);
   }
 
   findParent(parentId: number): View {

@@ -1,4 +1,5 @@
 import {RoleTypeId} from "../roles/role-type";
+import {Role} from "../roles/role";
 
 export class Template {
   private _id: number;
@@ -7,14 +8,16 @@ export class Template {
   private _isGlobal: boolean;
   private _roleType: RoleTypeId;
   private _viewId: number;
+  private _roles?: {viewerRole: Role, userRole?: Role}[];
 
-  constructor(id: number, name: string, courseId: number, isGlobal: boolean, roleType: RoleTypeId, viewId: number) {
+  constructor(id: number, name: string, courseId: number, isGlobal: boolean, roleType: RoleTypeId, viewId: number, roles?: {viewerRole: Role, userRole?: Role}[]) {
     this.id = id;
     this.name = name;
     this.courseId = courseId;
     this.isGlobal = isGlobal;
     this.roleType = roleType;
     this.viewId = viewId;
+    if (roles)  this.roles = roles;
   }
 
   get id(): number {
@@ -65,6 +68,14 @@ export class Template {
     this._viewId = value;
   }
 
+  get roles(): {viewerRole: Role, userRole?: Role}[] {
+    return this._roles;
+  }
+
+  set roles(value: {viewerRole: Role, userRole?: Role}[]) {
+    this._roles = value;
+  }
+
   static fromDatabase(obj: TemplateDatabase): Template {
     return new Template(
       parseInt(obj.id),
@@ -72,8 +83,27 @@ export class Template {
       parseInt(obj.course),
       !!parseInt(obj.isGlobal),
       obj.roleType as RoleTypeId,
-      parseInt(obj.viewId)
+      parseInt(obj.viewId),
+      obj.roles ? this.parseRoles(obj.roles, obj.roleType) : null
     );
+  }
+
+  static parseRoles(roles: string[], roleType: string): {viewerRole: Role, userRole?: Role}[] {
+    const parsedRoles: {viewerRole: Role, userRole?: Role}[] = [];
+    roles.forEach(role => {
+      let roleObj: {viewerRole: Role, userRole?: Role };
+      if (roleType === RoleTypeId.ROLE_SINGLE) {
+        roleObj = { viewerRole: Role.fromDatabase({name: role}) };
+
+      } else if (roleType === RoleTypeId.ROLE_INTERACTION) {
+        roleObj = {
+          viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
+          userRole: Role.fromDatabase({name: role.split('>')[0]})
+        };
+      }
+      parsedRoles.push(roleObj);
+    });
+    return parsedRoles;
   }
 }
 
@@ -84,4 +114,5 @@ export interface TemplateDatabase {
   isGlobal: string;
   roleType: string;
   viewId: string;
+  roles?: string[];
 }

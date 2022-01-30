@@ -92,15 +92,16 @@ export class ViewRow extends View {
     this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds() {
+  replaceWithFakeIds(base?: number) {
     // Replace IDs in children
     for (const child of this.children) {
-      child.replaceWithFakeIds();
+      child.replaceWithFakeIds(exists(base) ? base : null);
     }
 
-    this.id = View.calculateFakeId(baseFakeId, this.id);
-    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
-    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+    const baseId = exists(base) ? base : baseFakeId;
+    this.id = View.calculateFakeId(baseId, this.id);
+    this.viewId = View.calculateFakeId(baseId, this.viewId);
+    this.parentId = View.calculateFakeId(baseId, this.parentId);
   }
 
   findParent(parentId: number): View {

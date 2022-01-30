@@ -91,7 +91,7 @@ export class Role {
   static fromDatabase(obj: RoleDatabase): Role {
     return new Role(
       obj.id ? parseInt(obj.id) : null,
-      obj.name,
+      obj.name.startsWith('role.') ? obj.name.substr(5) : obj.name,
       obj.landingPage,
       obj.children ? obj.children.map(child => Role.fromDatabase(child)) : null
     );

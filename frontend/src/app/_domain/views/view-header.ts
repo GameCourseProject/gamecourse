@@ -107,14 +107,15 @@ export class ViewHeader extends View{
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds() {
+  replaceWithFakeIds(base?: number) {
     // Replace IDs in image & title
-    this.image.replaceWithFakeIds();
-    this.title.replaceWithFakeIds();
+    this.image.replaceWithFakeIds(exists(base) ? base : null);
+    this.title.replaceWithFakeIds(exists(base) ? base : null);
 
-    this.id = View.calculateFakeId(baseFakeId, this.id);
-    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
-    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+    const baseId = exists(base) ? base : baseFakeId;
+    this.id = View.calculateFakeId(baseId, this.id);
+    this.viewId = View.calculateFakeId(baseId, this.viewId);
+    this.parentId = View.calculateFakeId(baseId, this.parentId);
   }
 
   findParent(parentId: number): View {

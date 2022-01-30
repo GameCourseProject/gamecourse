@@ -172,18 +172,19 @@ export class ViewTable extends View {
     // Table has its own editor, do nothing
   }
 
-  replaceWithFakeIds() {
+  replaceWithFakeIds(base?: number) {
     // Replace IDs in children
     for (const headerRow of this.headerRows) {
-      headerRow.replaceWithFakeIds();
+      headerRow.replaceWithFakeIds(exists(base) ? base : null);
     }
     for (const row of this.rows) {
-      row.replaceWithFakeIds();
+      row.replaceWithFakeIds(exists(base) ? base : null);
     }
 
-    this.id = View.calculateFakeId(baseFakeId, this.id);
-    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
-    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+    const baseId = exists(base) ? base : baseFakeId;
+    this.id = View.calculateFakeId(baseId, this.id);
+    this.viewId = View.calculateFakeId(baseId, this.viewId);
+    this.parentId = View.calculateFakeId(baseId, this.parentId);
   }
 
   findParent(parentId: number): View {

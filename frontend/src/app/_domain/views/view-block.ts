@@ -102,10 +102,16 @@ export class ViewBlock extends View {
     this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds() {
-    this.id = View.calculateFakeId(baseFakeId, this.id);
-    this.viewId = View.calculateFakeId(baseFakeId, this.viewId);
-    this.parentId = View.calculateFakeId(baseFakeId, this.parentId);
+  replaceWithFakeIds(base?: number) {
+    // Replace IDs in children
+    for (const child of this.children) {
+      child.replaceWithFakeIds(exists(base) ? base : null);
+    }
+
+    const baseId = exists(base) ? base : baseFakeId;
+    this.id = View.calculateFakeId(baseId, this.id);
+    this.viewId = View.calculateFakeId(baseId, this.viewId);
+    this.parentId = View.calculateFakeId(baseId, this.parentId);
   }
 
   findParent(parentId: number): View {

@@ -36,6 +36,7 @@ export class ViewsEditorComponent implements OnInit {
 
   courseID: number;
   template: Template;
+  matchingTemplates: Template[];
   user: User;
 
   courseRoles: Role[];
@@ -44,6 +45,7 @@ export class ViewsEditorComponent implements OnInit {
   viewsByAspects: {[key: string]: View};
 
   viewToShow: View;
+  templateToAdd: number;
 
   selectedViewerRole: string;
   selectedUserRole: string;
@@ -166,22 +168,7 @@ export class ViewsEditorComponent implements OnInit {
           this.courseRoles = data.courseRoles;
           this.rolesHierarchy = data.rolesHierarchy;
           this.viewsByAspects = data.templateViewsByAspect;
-
-          // Set template roles
-          this.templateRoles = [];
-          data.templateRoles.forEach(role => {
-            let roleObj: {viewerRole: Role, userRole?: Role };
-            if (template.roleType === RoleTypeId.ROLE_SINGLE) {
-              roleObj = { viewerRole: Role.fromDatabase({name: role}) };
-
-            } else if (template.roleType === RoleTypeId.ROLE_INTERACTION) {
-              roleObj = {
-                viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
-                userRole: Role.fromDatabase({name: role.split('>')[0]})
-              };
-            }
-            this.templateRoles.push(roleObj)
-          });
+          this.templateRoles = Template.parseRoles(data.templateRoles, template.roleType);
 
           // Set selected roles
           this.selectedViewerRole = this.templateRoles.length !== 0 ? this.templateRoles[0].viewerRole.name : 'Default';
@@ -227,7 +214,6 @@ export class ViewsEditorComponent implements OnInit {
       } else if (btn === 'remove') {  // Delete view
         this.verificationText = 'Are you sure you want to delete this view and all its aspects?';
         this.isVerificationModalOpen = true;
-        console.log(this.isVerificationModalOpen)
 
       } else if (btn === 'save-as-template') {  // Save view as template
         this.viewToSave = this.viewToEdit;
@@ -336,18 +322,53 @@ export class ViewsEditorComponent implements OnInit {
     this.viewToEditVariables[name] = null;
   }
 
-  editLayout(type: string, action?: {action: EditorAction, params?: any}): void {
+  async editLayout(type: string, action?: { action: EditorAction, params?: any }): Promise<void> {
     if (type === 'block') {
-      // Create view
-      let defaultView;
-      if (this.partToAdd === 'text') defaultView = ViewText.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
-      else if (this.partToAdd === 'image') defaultView = ViewImage.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
-      else if (this.partToAdd === 'block') defaultView = ViewBlock.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
-      else if (this.partToAdd === 'header') { defaultView = ViewHeader.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole); this.fakeIDMin -= 2; }
-      else if (this.partToAdd === 'table') { defaultView = ViewTable.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole); this.fakeIDMin -= 4; }
 
-      // Update view
-      (this.viewToEdit as ViewBlock).children.push(defaultView);
+      if (this.partToAdd !== 'template') {
+        let defaultView;
+
+        // Create view
+        if (this.partToAdd === 'text') defaultView = ViewText.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+        else if (this.partToAdd === 'image') defaultView = ViewImage.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+        else if (this.partToAdd === 'block') defaultView = ViewBlock.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+        else if (this.partToAdd === 'header') {
+          defaultView = ViewHeader.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+          this.fakeIDMin -= 2;
+
+        } else if (this.partToAdd === 'table') {
+          defaultView = ViewTable.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+          this.fakeIDMin -= 4;
+        }
+
+        // Update view
+        if (defaultView) (this.viewToEdit as ViewBlock).children.push(defaultView);
+
+      } else {
+        this.loading = true;
+        this.useByRef = !!this.useByRef;
+
+        let templateViewsByAspects: {[p: string]: View};
+        await this.api.getTemplateEditInfo(this.courseID, this.templateToAdd).toPromise()
+          .then(res => templateViewsByAspects = res.templateViewsByAspect)
+          .catch(error => ErrorService.set(error))
+          .finally(() => this.loading = false);
+
+        if (!this.useByRef) {
+          // Change view IDs
+          for (const aspect of Object.values(templateViewsByAspects)) {
+            aspect.replaceWithFakeIds(this.fakeIDMin);
+          }
+        }
+
+        for (const [role, aspect] of Object.entries(templateViewsByAspects)) {
+          if (Object.keys(this.viewsByAspects).includes(role)) {
+            const view = this.viewsByAspects[role].findView(this.viewToEdit.viewId) as ViewBlock;
+            aspect.parentId = view.id;
+            view.children.push(aspect);
+          }
+        }
+      }
 
       this.partToAdd = null;
       this.isAddingPartModalOpen = false;
@@ -373,6 +394,27 @@ export class ViewsEditorComponent implements OnInit {
     if (type === 'table' && action.action === EditorAction.TABLE_EDIT_ROW) this.toolbarBtnClicked('edit-settings', action.params.type === 'header' ?
       (this.viewToEdit as ViewTable).headerRows[action.params.row] :
       (this.viewToEdit as ViewTable).rows[action.params.row]);
+  }
+
+  async getMatchingTemplates(): Promise<void> {
+    if (exists(this.matchingTemplates)) return;
+
+    this.loading = true;
+    await this.api.getViewsList(this.courseID).toPromise()
+      .then(res => {
+        this.matchingTemplates = res.templates
+          .filter(template => {
+            for (const role of template.roles) {
+              if (!this.templateRoles.find(el => el.viewerRole.name === role.viewerRole.name && el.userRole.name === role.userRole.name))
+                return false;
+            }
+            return template.roleType === this.template.roleType && template.id !== this.template.id;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+        // const allGlobalTemplates = res.globals;
+      })
+      .catch(error => ErrorService.set(error))
+      .finally(() => this.loading = false);
   }
 
   saveAsTemplate(): void {

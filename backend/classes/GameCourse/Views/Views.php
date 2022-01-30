@@ -162,14 +162,19 @@ class Views
     public static function getTemplates(int $courseId, bool $includeGlobals = false): array
     {
         $temps = Core::$systemDB->selectMultiple(
-            'template t join view_template vt on templateId=id join view v on v.viewId=vt.viewId',
+            'template t join view_template vt on templateId=id',
             ['course' => $courseId],
-            "t.id,name,course,isGlobal,roleType,vt.viewId,role",
+            "t.id,name,course,isGlobal,roleType,vt.viewId",
             null,
             [],
             [],
             "t.id"
         );
+
+        // Get template roles
+        foreach ($temps as &$template) {
+            $template["roles"] = self::getTemplateRoles($template["id"]);
+        }
 
         if ($includeGlobals) {
             $globalTemp = Core::$systemDB->selectMultiple("template", ["isGlobal" => true]);
