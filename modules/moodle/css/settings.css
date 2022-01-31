@@ -1,17 +1,17 @@
-#configPage .plugin_row{
+#configPage .moodle_row{
     margin-bottom: 20px;
     display: inline-block;
 }
 
-#configPage .plugin_row input {
+#configPage .moodle_row input {
     width: 334px;
     margin-right: 20px;
 }
-#configPage .plugin_row span {
+#configPage .moodle_row span {
     width: 105px;
     display: inline-block;
 }
-#configPage .plugin_row .button {
+#configPage .moodle_row .button {
     margin-top: 10px;
 }
 
@@ -47,6 +47,6 @@
     margin-right: 20px;
     margin-left: 0;
 }
-#configPage input[type="file"].config_input.plugin {
+#configPage input[type="file"].config_input.moodle {
     border: none;
 }

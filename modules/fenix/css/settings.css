@@ -1,9 +1,9 @@
-#configPage .plugin_row{
+#configPage .fenix_row{
     margin-bottom: 20px;
     display: inline-block;
 }
 
-#configPage .plugin_row span {
+#configPage .fenix_row span {
     width: 105px;
     display: inline-block;
 }
@@ -20,106 +20,6 @@
     margin-left: 20px;
 }
 
-#configPage input[type="file"].config_input.plugin {
-    border: none;
-}
-#configPage .plugin_row{
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-#configPage .plugin_row span {
-    width: 105px;
-    display: inline-block;
-}
-
-#configPage .column{
-    display: flex;
-    flex-direction: column;
-}
-
-#configPage .input_with_button{
-    width: calc(100% - 155px);
-}
-#configPage .input_with_button .button {
-    margin-left: 20px;
-}
-
-#configPage input[type="file"].config_input.plugin {
-    border: none;
-}
-#configPage .plugin_row{
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-#configPage .plugin_row span {
-    width: 105px;
-    display: inline-block;
-}
-
-#configPage .column{
-    display: flex;
-    flex-direction: column;
-}
-
-#configPage .input_with_button{
-    width: calc(100% - 155px);
-}
-#configPage .input_with_button .button {
-    margin-left: 20px;
-}
-
-#configPage input[type="file"].config_input.plugin {
-    border: none;
-}
-#configPage .plugin_row{
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-#configPage .plugin_row span {
-    width: 105px;
-    display: inline-block;
-}
-
-#configPage .column{
-    display: flex;
-    flex-direction: column;
-}
-
-#configPage .input_with_button{
-    width: calc(100% - 155px);
-}
-#configPage .input_with_button .button {
-    margin-left: 20px;
-}
-
-#configPage input[type="file"].config_input.plugin {
-    border: none;
-}
-#configPage .plugin_row{
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-#configPage .plugin_row span {
-    width: 105px;
-    display: inline-block;
-}
-
-#configPage .column{
-    display: flex;
-    flex-direction: column;
-}
-
-#configPage .input_with_button{
-    width: calc(100% - 155px);
-}
-#configPage .input_with_button .button {
-    margin-left: 20px;
-}
-
-#configPage input[type="file"].config_input.plugin {
+#configPage input[type="file"].config_input.fenix {
     border: none;
 }

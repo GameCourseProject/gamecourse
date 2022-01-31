@@ -49,7 +49,7 @@ function fenixPersonalizedConfig($scope, $element, $smartboards, $compile) {
         fenixconfigurationSection.attr("class", "multiple_inputs content");
         fenixInputs = $('<div class="row" ></div>');
         fenixInputs.append('<span">Fenix Course Id: </span>');
-        fenixInputs.append('<input class="config_input" type="file" accept=".csv, .txt" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
+        fenixInputs.append('<input class="config_input fenix" type="file" accept=".csv, .txt" id="newList1" onchange="angular.element(this).scope().upload()"><br>');
         fenixconfigurationSection.append(fenixInputs);
 
         action_buttons = $("<div class='config_save_button'></div>");

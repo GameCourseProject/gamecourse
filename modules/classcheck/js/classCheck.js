@@ -86,17 +86,17 @@ function classCheckPersonalizedConfig($scope, $element, $smartboards, $compile) 
         //class check
         var classCheckconfigurationSection = createSection(configurationSection, 'Class Check Variables');
         classCheckconfigurationSection.attr("class", "column content");
-        row = $("<div class='plugin_row'></div>");
+        row = $("<div class='classcheck_row'></div>");
         row.append('<span>TSV Code: </span>');
-        row.append('<input class="config_input" type:"text" id="newList" ng-model="classCheckVars.tsvCode"><br>');
+        row.append('<input class="config_input" style= "margin-top: -20px; margin-left: 120px;" type:"text" id="newList" ng-model="classCheckVars.tsvCode"><br>');
         classCheckconfigurationSection.append(row);
-        row2 = $("<div class='plugin_row periodicity'></div>");
+        row2 = $("<div class='classcheck_row periodicity'></div>");
         row2.append('<span>Periodicity: </span>');
-        row2.append('<input class="config_input" ng-init="classCheckVarsPeriodicity.number" ng-model="classCheckVarsPeriodicity.number" type="number" id="classCheckPeriodicidade1" min="0" max="59">');
-        row2.append('<select class="form-control config_input" style="margin-left: 180px; margin-top: -30px" ng-model="classCheckVarsPeriodicity.time" id="classCheckPeriodicidade2" ng-options="option.name for option in classCheckVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(classCheckVarsPeriodicity.plugin)" ></select >');
+        row2.append('<input class="config_input" style= "margin-top: -20px; margin-left: 120px;" ng-init="classCheckVarsPeriodicity.number" ng-model="classCheckVarsPeriodicity.number" type="number" id="classCheckPeriodicidade1" min="0" max="59">');
+        row2.append('<select class="form-control config_input" style="margin-left: 280px; margin-top: -30px" ng-model="classCheckVarsPeriodicity.time" id="classCheckPeriodicidade2" ng-options="option.name for option in classCheckVarsPeriodicity.availableOptions track by option.id" ng-change="changeLimit(classCheckVarsPeriodicity.plugin)" ></select >');
         //row2.append('<button style="margin-right:2px;background-color:green; margin-top: 30px" class="button small" ng-click="enableClassCheck()">Enable Class Check</button>');
        // row2.append('<button class="button small" style="background-color:red; margin-top: 30px" ng-click="disableClassCheck()">Disable Class Check</button><br>');
-        row2.append('<button style="margin-right:2px;" class="button small" ng-click="enableClassCheck()">Enable Class Check</button>');
+        row2.append('<button style="margin-right:2px; margin-top: 20px;" class="button small" ng-click="enableClassCheck()">Enable Class Check</button>');
         row2.append('<button class="button small" ng-click="disableClassCheck()">Disable Class Check</button><br>');
         classCheckconfigurationSection.append(row2);
 

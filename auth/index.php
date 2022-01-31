@@ -17,7 +17,7 @@ if (array_key_exists("googleSheetsAuth", $_GET) && array_key_exists("state", $_G
     $code = $_GET["code"];
     if ($receivedCourse && $code) {
         Core::init();
-        $gs = new GoogleSheets($receivedCourse); // alterar para GoogleSheets se quisermos meter o plugin
+        $gs = new GoogleSheets($receivedCourse);
         $gs->saveTokenToDB($code);
     }
     echo "<script>window.close();window.opener.location.reload(false);</script>";
