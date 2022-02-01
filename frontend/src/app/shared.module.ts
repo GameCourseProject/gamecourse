@@ -26,6 +26,12 @@ import {HideViewDirective} from "./_directives/events/hide-view.directive";
 import {ShowViewDirective} from "./_directives/events/show-view.directive";
 import {ToggleViewDirective} from "./_directives/events/toggle-view.directive";
 import {RowComponent} from "./_components/building-blocks/row/row.component";
+import {ChartComponent} from "./_components/building-blocks/chart/chart.component";
+import {NgApexchartsModule} from "ng-apexcharts";
+import {LineChartComponent} from "./_components/charts/line-chart/line-chart.component";
+import {BarChartComponent} from "./_components/charts/bar-chart/bar-chart.component";
+import {ProgressChartComponent} from "./_components/charts/progress-chart/progress-chart.component";
+import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
 
 
 @NgModule({
@@ -47,13 +53,18 @@ import {RowComponent} from "./_components/building-blocks/row/row.component";
     ImageComponent,
     TableComponent,
     HeaderComponent,
+    ChartComponent,
     AnyComponent,
     AsPipe,
     ViewSelectionDirective,
     GoToPageDirective,
     HideViewDirective,
     ShowViewDirective,
-    ToggleViewDirective
+    ToggleViewDirective,
+    LineChartComponent,
+    BarChartComponent,
+    ProgressChartComponent,
+    RadarChartComponent
   ],
   exports: [
     NavbarComponent,
@@ -73,10 +84,11 @@ import {RowComponent} from "./_components/building-blocks/row/row.component";
     AsPipe,
     ClickedOutsideDirective
   ],
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule
-  ]
+    imports: [
+        CommonModule,
+        RouterModule,
+        FormsModule,
+        NgApexchartsModule
+    ]
 })
 export class SharedModule { }

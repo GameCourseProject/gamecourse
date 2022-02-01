@@ -6,6 +6,7 @@ import {ViewTable, ViewTableDatabase} from "../view-table";
 import {ViewBlock, ViewBlockDatabase} from "../view-block";
 import {ViewHeader, ViewHeaderDatabase} from "../view-header";
 import {ViewRow, ViewRowDatabase} from "../view-row";
+import {ViewChart, ViewChartDatabase} from "../view-chart";
 
 /**
  * Builds a view from an object coming from the database
@@ -26,5 +27,7 @@ export function buildView(obj: ViewDatabase): View {
   else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase);
   else if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
   else if (type === ViewType.ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
+  else if (type === ViewType.CHART) return ViewChart.fromDatabase(obj as ViewChartDatabase);
+  // NOTE: insert here other types of views
   return null;
 }

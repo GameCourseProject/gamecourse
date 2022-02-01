@@ -1,6 +1,10 @@
 <?php
 namespace Modules\Charts;
 
+use CacheSystem;
+use DateTime;
+use GameCourse\Course;
+use GameCourse\CourseUser;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
@@ -34,9 +38,10 @@ class Charts extends Module {
             },
             function(&$view, $viewParams, $visitor) { //processing function
                 if ($view['chartType'] == 'progress') {
-                    $view['info']['value'] = $view['info']['value']->accept($visitor)->getValue();
-                    $view['info']['max'] = $view['info']['max']->accept($visitor)->getValue();
-                } else {
+                    ViewHandler::processSelf($view['info']['value'], $visitor);
+                    ViewHandler::processSelf($view['info']['max'], $visitor);
+
+                } else if (!empty($view['info']['provider'])) {
                     $processFunc = $this->registeredCharts[$view['info']['provider']];
                     $processFunc($view, $viewParams, $visitor);
                 }
@@ -44,18 +49,18 @@ class Charts extends Module {
             true
         );
 
-        /*** ------------ Chart Types ----------- ***/
+        /*** --------- Chart Providers --------- ***/
 
         $this->registerChart('starPlot', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
 
-            $course = \GameCourse\Course::getCourse($params['course'], false);
-            $userXPData = (new \GameCourse\CourseUser($userID, $course))->getXP();
+            $course = Course::getCourse($params['course'], false);
+            $userXPData = (new CourseUser($userID, $course))->getXP();
 
             $students = $course->getUsersWithRole('Student');
-            $studentsData= [];
-            foreach($students as $s){
-                $studentsData[]= (new \GameCourse\CourseUser($s["id"], $course))->getXP();
+            $studentsData = [];
+            foreach($students as $s) {
+                $studentsData[] = (new CourseUser($s["id"], $course))->getXP();
             }
             $numStudents = sizeof($students);
 
@@ -83,9 +88,10 @@ class Charts extends Module {
 
         $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course'], false);
+            $course = Course::getCourse($params['course'], false);
             $xpModule = $course->getModule("xp");
             $xp = $xpModule->getUserXP($userID,$params['course']);
+
             $cacheId = 'xpEvolution' . $params['course'] . '-' . $userID .'-'.$xp;
             list($hasCache, $cacheValue) = CacheSystem::get($cacheId);
             if ($hasCache) {
@@ -94,14 +100,16 @@ class Charts extends Module {
                 $chart['info']['spark'] = $spark;
                 return;
             }
+
             $awards = Core::$systemDB->selectMultiple("award",["user"=>$userID,"course"=>$course->getId()],"*","date");
 
-            if(array_key_exists(0, $awards)){
+            if (array_key_exists(0, $awards)){
                 $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
             }
             else {
                 $currentDay = (new DateTime('2021-03-01'));
             }
+
             $xpDay = 0;
             $xpTotal = 0;
             $xpValue = array();
@@ -133,7 +141,7 @@ class Charts extends Module {
 
         $this->registerChart('leaderboardEvolution', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course'], false);
+            $course = Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -285,7 +293,7 @@ class Charts extends Module {
 
         $this->registerChart('xpWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course'], false);
+            $course = Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
 
@@ -313,9 +321,21 @@ class Charts extends Module {
                 $data[] = array('x' => $xp, 'y' => $count);
             }
 
+            $domainX = range(0, max(ceil($maxXP/1000) * 1000, 20000), 500);
+            foreach ($domainX as $xpVal) {
+                $values = array_column($data, "x");
+                $found = array_search($xpVal, $values);
+                if (!is_int($found) && $found == false) $data[] = array('x' => $xpVal, 'y' => 0);
+            }
+            usort($data, function ($a, $b) {
+                if ($a["x"] > $b["x"]) return 1;
+                else if ($a["x"] < $b["x"]) return -1;
+                return 1;
+            });
+
             $chart['info'] = array(
                 'values' => $data,
-                'domainX' => range(0, max(ceil($maxXP/1000) * 1000, 20000), 500),
+                'domainX' => $domainX,
                 'domainY' => array(0, $maxCount),
                 'highlightValue' => $highlightValue,
                 'shiftBar' => true,
@@ -326,7 +346,7 @@ class Charts extends Module {
 
         $this->registerChart('badgeWorld', function(&$chart, $params, $visitor) {
             $userID = $params['user'];
-            $course = \GameCourse\Course::getCourse($params['course'], false);
+            $course = Course::getCourse($params['course'], false);
 
             $students = $course->getUsersWithRole('Student');
             $badgesModule = $course->getModule("badges");
@@ -353,9 +373,21 @@ class Charts extends Module {
 
             $totalLevels =$badgesModule->getBadgeCount();
 
+            $domainX = range(0, $totalLevels);
+            foreach ($domainX as $badgesVal) {
+                $values = array_column($data, "x");
+                $found = array_search($badgesVal, $values);
+                if (!is_int($found) && $found == false) $data[] = array('x' => $badgesVal, 'y' => 0);
+            }
+            usort($data, function ($a, $b) {
+                if ($a["x"] > $b["x"]) return 1;
+                else if ($a["x"] < $b["x"]) return -1;
+                return 1;
+            });
+
             $chart['info'] = array(
                 'values' => $data,
-                'domainX' => range(0, $totalLevels),
+                'domainX' => $domainX,
                 'domainY' => array(0, $maxCount),
                 'highlightValue' => $highlightValue,
                 'labelX' => 'Badges',

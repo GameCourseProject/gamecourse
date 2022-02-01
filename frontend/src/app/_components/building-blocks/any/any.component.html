@@ -5,4 +5,5 @@
   <bb-table *ngIf="view.type === ViewType.TABLE" [view]="view | as : ViewTable" [viewSelection]="view"></bb-table>
   <bb-block *ngIf="view.type === ViewType.BLOCK" [view]="view | as : ViewBlock" [viewSelection]="view"></bb-block>
   <bb-row *ngIf="view.type === ViewType.ROW" [view]="view | as : ViewRow" [viewSelection]="view"></bb-row>
+  <bb-chart *ngIf="view.type === ViewType.CHART" [view]="view | as : ViewChart" [viewSelection]="view"></bb-chart>
 </ng-container>

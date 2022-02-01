@@ -123,6 +123,11 @@
         [ngTemplateOutlet]="loopData">
       </ng-container>
 
+      <!-- Chart Options -->
+      <ng-container *ngIf="viewToEdit.type === ViewType.CHART"
+                    [ngTemplateOutlet]="chartOptions">
+      </ng-container>
+
       <!-- Variables -->
       <ng-container [ngTemplateOutlet]="variables"></ng-container>
 
@@ -347,8 +352,83 @@
           (valueChange)="viewToEdit[param] = $event">
         </app-input-code>
       </div>
-<!--      <textarea [id]="label" [title]="title" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEdit[param]"></textarea>-->
     </div>
+  </div>
+</ng-template>
+
+<ng-template #chartOptions>
+  <div class="sb-menu section">
+    <div class="divider"><div class="title"><span>Chart Options</span></div></div>
+
+    <!-- Chart type -->
+    <div class="sb-component">
+      <label for="chart-type">Chart Type</label>
+      <select class="form__input" id="chart-type" [(ngModel)]="viewToEdit['chartType']">
+        <option *ngFor="let type of getChartTypes()" [label]="capitalize(type)" [value]="type">{{capitalize(type)}}</option>
+      </select>
+    </div>
+
+    <!-- Chart provider -->
+    <div *ngIf="viewToEdit['chartType'] === ChartType.LINE || viewToEdit['chartType'] === ChartType.BAR" class="sb-expression">
+      <label [for]="'chart-provider'">Chart Provider</label>
+      <input id="chart-provider" type="text" class="form__input" style="width: 37.5%" [placeholder]="'Set a provider'"
+             [(ngModel)]="viewToEdit['info']['provider']">
+    </div>
+
+    <!-- Progress chart -->
+    <div *ngIf="viewToEdit['chartType'] === ChartType.PROGRESS" class="progress">
+      <div class="content">
+        <div class="sb-expression">
+          <label [for]="'chart-value'">Value</label>
+          <div style="width: calc(100% - 90px)">
+            <input id="chart-value" type="text" class="expression form__input" [placeholder]="'Expression'"
+                   [(ngModel)]="viewToEdit['info']['value']">
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="sb-expression">
+          <label [for]="'chart-max'">Max</label>
+          <div style="width: calc(100% - 90px)">
+            <input id="chart-max" type="text" class="expression form__input" [placeholder]="'Expression'"
+                   [(ngModel)]="viewToEdit['info']['max']">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sparkline -->
+    <div *ngIf="viewToEdit['chartType'] === ChartType.LINE" class="sb-checkbox">
+      <input id="cb-info" type="checkbox" [(ngModel)]="viewToEdit['info']['spark']">
+      <label for="cb-info">Enable Sparkline</label>
+    </div>
+
+    <!-- Star plot -->
+    <ng-container *ngIf="viewToEdit['chartType'] === ChartType.STAR">
+
+      <!-- Params -->
+      <div *ngIf="getEvents().length > 0">
+        <div *ngFor="let type of getEvents()">
+          <div class="content">
+            <div class="sb-expression">
+              <label [for]="type">{{type}}</label>
+              <textarea [id]="type" [title]="'Define the behaviour triggered by an event'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditEvents[type]"></textarea>
+              <div class="content"><div class="icon delete_icon" (click)="deleteEvent(type)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add event -->
+      <div *ngIf="getEventsAvailableToAdd().length > 0" class="sb-component">
+        <label for="events-missing">Add Event:</label>
+        <select class="form__input" id="events-missing" [(ngModel)]="eventToAdd">
+          <option *ngFor="let eventType of getEventsAvailableToAdd()" [label]="eventType" [value]="eventType">{{eventType}}</option>
+        </select>
+        <button [disabled]="!eventToAdd" (click)="addEvent()">Add</button>
+      </div>
+    </ng-container>
   </div>
 </ng-template>
 

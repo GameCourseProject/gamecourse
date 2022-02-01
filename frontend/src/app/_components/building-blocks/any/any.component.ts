@@ -7,6 +7,7 @@ import { ViewHeader } from 'src/app/_domain/views/view-header';
 import { ViewTable } from 'src/app/_domain/views/view-table';
 import { ViewBlock } from 'src/app/_domain/views/view-block';
 import { ViewRow } from 'src/app/_domain/views/view-row';
+import {ViewChart} from "../../../_domain/views/view-chart";
 
 @Component({
   selector: 'bb-any',
@@ -55,6 +56,10 @@ export class AnyComponent implements OnInit {
 
   get ViewRow(): typeof ViewRow {
     return ViewRow;
+  }
+
+  get ViewChart(): typeof ViewChart {
+    return ViewChart;
   }
 
 }

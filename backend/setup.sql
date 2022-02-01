@@ -316,6 +316,14 @@ CREATE TABLE view_table_row(
     FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
 );
 
+CREATE TABLE view_chart(
+    id                          int unsigned NOT NULL,
+    chartType                   ENUM ('line', 'bar', 'star', 'progress'),
+    info                        varchar(500),
+
+    FOREIGN key(id) REFERENCES view(id) ON DELETE CASCADE
+);
+
 CREATE TABLE view_parent(
     parentId                    int unsigned,
     childId                     int unsigned,

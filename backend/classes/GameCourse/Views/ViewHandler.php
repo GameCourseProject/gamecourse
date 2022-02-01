@@ -89,6 +89,7 @@ class ViewHandler
             if ($aspect["type"] == 'table') $viewRoles = self::updateViewTable($aspect, $mode);
             if ($aspect["type"] == 'block') $viewRoles = self::updateViewBlock($aspect, $mode);
             if ($aspect["type"] == 'row') $viewRoles = self::updateViewRow($aspect, $mode);
+            if ($aspect["type"] == 'chart') $viewRoles = self::updateViewChart($aspect, $mode);
             // NOTE: insert here other types of views
 
             // Add view roles to template roles
@@ -287,6 +288,31 @@ class ViewHandler
         return self::updateViewBlock($view, $mode);
     }
 
+    /**
+     * Update a view of type 'chart' in the database.
+     *
+     * @param $view
+     * @param string $mode
+     * @return array
+     */
+    private static function updateViewChart($view, string $mode): array
+    {
+        if ($mode == 'INSERT') {
+            Core::$systemDB->insert("view_chart", [
+                "id" => $view["id"],
+                "chartType" => $view["chartType"],
+                "info" => $view["info"]
+            ]);
+
+        } else if ($mode == 'UPDATE') {
+            Core::$systemDB->update("view_chart", [
+                "chartType" => $view["chartType"],
+                "info" => $view["info"]
+            ], ["id" => $view["id"]]);
+        }
+        return [$view["role"]];
+    }
+
 
     /**
      * Deletes view from database.
@@ -304,6 +330,7 @@ class ViewHandler
             if ($aspect["type"] == 'table') self::deleteViewTable($aspect);
             if ($aspect["type"] == 'block') self::deleteViewBlock($aspect);
             if ($aspect["type"] == 'row') self::deleteViewRow($aspect);
+            if ($aspect["type"] == 'chart') self::deleteViewChart($aspect);
             // NOTE: insert here other types of views
 
             Core::$systemDB->delete('view', ["id" => $aspect["id"]]);
@@ -399,6 +426,16 @@ class ViewHandler
         self::deleteViewBlock($view);
     }
 
+    /**
+     * Delete view of type 'chart' from database.
+     *
+     * @param $view
+     */
+    private static function deleteViewChart($view)
+    {
+        Core::$systemDB->delete("view_chart", ["id" => $view["id"]]);
+    }
+
 
 
     /*** ---------------------------------------------------- ***/
@@ -450,14 +487,16 @@ class ViewHandler
             self::filterViewByRoles($view, $rolesHierarchy);
 
         foreach ($view as &$aspect) {
-            self::prepareViewFromDatabase($aspect);
             if ($aspect["type"] == 'text') self::buildViewText($aspect);
             if ($aspect["type"] == 'image') self::buildViewImage($aspect);
             if ($aspect["type"] == 'header') self::buildViewHeader($aspect, $toExport, $rolesHierarchy, $edit);
             if ($aspect["type"] == 'table') self::buildViewTable($aspect, $toExport, $rolesHierarchy, $edit);
             if ($aspect["type"] == 'block') self::buildViewBlock($aspect, $toExport, $rolesHierarchy, $edit);
             if ($aspect["type"] == 'row') self::buildViewRow($aspect, $toExport, $rolesHierarchy, $edit);
+            if ($aspect["type"] == 'chart') self::buildViewChart($aspect);
             // NOTE: insert here other types of views
+
+            self::prepareViewFromDatabase($aspect);
 
             if ($toExport) {
                 // Delete ids
@@ -610,6 +649,17 @@ class ViewHandler
         // Similar to view type 'block',
         // they both only carry children views
         self::buildViewBlock($view, $toExport, $rolesHierarchy, $edit);
+    }
+
+    /**
+     * Build a view of type 'chart' from the database.
+     *
+     * @param $view
+     */
+    public static function buildViewChart(&$view)
+    {
+        $viewChart = Core::$systemDB->select("view_chart", ["id" => $view["id"]]);
+        $view = array_merge($view, $viewChart);
     }
 
 
@@ -811,7 +861,7 @@ class ViewHandler
     private static function prepareViewForDatabase(&$view)
     {
         // Params that need to be encoded
-        $toEncode = ['events', 'loopData', 'variables', 'visibilityCondition'];
+        $toEncode = ['events', 'loopData', 'variables', 'visibilityCondition', 'info'];
         foreach ($toEncode as $param) {
             if (isset($view[$param]))
                 $view[$param] = json_encode($view[$param]);
@@ -828,10 +878,11 @@ class ViewHandler
     private static function prepareViewFromDatabase(&$view)
     {
         // Params that need to be decoded
-        $toDecode = ['events', 'loopData', 'variables', 'visibilityCondition'];
+        $toDecode = ['events', 'loopData', 'variables', 'visibilityCondition', 'info'];
         foreach ($toDecode as $param) {
+
             if (isset($view[$param]))
-                $view[$param] = json_decode($view[$param]);
+                $view[$param] = json_decode($view[$param], true);
         }
     }
 

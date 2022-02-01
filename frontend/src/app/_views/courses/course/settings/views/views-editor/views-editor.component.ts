@@ -25,6 +25,7 @@ import {ViewTable} from 'src/app/_domain/views/view-table';
 import {ViewHeader} from "../../../../../../_domain/views/view-header";
 import {EditorAction, ViewEditorService} from "../../../../../../_services/view-editor.service";
 import {Subject} from "rxjs";
+import {ChartType, ViewChart} from "../../../../../../_domain/views/view-chart";
 
 @Component({
   selector: 'app-view-editor',
@@ -118,8 +119,16 @@ export class ViewsEditorComponent implements OnInit {
     return ViewTable;
   }
 
+  get ViewChart(): typeof ViewChart {
+    return ViewChart;
+  }
+
   get VisibilityType(): typeof VisibilityType {
     return VisibilityType;
+  }
+
+  get ChartType(): typeof ChartType {
+    return ChartType;
   }
 
   capitalize(str: string): string {
@@ -265,6 +274,16 @@ export class ViewsEditorComponent implements OnInit {
     if (!exists(this.viewToEdit.loopData) || this.viewToEdit.loopData.isEmpty())
       this.viewToEdit.loopData = null;
 
+    // Chart Options
+    if (this.viewToEdit.type === ViewType.CHART) {
+      const sparkline = (this.viewToEdit as ViewChart).info['spark'];
+      if (!sparkline || !exists(sparkline))
+        delete (this.viewToEdit as ViewChart).info['spark'];
+
+      if ((this.viewToEdit as ViewChart).chartType === ChartType.PROGRESS)
+        delete (this.viewToEdit as ViewChart).info['provider'];
+    }
+
     this.updateView(this.viewToEdit);
 
     this.messageText = 'Saved!';
@@ -275,6 +294,7 @@ export class ViewsEditorComponent implements OnInit {
   saveChanges() {
     this.loading = true;
     const viewTree = buildViewTree(Object.values(this.viewsByAspects));
+
     this.api.saveTemplate(this.courseID, this.template.id, viewTree, this.viewsDeleted.length > 0 ? this.viewsDeleted : null)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
@@ -334,6 +354,7 @@ export class ViewsEditorComponent implements OnInit {
         // Create view
         if (this.partToAdd === 'text') defaultView = ViewText.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
         else if (this.partToAdd === 'image') defaultView = ViewImage.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
+        else if (this.partToAdd === 'chart') defaultView = ViewChart.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
         else if (this.partToAdd === 'block') defaultView = ViewBlock.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
         else if (this.partToAdd === 'header') {
           defaultView = ViewHeader.getDefault(--this.fakeIDMin, this.viewToEdit.id, this.selectedRole);
@@ -526,5 +547,9 @@ export class ViewsEditorComponent implements OnInit {
   clearSelection() {
     if (!this.isPreviewingView && !this.hasModalOpen && !this.isEditingLayout)
       this.selection.clear();
+  }
+
+  getChartTypes(): string[] {
+    return Object.values(ChartType);
   }
 }
