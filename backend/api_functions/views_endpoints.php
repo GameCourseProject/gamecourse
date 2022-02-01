@@ -390,7 +390,7 @@ API::registerFunction($MODULE, 'saveViewAsTemplate', function () {
 
 
 
-// TODO: refactor
+// TODO: refactor to new structure (everything underneath)
 
 //creates a new aspect for the page/template, copies content of closest aspect
 API::registerFunction($MODULE, 'createAspectView', function () {
@@ -462,65 +462,6 @@ API::registerFunction($MODULE, 'getInfo', function () {
     API::response($response);
 });
 
-//save a part of the view as a template or templateRef while editing the view
-API::registerFunction($MODULE, 'saveTemplateOld', function () {
-    API::requireCourseAdminPermission();
-    API::requireValues('course', 'name', 'parts', 'isRef');
-    $templateName = API::getValue('name');
-    $content = API::getValue('parts');
-    $courseId = API::getValue("course");
-    $isRef = API::getValue("isRef");
-
-    $roleType = $this->viewHandler->getRoleType($content[0]["role"]);
-    if ($roleType == "ROLE_INTERACTION") {
-        $defaultRole = "role.Default>role.Default";
-    } else {
-        $defaultRole = "role.Default";
-    }
-    //$aspects = [];
-    //$aspects[] = ["role" => "role.Default", "partType" => "block", "parent" => null];
-
-    //these lines were moved to setTemplate
-    // Core::$systemDB->insert("aspect_class");
-    // $aspectClass = Core::$systemDB->getLastId();
-    //'container' is always Default
-    // Core::$systemDB->insert("view", ["aspectClass" => $aspectClass, "partType" => "block", "parent" => null, "role" => $defaultRole]);
-    // $viewId = Core::$systemDB->getLastId();
-    // Core::$systemDB->update("view", ["viewId" => $viewId], ['id' => $viewId]);
-    if ($isRef) {
-        $viewId = API::getValue('viewId');
-        $role = API::getValue('role');
-        Core::$systemDB->insert("template", ["course" => $courseId, "name" => $templateName, "roleType" => $roleType]);
-        $templateId = Core::$systemDB->getLastId();
-
-
-        $view = Core::$systemDB->select("view", ["viewId" => $viewId, "role" => $role]);
-        $existsTemplateWithViewId = Core::$systemDB->select("view_template", ["viewId" => $viewId]) != null; //templateRef
-        // print_r($view);
-        // print_r($existsTemplateWithViewId);
-        if ($view == null || $existsTemplateWithViewId) {
-            // print_r("aqui");
-            foreach ($content as $aspect) {
-                // print_r($aspect);
-                $aspect["parentId"] = null;
-                if (!isset($aspect["isTemplateRef"])) // (not) used as ref
-                    $aspect["viewId"] = null;
-                ViewHandler::updateViewAndChildren($aspect, $courseId, false, false, $templateName);
-            }
-        } else {
-            Core::$systemDB->insert("view_template", ["viewId" => $viewId, "templateId" => $templateId]);
-        }
-
-        $finalViewId = Core::$systemDB->select("view_template", ["templateId" => $templateId], "viewId");
-
-        API::response(array('templateId' => $templateId, 'idView' => $finalViewId));
-    } else {
-        //FIXME: setTemplate changed
-        [$templateId, $viewId] = $this->setTemplate($content, $defaultRole, $courseId, $templateName, $roleType);
-        API::response(array('templateId' => $templateId, 'idView' => $viewId));
-    }
-});
-
 //make copy of global template for the current course
 API::registerFunction($MODULE, "copyGlobalTemplate", function () {
     API::requireCourseAdminPermission();
@@ -558,14 +499,6 @@ API::registerFunction($MODULE, 'getDictionary', function () {
     $course = new Course($courseId);
     //API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);
     API::response(array('libraries' => $course->getEnabledLibrariesInfo(), 'functions' => $course->getAllFunctionsForEditor(), 'variables' => $course->getEnabledVariables()));
-});
-//save the view being edited
-API::registerFunction($MODULE, 'saveEdit', function () {
-    $this->saveOrPreview(true);
-});
-//gets data to show preview of the view being edited
-API::registerFunction($MODULE, 'previewEdit', function () {
-    $this->saveOrPreview(false);
 });
 
 API::registerFunction($MODULE, 'testExpression', function () {
