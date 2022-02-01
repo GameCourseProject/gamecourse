@@ -74,7 +74,7 @@
         <div class="tool btn" title="Remove" (click)="toolbarBtnClicked('remove')">
           <img src="assets/icons/delete_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Switch part" (click)="toolbarBtnClicked('switch')">
+        <div *ngIf="selection.get().type !== ViewType.ROW" class="tool btn" title="Switch part" (click)="toolbarBtnClicked('switch')">
           <img src="assets/icons/switch_part_icon.svg" alt="">
         </div>
         <div class="tool btn" title="Duplicate" (click)="toolbarBtnClicked('duplicate')">
@@ -514,7 +514,7 @@
       </div>
     </ng-container>
 
-    <button [disabled]="!partToAdd || (partToAdd === 'template' && !templateToAdd)" class="save_btn" (click)="editLayout('block')">Add Item</button>
+    <button [disabled]="!partToAdd || (partToAdd === 'template' && !templateToAdd)" class="save_btn" (click)="editLayout(isSwitching ? 'switch' : 'block')">Add Item</button>
   </div>
 </ng-template>
 

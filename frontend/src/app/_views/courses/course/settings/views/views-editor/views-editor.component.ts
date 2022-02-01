@@ -26,6 +26,7 @@ import {ViewHeader} from "../../../../../../_domain/views/view-header";
 import {EditorAction, ViewEditorService} from "../../../../../../_services/view-editor.service";
 import {Subject} from "rxjs";
 import {ChartType, ViewChart} from "../../../../../../_domain/views/view-chart";
+import {ViewRow} from "../../../../../../_domain/views/view-row";
 
 @Component({
   selector: 'app-view-editor',
@@ -75,6 +76,7 @@ export class ViewsEditorComponent implements OnInit {
   templateName: string;
   useByRef: boolean;
 
+  isSwitching: boolean;
   saving: boolean;
 
   isPreviewingView: boolean;
@@ -208,7 +210,7 @@ export class ViewsEditorComponent implements OnInit {
     if (!viewSelected) viewSelected = this.selection.get();
     this.viewToEdit = copyObject(viewSelected);
 
-    if (btn === 'edit-layout') {  // Edit layout
+    if (btn === 'edit-layout') {  // Edit layout or Switch
       this.isEditingLayout = !this.isEditingLayout;
       (viewSelected as ViewBlock|ViewTable).isEditingLayout = !(viewSelected as ViewBlock|ViewTable).isEditingLayout;
       this.selection.toggleState();
@@ -222,6 +224,10 @@ export class ViewsEditorComponent implements OnInit {
         // TODO: don't show gamecourse classes on input
         this.isEditSettingsModalOpen = true;
         setTimeout(() => this.viewLoaded.next(), 0);
+
+      } else if (btn === 'switch') {
+        this.isSwitching = true;
+        this.isAddingPartModalOpen = true;
 
       } else if (btn === 'remove') {  // Delete view
         this.verificationText = 'Are you sure you want to delete this view and all its aspects?';
@@ -346,7 +352,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async editLayout(type: string, action?: { action: EditorAction, params?: any }): Promise<void> {
-    if (type === 'block') {
+    if (type === 'block' || type === 'switch') {
 
       if (this.partToAdd !== 'template') {
         let defaultView;
@@ -366,7 +372,26 @@ export class ViewsEditorComponent implements OnInit {
         }
 
         // Update view
-        if (defaultView) (this.viewToEdit as ViewBlock).children.push(defaultView);
+        if (type === 'block' && defaultView) {
+          (defaultView as View).parentId = this.viewToEdit.id;
+          (this.viewToEdit as ViewBlock).children.push(defaultView);
+
+        } else if (type === 'switch' && defaultView) {
+          for (const aspect of Object.values(this.viewsByAspects)) {
+            const parent = aspect.findParent(this.viewToEdit.parentId);
+            if (parent) {
+              for (let i = 0; i < (parent as ViewBlock | ViewRow).children.length; i++) {
+                const child = (parent as ViewBlock | ViewRow).children[i];
+                if (child.viewId === this.viewToEdit.viewId) {
+                  (defaultView as View).parentId = parent.id;
+                  (parent as ViewBlock | ViewRow).children.removeAtIndex(i);
+                  (parent as ViewBlock | ViewRow).children.insertAtIndex(i, defaultView);
+                  break;
+                }
+              }
+            }
+          }
+        }
 
       } else {
         this.loading = true;
@@ -414,6 +439,8 @@ export class ViewsEditorComponent implements OnInit {
 
     this.updateView(this.viewToEdit);
     this.toolbarBtnClicked('edit-layout');
+    this.isSwitching = false;
+    this.hasUnsavedChanges = true;
 
     if (type === 'table' && action.action === EditorAction.TABLE_EDIT_ROW) this.toolbarBtnClicked('edit-settings', action.params.type === 'header' ?
       (this.viewToEdit as ViewTable).headerRows[action.params.row] :
