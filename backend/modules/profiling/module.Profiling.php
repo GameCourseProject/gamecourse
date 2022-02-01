@@ -25,12 +25,11 @@ class Profiling extends Module {
 
     public function init() {
         $this->setupData($this->getCourseId());
-        $this->initDictionary();
+        $this->initAPIEndpoints();
     }
 
-    public function initDictionary()
+    public function initAPIEndpoints()
     {
-        // FIXME: shouldn't be here; only Dictionary functions
         API::registerFunction('settings', 'getTime', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');

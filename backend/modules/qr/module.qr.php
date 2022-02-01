@@ -15,12 +15,11 @@ class QR extends Module
 
     public function init() {
         $this->setupData();
-        $this->initDictionary();
+        $this->initAPIEndpoints();
     }
 
-    public function initDictionary()
+    public function initAPIEndpoints()
     {
-        // FIXME: shouldn't be here; this is for Dictionary functions
         API::registerFunction('settings', 'qrError', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');

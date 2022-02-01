@@ -27,6 +27,7 @@ class Skills extends Module
         $this->setupData($this->getCourseId());
         $this->initTemplates();
         $this->initDictionary();
+        $this->initAPIEndpoints();
     }
 
     public function initTemplates()
@@ -664,8 +665,10 @@ class Skills extends Module
             'library',
             true
         );
+    }
 
-        // FIXME: shouldn't be here; only Dictionary functions
+    public function initAPIEndpoints()
+    {
         API::registerFunction('skills', 'page', function () {
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');

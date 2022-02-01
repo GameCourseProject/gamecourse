@@ -44,12 +44,11 @@ class Plugin extends Module
     public function init()
     {
         $this->setupData();
-        $this->initDictionary();
+        $this->initAPIEndpoints();
     }
 
-    public function initDictionary()
+    public function initAPIEndpoints()
     {
-        // FIXME: shouldn't be here; only Dictionary functions
         //do not touch bellow
         //settings page
         API::registerFunction('settings', 'coursePlugin', function () {

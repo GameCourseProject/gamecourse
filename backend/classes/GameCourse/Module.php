@@ -131,8 +131,6 @@ abstract class Module
 
     /**
      * Creates default templates of module.
-     *
-     * @return void
      */
     public function initTemplates()
     {
@@ -143,10 +141,16 @@ abstract class Module
      * Registers libraries, functions, variables and/or view types of a
      * module in the Dictionary to make them available on the system.
      * @see Dictionary
-     *
-     * @return void
      */
     public function initDictionary()
+    {
+
+    }
+
+    /**
+     * Registers API functions of a module.
+     */
+    public function initAPIEndpoints()
     {
 
     }

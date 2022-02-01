@@ -49,7 +49,7 @@ class Quest extends Module
         }*/
 
         $this->initTemplates();
-        $this->initDictionary();
+        $this->initAPIEndpoints();
     }
 
     public function initTemplates()
@@ -60,10 +60,8 @@ class Quest extends Module
             Views::createTemplateFromFile(self::QUEST_ANNOUNCE_TEMPLATE, file_get_contents(__DIR__ . '/quest_announce.txt'), $courseId);
     }
 
-    public function initDictionary()
+    public function initAPIEndpoints()
     {
-        // FIXME: shouldn't be here; this is for Dictionary functions
-
         API::registerFunction('quest', 'level', function() {
             API::requireValues('level');
 

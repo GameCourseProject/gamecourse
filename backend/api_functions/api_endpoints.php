@@ -13,7 +13,9 @@ include('api_functions/views_endpoints.php');
 
 $MODULE = 'api';
 
-// Get all API endpoints available.
+/**
+ * Get all API endpoints available.
+ */
 API::registerFunction($MODULE, 'getAPIEndpoints', function () {
     // FIXME: return functions args and description as well
     API::response(array('endpoints' => API::getAllFunctions()));

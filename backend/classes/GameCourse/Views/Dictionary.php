@@ -37,7 +37,7 @@ class Dictionary
     {
         if ($setup) {
             // NOTE: these only need to be initialized once on setup
-            // because all their params fit in the DB (non-functions)
+            // because all their params fit in the database (non-functions)
 
             /*** ----------------------------------------------- ***/
             /*** ------------------ Libraries ------------------ ***/
