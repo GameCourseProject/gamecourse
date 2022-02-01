@@ -115,7 +115,7 @@ export class LineChartComponent implements OnInit {
       }
     }
 
-    if (exists(this.yAxisLabel && this.yAxisLabel === 'Position')) {
+    if (exists(this.yAxisLabel) && this.yAxisLabel === 'Position') {
       this.chartOptions.yaxis.labels = { formatter(val: number, opts?: any): string | string[] {
         return Math.round(val).toString();
         }
