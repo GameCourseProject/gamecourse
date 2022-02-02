@@ -794,12 +794,7 @@ class Dictionary
                             $imgName = str_replace(' ', '', $name . '-' . $level);
                             return new ValueNode('modules/badges/imgs/' . $imgName . '.png');
                         case 'skill':
-                            $color = '#fff';
-                            $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
-                            if ($skillColor)
-                                $color = $skillColor;
-                            //needs width and height , should have them if it has latest-awards class in a profile
-                            return new ValueNode('<div class="img" style="background-color: ' . $color . '">');
+                            return new ValueNode('modules/skills/imgs/skills.svg');
                         case 'bonus':
                             return new ValueNode('modules/awardlist/imgs/awards.svg');
                         default:
