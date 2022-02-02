@@ -461,7 +461,7 @@ class Quest extends Module
         parent::addResources('css/jquery.datetimepicker.css');
     }
 
-    public function cleanModuleData() {
+    public function cleanUp(string $moduleId, int $courseId) {
         /*$questData = $this->getData()->getValue();
         foreach ($questData['quests'] as &$quest) {
             unset($quest['info']);

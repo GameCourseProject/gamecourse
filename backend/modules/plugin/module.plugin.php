@@ -325,13 +325,13 @@ class Plugin extends Module
         Core::$systemDB->delete("config_moodle", ["course" => $courseId]);
     }
 
-    public function dropTables($moduleName)
+    public function dropTables($moduleId)
     {
         $courseId = API::getValue('course');
         new CronJob("Moodle", $courseId, null, null, true);
         new CronJob("ClassCheck", $courseId, null, null, true);
         new CronJob("GoogleSheets", $courseId, null, null, true);
-        parent::dropTables($moduleName);
+        parent::dropTables($moduleId);
     }
 
 

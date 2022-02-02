@@ -18,7 +18,7 @@ $MODULE = 'module';
  * Set module state in course: either enabled or disabled.
  *
  * @param int $courseId
- * @param int $moduleId
+ * @param string $moduleId
  * @param bool $isEnabled
  */
 API::registerFunction($MODULE, 'setModuleState', function () {

@@ -355,8 +355,8 @@ CREATE TABLE template(
 );
 
 CREATE TABLE view_template(
-	viewId                      int unsigned NOT NULL ,
-	templateId                  int unsigned NOT NULL ,
+	viewId                      int unsigned NOT NULL,
+	templateId                  int unsigned NOT NULL,
 
 	FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
 );
@@ -366,6 +366,14 @@ CREATE TABLE template_role(
     role                        varchar(100),
 
     FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE
+);
+
+CREATE TABLE template_module(
+    templateId                  int unsigned NOT NULL,
+    moduleId                    varchar(50),
+
+    FOREIGN key(templateId) REFERENCES template(id) ON DELETE CASCADE,
+    FOREIGN key(moduleId) REFERENCES module(moduleId) ON DELETE CASCADE
 );
 
 CREATE TABLE autogame(

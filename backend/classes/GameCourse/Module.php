@@ -2,6 +2,7 @@
 namespace GameCourse;
 
 use GameCourse\Views\Dictionary;
+use GameCourse\Views\Views;
 use Utils;
 
 abstract class Module
@@ -155,14 +156,6 @@ abstract class Module
 
     }
 
-    public function initSettingsTabs() // FIXME: prob can delete; after refactor not being used
-    {
-    }
-
-    public function cleanModuleData()
-    {
-    }
-
     public static function deleteModule(string $moduleId)
     {
         $module = ModuleLoader::getModule($moduleId);
@@ -175,6 +168,29 @@ abstract class Module
         Core::$systemDB->delete("module", ["moduleId" => $moduleId]);
         //apagar a pasta do module
         Utils::deleteDirectory(MODULES_FOLDER . "/" . $moduleId);
+    }
+
+    /**
+     * Cleans up module data in a given course.
+     *
+     * @param string $moduleId
+     * @param int $courseId
+     */
+    public function cleanUp(string $moduleId, int $courseId)
+    {
+        // Delete module templates in course
+        $templates = array_map(function ($item) {
+            return $item['templateId'];
+        }, Core::$systemDB->selectMultiple("template_module", ["moduleId" => $moduleId], "templateId"));
+        Core::$systemDB->delete("template_module", ["moduleId" => $moduleId]);
+
+        foreach ($templates as $templateId) {
+            Views::deleteTemplate($courseId, $templateId);
+        }
+
+        // Drop module tables if not enabled in any course
+        if (empty(Core::$systemDB->select("course_module", ["moduleId" => $moduleId])))
+            self::dropTables($moduleId);
     }
 
 
@@ -264,9 +280,9 @@ abstract class Module
     {
     }
 
-    public function dropTables(string $moduleName)
+    public function dropTables(string $moduleId)
     {
-        $file = MODULES_FOLDER . "/" . $moduleName . "/delete.sql";
+        $file = MODULES_FOLDER . "/" . $moduleId . "/delete.sql";
         if (file_exists($file)) {
             Core::$systemDB->executeQuery(file_get_contents($file));
         }

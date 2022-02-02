@@ -312,9 +312,9 @@ class Course
             ModuleLoader::initModules($this);
 
         } else {
-            // TODO: delete module templates (with respective views) and pages
-            //ToDo:do something about views that use this module?
-            //  Core::$systemDB->delete("page",["module"=>$moduleId, "course"=>$this->cid]);
+            $moduleInfo = ModuleLoader::getModule($moduleId);
+            $module = $moduleInfo['factory']();
+            $module->cleanUp($moduleId, $this->cid);
         }
     }
 

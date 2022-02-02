@@ -212,16 +212,22 @@ class Views
     /**
      * Sets a new template from a .txt file.
      * The contents of the file need to be in a correct format (see docs).
+     * Option for when template comes from a module specification.
      *
      * @param string $name
      * @param string $contents
      * @param int $courseId
+     * @param string|null $moduleId (optional)
      */
-    public static function createTemplateFromFile(string $name, string $contents, int $courseId): void
+    public static function createTemplateFromFile(string $name, string $contents, int $courseId, string $moduleId = null): void
     {
         $view = json_decode($contents, true); // format: [aspect1, aspect2, ...], where aspect = view object
         $roleType = self::getRoleType($view[0]["role"]); // role type must be the same for all aspects
-        Views::createTemplate($view, $courseId, $name, $roleType);
+        $templateId = Views::createTemplate($view, $courseId, $name, $roleType)[0];
+
+        // If template comes from a module, insert in 'template_module' table
+        if ($moduleId)
+            Core::$systemDB->insert("template_module", ["templateId" => $templateId, "moduleId" => $moduleId]);
     }
 
     /**
@@ -302,6 +308,9 @@ class Views
 
         // Delete entries on 'template_role' table
         Core::$systemDB->delete('template_role', ["templateId" => $templateId]);
+
+        // Delete from 'template_module' if module template
+        Core::$systemDB->delete('template_module', ["templateId" => $templateId]);
 
         Core::$systemDB->setForeignKeyChecks(true);
     }

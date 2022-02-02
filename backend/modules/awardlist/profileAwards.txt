@@ -1,310 +1,130 @@
 [
-    {
-        "id": "4021",
-        "viewId": "4021",
-        "role": "role.Default>role.Default",
-        "partType": "block",
-        "parentId": null,
-        "viewIndex": null,
-        "label": null,
-        "loopData": null,
-        "variables": null,
-        "value": null,
-        "class": null,
-        "style": null,
-        "link": null,
-        "visibilityCondition": null,
-        "visibilityType": null,
-        "events": null,
-        "info": null,
-        "children": []
-    },
-    {
-        "id": "4022",
-        "viewId": "4021",
-        "role": "role.Student>role.Default",
-        "partType": "block",
-        "parentId": null,
-        "viewIndex": null,
-        "label": null,
-        "loopData": null,
-        "variables": null,
-        "value": null,
-        "class": null,
-        "style": null,
-        "link": null,
-        "visibilityCondition": null,
-        "visibilityType": null,
-        "events": null,
-        "info": null,
-        "children": [
+  {
+    "type": "block",
+    "role": "role.Default>role.Default",
+    "class": "award-list",
+    "visibilityType": "visible",
+    "children": [
+      [
+        {
+          "type": "header",
+          "role": "role.Default>role.Default",
+          "visibilityType": "visible",
+          "image": [
             {
-                "id": "4023",
-                "viewId": "4023",
-                "role": "role.Student>role.Default",
-                "partType": "block",
-                "parentId": "4022",
-                "viewIndex": "0",
-                "label": null,
-                "loopData": "{}",
-                "variables": [],
-                "value": null,
-                "class": null,
-                "style": null,
-                "link": null,
-                "visibilityCondition": "{}",
-                "visibilityType": "conditional",
-                "events": [],
-                "info": null,
-                "children": [
-                    {
-                        "id": "4024",
-                        "viewId": "4024",
-                        "role": "role.Student>role.Default",
-                        "partType": "table",
-                        "parentId": "4023",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false)}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [],
-                        "rows": [
-                            {
-                                "id": "4029",
-                                "viewId": "4029",
-                                "role": "role.Student>role.Default",
-                                "partType": "row",
-                                "parentId": "4024",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": null,
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "values": [
-                                    {
-                                        "value": {
-                                            "id": "4030",
-                                            "viewId": "4030",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4029",
-                                            "viewIndex": "0",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "{%item.reward} XP",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    },
-                                    {
-                                        "value": {
-                                            "id": "4031",
-                                            "viewId": "4031",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4029",
-                                            "viewIndex": "1",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "{%item.date}",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    },
-                                    {
-                                        "value": {
-                                            "id": "4032",
-                                            "viewId": "4032",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4029",
-                                            "viewIndex": "2",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "{%item.description}",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        "headerRows": [
-                            {
-                                "id": "4025",
-                                "viewId": "4025",
-                                "role": "role.Student>role.Default",
-                                "partType": "headerRow",
-                                "parentId": "4024",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": null,
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "values": [
-                                    {
-                                        "value": {
-                                            "id": "4026",
-                                            "viewId": "4026",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4025",
-                                            "viewIndex": "0",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "Experience",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    },
-                                    {
-                                        "value": {
-                                            "id": "4027",
-                                            "viewId": "4027",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4025",
-                                            "viewIndex": "1",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "Date",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    },
-                                    {
-                                        "value": {
-                                            "id": "4028",
-                                            "viewId": "4028",
-                                            "role": "role.Student>role.Default",
-                                            "partType": "text",
-                                            "parentId": "4025",
-                                            "viewIndex": "2",
-                                            "label": null,
-                                            "loopData": "{}",
-                                            "variables": [],
-                                            "value": "Description",
-                                            "class": null,
-                                            "style": null,
-                                            "link": null,
-                                            "visibilityCondition": "{}",
-                                            "visibilityType": "conditional",
-                                            "events": [],
-                                            "info": null,
-                                            "children": []
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        "columns": 3
-                    }
-                ],
-                "header": {
-                  "id": "3881",
-                  "viewId": "3881",
-                  "role": "role.Student>role.Default",
-                  "partType": "header",
-                  "parentId": "4033",
-                    "image": {
-                        "id": "4034",
-                        "viewId": "4034",
-                        "role": "role.Student>role.Default",
-                        "partType": "image",
-                        "parentId": "3881",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "modules/profile/imgs/profile-img.svg",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
-                    },
-                    "title": {
-                        "id": "4035",
-                        "viewId": "4035",
-                        "role": "role.Student>role.Default",
-                        "partType": "text",
-                        "parentId": "3881",
-                        "viewIndex": "1",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "Award List",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
-                    }
-                }
+              "type": "image",
+              "role": "role.Default>role.Default",
+              "visibilityType": "visible",
+              "src": "modules/profile/imgs/profile-img.svg"
             }
-        ]
-    }
+          ],
+          "title": [
+            {
+              "type": "text",
+              "role": "role.Default>role.Default",
+              "visibilityType": "visible",
+              "value": "Awards List"
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "type": "table",
+          "role": "role.Default>role.Default",
+          "visibilityType": "visible",
+          "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
+          "headerRows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default>role.Default",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "Experience"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "Date"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "Description"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ],
+          "rows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default>role.Default",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%item.reward} XP"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%item.date}"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default>role.Default",
+                      "class": "award-description",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default>role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%item.description}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "image",
+                            "role": "role.Default>role.Default",
+                            "class": "award-description-img",
+                            "visibilityType": "visible",
+                            "src": "{%item.renderPicture(\"type\")}"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
 ]

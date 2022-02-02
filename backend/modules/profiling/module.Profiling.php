@@ -204,10 +204,10 @@ class Profiling extends Module {
         Core::$systemDB->delete("saved_user_profile", ["course" => $courseId]);
     }
 
-    public function dropTables($moduleName) {
+    public function dropTables($moduleId) {
         $courseId = API::getValue('course');
         $this->deleteClusterRoles($courseId);
-        parent::dropTables($moduleName);
+        parent::dropTables($moduleId);
     }
 
 

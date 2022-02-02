@@ -449,6 +449,7 @@ class Badges extends Module
     {
         parent::addResources('js/');
         parent::addResources('css/badges.css');
+        parent::addResources('imgs/');
     }
 
     public function setupData(int $courseId)

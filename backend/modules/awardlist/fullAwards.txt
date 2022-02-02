@@ -1,375 +1,146 @@
 [
   {
-    "id": "4036",
-    "viewId": "4036",
+    "type": "block",
     "role": "role.Default>role.Default",
-    "partType": "block",
-    "parentId": null,
-    "viewIndex": null,
-    "label": null,
-    "loopData": null,
-    "variables": null,
-    "value": null,
-    "class": null,
-    "style": null,
-    "link": null,
-    "visibilityCondition": null,
-    "visibilityType": null,
-    "events": null,
-    "info": null,
+    "class": "award-list",
+    "visibilityType": "visible",
     "children": [
-      {
-        "id": "4037",
-        "viewId": "4037",
-        "role": "role.Default>role.Default",
-        "partType": "block",
-        "parentId": "4036",
-        "viewIndex": "0",
-        "label": null,
-        "loopData": "{}",
-        "variables": [],
-        "value": null,
-        "class": null,
-        "style": null,
-        "link": null,
-        "visibilityCondition": "{}",
-        "visibilityType": "conditional",
-        "events": [],
-        "info": null,
-        "children": [
-          {
-            "id": "4038",
-            "viewId": "4038",
-            "role": "role.Default>role.Default",
-            "partType": "table",
-            "parentId": "4037",
-            "viewIndex": "0",
-            "label": null,
-            "loopData": "{}",
-            "variables": [],
-            "value": null,
-            "class": "awards-table",
-            "style": null,
-            "link": null,
-            "visibilityCondition": "{}",
-            "visibilityType": "conditional",
-            "events": [],
-            "info": null,
-            "children": [],
-            "rows": [
+      [
+        {
+          "type": "header",
+          "role": "role.Default>role.Default",
+          "visibilityType": "visible",
+          "image": [
+            {
+              "type": "image",
+              "role": "role.Default>role.Default",
+              "visibilityType": "visible",
+              "src": "modules/awardlist/imgs/awards.svg"
+            }
+          ],
+          "title": [
+            {
+              "type": "text",
+              "role": "role.Default>role.Default",
+              "visibilityType": "visible",
+              "value": "Awards"
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "type": "table",
+          "role": "role.Default>role.Default",
+          "visibilityType": "visible",
+          "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
+          "headerRows": [
+            [
               {
-                "id": "4044",
-                "viewId": "4044",
+                "type": "row",
                 "role": "role.Default>role.Default",
-                "partType": "row",
-                "parentId": "4038",
-                "viewIndex": "1",
-                "label": null,
-                "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
-                "variables": [],
-                "value": null,
-                "class": null,
-                "style": null,
-                "link": null,
-                "visibilityCondition": "{}",
-                "visibilityType": "conditional",
-                "events": [],
-                "info": null,
-                "values": [
-                  {
-                    "value": {
-                      "id": "4045",
-                      "viewId": "4045",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
                       "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4044",
-                      "viewIndex": "0",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "{%item.reward} XP",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
+                      "visibilityType": "visible",
+                      "value": "Experience"
                     }
-                  },
-                  {
-                    "value": {
-                      "id": "4046",
-                      "viewId": "4046",
+                  ],
+                  [
+                    {
+                      "type": "text",
                       "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4044",
-                      "viewIndex": "1",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "{%item.date}",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
+                      "visibilityType": "visible",
+                      "value": "Date"
                     }
-                  },
-                  {
-                    "value": {
-                      "id": "4047",
-                      "viewId": "4047",
+                  ],
+                  [
+                    {
+                      "type": "text",
                       "role": "role.Default>role.Default",
-                      "partType": "block",
-                      "parentId": "4044",
-                      "viewIndex": "2",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": null,
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
+                      "visibilityType": "visible",
+                      "value": "Description"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "Who"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ],
+          "rows": [
+            [
+              {
+                "type": "row",
+                "role": "role.Default>role.Default",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%item.reward} XP"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "role": "role.Default>role.Default",
+                      "visibilityType": "visible",
+                      "value": "{%item.date}"
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Default>role.Default",
+                      "class": "award-description",
+                      "visibilityType": "visible",
                       "children": [
-                        {
-                          "id": "4049",
-                          "viewId": "4049",
-                          "role": "role.Default>role.Default",
-                          "partType": "text",
-                          "parentId": "4047",
-                          "viewIndex": "0",
-                          "label": null,
-                          "loopData": "{}",
-                          "variables": [],
-                          "value": "{%item.description}",
-                          "class": null,
-                          "style": null,
-                          "link": null,
-                          "visibilityCondition": "{}",
-                          "visibilityType": "conditional",
-                          "events": [],
-                          "info": null,
-                          "children": []
-                        },
-                        {
-                          "id": "4050",
-                          "viewId": "4050",
-                          "role": "role.Default>role.Default",
-                          "partType": "text",
-                          "parentId": "4047",
-                          "viewIndex": "1",
-                          "label": null,
-                          "loopData": "{}",
-                          "variables": [],
-                          "value": "{%item.renderPicture(\"type\")}",
-                          "class": null,
-                          "style": null,
-                          "link": null,
-                          "visibilityCondition": "{}",
-                          "visibilityType": "conditional",
-                          "events": [],
-                          "info": null,
-                          "children": []
-                        }
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Default>role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%item.description}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "image",
+                            "role": "role.Default>role.Default",
+                            "class": "award-description-img",
+                            "visibilityType": "visible",
+                            "src": "{%item.renderPicture(\"type\")}"
+                          }
+                        ]
                       ]
                     }
-                  },
-                  {
-                    "value": {
-                      "id": "4048",
-                      "viewId": "4048",
+                  ],
+                  [
+                    {
+                      "type": "text",
                       "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4044",
-                      "viewIndex": "3",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "{users.getUser(%item.user).name}",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
+                      "visibilityType": "visible",
+                      "value": "{users.getUser(%item.user).name}"
                     }
-                  }
+                  ]
                 ]
               }
-            ],
-            "headerRows": [
-              {
-                "id": "4039",
-                "viewId": "4039",
-                "role": "role.Default>role.Default",
-                "partType": "headerRow",
-                "parentId": "4038",
-                "viewIndex": "0",
-                "label": null,
-                "loopData": "{}",
-                "variables": [],
-                "value": null,
-                "class": null,
-                "style": null,
-                "link": null,
-                "visibilityCondition": "{}",
-                "visibilityType": "conditional",
-                "events": [],
-                "info": null,
-                "values": [
-                  {
-                    "value": {
-                      "id": "4040",
-                      "viewId": "4040",
-                      "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4039",
-                      "viewIndex": "0",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "Experience",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
-                    }
-                  },
-                  {
-                    "value": {
-                      "id": "4041",
-                      "viewId": "4041",
-                      "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4039",
-                      "viewIndex": "1",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "Date",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
-                    }
-                  },
-                  {
-                    "value": {
-                      "id": "4042",
-                      "viewId": "4042",
-                      "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4039",
-                      "viewIndex": "2",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "Description",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
-                    }
-                  },
-                  {
-                    "value": {
-                      "id": "4043",
-                      "viewId": "4043",
-                      "role": "role.Default>role.Default",
-                      "partType": "text",
-                      "parentId": "4039",
-                      "viewIndex": "3",
-                      "label": null,
-                      "loopData": "{}",
-                      "variables": [],
-                      "value": "Who",
-                      "class": null,
-                      "style": null,
-                      "link": null,
-                      "visibilityCondition": "{}",
-                      "visibilityType": "conditional",
-                      "events": [],
-                      "info": null,
-                      "children": []
-                    }
-                  }
-                ]
-              }
-            ],
-            "columns": 4
-          }
-        ],
-        "header": {
-          "id": "3880",
-          "viewId": "3880",
-          "role": "role.Default>role.Default",
-          "partType": "header",
-          "parentId": "4049",
-          "image": {
-            "id": "4050",
-            "viewId": "4050",
-            "role": "role.Default>role.Default",
-            "partType": "image",
-            "parentId": "3880",
-            "viewIndex": "0",
-            "label": null,
-            "loopData": "{}",
-            "variables": [],
-            "value": "modules/awards/imgs/awards.svg",
-            "class": null,
-            "style": null,
-            "link": null,
-            "visibilityCondition": "{}",
-            "visibilityType": "conditional",
-            "events": [],
-            "info": null,
-            "children": []
-          },
-          "title": {
-            "id": "4051",
-            "viewId": "4051",
-            "role": "role.Default>role.Default",
-            "partType": "text",
-            "parentId": "3880",
-            "viewIndex": "1",
-            "label": null,
-            "loopData": "{}",
-            "variables": [],
-            "value": "Awards",
-            "class": null,
-            "style": null,
-            "link": null,
-            "visibilityCondition": "{}",
-            "visibilityType": "conditional",
-            "events": [],
-            "info": null,
-            "children": []
-          }
+            ]
+          ]
         }
-      }
+      ]
     ]
   }
 ]

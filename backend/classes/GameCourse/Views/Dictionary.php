@@ -440,7 +440,8 @@ class Dictionary
         self::registerFunction(
             'users',
             'getUser',
-            function (int $id, $course) {
+            function (int $id) {
+                $course = Course::getCourse(self::$courseId, false);
                 $user = $course->getUser($id)->getAllData();
                 if (empty($user)) {
                     throw new \Exception("In function getUser(id): The ID given doesn't match any user");
@@ -777,21 +778,21 @@ class Dictionary
             function ($award, string $item) {
                 self::checkArray($award, "object", "renderPicture()");
                 if ($item == "user") {
-                    $gameCourseId = Core::$systemDB->select("game_course_user", ["id" => $award["value"]["user"]], "id");
-                    if (empty($gameCourseId))
-                        throw new \Exception("In function renderPicture('user'): couldn't find user.");
-                    return new ValueNode("photos/" . $gameCourseId . ".png");
+                    $username = Core::$systemDB->select("auth", ["game_course_user_id" => $award["value"]["user"]], "username");
+                    if (empty($username))
+                        throw new \Exception("In function renderPicture('user'): couldn't find username.");
+                    return new ValueNode("photos/" . $username . ".png");
                 } else if ($item == "type") {
                     switch ($award["value"]['type']) {
                         case 'grade':
-                            return new ValueNode('<img class="img" src="images/quiz.svg">');
+                            return new ValueNode('modules/awardlist/imgs/quiz.svg');
                         case 'badge':
                             $name = self::getModuleNameOfAward($award);
                             if ($name === null)
                                 throw new \Exception("In function renderPicture('type'): couldn't find badge.");
                             $level = substr($award["value"]["description"], -2, 1); //assuming that level are always single digit
                             $imgName = str_replace(' ', '', $name . '-' . $level);
-                            return new ValueNode('<img class="img" src="badges/' . $imgName . '.png">');
+                            return new ValueNode('modules/badges/imgs/' . $imgName . '.png');
                         case 'skill':
                             $color = '#fff';
                             $skillColor = Core::$systemDB->select("skill", ["id" => $award['value']["moduleInstance"]], "color");
@@ -800,9 +801,9 @@ class Dictionary
                             //needs width and height , should have them if it has latest-awards class in a profile
                             return new ValueNode('<div class="img" style="background-color: ' . $color . '">');
                         case 'bonus':
-                            return new ValueNode('<img class="img" src="images/awards.svg">');
+                            return new ValueNode('modules/awardlist/imgs/awards.svg');
                         default:
-                            return new ValueNode('<img class="img" src="images/quiz.svg">');
+                            return new ValueNode('modules/awardlist/imgs/quiz.svg');
                     }
                 } else
                     throw new \Exception("In function renderPicture(item): item must be 'user' or 'type'");

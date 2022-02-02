@@ -7,6 +7,8 @@ use GameCourse\Views\Views;
 
 class AwardList extends Module
 {
+    const ID = 'awardlist';
+
     const AWARDS_PROFILE_TEMPLATE = 'Awards Profile - by awards';
     const FULL_AWARDS_TEMPLATE = 'Full Award List - by awards';
 
@@ -25,10 +27,10 @@ class AwardList extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::AWARDS_PROFILE_TEMPLATE))
-            Views::createTemplateFromFile(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $courseId);
+            Views::createTemplateFromFile(self::AWARDS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/profileAwards.txt'), $courseId, self::ID);
 
         if (!Views::templateExists($courseId, self::FULL_AWARDS_TEMPLATE))
-            Views::createTemplateFromFile(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $courseId);
+            Views::createTemplateFromFile(self::FULL_AWARDS_TEMPLATE, file_get_contents(__DIR__ . '/fullAwards.txt'), $courseId, self::ID);
     }
 
     public function setupResources()
