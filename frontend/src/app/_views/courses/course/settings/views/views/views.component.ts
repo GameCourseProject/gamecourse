@@ -41,9 +41,7 @@ export class ViewsComponent implements OnInit {
   isImportModalOpen: boolean;
   saving: boolean;
 
-  newPage: Partial<Page>;
   pageSelected: Page;
-  newTemplate: Partial<Template>;
   templateSelected: Template;
 
   importedFile: File;
@@ -159,8 +157,8 @@ export class ViewsComponent implements OnInit {
     this.api.deletePage(this.courseID, this.pageSelected)
       .pipe( finalize(() => {
         this.saving = false;
+        this.clear();
         this.isDeleteVerificationModalOpen = false;
-        this.pageSelected = null;
       }) )
       .subscribe(
         res => {
@@ -225,8 +223,8 @@ export class ViewsComponent implements OnInit {
       this.api.deleteTemplate(this.courseID, this.templateSelected)
         .pipe( finalize(() => {
           this.saving = false;
+          this.clear();
           this.isDeleteVerificationModalOpen = false;
-          this.templateSelected = null;
         }) )
         .subscribe(
           res => {
@@ -237,8 +235,8 @@ export class ViewsComponent implements OnInit {
 
     } else {
       this.saving = false;
+      this.clear();
       this.isDeleteVerificationModalOpen = false;
-      this.templateSelected = null;
     }
   }
 
@@ -306,9 +304,17 @@ export class ViewsComponent implements OnInit {
     }
   }
 
+  getEmptyPage(): Page {
+    return new Page(null, null, null, null, null, null, null);
+  }
+
+  getEmptyTemplate(): Template {
+    return new Template(null, null, null, null, null, null);
+  }
+
   clear(): void {
-    this.pageSelected = new Page(null, null, null, null, null, null, null);
-    this.templateSelected = new Template(null, null, null, null, null, null);
+    this.pageSelected = null;
+    this.templateSelected = null;
   }
 
 }

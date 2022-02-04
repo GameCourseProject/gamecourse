@@ -38,7 +38,7 @@
       </div>
 
       <div class="action-buttons" style="width:30px">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; clear(); isPageModalOpen = true;"></div>
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; this.pageSelected = getEmptyPage(); isPageModalOpen = true;"></div>
       </div>
     </div>
 
@@ -76,7 +76,7 @@
 
       <div class="action-buttons">
         <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; clear(); isTemplateModalOpen = true;"></div>
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; templateSelected = getEmptyTemplate(); isTemplateModalOpen = true;"></div>
       </div>
     </div>
 
@@ -126,7 +126,7 @@
     [isModalOpen]="isPageModalOpen"
     [id]="mode === 'add' ? 'new-view' : 'edit-view'"
     [templateRef]="newPageModal"
-    (closeBtnClicked)="isPageModalOpen = false; clear()"
+    (closeBtnClicked)="clear(); isPageModalOpen = false;"
     [actionInProgress]="saving">
   </app-modal>
 </ng-container>
@@ -214,7 +214,7 @@
     [positiveBtnText]="'Delete'"
     (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"
     (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"
-    (closeBtnClicked)="isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
