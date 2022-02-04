@@ -10,6 +10,11 @@ class EvaluateVisitor extends Visitor {
         $this->params = $params;
     }
 
+    public function getParams()
+    {
+        return $this->params;
+    }
+
     public function visitStatementSequence($node) {
         $text = $node->getNode()->accept($this)->getValue();
         if (is_array(($text)))
@@ -79,7 +84,6 @@ class EvaluateVisitor extends Visitor {
     }
 
     public function visitFunctionOp($node) {
-
         $funcName = $node->getName();
         if ($node->getArgs() == null) {
             $args = array();

@@ -343,7 +343,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   addVariable(): void {
-    this.viewToEditVariables['%' + this.variableToAdd] = '{}';
+    this.viewToEditVariables[this.variableToAdd] = '{}';
     this.variableToAdd = null;
   }
 

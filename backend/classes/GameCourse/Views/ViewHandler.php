@@ -465,7 +465,7 @@ class ViewHandler
         if (!$edit) {
             // Populate view with actual data, not just view specifications.
             self::parseView($view);
-            self::processView($view, $viewParams);
+            self::processView($view, new EvaluateVisitor($viewParams));
         }
     }
 
@@ -710,7 +710,7 @@ class ViewHandler
     public static function parseVariables(&$view)
     {
         foreach ($view['variables'] as $name => &$variable) {
-            self::parseSelf($variable);
+            self::parseSelf($variable["value"]);
         }
     }
 
@@ -735,9 +735,11 @@ class ViewHandler
     /*** ----------------- Processing views ----------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function processView(&$view, $viewParams)
+    public static function processView(&$view, EvaluateVisitor $visitor)
     {
-        $visitor = new EvaluateVisitor($viewParams);
+        // NOTE: need to be the 1st so that other view attributtes can be
+        //       resolved if they use any variable
+        if (isset($view['variables'])) self::processVariables($view, $visitor);
 
         if (isset($view['style'])) self::processSelf($view['style'], $visitor);
         if (isset($view['cssId'])) self::processSelf($view['cssId'], $visitor);
@@ -745,10 +747,9 @@ class ViewHandler
         if (isset($view['label'])) self::processSelf($view['label'], $visitor);
 
         if (isset($view['events'])) self::processEvents($view, $visitor);
-        if (isset($view['variables'])) self::processVariables($view, $visitor);
         if (isset($view['visibilityCondition'])) self::processVisibilityCondition($view, $visitor);
 
-        self::processViewType($view["type"], $view, $viewParams, $visitor);
+        self::processViewType($view["type"], $view, $visitor);
     }
 
     public static function processViewType($type, &...$args)
@@ -761,41 +762,51 @@ class ViewHandler
             $func(...$args);
     }
 
-    public static function processSelf(&$view, $visitor)
+    public static function processSelf(&$view, EvaluateVisitor $visitor)
     {
         $view = $view->accept($visitor)->getValue();
     }
 
-    public static function processVariables(&$view, $visitor)
+    public static function processVariables(&$view, EvaluateVisitor &$visitor)
     {
+        $params = $visitor->getParams();
         foreach ($view['variables'] as $name => &$variable) {
-            $variable = $variable->accept($visitor)->getValue();
+            self::processSelf($variable["value"], $visitor);
+
+            // Add variable value in params
+            if (!in_array($name, $params)) {
+                $params[$name] = $variable["value"];
+            }
         }
+        $visitor = new EvaluateVisitor($params);
     }
 
-    public static function processEvents(&$view, $visitor)
+    public static function processEvents(&$view, EvaluateVisitor $visitor)
     {
         foreach ($view['events'] as $trigger => &$event) {
-            $event = $event->accept($visitor)->getValue();
+            self::processSelf($event, $visitor);
         }
     }
 
-    public static function processVisibilityCondition(&$view, $visitor): bool
+    public static function processVisibilityCondition(&$view, EvaluateVisitor $visitor): bool
     {
-        if (!$view["visibilityType"] || $view["visibilityType"] == 'visible') {
+        if (!$view["visibilityType"] || $view["visibilityType"] == 'visible') { // visible
             return true;
 
-        } else {
-            $ret = false;
-            if ($view['visibilityCondition']->accept($visitor)->getValue() == true)
-                $ret = true;
+        } else if ($view["visibilityType"] == 'invisible') { // invisible
+            return false;
+
+        } else { // conditional
+            $visible = false;
+            self::processSelf($view['visibilityCondition'], $visitor);
+            if ($view['visibilityCondition'] == true) $visible = true;
             unset($view['visibilityCondition']);
-            $view["visibilityType"] = $ret ? 'visible' : 'invisible';
-            return $ret;
+            $view["visibilityType"] = $visible ? 'visible' : 'invisible';
+            return $visible;
         }
     }
 
-    public static function processLoop(&$view, $viewParams, $visitor)
+    public static function processLoop(&$view, EvaluateVisitor $visitor)
     {
         // Process loop data
         ViewHandler::processSelf($view["loopData"], $visitor);
@@ -833,8 +844,9 @@ class ViewHandler
                 if (!is_array($value)) $loopParam = [$repeatKey => $value];
                 else $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
 
-                $paramsForEvaluator = array_merge($viewParams, $loopParam, array("index" => $i));
-                self::processView($v, $paramsForEvaluator);
+                $paramsForEvaluator = array_merge($visitor->getParams(), $loopParam, array("index" => $i));
+                $visitor = new EvaluateVisitor($paramsForEvaluator);
+                self::processView($v, $visitor);
                 $repeatedValues[] = $v;
             }
             $newViews = array_merge($newViews, $repeatedValues);

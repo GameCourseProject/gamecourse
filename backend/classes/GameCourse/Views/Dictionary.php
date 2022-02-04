@@ -16,7 +16,7 @@ class Dictionary
 {
 
     // NOTE: need these here because they have functions
-    // which are hard to put and retrieve from database
+    //       which are hard to put and retrieve from database
     public static $viewTypes = array();
     public static $viewFunctions = array();
 
@@ -36,8 +36,8 @@ class Dictionary
     public static function init(bool $setup = false)
     {
         if ($setup) {
-            // NOTE: these only need to be initialized once on setup
-            // because all their params fit in the database (non-functions)
+            // NOTE: these only need to be initialized once on setup because
+            //       all their params fit in the database (non-functions)
 
             /*** ----------------------------------------------- ***/
             /*** ------------------ Libraries ------------------ ***/
@@ -75,7 +75,7 @@ class Dictionary
                 if (isset($view["link"])) ViewHandler::parseSelf($view['link']);
                 ViewHandler::parseSelf($view["value"]);
             },
-            function (&$view, $viewParams, $visitor) { //processing function
+            function (&$view, $visitor) { //processing function
                 if (isset($view["link"])) ViewHandler::processSelf($view["link"], $visitor);
                 ViewHandler::processSelf($view["value"], $visitor);
             },
@@ -88,7 +88,7 @@ class Dictionary
                 if (isset($view["link"])) ViewHandler::parseSelf($view['link']);
                 ViewHandler::parseSelf($view["src"]);
             },
-            function (&$view, $viewParams, $visitor) { //processing function
+            function (&$view, $visitor) { //processing function
                 if (isset($view["link"])) ViewHandler::processSelf($view["link"], $visitor);
                 ViewHandler::processSelf($view["src"], $visitor);
             },
@@ -101,9 +101,9 @@ class Dictionary
                 ViewHandler::parseView($view['image']);
                 ViewHandler::parseView($view['title']);
             },
-            function (&$view, $viewParams, $visitor) { //processing function
-                ViewHandler::processView($view['image'], $viewParams);
-                ViewHandler::processView($view['title'], $viewParams);
+            function (&$view, $visitor) { //processing function
+                ViewHandler::processView($view['image'], $visitor);
+                ViewHandler::processView($view['title'], $visitor);
             },
             $setup
         );
@@ -122,19 +122,20 @@ class Dictionary
                     }
                 }
             },
-            function (&$view, $viewParams, $visitor) { //processing function
+            function (&$view, $visitor) { //processing function
                 if (isset($view["headerRows"])) {
                     foreach ($view["headerRows"] as &$headerRow) {
-                        ViewHandler::processView($headerRow, $viewParams);
+                        ViewHandler::processView($headerRow, $visitor);
                     }
                 }
 
                 if (isset($view["rows"])) {
                     if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view, $viewParams, $visitor);
+                        ViewHandler::processLoop($view, $visitor);
+
                     } else {
                         foreach ($view["rows"] as &$row) {
-                            ViewHandler::processView($row, $viewParams);
+                            ViewHandler::processView($row, $visitor);
                         }
                     }
                 }
@@ -151,14 +152,14 @@ class Dictionary
                     }
                 }
             },
-            function (&$view, $viewParams, $visitor) { //processing function
+            function (&$view, $visitor) { //processing function
                 if (isset($view["children"])) {
                     if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view, $viewParams, $visitor);
+                        ViewHandler::processLoop($view, $visitor);
 
                     } else {
                         foreach ($view['children'] as &$child) {
-                            ViewHandler::processView($child, $viewParams);
+                            ViewHandler::processView($child, $visitor);
                         }
                     }
                 }
@@ -175,10 +176,10 @@ class Dictionary
                     }
                 }
             },
-            function (&$view, $viewParams, $visitor) { //processing function
+            function (&$view, $visitor) { //processing function
                 if (isset($view["children"])) {
                     foreach ($view['children'] as &$child) {
-                        ViewHandler::processView($child, $viewParams);
+                        ViewHandler::processView($child, $visitor);
                     }
                 }
             },
@@ -1285,7 +1286,6 @@ class Dictionary
      *
      * @param string $name
      * @param string $returnType
-     * @param string $returnName
      * @param string|null $libraryName
      * @param string|null $description
      */
