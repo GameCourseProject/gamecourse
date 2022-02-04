@@ -215,7 +215,7 @@ export abstract class View {
       visibilityType: view.visibilityType || null,
       events: view.events ? objectMap(view.events, event => '{actions.' + (event as Event).print() + '}') : null,
       loopData: view.loopData || null,
-      variables: view.variables ? objectMap(view.variables, variable => variable.value) : null,
+      variables: view.variables ? objectMap(view.variables, variable => { return {value: (variable as Variable).value} }) : null,
       visibilityCondition: view.visibilityCondition || null
     }
   }
@@ -239,7 +239,7 @@ export abstract class View {
       mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
       loopData: (obj.loopData && !obj.loopData.isEmpty()) ? obj.loopData : null,
       variables: obj.variables && !!Object.keys(obj.variables).length ?
-              objectMap(obj.variables, (value, name) => new Variable(name, value)) : null,
+              objectMap(obj.variables, (value, name) => new Variable(name, value.value)) : null,
       style: (obj.style && !obj.style.isEmpty()) ? obj.style : null,
       cssId: (obj.cssId && !obj.cssId.isEmpty()) ? obj.cssId : null,
       class: (!obj.class || obj.class.isEmpty()) ? this.VIEW_CLASS : obj.class + ' ' + this.VIEW_CLASS,
@@ -273,7 +273,7 @@ export interface ViewDatabase {
   role: string;
   edit?: boolean;
   loopData?: string;
-  variables?: {[name: string]: string};
+  variables?: {[name: string]: {value: string}};
   style?: string;
   cssId?: string;
   class?: string;

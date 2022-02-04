@@ -190,7 +190,7 @@
       <div *ngFor="let name of getVariables()">
         <div class="content">
           <div class="sb-expression">
-            <label [for]="name">{{name}}</label>
+            <label [for]="name">%{{name}}</label>
             <textarea [id]="name" [title]="'Define the value of a variables for the element'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditVariables[name]"></textarea>
             <div class="content"><div class="icon delete_icon" (click)="deleteVariable(name)"></div></div>
           </div>
