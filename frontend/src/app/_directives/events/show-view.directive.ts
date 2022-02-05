@@ -17,10 +17,10 @@ export class ShowViewDirective {
   /**
    * Show view.
    *
-   * @param viewId
+   * @param label
    */
-  showView(viewId: number): void {
-    const view = document.querySelectorAll('[data-viewId="' + viewId + '"]')[0] as HTMLHtmlElement;
+  showView(label: string): void {
+    const view = document.querySelectorAll('[data-label="' + label + '"]')[0] as HTMLHtmlElement;
     view.style.display = 'unset';
   }
 
@@ -34,6 +34,6 @@ export class ShowViewDirective {
   onEvent(event: Event) {
     if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
-      this.showView(this.event.viewId);
+      this.showView(this.event.label);
   }
 }

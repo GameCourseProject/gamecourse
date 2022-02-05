@@ -54,6 +54,10 @@ const routes: Routes = [
   {
     path: 'pages/:id',
     component: PageComponent
+  },
+  {
+    path: 'pages/:id/user/:userId',
+    component: PageComponent
   }
 ];
 

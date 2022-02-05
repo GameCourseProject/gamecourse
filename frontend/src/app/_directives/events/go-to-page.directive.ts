@@ -22,9 +22,11 @@ export class GoToPageDirective {
    * Go to a page in the active course.
    *
    * @param pageId
+   * @param userId (optional)
    */
-  goToPage(pageId: number): void {
-    this.router.navigate(['pages/' + pageId], {relativeTo: this.route.parent})
+  goToPage(pageId: string, userId?: string): void {
+    const path = 'pages/' + pageId + (userId ? '/user/' + userId : '');
+    this.router.navigate([path], {relativeTo: this.route.parent})
   }
 
   @HostListener('click', ['$event'])
@@ -37,7 +39,7 @@ export class GoToPageDirective {
   onEvent(event: Event) {
     if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
-      this.goToPage(this.event.pageId);
+      this.goToPage(this.event.pageId, this.event.userId || null);
   }
 
 }

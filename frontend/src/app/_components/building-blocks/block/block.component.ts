@@ -2,7 +2,7 @@ import {Component, Input, OnInit} from '@angular/core';
 import { ViewHeader } from 'src/app/_domain/views/view-header';
 import {ViewBlock} from "../../../_domain/views/view-block";
 import {exists, requireValues} from "../../../_utils/misc/misc";
-import {ViewMode} from "../../../_domain/views/view";
+import {ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {Event} from "../../../_domain/events/event";
 import {EventAction, getEventFromAction} from "../../../_domain/events/event-action";
 import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
@@ -29,6 +29,11 @@ export class BlockComponent implements OnInit {
     requireValues(this.view, [this.view.children]);
     if (!!this.view.events?.click) this.view.class += ' gc-clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
+
+    if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
+      this.view.style = this.view.style || '';
+      this.view.style = this.view.style.concatWithDivider('display: none', ';');
+    }
   }
 
   get ViewHeader(): typeof ViewHeader {

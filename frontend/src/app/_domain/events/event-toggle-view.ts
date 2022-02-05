@@ -4,22 +4,22 @@ import {EventAction} from "./event-action";
 
 export class EventToggleView extends Event {
 
-  private _viewId: number;  // FIXME: use label or delete
+  private _label: string;
 
-  constructor(type: EventType, viewId: number) {
+  constructor(type: EventType, label: string) {
     super(type, EventAction.TOGGLE_VIEW);
-    this.viewId = viewId;
+    this.label = label;
   }
 
-  get viewId(): number {
-    return this._viewId;
+  get label(): string {
+    return this._label;
   }
 
-  set viewId(value: number) {
-    this._viewId = value;
+  set label(value: string) {
+    this._label = value;
   }
 
   print(): string {
-    return EventAction.TOGGLE_VIEW + '(' + this.viewId + ')';
+    return EventAction.TOGGLE_VIEW + '(' + this.label + ')';
   }
 }

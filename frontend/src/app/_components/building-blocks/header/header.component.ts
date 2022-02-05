@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewHeader} from "../../../_domain/views/view-header";
 import {exists, requireValues} from "../../../_utils/misc/misc";
-import {ViewMode} from "../../../_domain/views/view";
+import {ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {Event} from "../../../_domain/events/event";
 import {EventAction, getEventFromAction} from "../../../_domain/events/event-action";
 import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
@@ -27,6 +27,11 @@ export class HeaderComponent implements OnInit {
     if (!!this.view.events?.click) this.view.class += ' gc-clickable';
     if (!!this.view.image.events?.click) this.view.image.class += ' gc-clickable';
     if (!!this.view.title.events?.click) this.view.title.class += ' gc-clickable';
+
+    if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
+      this.view.style = this.view.style || '';
+      this.view.style = this.view.style.concatWithDivider('display: none', ';');
+    }
   }
 
 

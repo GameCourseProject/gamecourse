@@ -30,7 +30,7 @@ import {ViewHeaderDatabase} from "../../_domain/views/view-header";
 import {ViewTableDatabase} from "../../_domain/views/view-table";
 import {ViewBlockDatabase} from "../../_domain/views/view-block";
 import {ViewRowDatabase} from "../../_domain/views/view-row";
-import {dateFromDatabase, objectMap} from "../../_utils/misc/misc";
+import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
 
 @Injectable({
   providedIn: 'root'
@@ -940,13 +940,13 @@ export class ApiHttpService {
 
 
   // Pages
-  public renderPage(courseID: number, pageID: number,  userID: number): Observable<View> {
+  public renderPage(courseID: number, pageID: number,  userID: number = null): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.VIEWS);
       qs.push('request', 'renderPage');
       qs.push('courseId', courseID);
       qs.push('pageId', pageID);
-      qs.push('userId', userID);
+      if (exists(userID)) qs.push('userId', userID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);

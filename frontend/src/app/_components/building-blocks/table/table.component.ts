@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewTable} from "../../../_domain/views/view-table";
 import {exists, requireValues} from "../../../_utils/misc/misc";
-import {ViewMode} from "../../../_domain/views/view";
+import {ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {Event} from "../../../_domain/events/event";
 import {EventAction, getEventFromAction} from "../../../_domain/events/event-action";
 import { EventGoToPage } from 'src/app/_domain/events/event-go-to-page';
@@ -32,6 +32,11 @@ export class TableComponent implements OnInit {
     this.view.rows.forEach(row => row.children.forEach(r => {
       if(!!r.events?.click) r.class += ' gc-clickable';
     }));
+
+    if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
+      this.view.style = this.view.style || '';
+      this.view.style = this.view.style.concatWithDivider('display: none', ';');
+    }
   }
 
   get ViewTable(): typeof ViewTable {

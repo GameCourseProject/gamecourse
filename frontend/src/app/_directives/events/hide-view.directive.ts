@@ -17,10 +17,10 @@ export class HideViewDirective {
   /**
    * Hide view.
    *
-   * @param viewId
+   * @param label
    */
-  hideView(viewId: number): void {
-    const view = document.querySelectorAll('[data-viewId="' + viewId + '"]')[0] as HTMLHtmlElement;
+  hideView(label: string): void {
+    const view = document.querySelectorAll('[data-label="' + label + '"]')[0] as HTMLHtmlElement;
     view.style.display = 'none';
   }
 
@@ -34,6 +34,6 @@ export class HideViewDirective {
   onEvent(event: Event) {
     if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
     if (event.type === this.event.type)
-      this.hideView(this.event.viewId);
+      this.hideView(this.event.label);
   }
 }

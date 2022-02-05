@@ -1,7 +1,7 @@
 import {Directive, HostListener, Input} from '@angular/core';
 import {EventToggleView} from "../../_domain/events/event-toggle-view";
 import {exists} from "../../_utils/misc/misc";
-import {ViewMode} from "../../_domain/views/view";
+import {View, ViewMode} from "../../_domain/views/view";
 
 @Directive({
   selector: '[toggleView]'
@@ -17,12 +17,12 @@ export class ToggleViewDirective {
   /**
    * Toggle view.
    *
-   * @param viewId
+   * @param label
    */
-  toggleView(viewId: number): void {
-    const view = document.querySelectorAll('[data-viewId="' + viewId + '"]')[0] as HTMLHtmlElement;
-    if (view.style.display === 'none') view.style.display = 'unset';
-    else view.style.display = 'none';
+  toggleView(label: string): void {
+    label = label.substr(1, label.length - 2); // NOTE: remove ''
+    const view = document.querySelector('.' + View.VIEW_CLASS + '[data-label="' + label + '"]') as HTMLHtmlElement;
+    view.style.display = view.style.display === 'none' ? '' : 'none';
   }
 
   @HostListener('click', ['$event'])
@@ -33,8 +33,8 @@ export class ToggleViewDirective {
   @HostListener('wheel', ['$event'])
   @HostListener('drag', ['$event'])
   onEvent(event: Event) {
-    if (!exists(this.event)) return;
-    if (event.type === this.event.type || this.mode === ViewMode.EDIT)
-      this.toggleView(this.event.viewId);
+    if (!exists(this.event) || this.mode === ViewMode.EDIT) return;
+    if (event.type === this.event.type)
+      this.toggleView(this.event.label);
   }
 }

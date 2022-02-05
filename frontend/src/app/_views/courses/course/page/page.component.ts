@@ -13,6 +13,8 @@ export class PageComponent implements OnInit {
 
   courseID: number;
   pageID: number;
+  userID: number;
+
   pageView: View;
 
   constructor(
@@ -26,6 +28,7 @@ export class PageComponent implements OnInit {
 
       this.route.params.subscribe(params => {
         this.pageID = parseInt(params.id);
+        this.userID = parseInt(params.userId) || null;
         this.getPage();
       });
     });
@@ -40,11 +43,11 @@ export class PageComponent implements OnInit {
     this.pageView = null; // NOTE: Important - Forces view to completely refresh
     this.api.getLoggedUser()
       .subscribe(user => {
-          this.api.renderPage(this.courseID, this.pageID, user.id)
-            .subscribe(
-              view => this.pageView = view,
-              error => ErrorService.set(error)
-            );
+        this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
+          .subscribe(
+            view => this.pageView = view,
+            error => ErrorService.set(error)
+          );
       }, error => ErrorService.set(error));
   }
 

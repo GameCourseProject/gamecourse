@@ -1,13 +1,13 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ViewText} from "../../../_domain/views/view-text";
 import {exists, requireValues} from "../../../_utils/misc/misc";
-import {ViewMode} from "../../../_domain/views/view";
+import {ViewMode, VisibilityType} from "../../../_domain/views/view";
 import {EventGoToPage} from "../../../_domain/events/event-go-to-page";
 import {Event} from "../../../_domain/events/event";
 import {EventAction, getEventFromAction} from "../../../_domain/events/event-action";
-import { EventHideView } from 'src/app/_domain/events/event-hide-view';
+import {EventHideView} from 'src/app/_domain/events/event-hide-view';
 import {EventShowView} from "../../../_domain/events/event-show-view";
-import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
+import {EventToggleView} from 'src/app/_domain/events/event-toggle-view';
 
 @Component({
   selector: 'bb-text',
@@ -29,6 +29,11 @@ export class TextComponent implements OnInit {
 
     if (this.view.value.isEmpty()) this.view.class += ' ' + ViewText.TEXT_EMPTY_CLASS;
     else this.view.class = this.view.class.removeWord(ViewText.TEXT_EMPTY_CLASS);
+
+    if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
+      this.view.style = this.view.style || '';
+      this.view.style = this.view.style.concatWithDivider('display: none', ';');
+    }
   }
 
 

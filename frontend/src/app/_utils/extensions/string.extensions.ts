@@ -1,5 +1,6 @@
 interface String {
   capitalize(): string;
+  concatWithDivider(str: string, divider: string);
   containsWord(word: string): boolean;
   isEmpty(): boolean;
   noWhiteSpace(): string;
@@ -15,6 +16,17 @@ interface String {
  */
 String.prototype.capitalize = function(): string {
   return this[0].toUpperCase() + this.substr(1);
+}
+
+/**
+ * Concatenates a string with a given divider.
+ *
+ * @return string
+ */
+String.prototype.concatWithDivider = function(str: string, divider: string): string {
+  const parts = this.split(divider);
+  parts.push(str);
+  return parts.filter(part => !part.isEmpty()).join(divider);
 }
 
 /**

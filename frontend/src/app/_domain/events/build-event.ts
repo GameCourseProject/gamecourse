@@ -23,11 +23,10 @@ export function buildEvent(type: EventType, eventStr: string): Event {
   const action = eventStr.split('(')[0];
   const args = eventStr.split('(')[1].split(',').map(arg => arg.noWhiteSpace().replace(')', ''));
 
-  // FIXME: remove unused args from backend
-  if (action === EventAction.GO_TO_PAGE) return new EventGoToPage(type, parseInt(args[0]), args.length === 2 ? parseInt(args[1]) : null);
-  else if (action === EventAction.HIDE_VIEW) return new EventHideView(type, parseInt(args[0]));
-  else if (action === EventAction.SHOW_VIEW) return new EventShowView(type, parseInt(args[0]));
-  else if (action === EventAction.TOGGLE_VIEW) return new EventToggleView(type, parseInt(args[0]));
+  if (action === EventAction.GO_TO_PAGE) return new EventGoToPage(type, args[0], args[1] || null);
+  else if (action === EventAction.HIDE_VIEW) return new EventHideView(type, args[0]);
+  else if (action === EventAction.SHOW_VIEW) return new EventShowView(type, args[0]);
+  else if (action === EventAction.TOGGLE_VIEW) return new EventToggleView(type, args[0]);
 
   return null;
 }
