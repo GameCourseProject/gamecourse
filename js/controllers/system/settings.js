@@ -130,7 +130,10 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
 
     // Modules Section
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'GameElement\'"></div>')
+    // module_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'GameElement\'"></div>')
+
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0 && module.name != \'Plugin\' && module.name != \'Moodle\' && module.name != \'ClassCheck\' && module.name != \'Fenix\' && module.name != \'GoogleSheets\'" ng-click="openModule(module)"></div> ')
+
     module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text no-status">{{module.description}}</div>'));
@@ -146,7 +149,13 @@ app.controller('SettingsModules', function($scope, $element, $smartboards, $comp
 
     // DataSource Section
     dsmodules = $('<div id="modules"></div>');
-    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'DataSource\'"></div>')
+
+    // dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in modules" ng-if="module.type === \'DataSource\'"></div>')
+
+    // generalized version only works locally yet (?)
+    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0  && ( module.name === \'Plugin\' || module.name === \'Moodle\' || module.name === \'ClassCheck\' || module.name === \'Fenix\' || module.name === \'GoogleSheets\')" ng-click="openModule(module)"></div> ')
+
+
     dsmodule_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     dsmodule_card.append($('<div class="header">{{module.name}}</div>'));
     dsmodule_card.append($('<div class="text no-status">{{module.description}}</div>'));

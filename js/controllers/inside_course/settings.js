@@ -489,7 +489,11 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     search = $("<div class='search'> <input type='text' id='seach_input' placeholder='Search..' name='search' ng-model='search' ><button class='magnifying-glass' id='search-btn'></button>  </div>")
 
     modules = $('<div id="modules"></div>');
-    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0 && module.type === \'GameElement\'" ng-click="openModule(module)"></div> ')
+    //module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0 && module.type === \'GameElement\'" ng-click="openModule(module)"></div> ')
+
+    module_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0 && module.name != \'Plugin\' && module.name != \'Moodle\' && module.name != \'ClassCheck\' && module.name != \'Fenix\' && module.name != \'GoogleSheets\'" ng-click="openModule(module)"></div> ')
+
+
     module_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     module_card.append($('<div class="header">{{module.name}}</div>'));
     module_card.append($('<div class="text">{{module.description}}</div>'));
@@ -546,7 +550,11 @@ app.controller('CourseSettingsModules', function ($scope, $element, $smartboards
     tabContent.append($compile(dsources)($scope));
 
     dsmodules = $('<div id="modules"></div>');
-    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0  && module.type === \'DataSource\'" ng-click="openModule(module)"></div> ')
+
+    // generalized version only works locally yet (?)
+    // dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0  && module.type === \'DataSource\'" ng-click="openModule(module)"></div> ')
+    dsmodule_card = $('<div class="module_card" ng-repeat="(i, module) in mdls = ( modules | filter: search : [description, name])" value="#view-module" onclick="openModal(this)" ng-if="mdls.length > 0  && ( module.name === \'Plugin\' || module.name === \'Moodle\' || module.name === \'ClassCheck\' || module.name === \'Fenix\' || module.name === \'GoogleSheets\')" ng-click="openModule(module)"></div> ')
+
     dsmodule_card.append($('<div class="icon" style="background-image: url(/gamecourse/modules/{{module.id}}/icon.svg)"></div>'));
     dsmodule_card.append($('<div class="header">{{module.name}}</div>'));
     dsmodule_card.append($('<div class="text">{{module.description}}</div>'));
