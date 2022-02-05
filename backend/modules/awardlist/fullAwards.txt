@@ -1,19 +1,19 @@
 [
   {
     "type": "block",
-    "role": "role.Default>role.Default",
+    "role": "role.Default",
     "class": "award-list",
     "visibilityType": "visible",
     "children": [
       [
         {
           "type": "header",
-          "role": "role.Default>role.Default",
+          "role": "role.Default",
           "visibilityType": "visible",
           "image": [
             {
               "type": "image",
-              "role": "role.Default>role.Default",
+              "role": "role.Default",
               "visibilityType": "visible",
               "src": "modules/awardlist/imgs/awards.svg"
             }
@@ -21,7 +21,7 @@
           "title": [
             {
               "type": "text",
-              "role": "role.Default>role.Default",
+              "role": "role.Default",
               "visibilityType": "visible",
               "value": "Awards"
             }
@@ -31,20 +31,19 @@
       [
         {
           "type": "table",
-          "role": "role.Default>role.Default",
+          "role": "role.Default",
           "visibilityType": "visible",
-          "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
           "headerRows": [
             [
               {
                 "type": "row",
-                "role": "role.Default>role.Default",
+                "role": "role.Default",
                 "visibilityType": "visible",
                 "children": [
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
                       "value": "Experience"
                     }
@@ -52,7 +51,7 @@
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
                       "value": "Date"
                     }
@@ -60,7 +59,7 @@
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
                       "value": "Description"
                     }
@@ -68,7 +67,7 @@
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
                       "value": "Who"
                     }
@@ -81,47 +80,53 @@
             [
               {
                 "type": "row",
-                "role": "role.Default>role.Default",
+                "role": "role.Default",
                 "visibilityType": "visible",
+                "loopData": "{awards.getAllAwards().sort(\"descending\", \"date\")}",
+                "variables": {
+                  "award": {
+                    "value": "{%item}"
+                  }
+                },
                 "children": [
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
-                      "value": "{%item.reward} XP"
+                      "value": "{%award.reward} XP"
                     }
                   ],
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
-                      "value": "{%item.date}"
+                      "value": "{%award.date}"
                     }
                   ],
                   [
                     {
                       "type": "block",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "class": "award-description",
                       "visibilityType": "visible",
                       "children": [
                         [
                           {
                             "type": "text",
-                            "role": "role.Default>role.Default",
+                            "role": "role.Default",
                             "visibilityType": "visible",
-                            "value": "{%item.description}"
+                            "value": "{%award.description}"
                           }
                         ],
                         [
                           {
                             "type": "image",
-                            "role": "role.Default>role.Default",
+                            "role": "role.Default",
                             "class": "award-description-img",
                             "visibilityType": "visible",
-                            "src": "{%item.renderPicture(\"type\")}"
+                            "src": "{%award.renderPicture(\"type\")}"
                           }
                         ]
                       ]
@@ -130,9 +135,9 @@
                   [
                     {
                       "type": "text",
-                      "role": "role.Default>role.Default",
+                      "role": "role.Default",
                       "visibilityType": "visible",
-                      "value": "{users.getUser(%item.user).name}"
+                      "value": "{users.getUser(%award.user).name}"
                     }
                   ]
                 ]

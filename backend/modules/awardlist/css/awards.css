@@ -15,7 +15,6 @@
 }
 
 .award-list .award-description > * {
-    /* FIXME: children direction should be attribute on block view */
     flex-direction: row !important;
     align-items: center;
 }
