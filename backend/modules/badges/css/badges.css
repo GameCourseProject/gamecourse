@@ -1,174 +1,118 @@
-.badges-page {
+.badges-list {
   border: 2px solid #d9d9d9;
+  border-radius: 5px;
+  padding: 20px 20px 0;
 }
 
-.badges-page .badge {
-  width: 100%;
-  margin-top: 0 !important;
+.badges-list .badge {
   border-top: 2px solid #e6e6e6;
-  padding: 0 !important;
-}
-
-.badges-page .badge>.content {
-  padding: 8px;
-  margin: 0;
-  display: block !important;
-  transition: all 0.3s ease;
-}
-
-.badges-page .badge>.content:hover {
-  background-color: #d1d1d1 !important;
-}
-
-.badges-page .badge>.content>* {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.badges-page .badge>.content>* .content {
-  margin: 0;
-  padding: 0 !important;
+  padding: 20px 40px 10px 10px;
 }
 
 
-.badges-page .badge>.content>* .content>* {
-  margin: 0;
-  padding: 0 !important;
+/*** ------------- Top ------------- ***/
+
+.badges-list .badge .badge-top > * {
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
 }
 
+/*** ---------- Top Left ---------- ***/
 
-.badge .content .block {
-  padding: 10px;
+.badges-list .badge .badge-top .badge-top-left > * {
+  flex-direction: row !important;
 }
 
-.badges-page .badge .badge-images {
-  width: 162px;
+.badges-list .badge .badge-top .badge-top-left .badge-imgs > * {
+  flex-direction: row !important;
+  align-items: center;
 }
 
-@media all and (min-width: 700px) {
-  .badges-page .badge .badge-images {
-    width: 240px;
-  }
+.badges-list .badge .badge-top .badge-top-left .badge-imgs .badge-img {
+  width: 70px;
+  height: 70px;
+  padding: 5px;
 }
 
-.badges-page .badge .badge-images>.content {
-  display: flex;
+.badges-list .badge .badge-top .badge-top-left .badge-info {
+  margin-left: 40px;
+  margin-top: 10px;
 }
 
-.badges-page .badge .badge-info>.content,
-.badges-page .badge .xp-container .content {
-  display: block;
-}
-
-.badges-page .badge .badge-info>.content>.value,
-.badges-page .badge .xp-container .content>.value {
-  display: block;
-}
-
-.badges-page .badge .badge-info .title {
+.badges-list .badge .badge-top .badge-top-left .badge-info .badge-title {
   font-size: 16px;
   font-weight: bold;
 }
-.badges-page .badge .badge-info .description {
+
+.badges-list .badge .badge-top .badge-top-left .badge-info .badge-description {
   font-size: 14px;
 }
 
-.badges-page .badge .badge-info .leveldesc {
+.badges-list .badge .badge-top .badge-top-left .badge-info .badge-level-info > * {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.badges-list .badge .badge-top .badge-top-left .badge-info .badge-level-info .level-description {
+  margin-right: 5px;
   font-size: 12px;
 }
 
-.badges-page .badge .badge-info .leveldesc .progress {
-  margin-left: 5px;
+.badges-list .badge .badge-top .badge-top-left .badge-info .badge-level-info .level-count {
+  font-size: 12px;
   font-weight: bold;
 }
 
-.badges-page .badge .xp-container {
-  text-align: center;
-  display: flex !important;
+/*** ---------- Top Right ---------- ***/
+
+.badges-list .badge .badge-top .badge-top-right > * {
   align-items: center;
-  justify-content: center;
 }
 
-@media all and (min-width: 700px) {
-  .badges-page .badge .xp-container {
-    float: right;
-    width: 120px;
-    height: 80px;
-  }
-}
-
-.badges-page .badge .xp {
+.badges-list .badge .badge-top .badge-top-right .badge-reward {
   font-size: 22px;
   font-weight: bold;
 }
 
-.badges-page .badge .extra-credit {
+.badges-list .badge .badge-top .badge-top-right .badge-extra-credit {
   color: #E00;
   font-size: 10px;
   font-weight: bold;
 }
 
-.badges-page .badge .bragging-rights {
+.badges-list .badge .badge-top .badge-top-right .badge-bragging-rights {
   color: #070;
   font-size: 10px;
   font-weight: bold;
 }
 
-.badges-page .badge img {
-  width: 50px;
-  height: 50px;
-  padding: 2px;
-}
+/*** ---------- Bottom ---------- ***/
 
-@media all and (min-width: 700px) {
-  .badges-page .badge img {
-    width: 70px;
-    height: 70px;
-    padding: 5px;
-  }
-}
-
-.badges-page .badge .badge-extra {
-  width: 100%;
+.badges-list .badge .badge-bottom {
   border-top: 1px solid #e6e6e6;
-  padding-top: 6px;
+  margin-top: 10px;
+  padding-top: 15px;
 }
 
-.badges-page .badge .badge-extra.editable {
-  display: block;
+.badges-list .badge .badge-bottom .badge-levels {
+  margin-bottom: 10px;
 }
 
-.badges-page .badge .badge-extra>.content {
-  display: block;
-}
-
-.badges-page .badge .badge-extra>.content .indicator {
+.badges-list .badge .badge-bottom .badge-levels .badge-indicator {
   display: inline-block;
-  margin-right: 4px !important;
+  margin-right: 4px;
+  font-size: 12px !important;
 }
 
-.badges-page .badge .badge-extra>.content .indicator+.indicator:before {
-  content: '| ';
-  display: inline-block;
-  margin-right: 3px;
-}
-
-.badges-page .badge .badge-extra>.content .level-info .content {
-  display: block;
-}
-
-.badges-page .badge .badge-extra>.content .level-info .content .leveldesc {
-  display: block;
+.badges-list .badge .badge-bottom .badge-levels .badge-level {
   font-weight: bold;
-  padding: 8px 0 !important;
   font-size: 14px;
+  margin-bottom: 5px;
 }
 
-.badges-page .badge .badge-extra>.content .level-info .content .student-image img {
+.badges-list .badge .badge-bottom .badge-levels .badge-level-student-img {
   width: 30px;
+  object-fit: cover;
   height: 30px;
-  margin: 1px;
-  padding: 0;
-  cursor: pointer;
-  border: 1px solid #bfbfbf;
 }

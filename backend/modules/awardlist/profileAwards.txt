@@ -2,7 +2,7 @@
   {
     "type": "block",
     "role": "role.Student>role.Default",
-    "class": "award-list",
+    "class": "awards-list",
     "visibilityType": "visible",
     "children": [
       [

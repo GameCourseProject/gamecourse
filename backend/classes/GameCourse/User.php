@@ -34,6 +34,11 @@ class User
         return $id;
     }
 
+    public static function deleteUserFromDB(int $userId) {
+        Core::$systemDB->delete("game_course_user", ["id" => $userId]);
+        Core::$systemDB->delete("auth", ["game_course_user_id" => $userId]);
+    }
+
     public function exists()
     {
         return (!empty($this->getData("id")));

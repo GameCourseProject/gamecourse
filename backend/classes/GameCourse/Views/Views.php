@@ -5,6 +5,7 @@ namespace GameCourse\Views;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
+use GameCourse\CourseUser;
 
 /**
  * This class has functions that manage pages and templates.
@@ -98,7 +99,7 @@ class Views
 
         // Get viewer roles hierarchy
         $viewerRolesHierarchy = $viewer->getUserRolesByHierarchy(); // [0]=>role more specific, [1]=>role less specific...
-        array_push($viewerRolesHierarchy, "Default"); // add Default as the last choice
+        if (!in_array("Default", $viewerRolesHierarchy)) $viewerRolesHierarchy[] = "Default"; // add Default as the last choice
 
         $roleType = self::getRoleType($view[0]["role"]);
         $rolesHierarchy = [];
@@ -114,7 +115,7 @@ class Views
 
             // Get user roles hierarchy
             $userRolesHierarchy = $user->getUserRolesByHierarchy();   // [0]=>role more specific, [1]=>role less specific...
-            array_push($userRolesHierarchy, "Default"); // add Default as the last choice
+            if (!in_array("Default", $userRolesHierarchy)) $userRolesHierarchy[] = "Default"; // add Default as the last choice
 
             foreach ($viewerRolesHierarchy as $viewerRole) {
                 foreach ($userRolesHierarchy as $userRole) {
@@ -332,6 +333,7 @@ class Views
 
     /**
      * Renders a template based on viewer and user roles.
+     * It mocks users with the desired roles to render the template.
      *
      * @param int $courseId
      * @param int $templateId
@@ -346,31 +348,46 @@ class Views
         $template = self::getTemplate($templateId);
         $view = self::getViewByViewId($template["viewId"]);
 
+        // Get viewer rolesHierarchy
+        $viewerRolesHierarchy = array_merge([$viewerRole], self::getRoleParents($course, $viewerRole)); // [0]=>role more specific, [1]=>role less specific...
+        if (!in_array("Default", $viewerRolesHierarchy)) $viewerRolesHierarchy[] = "Default"; // add Default as the last choice
+
+        // Create temporary viewer with viewer role
+        $viewerId = CourseUser::createMockCourseUser($courseId, 'Johanna Doe', 'johanna_doe', "fenix",
+            'johannadoe@email.com', '654321', 'J. Doe', 'MEIC', 0, 1, $viewerRole);
+
         $roleType = self::getRoleType($view[0]["role"]);
         $rolesHierarchy = [];
 
-        // Get viewer rolesHierarchy
-        $viewerRolesHierarchy = array_merge([$viewerRole], self::getRoleParents($course, $viewerRole));
-        if (!in_array("Default", $viewerRolesHierarchy)) $viewerRolesHierarchy[] = "Default";
-
+        $viewParams = null;
         if ($roleType == 'ROLE_SINGLE') {
             $rolesHierarchy = $viewerRolesHierarchy;
+            $viewParams = ["course" => $courseId, "viewer" => $viewerId];
 
         } else if ($roleType == 'ROLE_INTERACTION') {
             if (!$userRole) API::error('Missing user role to render view with role type = \'ROLE_INTERACTION\'');
 
             // Get user rolesHierarchy
-            $userRolesHierarchy = array_merge([$userRole], self::getRoleParents($course, $userRole));
-            if (!in_array("Default", $userRolesHierarchy)) $userRolesHierarchy[] = "Default";
+            $userRolesHierarchy = array_merge([$userRole], self::getRoleParents($course, $userRole)); // [0]=>role more specific, [1]=>role less specific...
+            if (!in_array("Default", $userRolesHierarchy)) $userRolesHierarchy[] = "Default"; // add Default as the last choice
 
             foreach ($viewerRolesHierarchy as $viewerRole) {
                 foreach ($userRolesHierarchy as $userRole) {
                     $rolesHierarchy[] = $userRole . '>' . $viewerRole;
                 }
             }
+
+            // Create temporary user with user role
+            $userId = CourseUser::createMockCourseUser($courseId, 'John Doe', 'john_doe', "fenix",
+                'johndoe@email.com', '123456', 'J. Doe', 'MEIC', 0, 1, $userRole);
+
+            $viewParams = ["course" => $courseId, "viewer" => $viewerId, "user" => $userId];
+            CourseUser::deleteMockCourseUser($courseId, $userId);
         }
 
-        ViewHandler::renderView($view, $rolesHierarchy, array('course' => $courseId), $edit);
+        ViewHandler::renderView($view, $rolesHierarchy, $viewParams, $edit);
+        CourseUser::deleteMockCourseUser($courseId, $viewerId);
+
         return $view;
     }
 

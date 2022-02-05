@@ -11,7 +11,9 @@ use GameCourse\Course;
 
 class Badges extends Module
 {
-    const BADGES_TEMPLATE = 'Badges block - by badges';
+    const ID = 'badges';
+
+    const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
 
 
     /*** ----------------------------------------------- ***/
@@ -237,7 +239,7 @@ class Badges extends Module
                 else
                     $levelNum = $level;
                 $name = str_replace(' ', '', $badge["value"]["name"]);
-                return new ValueNode("badges/" . $name . "-" . $levelNum . ".png");
+                return new ValueNode("modules/badges/imgs/" . $name . "-" . $levelNum . ".png");
             },
             'Return a picture of a badge’s level.',
             'picture',
@@ -339,7 +341,6 @@ class Badges extends Module
             'badgeProgression',
 
             function ($badge, int $user) {
-
                 $badgeParticipation = $this->getBadgeProgression($badge, $user);
                 return Dictionary::createNode($badgeParticipation, 'badges', 'collection');
             },
@@ -441,13 +442,12 @@ class Badges extends Module
     {
         $courseId = $this->getCourseId();
 
-        if (!Views::templateExists($courseId, self::BADGES_TEMPLATE))
-            Views::createTemplateFromFile(self::BADGES_TEMPLATE, file_get_contents(__DIR__ . '/badges.txt'), $courseId);
+        if (!Views::templateExists($courseId, self::BADGES_PROFILE_TEMPLATE))
+            Views::createTemplateFromFile(self::BADGES_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/badges.txt'), $courseId, self::ID);
     }
 
     public function setupResources()
     {
-        parent::addResources('js/');
         parent::addResources('css/badges.css');
         parent::addResources('imgs/');
     }
@@ -898,7 +898,6 @@ class Badges extends Module
                 array_push($usersWithBadge, $userObj->getValue()["value"]);
             }
         }
-
         return Dictionary::createNode($usersWithBadge, 'users', "collection");
     }
 
@@ -959,7 +958,6 @@ class Badges extends Module
     public function getBadgeProgression($badge, $user)
     {
         $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id", ["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description, participation.rating");
-
 
         for ($i = 0; $i < sizeof($badgePosts); $i++) {
             if ($badgePosts[$i]["isPost"]) {
@@ -1073,10 +1071,10 @@ class Badges extends Module
                 $badgeData["image"] = $achievement['image'];
             }
             Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
-    
+
             if ($originalBadge["maxLevel"] <= $maxLevel) {
                 for ($i = 1; $i <= $maxLevel; $i++) {
-    
+
                     if ($i > $originalBadge["maxLevel"]) {
                         //if they are new levels they need to be inserted and not updated
                         Core::$systemDB->insert("badge_level", [
@@ -1110,7 +1108,7 @@ class Badges extends Module
                     ]);
                 }
             }
-        } 
+        }
     }
 
     public function deleteBadge($badge)

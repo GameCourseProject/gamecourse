@@ -1,29 +1,29 @@
-.award-list {
+.awards-list {
     border: 2px solid #d9d9d9;
     border-radius: 5px;
     padding: 20px;
 }
 
-.award-list table thead tr th,
-.award-list table tbody tr td {
+.awards-list table thead tr th,
+.awards-list table tbody tr td {
     text-align: center !important;
 }
 
-.award-list table tbody tr td:nth-child(3) {
+.awards-list table tbody tr td:nth-child(3) {
     text-align: left !important;
     font-weight: bold;
 }
 
-.award-list .award-description > * {
+.awards-list .award-description > * {
     flex-direction: row !important;
     align-items: center;
 }
 
-.award-list .award-description > * > * {
+.awards-list .award-description > * > * {
     margin-bottom: 0 !important;
 }
 
-.award-list .award-description .award-description-img {
+.awards-list .award-description .award-description-img {
     width: 32px !important;
     height: 32px !important;
     margin-left: 10px !important;

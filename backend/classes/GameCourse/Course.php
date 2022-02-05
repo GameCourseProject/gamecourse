@@ -923,7 +923,7 @@ class Course
     public function getEnabledVariables()
     {
         $modulesEnabled = $this->getEnabledModules();
-        $whereCondition = "libraryId is null or ";
+        $whereCondition = "libraryId is null or moduleId is null or ";
 
         $i = 0;
         foreach ($modulesEnabled as $module) {
@@ -938,7 +938,7 @@ class Course
         return Core::$systemDB->selectMultipleSegmented(
             "dictionary_library right join dictionary_variable on libraryId = dictionary_library.id",
             $whereCondition,
-            "dictionary_library.name as library, dictionary_variable.name as name, returnType, returnName"
+            "dictionary_library.name as library, dictionary_variable.name as name, returnType, dictionary_variable.description as description"
         );
     }
 

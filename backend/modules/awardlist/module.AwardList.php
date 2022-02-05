@@ -10,7 +10,7 @@ class AwardList extends Module
     const ID = 'awardlist';
 
     const AWARDS_PROFILE_TEMPLATE = 'Awards Profile - by awards';
-    const FULL_AWARDS_TEMPLATE = 'Full Award List - by awards';
+    const FULL_AWARDS_TEMPLATE = 'Full Awards List - by awards';
 
 
     /*** ----------------------------------------------- ***/
@@ -35,7 +35,6 @@ class AwardList extends Module
 
     public function setupResources()
     {
-        parent::addResources('js/');
         parent::addResources('css/awards.css');
         parent::addResources('imgs/');
     }

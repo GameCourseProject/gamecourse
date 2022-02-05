@@ -6,7 +6,6 @@ use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\Views\Views;
-use GameCourse\Views\ViewHandler;
 use GameCourse\Views\Expression\EvaluateVisitor;
 
 $MODULE = 'views';
@@ -330,8 +329,7 @@ API::registerFunction($MODULE, 'previewTemplate', function () {
         API::error('There is no template with id = ' . $templateId);
 
     $viewerRole = API::getValue("viewerRole");
-    $userRole = null;
-    if (API::hasKey("userRole")) $userRole = API::getValue("userRole");
+    $userRole = API::getValue("userRole");
 
     API::response(array('view' => Views::renderTemplateByAspect($courseId, $templateId, $viewerRole, $userRole, false)));
 });
@@ -340,7 +338,7 @@ API::registerFunction($MODULE, 'previewTemplate', function () {
  * Save template to database.
  *
  * @param int $courseId
- * @param int $tempalteId
+ * @param int $templateId
  * @param $template
  * @param array $viewsDeleted (optional)
  */
@@ -372,6 +370,15 @@ API::registerFunction($MODULE, 'saveTemplate', function () {
     }
 });
 
+/**
+ * Save a specific view as a new template.
+ *
+ * @param int $courseId
+ * @param string $templateName
+ * @param $view
+ * @param string $roleType
+ * @param bool isRef
+ */
 API::registerFunction($MODULE, 'saveViewAsTemplate', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'templateName', 'view', 'roleType', 'isRef');
@@ -493,8 +500,8 @@ API::registerFunction($MODULE, "copyGlobalTemplate", function () {
 //getDictionary
 API::registerFunction($MODULE, 'getDictionary', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('course');
-    $courseId = API::getValue('course');
+    API::requireValues('courseId');
+    $courseId = API::getValue('courseId');
     //get course libraries
     $course = new Course($courseId);
     //API::response([$course->getEnabledLibraries(), $course->getEnabledVariables()]);

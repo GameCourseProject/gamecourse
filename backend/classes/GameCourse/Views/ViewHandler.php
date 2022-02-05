@@ -738,7 +738,7 @@ class ViewHandler
     public static function processView(&$view, EvaluateVisitor $visitor)
     {
         // NOTE: need to be the 1st so that other view attributtes can be
-        //       resolved if they use any variable
+        //       resolved if they use any of these variables
         if (isset($view['variables'])) self::processVariables($view, $visitor);
 
         if (isset($view['style'])) self::processSelf($view['style'], $visitor);

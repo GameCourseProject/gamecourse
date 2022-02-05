@@ -30,12 +30,32 @@ class CourseUser extends User
         return $id;
     }
 
+    public static function createMockCourseUser(int $courseId, string $name, string $username, string $auth, string $email, string $studentNumber, string $nickname, string $major, int $isAdmin, int $isActive, string $role)
+    {
+        // Add to system
+        if (is_null($user = User::getUserByUsername($username)))
+            $userId = User::addUserToDB($name, $username, $auth, $email, $studentNumber, $nickname, $major, $isAdmin, $isActive);
+        else $userId = $user->getId();
+
+        // Add to course
+        $courseUser = new CourseUser($userId, Course::getCourse($courseId, false));
+        if (!self::userExists($courseId, $userId))
+            $courseUser->addCourseUserToDB(Course::getRoleId($role, $courseId));
+
+        return $userId;
+    }
+
+    public static function deleteMockCourseUser(int $courseId, int $userId) {
+        $courseUser = new CourseUser($userId, Course::getCourse($courseId, false));
+        $courseUser->delete();
+        User::deleteUserFromDB($userId);
+    }
+
     public static function editCourseUser($id, $course, $role){
         Core::$systemDB->update(
             "course_user",
             [
                 "course" => $course,
-                
             ],
             [
                 "id" => $id
@@ -86,6 +106,11 @@ class CourseUser extends User
         Core::$systemDB->update("course_user", ["previousActivity" => $lastlast], ["course" => $this->course->getId(), "id" => $this->id]);
 
         Core::$systemDB->update("course_user", ["lastActivity" => date("Y-m-d H:i:s", time())], ["course" => $this->course->getId(), "id" => $this->id]);
+    }
+
+    public static function userExists(int $courseId, int $userId): bool
+    {
+        return !empty(Core::$systemDB->select("course_user", ["id" => $userId, "course" => $courseId]));
     }
 
     public function getId()
@@ -164,7 +189,7 @@ class CourseUser extends User
     {
         return parent::getData("major");
     }
-    
+
     function getRolesNames()
     {
         return array_column(Core::$systemDB->selectMultiple(
@@ -186,7 +211,7 @@ class CourseUser extends User
     {
         Core::$systemDB->update("course_user", ["isActive" => $isActive], ["course" => $this->course->getId(), "id" => $this->id]);
     }
-    
+
     function getUserRolesByHierarchy()
     {
         $courseRoles = $this->course->getRolesHierarchy();
@@ -305,7 +330,7 @@ class CourseUser extends User
                 $j = 0;
                 foreach ($roles as $value) {
                     $roleName = Core::$systemDB->select("role", ["id" => $value["role"]]);
-                    $roleId .= $roleName["name"]; 
+                    $roleId .= $roleName["name"];
                     if ($j != $lenRoles - 1) {
                         $roleId .= "-";
                     }
@@ -313,9 +338,9 @@ class CourseUser extends User
                 }
             }
 
-            $file .= $user["name"] . "," . $user["email"] . "," .  $user["nickname"] . "," . 
-                    $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," .
-                    $user["major"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
+            $file .= $user["name"] . "," . $user["email"] . "," .  $user["nickname"] . "," .
+                $user["studentNumber"] . "," . $user["isAdmin"] . "," .  $user["isActive"] . "," .
+                $user["major"] . "," . $roleId . "," . $auth["username"] . "," . $auth["authentication_service"];
             if ($i != $len - 1) {
                 $file .= "\n";
             }

@@ -446,12 +446,11 @@ API::registerFunction($MODULE, 'createCourseUser', function () {
     $userUsername = API::getValue('userUsername');
     $userAuthService = API::getValue('userAuthService');
 
-    $user = User::getUserByStudentNumber($userStudentNumber);
-    if ($user != null)
+    if (User::getUserByStudentNumber($userStudentNumber) != null)
         API::error('There is already a student registered with studentNumber = ' . $userStudentNumber);
 
     // Add to system
-    User::addUserToDB($userName, $userUsername, $userAuthService, $userEmail, $userStudentNumber, $userNickname, $userMajor, 0, 1);
+    $userId = User::addUserToDB($userName, $userUsername, $userAuthService, $userEmail, $userStudentNumber, $userNickname, $userMajor, 0, 1);
     if (API::getValue('userHasImage') == 'true') {
         API::requireValues('userImage');
         $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('userImage')));
@@ -459,8 +458,7 @@ API::registerFunction($MODULE, 'createCourseUser', function () {
     }
 
     // Add to course
-    $user = User::getUserByStudentNumber($userStudentNumber);
-    $courseUser = new CourseUser($user->getId(), $course);
+    $courseUser = new CourseUser($userId, $course);
     $courseUser->addCourseUserToDB();
     $courseUser->setRoles($userRoles);
 });
