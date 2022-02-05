@@ -22,6 +22,7 @@ export class ImageComponent implements OnInit {
   edit: boolean;
 
   isEmpty: boolean;
+  isPlaceholder: boolean;
   image: ImageManager;
 
   constructor(
