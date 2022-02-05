@@ -774,7 +774,7 @@ class ViewHandler
             self::processSelf($variable["value"], $visitor);
 
             // Add variable value in params
-            if (!in_array($name, $params)) {
+            if (!array_key_exists($name, $params)) {
                 $params[$name] = $variable["value"];
             }
         }
@@ -833,28 +833,25 @@ class ViewHandler
         $repeatParams = array_values($repeatParams);
 
         // Repeat views
-        $container = $view["type"] == 'block' ? "children" : "rows";
-        $newViews = [];
+        $repeatedViews = [];
         for ($i = 0; $i < sizeof($repeatParams); $i++) {
+            $viewToRepeat = array_merge([], $view);
 
-            // Process view data
-            $repeatedValues = [];
-            foreach ($view[$container] as $v) {
-                $value = $repeatParams[$i][$repeatKey];
-                if (!is_array($value)) $loopParam = [$repeatKey => $value];
-                else $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
+            // Process loop data
+            $value = $repeatParams[$i][$repeatKey];
+            if (!is_array($value)) $loopParam = [$repeatKey => $value];
+            else $loopParam = [$repeatKey => ["type" => "object", "value" => $value]];
 
-                $paramsForEvaluator = array_merge($visitor->getParams(), $loopParam, array("index" => $i));
-                $visitor = new EvaluateVisitor($paramsForEvaluator);
-                self::processView($v, $visitor);
-                $repeatedValues[] = $v;
-            }
-            $newViews = array_merge($newViews, $repeatedValues);
+            // Update visitor
+            $paramsForEvaluator = array_merge($visitor->getParams(), $loopParam, ["index" => $i]);
+            $visitor = new EvaluateVisitor($paramsForEvaluator);
+
+            // Process view
+            self::processView($viewToRepeat, $visitor);
+            unset($viewToRepeat["loopData"]);
+            $repeatedViews[] = $viewToRepeat;
         }
-
-        $view[$container] = $newViews;
-
-        unset($view["loopData"]);
+        $view = $repeatedViews;
     }
 
 

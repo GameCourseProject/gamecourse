@@ -124,20 +124,37 @@ class Dictionary
             },
             function (&$view, $visitor) { //processing function
                 if (isset($view["headerRows"])) {
-                    foreach ($view["headerRows"] as &$headerRow) {
-                        ViewHandler::processView($headerRow, $visitor);
+                    $processedHeaderRows = [];
+                    for ($i = 0; $i < sizeof($view["headerRows"]); $i++) {
+                        $headerRow = $view["headerRows"][$i];
+
+                        if (isset($headerRow["loopData"])) {
+                            ViewHandler::processLoop($headerRow, $visitor);
+                            $processedHeaderRows = array_merge($processedHeaderRows, $headerRow);
+
+                        } else {
+                            ViewHandler::processView($headerRow, $visitor);
+                            $processedHeaderRows[] = $headerRow;
+                        }
                     }
+                    $view["headerRows"] = $processedHeaderRows;
                 }
 
                 if (isset($view["rows"])) {
-                    if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view, $visitor);
+                    $processedRows = [];
+                    for ($i = 0; $i < sizeof($view["rows"]); $i++) {
+                        $row = $view["rows"][$i];
 
-                    } else {
-                        foreach ($view["rows"] as &$row) {
+                        if (isset($row["loopData"])) {
+                            ViewHandler::processLoop($row, $visitor);
+                            $processedRows = array_merge($processedRows, $row);
+
+                        } else {
                             ViewHandler::processView($row, $visitor);
+                            $processedRows[] = $row;
                         }
                     }
+                    $view["rows"] = $processedRows;
                 }
             },
             $setup
@@ -154,14 +171,20 @@ class Dictionary
             },
             function (&$view, $visitor) { //processing function
                 if (isset($view["children"])) {
-                    if (isset($view["loopData"])) {
-                        ViewHandler::processLoop($view, $visitor);
+                    $processedChildren = [];
+                    for ($i = 0; $i < sizeof($view["children"]); $i++) {
+                        $child = $view["children"][$i];
 
-                    } else {
-                        foreach ($view['children'] as &$child) {
+                        if (isset($child["loopData"])) {
+                            ViewHandler::processLoop($child, $visitor);
+                            $processedChildren = array_merge($processedChildren, $child);
+
+                        } else {
                             ViewHandler::processView($child, $visitor);
+                            $processedChildren[] = $child;
                         }
                     }
+                    $view["children"] = $processedChildren;
                 }
             },
             $setup
@@ -178,9 +201,20 @@ class Dictionary
             },
             function (&$view, $visitor) { //processing function
                 if (isset($view["children"])) {
-                    foreach ($view['children'] as &$child) {
-                        ViewHandler::processView($child, $visitor);
+                    $processedChildren = [];
+                    for ($i = 0; $i < sizeof($view["children"]); $i++) {
+                        $child = $view["children"][$i];
+
+                        if (isset($child["loopData"])) {
+                            ViewHandler::processLoop($child, $visitor);
+                            $processedChildren = array_merge($processedChildren, $child);
+
+                        } else {
+                            ViewHandler::processView($child, $visitor);
+                            $processedChildren[] = $child;
+                        }
                     }
+                    $view["children"] = $processedChildren;
                 }
             },
             $setup

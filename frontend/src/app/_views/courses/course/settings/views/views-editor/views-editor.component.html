@@ -118,9 +118,10 @@
     <div class="settings-overlay">
       <div class="title">Edit {{capitalize(viewToEdit.type)}} Settings:</div>
 
-      <!-- Loop Data -->
-      <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK || viewToEdit.type === ViewType.TABLE"
-        [ngTemplateOutlet]="loopData">
+      <!-- Content -->
+      <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE || viewToEdit.type === ViewType.HEADER"
+                    [ngTemplateOutlet]="content"
+                    [ngTemplateOutletContext]="{type: viewToEdit.type === ViewType.TEXT ? 'text' : viewToEdit.type === ViewType.IMAGE ? 'image' : 'header'}">
       </ng-container>
 
       <!-- Chart Options -->
@@ -131,10 +132,9 @@
       <!-- Variables -->
       <ng-container [ngTemplateOutlet]="variables"></ng-container>
 
-      <!-- Content -->
-      <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.IMAGE || viewToEdit.type === ViewType.HEADER"
-        [ngTemplateOutlet]="content"
-        [ngTemplateOutletContext]="{type: viewToEdit.type === ViewType.TEXT ? 'text' : viewToEdit.type === ViewType.IMAGE ? 'image' : 'header'}">
+      <!-- Loop Data -->
+      <ng-container
+        [ngTemplateOutlet]="loopData">
       </ng-container>
 
       <!-- Styling/Misc -->
