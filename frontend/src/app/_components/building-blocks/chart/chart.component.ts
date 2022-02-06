@@ -27,7 +27,7 @@ export class ChartComponent implements OnInit {
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.chartType, this.view.info]);
-    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
+    if (!this.edit && !!this.view.events?.click) this.view.class += ' gc-clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
 
     if (!this.edit && this.view.chartType !== ChartType.PROGRESS) {

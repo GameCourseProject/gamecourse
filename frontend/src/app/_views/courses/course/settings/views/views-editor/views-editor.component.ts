@@ -46,6 +46,7 @@ export class ViewsEditorComponent implements OnInit {
   rolesHierarchy: Role[];
   templateRoles: {viewerRole: Role, userRole?: Role}[];
   viewsByAspects: {[key: string]: View};
+  enabledModules: string[];
 
   viewToShow: View;
   templateToAdd: number;
@@ -182,6 +183,7 @@ export class ViewsEditorComponent implements OnInit {
           this.rolesHierarchy = data.rolesHierarchy;
           this.viewsByAspects = data.templateViewsByAspect;
           this.templateRoles = Template.parseRoles(data.templateRoles, template.roleType);
+          this.enabledModules = data.enabledModules;
 
           // Set selected roles
           this.selectedViewerRole = this.templateRoles.length !== 0 ? this.templateRoles[0].viewerRole.name : 'Default';

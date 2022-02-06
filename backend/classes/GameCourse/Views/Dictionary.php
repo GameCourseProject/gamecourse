@@ -393,7 +393,7 @@ class Dictionary
         self::registerFunction(
             null,
             'getKNeighbors',
-            function ($collection, $user, $k, int $courseId) {
+            function ($collection, $user, $k) {
                 $key = array_search($user, array_column($collection['value'], 'id'));
                 $nElements = count($collection['value']);
                 $result = [];

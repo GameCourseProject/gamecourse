@@ -207,33 +207,37 @@ class ViewHandler
         }
 
         // Update header rows
-        foreach ($view["headerRows"] as &$headerRow) {
-            $headerRoles = self::updateView($headerRow);
-            foreach ($headerRoles as $headerRole){
-                if (!in_array($headerRole, $viewRoles)) $viewRoles[] = $headerRole;
-            }
+        if (isset($view["headerRows"])) {
+            foreach ($view["headerRows"] as &$headerRow) {
+                $headerRoles = self::updateView($headerRow);
+                foreach ($headerRoles as $headerRole){
+                    if (!in_array($headerRole, $viewRoles)) $viewRoles[] = $headerRole;
+                }
 
-            // Insert into 'view_table_header'
-            Core::$systemDB->insert("view_table_header", [
-                "id" => $view["id"],
-                "headerRow" => $headerRow[0]["viewId"],
-                "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_header", ["id" => $view["id"]]))
-            ]);
+                // Insert into 'view_table_header'
+                Core::$systemDB->insert("view_table_header", [
+                    "id" => $view["id"],
+                    "headerRow" => $headerRow[0]["viewId"],
+                    "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_header", ["id" => $view["id"]]))
+                ]);
+            }
         }
 
         // Update body rows
-        foreach ($view["rows"] as &$row) {
-            $bodyRoles = self::updateView($row);
-            foreach ($bodyRoles as $bodyRole){
-                if (!in_array($bodyRole, $viewRoles)) $viewRoles[] = $bodyRole;
-            }
+        if (isset($view["rows"])) {
+            foreach ($view["rows"] as &$row) {
+                $bodyRoles = self::updateView($row);
+                foreach ($bodyRoles as $bodyRole) {
+                    if (!in_array($bodyRole, $viewRoles)) $viewRoles[] = $bodyRole;
+                }
 
-            // Insert into 'view_table_row'
-            Core::$systemDB->insert("view_table_row", [
-                "id" => $view["id"],
-                "row" => $row[0]["viewId"],
-                "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_row", ["id" => $view["id"]]))
-            ]);
+                // Insert into 'view_table_row'
+                Core::$systemDB->insert("view_table_row", [
+                    "id" => $view["id"],
+                    "row" => $row[0]["viewId"],
+                    "viewIndex" => count(Core::$systemDB->selectMultiple("view_table_row", ["id" => $view["id"]]))
+                ]);
+            }
         }
 
         return $viewRoles;
@@ -381,15 +385,19 @@ class ViewHandler
         self::buildViewTable($view);
 
         // Delete header rows
-        foreach ($view["headerRows"] as $headerRow) {
-            self::deleteView($headerRow);
-            Core::$systemDB->delete("view_table_header", ["headerRow" => $headerRow[0]["viewId"]]);
+        if (isset($view["headerRows"])) {
+            foreach ($view["headerRows"] as $headerRow) {
+                self::deleteView($headerRow);
+                Core::$systemDB->delete("view_table_header", ["headerRow" => $headerRow[0]["viewId"]]);
+            }
         }
 
         // Delete body rows
-        foreach ($view["rows"] as $row) {
-            self::deleteView($row);
-            Core::$systemDB->delete("view_table_row", ["row" => $row[0]["viewId"]]);
+        if (isset($view["rows"])) {
+            foreach ($view["rows"] as $row) {
+                self::deleteView($row);
+                Core::$systemDB->delete("view_table_row", ["row" => $row[0]["viewId"]]);
+            }
         }
     }
 

@@ -25,7 +25,6 @@ import {GoToPageDirective} from "./_directives/events/go-to-page.directive";
 import {HideViewDirective} from "./_directives/events/hide-view.directive";
 import {ShowViewDirective} from "./_directives/events/show-view.directive";
 import {ToggleViewDirective} from "./_directives/events/toggle-view.directive";
-import {RowComponent} from "./_components/building-blocks/row/row.component";
 import {ChartComponent} from "./_components/building-blocks/chart/chart.component";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {LineChartComponent} from "./_components/charts/line-chart/line-chart.component";
@@ -48,7 +47,6 @@ import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.
     FooterComponent,
     InputCodeComponent,
     BlockComponent,
-    RowComponent,
     TextComponent,
     ImageComponent,
     TableComponent,

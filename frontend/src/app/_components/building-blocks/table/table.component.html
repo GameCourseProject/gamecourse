@@ -15,10 +15,10 @@
        [attr.data-viewId]="view.viewId"
        [attr.data-label]="view.label"
        [attr.data-role]="edit ? view.role : null"
-       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : EventGoToPage"
-       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"
-       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"
-       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
+       [goToPage]="getEvent(view, EventAction.GO_TO_PAGE) | as : EventGoToPage"
+       [hideView]="getEvent(view, EventAction.HIDE_VIEW) | as : EventHideView"
+       [showView]="getEvent(view, EventAction.SHOW_VIEW) | as : EventShowView"
+       [toggleView]="getEvent(view, EventAction.TOGGLE_VIEW) | as : EventToggleView"
        [mode]="view.mode">
     <table>
 
@@ -34,8 +34,21 @@
           <th><button (click)="actionManager.triggerAction({action: EditorAction.TABLE_ADD_HEADER_ROW})">Add Header Row</button></th>
         </tr>
 
-        <tr *ngFor="let row of view.headerRows; let i = index">
-          <th *ngFor="let header of row.children">
+        <tr *ngFor="let row of view.headerRows; let i = index"
+            [attr.id]="row.cssId"
+            [classList]="row.class" [ngClass]="row.children.length === 0 ? ViewRow.ROW_EMPTY_CLASS : ''"
+            [attr.style]="row.style"
+            [attr.data-id]="row.id"
+            [attr.data-viewId]="row.viewId"
+            [attr.data-label]="row.label"
+            [attr.data-role]="edit ? row.role : null"
+            [goToPage]="getEvent(row, EventAction.GO_TO_PAGE) | as : EventGoToPage"
+            [hideView]="getEvent(row, EventAction.HIDE_VIEW) | as : EventHideView"
+            [showView]="getEvent(row, EventAction.SHOW_VIEW) | as : EventShowView"
+            [toggleView]="getEvent(row, EventAction.TOGGLE_VIEW) | as : EventToggleView"
+            [mode]="view.mode">
+
+          <th *ngFor="let header of row.children" [classList]="ViewRow.ROW_CHILD_CLASS">
             <bb-any [view]="header"></bb-any>
           </th>
 
@@ -51,8 +64,21 @@
           <td><button (click)="actionManager.triggerAction({action: EditorAction.TABLE_ADD_ROW})">Add Row</button></td>
         </tr>
 
-        <tr *ngFor="let row of view.rows; let i = index">
-          <td *ngFor="let item of row.children">
+        <tr *ngFor="let row of view.rows; let i = index"
+            [attr.id]="row.cssId"
+            [classList]="row.class" [ngClass]="row.children.length === 0 ? ViewRow.ROW_EMPTY_CLASS : ''"
+            [attr.style]="row.style"
+            [attr.data-id]="row.id"
+            [attr.data-viewId]="row.viewId"
+            [attr.data-label]="row.label"
+            [attr.data-role]="edit ? row.role : null"
+            [goToPage]="getEvent(row, EventAction.GO_TO_PAGE) | as : EventGoToPage"
+            [hideView]="getEvent(row, EventAction.HIDE_VIEW) | as : EventHideView"
+            [showView]="getEvent(row, EventAction.SHOW_VIEW) | as : EventShowView"
+            [toggleView]="getEvent(row, EventAction.TOGGLE_VIEW) | as : EventToggleView"
+            [mode]="view.mode">
+
+          <td *ngFor="let item of row.children" [classList]="ViewRow.ROW_CHILD_CLASS">
             <bb-any [view]="item"></bb-any>
           </td>
 

@@ -14,7 +14,7 @@ export class ViewRow extends View {
   private _children: View[];
 
   static readonly ROW_CLASS = 'gc-row';
-  static readonly ROW_CHILDREN_CLASS = 'gc-row_children';
+  static readonly ROW_CHILD_CLASS = 'gc-row_child';
   static readonly ROW_EMPTY_CLASS = 'gc-row_empty';
 
   constructor(id: number, viewId: number, parentId: number, role: string, mode: ViewMode, children: View[], loopData?: any,

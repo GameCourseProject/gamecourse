@@ -7,6 +7,8 @@ use GameCourse\Views\Views;
 
 class Leaderboard extends Module
 {
+    const ID = 'leaderboard';
+
     const LEADERBOARD_TEMPLATE = 'Leaderboard - by leaderboard';
     const RELATIVE_LEADERBOARD_TEMPLATE = 'Relative Leaderboard - by leaderboard';
 
@@ -24,14 +26,13 @@ class Leaderboard extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::LEADERBOARD_TEMPLATE))
-            Views::createTemplateFromFile(self::LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/leaderboard.txt'), $courseId);
+            Views::createTemplateFromFile(self::LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/leaderboard.txt'), $courseId, self::ID);
 
         if (!Views::templateExists($courseId, self::RELATIVE_LEADERBOARD_TEMPLATE))
-            Views::createTemplateFromFile(self::RELATIVE_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), $courseId);
+            Views::createTemplateFromFile(self::RELATIVE_LEADERBOARD_TEMPLATE, file_get_contents(__DIR__ . '/relativeLeaderboard.txt'), $courseId, self::ID);
     }
 
     public function setupResources() {
-        parent::addResources('js/');
         parent::addResources('css/leaderboard.css');
         parent::addResources('imgs/');
     }

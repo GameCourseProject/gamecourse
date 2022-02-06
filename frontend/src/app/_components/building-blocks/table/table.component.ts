@@ -9,6 +9,7 @@ import { EventHideView } from 'src/app/_domain/events/event-hide-view';
 import { EventShowView } from 'src/app/_domain/events/event-show-view';
 import { EventToggleView } from 'src/app/_domain/events/event-toggle-view';
 import {EditorAction, ViewEditorService} from "../../../_services/view-editor.service";
+import { ViewRow } from 'src/app/_domain/views/view-row';
 
 @Component({
   selector: 'bb-table',
@@ -25,13 +26,13 @@ export class TableComponent implements OnInit {
     requireValues(this.view, [this.view.headerRows, this.view.rows, this.view.nrColumns]);
     this.edit = this.view.mode === ViewMode.EDIT;
 
-    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
-    this.view.headerRows.forEach(row => row.children.forEach(header => {
-      if (!!header.events?.click) header.class += ' gc-clickable';
-    }));
-    this.view.rows.forEach(row => row.children.forEach(r => {
-      if(!!r.events?.click) r.class += ' gc-clickable';
-    }));
+    if (!this.edit && !!this.view.events?.click) this.view.class += ' gc-clickable';
+    this.view.headerRows.forEach(row => {
+      if (!this.edit && !!row.events?.click) row.class += ' gc-clickable';
+    });
+    this.view.rows.forEach(row => {
+      if (!this.edit && !!row.events?.click) row.class += ' gc-clickable';
+    });
 
     if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {
       this.view.style = this.view.style || '';
@@ -43,6 +44,10 @@ export class TableComponent implements OnInit {
     return ViewTable;
   }
 
+  get ViewRow(): typeof ViewRow {
+    return ViewRow;
+  }
+
   get EditorAction(): typeof EditorAction {
     return EditorAction;
   }
@@ -52,9 +57,9 @@ export class TableComponent implements OnInit {
   /*** ---------------- Events ---------------- ***/
   /*** ---------------------------------------- ***/
 
-  getEvent(action: EventAction): Event {
-    if (!exists(this.view.events)) return null;
-    return getEventFromAction(this.view.events, action);
+  getEvent(view: ViewTable | ViewRow, action: EventAction): Event {
+    if (!exists(view.events)) return null;
+    return getEventFromAction(view.events, action);
   }
 
   get EventAction(): typeof EventAction {

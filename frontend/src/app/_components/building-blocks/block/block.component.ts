@@ -27,7 +27,7 @@ export class BlockComponent implements OnInit {
 
   ngOnInit(): void {
     requireValues(this.view, [this.view.children]);
-    if (!!this.view.events?.click) this.view.class += ' gc-clickable';
+    if (!this.edit && !!this.view.events?.click) this.view.class += ' gc-clickable';
     this.edit = this.view.mode === ViewMode.EDIT;
 
     if (this.view.visibilityType === VisibilityType.INVISIBLE && !this.edit) {

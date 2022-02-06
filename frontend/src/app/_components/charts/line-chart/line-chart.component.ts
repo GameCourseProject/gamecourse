@@ -96,7 +96,9 @@ export class LineChartComponent implements OnInit {
         tickAmount: this.yAxisTickAmount,
         reversed: this.yAxisReversed,
       },
-      tooltip: { }
+      tooltip: {
+        enabled: !this.sparkline
+      }
     };
 
     if (this.xAxisType === 'category') this.chartOptions.xaxis.categories = this.categories;

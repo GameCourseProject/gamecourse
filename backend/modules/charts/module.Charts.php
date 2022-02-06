@@ -12,8 +12,8 @@ use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
 
-class Charts extends Module {
-
+class Charts extends Module
+{
     const ID = 'charts';
 
     private $registeredCharts = array();
