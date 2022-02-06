@@ -21,14 +21,8 @@ $GLOBALS['fail'] = 0;
 global $courseInfo;
 $GLOBALS['courseInfo'] = null;
 
-global $fenixInfo;
-$GLOBALS['fenixInfo'] = null;
-global $moodleInfo;
-$GLOBALS['moodleInfo'] = null;
-global $classcheckInfo;
-$GLOBALS['classcheckInfo'] = null;
-global $googlesheetsInfo;
-$GLOBALS['googlesheetsInfo'] = null;
+global $pluginInfo;
+$GLOBALS['pluginInfo'] = null;
 
 global $lg_1;
 $GLOBALS['lg_1'] = [];
@@ -92,12 +86,7 @@ global $c_3;
 $GLOBALS['c_3'] = [];
 
 $GLOBALS['courseInfo'] = testCourse();
-$GLOBALS['fenixInfo'] = testFenix();
-$GLOBALS['moodleInfo'] = testMoodle();
-$GLOBALS['classcheckInfo'] = testClassCheck();
-$GLOBALS['googlesheetsInfo'] = testGoogleSheets();
-
-
+$GLOBALS['pluginInfo'] = testPlugin();
 $GLOBALS['dictionaryInfo'] = testDictionary();
 
 function testCourse()
@@ -117,52 +106,13 @@ function testCourse()
         return 0;
     }
 }
-function testFenix()
+function testPlugin()
 {
     if (array_key_exists("course", $_GET)) {
 
         $course = $_GET["course"];
         $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("fenix")) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-}
-function testMoodle()
-{
-    if (array_key_exists("course", $_GET)) {
-
-        $course = $_GET["course"];
-        $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("moodle")) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-}
-function testClassCheck()
-{
-    if (array_key_exists("course", $_GET)) {
-
-        $course = $_GET["course"];
-        $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("classcheck")) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-}
-function testGoogleSheets()
-{
-    if (array_key_exists("course", $_GET)) {
-
-        $course = $_GET["course"];
-        $courseObj = Course::getCourse($course);
-        if ($courseObj->getModule("googlesheets")) {
+        if ($courseObj->getModule("plugin")) {
             return 1;
         } else {
             return 0;
@@ -184,30 +134,24 @@ function testDictionary()
 }
 testPhotoDownload();
 if ($GLOBALS['courseInfo'] == 0) {
-   // testUserImport();
+    testUserImport();
     // return "<strong style='color:#F7941D;'>Warning:</strong> If you desire to test the whole script, please specify a course id as an URL parameter: ?course=1 or &course=1.";
 } else if ($GLOBALS['courseInfo'] == -1) {
-   // testUserImport();
+    testUserImport();
     // return "<strong style='color:#F7941D;'>Warning:</strong> There is no course with id " . $_GET["course"];
 } else if ($GLOBALS['courseInfo'] == 1) {
     $course = $_GET["course"];
     $courseObj = Course::getCourse($course);
-    if ($courseObj->getModule("fenix")) {
+    if ($courseObj->getModule("plugin")) {
         testFenixPlugin($course);
-    }
-    if ($courseObj->getModule("moodle")) {
         testMoodlePlugin($course);
-    }
-    if ($courseObj->getModule("classcheck")) {
         testClassCheckPlugin($course);
-    }
-    if ($courseObj->getModule("googlesheets")) {
         testGoogleSheetsPlugin($course);
     }
-    //testDictionaryManagement($course);
-    //testUserImport();
-    //testCourseUserImport($course);
-    //testCourseImport();
+    testDictionaryManagement($course);
+    testUserImport();
+    testCourseUserImport($course);
+    testCourseImport();
 }
 
 function testPhotoDownload()
@@ -1327,9 +1271,9 @@ echo "</tr>";
 // Fénix Import
 echo "<tr>";
 if ($GLOBALS['courseInfo'] == 1) {
-    if ($GLOBALS["fenixInfo"] == 0) {
+    if ($GLOBALS["pluginInfo"] == 0) {
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Fénix Import</td>";
-        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test fenix, please enable the fenix module.</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.</td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/4)</td>";
         echo "</tr>";
@@ -1359,9 +1303,9 @@ if ($GLOBALS['courseInfo'] == 1) {
 //Plugin
 echo "<tr>";
 if ($GLOBALS['courseInfo'] == 1) {
-    if ($GLOBALS["fenixInfo"] == 0) {
-        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Data Sources</td>";
-        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the fenix2, please enable the fenix2 module.</td>";
+    if ($GLOBALS["pluginInfo"] == 0) {
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'>Plugins</td>";
+        echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;'><strong style='color:#F7941D;'>Warning:</strong> To test the plugin, please enable the plugin module.</td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;'></td>";
         echo "<td rowspan='1' style='border: 1px solid black; padding: 5px;text-align:center;background-color:#FFA5A5'>0%</br>(0/3)</td>";
         echo "</tr>";
@@ -1369,7 +1313,7 @@ if ($GLOBALS['courseInfo'] == 1) {
         $info = $GLOBALS["p_1"][0] . $GLOBALS["p_2"][0] . $GLOBALS["p_3"][0];
         $countedInfo = countInfos($info, 3);
         // return [$warningCount, $successCount, $percentageScore, $percentageCover, $colorScore, $colorCover];
-        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Data Sources</td>";
+        echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;'>Plugins</td>";
         echo "<td style='border: 1px solid black; padding: 5px;'>" . $GLOBALS["p_1"][1] . "</td>";
         echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[4] . ";'>" . $countedInfo[2] . "%</br>(" . $countedInfo[1] . "/3)</td>";
         echo "<td rowspan='3' style='border: 1px solid black; padding: 5px;text-align:center;background-color:" . $countedInfo[5] . ";'>" . $countedInfo[3] . "%</br>(" . (3 - $countedInfo[0]) . "/3)</td>";

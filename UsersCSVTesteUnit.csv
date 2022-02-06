@@ -1,0 +1,4 @@
+name,email,nickname,studentNumber,major,isAdmin,isActive,username,auth
+Teacher,,,90709,,1,1,ist190709,fenix
+MacMiller,macmiller@circles.com,,190701,eic,0,1,macmiller,fenix
+JCole,jcole@kod.com,,190702,eic,0,1,jcole,fenix
