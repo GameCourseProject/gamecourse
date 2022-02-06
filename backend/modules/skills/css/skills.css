@@ -1,241 +1,90 @@
-.skills-overview .tier-container {
-  background-color: #d9d9d9;
-  margin-top: 2px !important;
-  padding-left: 8px;
-}
-
-.skills-overview .tier-container:first-child {
-  margin-top: 0px !important;
-}
-
-.skills-overview .skill-square {
-  font-size: 90%;
-  color: #ffffff;
-  text-align: left;
-  margin: 12px 8px 12px 0px;
-  width: 180px;
-  padding: 5px;
-  display: inline-block;
-}
-
-.skills-overview .photos-container {
-  padding: 8px;
-}
-
-.skills-overview .student-image {
-  width: 30px;
-  margin: 1px;
-  border: 1px solid #666666;
-  cursor: pointer;
-}
-
-.skills-overviewnew.block>.content {
-  display: block;
-}
-
-.skills-overviewnew.block .tier-container .table tr td:first-child {
-  width: 190px;
-  vertical-align: top;
-}
-
-.skills-overviewnew.block .tier-container .table td {
-  padding: 0;
-}
-
-.skills-overviewnew.block .skill-square {
-  font-size: 90%;
-  color: #ffffff;
-  text-align: left;
-  width: 180px;
-  padding: 9px;
-  display: inline-block;
-}
-
-.skills-overviewnew.block .photos-container {
-  margin: 0;
-}
-
-.skills-overviewnew.block .photos-container>.content {
-  margin: 0;
-  padding: 0;
-}
-
-.skills-overviewnew.block .photos-container>.content>* {
-  margin: 0;
-}
-
-.skills-overviewnew.block .student-image .img {
-  width: 30px;
-  margin: 1px;
-  border: 1px solid #666666;
-  cursor: pointer;
-}
-
-.skills-pageblock {
+.skill-tree {
   border: 2px solid #d9d9d9;
+  border-radius: 5px;
+  padding: 20px;
 }
 
-.skills-pageblock>.content {
-  margin: 0px !important;
+/*** ------------ Tiers ------------ ***/
+
+.skill-tree .skill-tiers {
+  width: 100%;
 }
 
-.skills-pageblock .content {
-  align-items: initial !important
+.skill-tree .skill-tiers > * {
+  flex-direction: row !important;
 }
 
-@media all and (max-width: 1000px) {
-  .skills-pageblock>.content {
-    display: block;
-  }
-
-  .skills-pageblock>.content>div {
-    width: 100%;
-  }
+.skill-tree .skill-tiers > * bb-any {
+  width: 100%;
 }
 
-.skills-pageblock .tier {
-  margin: 0 !important;
-  width: 20%;
-  box-sizing: border-box;
-  /*background-color: #d9d9d9 !important;*/
-  border-bottom: 2px dashed #bfbfbf;
-  display: flex !important;
-  align-items: center;
+.skill-tree .skill-tiers .skill-tier {
+  border-right: 2px dashed #bfbfbf;
+  display: flex;
   justify-content: center;
-  padding: 30px 0 0 0 !important;
+  align-items: center;
+  position: relative;
+  height: 100%;
 }
 
-.skills-pageblock .tier:last-child {
-  border-bottom: 0;
+.skill-tree .skill-tiers > * bb-any:last-child .skill-tier {
+  border-right: none;
 }
 
-@media all and (min-width: 1000px) {
-  .skills-pageblock .tier {
-    border-bottom: 0;
-    border-right: 2px dashed #bfbfbf;
-  }
-
-  .skills-pageblock .tier:last-of-type {
-    border-right: none;
-  }
-}
-
-.skills-pageblock .tier .content,
-.skills-pageblock .tier .content>* {
-  margin: 0 !important;
-  padding: 0 !important;
-  font-size: 11px;
-}
-
-.skills-pageblock .tier>.content {
-  /* background-color: #d9d9d9; */
-  display: block;
-}
-
-@media all and (max-width: 1000px) {
-  .skills-pageblock .tier>.content {
-    display: flex;
-    align-items: center;
-    padding-bottom: 0px;
-  }
-}
-
-.skills-pageblock .tier .tier-reward {
+.skill-tree .skill-tiers .skill-tier .skill-tier-reward {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   text-align: center;
   font-size: 20px;
   font-weight: bold;
-  top: 0;
-  position: absolute;
 }
 
-.skills-pageblock .tier .tier-reward.editable {
-  width: inherit;
+.skill-tree .skill-tiers .skill-tier .skill-tier-used-wildcards {
+  font-weight: bold;
+  margin-top: 30px;
 }
 
+/*** ------------ Skills ------------ ***/
 
-.skills-pageblock .tier .skill-container {
-  width: 50%;
-  flex-grow: 0;
-  min-height: 120px;
-  min-width: 230px;
+.skill-tree .skill-tiers .skill-tier .skill-container {
+  margin-top: 40px;
 }
 
-@media all and (min-width: 1000px) {
-  .skills-pageblock .tier .skill-container {
-    width: 100%;
-  }
-}
-
-.skills-pageblock .tier .skill-container>.content {
-  display: block;
-  padding: 0.1px;
-}
-
-.skills-pageblock .tier .skill {
-  display: block;
+.skill-tree .skill-tiers .skill-tier .skill-container .skill {
   position: relative;
-  color: #ffffff;
-  text-align: left;
-  width: 60px;
-  height: 60px;
-  margin: 8px auto !important;
-  padding: 5px !important;
-  flex-grow: 0;
-  cursor: pointer;
+  border-radius: 5px;
+  width: 72px;
+  height: 72px;
+  color: white;
+  font-size: 11px;
+  padding: 5px;
+  margin: auto;
+  word-break: break-word;
 }
 
-.skills-pageblock .tier .dependency {
-  font-size: 90%;
-  opacity: 0.7;
-}
-
-.skills-pageblock .tier .dependency.unlocked {
-  opacity: 1;
-}
-
-.skills-pageblock .tier .dependency .content {
-  display: flex;
-}
-
-.skills-pageblock .tier .dependency .content>* {
-  margin-right: 7px !important;
-}
-
-.skills-pageblock .tier .dependency .content>*:before {
-  content: '+';
-  float: left;
-  padding-right: 5px;
-}
-
-.skills-pageblock .tier .dependency .content>*:first-of-type {
-  margin-left: auto !important;
-}
-
-.skills-pageblock .tier .dependency .content>*:first-of-type:before {
-  content: '';
-  padding-right: 0px;
-}
-
-.skills-pageblock .tier .dependency .content>*:last-of-type {
-  margin-right: auto !important;
-}
-
-.skills-pageblock .tier .post {
+.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-post {
   position: absolute;
   bottom: 1px;
   right: 1px;
-  padding: 1px 2px;
-  font-size: 75%;
+  color: white;
+  font-size: 90%;
   background: rgba(102, 102, 102, 0.7);
-  text-transform: capitalize;
-  color: #ffffff;
 }
 
-.skills-pageblock .tier .post:hover {
-  color: #e6e6e6;
+.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * {
+  align-items: center;
 }
 
-.value.wildcards.ng-scope {
-  margin-left: 15px !important;
+.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies > * bb-any {
+  width: fit-content;
+}
+
+.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency {
+  font-size: 11px !important;
+}
+
+.skill-tree .skill-tiers .skill-tier .skill-container .skill-dependencies .skill-dependency.first {
+  margin-top: 10px;
 }

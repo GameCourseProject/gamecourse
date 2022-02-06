@@ -584,4 +584,8 @@ export class ViewsEditorComponent implements OnInit {
   getChartTypes(): string[] {
     return Object.values(ChartType);
   }
+
+  isRootView(view: View): boolean {
+    return !exists(view.parentId);
+  }
 }

@@ -27,33 +27,22 @@ class Skills extends Module
     public function init()
     {
         $this->setupData($this->getCourseId());
-        $this->initTemplates();
         $this->initDictionary();
+        $this->initTemplates();
         $this->initAPIEndpoints();
-    }
-
-    public function initTemplates()
-    {
-        $courseId = $this->getCourseId();
-
-        if (!Views::templateExists($courseId, self::SKILL_TREE_TEMPLATE))
-            Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId, self::ID);
-
-        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE))
-            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
     }
 
     public function initDictionary()
     {
         $courseId = $this->getCourseId();
-        
+
         /*** ------------ Libraries ------------ ***/
-        
+
         Dictionary::registerLibrary("skills", "skillTrees", "This library provides information regarding Skill Trees. It is provided by the skills module.");
 
-        
+
         /*** ------------ Functions ------------ ***/
-        
+
         //skillTrees.getTree(id), returns tree object
         Dictionary::registerFunction(
             'skillTrees',
@@ -131,7 +120,7 @@ class Skills extends Module
             null,
             true
         );
-        
+
         //%tree.getAllSkills(...) returns collection
         Dictionary::registerFunction(
             'skillTrees',
@@ -200,7 +189,7 @@ class Skills extends Module
             'tree',
             true
         );
-        
+
         //%tree.getTier(number), returns tier object
         Dictionary::registerFunction(
             'skillTrees',
@@ -222,7 +211,7 @@ class Skills extends Module
             'tree',
             true
         );
-        
+
         //%tree.tiers, returns collection w all tiers of the tree
         Dictionary::registerFunction(
             'skillTrees',
@@ -247,7 +236,7 @@ class Skills extends Module
             'tree',
             true
         );
-        
+
         //%tier.skills(isActive), returns collection w all skills of the tier
         Dictionary::registerFunction(
             'skillTrees',
@@ -284,7 +273,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.nextTier, returns tier object
         Dictionary::registerFunction(
             'skillTrees',
@@ -305,7 +294,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.previousTier, returns tier object
         Dictionary::registerFunction(
             'skillTrees',
@@ -326,7 +315,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.reward
         Dictionary::registerFunction(
             'skillTrees',
@@ -341,7 +330,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.usedWildcards
         Dictionary::registerFunction(
             'skillTrees',
@@ -358,7 +347,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.hasWildcards
         Dictionary::registerFunction(
             'skillTrees',
@@ -375,7 +364,7 @@ class Skills extends Module
             'tier',
             true
         );
-        
+
         //%tier.tier
         Dictionary::registerFunction(
             'skillTrees',
@@ -420,7 +409,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.name
         Dictionary::registerFunction(
             'skillTrees',
@@ -435,7 +424,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.isActive
         Dictionary::registerFunction(
             'skillTrees',
@@ -450,7 +439,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.getPost(user)
         Dictionary::registerFunction(
             'skillTrees',
@@ -496,7 +485,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.isCompleted(user), returns true if skill has been achieved by the user
         Dictionary::registerFunction(
             'skillTrees',
@@ -512,7 +501,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.completedBy(), returns a collection with the users that completed the skill
         Dictionary::registerFunction(
             'skillTrees',
@@ -527,7 +516,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.dependsOn,return colection of dependencies, each has a colection of skills
         Dictionary::registerFunction(
             'skillTrees',
@@ -544,7 +533,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%skill.requiredBy, returns collection of skills that depend on the given skill
         Dictionary::registerFunction(
             'skillTrees',
@@ -560,7 +549,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //%dependency.simpleSkills, returns collection of the required/normal/simple skills of a dependency
         Dictionary::registerFunction(
             'skillTrees',
@@ -581,7 +570,7 @@ class Skills extends Module
             'dependency',
             true
         );
-        
+
         //%dependency.dependencies, returns names of the required/normal/simple skills/tiers of a dependency
         Dictionary::registerFunction(
             'skillTrees',
@@ -612,7 +601,7 @@ class Skills extends Module
             'dependency',
             true
         );
-        
+
         //%dependency.superSkill, returns skill object
         Dictionary::registerFunction(
             'skillTrees',
@@ -653,7 +642,7 @@ class Skills extends Module
             'skill',
             true
         );
-        
+
         //skillTrees.wildcardAvailable(tierName,user)
         Dictionary::registerFunction(
             'skillTrees',
@@ -667,6 +656,17 @@ class Skills extends Module
             'library',
             true
         );
+    }
+
+    public function initTemplates()
+    {
+        $courseId = $this->getCourseId();
+
+        if (!Views::templateExists($courseId, self::SKILL_TREE_TEMPLATE))
+            Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId, self::ID);
+
+//        if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE)) // FIXME: needs refactor
+//            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
     }
 
     public function initAPIEndpoints()
@@ -708,7 +708,6 @@ class Skills extends Module
     {
         parent::addResources('js/');
         parent::addResources('css/skills.css');
-        parent::addResources('css/skill-page.css');
         parent::addResources('imgs');
     }
 

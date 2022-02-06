@@ -71,16 +71,16 @@
              (click)="toolbarBtnClicked('edit-layout')">
           <img src="assets/icons/layout_editor_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Remove" (click)="toolbarBtnClicked('remove')">
+        <div *ngIf="!isRootView(selection.get())" class="tool btn" title="Remove" (click)="toolbarBtnClicked('remove')">
           <img src="assets/icons/delete_icon.svg" alt="">
         </div>
-        <div *ngIf="selection.get().type !== ViewType.ROW" class="tool btn" title="Switch part" (click)="toolbarBtnClicked('switch')">
+        <div *ngIf="!isRootView(selection.get()) && selection.get().type !== ViewType.ROW" class="tool btn" title="Switch part" (click)="toolbarBtnClicked('switch')">
           <img src="assets/icons/switch_part_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Duplicate" (click)="toolbarBtnClicked('duplicate')">
+        <div *ngIf="!isRootView(selection.get())" class="tool btn" title="Duplicate" (click)="toolbarBtnClicked('duplicate')">
           <img src="assets/icons/duplicate_icon.svg" alt="">
         </div>
-        <div class="tool btn" title="Save as template" (click)="toolbarBtnClicked('save-as-template')">
+        <div *ngIf="!isRootView(selection.get())" class="tool btn" title="Save as template" (click)="toolbarBtnClicked('save-as-template')">
           <img src="assets/icons/save_icon.svg" alt="">
         </div>
         <div class="tool btn" title="Manage Aspects" (click)="toolbarBtnClicked('manage-aspects')">
@@ -133,7 +133,7 @@
       <ng-container [ngTemplateOutlet]="variables"></ng-container>
 
       <!-- Loop Data -->
-      <ng-container
+      <ng-container *ngIf="viewToEdit.parentId !== null"
         [ngTemplateOutlet]="loopData">
       </ng-container>
 

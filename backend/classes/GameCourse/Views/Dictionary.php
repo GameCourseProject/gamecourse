@@ -313,6 +313,12 @@ class Dictionary
             $collection["value"] = array_slice($collection["value"], $start, $end - $start + 1);
             return new ValueNode($collection);
         },  "Returns the collection only with objects that have an index between start and end, inclusively.", 'collection', null, 'collection', null, $setup);
+        //%collection.join(param, separator) returns a string of the collection param joined by a separator
+        self::registerFunction(null, 'join', function ($collection, string $param, string $separator) {
+            self::checkArray($collection, "collection", "join()");
+            $collection["value"] = array_map(function ($item) use ($param) { return $item[$param]; }, $collection["value"]);
+            return new ValueNode(implode($separator, $collection["value"]));
+        },  "Returns a string of the collection param joined by a separator.", 'string', null, 'collection', null, $setup);
         //$collection.filter(key,val,op) returns collection w items that pass the condition of the filter
         self::registerFunction(null, 'filter', function ($collection, string $key, string $value, string $operation) {
             self::checkArray($collection, "collection", "filter()");
