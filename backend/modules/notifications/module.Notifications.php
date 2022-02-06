@@ -85,7 +85,7 @@ class Notifications extends Module
         $this->initDictionary();
     }
 
-    public function initTemplates()
+    public function initTemplates() // FIXME: refactor templates
     {
         $courseId = $this->getCourseId();
 

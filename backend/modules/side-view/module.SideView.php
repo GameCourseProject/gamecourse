@@ -20,7 +20,7 @@ class SideView extends Module
         $this->initTemplates();
     }
 
-    public function initTemplates()
+    public function initTemplates() // FIXME: refactor templates
     {
         $courseId = $this->getCourseId();
 

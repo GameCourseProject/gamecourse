@@ -54,7 +54,7 @@ class Quest extends Module
         $this->initAPIEndpoints();
     }
 
-    public function initTemplates()
+    public function initTemplates() // FIXME: refactor templates
     {
         $courseId = $this->getCourseId();
 
