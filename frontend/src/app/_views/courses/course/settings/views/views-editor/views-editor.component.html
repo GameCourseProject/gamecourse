@@ -291,13 +291,11 @@
       </div>
     </div>
 
-    <!-- Condition -->
-    <ng-template [ngIf]="viewToEdit.visibilityType === VisibilityType.CONDITIONAL">
-      <ng-container
+    <!-- Condition FIXME: should not be visible all the time -->
+      <ng-template
         [ngTemplateOutlet]="expressionInput"
         [ngTemplateOutletContext]="{label: 'condition', title: 'Define a condition that needs to be true for the element to appear', viewParam: 'visibilityCondition'}">
-      </ng-container>
-    </ng-template>
+      </ng-template>
   </div>
 </ng-template>
 
