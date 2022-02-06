@@ -267,7 +267,8 @@ API::registerFunction($MODULE, 'exportTemplate', function () {
 
 /**
  * Get essential info for editor like course roles, roles hierarchy,
- * template roles, template views by aspect and template view tree.
+ * template roles, template views by aspect, template view tree and
+ * enabled modules in course.
  *
  * @param int $courseId
  * @param int $templateId
@@ -302,7 +303,8 @@ API::registerFunction($MODULE, 'getTemplateEditInfo', function () {
         'courseRoles' => $course->getRoles('id, name, landingPage'),
         'rolesHierarchy' => $course->getRolesHierarchy(),
         'templateRoles' => $templateRoles,
-        'templateViewsByAspect' => $templateViewsByAspect
+        'templateViewsByAspect' => $templateViewsByAspect,
+        'enabledModules' => $course->getEnabledModules()
     ));
 });
 

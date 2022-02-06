@@ -9,6 +9,7 @@ use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
+use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
 
 class Charts extends Module {
@@ -39,14 +40,14 @@ class Charts extends Module {
                     ViewHandler::parseSelf($view['info']['max']);
                 }
             },
-            function(&$view, $viewParams, $visitor) { //processing function
+            function(&$view, $visitor) { //processing function
                 if ($view['chartType'] == 'progress') {
                     ViewHandler::processSelf($view['info']['value'], $visitor);
                     ViewHandler::processSelf($view['info']['max'], $visitor);
 
                 } else if (!empty($view['info']['provider'])) {
                     $processFunc = $this->registeredCharts[$view['info']['provider']];
-                    $processFunc($view, $viewParams, $visitor);
+                    $processFunc($view, $visitor);
                 }
             },
             true
@@ -54,7 +55,8 @@ class Charts extends Module {
 
         /*** --------- Chart Providers --------- ***/
 
-        $this->registerChart('starPlot', function(&$chart, $params, $visitor) {
+        $this->registerChart('starPlot', function(&$chart, EvaluateVisitor $visitor) {
+            $params = $visitor->getParams();
             $userID = $params['user'];
 
             $course = Course::getCourse($params['course'], false);
@@ -89,7 +91,8 @@ class Charts extends Module {
             );
         });
 
-        $this->registerChart('xpEvolution', function(&$chart, $params, $visitor) {
+        $this->registerChart('xpEvolution', function(&$chart, EvaluateVisitor $visitor) {
+            $params = $visitor->getParams();
             $userID = $params['user'];
             $course = Course::getCourse($params['course'], false);
             $xpModule = $course->getModule("xp");
@@ -142,7 +145,8 @@ class Charts extends Module {
             CacheSystem::store($cacheId, $chart['info']);
         });
 
-        $this->registerChart('leaderboardEvolution', function(&$chart, $params, $visitor) {
+        $this->registerChart('leaderboardEvolution', function(&$chart, EvaluateVisitor $visitor) {
+            $params = $visitor->getParams();
             $userID = $params['user'];
             $course = Course::getCourse($params['course'], false);
 
@@ -176,7 +180,7 @@ class Charts extends Module {
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = \GameCourse\Core::$systemDB->selectMultiple("award",['user'=>$student['id'],'course'=>$params['course']],"*","date");
+                $awards = Core::$systemDB->selectMultiple("award",['user'=>$student['id'],'course'=>$params['course']],"*","date");
 
                 if (count($awards) == 0) {
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
@@ -294,7 +298,8 @@ class Charts extends Module {
             CacheSystem::store($cacheId, $chart['info']);
         });
 
-        $this->registerChart('xpWorld', function(&$chart, $params, $visitor) {
+        $this->registerChart('xpWorld', function(&$chart, EvaluateVisitor $visitor) {
+            $params = $visitor->getParams();
             $userID = $params['user'];
             $course = Course::getCourse($params['course'], false);
 
@@ -347,7 +352,8 @@ class Charts extends Module {
             );
         });
 
-        $this->registerChart('badgeWorld', function(&$chart, $params, $visitor) {
+        $this->registerChart('badgeWorld', function(&$chart, EvaluateVisitor $visitor) {
+            $params = $visitor->getParams();
             $userID = $params['user'];
             $course = Course::getCourse($params['course'], false);
 

@@ -482,7 +482,7 @@
         <img [src]="'assets/icons/table_part_icon.svg'">
         <div class="part_label">Table</div>
       </div>
-      <div class="part_option" (click)="partToAdd = 'chart'" [ngStyle]="{'opacity': partToAdd === 'chart' ? 1 : 0.5}">
+      <div *ngIf="enabledModules.includes('charts')" class="part_option" (click)="partToAdd = 'chart'" [ngStyle]="{'opacity': partToAdd === 'chart' ? 1 : 0.5}">
         <img [src]="'assets/icons/chart_part_icon.svg'">
         <div class="part_label">Chart</div>
       </div>
