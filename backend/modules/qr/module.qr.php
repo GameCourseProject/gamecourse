@@ -8,6 +8,7 @@ use GameCourse\ModuleLoader;
 
 class QR extends Module
 {
+    const ID = 'qr';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

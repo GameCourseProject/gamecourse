@@ -9,6 +9,8 @@ use GameCourse\Views\Views;
 
 class Notifications extends Module
 {
+    const ID = 'notifications';
+
     const NOTIFICATIONS_PROFILE_TEMPLATE = 'Notifications Profile - by notifications';
 
     public $notificationList = []; //contains an array of notfics of current user
@@ -88,7 +90,7 @@ class Notifications extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::NOTIFICATIONS_PROFILE_TEMPLATE))
-            Views::createTemplateFromFile(self::NOTIFICATIONS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/notifications.txt'), $courseId);
+            Views::createTemplateFromFile(self::NOTIFICATIONS_PROFILE_TEMPLATE, file_get_contents(__DIR__ . '/notifications.txt'), $courseId, self::ID);
     }
 
     public function initDictionary()

@@ -14,6 +14,8 @@ use GameCourse\Views\Views;
 
 class Skills extends Module
 {
+    const ID = 'skills';
+
     const SKILL_TREE_TEMPLATE = 'Skill Tree - by skills';
     const SKILLS_OVERVIEW_TEMPLATE = 'Skills Overview - by skills';
 
@@ -35,10 +37,10 @@ class Skills extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::SKILL_TREE_TEMPLATE))
-            Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId);
+            Views::createTemplateFromFile(self::SKILL_TREE_TEMPLATE, file_get_contents(__DIR__ . '/skillTree.txt'), $courseId, self::ID);
 
         if (!Views::templateExists($courseId, self::SKILLS_OVERVIEW_TEMPLATE))
-            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId);
+            Views::createTemplateFromFile(self::SKILLS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/skillsOverview.txt'), $courseId, self::ID);
     }
 
     public function initDictionary()

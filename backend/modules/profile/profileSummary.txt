@@ -1,2352 +1,1000 @@
 [
-    {
-        "id": "2783",
-        "viewId": "2783",
-        "role": "role.Default>role.Default",
-        "partType": "block",
-        "parentId": null,
-        "viewIndex": null,
-        "label": null,
-        "loopData": null,
-        "variables": null,
-        "value": null,
-        "class": null,
-        "style": null,
-        "link": null,
-        "visibilityCondition": null,
-        "visibilityType": null,
-        "events": null,
-        "info": null,
-        "children": [
-            {
-                "id": "2784",
-                "viewId": "2784",
-                "role": "role.Default>role.Default",
-                "partType": "block",
-                "parentId": "2783",
-                "viewIndex": "0",
-                "label": null,
-                "loopData": "{}",
-                "variables": {
-                    "userData": {
-                        "value": "{users.getUser(%user)}"
-                    }
-                },
-                "value": null,
-                "class": "profile-view",
-                "style": null,
-                "link": null,
-                "visibilityCondition": "{}",
-                "visibilityType": "conditional",
-                "events": [],
-                "info": null,
-                "children": [
-                    {
-                        "id": "2785",
-                        "viewId": "2785",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": "max-width:380px;",
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2786",
-                                "viewId": "2786",
-                                "role": "role.Default>role.Default",
-                                "partType": "table",
-                                "parentId": "2785",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": null,
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": [],
-                                "rows": [
-                                    {
-                                        "id": "2787",
-                                        "viewId": "2787",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2786",
-                                        "viewIndex": "0",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2788",
-                                                    "viewId": "2788",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2787",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Level",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2789",
-                                                    "viewId": "2789",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2787",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": {
-                                                        "lvl": {
-                                                            "value": "{xp.getLevel(%user)}"
-                                                        }
-                                                    },
-                                                    "value": "{%lvl.number} - {%lvl.description}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "2790",
-                                        "viewId": "2790",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2786",
-                                        "viewIndex": "1",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2791",
-                                                    "viewId": "2791",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2790",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "XP",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2792",
-                                                    "viewId": "2792",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2790",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "2793",
-                                        "viewId": "2793",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2786",
-                                        "viewIndex": "2",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2794",
-                                                    "viewId": "2794",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2793",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Badges",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2795",
-                                                    "viewId": "2795",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2793",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getBadgesXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "2796",
-                                        "viewId": "2796",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2786",
-                                        "viewIndex": "3",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2797",
-                                                    "viewId": "2797",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2796",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Skills",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2798",
-                                                    "viewId": "2798",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2796",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getSkillTreeXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "2799",
-                                        "viewId": "2799",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2786",
-                                        "viewIndex": "4",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2800",
-                                                    "viewId": "2800",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2799",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Major",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2801",
-                                                    "viewId": "2801",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2799",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%userData.major}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "headerRows": [],
-                                "columns": 2
-                            }
-                        ],
-                        "header": {
-                            "id": "3890",
-                            "viewId": "3890",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2802",
-                            "image": {
-                                "id": "2803",
-                                "viewId": "2803",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3890",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "{%userData.picture}",
-                                "class": null,
-                                "style": "border: 1px solid #bfbfbf;width:100px;height:100px;",
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2804",
-                                "viewId": "2804",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3890",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "{%userData.name} - {%userData.studentNumber}",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2805",
-                        "viewId": "2805",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "1",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": "max-width:400px;",
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2806",
-                                "viewId": "2806",
-                                "role": "role.Default>role.Default",
-                                "partType": "table",
-                                "parentId": "2805",
-                                "viewIndex": "0",
-                                "label": null,
-                                "variables": [],
-                                "value": null,
-                                "class": "latest-awards",
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "loopData": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": [],
-                                "rows": [
-                                    {
-                                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
-                                        "id": "2807",
-                                        "viewId": "2807",
-                                        "role": "role.Default>role.Default",
-                                        "partType": "row",
-                                        "parentId": "2806",
-                                        "viewIndex": "0",
-                                        "label": null,
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "2808",
-                                                    "viewId": "2808",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2807",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.renderPicture(\"type\")}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2809",
-                                                    "viewId": "2809",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2807",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.description}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "2810",
-                                                    "viewId": "2810",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "2807",
-                                                    "viewIndex": "2",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.reward} XP",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "headerRows": [],
-                                "columns": 3
-                            }
-                        ],
-                        "header": {
-                            "id": "3891",
-                            "viewId": "3891",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2811",
-                            "image": {
-                                "id": "2812",
-                                "viewId": "2812",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3891",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2813",
-                                "viewId": "2813",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3891",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Latest Awards",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2814",
-                        "viewId": "2814",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "2",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2815",
-                                "viewId": "2815",
-                                "role": "role.Default>role.Default",
-                                "partType": "chart",
-                                "parentId": "2814",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "star",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "starPlot",
-                                    "params": [
-                                        {
-                                            "id": "quizXP",
-                                            "label": "Quiz",
-                                            "max": "6000"
-                                        },
-                                        {
-                                            "id": "labXP",
-                                            "label": "Labs",
-                                            "max": "3000"
-                                        },
-                                        {
-                                            "id": "badgeXP",
-                                            "label": "Badges",
-                                            "max": "4000"
-                                        },
-                                        {
-                                            "id": "skillXP",
-                                            "label": "Skills",
-                                            "max": "5000"
-                                        },
-                                        {
-                                            "id": "presentationXP",
-                                            "label": "Presentation",
-                                            "max": "3000"
-                                        }
-                                    ]
-                                },
-                                "chartType": "star",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3892",
-                            "viewId": "3892",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2816",
-                            "image": {
-                                "id": "2817",
-                                "viewId": "2817",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3892",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/starplot.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2818",
-                                "viewId": "2818",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3892",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "XP Overview",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2819",
-                        "viewId": "2819",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "3",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2820",
-                                "viewId": "2820",
-                                "role": "role.Default>role.Default",
-                                "partType": "chart",
-                                "parentId": "2819",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "line",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "xpEvolution"
-                                },
-                                "chartType": "line",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3893",
-                            "viewId": "3893",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2821",
-                            "image": {
-                                "id": "2822",
-                                "viewId": "2822",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3893",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2823",
-                                "viewId": "2823",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3893",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "XP Evolution",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2824",
-                        "viewId": "2824",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "4",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2825",
-                                "viewId": "2825",
-                                "role": "role.Default>role.Default",
-                                "partType": "chart",
-                                "parentId": "2824",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "line",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "leaderboardEvolution"
-                                },
-                                "chartType": "line",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3894",
-                            "viewId": "3894",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2826",
-                            "image": {
-                                "id": "2827",
-                                "viewId": "2827",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3894",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2828",
-                                "viewId": "2828",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3894",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Leaderboard Evolution",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2829",
-                        "viewId": "2829",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "5",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2830",
-                                "viewId": "2830",
-                                "role": "role.Default>role.Default",
-                                "partType": "chart",
-                                "parentId": "2829",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "bar",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "xpWorld"
-                                },
-                                "chartType": "bar",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3895",
-                            "viewId": "3895",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "2831",
-                            "image": {
-                                "id": "2832",
-                                "viewId": "2832",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3895",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2833",
-                                "viewId": "3895",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "2831",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Your XP and the world's...",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "2834",
-                        "viewId": "2834",
-                        "role": "role.Default>role.Default",
-                        "partType": "block",
-                        "parentId": "2784",
-                        "viewIndex": "6",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "2835",
-                                "viewId": "2835",
-                                "role": "role.Default>role.Default",
-                                "partType": "chart",
-                                "parentId": "2834",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "bar",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "badgeWorld"
-                                },
-                                "chartType": "bar",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                        "id": "3896",
-                                                    "viewId": "3896",
-                                                    "role": "role.Default>role.Default",
-                                                    "partType": "header",
-                                                    "parentId": "2836",
-                            "image": {
-                                "id": "2837",
-                                "viewId": "2837",
-                                "role": "role.Default>role.Default",
-                                "partType": "image",
-                                "parentId": "3896",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "2838",
-                                "viewId": "2838",
-                                "role": "role.Default>role.Default",
-                                "partType": "text",
-                                "parentId": "3896",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Your Badges and the world's...",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    }
-                ],
-                "header": {
-                    "id": "3897",
-                    "viewId": "3897",
-                    "role": "role.Default>role.Default",
-                    "partType": "header",
-                    "parentId": "2839",
-                    "image": {
-                        "id": "2840",
-                        "viewId": "2840",
-                        "role": "role.Default>role.Default",
-                        "partType": "image",
-                        "parentId": "3897",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "images\/profile.svg",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
-                    },
-                    "title": {
-                        "id": "2841",
-                        "viewId": "3897",
-                        "role": "role.Default>role.Default",
-                        "partType": "text",
-                        "parentId": "2839",
-                        "viewIndex": "1",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "Profile",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
-                    }
-                }
-            }
-        ]
+  {
+    "type": "block",
+    "role": "role.Student>role.Default",
+    "class": "profile",
+    "visibilityType": "visible",
+    "variables": {
+      "userData": {
+        "value": "{users.getUser(%user)}"
+      }
     },
-    {
-        "id": "3793",
-        "viewId": "2783",
-        "role": "role.Student>role.Default",
-        "partType": "block",
-        "parentId": null,
-        "viewIndex": null,
-        "label": null,
-        "loopData": null,
-        "variables": null,
-        "value": null,
-        "class": null,
-        "style": null,
-        "link": null,
-        "visibilityCondition": null,
-        "visibilityType": null,
-        "events": null,
-        "info": null,
-        "children": [
-            {
-                "id": "3794",
-                "viewId": "3794",
+    "children": [
+      [
+        {
+          "type": "block",
+          "role": "role.Student>role.Default",
+          "class": "profile-summary",
+          "visibilityType": "visible",
+          "children": [
+            [
+              {
+                "type": "header",
                 "role": "role.Student>role.Default",
-                "partType": "block",
-                "parentId": "3793",
-                "viewIndex": "0",
-                "label": null,
-                "loopData": "{}",
-                "variables": {
-                    "userData": {
-                        "value": "{users.getUser(%user)}"
-                    }
-                },
-                "value": null,
-                "class": null,
-                "style": null,
-                "link": null,
-                "visibilityCondition": "{}",
-                "visibilityType": "conditional",
-                "events": [],
-                "info": null,
-                "children": [
-                    {
-                        "id": "3795",
-                        "viewId": "3795",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": "max-width:380px;",
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3796",
-                                "viewId": "3796",
-                                "role": "role.Student>role.Default",
-                                "partType": "table",
-                                "parentId": "3795",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": null,
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": [],
-                                "rows": [
-                                    {
-                                        "id": "3797",
-                                        "viewId": "3797",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3796",
-                                        "viewIndex": "5",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3798",
-                                                    "viewId": "3798",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3797",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Level",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3799",
-                                                    "viewId": "3799",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3797",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": {
-                                                        "lvl": {
-                                                            "value": "{xp.getLevel(%user)}"
-                                                        }
-                                                    },
-                                                    "value": "{%lvl.number} - {%lvl.description}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "3800",
-                                        "viewId": "3800",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3796",
-                                        "viewIndex": "6",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3801",
-                                                    "viewId": "3801",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3800",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "XP",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3802",
-                                                    "viewId": "3802",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3800",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "3803",
-                                        "viewId": "3803",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3796",
-                                        "viewIndex": "7",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3804",
-                                                    "viewId": "3804",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3803",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Badges",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3805",
-                                                    "viewId": "3805",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3803",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getBadgesXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "3806",
-                                        "viewId": "3806",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3796",
-                                        "viewIndex": "8",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3807",
-                                                    "viewId": "3807",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3806",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Skills",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3808",
-                                                    "viewId": "3808",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3806",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{xp.getSkillTreeXP(%user)}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "id": "3809",
-                                        "viewId": "3809",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3796",
-                                        "viewIndex": "9",
-                                        "label": null,
-                                        "loopData": "{}",
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3810",
-                                                    "viewId": "3810",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3809",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "Major",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3811",
-                                                    "viewId": "3811",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3809",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%userData.major}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "headerRows": [],
-                                "columns": 2
-                            }
-                        ],
-                        "header": {
-                            "id": "3898",
-                            "viewId": "3898",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3812",
-                            "image": {
-                                "id": "3813",
-                                "viewId": "3813",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3898",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "{%userData.picture}",
-                                "class": null,
-                                "style": "border: 1px solid #bfbfbf;width:100px;height:100px;",
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3814",
-                                "viewId": "3814",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3898",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "{%userData.name} - {%userData.studentNumber}",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3815",
-                        "viewId": "3815",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "1",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": "max-width:400px;",
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3816",
-                                "viewId": "3816",
-                                "role": "role.Student>role.Default",
-                                "partType": "table",
-                                "parentId": "3815",
-                                "viewIndex": "0",
-                                "label": null,
-                                "variables": [],
-                                "value": null,
-                                "class": "latest-awards",
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": [],
-                                "loopData": "{}",
-                                "rows": [
-                                    {
-                                        "loopData": "{awards.getAllAwards(%user, null, null, null, null, false).sort(\"descending\", \"date\").crop(0,2)}",
-                                        "id": "3817",
-                                        "viewId": "3817",
-                                        "role": "role.Student>role.Default",
-                                        "partType": "row",
-                                        "parentId": "3816",
-                                        "viewIndex": "1",
-                                        "label": null,
-                                        "variables": [],
-                                        "value": null,
-                                        "class": null,
-                                        "style": null,
-                                        "link": null,
-                                        "visibilityCondition": "{}",
-                                        "visibilityType": "conditional",
-                                        "events": [],
-                                        "info": null,
-                                        "values": [
-                                            {
-                                                "value": {
-                                                    "id": "3818",
-                                                    "viewId": "3818",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3817",
-                                                    "viewIndex": "0",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.renderPicture(\"type\")}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3819",
-                                                    "viewId": "3819",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3817",
-                                                    "viewIndex": "1",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.description}",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            },
-                                            {
-                                                "value": {
-                                                    "id": "3820",
-                                                    "viewId": "3820",
-                                                    "role": "role.Student>role.Default",
-                                                    "partType": "text",
-                                                    "parentId": "3817",
-                                                    "viewIndex": "2",
-                                                    "label": null,
-                                                    "loopData": "{}",
-                                                    "variables": [],
-                                                    "value": "{%item.reward} XP",
-                                                    "class": null,
-                                                    "style": null,
-                                                    "link": null,
-                                                    "visibilityCondition": "{}",
-                                                    "visibilityType": "conditional",
-                                                    "events": [],
-                                                    "info": null,
-                                                    "children": []
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "headerRows": [],
-                                "columns": 3
-                            }
-                        ],
-                        "header": {
-                            "id": "3899",
-                            "viewId": "3899",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3821",
-                            "image": {
-                                "id": "3822",
-                                "viewId": "3822",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3899",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "images\/awards.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3823",
-                                "viewId": "3823",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3899",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Latest Awards",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3824",
-                        "viewId": "3824",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "2",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3825",
-                                "viewId": "3825",
-                                "role": "role.Student>role.Default",
-                                "partType": "chart",
-                                "parentId": "3824",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "star",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "starPlot",
-                                    "params": [
-                                        {
-                                            "id": "quizXP",
-                                            "label": "Quiz",
-                                            "max": "6000"
-                                        },
-                                        {
-                                            "id": "labXP",
-                                            "label": "Labs",
-                                            "max": "3000"
-                                        },
-                                        {
-                                            "id": "badgeXP",
-                                            "label": "Badges",
-                                            "max": "4000"
-                                        },
-                                        {
-                                            "id": "skillXP",
-                                            "label": "Skills",
-                                            "max": "5000"
-                                        },
-                                        {
-                                            "id": "presentationXP",
-                                            "label": "Presentation",
-                                            "max": "3000"
-                                        }
-                                    ]
-                                },
-                                "chartType": "star",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3900",
-                            "viewId": "3900",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3826",
-                            "image": {
-                                "id": "3827",
-                                "viewId": "3827",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3826",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "images\/starplot.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3828",
-                                "viewId": "3828",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3826",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "XP Overview",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3829",
-                        "viewId": "3829",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "3",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3830",
-                                "viewId": "3830",
-                                "role": "role.Student>role.Default",
-                                "partType": "chart",
-                                "parentId": "3829",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "line",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "xpEvolution"
-                                },
-                                "chartType": "line",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3901",
-                            "viewId": "3901",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3826",
-                            "image": {
-                                "id": "3832",
-                                "viewId": "3832",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3831",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3833",
-                                "viewId": "3833",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3831",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "XP Evolution",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3834",
-                        "viewId": "3834",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "4",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3835",
-                                "viewId": "3835",
-                                "role": "role.Student>role.Default",
-                                "partType": "chart",
-                                "parentId": "3834",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "line",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "leaderboardEvolution"
-                                },
-                                "chartType": "line",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3902",
-                            "viewId": "3902",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3826",
-                            "image": {
-                                "id": "3837",
-                                "viewId": "3837",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3836",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3838",
-                                "viewId": "3838",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3836",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Leaderboard Evolution",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3839",
-                        "viewId": "3839",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "5",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3840",
-                                "viewId": "3840",
-                                "role": "role.Student>role.Default",
-                                "partType": "chart",
-                                "parentId": "3839",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "bar",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "xpWorld"
-                                },
-                                "chartType": "bar",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3903",
-                            "viewId": "3903",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3826",
-                            "image": {
-                                "id": "3842",
-                                "viewId": "3842",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3841",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3843",
-                                "viewId": "3843",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3841",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Your XP and the world's...",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    },
-                    {
-                        "id": "3844",
-                        "viewId": "3844",
-                        "role": "role.Student>role.Default",
-                        "partType": "block",
-                        "parentId": "3794",
-                        "viewIndex": "6",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": null,
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": [
-                            {
-                                "id": "3845",
-                                "viewId": "3845",
-                                "role": "role.Student>role.Default",
-                                "partType": "chart",
-                                "parentId": "3844",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "bar",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": {
-                                    "provider": "badgeWorld"
-                                },
-                                "chartType": "bar",
-                                "children": []
-                            }
-                        ],
-                        "header": {
-                            "id": "3904",
-                            "viewId": "3904",
-                            "role": "role.Default>role.Default",
-                            "partType": "header",
-                            "parentId": "3826",
-                            "image": {
-                                "id": "3847",
-                                "viewId": "3847",
-                                "role": "role.Student>role.Default",
-                                "partType": "image",
-                                "parentId": "3846",
-                                "viewIndex": "0",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "modules/charts/imgs/chart.svg",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            },
-                            "title": {
-                                "id": "3848",
-                                "viewId": "3848",
-                                "role": "role.Student>role.Default",
-                                "partType": "text",
-                                "parentId": "3846",
-                                "viewIndex": "1",
-                                "label": null,
-                                "loopData": "{}",
-                                "variables": [],
-                                "value": "Your Badges and the world's...",
-                                "class": null,
-                                "style": null,
-                                "link": null,
-                                "visibilityCondition": "{}",
-                                "visibilityType": "conditional",
-                                "events": [],
-                                "info": null,
-                                "children": []
-                            }
-                        }
-                    }
+                "visibilityType": "visible",
+                "image": [
+                  {
+                    "type": "image",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "src": "modules/profile/icon.svg"
+                  }
                 ],
-                "header": {
-                    "id": "3905",
-                    "viewId": "3905",
-                    "role": "role.Default>role.Default",
-                    "partType": "header",
-                    "parentId": "3826",
-                    "image": {
-                        "id": "3850",
-                        "viewId": "3850",
-                        "role": "role.Student>role.Default",
-                        "partType": "image",
-                        "parentId": "3849",
-                        "viewIndex": "0",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "images\/profile.svg",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
-                    },
-                    "title": {
-                        "id": "3851",
-                        "viewId": "3851",
-                        "role": "role.Student>role.Default",
-                        "partType": "text",
-                        "parentId": "3849",
-                        "viewIndex": "1",
-                        "label": null,
-                        "loopData": "{}",
-                        "variables": [],
-                        "value": "Profile",
-                        "class": null,
-                        "style": null,
-                        "link": null,
-                        "visibilityCondition": "{}",
-                        "visibilityType": "conditional",
-                        "events": [],
-                        "info": null,
-                        "children": []
+                "title": [
+                  {
+                    "type": "text",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "value": "Profile"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "type": "block",
+                "role": "role.Student>role.Default",
+                "class": "profile-summary-blocks",
+                "visibilityType": "visible",
+                "children": [
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-details profile-summary-block",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "{%userData.picture}"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "{%userData.name} - {%userData.studentNumber}"
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "table",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "rows": [
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Level"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "variables": {
+                                          "level": {
+                                            "value": "{xp.getLevel(%user)}"
+                                          }
+                                        },
+                                        "value": "{%level.number} - {%level.description}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "XP"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{xp.getXP(%user)}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Badges"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{xp.getBadgesXP(%user)}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Skills"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "TODO"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "Major"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{%userData.major}"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
                     }
-                }
-            }
-        ]
-    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-latest-awards profile-summary-block",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/awardlist/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "Latest Awards"
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "table",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "rows": [
+                              [
+                                {
+                                  "type": "row",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\").crop(0, 2)}",
+                                  "variables": {
+                                    "award": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "profile-latest-award-img",
+                                        "visibilityType": "visible",
+                                        "src": "{%award.renderPicture(\"type\")}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{%award.description}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "visibilityType": "visible",
+                                        "value": "{%award.reward} XP"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-xp-overview profile-summary-block",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/charts/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "XP Overview"
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "chartType": "star",
+                            "info": {
+                              "provider": "starPlot",
+                              "params": [
+                                {
+                                  "id": "presentationXP",
+                                  "label": "Presentation",
+                                  "max": "3000"
+                                },
+                                {
+                                  "id": "labXP",
+                                  "label": "Labs",
+                                  "max": "3000"
+                                },
+                                {
+                                  "id": "badgeXP",
+                                  "label": "Badges",
+                                  "max": "4000"
+                                },
+                                {
+                                  "id": "skillXP",
+                                  "label": "Skills",
+                                  "max": "5000"
+                                },
+                                {
+                                  "id": "quizXP",
+                                  "label": "Quiz",
+                                  "max": "6000"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-xp-evolution profile-summary-block",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/charts/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "XP Evolution"
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "chartType": "line",
+                            "info": {
+                              "provider": "xpEvolution"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-summary-block profile-leaderboard-evolutio",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/charts/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "Leaderboard Evolution"
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "chartType": "line",
+                            "info": {
+                              "provider": "leaderboardEvolution"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-summary-block profile-xp-world",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/charts/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "Your XP and the world's..."
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "chartType": "bar",
+                            "info": {
+                              "provider": "xpWorld"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "profile-summary-block profile-badge-world last",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "header",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "image": [
+                              {
+                                "type": "image",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "src": "modules/charts/icon.svg"
+                              }
+                            ],
+                            "title": [
+                              {
+                                "type": "text",
+                                "role": "role.Student>role.Default",
+                                "visibilityType": "visible",
+                                "value": "Your Badges and the world's..."
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "chart",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "chartType": "bar",
+                            "info": {
+                              "provider": ""
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        {
+          "type": "block",
+          "role": "role.Student>role.Default",
+          "class": "badges-list",
+          "visibilityType": "visible",
+          "children": [
+            [
+              {
+                "type": "header",
+                "role": "role.Student>role.Default",
+                "visibilityType": "visible",
+                "image": [
+                  {
+                    "type": "image",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "src": "modules/badges/icon.svg"
+                  }
+                ],
+                "title": [
+                  {
+                    "type": "text",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "value": "Badges ({badges.getBadgesCount(%user)} out of {badges.getBadgesCount()}, {xp.getBadgesXP(%user)} XP)"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "type": "block",
+                "role": "role.Student>role.Default",
+                "class": "badge",
+                "visibilityType": "visible",
+                "loopData": "{badges.getAllBadges().sort(\"ascending\",\"name\")}",
+                "variables": {
+                  "levels": {
+                    "value": "{%item.levels}"
+                  },
+                  "badgeLvl": {
+                    "value": "{%item.currLevel(%user)}"
+                  },
+                  "badgeParticipations": {
+                    "value": "{badges.badgeProgression(%item.id, %viewer)}"
+                  },
+                  "badge": {
+                    "value": "{%item}"
+                  },
+                  "badgeIndex": {
+                    "value": "{%index}"
+                  }
+                },
+                "events": {
+                  "click": "{actions.toggleView(\"badge-\"+%index)}"
+                },
+                "children": [
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "badge-top",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "badge-top-left",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "block",
+                                  "role": "role.Student>role.Default",
+                                  "class": "badge-imgs",
+                                  "visibilityType": "visible",
+                                  "loopData": "{%levels}",
+                                  "variables": {
+                                    "level": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "badge-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%level.number <= %badgeLvl.number}",
+                                        "src": "{%badge.renderPicture(%level.number)}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "image",
+                                        "role": "role.Student>role.Default",
+                                        "class": "badge-img",
+                                        "visibilityType": "conditional",
+                                        "visibilityCondition": "{%level.number>%badgeLvl.number}",
+                                        "src": "modules/badges/imgs/blank.png"
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "block",
+                                  "role": "role.Student>role.Default",
+                                  "class": "badge-info",
+                                  "visibilityType": "visible",
+                                  "children": [
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "class": " badge-title",
+                                        "visibilityType": "visible",
+                                        "value": "{%badge.name} - level {%badgeLvl.number}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "text",
+                                        "role": "role.Student>role.Default",
+                                        "class": " badge-description",
+                                        "visibilityType": "visible",
+                                        "value": "{%badge.description}"
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "type": "block",
+                                        "role": "role.Student>role.Default",
+                                        "class": "badge-level-info",
+                                        "visibilityType": "visible",
+                                        "children": [
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "class": "level-description ",
+                                              "visibilityType": "conditional",
+                                              "visibilityCondition": "{%badgeLvl.number < %badge.maxLevel}",
+                                              "value": "Level {%badgeLvl.nextLevel.number}: {%badgeLvl.nextLevel.description}"
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "class": "level-count ",
+                                              "visibilityType": "conditional",
+                                              "visibilityCondition": "{%badge.isCount}",
+                                              "value": "[{%badgeParticipations.count} so far]"
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "type": "text",
+                                              "role": "role.Student>role.Default",
+                                              "class": " level-post",
+                                              "visibilityType": "conditional",
+                                              "visibilityCondition": "{!%badge.isCount && %badge.isPost}",
+                                              "value": "[Post]"
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "badge-top-right",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " badge-reward ",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%badgeLvl.nextLevel.number <= %badge.maxLevel && %badgeLvl.nextLevel.reward > 0}",
+                                  "value": "{%badgeLvl.nextLevel.reward} XP"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " badge-extra-credit",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%badge.isExtra}",
+                                  "value": "extra credit"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " badge-bragging-rights",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{%item.isBragging}",
+                                  "value": "bragging rights"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "type": "block",
+                      "role": "role.Student>role.Default",
+                      "class": "badge-bottom",
+                      "label": "badge-{%badgeIndex}",
+                      "visibilityType": "invisible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "class": " badge-indicator",
+                            "visibilityType": "visible",
+                            "loopData": "{%badgeParticipations}",
+                            "variables": {
+                              "participation": {
+                                "value": "{%item}"
+                              }
+                            },
+                            "value": "{%participation.description}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "badge-levels",
+                            "visibilityType": "visible",
+                            "loopData": "{%levels}",
+                            "variables": {
+                              "level": {
+                                "value": "{%item}"
+                              }
+                            },
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "class": " badge-level",
+                                  "visibilityType": "visible",
+                                  "value": "Level {%level.number}: {%level.description} - {%level.reward} XP"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "class": "badge-level-student-img",
+                                  "visibilityType": "visible",
+                                  "loopData": "{users.getUsersWithBadge(%badge, %level)}",
+                                  "variables": {
+                                    "badgeUser": {
+                                      "value": "{%item}"
+                                    }
+                                  },
+                                  "events": {
+                                    "click": "{actions.goToPage(4, %badgeUser.id)}"
+                                  },
+                                  "src": "{%badgeUser.picture}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "conditional",
+                                  "visibilityCondition": "{badges.doesntHaveBadge(%badge, %level)}",
+                                  "value": "No one reached this level. Be the first!"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        {
+          "type": "block",
+          "role": "role.Student>role.Default",
+          "class": "awards-list",
+          "visibilityType": "visible",
+          "children": [
+            [
+              {
+                "type": "header",
+                "role": "role.Student>role.Default",
+                "visibilityType": "visible",
+                "image": [
+                  {
+                    "type": "image",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "src": "modules/awardlist/icon.svg"
+                  }
+                ],
+                "title": [
+                  {
+                    "type": "text",
+                    "role": "role.Student>role.Default",
+                    "visibilityType": "visible",
+                    "value": "Awards List"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "type": "table",
+                "role": "role.Student>role.Default",
+                "visibilityType": "visible",
+                "headerRows": [
+                  [
+                    {
+                      "type": "row",
+                      "role": "role.Student>role.Default",
+                      "visibilityType": "visible",
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "value": "Experience"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "value": "Date"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "value": "Description"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ],
+                "rows": [
+                  [
+                    {
+                      "type": "row",
+                      "role": "role.Student>role.Default",
+                      "visibilityType": "visible",
+                      "loopData": "{awards.getAllAwards(%user).sort(\"descending\", \"date\")}",
+                      "variables": {
+                        "award": {
+                          "value": "{%item}"
+                        }
+                      },
+                      "children": [
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%award.reward} XP"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "role": "role.Student>role.Default",
+                            "visibilityType": "visible",
+                            "value": "{%award.date}"
+                          }
+                        ],
+                        [
+                          {
+                            "type": "block",
+                            "role": "role.Student>role.Default",
+                            "class": "award-description",
+                            "visibilityType": "visible",
+                            "children": [
+                              [
+                                {
+                                  "type": "text",
+                                  "role": "role.Student>role.Default",
+                                  "visibilityType": "visible",
+                                  "value": "{%award.description}"
+                                }
+                              ],
+                              [
+                                {
+                                  "type": "image",
+                                  "role": "role.Student>role.Default",
+                                  "class": "award-description-img",
+                                  "visibilityType": "visible",
+                                  "src": "{%award.renderPicture(\"type\")}"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    ]
+  }
 ]

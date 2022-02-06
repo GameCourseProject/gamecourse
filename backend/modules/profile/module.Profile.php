@@ -7,8 +7,9 @@ use GameCourse\Views\Views;
 
 class Profile extends Module
 {
+    const ID = 'profile';
+
     const STUDENT_SUMMARY_TEMPLATE = 'Student Summary - by profile';
-    const STUDENT_AWARD_LIST_TEMPLATE = 'User Awards - by profile';
 
 
     /*** ----------------------------------------------- ***/
@@ -24,14 +25,10 @@ class Profile extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::STUDENT_SUMMARY_TEMPLATE))
-            Views::createTemplateFromFile(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $courseId);
-
-        if (!Views::templateExists($courseId, self::STUDENT_AWARD_LIST_TEMPLATE))
-            Views::createTemplateFromFile(self::STUDENT_AWARD_LIST_TEMPLATE, file_get_contents(__DIR__ . '/userAwards.txt'), $courseId);
+            Views::createTemplateFromFile(self::STUDENT_SUMMARY_TEMPLATE, file_get_contents(__DIR__ . '/profileSummary.txt'), $courseId, self::ID);
     }
 
     public function setupResources() {
-        parent::addResources('js/');
         parent::addResources('css/profile.css');
         parent::addResources('imgs');
     }

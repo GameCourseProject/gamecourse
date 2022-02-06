@@ -7,6 +7,8 @@ use GameCourse\Views\Views;
 
 class Overview extends Module
 {
+    const ID = 'overview';
+
     const USERS_OVERVIEW_TEMPLATE = 'Users Overview - by overview';
 
 
@@ -23,7 +25,7 @@ class Overview extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::USERS_OVERVIEW_TEMPLATE))
-            Views::createTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/usersOverview.txt'), $courseId);
+            Views::createTemplateFromFile(self::USERS_OVERVIEW_TEMPLATE, file_get_contents(__DIR__ . '/usersOverview.txt'), $courseId, self::ID);
     }
 
     public function setupResources() {

@@ -13,6 +13,8 @@ use GameCourse\CronJob;
 
 class Plugin extends Module
 {
+    const ID = 'plugin';
+
     private $moodle;
     private $classCheck;
     private $googleSheets;

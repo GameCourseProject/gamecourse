@@ -11,6 +11,7 @@ use GameCourse\Views\Expression\ValueNode;
 
 class XPLevels extends Module
 {
+    const ID = 'xp';
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

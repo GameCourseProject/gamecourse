@@ -9,6 +9,8 @@ use GameCourse\Views\Views;
 
 class Quest extends Module
 {
+    const ID = 'quest';
+
     const LEVEL_NO_EXIST = 'Hummm.. This level does not seem to exist.';
     const QUEST_ANNOUNCE_TEMPLATE = 'Quest Announce - by quest';
 
@@ -57,7 +59,7 @@ class Quest extends Module
         $courseId = $this->getCourseId();
 
         if (!Views::templateExists($courseId, self::QUEST_ANNOUNCE_TEMPLATE))
-            Views::createTemplateFromFile(self::QUEST_ANNOUNCE_TEMPLATE, file_get_contents(__DIR__ . '/quest_announce.txt'), $courseId);
+            Views::createTemplateFromFile(self::QUEST_ANNOUNCE_TEMPLATE, file_get_contents(__DIR__ . '/quest_announce.txt'), $courseId, self::ID);
     }
 
     public function initAPIEndpoints()

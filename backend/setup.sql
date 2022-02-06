@@ -267,11 +267,11 @@ CREATE TABLE view(
     role                        varchar(100) DEFAULT 'role.Default',
     style                       varchar(200),
     cssId                       varchar(50),
-    class                       varchar(50),
+    class                       varchar(200),
     label                       varchar(50),
     visibilityType              ENUM ('visible', 'invisible', 'conditional'),
     visibilityCondition         varchar(200),
-    loopData                    varchar(200),
+    loopData                    varchar(500),
     variables                   varchar(500),
     events                      varchar(500)
 );

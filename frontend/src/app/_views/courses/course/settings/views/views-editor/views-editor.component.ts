@@ -456,10 +456,13 @@ export class ViewsEditorComponent implements OnInit {
     await this.api.getViewsList(this.courseID).toPromise()
       .then(res => {
         this.matchingTemplates = res.templates
+          .filter(template => template.roleType === this.template.roleType)
           .filter(template => {
             for (const role of template.roles) {
-              if (!this.templateRoles.find(el => el.viewerRole.name === role.viewerRole.name && el.userRole.name === role.userRole.name))
-                return false;
+              if (!this.templateRoles.find(el => {
+                if (this.template.roleType === RoleTypeId.ROLE_SINGLE) return el.viewerRole.name === role.viewerRole.name;
+                else return el.viewerRole.name === role.viewerRole.name && el.userRole.name === role.userRole.name;
+              })) return false;
             }
             return template.roleType === this.template.roleType && template.id !== this.template.id;
           })

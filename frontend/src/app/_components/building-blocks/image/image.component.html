@@ -8,7 +8,7 @@
 <!------------------------------------------------>
 
 <ng-template #SIMPLE>
-  <span [attr.id]="view.cssId"
+  <div [attr.id]="view.cssId"
         [classList]="view.class"
         [attr.style]="view.style"
         [attr.data-id]="view.id"
@@ -21,7 +21,7 @@
         [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"
         [mode]="view.mode">
     <img class="img" [src]="image.get()" alt="" (error)="isPlaceholder = edit"> <!-- FIXME: should have alt (accessibility) -->
-  </span>
+  </div>
 </ng-template>
 
 <ng-template #LINK> <!-- FIXME: target should be an option -->

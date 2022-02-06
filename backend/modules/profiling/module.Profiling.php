@@ -7,7 +7,9 @@ use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
-class Profiling extends Module {
+class Profiling extends Module
+{
+    const ID = 'profiling';
 
     private $scriptPath = API_URL . "/" . MODULES_FOLDER . "/profiling/profiler.py";
     private $logPath = API_URL . "/" . MODULES_FOLDER . "/profiling/";
