@@ -402,31 +402,31 @@
       <label for="cb-info">Enable Sparkline</label>
     </div>
 
-    <!-- Star plot -->
-    <ng-container *ngIf="viewToEdit['chartType'] === ChartType.STAR">
+    <!-- Star plot TODO -->
+<!--    <ng-container *ngIf="viewToEdit['chartType'] === ChartType.STAR">-->
 
-      <!-- Params -->
-      <div *ngIf="getEvents().length > 0">
-        <div *ngFor="let type of getEvents()">
-          <div class="content">
-            <div class="sb-expression">
-              <label [for]="type">{{type}}</label>
-              <textarea [id]="type" [title]="'Define the behaviour triggered by an event'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditEvents[type]"></textarea>
-              <div class="content"><div class="icon delete_icon" (click)="deleteEvent(type)"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
+<!--      &lt;!&ndash; Params &ndash;&gt;-->
+<!--      <div *ngIf="getEvents().length > 0">-->
+<!--        <div *ngFor="let type of getEvents()">-->
+<!--          <div class="content">-->
+<!--            <div class="sb-expression">-->
+<!--              <label [for]="type">{{type}}</label>-->
+<!--              <textarea [id]="type" [title]="'Define the behaviour triggered by an event'" class="expression form__input" placeholder="Expression" [(ngModel)]="viewToEditEvents[type]"></textarea>-->
+<!--              <div class="content"><div class="icon delete_icon" (click)="deleteEvent(type)"></div></div>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <!-- Add event -->
-      <div *ngIf="getEventsAvailableToAdd().length > 0" class="sb-component">
-        <label for="events-missing">Add Event:</label>
-        <select class="form__input" id="events-missing" [(ngModel)]="eventToAdd">
-          <option *ngFor="let eventType of getEventsAvailableToAdd()" [label]="eventType" [value]="eventType">{{eventType}}</option>
-        </select>
-        <button [disabled]="!eventToAdd" (click)="addEvent()">Add</button>
-      </div>
-    </ng-container>
+<!--      &lt;!&ndash; Add event &ndash;&gt;-->
+<!--      <div *ngIf="getEventsAvailableToAdd().length > 0" class="sb-component">-->
+<!--        <label for="events-missing">Add Event:</label>-->
+<!--        <select class="form__input" id="events-missing" [(ngModel)]="eventToAdd">-->
+<!--          <option *ngFor="let eventType of getEventsAvailableToAdd()" [label]="eventType" [value]="eventType">{{eventType}}</option>-->
+<!--        </select>-->
+<!--        <button [disabled]="!eventToAdd" (click)="addEvent()">Add</button>-->
+<!--      </div>-->
+<!--    </ng-container>-->
   </div>
 </ng-template>
 

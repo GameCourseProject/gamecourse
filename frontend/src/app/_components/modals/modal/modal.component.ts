@@ -27,8 +27,9 @@ export class ModalComponent implements OnInit {
   }
 
   clickedOutside(): void {
-    if (this.ignore) this.ignore = false;
-    else if (this.innerClickEvents) this.closeBtnClicked.emit();
+    // FIXME: this is preventing modal to open 2nd time
+    // if (this.ignore) this.ignore = false;
+    // else if (this.innerClickEvents) this.closeBtnClicked.emit();
   }
 
 }
