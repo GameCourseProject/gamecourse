@@ -12,6 +12,9 @@ use GameCourse\Views\Dictionary;
 use GameCourse\Views\ViewHandler;
 
 class Charts extends Module {
+
+    const ID = 'charts';
+
     private $registeredCharts = array();
 
 
@@ -397,7 +400,6 @@ class Charts extends Module {
     }
 
     public function setupResources() {
-        parent::addResources('js/');
         parent::addResources('css/charts.css');
         parent::addResources('imgs');
     }
