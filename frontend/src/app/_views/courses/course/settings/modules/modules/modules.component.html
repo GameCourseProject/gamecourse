@@ -24,7 +24,7 @@
 
 <!-- Loader -->
 <div *ngIf="loading" id="page-loading">
-  <img src="../../../../../../assets/loader/loader.gif" alt="loader">
+  <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 
@@ -72,7 +72,7 @@
       </div>
     </div>
     <button class="save_btn" [disabled]="isEnabled === moduleOpen.enabled" (click)="toggleEnabled(moduleOpen)">Save</button>
-    <button *ngIf="moduleOpen.hasConfiguration" class="config_btn">Configure</button>
+    <button *ngIf="moduleOpen.hasConfiguration" class="config_btn" [routerLink]="moduleOpen.id + '/config'">Configure</button>
   </div>
 
 </ng-template>

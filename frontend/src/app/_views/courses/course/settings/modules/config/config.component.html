@@ -1,0 +1,68 @@
+<ng-container *ngIf="!loading">
+
+  <!-- Header -->
+  <div class="header">
+    <div id="name">{{capitalize(module.name)}} Configuration</div>
+    <div id="description">{{module.description}}</div>
+  </div>
+
+  <form #f="ngForm">
+
+    <!-- General Attributes -->
+    <div class="section">
+      <div class="divider">
+        <div class="title"><span>General Attributes</span></div>
+      </div>
+
+      <div *ngIf="generalInputs.length > 0" class="multiple_inputs content">
+        <div *ngFor="let input of generalInputs" class="row">
+          <ng-container
+            [ngTemplateOutlet]="INPUT"
+            [ngTemplateOutletContext]="{input, form: f}">
+          </ng-container>
+        </div>
+
+        <div class="action-buttons">
+          <button id="general-inputs-save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveGeneralInputs()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
+</div>
+
+
+<!-- Input Templates -->
+<ng-template #INPUT let-input='input' let-form='form'>
+  <!-- Text Input -->
+  <app-input-text *ngIf="input.type === InputType.TEXT"
+    [id]="input['id']"
+    [form]="form"
+    [(value)]="input['current_val']"
+    [label]="input['name']"
+    (valueChange)="hasUnsavedChanges = true"
+  ></app-input-text>
+
+  <!-- Number Input -->
+  <app-input-number *ngIf="input.type === InputType.NUMBER"
+    [id]="input['id']"
+    [form]="form"
+    [(value)]="input['current_val']"
+    [label]="input['name']"
+    (valueChange)="hasUnsavedChanges = true"
+  ></app-input-number>
+
+  <!-- Image Input -->
+  <app-input-file *ngIf="input.type === InputType.IMAGE"
+    [id]="input['id']"
+    [form]="form"
+    [accept]="'image/*'"
+    [label]="input['name']"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+</ng-template>

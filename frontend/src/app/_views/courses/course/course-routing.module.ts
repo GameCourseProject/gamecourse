@@ -5,11 +5,12 @@ import {UsersComponent} from "./users/users.component";
 import {SettingsComponent} from "./settings/settings/settings.component";
 import {GlobalComponent} from "./settings/global/global.component";
 import {RolesComponent} from "./settings/roles/roles.component";
-import {ModulesComponent} from "./settings/modules/modules.component";
+import {ModulesComponent} from "./settings/modules/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
 import {ViewsEditorComponent} from "./settings/views/views-editor/views-editor.component";
 import {PageComponent} from "./page/page.component";
+import {ConfigComponent} from "./settings/modules/config/config.component";
 
 const routes: Routes = [
   {
@@ -37,6 +38,10 @@ const routes: Routes = [
         component: ModulesComponent
       },
       {
+        path: 'modules/:id/config',
+        component: ConfigComponent
+      },
+      {
         path: 'rules',
         component: RulesComponent
       },
@@ -44,12 +49,12 @@ const routes: Routes = [
         path: 'views',
         component: ViewsComponent,
       },
+      {
+        path: 'views/templates/:id/editor',
+        component: ViewsEditorComponent
+      },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]
-  },
-  {
-    path: 'settings/views/templates/:id/editor',
-    component: ViewsEditorComponent,
   },
   {
     path: 'pages/:id',

@@ -1,10 +1,24 @@
-<input
-  type="file"
-  id="{{id}}"
-  name="{{id}}"
-  [accept]="accept"
-  class="{{classList}}"
-  [multiple]="multiple"
-  (change)="onFilesSelected($event)"
-  [disabled]="disabled"
-  [required]="required">
+<div class="input-wrapper" [ngClass]="classList">
+  <!-- Label -->
+  <span *ngIf="label" class="label">{{label}}</span>
+
+  <!-- Input -->
+  <input
+    type="file"
+    id="{{id}}"
+    name="{{id}}"
+    [accept]="accept"
+    class="input"
+    [multiple]="multiple"
+    [(ngModel)]="value"
+    (change)="onFilesSelected($event)"
+    [disabled]="disabled"
+    [required]="required"
+    #inputFile="ngModel"
+    [ngClass]="{'is-invalid': form && form.submitted && inputFile.invalid}">
+
+  <!-- Error Messages -->
+  <div *ngIf="form && form.submitted && inputFile.invalid" class="invalid-feedback d-block">
+    <span *ngIf="inputFile.errors.required">{{requiredErrorMessage}}</span>
+  </div>
+</div>

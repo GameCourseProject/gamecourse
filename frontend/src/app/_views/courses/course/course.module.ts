@@ -9,12 +9,13 @@ import {SharedModule} from "../../../shared.module";
 import {FormsModule} from "@angular/forms";
 import {GlobalComponent} from "./settings/global/global.component";
 import {RolesComponent} from "./settings/roles/roles.component";
-import {ModulesComponent} from "./settings/modules/modules.component";
+import {ModulesComponent} from "./settings/modules/modules/modules.component";
 import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import {SidebarComponent} from "./settings/sidebar/sidebar.component";
 import { PageComponent } from './page/page.component';
+import { ConfigComponent } from './settings/modules/config/config.component';
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { PageComponent } from './page/page.component';
     RulesComponent,
     ViewsComponent,
     ViewsEditorComponent,
-    PageComponent
+    PageComponent,
+    ConfigComponent
   ],
   imports: [
     CommonModule,

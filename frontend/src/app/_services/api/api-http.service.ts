@@ -31,6 +31,7 @@ import {ViewTableDatabase} from "../../_domain/views/view-table";
 import {ViewBlockDatabase} from "../../_domain/views/view-block";
 import {ViewRowDatabase} from "../../_domain/views/view-row";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
+import {InputType} from "../../_domain/inputs/input-type";
 
 @Injectable({
   providedIn: 'root'
@@ -704,6 +705,57 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+
+  // Configuration
+  public getModuleConfigInfo(courseID: number, moduleID: string):
+    Observable<{module: Module, courseFolder: string, generalInputs?: {id: string, name: string, type: InputType,
+        options: string, current_val: any}[], listingItems?: any[], personalizedConfig?: any[], tiers?: any[]}> {
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'getModuleConfigInfo');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map(
+        (res: any) => {
+          return {
+            module: Module.fromDatabase(res['data']['module']),
+            courseFolder: res['data']['courseFolder'],
+            generalInputs: res['data']['generalInputs'],
+            listingItems: res['data']['listingItems'],
+            personalizedConfig: res['data']['personalizedConfig'],
+            tiers: res['data']['tiers'],
+          }
+        }) );
+  }
+
+  public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItems?: {listName: string, itemName: string, header: string[], displayAttributes: string[],
+    items: any[], allAttributes: {id: string, name: string, type: InputType, options: string}[]}[], actionType?: 'new' | 'edit' | 'delete'): Observable<void> {
+
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+    }
+
+    if (generalInputs) data['generalInputs'] = generalInputs;
+    if (listingItems) data['listingItems'] = listingItems;
+    if (actionType) data['action_type'] = actionType;
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'saveModuleConfigInfo');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+
+  }
 
 
   /*** --------------------------------------------- ***/

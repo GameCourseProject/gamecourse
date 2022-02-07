@@ -1,0 +1,33 @@
+.divider .title:after {
+  width: calc(100% - 160px);
+}
+
+.header {
+  margin-bottom: 30px;
+
+  #name {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  #description {
+    font-size: 14px;
+  }
+}
+
+.multiple_inputs {
+  column-count: 3;
+  column-gap: 100px;
+  margin-top: 30px;
+
+  .row {
+    break-inside: avoid-column;
+  }
+
+  .action-buttons {
+    width: fit-content;
+    position: absolute;
+    top: -5px;
+    right: 0;
+  }
+}

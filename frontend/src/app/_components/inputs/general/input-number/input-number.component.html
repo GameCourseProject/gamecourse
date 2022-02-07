@@ -1,0 +1,34 @@
+<div class="input-wrapper" [ngClass]="classList">
+  <!-- Label -->
+  <span *ngIf="label" class="label">{{label}}</span>
+
+  <!-- Input -->
+  <input
+    type="number"
+    id="{{id}}"
+    name="{{id}}"
+    placeholder="{{placeholder}}"
+    class="input"
+    [(ngModel)]="value"
+    (ngModelChange)="valueChange.emit(value)"
+    [pattern]="pattern"
+    [required]="required"
+    [minlength]="minLength"
+    [maxlength]="maxLength"
+    [disabled]="disabled"
+    [min]="minValue"
+    [max]="maxValue"
+    #inputNumber="ngModel"
+    (keydown.enter)="enter()"
+    [ngClass]="{'is-invalid': form && form.submitted && inputNumber.invalid}">
+
+  <!-- Error Messages -->
+  <div *ngIf="form && form.submitted && inputNumber.invalid" class="invalid-feedback">
+    <span *ngIf="inputNumber.errors.pattern">{{patternErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.required">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.minlength">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.maxlength">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.min">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputNumber.errors.max">{{maxLengthErrorMessage}}</span>
+  </div>
+</div>

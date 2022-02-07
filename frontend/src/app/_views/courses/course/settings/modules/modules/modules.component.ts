@@ -2,12 +2,12 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {finalize} from "rxjs/operators";
 
-import {ApiHttpService} from "../../../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../../../_services/api/api-endpoints.service";
-import {ErrorService} from "../../../../../_services/error.service";
+import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints.service";
+import {ErrorService} from "../../../../../../_services/error.service";
 
-import {Module} from "../../../../../_domain/modules/module";
-import {Reduce} from "../../../../../_utils/display/reduce";
+import {Module} from "../../../../../../_domain/modules/module";
+import {Reduce} from "../../../../../../_utils/display/reduce";
 
 @Component({
   selector: 'app-modules',

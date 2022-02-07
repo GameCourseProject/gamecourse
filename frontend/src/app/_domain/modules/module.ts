@@ -5,28 +5,28 @@ import {exists} from "../../_utils/misc/misc";
 export class Module {
   private _id: string;
   private _name: string;
+  private _description: string;
   private _directory: string;
   private _version: string;
   private _dependencies: {id: string, mode?: string, enabled?: boolean}[];
-  private _description: string;
   private _enabled: boolean;
   private _canBeEnabled: boolean;
   private _hasConfiguration: boolean;
 
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
-  constructor(id: string, name: string, directory: string, version: string, dependencies: {id: string, mode?: string, enabled?: boolean}[],
-              description: string, enabled: boolean, canBeEnabled: boolean, hasConfiguration: boolean) {
+  constructor(id: string, name: string, description: string, directory?: string, version?: string, dependencies?: {id: string, mode?: string, enabled?: boolean}[],
+              enabled?: boolean, canBeEnabled?: boolean, hasConfiguration?: boolean) {
 
     this._id = id;
     this._name = name;
-    this._directory = directory;
-    this._version = version;
-    this._dependencies = dependencies;
     this._description = description;
-    this._enabled = enabled;
-    this._canBeEnabled = canBeEnabled;
-    this._hasConfiguration = hasConfiguration;
+    if (exists(directory)) this._directory = directory;
+    if (exists(version)) this._version = version;
+    if (exists(dependencies)) this._dependencies = dependencies;
+    if (exists(enabled)) this._enabled = enabled;
+    if (exists(canBeEnabled)) this._canBeEnabled = canBeEnabled;
+    if (exists(hasConfiguration)) this._hasConfiguration = hasConfiguration;
   }
 
   get id(): string {
@@ -43,6 +43,14 @@ export class Module {
 
   set name(value: string) {
     this._name = value;
+  }
+
+  get description(): string {
+    return this._description;
+  }
+
+  set description(value: string) {
+    this._description = value;
   }
 
   get directory(): string {
@@ -67,14 +75,6 @@ export class Module {
 
   set dependencies(value: { id: string; mode?: string, enabled?: boolean }[]) {
     this._dependencies = value;
-  }
-
-  get description(): string {
-    return this._description;
-  }
-
-  set description(value: string) {
-    this._description = value;
   }
 
   get enabled(): boolean {
@@ -158,10 +158,10 @@ export class Module {
     return new Module(
       obj.id,
       obj.name,
-      obj.dir,
-      obj.version,
-      obj.dependencies,
       obj.description,
+      obj.dir || null,
+      obj.version || null,
+      obj.dependencies || null,
       exists(obj.enabled) ? !!obj.enabled : null,
       exists(obj.canBeEnabled) ? !!obj.canBeEnabled : null,
       exists(obj.hasConfiguration) ? !!obj.hasConfiguration : null
@@ -172,10 +172,10 @@ export class Module {
 interface ModuleDatabase {
   id: string,
   name: string,
-  dir: string,
-  version: string,
-  dependencies: {id: string, mode?: string, enabled?: boolean}[],
   description: string;
+  dir?: string,
+  version?: string,
+  dependencies?: {id: string, mode?: string, enabled?: boolean}[],
   enabled?: boolean;
   canBeEnabled?: boolean;
   hasConfiguration?: boolean;

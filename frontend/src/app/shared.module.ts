@@ -31,6 +31,13 @@ import {LineChartComponent} from "./_components/charts/line-chart/line-chart.com
 import {BarChartComponent} from "./_components/charts/bar-chart/bar-chart.component";
 import {ProgressChartComponent} from "./_components/charts/progress-chart/progress-chart.component";
 import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
+import {InputTextComponent} from "./_components/inputs/general/input-text/input-text.component";
+import {InputNumberComponent} from "./_components/inputs/general/input-number/input-number.component";
+import {InputTextareaComponent} from "./_components/inputs/general/input-textarea/input-textarea.component";
+import {InputDateComponent} from "./_components/inputs/date & time/input-date/input-date.component";
+import {InputColorComponent} from "./_components/inputs/color/input-color/input-color.component";
+import {InputSelectComponent} from "./_components/inputs/select/input-select/input-select.component";
+import {InputToggleComponent} from "./_components/inputs/toggle/input-toggle/input-toggle.component";
 
 
 @NgModule({
@@ -62,7 +69,14 @@ import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.
     LineChartComponent,
     BarChartComponent,
     ProgressChartComponent,
-    RadarChartComponent
+    RadarChartComponent,
+    InputTextComponent,
+    InputNumberComponent,
+    InputTextareaComponent,
+    InputDateComponent,
+    InputColorComponent,
+    InputSelectComponent,
+    InputToggleComponent
   ],
   exports: [
     NavbarComponent,
@@ -80,7 +94,9 @@ import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.
     AnyComponent,
     TableComponent,
     AsPipe,
-    ClickedOutsideDirective
+    ClickedOutsideDirective,
+    InputTextComponent,
+    InputNumberComponent
   ],
     imports: [
         CommonModule,

@@ -565,7 +565,7 @@ export class ViewsEditorComponent implements OnInit {
         this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
       }
     }
-    this.router.navigate(['settings/views'], {relativeTo: this.route.parent});
+    this.router.navigate(['views'], {relativeTo: this.route.parent});
   }
 
   canUndo(): boolean {

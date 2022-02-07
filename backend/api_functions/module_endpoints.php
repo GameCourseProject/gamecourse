@@ -81,9 +81,11 @@ API::registerFunction($MODULE, 'setModuleState', function () {
  * Gets module information for the configuration page.
  *
  * @param int $courseId
+ * @param string $moduleId
  */
 API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
     API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId');
 
     $courseId = API::getValue('courseId');
     $course = Course::getCourse($courseId, false);
@@ -91,57 +93,41 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
 
-    $module = $course->getModule(API::getValue('module'));
-    $folder = Course::getCourseDataFolder($courseId);
+    $moduleId = API::getValue('moduleId');
+    $module = $course->getModule($moduleId);
 
-    if ($module != null) {
-        $moduleInfo = array(
-            'id' => $module->getId(),
-            'name' => $module->getName(),
-            'description' => $module->getDescription()
-        );
+    if ($module == null)
+        API::error('There is no module with id = ' . $moduleId);
 
-        $generalInputs = [];
-        if ($module->has_general_inputs()) {
-            $generalInputs = $module->get_general_inputs($course->getId());
-        }
+    // Get module info
+    $moduleInfo = [
+        'id' => $moduleId,
+        'name' => $module->getName(),
+        'description' => $module->getDescription()
+    ];
 
-        $personalizedConfig = [];
-        if ($module->has_personalized_config()) {
-            $personalizedConfig = $module->get_personalized_function();
-        }
-
-        $listingItems = [];
-        if ($module->has_listing_items()) {
-            $listingItems = $module->get_listing_items($course->getId());
-        }
-
-        $tiers = [];
-        if ($moduleInfo["name"] == "Skills") {
-            $tiers = $module->get_tiers_items($course->getId());
-        }
-
-        $info = array(
-            'generalInputs' => $generalInputs,
-            'listingItems' => $listingItems,
-            'personalizedConfig' => $personalizedConfig,
-            'tiers' => $tiers,
-            'module' => $moduleInfo,
-            'courseFolder' => $folder,
-        );
-        API::response($info);
-    } else {
-        API::error("There is no module with that id: " . API::getValue('module'));
-    }
+    API::response([
+        'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : [],
+        'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : [],
+        'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : [],
+        'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : [],
+        'module' => $moduleInfo,
+        'courseFolder' => Course::getCourseDataFolder($courseId)
+    ]);
 });
 
 /**
  * Save user input on the module configuration page.
  *
  * @param int $courseId
+ * @param string $moduleId
+ * @param $generalInputs (optional)
+ * @param $listingItems (optional)
+ * @param string $action_type (optional)
  */
 API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId');
 
     $courseId = API::getValue('courseId');
     $course = Course::getCourse($courseId, false);
@@ -149,30 +135,30 @@ API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     if (!$course->exists())
         API::error('There is no course with id = ' . $courseId);
 
-    $module = $course->getModule(API::getValue('module'));
+    $moduleId = API::getValue('moduleId');
+    $module = $course->getModule($moduleId);
 
-    if ($module != null) {
-        if (API::hasKey('generalInputs')) {
-            $generalInputs = API::getValue('generalInputs');
-            $module->save_general_inputs($generalInputs, $course->getId());
+    if ($module == null)
+        API::error('There is no module with id = ' . $moduleId);
+
+    // Save general inputs
+    if (API::hasKey('generalInputs'))
+        $module->save_general_inputs(API::getValue('generalInputs'), $courseId);
+
+    //personalized configuration should create its own API request
+    //inside the currespondent module
+
+    // Save listing items
+    if (API::hasKey('listingItems')) {
+        $listingItems = API::getValue('listingItems');
+        $action_type = API::getValue('action_type'); // new, edit, delete
+
+        if ($module->getId() !== "skills") {
+            $module->save_listing_item($action_type, $listingItems, $courseId);
+
+        } else {
+            if (array_key_exists("reward", $listingItems)) $module->save_tiers($action_type, $listingItems, $courseId);
+            else$module->save_listing_item($action_type, $listingItems, $courseId);
         }
-
-        //personalized configuration should create its own API request
-        //inside the currespondent module
-
-        if (API::hasKey('listingItems')) {
-            $listingItems = API::getValue('listingItems');
-            $action_type = API::getValue('action_type'); //new, edit, delete
-            if ($module->getName() != "Skills")
-                $module->save_listing_item($action_type, $listingItems, $course->getId());
-            else {
-                if (array_key_exists("reward", $listingItems))
-                    $module->save_tiers($action_type, $listingItems, $course->getId());
-                else
-                    $module->save_listing_item($action_type, $listingItems, $course->getId());
-            }
-        }
-    } else {
-        API::error("There is no module with that id: " . API::getValue('module'));
     }
 });
