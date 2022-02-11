@@ -190,7 +190,7 @@ class MoodleModule extends Module
     public function init(){
 
         $this->addTables("moodle", "config_moodle", "ConfigMoodle");
-        $this->moodle = new MoodleModule(API::getValue('course'));
+        $this->moodle = new Moodle(API::getValue('course'));
 
          API::registerFunction('settings', 'courseMoodle', function () {
              API::requireCourseAdminPermission();

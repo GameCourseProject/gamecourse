@@ -232,7 +232,7 @@ class GoogleSheetsModule extends Module
     {
 
         $this->addTables("googlesheets", "config_google_sheets", "ConfigGoogleSheets");
-        $this->googleSheets = new GoogleSheetsModule(API::getValue('course'));
+        $this->googleSheets = new GoogleSheets(API::getValue('course'));
 
         API::registerFunction('settings', 'courseGoogleSheets', function () {
             API::requireCourseAdminPermission();
