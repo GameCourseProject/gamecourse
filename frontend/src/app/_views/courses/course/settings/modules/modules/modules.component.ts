@@ -8,6 +8,7 @@ import {ErrorService} from "../../../../../../_services/error.service";
 
 import {Module} from "../../../../../../_domain/modules/module";
 import {Reduce} from "../../../../../../_utils/display/reduce";
+import {ModuleType} from "../../../../../../_domain/modules/ModuleType";
 
 @Component({
   selector: 'app-modules',
@@ -21,6 +22,10 @@ export class ModulesComponent implements OnInit {
   courseID: number;
 
   allModules: Module[];
+  modulesTypes: {[key in ModuleType]: string} = {
+    GameElement: 'Game Elements',
+    DataSource: 'Data Sources'
+  };
 
   reduce = new Reduce();
   searchQuery: string; // FIXME: create search component and remove this
@@ -37,6 +42,10 @@ export class ModulesComponent implements OnInit {
 
   get API_ENDPOINT(): string {
     return ApiEndpointsService.API_ENDPOINT;
+  }
+
+  get ModuleType(): typeof ModuleType {
+    return ModuleType;
   }
 
   ngOnInit(): void {
@@ -66,11 +75,15 @@ export class ModulesComponent implements OnInit {
 
 
   /*** --------------------------------------------- ***/
-  /*** ------------------- Search ------------------ ***/
+  /*** -------------- Search & Filter -------------- ***/
   /*** --------------------------------------------- ***/
 
   reduceList(query?: string): void {
     this.reduce.search(this.allModules, query);
+  }
+
+  filterList(modules: Module[], type: ModuleType): Module[] {
+    return modules.filter(module => module.type === type);
   }
 
 
@@ -96,6 +109,15 @@ export class ModulesComponent implements OnInit {
           this.moduleOpen = null;
         }
       );
+  }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  objectKeys(obj: object): string[] {
+    return Object.keys(obj);
   }
 
 }
