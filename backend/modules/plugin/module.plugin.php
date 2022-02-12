@@ -307,7 +307,8 @@ class Plugin extends Module
         return false;
     }
 
-    public function has_listing_items(): bool {
+    public function has_listing_items(): bool
+    {
         return  false;
     }
 

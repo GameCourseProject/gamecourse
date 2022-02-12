@@ -203,22 +203,14 @@ abstract class Module
         return false;
     } //default is false
 
-    public function has_personalized_config(): bool
-    {
-        return false;
-    } //default is false
-
-    public function get_personalized_function()
-    {
-    }
-
     public function has_general_inputs(): bool
     {
         return false;
     } //default is false
 
-    public function get_general_inputs(int $courseId)
+    public function get_general_inputs(int $courseId): array
     {
+        return [];
     }
 
     public function save_general_inputs(array $generalInputs, int $courseId)
@@ -230,12 +222,23 @@ abstract class Module
         return false;
     } //default is false
 
-    public function get_listing_items(int $courseId)
+    public function get_listing_items(int $courseId): array
     {
+        return [];
     }
 
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
+    }
+
+    public function has_personalized_config(): bool
+    {
+        return false;
+    } //default is false
+
+    public function get_personalized_function(): string
+    {
+        return "";
     }
 
 

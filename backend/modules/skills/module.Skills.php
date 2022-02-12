@@ -951,7 +951,7 @@ class Skills extends Module
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "editor", 'options' => "")
         ];
-        return array('listName' => 'Skills', 'itemName' => 'Skill', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
+        return array('listName' => 'Skills', 'itemName' => 'Skill', 'header' => $header, 'displayAttributes' => $displayAtributes, 'items' => $items, 'allAttributes' => $allAtributes);
     }
 
     public function save_listing_item($actiontype, $listingItem, $courseId)
@@ -1738,7 +1738,7 @@ class Skills extends Module
             array('name' => "Tier", 'id' => 'tier', 'type' => "text", 'options' => ""),
             array('name' => "XP", 'id' => 'reward', 'type' => "number", 'options' => "")
         ];
-        return array('listName' => 'Tiers', 'itemName' => 'Tier', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
+        return array('listName' => 'Tiers', 'itemName' => 'Tier', 'header' => $header, 'displayAttributes' => $displayAtributes, 'items' => $items, 'allAttributes' => $allAtributes);
     }
 
     public function save_tiers($actiontype, $item, $courseId)
@@ -1906,13 +1906,10 @@ class Skills extends Module
         }
     }
 
-    public function activeItem($itemId)
+    public function toggleItemParam(int $itemId, string $param)
     {
-        $active = Core::$systemDB->select("skill", ["id" => $itemId], "isActive");
-        if(!is_null($active)){
-            Core::$systemDB->update("skill", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
-            //ToDo: ADD RULE MANIPULATION HERE
-        }
+        $state = Core::$systemDB->select("skill", ["id" => $itemId], $param);
+        Core::$systemDB->update("skill", [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
 }
 

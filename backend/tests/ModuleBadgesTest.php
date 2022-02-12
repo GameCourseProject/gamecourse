@@ -37,124 +37,124 @@ class ModuleBadgesTest extends TestCase
 
     public function newBadgeSuccessProvider(){
         return array(
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
                   [array("number" => 1, "goal" => 2, "description" => "participate 2 times", "reward" => 100),
                   array("number" => 2, "goal" => 6, "description" => "participate 6 times", "reward" => 100),
                   array("number" => 3, "goal" => 12, "description" => "participate 12 times", "reward" => 100)]),       //standard case count based
                   
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 0, 'postBased' => 1, 'pointBased' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 0, "count2" => 0, "count3" => 0],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 0, 'isPoint' => 1, 'isPoint' => 0, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 0, "count2" => 0, "count3" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "participate 2 times", "reward" => 100),
                   array("number" => 2, "goal" => 0, "description" => "participate 6 times", "reward" => 100),
                   array("number" => 3, "goal" => 0, "description" => "participate 12 times", "reward" => 100)]),        //standard case post based
                   
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100,'desc3' => "get 3 point", 'xp3' => 100, 'countBased' => 0, 'postBased' => 0, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100,'desc3' => "get 3 point", 'xp3' => 100, 'isCount' => 0, 'isPoint' => 0, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
                   [array("number" => 1, "goal" => 1, "description" => "get 1 point", "reward" => 100),
                   array("number" => 2, "goal" => 2, "description" => "get 2 point", "reward" => 100),
                   array("number" => 3, "goal" => 3, "description" => "get 3 point", "reward" => 100)]),                 //standard case point based
 
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 0, 'desc2' => "participate 6 times", 'xp2' => 0,'desc3' => "participate 12 times", 'xp3' => 0, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 0, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 0, 'desc2' => "participate 6 times", 'xp2' => 0,'desc3' => "participate 12 times", 'xp3' => 0, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'isExtra' => 0, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
                   [array("number" => 1, "goal" => 2, "description" => "participate 2 times", "reward" => 0),
                   array("number" => 2, "goal" => 6, "description" => "participate 6 times", "reward" => 0),
                   array("number" => 3, "goal" => 12, "description" => "participate 12 times", "reward" => 0)]),       //bragging all zero
 
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 0, 'desc2' => "participate 6 times", 'xp2' => 10,'desc3' => "participate 12 times", 'xp3' => 20, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 0, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 0, 'desc2' => "participate 6 times", 'xp2' => 10,'desc3' => "participate 12 times", 'xp3' => 20, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'isExtra' => 0, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12],
                   [array("number" => 1, "goal" => 2, "description" => "participate 2 times", "reward" => 0),
                   array("number" => 2, "goal" => 6, "description" => "participate 6 times", "reward" => 10),
                   array("number" => 3, "goal" => 12, "description" => "participate 12 times", "reward" => 20)]),       //bragging only xp1 = 0
 
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 1, 'image' => null, "count1" => 2, "count2" => 6, "count3" => 12],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'isExtra' => 1, 'image' => null, "count1" => 2, "count2" => 6, "count3" => 12],
                   [array("number" => 1, "goal" => 2, "description" => "participate 2 times", "reward" => 100),
                   array("number" => 2, "goal" => 6, "description" => "participate 6 times", "reward" => 100),
                   array("number" => 3, "goal" => 12, "description" => "participate 12 times", "reward" => 100)]),       //null image
 
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 1, 'image' => "", "count1" => 2, "count2" => 6, "count3" => 12],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'isExtra' => 1, 'image' => "", "count1" => 2, "count2" => 6, "count3" => 12],
                   [array("number" => 1, "goal" => 2, "description" => "participate 2 times", "reward" => 100),
                   array("number" => 2, "goal" => 6, "description" => "participate 6 times", "reward" => 100),
                   array("number" => 3, "goal" => 12, "description" => "participate 12 times", "reward" => 100)]),       //empty image
             
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100, 'desc3' => "", 'xp3' => 100, 'countBased' => 0, 'postBased' => 0, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100, 'desc3' => "", 'xp3' => 100, 'isCount' => 0, 'isPoint' => 0, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
                   [array("number" => 1, "goal" => 1, "description" => "get 1 point", "reward" => 100),
                   array("number" => 2, "goal" => 2, "description" => "get 2 point", "reward" => 100)]),                 //two levels, xp3 set
                   
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100, 'countBased' => 0, 'postBased' => 0, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "get 2 point", 'xp2' => 100, 'isCount' => 0, 'isPoint' => 0, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
                   [array("number" => 1, "goal" => 1, "description" => "get 1 point", "reward" => 100),
                   array("number" => 2, "goal" => 2, "description" => "get 2 point", "reward" => 100)]),                 //two levels, xp3 not set
                   
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "", 'xp2' => 100, 'countBased' => 0, 'postBased' => 0, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'desc2' => "", 'xp2' => 100, 'isCount' => 0, 'isPoint' => 0, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
                   [array("number" => 1, "goal" => 1, "description" => "get 1 point", "reward" => 100)]),                 //one level, xp2 set
 
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'countBased' => 0, 'postBased' => 0, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "get 1 point", 'xp1' => 100, 'isCount' => 0, 'isPoint' => 0, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 1, "count2" => 2, "count3" => 3],
                   [array("number" => 1, "goal" => 1, "description" => "get 1 point", "reward" => 100)]),                 //one level, xp2 not set
         );
     }
 
     public function newBadgeNullFieldsSuccessProvider(){
         return array(
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 1, 'pointBased' => 1, 'extra' => null, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 0, 1, 1, 1),    //null isExtra
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => null, 'postBased' => 1, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 0, 1, 1),    //null isCount
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 1, 'pointBased' => null, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 1, 0, 1),    //null isPoint
-            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => null, 'pointBased' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 1, 1, 0)     //null isPost
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 1, 'isPoint' => 1, 'isExtra' => null, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 0, 1, 1, 1),    //null isExtra
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => null, 'isPoint' => 1, 'isPoint' => 1, 'isExtra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 0, 1, 1),    //null isCount
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 1, 'isPoint' => null, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 1, 0, 1),    //null isPoint
+            array(['name' => "Talkative", 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => null, 'isPoint' => 1, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], 1, 1, 1, 0)     //null isPost
         );
     }
     
     public function newBadgeFailProvider(){
         return array(
-            array(['name' => null, 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], "name"),               //null name
-            array(['name' => "Talkative", 'description' => null, 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'countBased' => 1, 'postBased' => 0, 'pointBased' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], "description")                                    //null description
+            array(['name' => null, 'description' => "Participate in Theoretical Lectures!", 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], "name"),               //null name
+            array(['name' => "Talkative", 'description' => null, 'desc1' => "participate 2 times", 'xp1' => 100, 'desc2' => "participate 6 times", 'xp2' => 100,'desc3' => "participate 12 times", 'xp3' => 100, 'isCount' => 1, 'isPoint' => 0, 'isPoint' => 0, 'extra' => 1, 'image' => "talkative.png", "count1" => 2, "count2" => 6, "count3" => 12], "description")                                    //null description
         );
     }
 
     public function editBadgeSuccessProvider(){
         return array(
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //same data
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'desc3' => "make fifty posts", 'xp3' => 0, 'image' => null, "count1" => 0, "count2" => 0, "count3" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'desc3' => "make fifty posts", 'xp3' => 0, 'image' => null, "count1" => 0, "count2" => 0, "count3" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0),
                   array("number" => 3, "goal" => 0, "description" => "make fifty posts", "reward" => 0)]),         //add level
                   
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'image' => null, "count1" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'image' => null, "count1" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0)]),       //remove level
 
-            array(["name" => "Post Lord", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Lord", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //change name
 
-            array(["name" => "Post Master", "description" => "Post something new in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something new in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change description
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 1, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 1, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isExtra
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 0, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 0, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isCount
                   
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 0, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 0, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isPost
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 1, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 1, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change isPoint
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => "badge2.png", "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => "badge2.png", "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),         //change image
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 20, "count2" => 30],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 20, "count2" => 30],
                   [array("number" => 1, "goal" => 20, "description" => "make twenty posts", "reward" => 0),
                   array("number" => 2, "goal" => 30, "description" => "make thirty posts", "reward" => 0)]),        //change level goal
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "post twenty times", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "post twenty times", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "post twenty times", "reward" => 0),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 0)]),        //change level description
 
-            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 110, 'desc2' => "make thirty posts", 'xp2' => 110, 'image' => null, "count1" => 0, "count2" => 0],
+            array(["name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 110, 'desc2' => "make thirty posts", 'xp2' => 110, 'image' => null, "count1" => 0, "count2" => 0],
                   [array("number" => 1, "goal" => 0, "description" => "make twenty posts", "reward" => 110),
                   array("number" => 2, "goal" => 0, "description" => "make thirty posts", "reward" => 110)]),      //change level reward + isBragging
 
@@ -401,7 +401,7 @@ class ModuleBadgesTest extends TestCase
         $levels = Core::$systemDB->selectMultiple("badge_level", []);
 
         $expectedBadge = array(
-            array("id" => $badge[0]["id"], "course" => $courseId, "maxLevel" => count($expectedLevels), "name" => $badgeInfo["name"], "description" => $badgeInfo["description"], "isActive" => 1, "isCount" => $badgeInfo["countBased"], "isPost" => $badgeInfo["postBased"], "isPoint" => $badgeInfo["pointBased"], "isExtra" => $badgeInfo["extra"], "isBragging" => ($badgeInfo['xp1'] == 0) ? 1 : 0, "image" => $badgeInfo["image"])
+            array("id" => $badge[0]["id"], "course" => $courseId, "maxLevel" => count($expectedLevels), "name" => $badgeInfo["name"], "description" => $badgeInfo["description"], "isActive" => 1, "isCount" => $badgeInfo["isCount"], "isPost" => $badgeInfo["isPoint"], "isPoint" => $badgeInfo["isPoint"], "isExtra" => $badgeInfo["extra"], "isBragging" => ($badgeInfo['xp1'] == 0) ? 1 : 0, "image" => $badgeInfo["image"])
         );
 
         foreach($levels as &$level){
@@ -484,8 +484,8 @@ class ModuleBadgesTest extends TestCase
 
         //Then
         $expectedBadges = array(
-            array("id" => $badge2, "course" => $courseId, "maxLevel" => 1, "name" => "Course Emperor", "description" => "Take the course, be the best", "isActive" => 1, "isExtra" => 1, "extra" => 1, "isCount" => 0, "countBased" => 0, "isPost" => 0, "postBased" => 0, "isPoint" => 0, "pointBased" => 0, "isBragging" => 0, "image" => null, "desc1" => "Have the highest course grade!", "xp1" => 80, "count1" => 0),
-            array("id" => $badge1, "course" => $courseId, "maxLevel" => 3, "name" => "Post Master", "description" => "Post something in the forums", "isActive" => 0, "isExtra" => 0, "extra" => 0, "isCount" => 1, "countBased" => 1, "isPost" => 1, "postBased" => 1, "isPoint" => 0, "pointBased" => 0, "isBragging" => 1, "image" => "someImage.jpeg", "desc1" => "make twenty posts", "xp1" => 0, "count1" => 0, "desc2" => "make thirty posts", "xp2" => 0, "count2" => 0, "desc3" => "make fifty posts", "xp3" => 0, "count3" => 0)
+            array("id" => $badge2, "course" => $courseId, "maxLevel" => 1, "name" => "Course Emperor", "description" => "Take the course, be the best", "isActive" => 1, "isExtra" => 1, "extra" => 1, "isCount" => 0, "isCount" => 0, "isPost" => 0, "isPoint" => 0, "isPoint" => 0, "isPoint" => 0, "isBragging" => 0, "image" => null, "desc1" => "Have the highest course grade!", "xp1" => 80, "count1" => 0),
+            array("id" => $badge1, "course" => $courseId, "maxLevel" => 3, "name" => "Post Master", "description" => "Post something in the forums", "isActive" => 0, "isExtra" => 0, "extra" => 0, "isCount" => 1, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isPoint" => 0, "isPoint" => 0, "isBragging" => 1, "image" => "someImage.jpeg", "desc1" => "make twenty posts", "xp1" => 0, "count1" => 0, "desc2" => "make thirty posts", "xp2" => 0, "count2" => 0, "desc3" => "make fifty posts", "xp3" => 0, "count3" => 0)
         );
         $this->assertEquals($expectedBadges, $badges);
     }
@@ -520,7 +520,7 @@ class ModuleBadgesTest extends TestCase
 
         //Then
         $expectedBadges = array(
-            array("id" => $badge2, "course" => $course2, "maxLevel" => 1, "name" => "Course Emperor", "description" => "Take the course, be the best", "isActive" => 1, "isExtra" => 1, "extra" => 1, "isCount" => 0, "countBased" => 0, "isPost" => 0, "postBased" => 0, "isPoint" => 0, "pointBased" => 0, "isBragging" => 0, "image" => null, "desc1" => "Have the highest course grade!", "xp1" => 80, "count1" => 0)
+            array("id" => $badge2, "course" => $course2, "maxLevel" => 1, "name" => "Course Emperor", "description" => "Take the course, be the best", "isActive" => 1, "isExtra" => 1, "extra" => 1, "isCount" => 0, "isCount" => 0, "isPost" => 0, "isPoint" => 0, "isPoint" => 0, "isPoint" => 0, "isBragging" => 0, "image" => null, "desc1" => "Have the highest course grade!", "xp1" => 80, "count1" => 0)
         );
         $this->assertEquals($expectedBadges, $badges);
     }
@@ -585,7 +585,7 @@ class ModuleBadgesTest extends TestCase
 
         $expectedBadges = array(
             array("id" => $badge1, "name" => "Class Annotator", "course" => $courseId, "description" => "Find related resources, more information, about class subjects", "maxLevel" => 3, "isExtra" => 0, "isBragging" => 0, "isCount" => 1, "isPost" => 1, "isPoint" => 1, "isActive" => 1, "image" => null),
-            array("id" => $badge2,  "course" => $courseId, "maxLevel" => count($expectedNewLevels), "name" => $badgeInfo["name"], "description" => $badgeInfo["description"], "isActive" => 1, "isCount" => $badgeInfo["countBased"], "isPost" => $badgeInfo["postBased"], "isPoint" => $badgeInfo["pointBased"], "isExtra" => $badgeInfo["extra"], "isBragging" => ($badgeInfo['xp1'] == 0) ? 1 : 0, "image" => $badgeInfo["image"]), 
+            array("id" => $badge2,  "course" => $courseId, "maxLevel" => count($expectedNewLevels), "name" => $badgeInfo["name"], "description" => $badgeInfo["description"], "isActive" => 1, "isCount" => $badgeInfo["isCount"], "isPost" => $badgeInfo["isPoint"], "isPoint" => $badgeInfo["isPoint"], "isExtra" => $badgeInfo["extra"], "isBragging" => ($badgeInfo['xp1'] == 0) ? 1 : 0, "image" => $badgeInfo["image"]), 
         );
         $expectedLevels = array(
             array("badgeId" => $badge1, "number" => 1, "goal" => 4, "description" => "get four points", "reward" => 300),
@@ -609,7 +609,7 @@ class ModuleBadgesTest extends TestCase
         $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
         $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
 
-        $badgeInfo = array("id" => $badge1 + 2, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
+        $badgeInfo = array("id" => $badge1 + 2, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
         
         //When
         $result = $this->badges->editBadge($badgeInfo, $courseId);
@@ -642,7 +642,7 @@ class ModuleBadgesTest extends TestCase
         $badge1L2 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 2, "goal" => 8, "description" => "get eight points", "reward" => 300]);
         $badge1L3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge1, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
 
-        $badgeInfo = array("id" => $badge1, "name" => "", "description" => "", "extra" => 0, "countBased" => 0, "postBased" => 0, "pointBased" => 0, 'desc1' => "", 'xp1' => 0, 'desc2' => "", 'xp2' => 0, 'image' => "", "count1" => 0, "count2" => 0);
+        $badgeInfo = array("id" => $badge1, "name" => "", "description" => "", "extra" => 0, "isCount" => 0, "isPoint" => 0, "isPoint" => 0, 'desc1' => "", 'xp1' => 0, 'desc2' => "", 'xp2' => 0, 'image' => "", "count1" => 0, "count2" => 0);
        
         //When
         $result = $this->badges->editBadge($badgeInfo, $courseId);
@@ -679,7 +679,7 @@ class ModuleBadgesTest extends TestCase
         $badge2 = Core::$systemDB->insert("badge", [ "maxLevel" => 1, "name" => "Lab Master", "course" => $course2, "description" => "Get the top grade in labs", "isBragging" => 1, "isCount" => 1, "isPost" => 0, "isPoint" => 0]);
         $badge2L1 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 1, "goal" => 1, "description" => "level 1", "reward" => 100]);
         
-        $badgeInfo = array("id" => $badge1, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "countBased" => 1, "postBased" => 1, "pointBased" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
+        $badgeInfo = array("id" => $badge1, "name" => "Post Master", "description" => "Post something in the forums", "extra" => 0, "isCount" => 1, "isPoint" => 1, "isPoint" => 0, 'desc1' => "make twenty posts", 'xp1' => 0, 'desc2' => "make thirty posts", 'xp2' => 0, 'image' => null, "count1" => 0, "count2" => 0);
         
         //When
         $result = $this->badges->editBadge($badgeInfo, $course2);
@@ -713,7 +713,7 @@ class ModuleBadgesTest extends TestCase
         $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
         
         //When
-        $this->badges->activeItem($badge);
+        $this->badges->toggleItemParam($badge, "isActive");
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -742,7 +742,7 @@ class ModuleBadgesTest extends TestCase
         $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
         
         //When
-        $this->badges->activeItem($badge);
+        $this->badges->toggleItemParam($badge, "isActive");
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -771,7 +771,7 @@ class ModuleBadgesTest extends TestCase
         $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
         
         //When
-        $this->badges->activeItem($badge + 1);
+        $this->badges->toggleItemParam($badge + 1, "isActive");
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -800,7 +800,7 @@ class ModuleBadgesTest extends TestCase
         $badgeL3 = Core::$systemDB->insert("badge_level", ["badgeId" => $badge, "number" => 3, "goal" => 12, "description" => "get twelve points", "reward" => 300]);
         
         //When
-        $this->badges->activeItem(null);
+        $this->badges->toggleItemParam(null, "isActive");
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);

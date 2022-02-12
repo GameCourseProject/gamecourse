@@ -11,22 +11,6 @@ use GameCourse\Course;
 
 
 
-/**
- * Change the item's active status.
- */
-API::registerFunction('settings', 'activeItem', function () {
-    API::requireCourseAdminPermission();
-    $courseId = API::getValue('course');
-    $course = Course::getCourse($courseId, false);
-    if ($course != null) {
-        $module = $course->getModule(API::getValue('module'));
-        if ($module != null) {
-            $itemId = API::getValue('itemId');
-            $module->activeItem($itemId);
-        }
-    }
-});
-
 API::registerFunction('settings', 'importItem', function () {
     API::requireAdminPermission();
     API::requireValues('file');

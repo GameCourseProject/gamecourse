@@ -624,7 +624,7 @@ class ModuleSkillsTest extends TestCase
 
         $expectedTierItems = array(
             "listName" => "Tiers", "itemName" => "Tier", "header" => $expectedHeader, 
-            "displayAtributes" => $expectedDisplayAtributes, "allAtributes" => $expectedAtributes,
+            "displayAttributes" => $expectedDisplayAtributes, "allAttributes" => $expectedAtributes,
             "items" => $expectedItems
         );
 
@@ -655,7 +655,7 @@ class ModuleSkillsTest extends TestCase
 
         $expectedTierItems = array(
             "listName" => "Tiers", "itemName" => "Tier", "header" => $expectedHeader, 
-            "displayAtributes" => $expectedDisplayAtributes, "allAtributes" => $expectedAtributes,
+            "displayAttributes" => $expectedDisplayAtributes, "allAttributes" => $expectedAtributes,
             "items" => $expectedItems
         );
 
@@ -689,7 +689,7 @@ class ModuleSkillsTest extends TestCase
 
         $expectedTierItems = array(
             "listName" => "Tiers", "itemName" => "Tier", "header" => $expectedHeader, 
-            "displayAtributes" => $expectedDisplayAtributes, "allAtributes" => $expectedAtributes,
+            "displayAttributes" => $expectedDisplayAtributes, "allAttributes" => $expectedAtributes,
             "items" => $expectedItems
         );
 
@@ -722,7 +722,7 @@ class ModuleSkillsTest extends TestCase
 
         $expectedTierItems = array(
             "listName" => "Tiers", "itemName" => "Tier", "header" => $expectedHeader, 
-            "displayAtributes" => $expectedDisplayAtributes, "allAtributes" => $expectedAtributes,
+            "displayAttributes" => $expectedDisplayAtributes, "allAttributes" => $expectedAtributes,
             "items" => $expectedItems
         );
 
@@ -1017,7 +1017,7 @@ class ModuleSkillsTest extends TestCase
         $skill1T2 = Core::$systemDB->insert("skill", ["isActive" => 0, "treeId" => $treeId, "seqId" => 1, "tier" => "Second Tier", "name" => "Skill 1 of tier 2"]);
 
         //When
-        $this->skills->activeItem($skill2T1);
+        $this->skills->toggleItemParam($skill2T1, "isActive");
 
         //Then
         $skills = Core::$systemDB->selectMultiple("skill", [], "*", "id");
@@ -1043,7 +1043,7 @@ class ModuleSkillsTest extends TestCase
         $skill1T2 = Core::$systemDB->insert("skill", ["isActive" => 1, "treeId" => $treeId, "seqId" => 1, "tier" => "Second Tier", "name" => "Skill 1 of tier 2"]);
 
         //When
-        $this->skills->activeItem($skill1T1);
+        $this->skills->toggleItemParam($skill1T1, "isActive");
 
         //Then
         $skills = Core::$systemDB->selectMultiple("skill", [], "*", "id");
@@ -1069,7 +1069,7 @@ class ModuleSkillsTest extends TestCase
         $skill1T2 = Core::$systemDB->insert("skill", ["isActive" => 1, "treeId" => $treeId, "seqId" => 1, "tier" => "Second Tier", "name" => "Skill 1 of tier 2"]);
 
         //When
-        $this->skills->activeItem($skill1T2 + 1);
+        $this->skills->toggleItemParam($skill1T2 + 1, "isActive");
 
         //Then
         $skills = Core::$systemDB->selectMultiple("skill", [], "*", "id");
@@ -1095,7 +1095,7 @@ class ModuleSkillsTest extends TestCase
         $skill1T2 = Core::$systemDB->insert("skill", ["isActive" => 1, "treeId" => $treeId, "seqId" => 1, "tier" => "Second Tier", "name" => "Skill 1 of tier 2"]);
 
         //When
-        $this->skills->activeItem(null);
+        $this->skills->toggleItemParam(null, "isActive");
 
         //Then
         $skills = Core::$systemDB->selectMultiple("skill", [], "*", "id");

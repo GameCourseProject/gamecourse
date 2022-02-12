@@ -497,7 +497,9 @@ button {
 #edit-view .modal_content .cancel,
 #edit-row .modal_content .cancel,
 #edit-course .modal_content .cancel,
-#add-row .modal_content .cancel{
+#add-row .modal_content .cancel,
+#new-item .modal_content .cancel,
+#edit-item .modal_content .cancel {
   position: absolute;
   bottom: 0;
   right: 80px;

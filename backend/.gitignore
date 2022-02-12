@@ -45,6 +45,7 @@ autogame/imported-functions/*/
 
 photos/**
 !/photos/no-photo.png
+!/photos/no-image.png
 
 modules/skills/resources/
 modules/quest/resources/

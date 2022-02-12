@@ -330,10 +330,10 @@ class XPLevels extends Module
             array('name' => "Title", 'id'=> 'description', 'type' => "text", 'options' => ""),
             array('name' => "Minimum XP", 'id'=> 'goal', 'type' => "number", 'options' => ""),
         ];
-        return array( 'listName'=> 'Levels', 'itemName'=> 'Level','header' => $header, 'displayAtributes'=> $displayAtributes, 'items'=> $items, 'allAtributes'=>$allAtributes);
+        return array( 'listName'=> 'Levels', 'itemName'=> 'Level','header' => $header, 'displayAttributes'=> $displayAtributes, 'items'=> $items, 'allAttributes'=>$allAtributes);
     }
 
-    public function save_listing_item (string $actiontype, array $listingItem, int $courseId){
+    public function save_listing_item(string $actiontype, array $listingItem, int $courseId){
         if($actiontype == 'new'){
             $this->newLevel($listingItem, $courseId);
         }

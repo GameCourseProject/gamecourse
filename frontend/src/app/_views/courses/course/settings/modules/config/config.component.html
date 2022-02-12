@@ -6,63 +6,258 @@
     <div id="description">{{module.description}}</div>
   </div>
 
-  <form #f="ngForm">
+  <!-- General Attributes -->
+  <div *ngIf="generalInputs?.length > 0" class="section">
+    <div class="divider">
+      <div class="title"><span>General Attributes</span></div>
+    </div>
 
-    <!-- General Attributes -->
-    <div class="section">
-      <div class="divider">
-        <div class="title"><span>General Attributes</span></div>
+    <div class="multiple_inputs content">
+      <div *ngFor="let input of generalInputs" class="row">
+        <ng-container
+          [ngTemplateOutlet]="INPUT"
+          [ngTemplateOutletContext]="{type: input.type, id: input.id, label: input.name, obj: input, param: 'current_val', style: 'outer'}">
+        </ng-container>
       </div>
 
-      <div *ngIf="generalInputs.length > 0" class="multiple_inputs content">
-        <div *ngFor="let input of generalInputs" class="row">
-          <ng-container
-            [ngTemplateOutlet]="INPUT"
-            [ngTemplateOutletContext]="{input, form: f}">
-          </ng-container>
-        </div>
-
-        <div class="action-buttons">
-          <button id="general-inputs-save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveGeneralInputs()">Save Changes</button>
-        </div>
+      <div class="action-buttons">
+        <button id="general-inputs-save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveGeneralInputs()">Save Changes</button>
       </div>
     </div>
-  </form>
+  </div>
+
+  <!-- Listing Items -->
+  <div *ngIf="listingItems" class="section">
+    <div class="divider">
+      <div class="title"><span>{{listingItems.listName}}</span></div>
+    </div>
+
+    <div class="allItems content">
+      <ng-container [ngTemplateOutlet]="LIST"></ng-container>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; isItemModalOpen = true;"></div>
+        <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
+        <div class="icon export_icon" title="Export All" (click)="exportAllItems()"></div>
+      </div>
+    </div>
+  </div>
 
 </ng-container>
 
 <!-- Loader -->
-<div *ngIf="loading" id="page-loading">
+<div *ngIf="loading || loadingAction" id="page-loading">
   <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 
-<!-- Input Templates -->
-<ng-template #INPUT let-input='input' let-form='form'>
-  <!-- Text Input -->
-  <app-input-text *ngIf="input.type === InputType.TEXT"
-    [id]="input['id']"
-    [form]="form"
-    [(value)]="input['current_val']"
-    [label]="input['name']"
-    (valueChange)="hasUnsavedChanges = true"
-  ></app-input-text>
+<!-- List Template -->
+<ng-template #LIST>
+  <div id="items-list">
+    <div class="data-table">
 
-  <!-- Number Input -->
-  <app-input-number *ngIf="input.type === InputType.NUMBER"
-    [id]="input['id']"
-    [form]="form"
-    [(value)]="input['current_val']"
-    [label]="input['name']"
-    (valueChange)="hasUnsavedChanges = true"
-  ></app-input-number>
+      <table *ngIf="listingItems.items.length > 0" id="listing-table">
+        <!-- Header -->
+        <thead>
+          <tr>
+            <th *ngFor="let header of listingItems.header; let i = index"
+                [ngClass]="{'check-column': listingItems.allAttributes[i].type === InputType.TOGGLE}">
+              {{header}}
+            </th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+            <th class="action-column"></th>
+          </tr>
+        </thead>
 
-  <!-- Image Input -->
-  <app-input-file *ngIf="input.type === InputType.IMAGE"
-    [id]="input['id']"
-    [form]="form"
-    [accept]="'image/*'"
-    [label]="input['name']"
+        <!-- Body -->
+        <tbody>
+          <tr *ngFor="let item of listingItems.items">
+
+            <td *ngFor="let param of listingItems.displayAttributes"
+                [ngClass]="{'check-column': param.type === InputType.TOGGLE}">
+
+              <ng-container *ngIf="param.type === InputType.IMAGE">
+                <img [src]="getImage(item[param.id] || 'photos/no-image.png')" alt="{{listingItems.itemName}} image">
+              </ng-container>
+
+              <ng-container *ngIf="param.type === InputType.TOGGLE" class="check-column">
+                <label class="switch">
+                  <input type="checkbox" [checked]="item[param.id]" (change)="toggleItemParam(item.id, param.id)">
+                  <span class="slider round"></span>
+                </label>
+              </ng-container>
+
+              <ng-container *ngIf="param.type !== InputType.IMAGE && param.type !== InputType.TOGGLE">
+                <span>{{item[param.id]}}</span>
+              </ng-container>
+            </td>
+
+            <td class="action-column">
+              <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateItem(item)"></div>
+            </td>
+            <td class="action-column">
+              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isItemModalOpen = true;"></div>
+            </td>
+            <td class="action-column">
+              <div class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
+            </td>
+            <td class="action-column">
+              <div class="icon export_icon_no_outline" title="Export" (click)="itemToExport = item; isIndividualExportModalOpen = true"></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="listingItems.items.length === 0" class='error_box'>
+        <div id='empty_table' class='error_msg'>No {{listingItems.itemName}}s found</div>
+      </div>
+
+    </div>
+  </div>
+</ng-template>
+
+
+<!-- New Item / Edit Item -->
+<ng-container *ngIf="isItemModalOpen">
+  <app-modal
+    [isModalOpen]="isItemModalOpen"
+    [id]="mode === 'add' ? 'new-item' : 'edit-item'"
+    [templateRef]="itemModal"
+    (closeBtnClicked)="isItemModalOpen = false; clearObject(newItem)"
+    [actionInProgress]="loading"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #itemModal>
+  <!-- Title -->
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{listingItems.itemName}}:</div>
+
+  <div class="content">
+    <div id="new_box" class="inputs">
+      <div class="row-inputs">
+        <div class="details full config-item">
+          <div *ngFor="let input of listingItems.allAttributes"
+               [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
+
+            <ng-container
+              [ngTemplateOutlet]="INPUT"
+              [ngTemplateOutletContext]="{type: input.type, id: input.id, label: input.name, obj: mode === 'add' ? newItem : itemToEdit, param: input.id, style: 'inner'}">
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="cancel" (click)="isItemModalOpen = false; clearObject(newItem)">Cancel</button>
+    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem() : editItem()">Save</button>
+  </div>
+</ng-template>
+
+
+<!-- Inputs -->
+<ng-template #INPUT let-type='type' let-id='id' let-label='label' let-obj='obj' let-param='param' let-style='style'>
+
+  <!-- Text -->
+  <ng-container *ngIf="type === InputType.TEXT">
+    <ng-container *ngIf="style === 'outer'">
+      <div class="input-wrapper">
+        <span *ngIf="label" class="label">{{label}}</span>
+        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="style === 'inner'">
+      <input type="text" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+      <label [for]="id" class="form__label">{{label}}</label>
+    </ng-container>
+  </ng-container>
+
+  <!-- Number -->
+  <ng-container *ngIf="type === InputType.NUMBER">
+    <ng-container *ngIf="style === 'outer'">
+      <div class="input-wrapper">
+        <span *ngIf="label" class="label">{{label}}</span>
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="style === 'inner'">
+      <div>
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{label}}" class="form__input" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true">
+        <label [for]="id" class="form__label">{{label}}</label>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- Image -->
+  <app-input-file *ngIf="type === InputType.IMAGE"
+      [id]="id"
+      [accept]="'image/*'"
+      [label]="label"
+      (valueChange)="onFileSelected($event)">
+  </app-input-file>
+
+  <!-- Toggle -->
+  <ng-container *ngIf="type === InputType.TOGGLE">
+    <div class="input-wrapper toggle">
+      <span *ngIf="label" class="label">{{label}}</span>
+      <label class="switch">
+        <input type="checkbox" id="{{id}}" name="{{id}}" [(ngModel)]="obj[param]" (ngModelChange)="hasUnsavedChanges = true" [checked]="obj[param]">
+        <span class="slider round"></span>
+      </label>
+    </div>
+  </ng-container>
+
+</ng-template>
+
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+  <app-verification-modal
+    [isModalOpen]="isDeleteVerificationModalOpen"
+    [id]="'delete-verification-' + itemToDelete.id"
+    [text]="'Are you sure you want to delete the ' + listingItems.itemName + '?'"
+    [target]="capitalize(listingItems.itemName) + ': ' + itemToDelete.name + ' (id:' + itemToDelete.id + ')'"
+    [positiveBtnText]="'Delete'"
+    (positiveBtnClicked)="deleteItem(itemToDelete)"
+    (negativeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
+    (closeBtnClicked)="itemToDelete = null; isDeleteVerificationModalOpen = false"
+    [actionInProgress]="loading">
+  </app-verification-modal>
+</ng-container>
+
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+  <app-modal
+    [isModalOpen]="isImportModalOpen"
+    [id]="'import-item'"
+    [templateRef]="importModal"
+    (closeBtnClicked)="isImportModalOpen = false"
+    [actionInProgress]="loading"
+    [innerClickEvents]="false"
+    [classList]="'verification'">
+  </app-modal>
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .csv or .txt file to be imported</div>
+  <div class="target">The separator must be comma <br>The encoding must be UTF-8</div>
+  <app-input-file
+    [id]="'import_item'"
+    [accept]="'.csv, .txt'"
+    [classList]="'config_input'"
     (valueChange)="onFileSelected($event)">
   </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importItems(true)">Import {{listingItems.itemName}}s (Replace Duplicates)</button>
+    <button (click)="importItems(false)">Import {{listingItems.itemName}}s (Ignore Duplicates)</button>
+  </div>
+
 </ng-template>

@@ -269,7 +269,7 @@ class Course
         return $this->loadedModules;
     }
 
-    public function getModule($module)
+    public function getModule($module): ?Module
     {
         if (array_key_exists($module, $this->loadedModules))
             return $this->loadedModules[$module];

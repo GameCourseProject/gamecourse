@@ -16,9 +16,9 @@
 }
 
 .multiple_inputs {
-  column-count: 3;
+  column-count: 2;
   column-gap: 100px;
-  margin-top: 30px;
+  margin-top: 40px;
 
   .row {
     break-inside: avoid-column;
@@ -26,8 +26,79 @@
 
   .action-buttons {
     width: fit-content;
-    position: absolute;
-    top: -5px;
-    right: 0;
   }
 }
+
+@media only screen and (min-width: 1500px) {
+  .multiple_inputs {
+    column-count: 3;
+  }
+}
+
+.allItems {
+  margin-top: 40px;
+
+  img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+  }
+}
+
+.action-buttons {
+  position: absolute;
+  top: -5px;
+  right: 0;
+}
+
+.config-item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#new_box {
+  padding-bottom: 30px;
+}
+
+.on_off {
+  margin-right: 0;
+  margin-bottom: 20px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  width: 100%;
+
+  .label {
+    min-width: 150px;
+    margin-right: 20px;
+    white-space: nowrap;
+  }
+
+  .input {
+    width: 100%;
+    padding: 7px;
+    color: #333;
+    background-color: white;
+    border-radius: 5px;
+    border: 2px solid lightgray;
+  }
+
+  &.toggle {
+    margin-bottom: unset;
+    font-size: unset;
+    width: unset;
+
+    .label {
+      min-width: unset;
+      margin-right: unset;
+      padding-right: 10px;
+    }
+  }
+}
+
+

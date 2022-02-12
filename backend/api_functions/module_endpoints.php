@@ -122,8 +122,8 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
  * @param int $courseId
  * @param string $moduleId
  * @param $generalInputs (optional)
- * @param $listingItems (optional)
- * @param string $action_type (optional)
+ * @param $listingItem (optional)
+ * @param string $actionType (optional)
  */
 API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     API::requireCourseAdminPermission();
@@ -149,16 +149,43 @@ API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     //inside the currespondent module
 
     // Save listing items
-    if (API::hasKey('listingItems')) {
-        $listingItems = API::getValue('listingItems');
-        $action_type = API::getValue('action_type'); // new, edit, delete
+    if (API::hasKey('listingItem')) {
+        $listingItem = API::getValue('listingItem');
+        $actionType = API::getValue('actionType'); // new, edit, delete, duplicate
 
         if ($module->getId() !== "skills") {
-            $module->save_listing_item($action_type, $listingItems, $courseId);
+            $module->save_listing_item($actionType, $listingItem, $courseId);
 
         } else {
-            if (array_key_exists("reward", $listingItems)) $module->save_tiers($action_type, $listingItems, $courseId);
-            else$module->save_listing_item($action_type, $listingItems, $courseId);
+            if (array_key_exists("reward", $listingItem)) $module->save_tiers($actionType, $listingItem, $courseId);
+            else $module->save_listing_item($actionType, $listingItem, $courseId);
         }
     }
+});
+
+/**
+ * Toggle module item param.
+ *
+ * @param int $courseId
+ * @param string $moduleId
+ * @param int $itemId
+ * @param string $param
+ */
+API::registerFunction($MODULE, 'toggleItemParam', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId', 'itemId', 'param');
+
+    $courseId = API::getValue('courseId');
+    $course = Course::getCourse($courseId, false);
+
+    if (!$course->exists())
+        API::error('There is no course with id = ' . $courseId);
+
+    $moduleId = API::getValue('moduleId');
+    $module = $course->getModule($moduleId);
+
+    if ($module == null)
+        API::error('There is no module with id = ' . $moduleId);
+
+    $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
 });

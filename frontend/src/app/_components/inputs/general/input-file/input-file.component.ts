@@ -49,7 +49,7 @@ export class InputFileComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   ngAfterViewInit(): void {
-    this.form.addControl(this.inputFile);
+    if (this.form) this.form.addControl(this.inputFile);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

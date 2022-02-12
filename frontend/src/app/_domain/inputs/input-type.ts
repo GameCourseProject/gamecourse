@@ -1,5 +1,5 @@
 export enum InputType {
-  TEXT = 'test',
+  TEXT = 'text',
   TEXTAREA = 'paragraph',
   NUMBER = 'number',
   IMAGE = 'image',

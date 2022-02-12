@@ -13,6 +13,10 @@ class Badges extends Module
 {
     const ID = 'badges';
 
+    const TABLE = 'badge';
+    const TABLE_LEVEL = 'badge_level';
+    const TABLE_CONFIG = 'badges_config';
+
     const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
 
 
@@ -454,27 +458,27 @@ class Badges extends Module
 
     public function setupData(int $courseId)
     {
-        if ($this->addTables("badges", "badge") || empty(Core::$systemDB->select("badges_config", ["course" => $courseId]))) {
-            Core::$systemDB->insert("badges_config", ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId]);
+        if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, ["maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId]);
         }
 
         $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
-        if (!file_exists($folder . "/badges"))
-            mkdir($folder . "/badges");
-        if (!file_exists($folder . "/badges" . "/Extra"))
-            mkdir($folder . "/badges" . "/Extra");
-        if (!file_exists($folder . "/badges" . "/Bragging"))
-            mkdir($folder . "/badges" . "/Bragging");
-        if (!file_exists($folder . "/badges" . "/Level2"))
-            mkdir($folder . "/badges" . "/Level2");
-        if (!file_exists($folder . "/badges" . "/Level3"))
-            mkdir($folder . "/badges" . "/Level3");
+        if (!file_exists($folder . "/" . self::ID))
+            mkdir($folder . "/" . self::ID);
+        if (!file_exists($folder . "/" . self::ID . "/Extra"))
+            mkdir($folder . "/" . self::ID . "/Extra");
+        if (!file_exists($folder . "/" . self::ID . "/Bragging"))
+            mkdir($folder . "/" . self::ID . "/Bragging");
+        if (!file_exists($folder . "/" . self::ID . "/Level2"))
+            mkdir($folder . "/" . self::ID . "/Level2");
+        if (!file_exists($folder . "/" . self::ID . "/Level3"))
+            mkdir($folder . "/" . self::ID . "/Level3");
     }
 
     public function update_module($compatibleVersions)
     {
         //obter o ficheiro de configuração do module para depois o apagar
-        $configFile = "modules/badges/config.json";
+        $configFile = "modules/" . self::ID . "/config.json";
         $contents = array();
         if (file_exists($configFile)) {
             $contents = json_decode(file_get_contents($configFile));
@@ -496,21 +500,21 @@ class Badges extends Module
         $badgesLevelArray = array();
 
         $badgesArr = array();
-        if (Core::$systemDB->tableExists("badges_config")) {
-            $badgesConfigVarDB = Core::$systemDB->select("badges_config", ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
+            $badgesConfigVarDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
             if ($badgesConfigVarDB) {
                 unset($badgesConfigVarDB["course"]);
                 array_push($badgesConfigArray, $badgesConfigVarDB);
             }
         }
-        if (Core::$systemDB->tableExists("badge")) {
-            $badgesVarDB = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists(self::TABLE)) {
+            $badgesVarDB = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
             if ($badgesVarDB) {
                 unset($badgesConfigVarDB["course"]);
                 foreach ($badgesVarDB as $badge) {
                     array_push($badgesArray, $badge);
 
-                    $badgesLevelVarDB_ = Core::$systemDB->selectMultiple("badge_level", ["badgeId" => $badge["id"]], "*");
+                    $badgesLevelVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVEL, ["badgeId" => $badge["id"]], "*");
                     foreach ($badgesLevelVarDB_ as $badgesLevelVarDB) {
                         array_push($badgesLevelArray, $badgesLevelVarDB);
                     }
@@ -518,9 +522,9 @@ class Badges extends Module
             }
         }
 
-        $badgesArr["badges_config"] = $badgesConfigArray;
-        $badgesArr["badge"] = $badgesArray;
-        $badgesArr["badge_level"] = $badgesLevelArray;
+        $badgesArr[self::TABLE_CONFIG] = $badgesConfigArray;
+        $badgesArr[self::TABLE] = $badgesArray;
+        $badgesArr[self::TABLE_LEVEL] = $badgesLevelArray;
 
         if ($badgesConfigArray || $badgesArray || $badgesLevelArray) {
             return $badgesArr;
@@ -537,14 +541,14 @@ class Badges extends Module
         $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                if ($tableName[$i] == "badges_config") {
+                if ($tableName[$i] == self::TABLE_CONFIG) {
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
                         $entry["course"] = $courseId;
                         Core::$systemDB->insert($tableName[$i], $entry);
                     }
-                } else  if ($tableName[$i] == "badge") {
+                } else  if ($tableName[$i] == self::TABLE) {
                     $importId = $entry["id"];
                     unset($entry["id"]);
                     if ($update && $existingCourse) {
@@ -554,7 +558,7 @@ class Badges extends Module
                         $newId = Core::$systemDB->insert($tableName[$i], $entry);
                     }
                     $badgeIds[$importId] = $newId;
-                } else  if ($tableName[$i] == "badge_level") {
+                } else  if ($tableName[$i] == self::TABLE_LEVEL) {
                     $oldBadgeId = $badgeIds[$entry["badgeId"]];
                     $entry["badgeId"] = $oldBadgeId;
                     unset($entry["id"]);
@@ -584,7 +588,7 @@ class Badges extends Module
     {
         $input = [
             array('name' => "Max Reward", 'id' => 'maxReward', 'type' => "number", 'options' => "", 'current_val' => intval($this->getMaxReward($courseId))),
-            array('name' => "Overlay for extra", 'id' => 'extra', 'type' => "image", 'options' => "Extra", 'current_val' => $this->getGeneralImages('imageExtra', $courseId)),
+            array('name' => "Overlay for extra", 'id' => 'isExtra', 'type' => "image", 'options' => "Extra", 'current_val' => $this->getGeneralImages('imageExtra', $courseId)),
             array('name' => "Overlay for bragging", 'id' => 'bragging', 'type' => "image", 'options' => "Bragging", 'current_val' => $this->getGeneralImages('imageBragging', $courseId)),
             array('name' => "Overlay for level 2", 'id' => 'level2', 'type' => "image", 'options' => "Level2", 'current_val' => $this->getGeneralImages('imageLevel2', $courseId)),
             array('name' => "Overlay for level 3", 'id' => 'level3', 'type' => "image", 'options' => "Level3", 'current_val' => $this->getGeneralImages('imageLevel3', $courseId))
@@ -597,7 +601,7 @@ class Badges extends Module
         $maxVal = $generalInputs["maxReward"];
         $this->saveMaxReward($maxVal, $courseId);
 
-        $extraImg = $generalInputs["extra"];
+        $extraImg = $generalInputs["isExtra"];
         if ($extraImg != "") {
             $this->saveGeneralImages('imageExtra', $extraImg, $courseId);
         }
@@ -622,12 +626,22 @@ class Badges extends Module
 
     public function get_listing_items(int $courseId): array
     {
-        //tenho de dar header
-        $header = ['Name', 'Description', '# Levels', 'Level 1', 'XP Level 1', 'Is Count', 'Is Post', 'Is Point', 'Is Extra', 'Image', 'Active'];
-        $displayAtributes = ['name', 'description', 'maxLevel', 'desc1', 'xp1',  'isCount', 'isPost', 'isPoint', 'isExtra', 'image', 'isActive'];
-        // items (pela mesma ordem do header)
+        $header = ['Name', 'Description', 'Image', '# Levels', 'Is Count', 'Is Post', 'Is Point', 'Is Extra', 'Active'];
+        $displayAtributes = [
+            ['id' => 'name', 'type' => 'text'],
+            ['id' => 'description', 'type' => 'text'],
+            ['id' => 'image', 'type' => 'image'],
+            ['id' => 'maxLevel', 'type' => 'number'],
+            ['id' => 'isCount', 'type' => 'on_off button'],
+            ['id' => 'isPost', 'type' => 'on_off button'],
+            ['id' => 'isPoint', 'type' => 'on_off button'],
+            ['id' => 'isExtra', 'type' => 'on_off button'],
+            ['id' => 'isActive', 'type' => 'on_off button'],
+        ];
+
         $items = $this->getBadges($courseId);
-        //argumentos para add/edit
+
+        // Arguments for adding/editing
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
@@ -637,27 +651,24 @@ class Badges extends Module
             array('name' => "XP2", 'id' => 'xp2', 'type' => "number", 'options' => ""),
             array('name' => "Level 3", 'id' => 'desc3', 'type' => "text", 'options' => ""),
             array('name' => "XP3", 'id' => 'xp3', 'type' => "number", 'options' => ""),
-            array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Post", 'id' => 'postBased', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Point", 'id' => 'pointBased', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Extra", 'id' => 'extra', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id' => 'isCount', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Post", 'id' => 'isPost', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Point", 'id' => 'isPoint', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Extra", 'id' => 'isExtra', 'type' => "on_off button", 'options' => ""),
             array('name' => "Count 1", 'id' => 'count1', 'type' => "number", 'options' => ""),
             array('name' => "Count 2", 'id' => 'count2', 'type' => "number", 'options' => ""),
             array('name' => "Count 3", 'id' => 'count3', 'type' => "number", 'options' => ""),
             array('name' => "Badge images", 'id' => 'image', 'type' => "image", 'options' => "")
         ];
-        return array('listName' => 'Badges', 'itemName' => 'Badge', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
+
+        return array('listName' => 'Badges', 'itemName' => 'badge', 'header' => $header, 'displayAttributes' => $displayAtributes, 'items' => $items, 'allAttributes' => $allAtributes);
     }
 
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
     {
-        if ($actiontype == 'new') {
-            $this->newBadge($listingItem, $courseId);
-        } elseif ($actiontype == 'edit') {
-            $this->editBadge($listingItem, $courseId);
-        } elseif ($actiontype == 'delete') {
-            $this->deleteBadge($listingItem);
-        }
+        if ($actiontype == 'new' || $actiontype == 'duplicate') $this->newBadge($listingItem, $courseId);
+        elseif ($actiontype == 'edit') $this->editBadge($listingItem, $courseId);
+        elseif ($actiontype == 'delete') $this->deleteBadge($listingItem);
     }
 
 
@@ -667,7 +678,7 @@ class Badges extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        Core::$systemDB->delete("badge", ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE, ["course" => $courseId]);
     }
 
 
@@ -678,7 +689,7 @@ class Badges extends Module
     public static function importItems(int $course, string $fileData, bool $replace = true): int
     {
         $courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("badges");
+        $moduleObject = $courseObject->getModule(self::ID);
 
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
@@ -699,7 +710,7 @@ class Badges extends Module
             if (
                 in_array("name", $firstLine)
                 && in_array("description", $firstLine) && in_array("isCount", $firstLine)
-                && in_array("isPost", $firstLine) && in_array("isPoint", $firstLine)
+                && in_array("isPost", $firstLine) && in_array("isPost", $firstLine)
                 && in_array("desc1", $firstLine) && in_array("xp1", $firstLine) && in_array("p1", $firstLine)
                 && in_array("desc2", $firstLine) && in_array("xp2", $firstLine) && in_array("p2", $firstLine)
                 && in_array("desc3", $firstLine) && in_array("xp3", $firstLine) && in_array("p3", $firstLine)
@@ -744,15 +755,15 @@ class Badges extends Module
                 }
                 $maxLevel = empty($item[$description[2]]) ? 1 : (empty($item[$description[3]]) ? 2 : 3);
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    $itemId = Core::$systemDB->select("badge", ["course" => $course, "name" => $item[$nameIndex]], "id");
+                    $itemId = Core::$systemDB->select(self::TABLE, ["course" => $course, "name" => $item[$nameIndex]], "id");
 
                     $badgeData = [
                         "name" => $item[$nameIndex],
                         "description" => $item[$descriptionIndex],
-                        "countBased" => (!strcasecmp("true", $item[$isCountIndex])) ? 1 : ($item[$isCountIndex] == 1) ? 1 : 0,
-                        "postBased" => (!strcasecmp("true", $item[$isPostIndex])) ? 1 : ($item[$isPostIndex] == 1) ? 1 : 0,
-                        "pointBased" => (!strcasecmp("true", $item[$isPointIndex])) ? 1 : ($item[$isPointIndex] == 1) ? 1 : 0,
-                        "extra" => ($item[$reward[1]] < 0) ? 1 : 0,
+                        "isCount" => (!strcasecmp("true", $item[$isCountIndex])) ? 1 : ($item[$isCountIndex] == 1) ? 1 : 0,
+                        "isPost" => (!strcasecmp("true", $item[$isPostIndex])) ? 1 : ($item[$isPostIndex] == 1) ? 1 : 0,
+                        "isPoint" => (!strcasecmp("true", $item[$isPointIndex])) ? 1 : ($item[$isPointIndex] == 1) ? 1 : 0,
+                        "isExtra" => ($item[$reward[1]] < 0) ? 1 : 0,
                         "desc1" => $item[$description[1]],
                         "desc2" => $item[$description[2]],
                         "desc3" => $item[$description[3]],
@@ -782,7 +793,7 @@ class Badges extends Module
     public static function exportItems(int $course): array
     {
         $courseInfo = Core::$systemDB->select("course", ["id" => $course]);
-        $listOfBadges = Core::$systemDB->selectMultiple("badge", ["course" => $course], '*');
+        $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $course], '*');
         $file = "";
         $i = 0;
         $len = count($listOfBadges);
@@ -796,7 +807,7 @@ class Badges extends Module
             $file .= $badge["name"] . ";" . $badge["description"] . ";" . $badge["isCount"] . ";" .  $badge["isPost"] . ";" .  $badge["isPoint"];
             for ($j = 1; $j <= 3; $j++) {
                 if ($j <= $maxLevel) {
-                    $level = Core::$systemDB->select("badge_level", ["badgeId" => $badge["id"], "number" => $j]);
+                    $level = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $badge["id"], "number" => $j]);
                     $file .= ";" . $level["description"];
                     if ($isExtra) {
                         $file .= ";" . "-" . $level["reward"];
@@ -830,13 +841,14 @@ class Badges extends Module
 
     public function getBadges($courseId)
     {
-        $badges = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], "*", "name");
+        $badges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
         foreach ($badges as &$badge) {
             //information to match needing fields
-            $badge['countBased'] = boolval($badge["isCount"]);
-            $badge['postBased'] = boolval($badge["isPost"]);
-            $badge['pointBased'] = boolval($badge["isPoint"]);
-            $badge['extra'] = boolval($badge["isExtra"]);
+            $badge['isCount'] = boolval($badge["isCount"]);
+            $badge['isPost'] = boolval($badge["isPost"]);
+            $badge['isPoint'] = boolval($badge["isPoint"]);
+            $badge['isExtra'] = boolval($badge["isExtra"]);
+            $badge['isBragging'] = boolval($badge["isBragging"]);
             $badge['isActive'] = boolval($badge["isActive"]);
 
             $levels = Core::$systemDB->selectMultiple(
@@ -1028,26 +1040,28 @@ class Badges extends Module
     public static function newBadge($achievement, $courseId)
     {
         $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
+
         $badgeData = [
-            "maxLevel" => $maxLevel, "name" => $achievement['name'],
-            "course" => $courseId, "description" => $achievement['description'],
-            "isExtra" => ($achievement['extra']) ? 1 : 0,
+            "name" => $achievement['name'],
+            "course" => $courseId,
+            "description" => $achievement['description'],
+            "maxLevel" => $maxLevel,
+            "isExtra" => ($achievement['isExtra']) ? 1 : 0,
             "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
-            "isCount" => ($achievement['countBased']) ? 1 : 0,
-            "isPost" => ($achievement['postBased']) ? 1 : 0,
-            "isPoint" => ($achievement['pointBased']) ? 1 : 0
+            "isCount" => ($achievement['isCount']) ? 1 : 0,
+            "isPost" => ($achievement['isPost']) ? 1 : 0,
+            "isPoint" => ($achievement['isPoint']) ? 1 : 0
         ];
-        if (array_key_exists("image", $achievement)) {
-            $badgeData["image"] = $achievement['image'];
-        }
-        $badgeId = Core::$systemDB->insert("badge", $badgeData);
-        for ($i = 1; $i <= $maxLevel; $i++) {
-            Core::$systemDB->insert("badge_level", [
+        if (array_key_exists("image", $achievement)) $badgeData["image"] = $achievement['image'];
+
+        $badgeId = Core::$systemDB->insert(self::TABLE, $badgeData);
+        for ($level = 1; $level <= $maxLevel; $level++) {
+            Core::$systemDB->insert(self::TABLE_LEVEL, [
                 "badgeId" => $badgeId,
-                "number" => $i,
-                "goal" => $achievement['count' . $i],
-                "description" => $achievement['desc' . $i],
-                "reward" => abs($achievement['xp' . $i])
+                "number" => $level,
+                "goal" => $achievement['count' . $level],
+                "description" => $achievement['desc' . $level],
+                "reward" => abs($achievement['xp' . $level])
             ]);
         }
     }
@@ -1061,11 +1075,11 @@ class Badges extends Module
             $badgeData = [
                 "maxLevel" => $maxLevel, "name" => $achievement['name'],
                 "course" => $courseId, "description" => $achievement['description'],
-                "isExtra" => ($achievement['extra']) ? 1 : 0,
+                "isExtra" => ($achievement['isExtra']) ? 1 : 0,
                 "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
-                "isCount" => ($achievement['countBased']) ? 1 : 0,
-                "isPost" => ($achievement['postBased']) ? 1 : 0,
-                "isPoint" => ($achievement['pointBased']) ? 1 : 0
+                "isCount" => ($achievement['isCount']) ? 1 : 0,
+                "isPost" => ($achievement['isPost']) ? 1 : 0,
+                "isPoint" => ($achievement['isPoint']) ? 1 : 0
             ];
             if (array_key_exists("image", $achievement)) {
                 $badgeData["image"] = $achievement['image'];
@@ -1113,16 +1127,14 @@ class Badges extends Module
 
     public function deleteBadge($badge)
     {
-        Core::$systemDB->delete("badge", ["id" => $badge['id']]);
+        Core::$systemDB->delete(self::TABLE, ["id" => $badge['id']]);
+        Core::$systemDB->delete(self::TABLE_LEVEL, ["badgeId" => $badge['id']]);
     }
 
-    public function activeItem($itemId)
+    public function toggleItemParam(int $itemId, string $param)
     {
-        $active = Core::$systemDB->select("badge", ["id" => $itemId], "isActive");
-        if(!is_null($active)){
-            Core::$systemDB->update("badge", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
-            //ToDo: ADD RULE MANIPULATION HERE
-        }
+        $state = Core::$systemDB->select("badge", ["id" => $itemId], $param);
+        Core::$systemDB->update("badge", [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
 }
 
