@@ -47,6 +47,7 @@ ModuleLoader::registerModule(array(
     'id' => 'leaderboard',
     'name' => 'Leaderboard',
     'description' => 'Creates a vew template with a leaderboard of the students progress on the course.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

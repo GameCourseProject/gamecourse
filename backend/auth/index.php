@@ -6,7 +6,7 @@ chdir('..');
 include 'classes/ClassLoader.class.php';
 
 use GameCourse\Core;
-use Modules\Plugin\GoogleSheets;
+use Modules\GoogleSheets\GoogleSheets;
 
 Core::denyCLI();
 if (Core::requireSetup(false))

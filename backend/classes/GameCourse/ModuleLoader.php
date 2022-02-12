@@ -19,6 +19,7 @@ class ModuleLoader {
         static::requireProp($module, 'id');
         static::requireProp($module, 'name');
         static::requireProp($module, 'description');
+        static::requireProp($module, 'type');
         static::requireProp($module, 'version');
         static::requireProp($module, 'compatibleVersions');
         if (!array_key_exists('dependencies', $module))
@@ -165,6 +166,7 @@ class ModuleLoader {
         $module->dir = $info['dir'];
         $module->name = $info['name'];
         $module->description = $info['description'];
+        $module->type = $info['type'];
         $module->version = $info['version'];
         $module->compatibleVersions = $info['compatibleVersions'];
         $module->dependencies = $info['dependencies'];

@@ -564,6 +564,7 @@ ModuleLoader::registerModule(array(
     'id' => 'quest',
     'name' => 'Quest',
     'description' => 'Generates a sequence of pages that create a treasure hunt game.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(),

@@ -9,11 +9,11 @@ class CronJob
         $cronFile = "/var/www/html/gamecourse/crontab.txt";
         $path = null;
         if ($script == "Moodle") {
-            $path = "/var/www/html/gamecourse/modules/plugin/MoodleScript.php";
+            $path = "/var/www/html/gamecourse/modules/moodle/MoodleScript.php";
         } else if ($script == "ClassCheck") {
-            $path = "/var/www/html/gamecourse/modules/plugin/ClassCheckScript.php";
+            $path = "/var/www/html/gamecourse/modules/classcheck/ClassCheckScript.php";
         } else if ($script == "GoogleSheets") {
-            $path = "/var/www/html/gamecourse/modules/plugin/GoogleSheetsScript.php";
+            $path = "/var/www/html/gamecourse/modules/googlesheets/GoogleSheetsScript.php";
         }else if ($script == "QR"){
             $path = "/var/www/html/gamecourse/modules/qr/QRScript.php";
 

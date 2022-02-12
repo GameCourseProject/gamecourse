@@ -43,6 +43,7 @@ ModuleLoader::registerModule(array(
     'id' => 'side-view',
     'name' => 'Side View',
     'description' => 'Creates a view template with a side view with information of the userlogged in.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(),

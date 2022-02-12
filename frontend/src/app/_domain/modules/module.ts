@@ -1,11 +1,13 @@
 import {ApiHttpService} from "../../_services/api/api-http.service";
 import {ApiEndpointsService} from "../../_services/api/api-endpoints.service";
 import {exists} from "../../_utils/misc/misc";
+import {ModuleType} from "./ModuleType";
 
 export class Module {
   private _id: string;
   private _name: string;
   private _description: string;
+  private _type: ModuleType;
   private _directory: string;
   private _version: string;
   private _dependencies: {id: string, mode?: string, enabled?: boolean}[];
@@ -15,12 +17,14 @@ export class Module {
 
   static stylesLoaded: Map<number, {state: LoadingState, stylesIds?: string[]}> = new Map<number, {state: LoadingState, stylesIds?: string[]}>();
 
-  constructor(id: string, name: string, description: string, directory?: string, version?: string, dependencies?: {id: string, mode?: string, enabled?: boolean}[],
-              enabled?: boolean, canBeEnabled?: boolean, hasConfiguration?: boolean) {
+  constructor(id: string, name: string, description: string, type: ModuleType, directory?: string, version?: string,
+              dependencies?: {id: string, mode?: string, enabled?: boolean}[], enabled?: boolean, canBeEnabled?: boolean,
+              hasConfiguration?: boolean) {
 
     this._id = id;
     this._name = name;
     this._description = description;
+    this._type = type;
     if (exists(directory)) this._directory = directory;
     if (exists(version)) this._version = version;
     if (exists(dependencies)) this._dependencies = dependencies;
@@ -51,6 +55,14 @@ export class Module {
 
   set description(value: string) {
     this._description = value;
+  }
+
+  get type(): ModuleType {
+    return this._type;
+  }
+
+  set type(value: ModuleType) {
+    this._type = value;
   }
 
   get directory(): string {
@@ -159,6 +171,7 @@ export class Module {
       obj.id,
       obj.name,
       obj.description,
+      obj.type as ModuleType,
       obj.dir || null,
       obj.version || null,
       obj.dependencies || null,
@@ -173,6 +186,7 @@ interface ModuleDatabase {
   id: string,
   name: string,
   description: string;
+  type: string;
   dir?: string,
   version?: string,
   dependencies?: {id: string, mode?: string, enabled?: boolean}[],

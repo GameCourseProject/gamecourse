@@ -43,6 +43,7 @@ ModuleLoader::registerModule(array(
     'id' => 'profile',
     'name' => 'Profile',
     'description' => 'Creates a view template for a profile page where all the stats of the user are shown.',
+    'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(

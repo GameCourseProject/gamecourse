@@ -10,6 +10,7 @@ abstract class Module
     private $id;
     private $name;
     private $description;
+    private $type;
     private $version;
     private $compatibleVersions;
     private $dependencies;
@@ -41,6 +42,11 @@ abstract class Module
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    public function getType()
+    {
+        return $this->type;
     }
 
     public function getVersion(): string
