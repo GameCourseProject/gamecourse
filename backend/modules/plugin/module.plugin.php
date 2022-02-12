@@ -762,6 +762,7 @@ ModuleLoader::registerModule(array(
     'id' => 'plugin',
     'name' => 'Plugin',
     'description' => 'Allows multiple sources of information to be automaticaly included on gamecourse.',
+    'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(),
