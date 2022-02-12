@@ -709,7 +709,9 @@ export class ApiHttpService {
   // Configuration
   public getModuleConfigInfo(courseID: number, moduleID: string):
     Observable<{module: Module, courseFolder: string, generalInputs?: {id: string, name: string, type: InputType,
-        options: string, current_val: any}[], listingItems?: any[], personalizedConfig?: any[], tiers?: any[]}> {
+      options: any, current_val: any}[], listingItems?: {listName: string, itemName: string, header: string[],
+      displayAttributes: {id: string, type: InputType}[], items: any[], allAttributes: {id: string, name: string,
+      type: InputType, options: any}[]}, personalizedConfig?: any[], tiers?: any[]}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -734,17 +736,18 @@ export class ApiHttpService {
         }) );
   }
 
-  public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItems?: {listName: string, itemName: string, header: string[], displayAttributes: string[],
-    items: any[], allAttributes: {id: string, name: string, type: InputType, options: string}[]}[], actionType?: 'new' | 'edit' | 'delete'): Observable<void> {
-
+  public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItem?: any,
+                              actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
     }
 
     if (generalInputs) data['generalInputs'] = generalInputs;
-    if (listingItems) data['listingItems'] = listingItems;
-    if (actionType) data['action_type'] = actionType;
+    if (listingItem) {
+      data['listingItem'] = listingItem;
+      data['actionType'] = actionType;
+    }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -755,6 +758,24 @@ export class ApiHttpService {
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
 
+  }
+
+  public toggleItemParam(courseID: number, moduleID: string, itemID: number, param: string): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      "itemId": itemID,
+      "param": param
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'toggleItemParam');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 
