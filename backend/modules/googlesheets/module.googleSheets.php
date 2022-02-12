@@ -355,9 +355,7 @@ ModuleLoader::registerModule(array(
     'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),
-    'dependencies' => array(
-        array('id' => 'views', 'mode' => 'hard')
-    ),
+    'dependencies' => array(),
     'factory' => function () {
         return new GoogleSheetsModule();
     }
