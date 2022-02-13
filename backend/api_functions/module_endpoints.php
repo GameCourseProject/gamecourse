@@ -26,17 +26,12 @@ API::registerFunction($MODULE, 'setModuleState', function () {
     API::requireValues('courseId', 'moduleId', 'isEnabled');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
+    $course = API::verifyCourseExists($courseId);
 
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $moduleId = API::getValue('moduleId');
+    $module = API::verifyModuleExists($courseId, $moduleId);
 
     $toEnable = API::getValue('isEnabled');
-    $moduleId = API::getValue('moduleId');
-    $module = ModuleLoader::getModule($moduleId);
-
-    if ($module == null)
-        API::error('There is no module with id = ' . $moduleId);
 
     $moduleObject = $module['factory']();
     $moduleEnabled = Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled");
@@ -88,16 +83,10 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
     API::requireValues('courseId', 'moduleId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = $course->getModule($moduleId);
-
-    if ($module == null)
-        API::error('There is no module with id = ' . $moduleId);
+    $module = API::verifyModuleExists($courseId, $moduleId);
 
     // Get module info
     $moduleInfo = [
@@ -130,16 +119,10 @@ API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     API::requireValues('courseId', 'moduleId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = $course->getModule($moduleId);
-
-    if ($module == null)
-        API::error('There is no module with id = ' . $moduleId);
+    $module = API::verifyModuleExists($courseId, $moduleId);
 
     // Save general inputs
     if (API::hasKey('generalInputs'))
@@ -176,16 +159,10 @@ API::registerFunction($MODULE, 'toggleItemParam', function () {
     API::requireValues('courseId', 'moduleId', 'itemId', 'param');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = $course->getModule($moduleId);
-
-    if ($module == null)
-        API::error('There is no module with id = ' . $moduleId);
+    $module = API::verifyModuleExists($courseId, $moduleId);
 
     $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
 });

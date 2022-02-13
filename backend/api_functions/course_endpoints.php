@@ -29,9 +29,8 @@ API::registerFunction($MODULE, 'getCourse', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
+    $course = API::verifyCourseExists($courseId);
 
-    if (!$course->exists()) API::error('There is no course with id = ' . $courseId);
     API::response(array('course' => $course->getData()));
 });
 
@@ -46,12 +45,10 @@ API::registerFunction($MODULE, 'getCourseWithInfo', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
+    $course = API::verifyCourseExists($courseId);
+
     $courseUser = $course->getLoggedUser();
     $courseUser->refreshActivity();
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
 
     $activePages = $course->getPages(true);
 
@@ -106,10 +103,7 @@ API::registerFunction($MODULE, 'getCourseGlobal', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $globalInfo = array(
         'name' => $course->getName(),
@@ -131,10 +125,7 @@ API::registerFunction($MODULE, 'getCourseRoles', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $roles = $course->getRoles("name");
     API::response(["courseRoles" => $roles]);
@@ -150,10 +141,7 @@ API::registerFunction($MODULE, 'getCourseResources', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     API::response(array('resources' => $course->getModulesResources()));
 });
@@ -240,10 +228,7 @@ API::registerFunction($MODULE, 'editCourse', function() {
     API::requireValues('courseId','courseName', 'courseShort', 'courseYear', 'courseColor', 'courseIsVisible', 'courseIsActive' );
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $course->editCourse(API::getValue('courseName'),API::getValue('courseShort'),API::getValue('courseYear'),API::getValue('courseColor'), API::getValue('courseIsVisible'), API::getValue('courseIsActive'));
 });
@@ -258,10 +243,7 @@ API::registerFunction($MODULE, 'deleteCourse', function() {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId , false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     Course::deleteCourse($courseId);
 });
@@ -274,16 +256,12 @@ API::registerFunction($MODULE, 'deleteCourse', function() {
  */
 API::registerFunction($MODULE, 'setCourseVisibility', function(){
     API::requireAdminPermission();
-    API::requireValues('courseId');
-    API::requireValues('isVisible');
+    API::requireValues('courseId', 'isVisible');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $isVisible = API::getValue('isVisible');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
-
     $course->setVisibleState($isVisible);
 });
 
@@ -295,16 +273,12 @@ API::registerFunction($MODULE, 'setCourseVisibility', function(){
  */
 API::registerFunction($MODULE, 'setCourseActiveState', function(){
     API::requireAdminPermission();
-    API::requireValues('courseId');
-    API::requireValues('isActive');
+    API::requireValues('courseId', 'isActive');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $isActive = API::getValue('isActive');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
-
     $course->setActiveState($isActive);
 });
 
@@ -327,10 +301,7 @@ API::registerFunction($MODULE, 'getCourseUsers', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     if (API::hasKey('role')) {
         $role = API::getValue('role');
@@ -373,10 +344,7 @@ API::registerFunction($MODULE, 'getCourseNonUsers', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $courseUsers = $course->getUsers();
     $systemUsers = User::getAllInfo();
@@ -431,10 +399,7 @@ API::registerFunction($MODULE, 'createCourseUser', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     API::requireValues('userHasImage', 'userMajor', 'userUsername', 'userAuthService', 'userName', 'userStudentNumber', 'userEmail', 'userRoles');
     $userName = API::getValue('userName');
@@ -475,10 +440,7 @@ API::registerFunction($MODULE, 'addUsersToCourse', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     API::requireValues('users', 'role');
     $users = API::getValue('users');
@@ -520,18 +482,13 @@ API::registerFunction($MODULE, 'editCourseUser', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     API::requireValues('userHasImage', 'userMajor', 'userId', 'userName', 'userStudentNumber', 'userEmail', 'userRoles');
-    $userId = API::getValue('userId');
-    $user = new User($userId);
-    $courseUser = new CourseUser($userId, $course);
 
-    if (!$courseUser->exists())
-        API::error('There is no user with id = ' . $userId . ' on course \'' . $course->getName() . '\'');
+    $userId = API::getValue('userId');
+    $user = API::verifyUserExists($userId);
+    $courseUser = API::verifyCourseUserExists($courseId, $userId);
 
     // Verify if new student number (if changed) is taken
     $studentNumber = API::getValue('userStudentNumber');
@@ -568,15 +525,10 @@ API::registerFunction($MODULE, 'removeCourseUser', function () {
     API::requireValues('courseId', 'userId');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $userId = API::getValue('userId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
-
-    $courseUser = new CourseUser($userId, $course);
-    if (!$courseUser->exists())
-        API::error('There is no user with id = ' . $userId);
+    $courseUser = API::verifyCourseUserExists($courseId, $userId);
 
     Core::$systemDB->delete("course_user", ["id" => $userId, "course" => $courseId]);
 });
@@ -590,20 +542,13 @@ API::registerFunction($MODULE, 'removeCourseUser', function () {
  */
 API::registerFunction($MODULE, 'setCourseUserActiveState', function () {
     API::requireCourseAdminPermission();
-    API::requireValues('userId');
-    API::requireValues('courseId');
-    API::requireValues('isActive');
+    API::requireValues('userId', 'courseId', 'isActive');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $userId = API::getValue('userId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
-
-    $courseUser = new CourseUser($userId, $course);
-    if (!$courseUser->exists())
-        API::error('There is no user with id = ' . $userId);
+    $courseUser = API::verifyCourseUserExists($courseId, $userId);
 
     $courseUser->setIsActive(API::getValue('isActive'));
 });
@@ -618,6 +563,9 @@ API::registerFunction($MODULE, 'setCourseUserActiveState', function () {
 API::registerFunction($MODULE, 'importCourseUsers', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'file');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
 
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
@@ -637,6 +585,8 @@ API::registerFunction($MODULE, 'exportCourseUsers', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     [$fileName, $courseUsers] = CourseUser::exportCourseUsers($courseId);
     API::response(array('courseUsers' => $courseUsers, 'fileName' => $fileName));
 });
@@ -657,10 +607,7 @@ API::registerFunction($MODULE, 'getCourseModules', function () {
     API:: requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $allModules = ModuleLoader::getModules();
     $enabledModules = $course->getEnabledModules();
@@ -721,10 +668,7 @@ API::registerFunction($MODULE, 'roles', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     if (API::hasKey('updateRoleHierarchy')) {
 
@@ -764,10 +708,7 @@ API::registerFunction($MODULE, 'getRulesSystemLastRun', function () {
     API::requireValues('courseId');
 
     $courseId = API::getValue('courseId');
-    $course = Course::getCourse($courseId, false);
-
-    if (!$course->exists())
-        API::error('There is no course with id = ' . $courseId);
+    $course = API::verifyCourseExists($courseId);
 
     $ruleSystem = new RuleSystem($course);
     API::response(array('ruleSystemLastRun' => $ruleSystem->getLastRunDate()));
@@ -1210,9 +1151,10 @@ API::registerFunction($MODULE, 'getCourseStyleFile', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId');
 
-    $course = API::getValue('courseId');
-    $courseObject = Course::getCourse($course, false);
-    $response = $courseObject->getStyleFile();
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $response = $course->getStyleFile();
 
     if ($response)
         API::response(array('styleFile' => $response[0], 'url' => $response[1]));
@@ -1229,9 +1171,10 @@ API::registerFunction($MODULE, 'createCourseStyleFile', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId');
 
-    $course = API::getValue('courseId');
-    $courseObject = Course::getCourse($course, false);
-    $result = $courseObject->createStyleFile();
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $result = $course->createStyleFile();
     API::response(array('url' => $result));
 });
 
@@ -1245,11 +1188,11 @@ API::registerFunction($MODULE, 'updateCourseStyleFile', function () {
     API::requireCourseAdminPermission();
     API::requireValues('courseId', 'content');
 
-    $course = API::getValue('courseId');
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
     $content = API::getValue('content');
 
-    $courseObject = Course::getCourse($course, false);
-    $response = $courseObject->updateStyleFile($content);
+    $response = $course->updateStyleFile($content);
     API::response(array('url' => $response));
 });
 
@@ -1270,6 +1213,8 @@ API::registerFunction($MODULE, 'getTableData', function () {
     API::requireValues('courseId', 'table');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $tableName = API::getValue('table');
 
     $data = Core::$systemDB->selectMultiple("game_course_user g join " . $tableName . " t on g.id=t.user", ["course" => $courseId], "t.*, g.name, g.studentNumber");
@@ -1304,6 +1249,8 @@ API::registerFunction($MODULE, 'submitTableEntry', function () {
     API::requireValues('courseId', 'table', 'rowData');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $tableName = API::getValue('table');
 
     if ($tableName != null) {
@@ -1361,6 +1308,8 @@ API::registerFunction($MODULE, 'deleteTableEntry', function () {
     API::requireValues('courseId', 'table', 'rowData');
 
     $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
     $tableName = API::getValue('table');
     $row = API::getValue('rowData');
 

@@ -2,6 +2,7 @@
 namespace GameCourse;
 
 use GameCourse\Views\Dictionary;
+use GameCourse\Views\Views;
 
 class API {
     private static $functions = array();
@@ -140,5 +141,61 @@ class API {
     public static function requireAdminPermission() {
         if (!Core::getLoggedUser()->isAdmin())
             API::error('You don\'t have permission to request this - only admins can.', 401);
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Verifications ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public static function verifyUserExists(int $userId): User
+    {
+        $user = new User($userId);
+        if (!$user->exists())
+            API::error('There is no user with id = ' . $userId);
+        return $user;
+    }
+
+    public static function verifyCourseExists(int $courseId): Course
+    {
+        $course = Course::getCourse($courseId, false);
+        if (!$course->exists())
+            API::error('There is no course with id = ' . $courseId);
+        return $course;
+    }
+
+    public static function verifyCourseUserExists(int $courseId, int $userId): CourseUser
+    {
+        $course = self::verifyCourseExists($courseId);
+        $courseUser = new CourseUser($userId, $course);
+        if (!$courseUser->exists())
+            API::error('There is no user with id = ' . $userId . ' in course \'' . $course->getName() . '\'');
+        return $courseUser;
+    }
+
+    public static function verifyModuleExists(int $courseId, string $moduleId): Module
+    {
+        $course = self::verifyCourseExists($courseId);
+        $module = $course->getModule($moduleId);
+        if ($module == null)
+            API::error('There is no module with id = ' . $moduleId);
+        return $module;
+    }
+
+    public static function verifyPageExists(int $courseId, int $pageId): array // TODO: create class for pages
+    {
+        $course = self::verifyCourseExists($courseId);
+        $page = Views::getPage($courseId, $pageId);
+        if (!$page)
+            API::error('Page with id = ' . $pageId . ' doesn\'t exist in course \'' . $course->getName() . '\'');
+        return $page;
+    }
+
+    public static function verifyTemplateExists(int $courseId, int $templateId): array // TODO: create class for templates
+    {
+        $course = self::verifyCourseExists($courseId);
+        if (!Views::templateExists($courseId, null, $templateId))
+            API::error('There is no template with id = ' . $templateId . ' in course \'' . $course->getName() . '\'');
+        return Views::getTemplate($templateId);
     }
 }

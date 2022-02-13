@@ -210,10 +210,7 @@ API::registerFunction($MODULE, 'editUser', function () {
     API::requireValues('userHasImage', 'userId', 'userName', 'userAuthService', 'userStudentNumber', 'userEmail', 'userMajor', 'userUsername', 'userIsActive', 'userIsAdmin');
 
     $userId = API::getValue('userId');
-    $user = new User($userId);
-
-    if (!$user->exists())
-        API::error('There is no user with id = ' . $userId);
+    $user = API::verifyUserExists($userId);
 
     // Verify if new student number (if changed) is taken
     $studentNumber = API::getValue('userStudentNumber');
@@ -271,10 +268,7 @@ API::registerFunction($MODULE, 'deleteUser', function () {
     API::requireValues('userId');
 
     $userId = API::getValue('userId');
-    $user = User::getUser($userId);
-
-    if (!$user->exists())
-        API::error('There is no user with id = ' . $userId);
+    $user = API::verifyUserExists($userId);
 
     User::deleteUser($userId);
 });
@@ -287,15 +281,11 @@ API::registerFunction($MODULE, 'deleteUser', function () {
  */
 API::registerFunction($MODULE, 'setUserAdminPermission', function () {
     API::requireAdminPermission();
-    API::requireValues('userId');
-    API::requireValues('isAdmin');
+    API::requireValues('userId', 'isAdmin');
 
     $userId = API::getValue('userId');
+    $user = API::verifyUserExists($userId);
     $isAdmin = API::getValue('isAdmin');
-    $user = User::getUser($userId);
-
-    if (!$user->exists())
-        API::error('There is no user with id = ' . $userId);
 
     $user->setAdmin($isAdmin);
 });
@@ -308,15 +298,11 @@ API::registerFunction($MODULE, 'setUserAdminPermission', function () {
  */
 API::registerFunction($MODULE, 'setUserActiveState', function () {
     API::requireAdminPermission();
-    API::requireValues('userId');
-    API::requireValues('isActive');
+    API::requireValues('userId', 'isActive');
 
     $userId = API::getValue('userId');
+    $user = API::verifyUserExists($userId);
     $isActive = API::getValue('isActive');
-    $user = User::getUser($userId);
-
-    if (!$user->exists())
-        API::error('There is no user with id = ' . $userId);
 
     $user->setActive($isActive);
 });
