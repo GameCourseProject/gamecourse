@@ -42,6 +42,10 @@
         <div class="icon export_icon" title="Export All" (click)="exportAllItems()"></div>
       </div>
     </div>
+
+    <div class='success_box'>
+      <div id='action_completed' class='success_msg'></div>
+    </div>
   </div>
 
 </ng-container>
@@ -105,7 +109,7 @@
               <div class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
             </td>
             <td class="action-column">
-              <div class="icon export_icon_no_outline" title="Export" (click)="itemToExport = item; isIndividualExportModalOpen = true"></div>
+              <div class="icon export_icon_no_outline" title="Export" (click)="exportItem(item)"></div>
             </td>
           </tr>
         </tbody>

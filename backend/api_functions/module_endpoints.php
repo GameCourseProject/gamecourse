@@ -166,3 +166,49 @@ API::registerFunction($MODULE, 'toggleItemParam', function () {
 
     $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
 });
+
+/**
+ * Import items into the module.
+ *
+ * @param int $courseId
+ * @param string $moduleId
+ * @param $file
+ * @param bool $replace (optional)
+ */
+API::registerFunction($MODULE, 'importItems', function () {
+    API::requireAdminPermission();
+    API::requireValues('courseId', 'moduleId', 'file', 'replace');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $moduleId = API::getValue('moduleId');
+    $module = API::verifyModuleExists($courseId, $moduleId);
+
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $nrItems = $module->importItems($fileContents, $replace);
+    API::response(array('nrItems' => $nrItems));
+});
+
+/**
+ * Export items from the module.
+ *
+ * @param int $courseId
+ * @param string $moduleId
+ * @param int $itemId (optional)
+ */
+API::registerFunction($MODULE, 'exportItems', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $moduleId = API::getValue('moduleId');
+    $module = API::verifyModuleExists($courseId, $moduleId);
+
+    [$fileName, $items] = $module->exportItems(API::getValue("itemId"));
+    API::response(array('items' => $items, 'fileName' => $fileName));
+});

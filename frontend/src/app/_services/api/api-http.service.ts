@@ -778,6 +778,46 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public importModuleItems(courseID: number, moduleID: string, file: string | ArrayBuffer, replace: boolean): Observable<number> {
+    const data = {
+      courseId: courseID,
+      moduleId: moduleID,
+      file,
+      replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'importItems');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrItems'])) );
+  }
+
+  public exportModuleItems(courseID: number, moduleID: string, itemID: number): Observable<{fileName: string, contents: string}> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      "itemId": itemID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'exportItems');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return {
+          fileName: res['data']['fileName'],
+          contents: 'data:text/csv;charset=utf-8,' + encodeURIComponent(res['data']['items'])
+        }
+      }) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- User ------------------- ***/

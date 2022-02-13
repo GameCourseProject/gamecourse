@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Badges;
 
+use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
@@ -686,10 +687,9 @@ class Badges extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public static function importItems(int $course, string $fileData, bool $replace = true): int
+    public function importItems(string $fileData, bool $replace = true): int
     {
-        $courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule(self::ID);
+        $course = Course::getCourse($this->getCourseId(), false);
 
         $newItemNr = 0;
         $lines = explode("\n", $fileData);
@@ -790,10 +790,16 @@ class Badges extends Module
         return $newItemNr;
     }
 
-    public static function exportItems(int $course): array
+    public function exportItems(int $itemId = null): array
     {
-        $courseInfo = Core::$systemDB->select("course", ["id" => $course]);
-        $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $course], '*');
+        $courseId = $this->getCourseId();
+        $course = Course::getCourse($courseId, false);
+
+        if (!is_null($itemId))
+            $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId, "id" => $itemId], "*");
+        else
+            $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
+
         $file = "";
         $i = 0;
         $len = count($listOfBadges);
@@ -831,7 +837,8 @@ class Badges extends Module
             }
             $i++;
         }
-        return ["Badges - " . $courseInfo["name"], $file];
+
+        return ["Badges - " . $course->getName(), $file];
     }
 
 

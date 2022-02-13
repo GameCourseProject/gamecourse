@@ -9,6 +9,7 @@ import {ImageManager} from "../../../../../../_utils/images/image-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints.service";
 import {copyObject} from "../../../../../../_utils/misc/misc";
+import {DownloadManager} from "../../../../../../_utils/download/download-manager";
 
 @Component({
   selector: 'app-config',
@@ -35,7 +36,6 @@ export class ConfigComponent implements OnInit {
 
   isItemModalOpen: boolean;
   isDeleteVerificationModalOpen: boolean;
-  isIndividualExportModalOpen: boolean;
   isImportModalOpen: boolean;
 
   mode: 'add' | 'edit';
@@ -182,10 +182,40 @@ export class ConfigComponent implements OnInit {
   }
 
   importItems(replace: boolean): void {
-  } // TODO
+    this.loadingAction = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedItems = reader.result;
+      this.api.importModuleItems(this.courseID, this.module.id, importedItems, replace)
+        .pipe( finalize(() => {
+          this.isImportModalOpen = false;
+          this.loadingAction = false;
+        }) )
+        .subscribe(
+          nrItems => {
+            this.getModuleConfigInfo(this.module.id);
+            const successBox = $('#action_completed');
+            successBox.empty();
+            successBox.append(nrItems + " " + this.listingItems.itemName + (nrItems > 1 ? 's' : '') + " Imported");
+            successBox.show().delay(3000).fadeOut();
+          },
+          error => ErrorService.set(error)
+        )
+    }
+    reader.readAsDataURL(this.importedFile);
+  }
 
   exportItem(item: any): void {
-  } // TODO
+    this.loadingAction = true;
+
+    this.api.exportModuleItems(this.courseID, this.module.id, item?.id || null)
+      .pipe( finalize(() => this.loadingAction = false) )
+      .subscribe(
+        res => DownloadManager.downloadAsCSV(res.fileName, res.contents),
+        error => ErrorService.set(error)
+      )
+  }
 
   exportAllItems(): void {
     this.exportItem(null);
