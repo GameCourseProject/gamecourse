@@ -29,7 +29,7 @@ API::registerFunction($MODULE, 'setModuleState', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId);
 
     $toEnable = API::getValue('isEnabled');
 
@@ -86,7 +86,7 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId, $courseId);
 
     // Get module info
     $moduleInfo = [
@@ -122,7 +122,7 @@ API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId, $courseId);
 
     // Save general inputs
     if (API::hasKey('generalInputs'))
@@ -162,7 +162,7 @@ API::registerFunction($MODULE, 'toggleItemParam', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId, $courseId);
 
     $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
 });
@@ -183,7 +183,7 @@ API::registerFunction($MODULE, 'importItems', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId, $courseId);
 
     $file = explode(",", API::getValue('file'));
     $fileContents = base64_decode($file[1]);
@@ -207,7 +207,7 @@ API::registerFunction($MODULE, 'exportItems', function () {
     $course = API::verifyCourseExists($courseId);
 
     $moduleId = API::getValue('moduleId');
-    $module = API::verifyModuleExists($courseId, $moduleId);
+    $module = API::verifyModuleExists($moduleId, $courseId);
 
     [$fileName, $items] = $module->exportItems(API::getValue("itemId"));
     API::response(array('items' => $items, 'fileName' => $fileName));

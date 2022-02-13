@@ -980,10 +980,9 @@ class Skills extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public static function importItems($course, $fileData, $replace = true): int
+    public function importItems(string $fileData, bool $replace = true): int
     {
-        /*$courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("skills");*/
+        $courseId = $this->getCourseId();
         $moduleObject = new Skills();
 
         $newItemNr = 0;
@@ -995,7 +994,7 @@ class Skills extends Module
         $colorIndex = "";
         $xpIndex = "";
         $i = 0;
-        $treeId = Core::$systemDB->select("skill_tree", ["course" => $course], "id");
+        $treeId = Core::$systemDB->select("skill_tree", ["course" => $courseId], "id");
         if ($lines[0]) {
             $lines[0] = trim($lines[0]);
             $firstLine = explode(";", $lines[0]);
@@ -1044,16 +1043,16 @@ class Skills extends Module
                     ];
                     $tierExists = Core::$systemDB->select("skill_tier", ["treeId" => $treeId, "tier" => $item[$tierIndex]]);
                     if (empty($tierExists)) {
-                        $moduleObject->newTier($tierData, $course);
+                        $moduleObject->newTier($tierData, $courseId);
                     }
                     if (!empty($itemId)) {
                         if ($replace) {
                             $skillData["id"] = $itemId;
                             $skillData["description"] = "";
-                            $moduleObject->editSkill($skillData, $course);
+                            $moduleObject->editSkill($skillData, $courseId);
                         }
                     } else {
-                        $moduleObject->newSkill($skillData, $course);
+                        $moduleObject->newSkill($skillData, $courseId);
                         $newItemNr++;
                     }
                 }
@@ -1063,9 +1062,11 @@ class Skills extends Module
         return $newItemNr;
     }
 
-    public function exportItems($course): array
+    public function exportItems(int $itemId = null): array
     {
-        $courseInfo = Core::$systemDB->select("course", ["id" => $course]);
+        $courseId = $this->getCourseId();
+        $course = Course::getCourse($courseId, false);
+
         $listOfSkills = $this->getSkills($course);
         $file = "";
         $i = 0;
@@ -1078,7 +1079,7 @@ class Skills extends Module
             }
             $i++;
         }
-        return ["Skills - " . $courseInfo["name"], $file];
+        return ["Skills - " . $course->getName(), $file];
     }
 
 

@@ -1966,7 +1966,7 @@ class ModuleSkillsTest extends TestCase
                 4;Audio Visualizer;Kinetic+Music Mashup|Cartoonist+Animated Publicist;#00a8a8;1500";
 
         //When
-        $newItems = $this->skills->importItems($courseId, $file, false);
+        $newItems = $this->skills->importItems($file, false);
 
         //Then
         $tiers = Core::$systemDB->selectMultiple("skill_tier", [], "*", "id");
@@ -2175,7 +2175,7 @@ class ModuleSkillsTest extends TestCase
                 4;Audio Visualizer;Kinetic+Music Mashup|Cartoonist+Animated Publicist;#00a8a8;1500";
 
         //When
-        $newItems = $this->skills->importItems($courseId, $file, false);
+        $newItems = $this->skills->importItems($file, false);
 
         //Then
         $tiers = Core::$systemDB->selectMultiple("skill_tier", [], "*", "id");
@@ -2393,7 +2393,7 @@ class ModuleSkillsTest extends TestCase
                 3;Stop Motion;Doppelganger+Alien Invasions|Wildcard+Doppelganger|Wildcard+Alien Invasions;#78ba00;700";
 
         //When
-        $newItems = $this->skills->importItems($courseId, $file);
+        $newItems = $this->skills->importItems($file);
 
         //Then
         $tiers = Core::$systemDB->selectMultiple("skill_tier", [], "*", "id");
@@ -2508,7 +2508,7 @@ class ModuleSkillsTest extends TestCase
 
         $this->expectOutputString("The skill Book Cover does not exist");
         //When
-        $newItems = $this->skills->importItems($courseId, $file);
+        $newItems = $this->skills->importItems($file);
 
         //Then
         $tiers = Core::$systemDB->selectMultiple("skill_tier", [], "*", "id");
@@ -2568,7 +2568,7 @@ class ModuleSkillsTest extends TestCase
         $file = "";
 
         //When
-        $this->skills->importItems($courseId, $file, false);
+        $this->skills->importItems($file, false);
 
         //Then
         $tiers = Core::$systemDB->selectMultiple("skill_tier", []);
@@ -2734,7 +2734,7 @@ class ModuleSkillsTest extends TestCase
         $skillDependency64 = Core::$systemDB->insert("skill_dependency", ["dependencyId" => $dependency32, "normalSkillId" => $skill27, "isTier" => 0]);
     
         //When
-        $result = $this->skills->exportItems($courseId);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";
@@ -2783,7 +2783,7 @@ class ModuleSkillsTest extends TestCase
         $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
 
         //When
-        $result = $this->skills->exportItems($courseId);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";
@@ -2799,7 +2799,7 @@ class ModuleSkillsTest extends TestCase
         $treeId = Core::$systemDB->insert("skill_tree", ["course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP]);
 
         //When
-        $result = $this->skills->exportItems($courseId);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";
@@ -2814,7 +2814,7 @@ class ModuleSkillsTest extends TestCase
         $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
 
         //When
-        $result = $this->skills->exportItems($courseId);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";
@@ -2870,7 +2870,7 @@ class ModuleSkillsTest extends TestCase
         $skillDependency10 = Core::$systemDB->insert("skill_dependency", ["dependencyId" => $dependency5, "normalSkillId" => $skill6, "isTier" => 0]);
     
         //When
-        $result = $this->skills->exportItems($courseId + 1);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";
@@ -2930,7 +2930,7 @@ class ModuleSkillsTest extends TestCase
         $skillDependency10 = Core::$systemDB->insert("skill_dependency", ["dependencyId" => $dependency5, "normalSkillId" => $skill6, "isTier" => 0]);
     
         //When
-        $result = $this->skills->exportItems(null);
+        $result = $this->skills->exportItems();
 
         //Then
         $expectedFile = "tier;name;dependencies;color;xp\n";

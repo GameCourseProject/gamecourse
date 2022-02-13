@@ -2,6 +2,8 @@
 
 namespace GameCourse;
 
+use Modules\XP\XPLevels;
+
 class CourseUser extends User
 {
     //$id is in User
@@ -259,7 +261,7 @@ class CourseUser extends User
         $xp = Core::$systemDB->select("course_module", ["course" => $this->course->getId(), "moduleId" => "xp"], "isEnabled");
         if($xp){
             if(!in_array("Student", $rolesByName) and in_array("Student", $oldRoles)) {
-                Core::$systemDB->delete("user_xp", ["course" => $this->course->getId(), "user" => $this->id]);
+                Core::$systemDB->delete(XPLevels::TABLE_XP, ["course" => $this->course->getId(), "user" => $this->id]);
             }
         }
 

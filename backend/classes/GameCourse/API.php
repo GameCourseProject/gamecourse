@@ -173,10 +173,13 @@ class API {
         return $courseUser;
     }
 
-    public static function verifyModuleExists(int $courseId, string $moduleId): Module
+    public static function verifyModuleExists(string $moduleId, int $courseId = null)
     {
-        $course = self::verifyCourseExists($courseId);
-        $module = $course->getModule($moduleId);
+        if (!is_null($courseId)) {
+            $course = self::verifyCourseExists($courseId);
+            $module = $course->getModule($moduleId);
+        } else $module = ModuleLoader::getModule($moduleId);
+
         if ($module == null)
             API::error('There is no module with id = ' . $moduleId);
         return $module;

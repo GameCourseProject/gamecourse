@@ -2523,7 +2523,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_profile", ["date" => $time2, "user" => $user4, "course" => $courseId, "cluster" => $cluster1]);
         
         //When
-        $result = $this->profiling->exportItems($courseId);
+        $result = $this->profiling->exportItems();
 
         //Then
         $this->assertEquals("Profiles - Forensics Cyber-Security", $result[0]);
@@ -2585,7 +2585,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         //When
-        $result = $this->profiling->exportItems($courseId);
+        $result = $this->profiling->exportItems();
 
         //Then
         $this->assertEquals("Profiles - Forensics Cyber-Security", $result[0]);
@@ -2639,7 +2639,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         //When
-        $result = $this->profiling->exportItems($courseId + 2);
+        $result = $this->profiling->exportItems();
 
         //Then
         $this->assertEquals("Profiles - ", $result[0]);
@@ -2694,7 +2694,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         //When
-        $result = $this->profiling->exportItems(null);
+        $result = $this->profiling->exportItems();
 
         //Then
         $this->assertEquals("Profiles - ", $result[0]);
@@ -2759,7 +2759,7 @@ class ModuleProfilingTest extends TestCase
         $file .= "ist1100956;Sleuth;Spy\n";
 
         //When
-        $result = $this->profiling->importItems($courseId, $file, false);
+        $result = $this->profiling->importItems($file, false);
 
         //Then
         $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
@@ -2872,7 +2872,7 @@ class ModuleProfilingTest extends TestCase
         Core::$systemDB->insert("user_role", ["id" => $user5, "course" => $courseId, "role" => $student]);
 
         //When
-        $result = $this->profiling->importItems($courseId, $file, false);
+        $result = $this->profiling->importItems($file, false);
 
         //Then
         $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        
@@ -2948,7 +2948,7 @@ class ModuleProfilingTest extends TestCase
         $file .= "ist1100956;Sleuth;Spy\n";
 
         //When
-        $result = $this->profiling->importItems($courseId, $file, false);
+        $result = $this->profiling->importItems($file, false);
 
         //Then
         $profiles = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId]);
@@ -3038,7 +3038,7 @@ class ModuleProfilingTest extends TestCase
         $file .= "ist11101036;Spy;Sleuth\n";
 
         //When
-        $result = $this->profiling->importItems($courseId, $file, false);
+        $result = $this->profiling->importItems($file, false);
 
         //Then
         $profiles = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId]);
@@ -3143,7 +3143,7 @@ class ModuleProfilingTest extends TestCase
         $file .= "ist1100956;Sleuth;Spy\n";
 
         //When
-        $result = $this->profiling->importItems($courseId, $file);
+        $result = $this->profiling->importItems($file);
 
         //Then
         $profileUser1 = Core::$systemDB->selectMultiple("user_profile", ["user" => $user1]);        

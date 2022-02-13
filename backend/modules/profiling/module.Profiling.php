@@ -217,8 +217,10 @@ class Profiling extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public static function importItems($courseId, $filedata, $replace = true) {
-        $lines = explode("\n", $filedata);
+    public function importItems(string $fileData, bool $replace = true): int
+    {
+        $courseId = $this->getCourseId();
+        $lines = explode("\n", $fileData);
 
         if ($lines[0]) {
             $lines[0] = trim($lines[0]);
@@ -254,11 +256,14 @@ class Profiling extends Module
                 }
             }
         }
+        return 0;
     }
 
-    public static function exportItems($courseId): array
+    public function exportItems(int $itemId = null): array
     {
-        $courseInfo = Core::$systemDB->select("course", ["id"=>$courseId]);
+        $courseId = $this->getCourseId();
+        $course = Course::getCourse($courseId, false);
+
         $profileList = Core::$systemDB->selectMultiple("user_profile p left join role r on cluster = r.id and p.course = r.course left join auth a on p.user = a.game_course_user_id", ["p.course" => $courseId], "name, username, date", "user, date");
         $days = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
         $nDays = count($days);
@@ -280,7 +285,7 @@ class Profiling extends Module
             }
         }
         $file .= "\n";
-        return ["Profiles - " . $courseInfo["name"], $file];
+        return ["Profiles - " . $course->getName(), $file];
     }
 
 

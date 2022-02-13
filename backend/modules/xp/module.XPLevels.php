@@ -13,6 +13,10 @@ class XPLevels extends Module
 {
     const ID = 'xp';
 
+    const TABLE_LEVELS = 'level';
+    const TABLE_XP = 'user_xp';
+
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
@@ -40,7 +44,7 @@ class XPLevels extends Module
             'getAllLevels',
             function () use ($courseId)/*use ($levelWhere, $levelTable)*/ {
                 $badgesExist = ($this->getParent()->getModule("badges") !== null);
-                $table = "level";
+                $table = self::TABLE_LEVELS;
                 $where = ["course" => $courseId];
                 $levels = Core::$systemDB->selectMultiple($table, $where);
                 return Dictionary::createNode($levels, 'xp', "collection");
@@ -59,7 +63,7 @@ class XPLevels extends Module
             'getLevel',
             function ($user = null, int $number = null, string $goal = null) use ($courseId) {
 
-                $table = "level";
+                $table = self::TABLE_LEVELS;
                 $where = ["course" => $courseId];
                 if ($user !== null) {
                     //calculate the level of the user
@@ -231,20 +235,20 @@ class XPLevels extends Module
     }
 
     public function setupData(int $courseId){
-        $this->addTables("xp", "level");
+        $this->addTables("xp", self::TABLE_LEVELS);
 
         //create level zero
-        $levelZero = Core::$systemDB->select("level", ["course" => $courseId, "number" => 0], "id");
+        $levelZero = Core::$systemDB->select(self::TABLE_LEVELS, ["course" => $courseId, "number" => 0], "id");
         if(empty($levelZero))
-            $levelZero = Core::$systemDB->insert("level", ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
+            $levelZero = Core::$systemDB->insert(self::TABLE_LEVELS, ["course" => $courseId, "number" => 0, "goal" => 0, "description" => "AWOL"]);
 
         //create first entry for every user of the course so that we only have to update later
         $course = new Course($courseId);
         $students = $course->getUsersWithRole("Student");
         foreach ($students as $student){
-            $entry = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $student["id"]]);
+            $entry = Core::$systemDB->select(self::TABLE_XP, ["course" => $courseId, "user" => $student["id"]]);
             if(!$entry)
-                Core::$systemDB->insert("user_xp", ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
+                Core::$systemDB->insert(self::TABLE_XP, ["course" => $courseId, "user" => $student["id"], "xp" => 0 ,"level" => $levelZero]);
         }
     }
 
@@ -263,7 +267,7 @@ class XPLevels extends Module
         $xpArray = array();
         $xpArr = array();
 
-        $xpVarDB_ = Core::$systemDB->selectMultiple("level", ["course" => $courseId], "*");
+        $xpVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVELS, ["course" => $courseId], "*");
         foreach ($xpVarDB_ as $xpVarDB) {
             unset($xpVarDB["course"]);
             array_push($xpArray, $xpVarDB);
@@ -308,11 +312,6 @@ class XPLevels extends Module
         return true;
     }
 
-    public function has_general_inputs(): bool
-    {
-        return false;
-    }
-
     public function has_listing_items(): bool
     {
         return  true;
@@ -322,27 +321,26 @@ class XPLevels extends Module
     {
         //tenho de dar header
         $header = ['Level', 'Title', 'Minimum XP'] ;
-        $displayAtributes = ['number', 'description', 'goal'];
+        $displayAtributes = [
+            ['id' => 'number', 'type' => 'number'],
+            ['id' => 'description', 'type' => 'text'],
+            ['id' => 'goal', 'type' => 'number']
+        ];
         // items (pela mesma ordem do header)
         $items = $this->getLevels($courseId);
         //argumentos para add/edit
         $allAtributes = [
-            array('name' => "Title", 'id'=> 'description', 'type' => "text", 'options' => ""),
-            array('name' => "Minimum XP", 'id'=> 'goal', 'type' => "number", 'options' => ""),
+            array('name' => "Level", 'id' => 'number', 'type' => "number", 'options' => ["edit" => false]),
+            array('name' => "Title", 'id' => 'description', 'type' => "text", 'options' => ""),
+            array('name' => "Minimum XP", 'id' => 'goal', 'type' => "number", 'options' => ""),
         ];
-        return array( 'listName'=> 'Levels', 'itemName'=> 'Level','header' => $header, 'displayAttributes'=> $displayAtributes, 'items'=> $items, 'allAttributes'=>$allAtributes);
+        return array('listName'=> 'Levels', 'itemName'=> 'level', 'header' => $header, 'displayAttributes'=> $displayAtributes, 'items'=> $items, 'allAttributes'=>$allAtributes);
     }
 
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId){
-        if($actiontype == 'new'){
-            $this->newLevel($listingItem, $courseId);
-        }
-        elseif ($actiontype == 'edit'){
-            $this->editLevel($listingItem, $courseId);
-
-        }elseif($actiontype == 'delete'){
-            $this->deleteLevel($listingItem, $courseId);
-        }
+        if ($actiontype == 'new' || $actiontype == 'duplicate') $this->newLevel($listingItem, $courseId);
+        elseif ($actiontype == 'edit') $this->editLevel($listingItem, $courseId);
+        elseif($actiontype == 'delete') $this->deleteLevel($listingItem, $courseId);
     }
 
 
@@ -352,8 +350,8 @@ class XPLevels extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        Core::$systemDB->delete("user_xp", ["course" => $courseId]);
-        Core::$systemDB->delete("level", ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_XP, ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_LEVELS, ["course" => $courseId]);
     }
 
 
@@ -361,10 +359,9 @@ class XPLevels extends Module
     /*** --------------- Import / Export --------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public static function importItems(int $course, string $fileData, bool $replace = true): int
+    public function importItems(string $fileData, bool $replace = true): int
     {
-        /*$courseObject = Course::getCourse($course, false);
-        $moduleObject = $courseObject->getModule("xp");*/
+        $courseId = $this->getCourseId();
         $moduleObject = new XPLevels();
 
         $newItemNr = 0;
@@ -395,7 +392,7 @@ class XPLevels extends Module
                     $goalIndex = 1;
                 }
                 if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    $itemId = Core::$systemDB->select("level", ["course"=> $course, "goal"=> $item[$goalIndex]], "id");
+                    $itemId = Core::$systemDB->select(self::TABLE_LEVELS, ["course"=> $courseId, "goal"=> $item[$goalIndex]], "id");
 
                     $levelData = [
                         "description"=>$item[$descriptionIndex],
@@ -404,10 +401,10 @@ class XPLevels extends Module
                     if ($itemId){
                         if ($replace) {
                             $levelData["id"] = $itemId;
-                            $moduleObject->editLevel($levelData, $course);
+                            $moduleObject->editLevel($levelData, $courseId);
                         }
                     } else {
-                        $toInsert .= "(" . $levelData['goal'] / 1000 . "," . $course . ",\"" . $levelData['description'] . "\"," . $levelData['goal'] . "),";
+                        $toInsert .= "(" . $levelData['goal'] / 1000 . "," . $courseId . ",\"" . $levelData['description'] . "\"," . $levelData['goal'] . "),";
                         $newItemNr++;
                     }
                 }
@@ -420,10 +417,12 @@ class XPLevels extends Module
         return $newItemNr;
     }
 
-    public static function exportItems(int $course): array
+    public function exportItems(int $itemId = null): array
     {
-        $courseInfo = Core::$systemDB->select("course", ["id"=>$course]);
-        $listOfLevels = Core::$systemDB->selectMultiple("level", ["course"=> $course], '*');
+        $courseId = $this->getCourseId();
+        $course = Course::getCourse($courseId, false);
+
+        $listOfLevels = Core::$systemDB->selectMultiple(self::TABLE_LEVELS, ["course"=> $course], '*');
         $file = "";
         $i = 0;
         $len = count($listOfLevels);
@@ -436,7 +435,7 @@ class XPLevels extends Module
             }
             $i++;
         }
-        return ["Levels - " . $courseInfo["name"], $file];
+        return ["Levels - " . $course->getName(), $file];
     }
 
 
@@ -556,7 +555,7 @@ class XPLevels extends Module
     public function getUserXP($user, $courseId)
     {
         $userId = $this->getUserId($user);
-        $totalXP = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "xp");
+        $totalXP = Core::$systemDB->select(self::TABLE_XP, ["course" => $courseId, "user" => $userId], "xp");
         return $totalXP;
     }
 
@@ -569,12 +568,12 @@ class XPLevels extends Module
     public function getUserLevel($user, $courseId)
     {
         $userId = $this->getUserId($user);
-        $level = Core::$systemDB->select("user_xp", ["course" => $courseId, "user" => $userId], "level");
-        return Core::$systemDB->select("level", ["id" => $level]);
+        $level = Core::$systemDB->select(self::TABLE_XP, ["course" => $courseId, "user" => $userId], "level");
+        return Core::$systemDB->select(self::TABLE_LEVELS, ["id" => $level]);
     }
 
     public function getLevels($courseId) {
-        $levels = Core::$systemDB->selectMultiple("level",["course"=>$courseId],"*", "number");
+        $levels = Core::$systemDB->selectMultiple(self::TABLE_LEVELS,["course"=>$courseId],"*", "number");
 
         foreach($levels as &$lvl){
             $lvl["goal"] = intval($lvl["goal"]);
@@ -584,17 +583,19 @@ class XPLevels extends Module
     }
 
     public function insertLevels($string){
-        $sql = "insert into level (number, course, description, goal) values ";
+        $sql = "insert into " . self::TABLE_LEVELS . " (number, course, description, goal) values ";
         $sql .= $string . ";";
         Core::$systemDB->executeQuery($sql);
     }
 
     public function newLevel($level, $courseId){
-        $levelData = ["number"=>$level['goal'] / 1000,
-                    "course"=>$courseId,"description"=>$level['description'],
-                    "goal"=> $level['goal']];
-
-        Core::$systemDB->insert("level",$levelData);
+        $levelData = [
+            "number" => $level['goal'] / 1000,
+            "course" => $courseId,
+            "description" => $level['description'],
+            "goal"=> $level['goal']
+        ];
+        Core::$systemDB->insert(self::TABLE_LEVELS, $levelData);
     }
 
     public function editLevel($level, $courseId){
@@ -603,11 +604,11 @@ class XPLevels extends Module
                     "course"=>$courseId,
                     "description"=>$level['description'],
                     "goal"=> $level['goal']];
-        Core::$systemDB->update("level",$levelData,["id"=>$level["id"]]);
+        Core::$systemDB->update(self::TABLE_LEVELS, $levelData, ["id"=>$level["id"]]);
     }
 
     public function deleteLevel($level, $courseId){
-        Core::$systemDB->delete("level",["id"=>$level['id']]);
+        Core::$systemDB->delete(self::TABLE_LEVELS, ["id"=>$level['id']]);
     }
 }
 

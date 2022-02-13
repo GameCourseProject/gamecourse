@@ -842,7 +842,7 @@ class ModuleBadgesTest extends TestCase
                 Tree Climber;Reach higher levels of the skill tree;reach level two;reach level three;reach level four;-100;-100;-100;False;True;False;;;";
 
         //When
-        $newBadges = $this->badges->importItems($courseId, $file);
+        $newBadges = $this->badges->importItems($file);
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -924,7 +924,7 @@ class ModuleBadgesTest extends TestCase
         $file .= "Post Master;Post something in the forums;1;1;0;make twenty posts;0;;make thirty posts;0;;make fifty posts;0;";;
 
         //When
-        $newBadges = $this->badges->importItems($courseId, $file);
+        $newBadges = $this->badges->importItems($file);
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -976,7 +976,7 @@ class ModuleBadgesTest extends TestCase
         $file .= "Post Master;Post something in the forums;1;1;0;make twenty posts;0;;make thirty posts;0;;make fifty posts;0;";;
 
         //When
-        $newBadges = $this->badges->importItems($courseId, $file);
+        $newBadges = $this->badges->importItems($file);
 
         //Then
         $badges = Core::$systemDB->selectMultiple("badge", []);
@@ -1015,7 +1015,7 @@ class ModuleBadgesTest extends TestCase
         $courseId = Core::$systemDB->insert("course", ["name" => "Forensics Cyber-Security", "short" => "FCS", "year" => "2020-2021", "color" => "#329da8", "isActive" => 1, "isVisible" => 1]);
         
         //When
-        $newBadges = $this->badges->importItems($courseId, $file);
+        $newBadges = $this->badges->importItems($file);
 
         //Then
         $this->assertEquals(0, $newBadges);
@@ -1047,7 +1047,7 @@ class ModuleBadgesTest extends TestCase
         Core::$systemDB->insert("badge_level", ["badgeId" => $badge4, "number" => 3, "goal" => 0, "description" => "make fifty posts", "reward" => 0]);
         
         //When
-        $result = $this->badges->exportItems($courseId);
+        $result = $this->badges->exportItems();
 
         //Then
         $expectedFile = "name;description;isCount;isPost;isPoint;desc1;xp1;p1;desc2;xp2;p2;desc3;xp3;p3\n";
@@ -1067,7 +1067,7 @@ class ModuleBadgesTest extends TestCase
         $courseId = Core::$systemDB->insert("course", ["name" => "Multimedia Content Production", "short" => "MCP", "year" => "2019-2020", "color" => "#79bf43", "isActive" => 1, "isVisible" => 1]);
         
         //When
-        $result = $this->badges->exportItems($courseId);
+        $result = $this->badges->exportItems();
 
         //Then
         $expectedFile = "name;description;isCount;isPost;isPoint;desc1;xp1;p1;desc2;xp2;p2;desc3;xp3;p3\n";
@@ -1090,7 +1090,7 @@ class ModuleBadgesTest extends TestCase
         Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 1, "goal" => 0, "description" => "participate in the interviews", "reward" => 100]);
        
         //When
-        $result = $this->badges->exportItems($courseId + 1);
+        $result = $this->badges->exportItems();
 
         //Then
         $expectedFile = "name;description;isCount;isPost;isPoint;desc1;xp1;p1;desc2;xp2;p2;desc3;xp3;p3\n";
@@ -1113,7 +1113,7 @@ class ModuleBadgesTest extends TestCase
         Core::$systemDB->insert("badge_level", ["badgeId" => $badge2, "number" => 1, "goal" => 0, "description" => "participate in the interviews", "reward" => 100]);
        
         //When
-        $result = $this->badges->exportItems(null);
+        $result = $this->badges->exportItems();
 
         //Then
         $expectedFile = "name;description;isCount;isPost;isPoint;desc1;xp1;p1;desc2;xp2;p2;desc3;xp3;p3\n";

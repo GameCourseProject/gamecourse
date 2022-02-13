@@ -1,7 +1,6 @@
 <?php
 namespace Modules\Badges;
 
-use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\ValueNode;
