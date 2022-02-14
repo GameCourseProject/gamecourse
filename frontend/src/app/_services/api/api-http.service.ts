@@ -815,6 +815,22 @@ export class ApiHttpService {
       }) );
   }
 
+  public courseFenix(courseID: number, file: string | ArrayBuffer): Observable<number> {
+    const data = {
+      courseId: courseID,
+      fenix: file,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'courseFenix');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- User ------------------- ***/

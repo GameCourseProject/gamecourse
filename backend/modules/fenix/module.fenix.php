@@ -33,7 +33,7 @@ class Fenix extends Module
          * @param int $courseId
          * @param $fenix (optional) // TODO: type?
          */
-        API::registerFunction(self::ID, 'courseFenix', function () {
+        API::registerFunction('module', 'courseFenix', function () {
             API::requireCourseAdminPermission();
             API:: requireValues('courseId');
 
@@ -49,10 +49,9 @@ class Fenix extends Module
                 $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
                 if (!$resultFenix) API::response(["updatedData" => ["Variables for fenix saved"]]);
                 else API::error($resultFenix);
-                return;
             }
 
-            API::response(array());
+            API::response(['nrStudents' => 0]); // TODO: return nr. students imported
         });
     }
 
@@ -94,7 +93,7 @@ class Fenix extends Module
 
     private function setFenixVars(int $courseId, $fenix): string
     {
-        $course = new Course($courseId);
+        $course = Course::getCourse($courseId, false);
         $year = $course->getData("year");
         for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
             $fields = explode(";", $fenix[$line]);
@@ -171,7 +170,7 @@ class Fenix extends Module
                 }
             }
         }
-        return "";
+        return ""; // TODO: return nr. students imported
     }
 }
 
