@@ -688,105 +688,61 @@ class Badges extends Module
 
     public function importItems(string $fileData, bool $replace = true): int
     {
-        $course = Course::getCourse($this->getCourseId(), false);
+        $courseId = $this->getCourseId();
 
-        $newItemNr = 0;
+        $nrItemsImported = 0;
+        $separator = ",";
+        $headers = ["name", "description", "maxLevel", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive",
+            "image", "desc1", "xp1", "count1", "desc2", "xp2", "count2", "desc3", "xp3", "count3"];
         $lines = explode("\n", $fileData);
-        $has1stLine = false;
-        $nameIndex = "";
-        $descriptionIndex = "";
-        $description = array();
-        $reward = array();
-        $isCountIndex = "";
-        $isPostIndex = "";
-        $isPointIndex = "";
-        $count = array();
-        $i = 0;
-        if ($lines[0]) {
-            $lines[0] = trim($lines[0]);
-            $firstLine = explode(";", $lines[0]);
-            $firstLine = array_map('trim', $firstLine);
-            if (
-                in_array("name", $firstLine)
-                && in_array("description", $firstLine) && in_array("isCount", $firstLine)
-                && in_array("isPost", $firstLine) && in_array("isPost", $firstLine)
-                && in_array("desc1", $firstLine) && in_array("xp1", $firstLine) && in_array("p1", $firstLine)
-                && in_array("desc2", $firstLine) && in_array("xp2", $firstLine) && in_array("p2", $firstLine)
-                && in_array("desc3", $firstLine) && in_array("xp3", $firstLine) && in_array("p3", $firstLine)
-            ) {
-                $has1stLine = true;
-                $nameIndex = array_search("name", $firstLine);
-                $descriptionIndex = array_search("description", $firstLine);
-                $description[1] = array_search("desc1", $firstLine);
-                $description[2] = array_search("desc2", $firstLine);
-                $description[3] = array_search("desc3", $firstLine);
-                $reward[1] = array_search("xp1", $firstLine);
-                $reward[2] = array_search("xp2", $firstLine);
-                $reward[3] = array_search("xp3", $firstLine);
-                $isCountIndex = array_search("isCount", $firstLine);
-                $isPostIndex = array_search("isPost", $firstLine);
-                $isPointIndex = array_search("isPoint", $firstLine);
-                $count[1] = array_search("p1", $firstLine);
-                $count[2] = array_search("p2", $firstLine);
-                $count[3] = array_search("p3", $firstLine);
-            }
-        }
-        foreach ($lines as $line) {
-            $line = trim($line);
-            $item = explode(";", $line);
-            $item = array_map('trim', $item);
-            if (count($item) > 1) {
-                if (!$has1stLine) {
-                    $nameIndex = 0;
-                    $descriptionIndex = 1;
-                    $description[1] = 2;
-                    $description[2] = 3;
-                    $description[3] = 4;
-                    $reward[1] = 5;
-                    $reward[2] = 6;
-                    $reward[3] = 7;
-                    $isCountIndex = 8;
-                    $isPostIndex = 9;
-                    $isPointIndex = 10;
-                    $count[1] = 11;
-                    $count[2] = 12;
-                    $count[3] = 13;
-                }
-                $maxLevel = empty($item[$description[2]]) ? 1 : (empty($item[$description[3]]) ? 2 : 3);
-                if (!$has1stLine || ($i != 0 && $has1stLine)) {
-                    $itemId = Core::$systemDB->select(self::TABLE, ["course" => $course, "name" => $item[$nameIndex]], "id");
 
-                    $badgeData = [
-                        "name" => $item[$nameIndex],
-                        "description" => $item[$descriptionIndex],
-                        "isCount" => (!strcasecmp("true", $item[$isCountIndex])) ? 1 : ($item[$isCountIndex] == 1) ? 1 : 0,
-                        "isPost" => (!strcasecmp("true", $item[$isPostIndex])) ? 1 : ($item[$isPostIndex] == 1) ? 1 : 0,
-                        "isPoint" => (!strcasecmp("true", $item[$isPointIndex])) ? 1 : ($item[$isPointIndex] == 1) ? 1 : 0,
-                        "isExtra" => ($item[$reward[1]] < 0) ? 1 : 0,
-                        "desc1" => $item[$description[1]],
-                        "desc2" => $item[$description[2]],
-                        "desc3" => $item[$description[3]],
-                        "xp1" => $item[$reward[1]],
-                        "xp2" => $item[$reward[2]],
-                        "xp3" => $item[$reward[3]],
-                        "count1" => (empty($item[$count[1]])) ? 0 : $item[$count[1]],
-                        "count2" => (empty($item[$count[2]])) ? 0 : $item[$count[2]],
-                        "count3" => (empty($item[$count[3]])) ? 0 : $item[$count[3]]
-                    ];
-                    if ($itemId) {
-                        if ($replace) {
-                            $badgeData["id"] = $itemId;
-                            Badges::editBadge($badgeData, $course);
-                        }
-                    } else {
-                        Badges::newBadge($badgeData, $course);
-                        $newItemNr++;
-                    }
+        if (count($lines) > 0) {
+            // Check if has header to ignore it
+            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
+            $hasHeaders = true;
+            foreach ($headers as $header) {
+                if (!in_array($header, $firstLine)) $hasHeaders = false;
+            }
+            if ($hasHeaders) array_shift($lines);
+
+            // Import each item
+            foreach ($lines as $line) {
+                $item = array_map('trim', explode($separator, trim($line)));
+                $itemId = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "name" => $item[array_search("name", $headers)]], "id");
+
+                $badgeData = [
+                    "name" => $item[array_search("name", $headers)],
+                    "description" => $item[array_search("description", $headers)],
+                    "isExtra" => intval($item[array_search("isExtra", $headers)]),
+                    "isBragging" => intval($item[array_search("isBragging", $headers)]),
+                    "isCount" => intval($item[array_search("isCount", $headers)]),
+                    "isPost" => intval($item[array_search("isPost", $headers)]),
+                    "isPoint" => intval($item[array_search("isPoint", $headers)]),
+                    "isActive" => intval($item[array_search("isActive", $headers)]),
+                    "image" => $item[array_search("image", $headers)],
+                    "desc1" => $item[array_search("desc1", $headers)],
+                    "desc2" => $item[array_search("desc2", $headers)],
+                    "desc3" => $item[array_search("desc3", $headers)],
+                    "xp1" => $item[array_search("xp1", $headers)],
+                    "xp2" => intval($item[array_search("xp2", $headers)]),
+                    "xp3" => intval($item[array_search("xp3", $headers)]),
+                    "count1" => intval($item[array_search("count1", $headers)]),
+                    "count2" => intval($item[array_search("count2", $headers)]),
+                    "count3" => intval($item[array_search("count3", $headers)])
+                ];
+
+                if ($itemId && $replace) { // replace item
+                    $badgeData["id"] = $itemId;
+                    Badges::editBadge($badgeData, $courseId);
+
+                } else { // create item
+                    Badges::newBadge($badgeData, $courseId);
+                    $nrItemsImported++;
                 }
             }
-            $i++;
         }
-        return $newItemNr;
+
+        return $nrItemsImported;
     }
 
     public function exportItems(int $itemId = null): array
@@ -794,47 +750,43 @@ class Badges extends Module
         $courseId = $this->getCourseId();
         $course = Course::getCourse($courseId, false);
 
+        // Get badges to export
         if (!is_null($itemId))
             $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId, "id" => $itemId], "*");
         else
             $listOfBadges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
 
         $file = "";
-        $i = 0;
+        $separator = ",";
         $len = count($listOfBadges);
-        $file .= "name;description;isCount;isPost;isPoint;desc1;xp1;p1;desc2;xp2;p2;desc3;xp3;p3\n";
-        foreach ($listOfBadges as $badge) {
-            $maxLevel = $badge["maxLevel"];
-            $isExtra = $badge["isExtra"];
-            $isBragging = $badge["isBragging"];
-            $isPoint = $badge["isPoint"];
 
-            $file .= $badge["name"] . ";" . $badge["description"] . ";" . $badge["isCount"] . ";" .  $badge["isPost"] . ";" .  $badge["isPoint"];
+        // Append headers
+        $headers = ["name", "description", "maxLevel", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive",
+            "image", "desc1", "xp1", "count1", "desc2", "xp2", "count2", "desc3", "xp3", "count3"];
+        $file .= implode($separator, $headers) . "\n";
+
+        // Go over each badge and append it to file
+        foreach ($listOfBadges as $index => $badge) {
+            $params = [$badge["name"], $badge["description"], $badge["maxLevel"], $badge["isExtra"], $badge["isBragging"],
+                $badge["isCount"], $badge["isPost"], $badge["isPoint"], $badge["isActive"], $badge["image"]];
+
+            // Get levels info
             for ($j = 1; $j <= 3; $j++) {
-                if ($j <= $maxLevel) {
+                if ($j <= $badge["maxLevel"]) {
                     $level = Core::$systemDB->select(self::TABLE_LEVEL, ["badgeId" => $badge["id"], "number" => $j]);
-                    $file .= ";" . $level["description"];
-                    if ($isExtra) {
-                        $file .= ";" . "-" . $level["reward"];
-                    } else if ($isBragging) {
-                        $file .= ";" . "0";
-                    } else {
-                        $file .= ";" . $level["reward"];
-                    }
+                    $params[] = $level["description"];
+                    $params[] = $level["reward"];
+                    $params[] = $level["goal"];
 
-                    $file .= ";";
-
-                    if ($isPoint) {
-                        $file .= $level["goal"];
-                    }
                 } else {
-                    $file .= ";;;";
+                    $params[] = "";
+                    $params[] = "";
+                    $params[] = "";
                 }
             }
-            if ($i != $len - 1) {
-                $file .= "\n";
-            }
-            $i++;
+
+            $file .= implode($separator, $params);
+            if ($index != $len - 1) $file .= "\n";
         }
 
         return ["Badges - " . $course->getName(), $file];
@@ -1056,9 +1008,10 @@ class Badges extends Module
             "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
             "isCount" => ($achievement['isCount']) ? 1 : 0,
             "isPost" => ($achievement['isPost']) ? 1 : 0,
-            "isPoint" => ($achievement['isPoint']) ? 1 : 0
+            "isPoint" => ($achievement['isPoint']) ? 1 : 0,
+            "isActive" => ($achievement['isActive']) ? 1 : 0,
+            "image" => array_key_exists("image", $achievement) ? $achievement['image'] : null
         ];
-        if (array_key_exists("image", $achievement)) $badgeData["image"] = $achievement['image'];
 
         $badgeId = Core::$systemDB->insert(self::TABLE, $badgeData);
         for ($level = 1; $level <= $maxLevel; $level++) {
