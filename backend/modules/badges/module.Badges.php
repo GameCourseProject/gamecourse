@@ -638,6 +638,7 @@ class Badges extends Module
             ['id' => 'isExtra', 'type' => 'on_off button'],
             ['id' => 'isActive', 'type' => 'on_off button'],
         ];
+        $actions = ['duplicate', 'edit', 'delete', 'export'];
 
         $items = $this->getBadges($courseId);
 
@@ -661,7 +662,7 @@ class Badges extends Module
             array('name' => "Badge images", 'id' => 'image', 'type' => "image", 'options' => "")
         ];
 
-        return array('listName' => 'Badges', 'itemName' => 'badge', 'header' => $header, 'displayAttributes' => $displayAtributes, 'items' => $items, 'allAttributes' => $allAtributes);
+        return array('listName' => 'Badges', 'itemName' => 'badge', 'header' => $header, 'displayAttributes' => $displayAtributes, 'actions' => $actions, 'items' => $items, 'allAttributes' => $allAtributes);
     }
 
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId)
@@ -1009,7 +1010,7 @@ class Badges extends Module
             "isCount" => ($achievement['isCount']) ? 1 : 0,
             "isPost" => ($achievement['isPost']) ? 1 : 0,
             "isPoint" => ($achievement['isPoint']) ? 1 : 0,
-            "isActive" => ($achievement['isActive']) ? 1 : 0,
+            "isActive" => 0,
             "image" => array_key_exists("image", $achievement) ? $achievement['image'] : null
         ];
 

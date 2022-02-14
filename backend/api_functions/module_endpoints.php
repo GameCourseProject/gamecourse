@@ -99,7 +99,7 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
         'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : [],
         'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : [],
         'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : [],
-        'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : [],
+        'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : null,
         'module' => $moduleInfo,
         'courseFolder' => Course::getCourseDataFolder($courseId)
     ]);
@@ -112,6 +112,7 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
  * @param string $moduleId
  * @param $generalInputs (optional)
  * @param $listingItem (optional)
+ * @param $tiersItem (optional)
  * @param string $actionType (optional)
  */
 API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
@@ -132,18 +133,12 @@ API::registerFunction($MODULE, 'saveModuleConfigInfo', function () {
     //inside the currespondent module
 
     // Save listing items
-    if (API::hasKey('listingItem')) {
-        $listingItem = API::getValue('listingItem');
-        $actionType = API::getValue('actionType'); // new, edit, delete, duplicate
+    if (API::hasKey('listingItem'))
+        $module->save_listing_item(API::getValue('actionType'), API::getValue('listingItem'), $courseId);
 
-        if ($module->getId() !== "skills") {
-            $module->save_listing_item($actionType, $listingItem, $courseId);
-
-        } else {
-            if (array_key_exists("reward", $listingItem)) $module->save_tiers($actionType, $listingItem, $courseId);
-            else $module->save_listing_item($actionType, $listingItem, $courseId);
-        }
-    }
+    // Save tiers items
+    if (API::hasKey('tiersItem') && $module->getId() === "skills")
+        $module->save_tiers(API::getValue('actionType'), API::getValue('tiersItem'), $courseId);
 });
 
 /**

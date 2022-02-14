@@ -1,5 +1,5 @@
 .divider .title:after {
-  width: calc(100% - 160px);
+  width: calc(100% - 140px);
 }
 
 .header {
@@ -98,6 +98,31 @@
       margin-right: unset;
       padding-right: 10px;
     }
+  }
+}
+
+.tiers {
+  .divider .title:after {
+    width: calc(100% - 50px);
+  }
+
+  .action-buttons {
+    width: unset;
+  }
+}
+
+.color {
+  display: flex;
+
+  .color-sample {
+    margin-right: 8px;
+  }
+
+  .box {
+    border: none;
+    width: 20px;
+    height: 20px;
+    opacity: 1;
   }
 }
 

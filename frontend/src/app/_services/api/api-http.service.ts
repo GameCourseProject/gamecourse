@@ -32,6 +32,7 @@ import {ViewBlockDatabase} from "../../_domain/views/view-block";
 import {ViewRowDatabase} from "../../_domain/views/view-row";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
 import {InputType} from "../../_domain/inputs/input-type";
+import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/modules/config/config.component";
 
 @Injectable({
   providedIn: 'root'
@@ -708,10 +709,8 @@ export class ApiHttpService {
 
   // Configuration
   public getModuleConfigInfo(courseID: number, moduleID: string):
-    Observable<{module: Module, courseFolder: string, generalInputs?: {id: string, name: string, type: InputType,
-      options: any, current_val: any}[], listingItems?: {listName: string, itemName: string, header: string[],
-      displayAttributes: {id: string, type: InputType}[], items: any[], allAttributes: {id: string, name: string,
-      type: InputType, options: any}[]}, personalizedConfig?: any[], tiers?: any[]}> {
+    Observable<{module: Module, courseFolder: string, generalInputs?: GeneralInput[], listingItems?: ListingItems,
+      personalizedConfig?: any[], tiers?: ListingItems}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -737,17 +736,16 @@ export class ApiHttpService {
   }
 
   public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItem?: any,
-                              actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
+                              tiersItem?: any, actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
     }
 
     if (generalInputs) data['generalInputs'] = generalInputs;
-    if (listingItem) {
-      data['listingItem'] = listingItem;
-      data['actionType'] = actionType;
-    }
+    if (listingItem) data['listingItem'] = listingItem;
+    if (tiersItem) data['tiersItem'] = tiersItem;
+    if (listingItem || tiersItem) data['actionType'] = actionType;
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);

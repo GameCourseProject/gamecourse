@@ -317,7 +317,7 @@ class XPLevels extends Module
         return  true;
     }
 
-    public function get_listing_items (int $courseId): array
+    public function get_listing_items(int $courseId): array
     {
         //tenho de dar header
         $header = ['Level', 'Title', 'Minimum XP'] ;
@@ -326,6 +326,7 @@ class XPLevels extends Module
             ['id' => 'description', 'type' => 'text'],
             ['id' => 'goal', 'type' => 'number']
         ];
+        $actions = ['edit', 'delete'];
         // items (pela mesma ordem do header)
         $items = $this->getLevels($courseId);
         //argumentos para add/edit
@@ -334,7 +335,7 @@ class XPLevels extends Module
             array('name' => "Title", 'id' => 'description', 'type' => "text", 'options' => ""),
             array('name' => "Minimum XP", 'id' => 'goal', 'type' => "number", 'options' => ""),
         ];
-        return array('listName'=> 'Levels', 'itemName'=> 'level', 'header' => $header, 'displayAttributes'=> $displayAtributes, 'items'=> $items, 'allAttributes'=>$allAtributes);
+        return array('listName'=> 'Levels', 'itemName'=> 'level', 'header' => $header, 'displayAttributes'=> $displayAtributes, 'actions' => $actions, 'items'=> $items, 'allAttributes'=>$allAtributes);
     }
 
     public function save_listing_item(string $actiontype, array $listingItem, int $courseId){

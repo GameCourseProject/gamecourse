@@ -8,8 +8,26 @@ import {InputType} from "../../../../../../_domain/inputs/input-type";
 import {ImageManager} from "../../../../../../_utils/images/image-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints.service";
-import {copyObject} from "../../../../../../_utils/misc/misc";
+import {copyObject, exists} from "../../../../../../_utils/misc/misc";
 import {DownloadManager} from "../../../../../../_utils/download/download-manager";
+
+export interface GeneralInput {
+  id: string,
+  name: string,
+  type: InputType,
+  current_val: any
+  options: any,
+}
+
+export interface ListingItems {
+  listName: string,
+  itemName: string,
+  header: string[],
+  displayAttributes: {id: string, type: InputType}[],
+  actions: string[],
+  items: any[],
+  allAttributes: {id: string, name: string, type: InputType, options: any}[]
+}
 
 @Component({
   selector: 'app-config',
@@ -26,15 +44,15 @@ export class ConfigComponent implements OnInit {
   module: Module;
   courseFolder: string;
 
-  generalInputs: {id: string, name: string, type: InputType, options: any, current_val: any}[];
-  listingItems: {listName: string, itemName: string, header: string[], displayAttributes: {id: string, type: InputType}[],
-                 items: any[], allAttributes: {id: string, name: string, type: InputType, options: any}[]};
+  generalInputs: GeneralInput[];
+  listingItems: ListingItems;
   personalizedConfig; // TODO: put type
-  tiers; // TODO: put type
+  tiers: ListingItems;
 
   importedFile: File;
 
   isItemModalOpen: boolean;
+  isTiers: boolean; // FIXME: should be general
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
 
@@ -113,7 +131,7 @@ export class ConfigComponent implements OnInit {
       )
   }
 
-  createItem(): void {
+  createItem(isTiers: boolean): void {
     this.loadingAction = true;
     for (const param of this.listingItems.allAttributes) {
       if (!this.newItem.hasOwnProperty(param.id)) {
@@ -121,7 +139,7 @@ export class ConfigComponent implements OnInit {
       }
     }
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.newItem, 'new')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !isTiers ? this.newItem : null, isTiers ? this.newItem : null, 'new')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
@@ -133,7 +151,7 @@ export class ConfigComponent implements OnInit {
       )
   }
 
-  editItem(): void {
+  editItem(isTiers: boolean): void {
     this.loadingAction = true;
     for (const param of this.listingItems.allAttributes) {
       if (!this.newItem.hasOwnProperty(param.id)) {
@@ -141,7 +159,7 @@ export class ConfigComponent implements OnInit {
       }
     }
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.itemToEdit, 'edit')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !isTiers ? this.itemToEdit : null, isTiers ? this.itemToEdit : null, 'edit')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
@@ -158,7 +176,7 @@ export class ConfigComponent implements OnInit {
     delete item.id;
     item.name = item.name + ' (Copy)';
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'duplicate')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !this.isTiers ? item : null, this.isTiers ? item : null, 'duplicate')
       .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
         res => this.getModuleConfigInfo(this.module.id),
@@ -169,7 +187,7 @@ export class ConfigComponent implements OnInit {
   deleteItem(item: any): void {
     this.loadingAction = true;
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'delete')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !this.isTiers ? item : null, this.isTiers ? item : null,'delete')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.itemToDelete = null;
@@ -235,6 +253,10 @@ export class ConfigComponent implements OnInit {
       )
   }
 
+  moveItem(dir: number) {
+    // TODO
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -263,6 +285,10 @@ export class ConfigComponent implements OnInit {
     for (const key of Object.keys(obj)) {
       obj[key] = null;
     }
+  }
+
+  filterEditableParams(list: ListingItems): {id: string, name: string, type: InputType, options: any}[] {
+    return list.allAttributes.filter(attr => !exists(attr.options['edit']) || attr.options['edit'] === true);
   }
 
 }

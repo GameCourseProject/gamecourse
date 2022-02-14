@@ -26,6 +26,29 @@
     </div>
   </div>
 
+  <!-- Tiers FIXME: should be general -->
+  <div *ngIf="tiers" class="section tiers">
+    <div class="divider">
+      <div class="title"><span>{{tiers.listName}}</span></div>
+    </div>
+
+    <div class="content">
+      <ng-container
+        [ngTemplateOutlet]="LIST"
+        [ngTemplateOutletContext]="{list: tiers, tiers: true}">
+      </ng-container>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; isItemModalOpen = true;"></div>
+      </div>
+    </div>
+
+    <div class='success_box'>
+      <div id='action_completed_tiers' class='success_msg'></div>
+    </div>
+  </div>
+
   <!-- Listing Items -->
   <div *ngIf="listingItems" class="section">
     <div class="divider">
@@ -33,7 +56,10 @@
     </div>
 
     <div class="allItems content">
-      <ng-container [ngTemplateOutlet]="LIST"></ng-container>
+      <ng-container
+        [ngTemplateOutlet]="LIST"
+        [ngTemplateOutletContext]="{list: listingItems, tiers: false}">
+      </ng-container>
 
       <!-- Action Buttons -->
       <div class="action-buttons">
@@ -57,34 +83,31 @@
 
 
 <!-- List Template -->
-<ng-template #LIST>
-  <div id="items-list">
+<ng-template #LIST let-list='list' let-tiers='tiers'>
+  <div [id]="'list-' + list.listName">
     <div class="data-table">
 
-      <table *ngIf="listingItems.items.length > 0" id="listing-table">
+      <table *ngIf="list.items.length > 0" id="listing-table">
         <!-- Header -->
         <thead>
           <tr>
-            <th *ngFor="let header of listingItems.header; let i = index"
-                [ngClass]="{'check-column': listingItems.allAttributes[i].type === InputType.TOGGLE}">
+            <th *ngFor="let header of list.header; let i = index"
+                [ngClass]="{'check-column': list.allAttributes[i].type === InputType.TOGGLE}">
               {{header}}
             </th>
-            <th class="action-column"></th>
-            <th class="action-column"></th>
-            <th class="action-column"></th>
-            <th class="action-column"></th>
+            <th *ngFor="let action of list.actions" class="action-column"></th>
           </tr>
         </thead>
 
         <!-- Body -->
         <tbody>
-          <tr *ngFor="let item of listingItems.items">
+          <tr *ngFor="let item of list.items">
 
-            <td *ngFor="let param of listingItems.displayAttributes"
+            <td *ngFor="let param of list.displayAttributes"
                 [ngClass]="{'check-column': param.type === InputType.TOGGLE}">
 
               <ng-container *ngIf="param.type === InputType.IMAGE">
-                <img [src]="getImage(item[param.id] || 'photos/no-image.png')" alt="{{listingItems.itemName}} image">
+                <img [src]="getImage(item[param.id] || 'photos/no-image.png')" alt="{{list.itemName}} image">
               </ng-container>
 
               <ng-container *ngIf="param.type === InputType.TOGGLE" class="check-column">
@@ -94,29 +117,34 @@
                 </label>
               </ng-container>
 
-              <ng-container *ngIf="param.type !== InputType.IMAGE && param.type !== InputType.TOGGLE">
+              <ng-container *ngIf="param.type === InputType.COLOR">
+                <div class="color">
+                  <div class="color-sample">
+                    <div class="box" [ngStyle]="{'backgroundColor': item[param.id]}"></div>
+                  </div>
+                  <div>{{item[param.id]}}</div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="param.type !== InputType.IMAGE && param.type !== InputType.TOGGLE && param.type !== InputType.COLOR">
                 <span>{{item[param.id]}}</span>
               </ng-container>
             </td>
 
-            <td class="action-column">
-              <div class="icon duplicate_icon" title="Duplicate" (click)="duplicateItem(item)"></div>
-            </td>
-            <td class="action-column">
-              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isItemModalOpen = true;"></div>
-            </td>
-            <td class="action-column">
-              <div class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
-            </td>
-            <td class="action-column">
-              <div class="icon export_icon_no_outline" title="Export" (click)="exportItem(item)"></div>
+            <td *ngFor="let action of list.actions" class="action-column">
+              <div *ngIf="action === 'duplicate'" class="icon duplicate_icon" title="Duplicate" (click)="duplicateItem(item)"></div>
+              <div *ngIf="action === 'edit'" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isTiers = tiers; isItemModalOpen = true;"></div>
+              <div *ngIf="action === 'delete'" class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
+              <div *ngIf="action === 'move-up'" class="icon up_icon" title="Move up" (click)="moveItem(1)"></div>
+              <div *ngIf="action === 'move-down'" class="icon down_icon" title="Move down" (click)="moveItem(-1)"></div>
+              <div *ngIf="action === 'export'" class="icon export_icon_no_outline" title="Export" (click)="exportItem(item)"></div>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div *ngIf="listingItems.items.length === 0" class='error_box'>
-        <div id='empty_table' class='error_msg'>No {{listingItems.itemName}}s found</div>
+      <div *ngIf="list.items.length === 0" class='error_box'>
+        <div id='empty_table' class='error_msg'>No {{list.itemName}}s found</div>
       </div>
 
     </div>
@@ -138,13 +166,13 @@
 
 <ng-template #itemModal>
   <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{listingItems.itemName}}:</div>
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{isTiers ? tiers.itemName : listingItems.itemName}}:</div>
 
   <div class="content">
     <div id="new_box" class="inputs">
       <div class="row-inputs">
         <div class="details full config-item">
-          <div *ngFor="let input of listingItems.allAttributes"
+          <div *ngFor="let input of filterEditableParams(isTiers ? tiers : listingItems)"
                [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
 
             <ng-container
@@ -157,7 +185,7 @@
     </div>
 
     <button class="cancel" (click)="isItemModalOpen = false; clearObject(newItem)">Cancel</button>
-    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem() : editItem()">Save</button>
+    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem(isTiers) : editItem(isTiers)">Save</button>
   </div>
 </ng-template>
 
