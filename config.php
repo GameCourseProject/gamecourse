@@ -28,4 +28,5 @@
     define('XP_PER_LEVEL', 1000);
     define('MAX_BONUS_BADGES', 1000); //this is the default value but can be changed in connfig page
     define('DEFAULT_MAX_TREE_XP', 5000); //this is the default value but can be changed in connfig page
+    define('MAX_BONUS_STREAKS', 1000); //this is the default value but can be changed in connfig page
     ?>

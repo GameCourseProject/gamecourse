@@ -242,7 +242,7 @@ class GoogleSheetsModule extends Module
                 $googleSheets = API::getValue('googleSheetsPeriodicity');
                 //place to verify input values
                 if ($this->setCronJob( $courseId, $googleSheets)) {
-                    API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                    API::response(["updatedData" => ["Google Sheets enabled"]]);
                 } else {
                     API::error("Please select a periodicity");
                 }
@@ -252,7 +252,7 @@ class GoogleSheetsModule extends Module
                 $googleSheets = API::getValue('googleSheetsPeriodicity');
                 //place to verify input values
                 if ($this->removeCronJob( $courseId)) {
-                    API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
+                    API::response(["updatedData" => ["Google Sheets disabled"]]);
                 } else {
                     API::error("Please select a periodicity");
                 }

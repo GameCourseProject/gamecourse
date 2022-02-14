@@ -211,7 +211,7 @@ class MoodleModule extends Module
                  //place to verify input values
                  $response = $this->setCronJob($courseId, $moodle);
                  if ($response["result"]) {
-                     API::response(["updatedData" => ["Plugin Moodle enabled"]]);
+                     API::response(["updatedData" => ["Moodle enabled"]]);
                  } else {
                      API::error($response["errorMessage"]);
                  }
@@ -223,7 +223,7 @@ class MoodleModule extends Module
                  //place to verify input values
                  $response = $this->removeCronJob( $courseId);
                  if ($response["result"]) {
-                     API::response(["updatedData" => ["Plugin Moodle disabled"]]);
+                     API::response(["updatedData" => ["Moodle disabled"]]);
                  } else {
                      API::error($response["errorMessage"]);
                  }

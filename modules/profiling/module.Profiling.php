@@ -671,7 +671,7 @@ ModuleLoader::registerModule(array(
         array('id' => 'views', 'mode' => 'hard'),
         array('id' => 'badges', 'mode' => 'hard'),
         array('id' => 'xp', 'mode' => 'hard'),
-        array('id' => 'plugin', 'mode' => 'hard')
+        //array('id' => 'plugin', 'mode' => 'hard')
     ),
     'factory' => function() {
         return new Profiling();

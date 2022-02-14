@@ -170,7 +170,7 @@ class ClassCheckModule extends Module
                  //place to verify input values
                  $response = $this->setCronJob( $courseId, $classCheck);
                  if ($response["result"]) {
-                     API::response(["updatedData" => ["Plugin Class Check enabled"]]);
+                     API::response(["updatedData" => ["Class Check enabled"]]);
                  } else {
                      API::error($response["errorMessage"]);
                  }
@@ -180,7 +180,7 @@ class ClassCheckModule extends Module
                  //place to verify input values
                  $response = $this->removeCronJob($courseId);
                  if ($response["result"]) {
-                     API::response(["updatedData" => ["Plugin Class Check disabled"]]);
+                     API::response(["updatedData" => ["Class Check disabled"]]);
                  } else {
                      API::error([$response["errorMessage"]]);
                  }
