@@ -15,7 +15,8 @@ import {ViewsComponent} from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import {SidebarComponent} from "./settings/sidebar/sidebar.component";
 import { PageComponent } from './page/page.component';
-import { ConfigComponent } from './settings/modules/config/config.component';
+import { ConfigComponent } from './settings/modules/config/config/config.component';
+import { FenixConfigComponent } from './settings/modules/config/fenix/fenix.component';
 
 
 @NgModule({
@@ -31,7 +32,8 @@ import { ConfigComponent } from './settings/modules/config/config.component';
     ViewsComponent,
     ViewsEditorComponent,
     PageComponent,
-    ConfigComponent
+    ConfigComponent,
+    FenixConfigComponent
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,21 @@
+<div class="section">
+  <div class="divider">
+    <div class="title"><span>Fenix Variables</span></div>
+  </div>
+
+  <div class="content">
+    <div class="row">
+      <app-input-file
+        [id]="'fenix-vars'"
+        [accept]="'.csv, .txt'"
+        [label]="'Fenix Course ID'"
+        [classList]="'config_input'"
+        (valueChange)="onFileSelected($event)">
+      </app-input-file>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveFenixVars()">Save Fenix Vars</button>
+    </div>
+  </div>
+</div>

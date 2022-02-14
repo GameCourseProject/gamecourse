@@ -96,9 +96,9 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
     ];
 
     API::response([
-        'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : [],
-        'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : [],
-        'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : [],
+        'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : null,
+        'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : null,
+        'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : null,
         'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : null,
         'module' => $moduleInfo,
         'courseFolder' => Course::getCourseDataFolder($courseId)

@@ -1,0 +1,16 @@
+.divider .title:after {
+  width: calc(100% - 160px);
+}
+
+.content {
+  column-count: 2;
+  column-gap: 100px;
+  margin-top: 40px;
+
+  .action-buttons {
+    width: fit-content;
+    position: absolute;
+    top: -5px;
+    right: 0;
+  }
+}

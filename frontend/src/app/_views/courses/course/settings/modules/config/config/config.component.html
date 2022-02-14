@@ -74,11 +74,18 @@
     </div>
   </div>
 
+  <!-- Personalized Config -->
+  <div class="personalized-config">
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.FENIX">
+      <ng-container *ngComponentOutlet="FenixConfig"></ng-container>
+    </ng-container>
+  </div>
+
 </ng-container>
 
 <!-- Loader -->
 <div *ngIf="loading || loadingAction" id="page-loading">
-  <img src="../../../../../../../assets/loader/loader.gif" alt="loader">
+  <img src="../../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 

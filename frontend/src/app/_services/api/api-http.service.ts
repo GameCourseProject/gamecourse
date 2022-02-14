@@ -31,8 +31,7 @@ import {ViewTableDatabase} from "../../_domain/views/view-table";
 import {ViewBlockDatabase} from "../../_domain/views/view-block";
 import {ViewRowDatabase} from "../../_domain/views/view-row";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
-import {InputType} from "../../_domain/inputs/input-type";
-import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/modules/config/config.component";
+import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/modules/config/config/config.component";
 
 @Injectable({
   providedIn: 'root'
@@ -710,7 +709,7 @@ export class ApiHttpService {
   // Configuration
   public getModuleConfigInfo(courseID: number, moduleID: string):
     Observable<{module: Module, courseFolder: string, generalInputs?: GeneralInput[], listingItems?: ListingItems,
-      personalizedConfig?: any[], tiers?: ListingItems}> {
+      personalizedConfig?: string, tiers?: ListingItems}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);

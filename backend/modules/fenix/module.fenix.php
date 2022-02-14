@@ -38,10 +38,7 @@ class Fenix extends Module
             API:: requireValues('courseId');
 
             $courseId = API::getValue('courseId');
-            $course = Course::getCourse($courseId, false);
-
-            if (!$course->exists())
-                API::error('There is no course with id = ' . $courseId);
+            $course = API::verifyCourseExists($courseId);
 
             if (API::hasKey('fenix')) {
                 $fenix = API::getValue('fenix');
@@ -87,7 +84,7 @@ class Fenix extends Module
 
     public function get_personalized_function(): string
     {
-        return "fenixPersonalizedConfig";
+        return self::ID;
     }
 
 

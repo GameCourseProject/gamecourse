@@ -1,15 +1,16 @@
 import {Component, OnInit} from '@angular/core';
-import {Module} from "../../../../../../_domain/modules/module";
-import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {Module} from "../../../../../../../_domain/modules/module";
+import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {ActivatedRoute} from "@angular/router";
-import {ErrorService} from "../../../../../../_services/error.service";
+import {ErrorService} from "../../../../../../../_services/error.service";
 import {finalize} from "rxjs/operators";
-import {InputType} from "../../../../../../_domain/inputs/input-type";
-import {ImageManager} from "../../../../../../_utils/images/image-manager";
+import {InputType} from "../../../../../../../_domain/inputs/input-type";
+import {ImageManager} from "../../../../../../../_utils/images/image-manager";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {ApiEndpointsService} from "../../../../../../_services/api/api-endpoints.service";
-import {copyObject, exists} from "../../../../../../_utils/misc/misc";
-import {DownloadManager} from "../../../../../../_utils/download/download-manager";
+import {ApiEndpointsService} from "../../../../../../../_services/api/api-endpoints.service";
+import {copyObject, exists} from "../../../../../../../_utils/misc/misc";
+import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
+import {FenixConfigComponent} from "../fenix/fenix.component";
 
 export interface GeneralInput {
   id: string,
@@ -29,6 +30,10 @@ export interface ListingItems {
   allAttributes: {id: string, name: string, type: InputType, options: any}[]
 }
 
+export enum PersonalizedConfig {
+  FENIX = 'fenix',
+}
+
 @Component({
   selector: 'app-config',
   templateUrl: './config.component.html',
@@ -46,7 +51,7 @@ export class ConfigComponent implements OnInit {
 
   generalInputs: GeneralInput[];
   listingItems: ListingItems;
-  personalizedConfig; // TODO: put type
+  personalizedConfig: string;
   tiers: ListingItems;
 
   importedFile: File;
@@ -85,6 +90,14 @@ export class ConfigComponent implements OnInit {
 
   get InputType(): typeof InputType {
     return InputType;
+  }
+
+  get PersonalizedConfig(): typeof PersonalizedConfig {
+    return PersonalizedConfig;
+  }
+
+  get FenixConfig(): typeof FenixConfigComponent {
+    return FenixConfigComponent;
   }
 
 

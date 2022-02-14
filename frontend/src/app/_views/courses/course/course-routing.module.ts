@@ -10,7 +10,7 @@ import {RulesComponent} from "./settings/rules/rules.component";
 import {ViewsComponent} from "./settings/views/views/views.component";
 import {ViewsEditorComponent} from "./settings/views/views-editor/views-editor.component";
 import {PageComponent} from "./page/page.component";
-import {ConfigComponent} from "./settings/modules/config/config.component";
+import {ConfigComponent} from "./settings/modules/config/config/config.component";
 
 const routes: Routes = [
   {
