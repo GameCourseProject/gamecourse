@@ -695,7 +695,7 @@ class Badges extends Module
         $separator = ",";
         $headers = ["name", "description", "maxLevel", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive",
             "image", "desc1", "xp1", "count1", "desc2", "xp2", "count2", "desc3", "xp3", "count3"];
-        $lines = explode("\n", $fileData);
+        $lines = array_filter(explode("\n", $fileData), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
             // Check if has header to ignore it

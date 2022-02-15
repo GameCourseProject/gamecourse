@@ -815,15 +815,15 @@ export class ApiHttpService {
       }) );
   }
 
-  public courseFenix(courseID: number, file: string | ArrayBuffer): Observable<number> {
+  public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
     const data = {
       courseId: courseID,
-      fenix: file,
+      file,
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'courseFenix');
+      qs.push('request', 'importFenixStudents');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
