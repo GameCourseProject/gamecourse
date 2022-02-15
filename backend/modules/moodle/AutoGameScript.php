@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Plugin;
+namespace Modules\Moodle;
 
 chdir('/var/www/html/gamecourse');
 include 'classes/ClassLoader.class.php';

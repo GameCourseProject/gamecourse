@@ -1013,7 +1013,16 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 
 	cnx.close()
 	return
-		
+
+
+def award_streak(target, badge, lvl, contributions=None, info=None):
+	# -----------------------------------------------------------
+	# Writes and updates 'award' table with streaks won by the
+	# user. Will retract if rules/participations have been
+	# changed.
+	# Is also responsible for creating indicators.
+	# -----------------------------------------------------------
+	return
 
 def get_campus(target):
 	# -----------------------------------------------------------	
