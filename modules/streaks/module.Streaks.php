@@ -259,24 +259,24 @@ class Streaks extends Module
     public function get_listing_items($courseId)
     {
 
-        // name description color isRepeatable periodicity #participations
-
         //tenho de dar header
-        $header = ['Name', 'Description', '# Accomplishments', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'Color', 'Active'];
-        $displayAtributes = ['name', 'description', 'accomplishments', 'periodicity', 'periodicityTime', 'isRepeatable',  'color', 'isActive'];
+        $header = ['Name', 'Description', 'Count', 'Periodicity', 'Periodicity Time', 'is Repeatable', 'is Periodic', 'is Count', 'Reward', 'Color', 'Active'];
+        $displayAtributes = ['name', 'description', 'count', 'periodicity', 'periodicityTime', 'isRepeatable', 'isPeriodic', 'isCount', 'reward' , 'color', 'isActive'];
         // items (pela mesma ordem do header)
         $items = $this->getStreaks($courseId);
         //argumentos para add/edit
         $allAtributes = [
             array('name' => "Name", 'id' => 'name', 'type' => "text", 'options' => ""),
             array('name' => "Description", 'id' => 'description', 'type' => "text", 'options' => ""),
-            //array('name' => "Level 1", 'id' => 'desc1', 'type' => "text", 'options' => ""),
-            array('name' => "XP", 'id' => 'xp1', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Days","Weeks"]),
             array('name' => "Accomplishments Count", 'id' => 'count', 'type' => "number", 'options' => ""),
+            array('name' => "Reward", 'id' => 'reward', 'type' => "number", 'options' => ""),
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
-            array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => "")
+            array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id' => 'count', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Days","Weeks"])
+            
         ];
         return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }
