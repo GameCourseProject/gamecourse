@@ -174,6 +174,11 @@ class Profiling extends Module
         //verificar compatibilidade
     }
 
+    public function disable(int $courseId)
+    {
+        $this->deleteClusterRoles($courseId);
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -203,12 +208,6 @@ class Profiling extends Module
         $this->deleteClusterRoles($courseId);
         Core::$systemDB->delete("profiling_config", ["course" => $courseId]);
         Core::$systemDB->delete("saved_user_profile", ["course" => $courseId]);
-    }
-
-    public function dropTables($moduleId) {
-        $courseId = API::getValue('course');
-        $this->deleteClusterRoles($courseId);
-        parent::dropTables($moduleId);
     }
 
 

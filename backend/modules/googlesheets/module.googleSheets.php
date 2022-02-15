@@ -96,6 +96,11 @@ class GoogleSheetsModule extends Module
         //verificar compatibilidade
     }
 
+    public function disable(int $courseId)
+    {
+        new CronJob("GoogleSheets", $courseId, null, null, true);
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -157,13 +162,6 @@ class GoogleSheetsModule extends Module
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
-
-    public function dropTables(string $moduleId)
-    {
-        $courseId = $this->getCourseId();
-        new CronJob("GoogleSheets", $courseId, null, null, true);
-        parent::dropTables($moduleId);
-    }
 
     public function deleteDataRows(int $courseId)
     {

@@ -77,6 +77,11 @@ class ClassCheckModule extends Module
         //verificar compatibilidade
     }
 
+    public function disable(int $courseId)
+    {
+        new CronJob("ClassCheck", $courseId, null, null, true);
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -136,13 +141,6 @@ class ClassCheckModule extends Module
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
-
-    public function dropTables(string $moduleId)
-    {
-        $courseId = $this->getCourseId();
-        new CronJob("ClassCheck", $courseId, null, null, true);
-        parent::dropTables($moduleId);
-    }
 
     public function deleteDataRows(int $courseId)
     {
