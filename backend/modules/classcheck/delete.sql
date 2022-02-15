@@ -1,1 +1,1 @@
-drop table if exists config_class_check;
+drop table if exists classcheck_config;

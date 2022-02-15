@@ -51,7 +51,6 @@ class Quest extends Module
         }*/
 
         $this->initTemplates();
-        $this->initAPIEndpoints();
     }
 
     public function initTemplates() // FIXME: refactor templates
@@ -64,7 +63,7 @@ class Quest extends Module
 
     public function initAPIEndpoints()
     {
-        API::registerFunction('quest', 'level', function() {
+        API::registerFunction(self::ID, 'level', function() {
             API::requireValues('level');
 
             $userId = Core::getLoggedUser()->getId();
@@ -144,7 +143,7 @@ class Quest extends Module
                         }*/
         });
 
-        API::registerFunction('quest', 'questSolution', function() {
+        API::registerFunction(self::ID, 'questSolution', function() {
             API::requireValues('level');
 
             $userId = Core::getLoggedUser()->getId();
@@ -223,7 +222,7 @@ class Quest extends Module
                         }*/
         });
 
-        API::registerFunction('quest', 'questInfo', function() {
+        API::registerFunction(self::ID, 'questInfo', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest');
 
@@ -266,7 +265,7 @@ class Quest extends Module
             ));*/
         });
 
-        API::registerFunction('quest', 'saveLevels', function() {
+        API::registerFunction(self::ID, 'saveLevels', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'levels');
 
@@ -287,7 +286,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'setLevel', function() {
+        API::registerFunction(self::ID, 'setLevel', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'level');
 
@@ -303,7 +302,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'setRateLimit', function() {
+        API::registerFunction(self::ID, 'setRateLimit', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'rateLimit');
 
@@ -319,7 +318,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'setTimeout', function() {
+        API::registerFunction(self::ID, 'setTimeout', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'timeout');
 
@@ -335,7 +334,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'setStartTime', function() {
+        API::registerFunction(self::ID, 'setStartTime', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'startTime');
 
@@ -351,7 +350,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'setEndTime', function() {
+        API::registerFunction(self::ID, 'setEndTime', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest', 'endTime');
 
@@ -367,7 +366,7 @@ class Quest extends Module
             $this->getData()->getWrapped('quests')->set($selectedQuest, $quest);*/
         });
 
-        API::registerFunction('quest', 'resetStats', function() {
+        API::registerFunction(self::ID, 'resetStats', function() {
             API::requireCourseAdminPermission();
             API::requireValues('quest');
 
@@ -380,7 +379,7 @@ class Quest extends Module
             //$this->getData()->getWrapped('quests')->getWrapped($selectedQuest)->set('info', array('lastSolution' => 0, 'users'=>array('tries' => array(), 'visits' => array(), 'solution' => array())));
         });
 
-        API::registerFunction('quest', 'uploadResource', function() {
+        API::registerFunction(self::ID, 'uploadResource', function() {
             API::requireCourseAdminPermission();
             API::requireValues('resource', 'quest');
 
@@ -401,7 +400,7 @@ class Quest extends Module
             file_put_contents($folder . $fileName, API::getUploadedFile());*/
         });
 
-        API::registerFunction('quest', 'deleteResource', function() {
+        API::registerFunction(self::ID, 'deleteResource', function() {
             API::requireCourseAdminPermission();
             API::requireValues('resource', 'quest');
 
@@ -420,7 +419,7 @@ class Quest extends Module
                 unlink($file);*/
         });
 
-        API::registerFunction('quest', 'settings', function() {
+        API::registerFunction(self::ID, 'settings', function() {
             API::requireCourseAdminPermission();
 
             /*if (API::hasKey('activeQuest')) {
@@ -461,14 +460,6 @@ class Quest extends Module
         parent::addResources('js/');
         parent::addResources('css/quest.css');
         parent::addResources('css/jquery.datetimepicker.css');
-    }
-
-    public function cleanUp(string $moduleId, int $courseId) {
-        /*$questData = $this->getData()->getValue();
-        foreach ($questData['quests'] as &$quest) {
-            unset($quest['info']);
-        }
-        $this->getData()->setValue($questData);*/
     }
 
     public function update_module($compatibleVersions)

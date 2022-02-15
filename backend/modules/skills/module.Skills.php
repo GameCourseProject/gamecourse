@@ -34,7 +34,6 @@ class Skills extends Module
         $this->setupData($this->getCourseId());
         $this->initDictionary();
         $this->initTemplates();
-        $this->initAPIEndpoints();
     }
 
     public function initDictionary()
@@ -676,7 +675,7 @@ class Skills extends Module
 
     public function initAPIEndpoints()
     {
-        API::registerFunction('skills', 'page', function () {
+        API::registerFunction(self::ID, 'page', function () {
             API::requireValues('skillName');
             $skillName = API::getValue('skillName');
             $courseId = $this->getParent()->getId();

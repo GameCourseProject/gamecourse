@@ -374,7 +374,7 @@ function testClassCheckPlugin($course)
     $ccVar = ["tsvCode" => "8c691b7fc14a0455386d4cb599958d3"];
     $resultCC = setClassCheckVars($course, $ccVar);
     if ($resultCC) {
-        if (Core::$systemDB->select("config_class_check", $ccVar)) {
+        if (Core::$systemDB->select("classcheck_config", $ccVar)) {
             // echo "<h3 style='font-weight: normal'><strong style='color:green'>Success:</strong> Class Check variables were set.</h3>";
             $GLOBALS['p_2'] =  ["success", "<strong style='color:green; '>Success:</strong> Class Check variables were set."];
             $GLOBALS['success']++;
@@ -1104,7 +1104,7 @@ function setMoodleVars($courseId, $moodleVar)
 //classcheck plugin
 function setClassCheckVars($courseId, $classCheck)
 {
-    $classCheckVars = Core::$systemDB->select("config_class_check", ["course" => $courseId], "*");
+    $classCheckVars = Core::$systemDB->select("classcheck_config", ["course" => $courseId], "*");
 
     $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
 
@@ -1112,9 +1112,9 @@ function setClassCheckVars($courseId, $classCheck)
         return false;
     } else {
         if (empty($classCheckVars)) {
-            Core::$systemDB->insert("config_class_check", $arrayToDb);
+            Core::$systemDB->insert("classcheck_config", $arrayToDb);
         } else {
-            Core::$systemDB->update("config_class_check", $arrayToDb);
+            Core::$systemDB->update("classcheck_config", $arrayToDb);
         }
         return true;
     }

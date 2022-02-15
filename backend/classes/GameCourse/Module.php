@@ -159,7 +159,6 @@ abstract class Module
      */
     public function initAPIEndpoints()
     {
-
     }
 
     public static function deleteModule(string $moduleId)
@@ -184,6 +183,9 @@ abstract class Module
      */
     public function cleanUp(string $moduleId, int $courseId)
     {
+        $moduleInfo = ModuleLoader::getModule($moduleId);
+        $module = $moduleInfo['factory']();
+
         // Delete module templates in course
         $templates = array_map(function ($item) {
             return $item['templateId'];
@@ -194,9 +196,15 @@ abstract class Module
             Views::deleteTemplate($courseId, $templateId);
         }
 
-        // Drop module tables if not enabled in any course
-        if (empty(Core::$systemDB->select("course_module", ["moduleId" => $moduleId])))
-            self::dropTables($moduleId);
+        // Delete module data
+        if (empty(Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1]))) {
+            // Drop module tables if not enabled in any course
+            $module->dropTables($moduleId);
+
+        } else {
+            // Delete module entries
+            $module->deleteDataRows($courseId);
+        }
     }
 
 
@@ -252,11 +260,11 @@ abstract class Module
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
 
-    public function addTables(string $moduleName, string $tableName, string $children = null): bool
+    public function addTables(string $moduleName, string $tableName): bool
     {
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
         if (empty($table)) {
-            Core::$systemDB->executeQuery(file_get_contents(MODULES_FOLDER . "/" . $moduleName . "/create" . $children . ".sql"));
+            Core::$systemDB->executeQuery(file_get_contents(MODULES_FOLDER . "/" . $moduleName . "/create.sql"));
             return true;
         }
         return false;

@@ -305,13 +305,12 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
-        $enabled = $enabled ? 1 : 0;
-        Core::$systemDB->update("course_module", ["isEnabled" => $enabled], ["course" => $this->cid, "moduleId" => $moduleId]);
+        Core::$systemDB->update("course_module", ["isEnabled" => $enabled ? 1 : 0], ["course" => $this->cid, "moduleId" => $moduleId]);
 
-        if ($enabled) {
+        if ($enabled) { // enable module
             ModuleLoader::initModules($this);
 
-        } else {
+        } else { // disable module
             $moduleInfo = ModuleLoader::getModule($moduleId);
             $module = $moduleInfo['factory']();
             $module->cleanUp($moduleId, $this->cid);

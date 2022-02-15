@@ -1,6 +1,8 @@
 <?php
 namespace GameCourse;
 
+use GameCourse\Views\Dictionary;
+
 class ModuleLoader {
     
     private static $loadingModuleDir = null;
@@ -180,5 +182,19 @@ class ModuleLoader {
 
     public static function getModules() {
         return static::$modules;
+    }
+
+    /**
+     * Initializes API endpoints in enabled modules that have them.
+     * Makes API endpoints available in the system.
+     */
+    public static function initAPIEndpoints()
+    {
+        $courseId = Dictionary::$courseId;
+        foreach (ModuleLoader::getModules() as $moduleInfo) {
+            $module = $moduleInfo['factory']();
+            ModuleLoader::setModuleInfo($module, $moduleInfo, Course::getCourse($courseId, false));
+            $module->initAPIEndpoints();
+        }
     }
 }

@@ -8,13 +8,12 @@ use GameCourse\ModuleLoader;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\CronJob;
-use Modules\Plugin\ClassCheck;
 
 class ClassCheckModule extends Module
 {
     const ID = 'classcheck';
 
-    const TABLE_CONFIG = 'config_class_check';
+    const TABLE_CONFIG = self::ID . '_config';
 
     private $classCheck;
 
@@ -25,7 +24,6 @@ class ClassCheckModule extends Module
 
     public function init(){
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
@@ -86,7 +84,7 @@ class ClassCheckModule extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG, "ConfigClassCheck");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
         $this->classCheck = new ClassCheck($courseId);
     }
 

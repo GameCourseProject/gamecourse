@@ -16,12 +16,11 @@ class QR extends Module
 
     public function init() {
         $this->setupData();
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
     {
-        API::registerFunction('settings', 'qrError', function () {
+        API::registerFunction(self::ID, 'qrError', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $errors = Core::$systemDB->selectMultiple("qr_error q left join game_course_user u on q.user = u.id",

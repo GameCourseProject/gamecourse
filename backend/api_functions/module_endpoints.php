@@ -5,7 +5,6 @@ namespace APIFunctions;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
-use GameCourse\ModuleLoader;
 
 $MODULE = 'module';
 
@@ -31,33 +30,23 @@ API::registerFunction($MODULE, 'setModuleState', function () {
     $moduleId = API::getValue('moduleId');
     $module = API::verifyModuleExists($moduleId);
 
-    $toEnable = API::getValue('isEnabled');
+    $toEnable = filter_var(API::getValue('isEnabled'), FILTER_VALIDATE_BOOLEAN);
+    $moduleEnabled = filter_var(Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled"), FILTER_VALIDATE_BOOLEAN);
 
-    $moduleObject = $module['factory']();
-    $moduleEnabled = Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled");
-
+    // Check dependencies
     if ($moduleEnabled && !$toEnable) { //disabling module
-        $modules = $course->getModules();
-        foreach ($modules as $mod) {
+        foreach ($course->getModules() as $mod) {
             $dependencies = $mod->getDependencies();
             foreach ($dependencies as $dependency) {
                 if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
-                    API::error('Must disable all modules that depend on this one first.');
+                    API::error('Must disable all modules that depend on this one first: module \'' . $dependency['id'] . '\' is enabled.');
             }
-        }
-
-        if (Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1], "count(*)") == 1) {
-            //only drop the tables of the module data if this is the last course where it is enabled
-            $moduleObject->dropTables($moduleId); //deletes tables associated with the module
-        } else {
-            $moduleObject->deleteDataRows($courseId);
         }
 
     } else if (!$moduleEnabled && $toEnable) { //enabling module
         foreach ($module['dependencies'] as $dependency) {
-            // FIXME: BUG - can enable module without dependencies enabled
-            if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
-                API::error('Must enable all dependencies first.');
+            if ($dependency['mode'] != 'optional' && !empty(Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $dependency['id'], "isEnabled" => 0])))
+                API::error('Must enable all dependencies first: module \'' . $dependency['id'] . '\' is disabled.');
         }
     }
 

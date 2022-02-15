@@ -15,7 +15,7 @@ class Badges extends Module
 
     const TABLE = 'badge';
     const TABLE_LEVEL = 'badge_level';
-    const TABLE_CONFIG = 'badges_config';
+    const TABLE_CONFIG = self::ID . '_config';
 
     const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
 

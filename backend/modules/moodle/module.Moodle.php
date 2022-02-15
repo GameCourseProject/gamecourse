@@ -23,7 +23,6 @@ class MoodleModule extends Module
 
     public function init(){
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
@@ -76,7 +75,7 @@ class MoodleModule extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG, "ConfigMoodle");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
         $this->moodle = new Moodle($courseId);
     }
 

@@ -20,11 +20,6 @@ class Fenix extends Module
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function init()
-    {
-        $this->initAPIEndpoints();
-    }
-
     public function initAPIEndpoints()
     {
         /**
@@ -33,7 +28,7 @@ class Fenix extends Module
          * @param int $courseId
          * @param $file
          */
-        API::registerFunction('module', 'importFenixStudents', function () {
+        API::registerFunction(self::ID, 'importFenixStudents', function () {
             API::requireCourseAdminPermission();
             API:: requireValues('courseId', 'file');
 

@@ -27,4 +27,5 @@ if (!Core::checkAccess(false))
 ModuleLoader::scanModules();
 API::gatherRequestInfo();
 Dictionary::init();
+ModuleLoader::initAPIEndpoints();
 API::processRequest();

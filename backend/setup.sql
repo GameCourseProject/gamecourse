@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS badges_config;
 DROP TABLE IF EXISTS badge_level;
 DROP TABLE IF EXISTS badge_progression;
 
-DROP TABLE IF EXISTS config_class_check;
+DROP TABLE IF EXISTS classcheck_config;
 DROP TABLE IF EXISTS config_google_sheets;
 DROP TABLE IF EXISTS config_moodle;
 DROP TABLE IF EXISTS config_qr;
