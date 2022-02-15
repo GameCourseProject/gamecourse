@@ -76,6 +76,10 @@
 
   <!-- Personalized Config -->
   <div class="personalized-config">
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.CLASSCHECK">
+      <ng-container *ngComponentOutlet="ClassCheckConfig"></ng-container>
+    </ng-container>
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.FENIX">
       <ng-container *ngComponentOutlet="FenixConfig"></ng-container>
     </ng-container>

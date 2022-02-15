@@ -5,11 +5,11 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
-  selector: 'app-config-fenix',
+  selector: 'app-fenix',
   templateUrl: './fenix.component.html',
   styleUrls: ['./fenix.component.scss']
 })
-export class FenixConfigComponent implements OnInit {
+export class FenixComponent implements OnInit {
 
   loading: boolean;
   hasUnsavedChanges: boolean;

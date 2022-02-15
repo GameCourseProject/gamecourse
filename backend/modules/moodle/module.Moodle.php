@@ -146,7 +146,7 @@ class MoodleModule extends Module
 
     public function get_personalized_function(): string
     {
-        return "moodlePersonalizedConfig";
+        return self::ID;
     }
 
 

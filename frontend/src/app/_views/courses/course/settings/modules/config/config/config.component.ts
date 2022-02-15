@@ -10,7 +10,8 @@ import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../../../../_services/api/api-endpoints.service";
 import {copyObject, exists} from "../../../../../../../_utils/misc/misc";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
-import {FenixConfigComponent} from "../fenix/fenix.component";
+import {FenixComponent} from "../fenix/fenix.component";
+import {ClasscheckComponent} from "../classcheck/classcheck.component";
 
 export interface GeneralInput {
   id: string,
@@ -31,7 +32,10 @@ export interface ListingItems {
 }
 
 export enum PersonalizedConfig {
+  CLASSCHECK = 'classcheck',
   FENIX = 'fenix',
+  GOOGLESHEETS = 'googlesheets',
+  MOODLE = 'moodle',
 }
 
 @Component({
@@ -96,8 +100,12 @@ export class ConfigComponent implements OnInit {
     return PersonalizedConfig;
   }
 
-  get FenixConfig(): typeof FenixConfigComponent {
-    return FenixConfigComponent;
+  get ClassCheckConfig(): typeof ClasscheckComponent {
+    return ClasscheckComponent;
+  }
+
+  get FenixConfig(): typeof FenixComponent {
+    return FenixComponent;
   }
 
 

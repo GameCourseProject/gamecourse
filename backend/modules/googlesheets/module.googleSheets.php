@@ -150,7 +150,7 @@ class GoogleSheetsModule extends Module
 
     public function get_personalized_function(): string
     {
-        return "googleSheetsPersonalizedConfig";
+        return self::ID;
     }
 
 

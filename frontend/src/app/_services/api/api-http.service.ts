@@ -824,6 +824,8 @@ export class ApiHttpService {
       }) );
   }
 
+
+  // Fenix
   public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
     const data = {
       courseId: courseID,
@@ -838,6 +840,42 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
+  }
+
+
+  // ClassCheck
+  public getClassCheckVars(courseID: number): Observable<{tsvCode: string, periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CLASSCHECK);
+      qs.push('request', 'getClassCheckVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['classCheckVars']) );
+  }
+
+  public setClassCheckVars(courseID: number, tsvCode: string, periodicityNr: number, periodicityTime: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      classCheck: {
+        tsvCode,
+        periodicityNumber: periodicityNr,
+        periodicityTime,
+        isEnabled
+      }
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CLASSCHECK);
+      qs.push('request', 'setClassCheckVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
 

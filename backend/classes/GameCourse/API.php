@@ -201,4 +201,10 @@ class API {
             API::error('There is no template with id = ' . $templateId . ' in course \'' . $course->getName() . '\'');
         return Views::getTemplate($templateId);
     }
+
+    public static function verifyCourseIsActive(int $courseId) {
+        self::verifyCourseExists($courseId);
+        if (empty(Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])))
+            API::error('Course with id = ' . $courseId . ' is not active.');
+    }
 }
