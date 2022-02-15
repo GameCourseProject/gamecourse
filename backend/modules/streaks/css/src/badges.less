@@ -1,0 +1,160 @@
+@import "../../../../css/src/base-settings";
+@import "../../../../css/src/device-sizes";
+
+@badge-separation: 2px;
+
+.badges-page {
+  .badge {
+    width: 100%;
+    margin-top: 0px !important;
+    border-top: @badge-separation solid @page-block-background;
+
+    > .content {
+      padding: 8px;
+      margin: 0px;
+      display: block;
+
+      transition: all .3s ease;
+      &:hover {
+        background-color: darken(@block-background, 3%) !important;
+      }
+
+      > * {
+        display: inline-block;
+        vertical-align: middle;
+
+        .content {
+          margin: 0px;
+          padding: 0px !important;
+
+          > * {
+            margin: 0px;
+            padding: 0px !important;
+          }
+        }
+      }
+    }
+
+    .badge-images {
+      width: 162px;
+
+      @media all and (min-width: @device-sm) {
+        width: 240px;
+      }
+
+      > .content {
+        display: flex;
+      }
+    }
+
+    .badge-info > .content, .xp-container .content {
+      display: block;
+
+      > .value {
+        display: block;
+      }
+    }
+
+    .badge-info {
+      .title {
+        font-size: 120%;
+        font-weight: bold;
+      }
+
+      .leveldesc {
+        font-size: 80%;
+        .progress {
+          margin-left: 5px;
+          font-weight: bold;
+        }
+      }
+    }
+
+    .xp-container {
+      text-align: center;
+      display: flex !important;;
+      align-items: center;
+      justify-content: center;
+
+      @media all and (min-width: @device-sm) {
+        float: right;
+        width: 120px;
+        height: 80px;
+      }
+    }
+
+    .xp {
+      font-size: 160%;
+      font-weight: bold;
+    }
+
+    .extra-credit {
+      color: #E00;
+      font-size: 80%;
+      font-weight: bold;
+    }
+
+    .bragging-rights {
+      color: #070;
+      font-size: 80%;
+      font-weight: bold;
+    }
+
+    img {
+      width: 50px;
+      height: 50px;
+      padding: 2px;
+      @media all and (min-width: @device-sm) {
+        width: 70px;
+        height: 70px;
+        padding: 5px;
+      }
+    }
+
+    .badge-extra {
+      width: 100%;
+      //display: none;
+      &.editable {
+        display: block;
+      }
+
+      border-top: @badge-separation/2 solid @page-block-background;
+      padding-top: 6px;
+
+      > .content {
+        display: block;
+
+        .indicator {
+          display: inline-block;
+          margin-right: 4px !important;
+        }
+
+        .indicator+.indicator:before {
+          content: '| ';
+          display: inline-block;
+          margin-right: 3px;
+        }
+
+        .level-info .content {
+          display: block;
+
+          .leveldesc {
+            display: block;
+            font-weight: bold;
+            padding: 8px 0px !important;
+            font-size: 110%;
+          }
+
+          .student-image img {
+            width: 30px;
+            height: 30px;
+            margin: 1px;
+            padding: 0px;
+            cursor: pointer;
+            border: 1px solid #bfbfbf;
+          }
+        }
+      }
+    }
+  }
+}

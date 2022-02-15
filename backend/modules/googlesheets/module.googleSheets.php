@@ -50,13 +50,13 @@ class GoogleSheetsModule extends Module
 
             if (API::hasKey('periodicity')) {
                 $periodicity = API::getValue('periodicity');
-                if ($this->setCronJob( $courseId, $periodicity)) API::response(["updatedData" => ["Plugin Google Sheets enabled"]]);
+                if ($this->setCronJob( $courseId, $periodicity)) API::response(["updatedData" => ["Google Sheets enabled"]]);
                 else API::error("Please select a periodicity");
                 return;
             }
 
             if (API::hasKey('disablePeriodicity')) {
-                if ($this->removeCronJob($courseId)) API::response(["updatedData" => ["Plugin Google Sheets disabled"]]);
+                if ($this->removeCronJob($courseId)) API::response(["updatedData" => ["Google Sheets disabled"]]);
                 else API::error("Please select a periodicity");
                 return;
             }
@@ -297,7 +297,7 @@ class GoogleSheetsModule extends Module
     private function setCronJob($courseId, $vars)
     {
         if (!Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])) {
-            return array("result" => false, "errorMessage" => "Course must be active to enable plugins");
+            return array("result" => false, "errorMessage" => "Course must be active to enable Google Sheets");
         }
         if (empty($vars['number']) || empty($vars['time'])) {
             return array("result" => false, "errorMessage" => "Select a periodicity");

@@ -52,7 +52,7 @@ class ClassCheckModule extends Module
                 $periodicity = API::getValue('periodicity');
                 $response = $this->setCronJob($courseId, $periodicity);
 
-                if ($response["result"]) API::response(["updatedData" => ["Plugin Class Check enabled"]]);
+                if ($response["result"]) API::response(["updatedData" => ["Class Check enabled"]]);
                 else API::error($response["errorMessage"]);
                 return;
             }
@@ -60,7 +60,7 @@ class ClassCheckModule extends Module
             if (API::hasKey('disablePeriodicity')) {
                 $response = $this->removeCronJob($courseId);
 
-                if ($response["result"]) API::response(["updatedData" => ["Plugin Class Check disabled"]]);
+                if ($response["result"]) API::response(["updatedData" => ["Class Check disabled"]]);
                 else API::error([$response["errorMessage"]]);
                 return;
             }
@@ -221,7 +221,7 @@ class ClassCheckModule extends Module
     private function setCronJob($courseId, $vars): array
     {
         if(!Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])){
-            return array("result" => false, "errorMessage" => "Course must be active to enable plugins");
+            return array("result" => false, "errorMessage" => "Course must be active to enable ClassCheck");
         }
         if (empty($vars['number']) || empty($vars['time'])) {
             return array("result" => false, "errorMessage" => "Select a periodicity");
