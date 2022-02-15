@@ -49,6 +49,15 @@ export class ApiHttpService {
   static readonly USER: string = 'user';
   static readonly VIEWS: string = 'views';
 
+  static readonly CLASSCHECK: string = 'classcheck';
+  static readonly FENIX: string = 'fenix';
+  static readonly GOOGLESHEETS: string = 'googlesheets';
+  static readonly MOODLE: string = 'moodle';
+  static readonly PROFILING: string = 'profiling';
+  static readonly QR: string = 'qr';
+  static readonly QUEST: string = 'quest';
+  static readonly SKILLS: string = 'skills';
+
 
   constructor(
     private http: HttpClient,
@@ -688,7 +697,7 @@ export class ApiHttpService {
   /*** --------------------------------------------- ***/
 
   // General
-  public setModuleEnabled(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
+  public setModuleState(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -822,7 +831,7 @@ export class ApiHttpService {
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MODULE);
+      qs.push('module', ApiHttpService.FENIX);
       qs.push('request', 'importFenixStudents');
     };
 
