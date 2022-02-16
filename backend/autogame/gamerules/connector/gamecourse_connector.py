@@ -5,7 +5,7 @@ import signal, os, sys
 import json
 import mysql.connector
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from io import StringIO
 from course.student import *
@@ -1015,6 +1015,26 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	return
 
 
+def clear_streak_progression(target):
+      # -----------------------------------------------------------
+      # Clear all streak progression for a given user before
+      # calculating new progression. Needs to be refresh everytime
+      # the rule system runs.
+      # -----------------------------------------------------------
+
+      (database, username, password) = get_credentials()
+      cnx = mysql.connector.connect(user=username, password=password,
+      host='localhost', database=database)
+      cursor = cnx.cursor(prepared=True)
+
+      course = config.course
+
+      query = "DELETE from streak_progression where course=%s and user=%s;"
+      cursor.execute(query, (course, target))
+      cnx.commit()
+      cnx.close()
+
+
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
 def award_streak(target, streak, contributions=None, info=None):
@@ -1052,38 +1072,81 @@ def award_streak(target, streak, contributions=None, info=None):
     cursor.execute(query, (course, streak))
     table_streak = cursor.fetchall()
 
+    count = table_streak[0][3]
+
     if not config.test_mode:
-        # None since there can be a  streak that does not require log information
     	if contributions != None:
             # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
             if len(contributions) > 0:
                 streakid, isCount, isPeriodic  = table_streak[0][0], table_streak[0][6], table_streak[0][7]
+                periodicity, periodicityTime = table_streak[0][1], table_streak[0][2]
 
-                # inserts each log in the progression table = little streak fire
-                if isCount: # if is count, the periodicity just needs to check first log and last.
-                            # if respects periodicity, saves all logs in the progression table.
-
-                    # we need to get date of this streak participation from participation table to verify periodicity
-
-                    # falta meter esta query a ir buscar so da streak em questao atraves do id e nome 
-
-                    query = "SELECT id, date FROM participation LEFT JOIN streak_progression ON participation.id = streak_progression.participationId;"
-                    cursor.execute(query, (course, streak))
-                    table_badge = cursor.fetchall()
-
-                    # if periodicity is met -> insert
-                    # else: delete all entries for this streak
-                    
+                # if isCount inserts all streak participations in the streak_progression.
+                if isCount:
                     for log in contributions:
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
-                        
+
+                # is Count & is Periodic =>  the streak periodicity is between the first participation and the last.
+                # example of streak: do 7 tasks in 1 week. We just need to check if the time interval was respected.
+                elif isCount and isPeriodic:
+
+                    # gets first streak participation
+                    query = "SELECT id, date FROM participation WHERE user = %s AND id = %s ORDER BY id ASC LIMIT 1;  "
+                    cursor.execute(query, (target, contributions[0].log_id ))
+                    table_first_streak = cursor.fetchall()
+
+                    firstStreak = table_first_streak[0][1]  # YYYY-MM-DD HH:MM:SS
+                    firstStreakObj = datetime.strptime(firstStreak,'%Y-%m-%d %H:%M:%S' )
+
+                    # gets most recent streak participation
+                    query = "SELECT id, date FROM participation WHERE user = %s AND id = %s ORDER BY id DESC LIMIT 1;  "
+                    cursor.execute(query, (target, contributions[-1].log_id))
+                    table_last_streak = cursor.fetchall()
+
+                    lastParticipation = table_last_streak[0][1]
+                    lastParticipationObj = datetime.strptime(lastParticipation,'%Y-%m-%d %H:%M:%S' )
+
+                    isRespected = False
+                    if periodicityTime == 'minutes':
+                        dif = lastParticipationObj - firstStreakObj
+                        if dif > timedelta(minutes=periodicity):
+                        if timedelta(minutes=periodicity) > dif:
+                            isRespected = True
+                    elif periodicityTime == 'hours':
+                        dif = lastParticipationObj - firstStreakObj
+                        if timedelta(hours=periodicity) > dif:
+                             isRespected = True
+                    elif periodicityTime == 'days':
+                        dif = lastParticipationObj.date() - firstStreakObj.date()
+                        if timedelta(days=periodicity) > dif:
+                             isRespected = True
+                    elif periodicityTime == 'weeks':
+                       weeksInDays = periodicity*7
+                       dif = lastParticipationObj.date() - firstStreakObj.date()
+                       if timedelta(days=weeksInDays) > dif:
+                            isRespected = True
+
+                   if isRespected:
+                        for log in contributions:
+                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                            cursor.execute(query, (course, target, streakid, log.log_id))
+                            cnx.commit()
+                   else:
+                        return
+
                 elif isPeriodic: # if is periodic, only inserts one
+                
                     for log in contributions:
+                        # if log1.date - log2.date < periodicity
+                        #   insert
+                        # else: delete all entries.
+
+                        # log.log_id == participation.id
 
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                        cursor.execute(query, (course, target, streakid, log[0].log_id))
+                        cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
 
 
@@ -1091,6 +1154,7 @@ def award_streak(target, streak, contributions=None, info=None):
     # table = filtered awards_table
     if len(table) == 0:  # no streak has been awarded with this name for this user
 
+       #counts nr of streak progressions registered. If  #count= streak.count -> award badge
        streak_id, streak_reward = table_streak[0][0], table_streak[0][2]
 
        query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"

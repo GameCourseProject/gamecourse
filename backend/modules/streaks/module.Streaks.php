@@ -362,13 +362,7 @@ class Streaks extends Module
     {
 
     }
-
-    // resets streak due to periodicity or if it is repeatable & the users has finished it.
-    public static function resetStreak($achievement, $courseId)
-    {
-
-    }
-
+    
     public function deleteStreak($streak)
     {
         Core::$systemDB->delete("streak", ["id" => $streak['id']]);
