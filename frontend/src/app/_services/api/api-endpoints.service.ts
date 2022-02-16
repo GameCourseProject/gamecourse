@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import {UrlBuilder} from "../../_utils/api/url-builder";
 import {QueryStringParameters} from "../../_utils/api/query-string-parameters";
 import {exists} from "../../_utils/misc/misc";
+import {environment} from "../../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiEndpointsService {
 
-  // static readonly API_ENDPOINT: string = 'https://gamecourse/v2/api/v1';
-  static readonly API_ENDPOINT: string = 'http://localhost/gamecourse-v2/backend';
+  static readonly API_ENDPOINT: string = environment.apiEndpoint;
 
   constructor() { }
 
