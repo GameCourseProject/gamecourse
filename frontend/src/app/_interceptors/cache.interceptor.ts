@@ -16,7 +16,6 @@ export class CacheInterceptor implements HttpInterceptor {
   constructor() {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log(request.url)
     if (request.method !== 'GET') {
       this.reset(request);
       return next.handle(request);
