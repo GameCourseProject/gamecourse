@@ -218,6 +218,7 @@ if __name__ == "__main__":
 	# Clear badge progression before calculating again
 	for el in students.keys():
 		clear_badge_progression(el)
+		clear_streak_progression(el)
 	
 	# Save the start date
 	timestamp = datetime.now()

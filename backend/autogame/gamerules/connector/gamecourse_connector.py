@@ -1062,7 +1062,6 @@ def award_streak(target, streak, contributions=None, info=None):
 
     # gets all awards for this user order by descending date (most recent on top)
 	query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s ;"
-
 	streak_name = streak + "%"
 	cursor.execute(query, (target, course, streak_name, typeof))
 	table = cursor.fetchall()
@@ -1072,8 +1071,6 @@ def award_streak(target, streak, contributions=None, info=None):
     cursor.execute(query, (course, streak))
     table_streak = cursor.fetchall()
 
-    count = table_streak[0][3]
-
     if not config.test_mode:
     	if contributions != None:
             # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
@@ -1082,7 +1079,7 @@ def award_streak(target, streak, contributions=None, info=None):
                 periodicity, periodicityTime = table_streak[0][1], table_streak[0][2]
 
                 # if isCount inserts all streak participations in the streak_progression.
-                if isCount:
+                if isCount and not isPeriodic:
                     for log in contributions:
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
@@ -1093,76 +1090,115 @@ def award_streak(target, streak, contributions=None, info=None):
                 elif isCount and isPeriodic:
 
                     # gets first streak participation
-                    query = "SELECT id, date FROM participation WHERE user = %s AND id = %s ORDER BY id ASC LIMIT 1;  "
-                    cursor.execute(query, (target, contributions[0].log_id ))
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id ASC LIMIT 1;  "
+                    cursor.execute(query, (target, course, contributions[0].log_id ))
                     table_first_streak = cursor.fetchall()
 
                     firstStreak = table_first_streak[0][1]  # YYYY-MM-DD HH:MM:SS
                     firstStreakObj = datetime.strptime(firstStreak,'%Y-%m-%d %H:%M:%S' )
 
                     # gets most recent streak participation
-                    query = "SELECT id, date FROM participation WHERE user = %s AND id = %s ORDER BY id DESC LIMIT 1;  "
-                    cursor.execute(query, (target, contributions[-1].log_id))
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id DESC LIMIT 1;  "
+                    cursor.execute(query, (target, course, contributions[0].log_id))
                     table_last_streak = cursor.fetchall()
 
                     lastParticipation = table_last_streak[0][1]
                     lastParticipationObj = datetime.strptime(lastParticipation,'%Y-%m-%d %H:%M:%S' )
 
-                    isRespected = False
                     if periodicityTime == 'minutes':
-                        dif = lastParticipationObj - firstStreakObj
+                        dif = secondParticipationObj - firstParticipationObj
                         if dif > timedelta(minutes=periodicity):
-                        if timedelta(minutes=periodicity) > dif:
-                            isRespected = True
+                            return
                     elif periodicityTime == 'hours':
-                        dif = lastParticipationObj - firstStreakObj
-                        if timedelta(hours=periodicity) > dif:
-                             isRespected = True
+                        dif = secondParticipationObj - firstParticipationObj
+                        if dif > timedelta(hours=periodicity):
+                            return
                     elif periodicityTime == 'days':
-                        dif = lastParticipationObj.date() - firstStreakObj.date()
-                        if timedelta(days=periodicity) > dif:
-                             isRespected = True
+                        dif = secondParticipationObj.date() - firstParticipationObj.date()
+                        if dif > timedelta(days=periodicity):
+                            return
                     elif periodicityTime == 'weeks':
-                       weeksInDays = periodicity*7
-                       dif = lastParticipationObj.date() - firstStreakObj.date()
-                       if timedelta(days=weeksInDays) > dif:
-                            isRespected = True
-
-                   if isRespected:
-                        for log in contributions:
-                            query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
-                            cursor.execute(query, (course, target, streakid, log.log_id))
-                            cnx.commit()
-                   else:
+                        weeksInDays = periodicity*7
+                        dif = secondParticipationObj.date() - firstParticipationObj.date()
+                        if dif > timedelta(days=weeksInDays):
+                           return
+                    else:
                         return
 
-                elif isPeriodic: # if is periodic, only inserts one
-                
                     for log in contributions:
-                        # if log1.date - log2.date < periodicity
-                        #   insert
-                        # else: delete all entries.
-
-                        # log.log_id == participation.id
-
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
                         cnx.commit()
 
 
+                elif isPeriodic and not isCount:
+
+                    for log in contributions:
+                        # get dates of participations that matter
+                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id ASC;  "
+                        cursor.execute(query, (target, course, log.log_id ))
+                        table_participations = cursor.fetchall()
+
+                    for i in range(nlogs):
+                         if i+1 != nlogs:
+
+                            firstParticipation = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipation = table_participations[i+1][1]
+
+                            firstParticipationObj = datetime.strptime(firstParticipation,'%Y-%m-%d %H:%M:%S' )
+                            secondParticipationObj = datetime.strptime(secondParticipation,'%Y-%m-%d %H:%M:%S' )
+
+                            # if it disrespects streak periodicity, then return
+                            if periodicityTime == 'minutes':
+                                dif = secondParticipationObj - firstParticipationObj
+                                if dif > timedelta(minutes=periodicity):
+                                    return
+                            elif periodicityTime == 'hours':
+                                dif = secondParticipationObj - firstParticipationObj
+                                if dif > timedelta(hours=periodicity):
+                                    return
+                            elif periodicityTime == 'days':
+                                dif = secondParticipationObj.date() - firstParticipationObj.date()
+                                if dif > timedelta(days=periodicity):
+                                    return
+                            elif periodicityTime == 'weeks':
+                                weeksInDays = periodicity*7
+                                dif = secondParticipationObj.date() - firstParticipationObj.date()
+                                if dif > timedelta(days=weeksInDays):
+                                   return
+                            else:
+                                return
+
+                    # if it gets here, streak periodicity was respected -> insert all participations
+                    for log in contributions:
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, log.log_id))
+                        cnx.commit()
+
+
+    # gets all streak progressions
+    query = "SELECT * FROM streak_progression where user = %s AND course = %s AND streakId = %s ;"
+    cursor.execute(query, (target, course, streakid))
+    table_progressions = cursor.fetchall()
+
+    # no valid progressions
+    if len (table_progressions) == 0:
+        return
+
     # table contains  user, course, description,  type, reward, date
     # table = filtered awards_table
-    if len(table) == 0:  # no streak has been awarded with this name for this user
+    elif len(table) == 0:  # no streak has been awarded with this name for this user
 
-       #counts nr of streak progressions registered. If  #count= streak.count -> award badge
-       streak_id, streak_reward = table_streak[0][0], table_streak[0][2]
+       # if streak is finished, award it
+       if len(table_progressions) == streak_count:
 
-       query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-       cursor.execute(query, (target, course, description, typeof, streak_id, reward))
-       cnx.commit()
-       cursor = cnx.cursor(prepared=True)
+           streak_id, streak_count, streak_reward = table_streak[0][0], table_streak[0][3], table_streak[0][4]
 
-       if contributions != None:
+           query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+           cursor.execute(query, (target, course, description, typeof, streak_id, reward))
+           cnx.commit()
+           cursor = cnx.cursor(prepared=True)
+
 
            query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
            cursor.execute(query, (target, course, description, typeof))
@@ -1176,10 +1212,10 @@ def award_streak(target, streak, contributions=None, info=None):
                     cursor.execute(query, (award_id, participation_id))
                     cnx.commit()
 
-    # if this streak has already been awarded, check if it is repeatable to award it again.
-    elif len(table) > 0:
-          isRepeatable = table_streak[0][5]
 
+    # if this streak has already been awarded, check if it is repeatable to award it again.
+    elif len(table) > 0 :
+          isRepeatable = table_streak[0][5]
           if isRepeatable and contributions != None:
 
              # inserts award again.
