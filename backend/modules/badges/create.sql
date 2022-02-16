@@ -28,7 +28,7 @@ create table badge_level(
 	id 	        int unsigned auto_increment primary key,
 	badgeId 	int unsigned,
     number      int not null,
-    goal        int not null,
+    goal        int not null default 0,
     description varchar(200),
 	reward 		int unsigned,
 	foreign key(badgeId) references badge(id) on delete cascade

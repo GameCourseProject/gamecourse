@@ -146,42 +146,6 @@ API::registerFunction($MODULE, 'getCourseResources', function () {
     API::response(array('resources' => $course->getModulesResources()));
 });
 
-/**
- * Import courses into the system.
- *
- * @param $file
- * @param bool $replace (optional)
- */
-API::registerFunction($MODULE, 'importCourses', function(){
-    API::requireAdminPermission();
-    API::requireValues('file');
-
-    $file = explode(",", API::getValue('file'));
-    $fileContents = base64_decode($file[1]);
-    $replace = API::getValue('replace');
-    $nrCourses = Course::importCourses($fileContents, $replace);
-    API::response(array('nrCourses' => $nrCourses));
-});
-
-/**
- * Export courses from the system.
- *
- * Pass an id value for a specific course, or null for all courses.
- * Options specify what you want to export with the course: users,
- * awards and modules.
- *
- * @param int $courseId (optional)
- * @param $options (optional)
- */
-API::registerFunction($MODULE, 'exportCourses', function(){
-    API::requireAdminPermission();
-
-    $courseId = API::getValue('courseId');
-    $options = API::getValue('options');
-    $courses = Course::exportCourses($courseId, $options);
-    API::response(array('courses' => $courses));
-});
-
 
 
 /*** --------------------------------------------- ***/
@@ -280,6 +244,48 @@ API::registerFunction($MODULE, 'setCourseActiveState', function(){
 
     $isActive = API::getValue('isActive');
     $course->setActiveState($isActive);
+});
+
+
+
+/*** --------------------------------------------- ***/
+/*** -------------- Import / Export -------------- ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Import courses into the system.
+ *
+ * @param $file
+ * @param bool $replace (optional)
+ */
+API::registerFunction($MODULE, 'importCourses', function(){
+    API::requireAdminPermission();
+    API::requireValues('file');
+
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    $replace = API::getValue('replace');
+    $nrCourses = Course::importCourses($fileContents, $replace);
+    API::response(array('nrCourses' => $nrCourses));
+});
+
+/**
+ * Export courses from the system.
+ *
+ * Pass an id value for a specific course, or null for all courses.
+ * Options specify what you want to export with the course: users,
+ * awards and modules.
+ *
+ * @param int $courseId (optional)
+ * @param $options (optional)
+ */
+API::registerFunction($MODULE, 'exportCourses', function(){
+    API::requireAdminPermission();
+
+    $courseId = API::getValue('courseId');
+    $options = API::getValue('options');
+    $courses = Course::exportCourses($courseId, $options);
+    API::response(array('courses' => $courses));
 });
 
 
@@ -594,7 +600,7 @@ API::registerFunction($MODULE, 'exportCourseUsers', function () {
 
 
 /*** --------------------------------------------- ***/
-/*** ------------------ Modules ------------------ ***/
+/*** -------------- Course Modules --------------- ***/
 /*** --------------------------------------------- ***/
 
 /**
