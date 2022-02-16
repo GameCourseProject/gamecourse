@@ -1015,14 +1015,118 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	return
 
 
-def award_streak(target, badge, lvl, contributions=None, info=None):
+
+#  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
+def award_streak(target, streak, contributions=None, info=None):
 	# -----------------------------------------------------------
 	# Writes and updates 'award' table with streaks won by the
 	# user. Will retract if rules/participations have been
 	# changed.
 	# Is also responsible for creating indicators.
 	# -----------------------------------------------------------
-	return
+
+    (database, username, password) = get_credentials()
+    cnx = mysql.connector.connect(user=username, password=password,
+    host='localhost', database=database)
+    cursor = cnx.cursor(prepared=True)
+
+    course = config.course
+    typeof = "streak"
+
+    nlogs = len(contributions)
+
+    if config.test_mode:
+        awards_table = "award_test"
+    else:
+        awards_table = "award"
+
+    # gets all awards for this user order by descending date (most recent on top)
+	query = "SELECT * FROM " + awards_table + " where user = %s AND course = %s AND description like %s AND type=%s ;"
+
+	streak_name = streak + "%"
+	cursor.execute(query, (target, course, streak_name, typeof))
+	table = cursor.fetchall()
+
+    # get streak info
+    query = "SELECT id, periodicity, periodicityTime, count, reward, isRepeatable, isCount, isPeriodic from streak where course = %s and name = %s ;"
+    cursor.execute(query, (course, streak))
+    table_streak = cursor.fetchall()
+
+    if not config.test_mode:
+        # None since there can be a  streak that does not require log information
+    	if contributions != None:
+            # contributions = logs = nr of participations as per say like peergrading posts, skill tree posts, ...
+            if len(contributions) > 0:
+                streakid, isCount, isPeriodic  = table_streak[0][0], table_streak[0][6], table_streak[0][7]
+
+                # inserts each log in the progression table = little streak fire
+                if isCount: # if is count, the periodicity just needs to check first log and last.
+                            # if respects periodicity, saves all logs in the progression table.
+
+                    # we need to get date of this streak participation from participation table to verify periodicity
+
+                    # falta meter esta query a ir buscar so da streak em questao atraves do id e nome 
+
+                    query = "SELECT id, date FROM participation LEFT JOIN streak_progression ON participation.id = streak_progression.participationId;"
+                    cursor.execute(query, (course, streak))
+                    table_badge = cursor.fetchall()
+
+                    # if periodicity is met -> insert
+                    # else: delete all entries for this streak
+                    
+                    for log in contributions:
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, log.log_id))
+                        cnx.commit()
+                        
+                elif isPeriodic: # if is periodic, only inserts one
+                    for log in contributions:
+
+                        query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
+                        cursor.execute(query, (course, target, streakid, log[0].log_id))
+                        cnx.commit()
+
+
+    # table contains  user, course, description,  type, reward, date
+    # table = filtered awards_table
+    if len(table) == 0:  # no streak has been awarded with this name for this user
+
+       streak_id, streak_reward = table_streak[0][0], table_streak[0][2]
+
+       query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
+       cursor.execute(query, (target, course, description, typeof, streak_id, reward))
+       cnx.commit()
+       cursor = cnx.cursor(prepared=True)
+
+       if contributions != None:
+
+           query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
+           cursor.execute(query, (target, course, description, typeof))
+           table_id = cursor.fetchall()
+           award_id = table_id[0][0]
+
+           if not config.test_mode:
+                for l in contributions:
+                    participation_id = l.log_id
+                    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+                    cursor.execute(query, (award_id, participation_id))
+                    cnx.commit()
+
+    # if this streak has already been awarded, check if it is repeatable to award it again.
+    elif len(table) > 0:
+          isRepeatable = table_streak[0][5]
+
+          if isRepeatable and contributions != None:
+
+             # inserts award again.
+
+
+
+
+    cnx.commit()
+    cnx.close()
+
+
 
 def get_campus(target):
 	# -----------------------------------------------------------	
