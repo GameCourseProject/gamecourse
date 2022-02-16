@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-  ActivatedRouteSnapshot,
-  CanActivate,
   CanLoad,
   Route,
   Router,
-  RouterStateSnapshot,
   UrlSegment,
   UrlTree
 } from '@angular/router';
@@ -17,19 +14,12 @@ import {ErrorService} from "../_services/error.service";
 @Injectable({
   providedIn: 'root'
 })
-export class LoginGuard implements CanActivate, CanLoad {
+export class LoginGuard implements CanLoad {
 
   constructor(
     private api: ApiHttpService,
     private router: Router
   ) { }
-
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-
-    return this.check();
-  }
 
   canLoad(
     route: Route,

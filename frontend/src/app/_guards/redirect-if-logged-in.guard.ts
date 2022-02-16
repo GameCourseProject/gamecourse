@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-  ActivatedRouteSnapshot,
-  CanActivate,
   CanLoad,
   Route,
   Router,
-  RouterStateSnapshot,
   UrlSegment,
   UrlTree
 } from '@angular/router';
@@ -16,19 +13,12 @@ import {ApiHttpService} from "../_services/api/api-http.service";
 @Injectable({
   providedIn: 'root'
 })
-export class RedirectIfLoggedInGuard implements CanActivate, CanLoad {
+export class RedirectIfLoggedInGuard implements CanLoad {
 
   constructor(
     private api: ApiHttpService,
     private router: Router
   ) { }
-
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-
-    return this.check();
-  }
 
   canLoad(
     route: Route,
