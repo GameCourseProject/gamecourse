@@ -32,7 +32,9 @@ class Course
 
     public function getData($field = '*')
     {
-        return Core::$systemDB->select("course", ["id" => $this->cid], $field);
+        $data = Core::$systemDB->select("course", ["id" => $this->cid], $field);
+        if ($field == '*') $data["folder"] = Course::getCourseDataFolder($this->cid);
+        return $data;
     }
     public function getName()
     {
@@ -379,7 +381,7 @@ class Course
     public static function getCourseDataFolder($courseId, $courseName = null)
     {
         if ($courseName === null) {
-            $courseName = Course::getCourse($courseId, false)->getName();
+            $courseName = Core::$systemDB->select("course", ["id" => $courseId], "name");
         }
         $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
         $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
@@ -1093,7 +1095,7 @@ class Course
         return $response;
     }
 
-    public static function getDataFolders($dir)
+    public static function getDataFoldersContents($dir): array
     {
         $results = [];
         $files = scandir($dir);
@@ -1107,8 +1109,8 @@ class Course
                 $file = array('name' => $value, 'filetype' => 'file', 'extension' => $extension);
                 array_push($results, $file);
             } else if ($value != "." && $value != "..") {
-                $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFolders($path));
-                $results[$value] = $folder;
+                $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFoldersContents($path));
+                $results[] = $folder;
             }
         }
         return $results;
