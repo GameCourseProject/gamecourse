@@ -55,6 +55,7 @@
               "node_modules/codemirror/theme/mdn-like.css",
               "node_modules/codemirror/addon/hint/show-hint.css",
               "node_modules/nestable2/dist/jquery.nestable.min.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles/global.scss"
             ],
             "scripts": [
@@ -66,7 +67,9 @@
               "node_modules/codemirror/addon/hint/css-hint.js",
               "node_modules/codemirror/addon/display/placeholder.js",
               "node_modules/nestable2/dist/jquery.nestable.min.js",
-              "node_modules/apexcharts/dist/apexcharts.min.js"
+              "node_modules/apexcharts/dist/apexcharts.min.js",
+              "node_modules/quill/dist/quill.min.js",
+              "node_modules/quill-image-resize/image-resize.min.js"
             ],
             "allowedCommonJsDependencies": [
               "codemirror"

@@ -35,7 +35,7 @@ export class InputCodeComponent implements OnInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  codemirror;
+  codemirror: CodeMirror.Editor;
 
   constructor() { }
 

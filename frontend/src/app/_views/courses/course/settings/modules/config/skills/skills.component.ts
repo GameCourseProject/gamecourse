@@ -7,6 +7,7 @@ import {ErrorService} from "../../../../../../../_services/error.service";
 import {exists} from "../../../../../../../_utils/misc/misc";
 import {Skill} from "../../../../../../../_domain/skills/skill";
 import Pickr from "@simonwep/pickr";
+import {Subject} from "rxjs";
 
 @Component({
   selector: 'app-skills',
@@ -39,11 +40,7 @@ export class SkillsComponent implements OnInit {
     color: null,
     description: null,
     tier: null,
-    // seqId: null,
-    // xp: null,
-    // isActive: null,
     dependencies: null,
-    // allActive: null,
     dependenciesList: [],
   };
   skillToEdit: Skill;
@@ -51,8 +48,10 @@ export class SkillsComponent implements OnInit {
 
   isTierModalOpen: boolean;
   isSkillModalOpen: boolean;
+  skillModalRendered: Subject<void> = new Subject<void>();
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
+  isSkillPreviewModalOpen: boolean;
   saving: boolean;
 
   selectedDependency1: Skill = null;
@@ -154,9 +153,6 @@ export class SkillsComponent implements OnInit {
 
   createSkill(): void {
     this.loading = true;
-
-    // FIXME: remove after implementing description
-    this.newSkill.description = "<h1>This is a drill</h1>";
 
     this.api.createSkill(this.courseID, this.newSkill)
       .pipe( finalize(() => {
@@ -267,10 +263,6 @@ export class SkillsComponent implements OnInit {
     }
   }
 
-  previewSkillPage(skill: SkillData) {
-    // TODO
-  }
-
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -292,11 +284,7 @@ export class SkillsComponent implements OnInit {
         color: item.color,
         description: item.description,
         tier: item.tier,
-        // seqId: item.seqId,
-        // xp: item.xp,
-        // isActive: item.isActive,
         dependencies: item.dependencies,
-        // allActive: item.allActive,
         dependenciesList: item.dependenciesList,
       };
       this.skillToEdit = item;
@@ -355,6 +343,10 @@ export class SkillsComponent implements OnInit {
   filterSkills(id: number): Skill[] {
     return this.skills.filter(skill => skill.id !== id);
   }
+
+  initTextEditor() {
+    setTimeout(() => this.skillModalRendered.next(), 0);
+  }
 }
 
 export interface TierData {
@@ -371,10 +363,6 @@ export interface SkillData {
   color: string,
   description: string,
   tier: string,
-  // seqId: number,
-  // xp: number,
-  // isActive: boolean,
   dependencies: string,
-  // allActive: boolean,
   dependenciesList: string[][],
 }

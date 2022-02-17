@@ -108,7 +108,7 @@
               </label>
             </td>
             <td class="action-column">
-              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(skill, 'skill'); isSkillModalOpen = true; initColorPicker()"></div>
+              <div class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(skill, 'skill'); isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
             </td>
             <td class="action-column">
               <div class="icon delete_icon" title="Remove" (click)="tierToDelete = null; skillToDelete = skill; isDeleteVerificationModalOpen = true"></div>
@@ -132,7 +132,7 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; initColorPicker()"></div>
+      <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
       <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
       <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>
     </div>
@@ -191,7 +191,7 @@
     [isModalOpen]="isSkillModalOpen"
     [id]="mode === 'add' ? 'new-skill' : 'edit-skill'"
     [templateRef]="skillModal"
-    [large]="true"
+    [width]="'700px'"
     (closeBtnClicked)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null"
     [actionInProgress]="saving"
     [innerClickEvents]="false">
@@ -249,18 +249,29 @@
         </div>
 
         <!-- Dependencies list -->
-        <div class="full">
+        <div class="full" style="margin-bottom: 30px">
           <span style="margin-right: 10px;">Dependencies: </span>
           <ng-container *ngFor="let dependencyPair of newSkill.dependenciesList" >
             <div (click)="removeSkillDependency(dependencyPair)" class="role_tag">{{dependencyPair[0] + ' + ' + dependencyPair[1]}}</div>
           </ng-container>
         </div>
       </ng-container>
+
+      <div id="editor" style="height: 300px">
+        <app-input-rich-text
+          [id]="'skill-description'"
+          [placeholder]="'Add the skill description here...'"
+          [container]="'editor'"
+          [init]="newSkill.description"
+          [canInit]="skillModalRendered"
+          (valueChange)="newSkill.description = $event">
+        </app-input-rich-text>
+      </div>
     </div>
 
     <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null">Cancel</button>
     <button class="save_btn" [disabled]="!isReadyToSubmit('skill')" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>
-    <button class="preview_btn" (click)="previewSkillPage(newSkill)">Preview</button>
+    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>
   </div>
 </ng-template>
 
@@ -279,3 +290,20 @@
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
+
+
+<!-- Skill Preview Modal -->
+<ng-container *ngIf="isSkillPreviewModalOpen">
+  <app-modal
+    [isModalOpen]="isSkillPreviewModalOpen"
+    [id]="'skill-preview'"
+    [templateRef]="skillPreview"
+    [width]="'calc(100% - 200px)'"
+    (closeBtnClicked)="isSkillPreviewModalOpen = false"
+    [innerClickEvents]="false">
+  </app-modal>
+</ng-container>
+
+<ng-template #skillPreview>
+  <div [innerHTML]="newSkill.description"></div>
+</ng-template>
