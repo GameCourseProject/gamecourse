@@ -16,8 +16,8 @@ import {ApiHttpService} from "../_services/api/api-http.service";
  * How does it work?
  * - POST requests are never cached, because they update information;
  * - GET requests are cached, because they only retrieve information without changes,
- *   and return the cached value if exists; otherwise makes the requests and caches the value.
- * - Each request module has dependencies associated that tell which request to delete from
+ *   and return the cached value if exists; otherwise makes the request and caches the value.
+ * - Each request module has dependencies associated that tell which requests to delete from
  *   cache once changes are made.
  */
 @Injectable()
@@ -34,6 +34,18 @@ export class CacheInterceptor implements HttpInterceptor {
     this.dependencies[ApiHttpService.USER] = [ApiHttpService.USER, ApiHttpService.COURSE];
     this.dependencies[ApiHttpService.VIEWS] = [ApiHttpService.VIEWS];
     // NOTE: add new dependencies here
+
+    // Add modules with requests
+    this.dependencies[ApiHttpService.MODULE] = this.dependencies[ApiHttpService.MODULE].concat([
+      ApiHttpService.CLASSCHECK,
+      ApiHttpService.FENIX,
+      ApiHttpService.GOOGLESHEETS,
+      ApiHttpService.MOODLE,
+      ApiHttpService.PROFILING,
+      ApiHttpService.QR,
+      ApiHttpService.QUEST,
+      ApiHttpService.SKILLS,
+    ]);
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {

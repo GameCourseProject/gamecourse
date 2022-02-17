@@ -18,6 +18,7 @@ import { PageComponent } from './page/page.component';
 import { ConfigComponent } from './settings/modules/config/config/config.component';
 import { FenixComponent } from './settings/modules/config/fenix/fenix.component';
 import { ClasscheckComponent } from './settings/modules/config/classcheck/classcheck.component';
+import { SkillsComponent } from './settings/modules/config/skills/skills.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { ClasscheckComponent } from './settings/modules/config/classcheck/classc
     PageComponent,
     ConfigComponent,
     FenixComponent,
-    ClasscheckComponent
+    ClasscheckComponent,
+    SkillsComponent
   ],
   imports: [
     CommonModule,

@@ -12,6 +12,7 @@ import {copyObject, exists} from "../../../../../../../_utils/misc/misc";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {FenixComponent} from "../fenix/fenix.component";
 import {ClasscheckComponent} from "../classcheck/classcheck.component";
+import {SkillsComponent} from "../skills/skills.component";
 
 export interface GeneralInput {
   id: string,
@@ -36,6 +37,7 @@ export enum PersonalizedConfig {
   FENIX = 'fenix',
   GOOGLESHEETS = 'googlesheets',
   MOODLE = 'moodle',
+  SKILLS = 'skills'
 }
 
 @Component({
@@ -56,12 +58,10 @@ export class ConfigComponent implements OnInit {
   generalInputs: GeneralInput[];
   listingItems: ListingItems;
   personalizedConfig: string;
-  tiers: ListingItems;
 
   importedFile: File;
 
   isItemModalOpen: boolean;
-  isTiers: boolean; // FIXME: should be general
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
 
@@ -108,6 +108,10 @@ export class ConfigComponent implements OnInit {
     return FenixComponent;
   }
 
+  get SkillsConfig(): typeof SkillsComponent {
+    return SkillsComponent;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -124,7 +128,6 @@ export class ConfigComponent implements OnInit {
           this.generalInputs = info.generalInputs;
           this.listingItems = info.listingItems;
           this.personalizedConfig = info.personalizedConfig;
-          this.tiers = info.tiers;
         },
         error => ErrorService.set(error)
       )
@@ -152,7 +155,7 @@ export class ConfigComponent implements OnInit {
       )
   }
 
-  createItem(isTiers: boolean): void {
+  createItem(): void {
     this.loadingAction = true;
     for (const param of this.listingItems.allAttributes) {
       if (!this.newItem.hasOwnProperty(param.id)) {
@@ -160,7 +163,7 @@ export class ConfigComponent implements OnInit {
       }
     }
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !isTiers ? this.newItem : null, isTiers ? this.newItem : null, 'new')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.newItem, 'new')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
@@ -172,7 +175,7 @@ export class ConfigComponent implements OnInit {
       )
   }
 
-  editItem(isTiers: boolean): void {
+  editItem(): void {
     this.loadingAction = true;
     for (const param of this.listingItems.allAttributes) {
       if (!this.newItem.hasOwnProperty(param.id)) {
@@ -180,7 +183,7 @@ export class ConfigComponent implements OnInit {
       }
     }
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !isTiers ? this.itemToEdit : null, isTiers ? this.itemToEdit : null, 'edit')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, this.itemToEdit, 'edit')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.isItemModalOpen = false;
@@ -197,7 +200,7 @@ export class ConfigComponent implements OnInit {
     delete item.id;
     item.name = item.name + ' (Copy)';
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !this.isTiers ? item : null, this.isTiers ? item : null, 'duplicate')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'duplicate')
       .pipe( finalize(() => this.loadingAction = false) )
       .subscribe(
         res => this.getModuleConfigInfo(this.module.id),
@@ -208,7 +211,7 @@ export class ConfigComponent implements OnInit {
   deleteItem(item: any): void {
     this.loadingAction = true;
 
-    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, !this.isTiers ? item : null, this.isTiers ? item : null,'delete')
+    this.api.saveModuleConfigInfo(this.courseID, this.module.id, null, item, 'delete')
       .pipe( finalize(() => {
         this.loadingAction = false;
         this.itemToDelete = null;

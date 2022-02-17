@@ -157,7 +157,6 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
         'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : null,
         'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : null,
         'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : null,
-        'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : null,
         'module' => $moduleInfo,
         'courseFolder' => Course::getCourseDataFolder($courseId)
     ]);
@@ -218,6 +217,29 @@ API::registerFunction($MODULE, 'toggleItemParam', function () {
     $module = API::verifyModuleExists($moduleId, $courseId);
 
     $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
+});
+
+/**
+ * Change item order sequence.
+ *
+ * @param int $courseId
+ * @param string $moduleId
+ * @param int $itemId
+ * @param int $oldSeq
+ * @param int $newSeq
+ * @param string $table
+ */
+API::registerFunction($MODULE, 'changeItemSequence', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId', 'itemId', 'oldSeq', 'newSeq', 'table');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $moduleId = API::getValue('moduleId');
+    $module = API::verifyModuleExists($moduleId, $courseId);
+
+    $module->changeItemSequence($courseId, API::getValue('itemId'), API::getValue('oldSeq'), API::getValue('newSeq'), API::getValue('table'));
 });
 
 /**

@@ -1,5 +1,6 @@
 <div *ngIf="isModalOpen" class="modal" [id]="id" style="display: block;">
-  <div class="modal_content {{classList}}" clickedOutside (clickedOutside)="clickedOutside()">
+  <div class="modal_content {{classList}}" clickedOutside (clickedOutside)="clickedOutside()"
+    [ngStyle]="{'width': large ? '650px' : '530px'}">
 
     <!-- Close btn -->
     <button class="close_btn icon" (click)="closeBtnClicked.emit()"></button>
