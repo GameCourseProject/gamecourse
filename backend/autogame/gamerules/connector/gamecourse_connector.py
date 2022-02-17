@@ -1235,10 +1235,6 @@ def award_streak(target, streak, contributions=None, info=None):
                    # falta inserir na award_participation 
 
 
-
-
-
-
     cnx.commit()
     cnx.close()
 
