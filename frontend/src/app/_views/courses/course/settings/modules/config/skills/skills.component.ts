@@ -19,6 +19,7 @@ export class SkillsComponent implements OnInit {
   loading: boolean;
 
   courseID: number;
+  courseFolder: string;
   tiers: Tier[] = [];
   skills: Skill[] = [];
 
@@ -68,6 +69,7 @@ export class SkillsComponent implements OnInit {
       this.courseID = parseInt(params.id);
       this.getTiers();
       this.getSkills();
+      this.getCourseDataFolder();
     });
   }
 
@@ -92,6 +94,16 @@ export class SkillsComponent implements OnInit {
       .pipe( finalize(() => this.loading = false) )
       .subscribe(
         skills => this.skills = skills,
+        error => ErrorService.set(error)
+      );
+  }
+
+  getCourseDataFolder() {
+    this.loading = true;
+    this.api.getCourse(this.courseID)
+      .pipe( finalize(() => this.loading = false) )
+      .subscribe(
+        course => this.courseFolder = course.folder,
         error => ErrorService.set(error)
       );
   }
@@ -340,8 +352,12 @@ export class SkillsComponent implements OnInit {
     }, 0);
   }
 
-  filterSkills(id: number): Skill[] {
+  filterSkillsById(id: number): Skill[] {
     return this.skills.filter(skill => skill.id !== id);
+  }
+
+  filterSkillsByTier(tier: string): Skill[] {
+    return this.skills.filter(skill => skill.tier === tier);
   }
 
   initTextEditor() {

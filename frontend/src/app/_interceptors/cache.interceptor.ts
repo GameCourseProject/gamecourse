@@ -79,6 +79,13 @@ export class CacheInterceptor implements HttpInterceptor {
     const module = getUrlModule(request.url);
     if (!module) return;
 
+    if (module === ApiHttpService.CORE) {
+      // If module core, invalidate whole cache
+      // This is done because any module can potentially depend on core
+      this.cache = new Map<HttpRequest<any>['url'], HttpResponse<any>>();
+      return;
+    }
+
     const dependencies = this.dependencies[module] || [module].concat(this.dependencies[ApiHttpService.MODULE]);
     this.cache.forEach((value, key, map) => {
       if (dependencies.includes(getUrlModule(key)))

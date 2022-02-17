@@ -30,7 +30,6 @@ API::registerFunction($MODULE, 'getCourse', function () {
 
     $courseId = API::getValue('courseId');
     $course = API::verifyCourseExists($courseId);
-
     API::response(array('course' => $course->getData()));
 });
 
@@ -144,6 +143,22 @@ API::registerFunction($MODULE, 'getCourseResources', function () {
     $course = API::verifyCourseExists($courseId);
 
     API::response(array('resources' => $course->getModulesResources()));
+});
+
+/**
+ * Get contents of course data folder.
+ *
+ * @param int $courseId
+ */
+API::registerFunction($MODULE, 'getCourseDataFolderContents', function () {
+    API::requireCoursePermission();
+    API::requireValues('courseId');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $folder = Course::getCourseDataFolder($courseId);
+    API::response(array('contents' => Course::getDataFoldersContents($folder)));
 });
 
 

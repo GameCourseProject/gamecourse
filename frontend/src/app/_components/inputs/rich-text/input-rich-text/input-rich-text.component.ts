@@ -5,6 +5,9 @@ import * as Quill from 'quill';
 import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
 import {exists} from "../../../../_utils/misc/misc";
+import {ImageManager} from "../../../../_utils/images/image-manager";
+import {DomSanitizer} from "@angular/platform-browser";
+import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 
 @Component({
   selector: 'app-input-rich-text',
@@ -24,11 +27,24 @@ export class InputRichTextComponent implements OnInit {
   @Input() options?: any;                     // Quill options
   @Input() container?: string;                // Container ID
 
+  // Image upload & search
+  @Input() whereToLook: string;               // Folder path of where to look for images
+  @Input() whereToStore: string;              // Folder path of where to store images
+
   @Output() valueChange = new EventEmitter<string>();
 
   quill: Quill;
 
-  constructor() { }
+  isPickingImage: boolean;
+  isAddingImage: boolean;
+
+  imageManager: ImageManager;
+
+  constructor(
+    private sanitizer: DomSanitizer,
+  ) {
+    this.imageManager = new ImageManager(sanitizer);
+  }
 
   ngOnInit(): void {
     this.canInit.subscribe(() => this.initQuill());
@@ -37,18 +53,24 @@ export class InputRichTextComponent implements OnInit {
   initQuill() {
     if (this.quill) return;
 
+    const that = this;
     if (!this.options) {
       this.options = {
         modules: {
-          toolbar: [
-            [{ 'font': [] }, { header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline'],
-            [{ 'script': 'sub' }, { 'script': 'super' }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'align': [] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-            ['link', 'image', 'video', 'code-block']
-          ],
+          toolbar: {
+            container: [
+              [{ 'font': [] }, { header: [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline'],
+              [{ 'script': 'sub' }, { 'script': 'super' }],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'align': [] }],
+              [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+              ['link', 'image', 'video', 'code-block']
+            ],
+            handlers: {
+              'image': () => that.isPickingImage = true
+            }
+          },
           imageResize: {},
           htmlEditButton: {}
         },
@@ -71,10 +93,15 @@ export class InputRichTextComponent implements OnInit {
     if (exists(this.init) && !this.init.isEmpty())
       this.quill.clipboard.dangerouslyPasteHTML(this.init);
 
-    const that = this;
     this.quill.on('text-change', function (delta, oldDelta, source) {
       that.valueChange.emit(that.quill.root.innerHTML);
     });
+  }
+
+  addImage(image: string) {
+    this.imageManager.set(ApiEndpointsService.API_ENDPOINT + '/' + image);
+    const url = this.imageManager.get('URL');
+    this.quill.insertEmbed(this.quill.getSelection, 'image', url);
   }
 
 }

@@ -1,3 +1,6 @@
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {SecurityContext} from "@angular/core";
+
 /**
  * This class is responsible for getting an image URL. It ensures that
  * the correct image is displayed, even if the URL is unchanged. This
@@ -8,8 +11,6 @@
  *
  * It also has utility functions related to images.
  */
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-
 export class ImageManager {
 
   private url: string;
@@ -17,13 +18,11 @@ export class ImageManager {
 
   constructor(private sanitizer: DomSanitizer) { }
 
-  public get(): SafeUrl {
+  public get(format: 'SafeUrl' | 'URL' = 'SafeUrl'): SafeUrl | string {
     if (!this.url) return null;
 
-    if (this.timestamp)
-      return this.sanitize(this.url + '?' + this.timestamp);
-
-    return this.sanitize(this.url);
+    const safeURL = this.sanitize(this.url + (this.timestamp ? '?' + this.timestamp : ''));
+    return format === 'SafeUrl' ? safeURL : this.sanitizer.sanitize(SecurityContext.URL, safeURL);
   }
 
   public set(img: string | File) {

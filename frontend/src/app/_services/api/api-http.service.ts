@@ -29,6 +29,7 @@ import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/m
 import {Tier} from "../../_domain/skills/tier";
 import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
 import {Skill} from "../../_domain/skills/skill";
+import {ContentItem} from "../../_components/modals/image-picker-modal/image-picker-modal.component";
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,7 @@ export class ApiHttpService {
     withCredentials: true
   };
 
+  static readonly CORE: string = 'core';
   static readonly COURSE: string = 'course';
   static readonly MODULE: string = 'module';
   static readonly THEMES: string = 'themes';
@@ -135,6 +137,29 @@ export class ApiHttpService {
   /*** ------------------ Course ------------------- ***/
   /*** --------------------------------------------- ***/
 
+  public uploadImage(image: string | ArrayBuffer, folder: string, name: string): Observable<string> {
+    const data = {
+      image,
+      folder,
+      name
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CORE);
+      qs.push('request', 'uploadImage');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['path']) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Course ------------------- ***/
+  /*** --------------------------------------------- ***/
+
   // General
   public getCourse(courseID: number): Observable<Course> {
     const params = (qs: QueryStringParameters) => {
@@ -209,6 +234,19 @@ export class ApiHttpService {
     const httpClient = new HttpClient(new HttpXhrBackend({ build: () => new XMLHttpRequest() }));
     return httpClient.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']['resources']));
+  }
+
+  public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getCourseDataFolderContents');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['contents']) );
   }
 
 

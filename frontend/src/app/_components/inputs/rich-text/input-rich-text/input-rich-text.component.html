@@ -1,3 +1,16 @@
 <div
   [id]="id"
   [ngClass]="classList"></div>
+
+<app-image-picker-modal
+  [isModalOpen]="isPickingImage"
+  [id]="'rick-text-image-picker'"
+  [whereToLook]="whereToLook"
+  [whereToStore]="whereToStore"
+  [positiveBtnText]="'Select'"
+  (positiveBtnClicked)="addImage($event)"
+  (negativeBtnClicked)="isPickingImage = false"
+  (closeBtnClicked)="isPickingImage = false"
+  [actionInProgress]="isAddingImage"
+  [innerClickEvents]="false">
+</app-image-picker-modal>

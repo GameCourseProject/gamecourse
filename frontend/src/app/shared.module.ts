@@ -32,6 +32,7 @@ import {BarChartComponent} from "./_components/charts/bar-chart/bar-chart.compon
 import {ProgressChartComponent} from "./_components/charts/progress-chart/progress-chart.component";
 import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
 import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
+import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal/image-picker-modal.component";
 
 
 @NgModule({
@@ -64,7 +65,8 @@ import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-
     BarChartComponent,
     ProgressChartComponent,
     RadarChartComponent,
-    InputRichTextComponent
+    InputRichTextComponent,
+    ImagePickerModalComponent
   ],
   exports: [
     NavbarComponent,

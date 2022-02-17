@@ -58,7 +58,7 @@
 </div>
 
 <!-- Skills -->
-<div class="section skills-section">
+<div *ngIf="tiers?.length > 0" class="section skills-section">
   <div class="divider">
     <div class="title"><span>Skills</span></div>
   </div>
@@ -135,6 +135,27 @@
       <div class="icon add_icon" title="New" (click)="mode = 'add'; isSkillModalOpen = true; initColorPicker(); initTextEditor()"></div>
       <div class="icon import_icon" title="Import" (click)="this.isImportModalOpen = true"></div>
       <div class="icon export_icon" title="Export All" (click)="exportAllSkills()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Skill Tree -->
+<div *ngIf="tiers?.length > 0 && skills?.length > 0" class="section skills-tree-section">
+  <div class="divider">
+    <div class="title"><span>Skill Tree</span></div>
+  </div>
+
+  <div class="content">
+    <div class="row">
+      <div class="row" style="float: left; width: 100%">
+        <div *ngFor="let tier of tiers" class="block tier column" style="float: left" [ngStyle]="{'width': 100 / tiers.length + '%'}">
+          Tier {{tier.tier}}: {{tier.reward}} XP
+          <div *ngFor="let skill of filterSkillsByTier(tier.tier)" class="block skill" style="color: #ffffff; width: 60px; height:60px"
+            [ngStyle]="{'backgroundColor': skill.color}">
+            <span style="font-size: 80%; overflow-wrap:anywhere;">{{skill.name}}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -239,11 +260,11 @@
           <span style="margin-right: 10px; white-space: nowrap">New Dependency: </span>
           <select [id]="'skill1'" class="form__input" name="skill1" style="margin-bottom: 0; margin-right: 5px" [(ngModel)]="selectedDependency1">
             <option [value]="null" disabled selected>Select Skill 1</option>
-            <option *ngFor="let skill of filterSkills(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
+            <option *ngFor="let skill of filterSkillsById(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
           </select>
           <select [id]="'skill2'" class="form__input" name="skill2" style="margin-bottom: 0; margin-right: 5px" [(ngModel)]="selectedDependency2">
             <option [value]="null" disabled selected>Select Skill 2</option>
-            <option *ngFor="let skill of filterSkills(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
+            <option *ngFor="let skill of filterSkillsById(mode === 'add' ? null : skillToEdit.id)" [ngValue]="skill">{{skill.name}}</option>
           </select>
           <button (click)="addSkillDependency(selectedDependency1, selectedDependency2)">Add</button>
         </div>
@@ -262,6 +283,8 @@
           [id]="'skill-description'"
           [placeholder]="'Add the skill description here...'"
           [container]="'editor'"
+          [whereToLook]="courseFolder"
+          [whereToStore]="courseFolder + '/skills'"
           [init]="newSkill.description"
           [canInit]="skillModalRendered"
           (valueChange)="newSkill.description = $event">
