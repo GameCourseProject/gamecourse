@@ -276,7 +276,7 @@ class Streaks extends Module
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
             array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Count", 'id' => 'count', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
             array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Days","Weeks"])
         ];
@@ -355,7 +355,23 @@ class Streaks extends Module
 
     public static function newStreak($achievement, $courseId)
     {
-
+        $streakData = [
+            "name" => $achievement['name'],
+            "course" => $courseId,
+            "description" => $achievement['description'],
+            "color" => $achievement['color'],
+            "periodicity" => $achievement['periodicity'],
+            "periodicityTime" => $achievement['periodicityTime'],
+            "count" => $achievement['count'],
+            "reward" => $achievement['reward'],
+            "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
+            "isCount" => ($achievement['countBased']) ? 1 : 0,
+            "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+        ];
+        if (array_key_exists("image", $achievement)) {
+            $streakData["image"] = $achievement['image'];
+        }
+        $streakId = Core::$systemDB->insert("streak", $streakData);
     }
 
     public static function editStreak($achievement, $courseId)
