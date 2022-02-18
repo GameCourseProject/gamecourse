@@ -17,7 +17,11 @@ API::registerFunction($MODULE, 'uploadImage', function () {
     API::requireValues('image', 'folder', 'name');
 
     $img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', API::getValue('image')));
-    $path = API::getValue('folder') . "/" . API::getValue('name') . ".png";
+    $folder = API::getValue('folder');
+    $path = $folder . "/" . API::getValue('name') . ".png";
+
+    if (!is_dir($folder))
+        mkdir($folder, 0777, true);
     file_put_contents($path, $img);
 
     API::response(['path' => $path]);
