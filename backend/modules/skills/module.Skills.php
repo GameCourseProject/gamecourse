@@ -385,6 +385,21 @@ class Skills extends Module
             true
         );
 
+        //%skill.id
+        Dictionary::registerFunction(
+            'skillTrees',
+            'id',
+            function ($skill) {
+                return Dictionary::basicGetterFunction($skill, "id");
+            },
+            'Returns a number with the id of the skill.',
+            'number',
+            null,
+            'object',
+            'skill',
+            true
+        );
+
         //%skill.tier
         Dictionary::registerFunction(
             'skillTrees',
@@ -806,38 +821,26 @@ class Skills extends Module
         });
 
         /**
-         * TODO: renders skill page
+         * Renders a skill page.
+         *
+         * @param int $courseId
+         * @param int $skillId
          */
-        API::registerFunction(self::ID, 'page', function () {
-            API::requireValues('skillName');
-            $skillName = API::getValue('skillName');
-            $courseId = $this->getParent()->getId();
-            $folder = Course::getCourseDataFolder($courseId);
+        API::registerFunction(self::ID, 'renderSkillPage', function () {
+            API::requireValues('courseId', 'skillId');
 
-            if ($skillName) {
-                $skills = Core::$systemDB->selectMultiple(
-                    self::TABLE_TIERS . " st left join " . self::TABLE . " s on st.tier=s.tier join " . self::TABLE_TREES . " t on t.id=st.treeId",
-                    ["course" => $courseId],
-                    "name,page"
-                );
-                foreach ($skills as $skill) {
-                    $compressedName = str_replace(' ', '', $skill['name']);
-                    if ($compressedName == $skillName) {
-                        $page = $this->getDescriptionFromPage($skill, $courseId);
-                        //to support legacy, TODO: Remove this when skill editing is supported in GameCourse
-                        // preg_match_all('/\shref="([A-z]+)[.]html/', $page, $matches);
-                        // foreach ($matches[0] as $id => $match) {
-                        //     $linkSkillName = $matches[1][$id];
-                        //     $page = str_replace($match, ' ui-sref="skill({skillName:\'' . $linkSkillName . '\'})', $page);
-                        // }
-                        // $page = str_replace('src="http:', 'src="https:', $page);
-                        // $page = str_replace(' href="' . $compressedName, ' target="_self" ng-href="' . $folder . '/tree/' . $compressedName, $page);
-                        // $page = str_replace(' src="' . $compressedName, ' src="' . $folder . '/tree/' . $compressedName, $page);
-                        API::response(array('name' => $skill['name'], 'description' => $page));
-                    }
-                }
-            }
-            API::error('Skill ' . $skillName . ' not found.', 404);
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
+
+            $skillId = API::getValue('skillId');
+            API::verifySkillExists($courseId, $skillId);
+
+            $skill = Core::$systemDB->select(self::TABLE, ["id" => $skillId], "id,name,page,color,tier,seqId,isActive");
+            $skill['isActive'] = boolval($skill["isActive"]);
+            $skill["description"] = $this->getDescriptionFromPage($skill, $courseId);
+            unset($skill["page"]);
+
+            API::response(['skill' => $skill]);
         });
     }
 
@@ -1313,43 +1316,10 @@ class Skills extends Module
             "color" => $skill['color'],
             "seqId" => $numSkills + 1,
         ];
-
-        $folder = Course::getCourseDataFolder($courseId);
-        $path = $folder . '/skills/' . str_replace(' ', '', $skill['name']) . '.html';
-        $descriptionPage = @file_get_contents($path);
-        if ($descriptionPage === FALSE) {
-            if (array_key_exists("description", $skill)) {
-                $htmlDom = new DOMDocument;
-                $htmlDom->preserveWhiteSpace = false;
-                $htmlDom->loadHTML($skill['description']);
-
-                $this->insertHeadHtml($htmlDom, $skill['name']);
-                $htmlDom->formatOutput = true;
-                $imageTags = $htmlDom->getElementsByTagName('img');
-                foreach ($imageTags as $imageTag) {
-                    //Get the src attribute of the image.
-                    $imgSrc = $imageTag->getAttribute('src');
-                    $exploded = explode("/", $imgSrc);
-                    $imageName = end($exploded);
-                    $imageTag->setAttribute('src', str_replace(' ', '', $skill['name']) . '/' . $imageName);
-                }
-
-                $skill['description'] = $htmlDom->saveXML($htmlDom->documentElement);
-                file_put_contents($path, $skill['description']);
-                $descriptionPage = @file_get_contents($path);
-
-                $start = strpos($descriptionPage, '<body>') + 6;
-                $end = stripos($descriptionPage, '</body>');
-                $descriptionPage = substr($descriptionPage, $start, $end - $start);
-
-                $skillData['page'] = htmlspecialchars(utf8_encode($descriptionPage));
-            }
-            //echo "Error: The skill ".$skill['name']." does not have a html file in the legacy data folder";
-            //return null;
-        }
-
         Core::$systemDB->insert(self::TABLE, $skillData);
         $skillId = Core::$systemDB->getLastId();
+
+        // Add dependencies
         $dependencyList = array();
         if ($skill["dependencies"] != "") {
             $pairDep = explode("|", str_replace(" | ", "|", $skill["dependencies"]));
@@ -1390,10 +1360,9 @@ class Skills extends Module
             }
             $skill['dependencies'] = trim($skill['dependencies']);
         }
-        // create rule
-        $tiers = Core::$systemDB->selectMultiple(self::TABLE_TIERS, ["treeId" => $treeId], "*", "seqId");
+
+        // Create rule
         $course = Course::getCourse($courseId, false);
-        //$this->generateSkillRule($course, $skill['name'], $skill['isWildcard'], $dependencyList);
         $this->generateSkillRule($course, $skill['name'], $dependencyList);
     }
 

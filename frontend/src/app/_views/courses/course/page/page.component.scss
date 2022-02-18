@@ -2,3 +2,25 @@
   padding: 30px;
   margin-bottom: 16px;
 }
+
+.skill-page {
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    img {
+      width: 45px;
+      height: 45px;
+      vertical-align: middle;
+    }
+
+    span {
+      vertical-align: middle;
+      margin-left: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 10px 20px;
+    }
+  }
+}

@@ -64,6 +64,10 @@
   word-break: break-word;
 }
 
+.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-name {
+  color: white;
+}
+
 .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-post {
   position: absolute;
   bottom: 1px;

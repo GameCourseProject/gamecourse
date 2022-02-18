@@ -1042,6 +1042,20 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public renderSkillPage(courseID: number, skillID: number): Observable<Skill> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'renderSkillPage');
+      qs.push('courseId', courseID);
+      qs.push('skillId', skillID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
+  }
+
 
 
   /*** --------------------------------------------- ***/

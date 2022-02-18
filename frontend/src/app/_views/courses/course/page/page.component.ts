@@ -1,8 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Route, Router} from "@angular/router";
 import {ErrorService} from "../../../../_services/error.service";
 import {View} from "../../../../_domain/views/view";
+import {Skill} from "../../../../_domain/skills/skill";
+import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 
 @Component({
   selector: 'app-page',
@@ -15,21 +17,35 @@ export class PageComponent implements OnInit {
   pageID: number;
   userID: number;
 
+  skillID: number;
+
   pageView: View;
+  skill: Skill;
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
+
+  get ApiEndpointsService(): typeof ApiEndpointsService {
+    return ApiEndpointsService;
+  }
 
   ngOnInit(): void {
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
 
       this.route.params.subscribe(params => {
-        this.pageID = parseInt(params.id);
-        this.userID = parseInt(params.userId) || null;
-        this.getPage();
+        if (this.router.url.includes('skills')) {
+          this.skillID = parseInt(params.id);
+          this.getSkill();
+
+        } else {
+          this.pageID = parseInt(params.id);
+          this.userID = parseInt(params.userId) || null;
+          this.getPage();
+        }
       });
     });
   }
@@ -49,6 +65,14 @@ export class PageComponent implements OnInit {
             error => ErrorService.set(error)
           );
       }, error => ErrorService.set(error));
+  }
+
+  getSkill(): void {
+    this.api.renderSkillPage(this.courseID, this.skillID)
+      .subscribe(
+        skill => this.skill = skill,
+        error => ErrorService.set(error)
+      );
   }
 
 }

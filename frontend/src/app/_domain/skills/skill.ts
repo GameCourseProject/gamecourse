@@ -160,9 +160,9 @@ interface SkillDatabase {
   description: string,
   tier: string,
   seqId: string,
-  xp: string,
+  xp?: string,
   isActive: boolean,
-  dependencies: string,
-  allActive: boolean,
-  dependenciesList: string[][],
+  dependencies?: string,
+  allActive?: boolean,
+  dependenciesList?: string[][],
 }

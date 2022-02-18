@@ -86,7 +86,8 @@ export class ImagePickerModalComponent implements OnInit {
   }
 
   filterFoldersOrImages(items: ContentItem[]): ContentItem[] {
-    return items.filter(item => item.filetype === ContentType.FOLDER || item.extension === '.png' || item.extension === '.jpg');
+    return items.filter(item => item.filetype === ContentType.FOLDER || item.extension === '.png' || item.extension === '.jpg'
+    || item.extension === '.gif');
   }
 
   goInside(item: ContentItem) {

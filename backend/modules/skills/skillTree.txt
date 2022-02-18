@@ -101,7 +101,8 @@
                                         "type": "text",
                                         "role": "role.Student>role.Default",
                                         "visibilityType": "visible",
-                                        "value": "{%skill.name}"
+                                        "value": "{%skill.name}",
+                                        "link": "#/courses/{%course}/skills/{%item.id}"
                                       }
                                     ],
                                     [
