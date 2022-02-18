@@ -34,7 +34,7 @@ Thumbs.db
 # GameCourse
 !/course_data/
 /course_data/**
-!/course_data/defaultData/
+!/course_data/defaultData/**
 
 autogame/imported-functions/*/
 
