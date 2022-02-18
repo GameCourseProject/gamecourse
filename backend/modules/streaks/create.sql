@@ -10,10 +10,10 @@ create table streak(
       course int unsigned not null,
       description  varchar(200) not null,
       color char(9), /* include the # for the color code */
-      periodicity int,
+      periodicity int not null,
       periodicityTime varchar(25),
-      count int,
-      reward int,
+      count int not null,
+      reward int unsigned,
       isRepeatable boolean not null default false,
       isCount boolean not null default false,
       isPeriodic boolean not null default false,

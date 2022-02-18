@@ -17,6 +17,8 @@ class Streaks extends Module
 
     const ID = 'streaks';
 
+    const TABLE = 'streak';
+
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
     /*** ----------------------------------------------- ***/
@@ -29,7 +31,6 @@ class Streaks extends Module
         $this->initDictionary();
         $this->initTemplates();
     }
-
 
     public function initDictionary(){
 
@@ -101,6 +102,111 @@ class Streaks extends Module
             true
         );
 
+        //%streak.color
+        Dictionary::registerFunction(
+            'streaks',
+            'color',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "color");
+            },
+            "Returns a string with the reference of the color in hexadecimal of the streak.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.reward
+        Dictionary::registerFunction(
+            'streaks',
+            'reward',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "reward");
+            },
+            "Returns a string with the reward of completing a streak.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.periodicity
+        Dictionary::registerFunction(
+            'streaks',
+            'periodicity',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "periodicity");
+            },
+            "Returns a string with periodicity to respect.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.periodicityTime
+        Dictionary::registerFunction(
+            'streaks',
+            'periodicityTime',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "periodicityTime");
+            },
+            "Returns a string with periodicity's time.",
+            'string',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.isRepeatable
+        Dictionary::registerFunction(
+            'streaks',
+            'isRepeatable',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "isRepeatable");
+            },
+            "Returns a boolean regarding whether the steak is repeatable.",
+            'boolean',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.isCount
+        Dictionary::registerFunction(
+            'streaks',
+            'isCount',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "isCount");
+            },
+            "Returns a boolean regarding whether the steak is count.",
+            'boolean',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
+        //%streak.isPeriodic
+        Dictionary::registerFunction(
+            'streaks',
+            'isPeriodic',
+            function ($streak) {
+                return $this->basicGetterFunction($streak, "isPeriodic");
+            },
+            "Returns a boolean regarding whether the steak is periodic.",
+            'boolean',
+            null,
+            'object',
+            'streak',
+            true
+        );
+
         //%streak.isActive
         Dictionary::registerFunction(
             'streaks',
@@ -115,6 +221,26 @@ class Streaks extends Module
             'streak',
             true
         );
+
+        //streaks.streakProgression(streak,user)
+        Dictionary::registerFunction(
+            'streaks',
+            'streakProgression',
+
+            function ($streak, int $user) {
+                $streakParticipation = $this->getStreakProgression($streak, $user);
+                return Dictionary::createNode($streakParticipation, 'streaks', 'collection');
+            },
+            'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
+            'collection',
+            'badge',
+            'library',
+            null,
+            true
+        );
+
+        //streakProgression.post
+        //streakProgression.description
 
     }
 
@@ -147,7 +273,7 @@ class Streaks extends Module
     {
         /*
         //obter o ficheiro de configuração do module para depois o apagar
-        $configFile = "modules/badges/config.json";
+        $configFile = "modules/" . self::ID . "/config.json";
         $contents = array();
         if (file_exists($configFile)) {
             $contents = json_decode(file_get_contents($configFile));
@@ -321,7 +447,17 @@ class Streaks extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    //  public function getStreaks($courseId){}
+    public function getStreaks($courseId){
+        $streaks = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*", "name");
+        foreach ($streaks as &$streak) {
+            //information to match needing fields
+            $streak['isRepeatable'] = boolval($streak["isRepeatable"]);
+            $streak['isCount'] = boolval($streak["isCount"]);
+            $streak['isPeriodic'] = boolval($streak["isPeriodic"]);
+            $streak['isActive'] = boolval($streak["isActive"]);
+        }
+        return $streaks;
+    }
 
     public function getStreak($selectMultiple, $where): ValueNode
     {
@@ -340,8 +476,13 @@ class Streaks extends Module
     }
               
     // getStreakCount
+    // getUsersWithStreak
 
-    // getUsersWithStreak - perguntar DG
+    public function getStreakProgression($badge, $user)
+    {
+
+
+    }
 
     public function saveMaxReward($max, $courseId)
     {
@@ -367,21 +508,35 @@ class Streaks extends Module
             "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
             "isCount" => ($achievement['countBased']) ? 1 : 0,
             "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+
         ];
-        if (array_key_exists("image", $achievement)) {
-            $streakData["image"] = $achievement['image'];
-        }
-        $streakId = Core::$systemDB->insert("streak", $streakData);
+
+        Core::$systemDB->insert(self::TABLE, $streakData);
     }
 
     public static function editStreak($achievement, $courseId)
     {
+        $originalStreak = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
 
+        if(!empty($originalStreak)) {
+            $streakData = [
+                "color" => $achievement['color'],
+                "periodicity" => $achievement['periodicity'],
+                "periodicityTime" => $achievement['periodicityTime'],
+                "count" => $achievement['count'],
+                "reward" => $achievement['reward'],
+                "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
+                "isCount" => ($achievement['countBased']) ? 1 : 0,
+                "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+            ];
+            
+            Core::$systemDB->update(self::TABLE, $streakData, ["id" => $achievement["id"]]);
+        }
     }
     
     public function deleteStreak($streak)
     {
-        Core::$systemDB->delete("streak", ["id" => $streak['id']]);
+        Core::$systemDB->delete(self::TABLE, ["id" => $streak['id']]);
     }
 
 
