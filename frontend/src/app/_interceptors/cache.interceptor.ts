@@ -5,9 +5,10 @@ import {
   HttpEvent,
   HttpInterceptor, HttpResponse
 } from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {EMPTY, NEVER, Observable, of} from 'rxjs';
 import {share, tap} from "rxjs/operators";
 import {ApiHttpService} from "../_services/api/api-http.service";
+import {exists} from "../_utils/misc/misc";
 
 /**
  * This class is responsible for intercepting HTTP requests and caching them.
@@ -24,6 +25,7 @@ import {ApiHttpService} from "../_services/api/api-http.service";
 export class CacheInterceptor implements HttpInterceptor {
 
   private cache: Map<HttpRequest<any>['url'], HttpResponse<any>> = new Map<HttpRequest<any>['url'], HttpResponse<any>>();
+  private lastRequest: HttpRequest<any>['url'];
 
   private readonly dependencies: {[key: string]: string[]} = {};
 
@@ -50,20 +52,27 @@ export class CacheInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.method !== 'GET') {
-      this.reset(request);
+      this.resetCache(request);
+      this.lastRequest = request.url;
       return next.handle(request);
     }
 
     const cachedResponse: HttpResponse<any> = this.cache.get(request.url);
     if (cachedResponse) {
+      // Has request cached
+      this.lastRequest = request.url;
       return of(cachedResponse.clone());
 
+    } else if (exists(this.lastRequest) && this.lastRequest === request.url) {
+      // Same request made in a row, don't make the call
+      return NEVER;
+
     } else {
+      this.lastRequest = request.url;
       return next.handle(request).pipe(
         tap(stateEvent => {
-          if (stateEvent instanceof HttpResponse) {
+          if (stateEvent instanceof HttpResponse)
             this.cache.set(request.url, stateEvent.clone())
-          }
         }),
         share()
       )
@@ -75,7 +84,7 @@ export class CacheInterceptor implements HttpInterceptor {
    *
    * @param request
    */
-  reset(request: HttpRequest<any>) {
+  resetCache(request: HttpRequest<any>) {
     const module = getUrlModule(request.url);
     if (!module) return;
 
