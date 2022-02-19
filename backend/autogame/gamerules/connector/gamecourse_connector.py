@@ -1108,19 +1108,19 @@ def award_streak(target, streak, contributions=None, info=None):
                     lastParticipation = table_last_streak[0][1]
                     lastParticipationObj = datetime.strptime(lastParticipation,'%Y-%m-%d %H:%M:%S' )
 
-                    if periodicityTime == 'minutes':
+                    if periodicityTime == 'Minutes':
                         dif = secondParticipationObj - firstParticipationObj
                         if dif > timedelta(minutes=periodicity):
                             return
-                    elif periodicityTime == 'hours':
+                    elif periodicityTime == 'Hours':
                         dif = secondParticipationObj - firstParticipationObj
                         if dif > timedelta(hours=periodicity):
                             return
-                    elif periodicityTime == 'days':
+                    elif periodicityTime == 'Days':
                         dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=periodicity):
                             return
-                    elif periodicityTime == 'weeks':
+                    elif periodicityTime == 'Weeks':
                         weeksInDays = periodicity*7
                         dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=weeksInDays):
@@ -1152,19 +1152,19 @@ def award_streak(target, streak, contributions=None, info=None):
                             secondParticipationObj = datetime.strptime(secondParticipation,'%Y-%m-%d %H:%M:%S' )
 
                             # if it disrespects streak periodicity, then return
-                            if periodicityTime == 'minutes':
+                            if periodicityTime == 'Minutes':
                                 dif = secondParticipationObj - firstParticipationObj
                                 if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
                                     return
-                            elif periodicityTime == 'hours':
+                            elif periodicityTime == 'Hours':
                                 dif = secondParticipationObj - firstParticipationObj
                                 if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
                                     return
-                            elif periodicityTime == 'days':
+                            elif periodicityTime == 'Days':
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=periodicity): # dif needs to be equal to periodicity
                                     return
-                            elif periodicityTime == 'weeks':
+                            elif periodicityTime == 'Weeks':
                                 weeksInDays = periodicity*7
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=weeksInDays):
