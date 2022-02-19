@@ -5,6 +5,7 @@ import {ErrorService} from "../../../../_services/error.service";
 import {View} from "../../../../_domain/views/view";
 import {Skill} from "../../../../_domain/skills/skill";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
+import {finalize} from "rxjs/operators";
 
 @Component({
   selector: 'app-page',
@@ -21,6 +22,9 @@ export class PageComponent implements OnInit {
 
   pageView: View;
   skill: Skill;
+
+  loading: boolean;
+  isPreview: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -39,6 +43,7 @@ export class PageComponent implements OnInit {
       this.route.params.subscribe(params => {
         if (this.router.url.includes('skills')) {
           this.skillID = parseInt(params.id);
+          this.isPreview = !!params.preview;
           this.getSkill();
 
         } else {
@@ -56,10 +61,12 @@ export class PageComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   getPage(): void {
+    this.loading = true;
     this.pageView = null; // NOTE: Important - Forces view to completely refresh
     this.api.getLoggedUser()
       .subscribe(user => {
         this.api.renderPage(this.courseID, this.pageID, this.userID || user.id)
+          .pipe(finalize(() => this.loading = false))
           .subscribe(
             view => this.pageView = view,
             error => ErrorService.set(error)
@@ -68,11 +75,17 @@ export class PageComponent implements OnInit {
   }
 
   getSkill(): void {
+    this.loading = true;
     this.api.renderSkillPage(this.courseID, this.skillID)
+      .pipe(finalize(() => this.loading = false))
       .subscribe(
         skill => this.skill = skill,
         error => ErrorService.set(error)
       );
+  }
+
+  goBack() {
+    this.router.navigate(['./settings/modules/skills/config'], {relativeTo: this.route.parent});
   }
 
 }

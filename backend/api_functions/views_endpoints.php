@@ -65,7 +65,7 @@ API::registerFunction($MODULE, 'renderPage', function () {
         API::error('Page \'' . $page["name"] . '\' (id = ' . $pageId . ') is not enabled.');
 
     $userId = API::getValue('userId');
-    $courseUser = API::verifyCourseUserExists($courseId, $userId);
+    if (!is_null($userId)) API::verifyCourseUserExists($courseId, $userId);
 
     API::response(['view' => Views::renderPage($courseId, $pageId, $userId)]);
 });

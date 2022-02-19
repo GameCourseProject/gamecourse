@@ -294,7 +294,7 @@
 
     <button *ngIf="mode === 'edit'" class="cancel" (click)="isSkillModalOpen = false; clearObject(newSkill); selectedDependency1 = null; selectedDependency2 = null">Cancel</button>
     <button class="save_btn" [disabled]="!isReadyToSubmit('skill')" (click)="mode === 'add' ? createSkill() : editSkill()">Save</button>
-    <button class="preview_btn" (click)="isSkillPreviewModalOpen = true">Preview</button>
+    <button class="preview_btn" (click)="navigate(newSkill.id)">Preview</button>
   </div>
 </ng-template>
 
@@ -313,20 +313,3 @@
     [actionInProgress]="saving">
   </app-verification-modal>
 </ng-container>
-
-
-<!-- Skill Preview Modal -->
-<ng-container *ngIf="isSkillPreviewModalOpen">
-  <app-modal
-    [isModalOpen]="isSkillPreviewModalOpen"
-    [id]="'skill-preview'"
-    [templateRef]="skillPreview"
-    [width]="'calc(100% - 200px)'"
-    (closeBtnClicked)="isSkillPreviewModalOpen = false"
-    [innerClickEvents]="false">
-  </app-modal>
-</ng-container>
-
-<ng-template #skillPreview>
-  <div [innerHTML]="newSkill.description"></div>
-</ng-template>

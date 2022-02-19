@@ -15,7 +15,7 @@
               "type": "image",
               "role": "role.Student>role.Default",
               "visibilityType": "visible",
-              "src": "modules/profile/imgs/profile-img.svg"
+              "src": "modules/awardlist/imgs/awards.svg"
             }
           ],
           "title": [

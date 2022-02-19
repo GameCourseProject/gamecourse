@@ -66,7 +66,7 @@ export class ModulesComponent implements OnInit {
     this.api.getCourseModules(courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(modules => {
-        this.allModules = modules;
+        this.allModules = modules.sort((a, b) => a.name.localeCompare(b.name));
         this.reduceList();
       },
       error => ErrorService.set(error)

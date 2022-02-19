@@ -67,6 +67,10 @@ const routes: Routes = [
   {
     path: 'skills/:id',
     component: PageComponent
+  },
+  {
+    path: 'skills/:id/:preview',
+    component: PageComponent
   }
 ];
 

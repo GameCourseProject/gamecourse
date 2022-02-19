@@ -80,52 +80,6 @@ class Skills extends Module
             true
         );
 
-        //skillTrees.getAllSkills(...) returns collection
-        Dictionary::registerFunction(
-            'skillTrees',
-            'getAllSkills',
-            function ($tree = null, $tier = null, $dependsOn = null, $requiredBy = null, $isActive = true) use ($courseId) {
-                //can be called by skillTrees or by %tree
-                $skillWhere = ["course" => $courseId];
-                $parent = null;
-                if ($tree !== null) {
-                    if (is_array($tree)) {
-                        $skillWhere["treeId"] = $tree["value"]["id"];
-                        $parent = $tree;
-                    } else
-                        $skillWhere["treeId"] = $tree;
-                }
-                if ($tier !== null) {
-                    if (is_array($tier))
-                        $skillWhere["tier"] = $tier["value"]["tier"];
-                    else
-                        $skillWhere["tier"] = $tier;
-                }
-                if ($isActive) {
-                    $skillWhere["isActive"] = true;
-                }
-                //if there are dependencies arguments we do more complex selects
-                if ($dependsOn !== null) {
-                    if ($requiredBy != null)
-                        return $this->getSkillsDependantAndRequired($dependsOn, $requiredBy, $skillWhere, $parent);
-                    return $this->getSkillsDependantof($dependsOn, $skillWhere, $parent);
-                } else if ($requiredBy !== null) {
-                    return $this->getSkillsRequiredBy($dependsOn, $skillWhere, $parent);
-                }
-                return Dictionary::createNode(Core::$systemDB->selectMultiple(
-                    self::TABLE . " s natural join " . self::TABLE_TIERS . " t join " . self::TABLE_TREES . " tr on tr.id=treeId",
-                    $skillWhere,
-                    "s.*,t.*"
-                ), 'skillTrees', "collection", $parent);
-            },
-            "Returns a collection with all the skills in the Course. The optional parameters can be used to find skills that specify a given combination of conditions:\ntree: The skillTree object or the id of the skillTree object to which the skill belongs to.\ntier: The tier object or tier of the tier object of the skill.\ndependsOn: a skill that is used to unlock a specific skill.\nrequiredBy: a skill that unlocks a collection of skills.\nisActive: a skill that is active.",
-            'collection',
-            'skill',
-            'library',
-            null,
-            true
-        );
-
         //%tree.getAllSkills(...) returns collection
         Dictionary::registerFunction(
             'skillTrees',
@@ -674,6 +628,7 @@ class Skills extends Module
             'boolean',
             null,
             'library',
+            null,
             true
         );
     }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Tier} from "../../../../../../../_domain/skills/tier";
 import {finalize} from "rxjs/operators";
 import {ErrorService} from "../../../../../../../_services/error.service";
@@ -52,7 +52,6 @@ export class SkillsComponent implements OnInit {
   skillModalRendered: Subject<void> = new Subject<void>();
   isDeleteVerificationModalOpen: boolean;
   isImportModalOpen: boolean;
-  isSkillPreviewModalOpen: boolean;
   saving: boolean;
 
   selectedDependency1: Skill = null;
@@ -60,7 +59,8 @@ export class SkillsComponent implements OnInit {
 
   constructor(
     private api: ApiHttpService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public router: Router
   ) { }
 
   ngOnInit(): void {
@@ -287,6 +287,7 @@ export class SkillsComponent implements OnInit {
         reward: item.reward,
         treeId: item.treeId
       };
+      if (this.mode === 'edit') this.newTier.id = item.id;
       this.tierToEdit = item;
     }
 
@@ -299,6 +300,7 @@ export class SkillsComponent implements OnInit {
         dependencies: item.dependencies,
         dependenciesList: item.dependenciesList,
       };
+      if (this.mode === 'edit') this.newSkill.id = item.id;
       this.skillToEdit = item;
     }
   }
@@ -362,6 +364,10 @@ export class SkillsComponent implements OnInit {
 
   initTextEditor() {
     setTimeout(() => this.skillModalRendered.next(), 0);
+  }
+
+  navigate(id: number) {
+    this.router.navigate(['./skills', id, true], {relativeTo: this.route.parent.parent})
   }
 }
 
