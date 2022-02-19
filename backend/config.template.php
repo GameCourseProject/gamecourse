@@ -41,3 +41,4 @@
      */
     const MAX_BONUS_BADGES = 1000;
     const DEFAULT_MAX_TREE_XP = 5000;
+    const MAX_BONUS_STREAKS = 1000;

@@ -1,12 +1,14 @@
 <?php
 namespace Modules\ClassCheck;
 
+use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\CronJob;
+use Modules\Plugin\ClassCheck;
 
 class ClassCheckModule extends Module
 {

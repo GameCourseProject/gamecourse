@@ -60,9 +60,18 @@ class Course
     public function setActiveState($active)
     {
         $this->setData("isActive", $active);
-        $module = ModuleLoader::getModule("plugin");
+
+        $module = ModuleLoader::getModule("googlesheets");
         $handler = $module["factory"]();
         $handler->setCourseCronJobs($this->cid, $active);
+
+        $module2 = ModuleLoader::getModule("classcheck");
+        $handler2 = $module2["factory"]();
+        $handler2->setCourseCronJobs($this->cid, $active);
+
+        $module3 = ModuleLoader::getModule("moodle");
+        $handler3 = $module3["factory"]();
+        $handler3->setCourseCronJobs($this->cid, $active);
     }
     public function setVisibleState($active)
     {

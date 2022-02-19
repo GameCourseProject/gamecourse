@@ -158,3 +158,12 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	"""
 	connector.award_assignment_grade(target, contributions, xp_per_assignemnt, max_grade)
 	return
+
+@rule_function
+def award_streak(target, streak, contributions=None, info=None):
+	"""
+	Awards a Streak type award called "streak" to "target". The "contributions" parameter should
+	receive the participations that justify the attribution of the streak for a given target.
+	"""
+	result = connector.award_streak(target, streak, contributions, info)
+	return result
