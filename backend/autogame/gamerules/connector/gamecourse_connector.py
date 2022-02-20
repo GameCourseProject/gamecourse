@@ -1037,7 +1037,7 @@ def clear_streak_progression(target):
 
 
 #  logs-> participations.getParticipations(user,type,rating,evaluator,initialDate,finalDate,activeUser,activeItem)
-def award_streak(target, streak, contributions=None, info=None):
+def award_streak(target, streak, participationType, contributions=None, info=None):
 	# -----------------------------------------------------------
 	# Writes and updates 'award' table with streaks won by the
 	# user. Will retract if rules/participations have been
@@ -1093,36 +1093,34 @@ def award_streak(target, streak, contributions=None, info=None):
                 elif isCount and isPeriodic:
 
                     # gets first streak participation
-                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id ASC LIMIT 1;  "
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s;  "
                     cursor.execute(query, (target, course, contributions[0].log_id ))
                     table_first_streak = cursor.fetchall()
 
-                    firstStreak = table_first_streak[0][1]  # YYYY-MM-DD HH:MM:SS
-                    firstStreakObj = datetime.strptime(firstStreak,'%Y-%m-%d %H:%M:%S' )
+                    firstParticipationObj = table_first_streak[0][1]  # YYYY-MM-DD HH:MM:SS
 
                     # gets most recent streak participation
-                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id DESC LIMIT 1;  "
-                    cursor.execute(query, (target, course, contributions[0].log_id))
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s;  "
+                    cursor.execute(query, (target, course, contributions[-1].log_id))
                     table_last_streak = cursor.fetchall()
 
-                    lastParticipation = table_last_streak[0][1]
-                    lastParticipationObj = datetime.strptime(lastParticipation,'%Y-%m-%d %H:%M:%S' )
+                    lastParticipationObj = table_last_streak[0][1]
 
                     if periodicityTime == 'Minutes':
-                        dif = secondParticipationObj - firstParticipationObj
+                        dif = lastParticipationObj - firstParticipationObj
                         if dif > timedelta(minutes=periodicity):
                             return
                     elif periodicityTime == 'Hours':
-                        dif = secondParticipationObj - firstParticipationObj
+                        dif = lastParticipationObj - firstParticipationObj
                         if dif > timedelta(hours=periodicity):
                             return
-                    elif periodicityTime == 'Days':
-                        dif = secondParticipationObj.date() - firstParticipationObj.date()
+                    elif len(periodicityTime) == 4:
+                        dif = lastParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=periodicity):
                             return
                     elif periodicityTime == 'Weeks':
                         weeksInDays = periodicity*7
-                        dif = secondParticipationObj.date() - firstParticipationObj.date()
+                        dif = lastParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=weeksInDays):
                            return
                     else:
@@ -1138,18 +1136,18 @@ def award_streak(target, streak, contributions=None, info=None):
 
                     for log in contributions:
                         # get dates of participations that matter
-                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s ORDER BY id ASC;  "
-                        cursor.execute(query, (target, course, log.log_id ))
+                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;  "
+                        cursor.execute(query, (target, course, participationType))
                         table_participations = cursor.fetchall()
 
                     for i in range(nlogs):
-                         if i+1 != nlogs:
+                         if i+1 < nlogs:
 
-                            firstParticipation = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
-                            secondParticipation = table_participations[i+1][1]
+                            firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
+                            secondParticipationObj = table_participations[i+1][1]
 
-                            firstParticipationObj = datetime.strptime(firstParticipation,'%Y-%m-%d %H:%M:%S' )
-                            secondParticipationObj = datetime.strptime(secondParticipation,'%Y-%m-%d %H:%M:%S' )
+                            #firstParticipationObj = datetime.strptime(firstParticipation,'%Y-%m-%d %H:%M:%S' )
+                            #secondParticipationObj = datetime.strptime(secondParticipation,'%Y-%m-%d %H:%M:%S' )
 
                             # if it disrespects streak periodicity, then return
                             if periodicityTime == 'Minutes':

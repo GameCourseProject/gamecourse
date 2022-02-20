@@ -281,11 +281,11 @@ def award_assignment_grade(target, contributions=None, xp_per_assignemnt=1, max_
 	return
 
 @rule_effect
-def award_streak(target, streak, contributions=None, info=None):
+def award_streak(target, streak, participationType, contributions=None, info=None):
 	"""
 	returns the output of a streak and writes the award to database
 	"""
-	result = connector.award_streak(target, streak, contributions, info)
+	result = connector.award_streak(target, streak, participationType, contributions, info)
 	return result
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
