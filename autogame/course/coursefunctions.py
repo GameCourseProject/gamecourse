@@ -15,6 +15,25 @@ DEFAULT_MAXREPEATS = 3
 MOODLEBASEURL = "http://groups.ist.utl.pt/~pcm.daemon/moodle/mod/"
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+def check_periodicity(logs, periodicity, time):
+    """
+    	The purpose of this function is to check if a streak periodicity is being
+    	respected.
+        Check if the time difference between the first and last log is
+        equal or inferior to the established periodicity.
+
+        returns True if periodicity is respect.
+        False otherwise.
+    """
+       nlogs = len(logs)
+
+       if time == 'days':
+
+
+    return
+
+
 def check_existance(logs, student, tag):
 	"""
 	returns TRUE if there is a log with an action equal to the tag,

@@ -131,3 +131,12 @@ def award_grade(target, item, contributions=None):
 	connector.award_grade(target, item, contributions)
 	# TODO possible upgrade: returning indicators to include these types of prizes as well
 	return
+
+@rule_function
+def award_streak(target, streak, participationType, contributions=None, info=None):
+	"""
+	Awards a Streak type award called "streak" to "target". The "contributions" parameter should
+	receive the participations that justify the attribution of the streak for a given target.
+	"""
+	result = connector.award_streak(target, streak, participationType, contributions, info)
+	return result

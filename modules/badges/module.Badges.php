@@ -700,7 +700,7 @@ class Badges extends Module
             "isBragging" => ($achievement['xp1'] == 0) ? 1 : 0,
             "isCount" => ($achievement['countBased']) ? 1 : 0,
             "isPost" => ($achievement['postBased']) ? 1 : 0,
-            "isPoint" => ($achievement['pointBased']) ? 1 : 0
+            "isPoint" => ($achievement['pointBased']) ? 1 : 0                                                  V
         ];
         if (array_key_exists("image", $achievement)) {
             $badgeData["image"] = $achievement['image'];

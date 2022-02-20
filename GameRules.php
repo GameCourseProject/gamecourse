@@ -14,7 +14,7 @@ use GameCourse\ModuleLoader;
 
 class GameRules{
 
-	const ROOT_FOLDER = "/var/www/html/gamecourse/";
+	const ROOT_FOLDER = "/var/www/html/gamecourse_test/";
 
 	private $courseId;
 	private $host = "127.0.0.1";
@@ -38,7 +38,7 @@ class GameRules{
 			if ($targets != null) {
 				$this->targets = $targets;
 			}
-		}
+		}                                                                                                                               re
 		if ($testMode) {
 			$this->autogamePath = self::ROOT_FOLDER . "autogame/run_autogame_test.py";
 			$this->testMode = True;

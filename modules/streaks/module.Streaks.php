@@ -41,7 +41,7 @@ class Streaks extends Module
                 $where["isActive"] = $isActive;
                 return $this->getStreak(true, $where);
             },
-            "Returns a collection with all the streaks in the Course. The optional parameters can be used to find badges that specify a given combination of conditions:\nisActive: Streak is active.",
+            "Returns a collection with all the streaks in the Course. The optional parameters can be used to find streaks that specify a given combination of conditions:\nisActive: Streak is active.",
             'collection',
             'streak',
             'library',
@@ -106,9 +106,9 @@ class Streaks extends Module
         );
 
 
-        if (!$viewsModule->templateExists(self::STREAKS_TEMPLATE_NAME))
+       /* if (!$viewsModule->templateExists(self::STREAKS_TEMPLATE_NAME))
             $viewsModule->setTemplate(self::STREAKS_TEMPLATE_NAME, file_get_contents(__DIR__ . '/streaks.txt'), true);
-
+       */
     }
 
     // public function initDictionary
@@ -273,9 +273,9 @@ class Streaks extends Module
             array('name' => "Color", 'id' => 'color', 'type' => "color", 'options' => "", 'current_val' => ""),
             array('name' => "Is Repeatable", 'id' => 'repeatable', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
-            array('name' => "Is Count", 'id' => 'count', 'type' => "on_off button", 'options' => ""),
+            array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Days","Weeks"])
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes", "Hours", "Days","Weeks_"])
             
         ];
         return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
@@ -352,9 +352,25 @@ class Streaks extends Module
     }
 
 
-    // name description color isRepeatable periodicity #participations
     public static function newStreak($achievement, $courseId)
     {
+        $streakData = [
+            "name" => $achievement['name'],
+            "course" => $courseId,
+            "description" => $achievement['description'],
+            "color" => $achievement['color'],
+            "periodicity" => $achievement['periodicity'],
+            "periodicityTime" => $achievement['periodicityTime'],
+            "count" => $achievement['count'],
+            "reward" => $achievement['reward'],
+            "isRepeatable" => ($achievement['repeatable']) ? 1 : 0,
+            "isCount" => ($achievement['countBased']) ? 1 : 0,
+            "isPeriodic" => ($achievement['periodic']) ? 1 : 0
+        ];
+        if (array_key_exists("image", $achievement)) {
+            $streakData["image"] = $achievement['image'];
+        }
+        $streakId = Core::$systemDB->insert("streak", $streakData);
 
     }
 
