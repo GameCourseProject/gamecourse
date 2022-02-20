@@ -1189,15 +1189,15 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
     # table contains  user, course, description,  type, reward, date
     # table = filtered awards_table
     elif len(table) == 0:  # no streak has been awarded with this name for this user
-        streak_id, streak_count, streak_reward = table_streak[0][0], table_streak[0][3], table_streak[0][4]
+        streak_count, streak_reward = table_streak[0][3], table_streak[0][4]
 
         # if streak is finished, award it
-        if len(table_progressions) == streak_count:
+        if len(table_progressions) >= streak_count:
 
             description = streak
 
             query = "INSERT INTO " + awards_table + " (user, course, description, type, moduleInstance, reward) VALUES(%s, %s , %s, %s, %s,%s);"
-            cursor.execute(query, (target, course, description, typeof, streak_id, streak_reward))
+            cursor.execute(query, (target, course, description, typeof, streakid, streak_reward))
             cnx.commit()
             cursor = cnx.cursor(prepared=True)
 
