@@ -30,7 +30,7 @@ class SideView extends Module
 
     public function setupResources() {
         parent::addResources('js/');
-        parent::addResources('css/side-view.css');
+        parent::addResources('css/sideview.css');
     }
 
     public function update_module($compatibleVersions)

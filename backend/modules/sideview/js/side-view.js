@@ -11,7 +11,7 @@ angular.module('module.sideview').controller('SideView', function($scope, $smart
                 return;
             }
 
-            var container = $('#side-view');
+            var container = $('#sideview');
             container.html('');
             container.append(view.element);
 
@@ -70,12 +70,12 @@ angular.module('module.sideview').controller('SideView', function($scope, $smart
             // Sticky!
             function testSticky() {
                 var windowTop = $(window).scrollTop();
-                var divDop = $('#side-view-anchor').offset().top - 16;
+                var divDop = $('#sideview-anchor').offset().top - 16;
 
                 if (windowTop > divDop) {
-                    $('#side-view').addClass('stick');
+                    $('#sideview').addClass('stick');
                 } else {
-                    $('#side-view').removeClass('stick');
+                    $('#sideview').removeClass('stick');
                 }
             }
 
@@ -90,9 +90,9 @@ angular.module('module.sideview').controller('SideView', function($scope, $smart
 });
 
 angular.module('module.sideview').run(function($rootScope, $compile, $state) {
-    var sideView = $('<div>', {id: 'side-view', 'ng-controller': 'SideView'});
+    var sideView = $('<div>', {id: 'sideview', 'ng-controller': 'SideView'});
     $('#content-wrapper').before($compile(sideView)($rootScope));
-    sideView.before($('<div>', {id: 'side-view-anchor'}));
+    sideView.before($('<div>', {id: 'sideview-anchor'}));
     $rootScope.$on('$stateChangeSuccess', function(e, toState) {
         if (toState.name == 'course.profile' || toState.name == 'course.leaderboard')
             $('#wrapper').addClass('sv-visible');
