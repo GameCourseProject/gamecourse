@@ -1201,16 +1201,26 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
             cnx.commit()
             cursor = cnx.cursor(prepared=True)
 
-            # inserts in award_participation
+            # gets award_id
             query = "SELECT id from " + awards_table + " where user = %s AND course = %s AND description=%s AND type=%s;"
             cursor.execute(query, (target, course, description, typeof))
             table_id = cursor.fetchall()
             award_id = table_id[0][0]
 
-            # if not config.test_mode:
+            #if not config.test_mode:
+            #    # inserts in award_participation
+            #    for el in contributions:
+			#	    query = "INSERT INTO award_participation (award, participation) VALUES(%s, %s);"
+			#	    cursor.execute(query, (award_id, el.log_id))
+            #        cnx.commit()
 
-               # * * * * * * TO DO * * * *  * * * * * * #
-               # falta inserir na award_participation  #
+            #    if contributions != None:
+			#		nr_contributions = str(len(contributions))
+			#	else:
+			#		nr_contributions = ''
+
+			#	config.award_list.append([str(target), str(streak), str(streak_reward), nr_contributions])
+
 
     # if this streak has already been awarded, check if it is repeatable to award it again.
     elif len(table) > 0:
