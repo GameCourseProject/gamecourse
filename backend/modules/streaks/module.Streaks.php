@@ -404,7 +404,7 @@ class Streaks extends Module
             array('name' => "Is Periodic", 'id' => 'periodic', 'type' => "on_off button", 'options' => ""),
             array('name' => "Is Count", 'id' => 'countBased', 'type' => "on_off button", 'options' => ""),
             array('name' => "Periodicity", 'id' => 'periodicity', 'type' => "number", 'options' => ""),
-            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks"])
+            array('name' => "Periodicity Time", 'id' => 'periodicityTime', 'type' => "select", 'options' => ["Minutes","Hours","Days","Weeks_"])
         ];
         return array('listName' => 'Streaks', 'itemName' => 'Streak', 'header' => $header, 'displayAtributes' => $displayAtributes, 'items' => $items, 'allAtributes' => $allAtributes);
     }

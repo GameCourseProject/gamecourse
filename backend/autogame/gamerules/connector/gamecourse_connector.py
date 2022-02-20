@@ -5,7 +5,7 @@ import signal, os, sys
 import json
 import mysql.connector
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from io import StringIO
 from course.student import *
@@ -1083,6 +1083,7 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                 # if isCount inserts all streak participations in the streak_progression.
                 if isCount and not isPeriodic:
+
                     for log in contributions:
                         query = "INSERT into streak_progression (course, user, streakId, participationId) values (%s,%s,%s,%s);"
                         cursor.execute(query, (course, target, streakid, log.log_id))
@@ -1091,7 +1092,6 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                 # is Count & is Periodic =>  the streak periodicity is between the first participation and the last.
                 # example of streak: do 7 tasks in 1 week. We just need to check if the time interval was respected.
                 elif isCount and isPeriodic:
-
                     # gets first streak participation
                     query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND id = %s;  "
                     cursor.execute(query, (target, course, contributions[0].log_id ))
@@ -1104,23 +1104,25 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
                     cursor.execute(query, (target, course, contributions[-1].log_id))
                     table_last_streak = cursor.fetchall()
 
-                    lastParticipationObj = table_last_streak[0][1]
+                    secondParticipationObj = table_last_streak[0][1]
 
-                    if periodicityTime == 'Minutes':
-                        dif = lastParticipationObj - firstParticipationObj
+                    print("\nAntes dos if's")
+                    if len(periodicityTime) == 7:  # minutes
+                        dif = secondParticipationObj - firstParticipationObj
                         if dif > timedelta(minutes=periodicity):
                             return
-                    elif periodicityTime == 'Hours':
-                        dif = lastParticipationObj - firstParticipationObj
+                    elif len(periodicityTime) == 5:   # hours
+                        dif = secondParticipationObj - firstParticipationObj
                         if dif > timedelta(hours=periodicity):
                             return
-                    elif len(periodicityTime) == 4:
-                        dif = lastParticipationObj.date() - firstParticipationObj.date()
+                    elif len(periodicityTime) == 4:   # days
+                        print("\nDentro do if Days")
+                        dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=periodicity):
                             return
-                    elif periodicityTime == 'Weeks':
+                    elif len(periodicityTime) == 6:  # weeks_
                         weeksInDays = periodicity*7
-                        dif = lastParticipationObj.date() - firstParticipationObj.date()
+                        dif = secondParticipationObj.date() - firstParticipationObj.date()
                         if dif > timedelta(days=weeksInDays):
                            return
                     else:
@@ -1134,35 +1136,33 @@ def award_streak(target, streak, participationType, contributions=None, info=Non
 
                 elif isPeriodic and not isCount:
 
-                    for log in contributions:
-                        # get dates of participations that matter
-                        query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;  "
-                        cursor.execute(query, (target, course, participationType))
-                        table_participations = cursor.fetchall()
+                    #for log in contributions:
+                    # get dates of participations that matter
+                    query = "SELECT id, date FROM participation WHERE user = %s AND course = %s AND type = %s;"
+                    cursor.execute(query, (target, course, participationType))
+                    table_participations = cursor.fetchall()
 
-                    for i in range(nlogs):
+                    for i in range(nlogs):    # 0 to nlogs-1 -> te  tiver 2 participations, i = 0, i = 1
                          if i+1 < nlogs:
 
                             firstParticipationObj = table_participations[i][1]  # YYYY-MM-DD HH:MM:SS
                             secondParticipationObj = table_participations[i+1][1]
 
-                            #firstParticipationObj = datetime.strptime(firstParticipation,'%Y-%m-%d %H:%M:%S' )
-                            #secondParticipationObj = datetime.strptime(secondParticipation,'%Y-%m-%d %H:%M:%S' )
 
                             # if it disrespects streak periodicity, then return
-                            if periodicityTime == 'Minutes':
+                            if len(periodicityTime) == 7:  # minutes
                                 dif = secondParticipationObj - firstParticipationObj
                                 if dif < timedelta(minutes=periodicity) or dif > timedelta(minutes=periodicity*2):
                                     return
-                            elif periodicityTime == 'Hours':
+                            elif len(periodicityTime) == 5:   # hours
                                 dif = secondParticipationObj - firstParticipationObj
                                 if dif < timedelta(hours=periodicity) or dif > timedelta(hours=periodicity*2):
                                     return
-                            elif periodicityTime == 'Days':
+                            elif len(periodicityTime) == 4:   # days
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=periodicity): # dif needs to be equal to periodicity
                                     return
-                            elif periodicityTime == 'Weeks':
+                            elif len(periodicityTime) == 6:  # weeks_
                                 weeksInDays = periodicity*7
                                 dif = secondParticipationObj.date() - firstParticipationObj.date()
                                 if dif != timedelta(days=weeksInDays):
