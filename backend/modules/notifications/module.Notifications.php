@@ -6,6 +6,7 @@ use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
+use Modules\AwardList\AwardList;
 
 class Notifications extends Module
 {
@@ -30,7 +31,7 @@ class Notifications extends Module
         if ($user->hasRole('Student')) {
             $activity = $user->getData("prevActivity");
 
-            $awards = Core::$systemDB->selectMultiple("award", ["course" => $courseId, "student" => $userId], "awardDate");
+            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $courseId, "student" => $userId], "awardDate");
             if (is_null($awards) || !is_array($awards))
                 return;
 
@@ -97,7 +98,7 @@ class Notifications extends Module
     {
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("notifications", "notifications", "This library provides information regarding notifications. It is provided by the notification module.");
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding notifications. It is provided by the notification module.");
     }
 
     public function setupResources()
@@ -114,7 +115,7 @@ class Notifications extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'notifications',
+    'id' => Notifications::ID,
     'name' => 'Notifications',
     'description' => 'Allows email notifications when a badge or points are atributed to a student.',
     'type' => 'GameElement',

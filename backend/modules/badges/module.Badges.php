@@ -8,14 +8,16 @@ use GameCourse\Views\Views;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 use GameCourse\Course;
+use Modules\AwardList\AwardList;
 
 class Badges extends Module
 {
     const ID = 'badges';
 
     const TABLE = 'badge';
-    const TABLE_LEVEL = 'badge_level';
-    const TABLE_CONFIG = 'badges_config';
+    const TABLE_LEVEL = self::TABLE . '_level';
+    const TABLE_CONFIG = self::ID . '_config';
+    const TABLE_PROGRESSION = self::TABLE . '_progression';
 
     const BADGES_PROFILE_TEMPLATE = 'Badges Profile - by badges';
 
@@ -35,14 +37,14 @@ class Badges extends Module
     {
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("badges", "badges", "This library provides information regarding Badges and their levels. It is provided by the badges module.");
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Badges and their levels. It is provided by the " . self::ID . " module.");
 
 
         /*** ------------ Functions ------------ ***/
 
         //badges.getAllBadges(isExtra,isBragging,isActive)
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'getAllBadges',
             function (bool $isExtra = null, bool $isBragging = null, bool $isActive = true) {
                 $where = [];
@@ -63,7 +65,7 @@ class Badges extends Module
         );
         //badges.getBadge(name)
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'getBadge',
             function (string $name = null) {
                 return $this->getBadge(false, ["name" => $name]);
@@ -77,7 +79,7 @@ class Badges extends Module
         );
         //badges.getBadgesCount(user) returns num of badges of user (if specified) or of course
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'getBadgesCount',
             function ($user = null) {
                 return new ValueNode($this->getBadgeCount($user));
@@ -91,7 +93,7 @@ class Badges extends Module
         );
         //badges.doesntHaveBadge(%badge, %level, %active) returns True if there are no students with this badge, False otherwise
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'doesntHaveBadge',
             function ($badge, $level, $active = true) {
                 $users = $this->getUsersWithBadge($badge, $level, $active);
@@ -122,7 +124,7 @@ class Badges extends Module
         //%badge.description
         // FIXME: there's another function here with the same lib and name that overrides this one
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'description',
             function ($arg) {
                 return Dictionary::basicGetterFunction($arg, "description");
@@ -136,7 +138,7 @@ class Badges extends Module
         );
         //%badge.name
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'name',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "name");
@@ -150,7 +152,7 @@ class Badges extends Module
         );
         //%badge.maxLevel
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'maxLevel',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "maxLevel");
@@ -164,7 +166,7 @@ class Badges extends Module
         );
         //%badge.isExtra
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'isExtra',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "isExtra");
@@ -178,7 +180,7 @@ class Badges extends Module
         );
         //%badge.isCount
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'isCount',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "isCount");
@@ -192,7 +194,7 @@ class Badges extends Module
         );
         //%badge.isPost
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'isPost',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "isPost");
@@ -206,7 +208,7 @@ class Badges extends Module
         );
         //%badge.isBragging
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'isBragging',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "isBragging");
@@ -220,7 +222,7 @@ class Badges extends Module
         );
         //%badge.isActive
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'isActive',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "isActive");
@@ -234,7 +236,7 @@ class Badges extends Module
         );
         //%badge.renderPicture(number) return expression for the image of the badge in the specified level
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'renderPicture',
             function ($badge, $level) {
                 //$level num or object
@@ -243,7 +245,7 @@ class Badges extends Module
                 else
                     $levelNum = $level;
                 $name = str_replace(' ', '', $badge["value"]["name"]);
-                return new ValueNode("modules/badges/imgs/" . $name . "-" . $levelNum . ".png");
+                return new ValueNode("modules/" . self::ID . "/imgs/" . $name . "-" . $levelNum . ".png");
             },
             'Return a picture of a badge’s level.',
             'picture',
@@ -254,7 +256,7 @@ class Badges extends Module
         );
         //%badge.levels returns collection of level objects
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'levels',
             function ($badge) {
                 Dictionary::checkArray($badge, "object", 'levels');
@@ -269,7 +271,7 @@ class Badges extends Module
         );
         //%badge.getLevel(number) returns level object
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'getLevel',
             function ($badge, $level) {
                 Dictionary::checkArray($badge, "object", 'getLevel');
@@ -285,7 +287,7 @@ class Badges extends Module
         );
         //%badge.currLevel(%user) returns object of the current level of user
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'currLevel',
             function ($badge, int $user) {
                 Dictionary::checkArray($badge, "object", 'currLevel');
@@ -301,7 +303,7 @@ class Badges extends Module
         );
         //%badge.nextLevel(user) %level.nextLevel  returns level object
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'nextLevel',
             function ($arg, $user = null) {
                 Dictionary::checkArray($arg, "object", 'nextLevel');
@@ -321,7 +323,7 @@ class Badges extends Module
         );
         //%badge.previousLevel(user) %level.previousLevel  returns level object
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'previousLevel',
             function ($arg, $user = null) {
                 Dictionary::checkArray($arg, "object", 'previousLevel');
@@ -341,12 +343,12 @@ class Badges extends Module
         );
         //badges.badgeProgression(badge,user)
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'badgeProgression',
 
             function ($badge, int $user) {
                 $badgeParticipation = $this->getBadgeProgression($badge, $user);
-                return Dictionary::createNode($badgeParticipation, 'badges', 'collection');
+                return Dictionary::createNode($badgeParticipation, self::ID, 'collection');
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that badge.',
             'collection',
@@ -357,7 +359,7 @@ class Badges extends Module
         );
         //%badgeProgression.post
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'post',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "post");
@@ -371,7 +373,7 @@ class Badges extends Module
         );
         //%badgeProgression.description
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'description',
             function ($badge) {
                 return Dictionary::basicGetterFunction($badge, "description");
@@ -385,7 +387,7 @@ class Badges extends Module
         );
         //%collection.countBadgesProgress  returns size of the collection or points obtained
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'countBadgesProgress',
             function ($collection, $badge) {
                 $count = $this->countBadgesProgress($collection, $badge);
@@ -400,7 +402,7 @@ class Badges extends Module
         );
         //%level.goal
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'goal',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "goal");
@@ -414,7 +416,7 @@ class Badges extends Module
         );
         //%level.reward
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'reward',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "reward");
@@ -428,7 +430,7 @@ class Badges extends Module
         );
         //%level.number
         Dictionary::registerFunction(
-            'badges',
+            self::ID,
             'number',
             function ($level) {
                 return Dictionary::basicGetterFunction($level, "number");
@@ -695,7 +697,7 @@ class Badges extends Module
         $separator = ",";
         $headers = ["name", "description", "maxLevel", "isExtra", "isBragging", "isCount", "isPost", "isPoint", "isActive",
             "image", "desc1", "xp1", "count1", "desc2", "xp2", "count2", "desc3", "xp3", "count3"];
-        $lines = explode("\n", $fileData);
+        $lines = array_filter(explode("\n", $fileData), function ($line) { return !empty($line); });
 
         if (count($lines) > 0) {
             // Check if has header to ignore it
@@ -811,9 +813,9 @@ class Badges extends Module
             $badge['isActive'] = boolval($badge["isActive"]);
 
             $levels = Core::$systemDB->selectMultiple(
-                "badge_level join badge on badge.id=badgeId",
+                self::TABLE_LEVEL . " join " . self::TABLE . " on " . self::TABLE . ".id=badgeId",
                 ["course" => $courseId, "badgeId" => $badge['id']],
-                'badge_level.description , goal, reward, number'
+                self::TABLE_LEVEL . '.description , goal, reward, number'
             );
             foreach ($levels as $level) {
                 $badge['desc' . $level['number']] = $level['description']; //string
@@ -828,29 +830,29 @@ class Badges extends Module
     {
         $where["course"] = $this->getCourseId();
         if ($selectMultiple) {
-            $badgeArray = Core::$systemDB->selectMultiple("badge", $where);
+            $badgeArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
             $type = "collection";
         } else {
-            $badgeArray = Core::$systemDB->select("badge", $where);
+            $badgeArray = Core::$systemDB->select(self::TABLE, $where);
             if (empty($badgeArray))
                 throw new \Exception("In function badges.getBadge(name): couldn't find badge with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($badgeArray, 'badges', $type);
+        return Dictionary::createNode($badgeArray, self::ID, $type);
     }
 
     public function getBadgeCount($user = null): int
     {
         $courseId = $this->getCourseId();
         if ($user === null) {
-            $count = Core::$systemDB->select("badge", ["course" => $courseId, "isActive" => true], "sum(maxLevel)");
+            $count = Core::$systemDB->select(self::TABLE, ["course" => $courseId, "isActive" => true], "sum(maxLevel)");
             if (is_null($count))
                 return 0;
             else
                 return $count;
         }
         $id = $this->getUserId($user);
-        return  Core::$systemDB->select("award", ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
+        return  Core::$systemDB->select(AwardList::TABLE, ["course" => $courseId, "type" => "badge", "user" => $id], "count(*)");
     }
 
     public function getUsersWithBadge($badge, $level, $active = false): ValueNode
@@ -881,7 +883,7 @@ class Badges extends Module
         } else if ($levelNum > $badge["value"]["maxLevel"] || $levelNum < 0) {
             $level = ["number" => null, "description" => null];
         } else {
-            $table = "badge join badge_level on badge.id=badgeId";
+            $table = self::TABLE . " join " . self::TABLE_LEVEL . " on " . self::TABLE . ".id=badgeId";
             $badgeId = $badge["value"]["id"];
             if ($levelNum == null) {
                 $level = Core::$systemDB->selectMultiple($table, ["badgeId" => $badgeId]);
@@ -895,32 +897,32 @@ class Badges extends Module
         unset($level["id"]);
         if ($type == "collection") {
             foreach ($level as &$l) {
-                $l["libraryOfVariable"] = "badges";
+                $l["libraryOfVariable"] = self::ID;
                 $l = array_merge($badge["value"], $l);
             }
         } else {
-            $level["libraryOfVariable"] = "badges";
+            $level["libraryOfVariable"] = self::ID;
             $level = array_merge($badge["value"], $level);
         }
-        return Dictionary::createNode($level, 'badges', $type, $parent);
+        return Dictionary::createNode($level, self::ID, $type, $parent);
     }
 
     public function getLevelNum($badge, $user): int
     {
         $id = $this->getUserId($user);
         $badgeId = $badge["value"]["id"];
-        $levelNum = Core::$systemDB->select("award", ["user" => $id, "type" => "badge", "moduleInstance" => $badgeId], "count(*)");
+        $levelNum = Core::$systemDB->select(AwardList::TABLE, ["user" => $id, "type" => "badge", "moduleInstance" => $badgeId], "count(*)");
         return (int)$levelNum;
     }
 
     public function getMaxReward($courseId)
     {
-        return Core::$systemDB->select("badges_config", ["course" => $courseId], "maxBonusReward");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward");
     }
 
     public function getGeneralImages($image, $courseId): string
     {
-        $result = Core::$systemDB->select("badges_config", ["course" => $courseId], $image);
+        $result = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], $image);
         if ($result == NULL)
             return "";
         return $result;
@@ -928,7 +930,7 @@ class Badges extends Module
 
     public function getBadgeProgression($badge, $user)
     {
-        $badgePosts = Core::$systemDB->selectMultiple("badge_progression b left join badge on b.badgeId=badge.id left join participation on b.participationId=participation.id", ["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description, participation.rating");
+        $badgePosts = Core::$systemDB->selectMultiple(self::TABLE_PROGRESSION . " b left join " . self::TABLE . " on b.badgeId=" . self::TABLE . ".id left join participation on b.participationId=participation.id", ["b.user" => $user, "badgeId" => $badge], "isPost, post, participation.description, participation.rating");
 
         for ($i = 0; $i < sizeof($badgePosts); $i++) {
             if ($badgePosts[$i]["isPost"]) {
@@ -961,28 +963,28 @@ class Badges extends Module
 
     public function saveMaxReward($max, $courseId)
     {
-        Core::$systemDB->update("badges_config", ["maxBonusReward" => $max], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["maxBonusReward" => $max], ["course" => $courseId]);
     }
 
     public function saveGeneralImages($image, $value, $courseId)
     {
-        Core::$systemDB->update("badges_config", [$image => $value], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, [$image => $value], ["course" => $courseId]);
     }
 
 
     public function deleteLevels($courseId)
     {
-        if (Core::$systemDB->tableExists("badge_level")) {
-            $badges = Core::$systemDB->selectMultiple("badge", ["course" => $courseId], 'id');
+        if (Core::$systemDB->tableExists(self::TABLE_LEVEL)) {
+            $badges = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], 'id');
             foreach ($badges as $badge) {
-                Core::$systemDB->delete("badge_level", ["badgeId" => $badge["id"]]);
+                Core::$systemDB->delete(self::TABLE_LEVEL, ["badgeId" => $badge["id"]]);
             }
         }
     }
 
     public function countBadgesProgress($collection, $badge): int
     {
-        $badgeParams = Core::$systemDB->selectMultiple("badge", ["id" => $badge], "isPost, isPoint, isCount");
+        $badgeParams = Core::$systemDB->selectMultiple(self::TABLE, ["id" => $badge], "isPost, isPoint, isCount");
         $count = 0;
         if (!empty($collection["value"])) {
             if ($badgeParams[0]["isPoint"]) {
@@ -1028,7 +1030,7 @@ class Badges extends Module
 
     public static function editBadge($achievement, $courseId)
     {
-        $originalBadge = Core::$systemDB->select("badge", ["course" => $courseId, 'id' => $achievement['id']], "*");
+        $originalBadge = Core::$systemDB->select(self::TABLE, ["course" => $courseId, 'id' => $achievement['id']], "*");
 
         if(!empty($originalBadge)){
             $maxLevel = empty($achievement['desc2']) ? 1 : (empty($achievement['desc3']) ? 2 : 3);
@@ -1044,14 +1046,14 @@ class Badges extends Module
             if (array_key_exists("image", $achievement)) {
                 $badgeData["image"] = $achievement['image'];
             }
-            Core::$systemDB->update("badge", $badgeData, ["id" => $achievement["id"]]);
+            Core::$systemDB->update(self::TABLE, $badgeData, ["id" => $achievement["id"]]);
 
             if ($originalBadge["maxLevel"] <= $maxLevel) {
                 for ($i = 1; $i <= $maxLevel; $i++) {
 
                     if ($i > $originalBadge["maxLevel"]) {
                         //if they are new levels they need to be inserted and not updated
-                        Core::$systemDB->insert("badge_level", [
+                        Core::$systemDB->insert(self::TABLE_LEVEL, [
                             "badgeId" => $achievement['id'],
                             "number" => $i,
                             "goal" => $achievement['count' . $i],
@@ -1059,7 +1061,7 @@ class Badges extends Module
                             "reward" => abs($achievement['xp' . $i])
                         ]);
                     } else {
-                        Core::$systemDB->update("badge_level", [
+                        Core::$systemDB->update(self::TABLE_LEVEL, [
                             "badgeId" => $achievement['id'],
                             "number" => $i,
                             "goal" => $achievement['count' . $i],
@@ -1070,10 +1072,10 @@ class Badges extends Module
                 }
             } else {
                 //deletes original badge levels
-                Core::$systemDB->delete("badge_level", ["badgeId" => $originalBadge['id']]);
+                Core::$systemDB->delete(self::TABLE_LEVEL, ["badgeId" => $originalBadge['id']]);
                 //creates new ones
                 for ($i = 1; $i <= $maxLevel; $i++) {
-                    Core::$systemDB->insert("badge_level", [
+                    Core::$systemDB->insert(self::TABLE_LEVEL, [
                         "badgeId" => $achievement['id'],
                         "number" => $i,
                         "goal" => $achievement['count' . $i],
@@ -1093,13 +1095,13 @@ class Badges extends Module
 
     public function toggleItemParam(int $itemId, string $param)
     {
-        $state = Core::$systemDB->select("badge", ["id" => $itemId], $param);
-        Core::$systemDB->update("badge", [$param => $state ? 0 : 1], ["id" => $itemId]);
+        $state = Core::$systemDB->select(self::TABLE, ["id" => $itemId], $param);
+        Core::$systemDB->update(self::TABLE, [$param => $state ? 0 : 1], ["id" => $itemId]);
     }
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'badges',
+    'id' => Badges::ID,
     'name' => 'Badges',
     'description' => 'Enables Badges with 3 levels and xp points that can be atributed to a student in certain conditions.',
     'type' => 'GameElement',

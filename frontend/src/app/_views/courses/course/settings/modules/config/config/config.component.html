@@ -26,29 +26,6 @@
     </div>
   </div>
 
-  <!-- Tiers FIXME: should be general -->
-  <div *ngIf="tiers" class="section tiers">
-    <div class="divider">
-      <div class="title"><span>{{tiers.listName}}</span></div>
-    </div>
-
-    <div class="content">
-      <ng-container
-        [ngTemplateOutlet]="LIST"
-        [ngTemplateOutletContext]="{list: tiers, tiers: true}">
-      </ng-container>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; isItemModalOpen = true;"></div>
-      </div>
-    </div>
-
-    <div class='success_box'>
-      <div id='action_completed_tiers' class='success_msg'></div>
-    </div>
-  </div>
-
   <!-- Listing Items -->
   <div *ngIf="listingItems" class="section">
     <div class="divider">
@@ -58,7 +35,7 @@
     <div class="allItems content">
       <ng-container
         [ngTemplateOutlet]="LIST"
-        [ngTemplateOutletContext]="{list: listingItems, tiers: false}">
+        [ngTemplateOutletContext]="{list: listingItems}">
       </ng-container>
 
       <!-- Action Buttons -->
@@ -76,8 +53,16 @@
 
   <!-- Personalized Config -->
   <div class="personalized-config">
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.CLASSCHECK">
+      <ng-container *ngComponentOutlet="ClassCheckConfig"></ng-container>
+    </ng-container>
+
     <ng-container *ngIf="personalizedConfig === PersonalizedConfig.FENIX">
       <ng-container *ngComponentOutlet="FenixConfig"></ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="personalizedConfig === PersonalizedConfig.SKILLS">
+      <ng-container *ngComponentOutlet="SkillsConfig"></ng-container>
     </ng-container>
   </div>
 
@@ -85,12 +70,12 @@
 
 <!-- Loader -->
 <div *ngIf="loading || loadingAction" id="page-loading">
-  <img src="../../../../../../../../assets/loader/loader.gif" alt="loader">
+  <img src="assets/loader/loader.gif" alt="loader">
 </div>
 
 
 <!-- List Template -->
-<ng-template #LIST let-list='list' let-tiers='tiers'>
+<ng-template #LIST let-list='list'>
   <div [id]="'list-' + list.listName">
     <div class="data-table">
 
@@ -140,7 +125,7 @@
 
             <td *ngFor="let action of list.actions" class="action-column">
               <div *ngIf="action === 'duplicate'" class="icon duplicate_icon" title="Duplicate" (click)="duplicateItem(item)"></div>
-              <div *ngIf="action === 'edit'" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isTiers = tiers; isItemModalOpen = true;"></div>
+              <div *ngIf="action === 'edit'" class="icon edit_icon" title="Edit" (click)="mode = 'edit'; initEditItem(item); isItemModalOpen = true;"></div>
               <div *ngIf="action === 'delete'" class="icon delete_icon" title="Remove" (click)="itemToDelete = item; isDeleteVerificationModalOpen = true"></div>
               <div *ngIf="action === 'move-up'" class="icon up_icon" title="Move up" (click)="moveItem(1)"></div>
               <div *ngIf="action === 'move-down'" class="icon down_icon" title="Move down" (click)="moveItem(-1)"></div>
@@ -173,13 +158,13 @@
 
 <ng-template #itemModal>
   <!-- Title -->
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{isTiers ? tiers.itemName : listingItems.itemName}}:</div>
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} {{listingItems.itemName}}:</div>
 
   <div class="content">
     <div id="new_box" class="inputs">
       <div class="row-inputs">
         <div class="details full config-item">
-          <div *ngFor="let input of filterEditableParams(isTiers ? tiers : listingItems)"
+          <div *ngFor="let input of filterEditableParams(listingItems)"
                [ngClass]="{'half': input.type !== InputType.IMAGE && input.type !== InputType.TOGGLE, 'full': input.type === InputType.IMAGE, 'on_off': input.type === InputType.TOGGLE}">
 
             <ng-container
@@ -192,7 +177,7 @@
     </div>
 
     <button class="cancel" (click)="isItemModalOpen = false; clearObject(newItem)">Cancel</button>
-    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem(isTiers) : editItem(isTiers)">Save</button>
+    <button class="save_btn" [disabled]="!hasUnsavedChanges" (click)="mode === 'add' ? createItem() : editItem()">Save</button>
   </div>
 </ng-template>
 

@@ -16,7 +16,9 @@ import { ViewsEditorComponent } from './settings/views/views-editor/views-editor
 import {SidebarComponent} from "./settings/sidebar/sidebar.component";
 import { PageComponent } from './page/page.component';
 import { ConfigComponent } from './settings/modules/config/config/config.component';
-import { FenixConfigComponent } from './settings/modules/config/fenix/fenix.component';
+import { FenixComponent } from './settings/modules/config/fenix/fenix.component';
+import { ClasscheckComponent } from './settings/modules/config/classcheck/classcheck.component';
+import { SkillsComponent } from './settings/modules/config/skills/skills.component';
 
 
 @NgModule({
@@ -33,7 +35,9 @@ import { FenixConfigComponent } from './settings/modules/config/fenix/fenix.comp
     ViewsEditorComponent,
     PageComponent,
     ConfigComponent,
-    FenixConfigComponent
+    FenixComponent,
+    ClasscheckComponent,
+    SkillsComponent
   ],
   imports: [
     CommonModule,

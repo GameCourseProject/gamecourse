@@ -5,6 +5,7 @@ namespace APIFunctions;
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\Course;
+use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
 $MODULE = 'module';
@@ -12,6 +13,38 @@ $MODULE = 'module';
 
 /*** --------------------------------------------- ***/
 /*** ------------------ General ------------------ ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Get all available modules in the system.
+ */
+API::registerFunction($MODULE, 'getModules', function() {
+    API::requireAdminPermission();
+
+    $allModules = ModuleLoader::getModules();
+
+    $modulesArr = [];
+    foreach ($allModules as $module) {
+        $mod = array(
+            'id' => $module['id'],
+            'name' => $module['name'],
+            'type' => $module['type'],
+            'dir' => $module['dir'],
+            'version' => $module['version'],
+            'dependencies' => $module['dependencies'],
+            'description' => $module['description']
+        );
+        $modulesArr[] = $mod;
+    }
+
+    API::response($modulesArr);
+
+});
+
+
+
+/*** --------------------------------------------- ***/
+/*** ------------ Module Manipulation ------------ ***/
 /*** --------------------------------------------- ***/
 
 /**
@@ -31,39 +64,64 @@ API::registerFunction($MODULE, 'setModuleState', function () {
     $moduleId = API::getValue('moduleId');
     $module = API::verifyModuleExists($moduleId);
 
-    $toEnable = API::getValue('isEnabled');
+    $toEnable = filter_var(API::getValue('isEnabled'), FILTER_VALIDATE_BOOLEAN);
+    $moduleEnabled = filter_var(Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled"), FILTER_VALIDATE_BOOLEAN);
 
-    $moduleObject = $module['factory']();
-    $moduleEnabled = Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $moduleId], "isEnabled");
-
+    // Check dependencies
     if ($moduleEnabled && !$toEnable) { //disabling module
-        $modules = $course->getModules();
-        foreach ($modules as $mod) {
+        foreach ($course->getModules() as $mod) {
             $dependencies = $mod->getDependencies();
             foreach ($dependencies as $dependency) {
                 if ($dependency['id'] == $moduleId && $dependency['mode'] != 'optional')
-                    API::error('Must disable all modules that depend on this one first.');
+                    API::error('Must disable all modules that depend on this one first: module \'' . $dependency['id'] . '\' is enabled.');
             }
-        }
-
-        if (Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1], "count(*)") == 1) {
-            //only drop the tables of the module data if this is the last course where it is enabled
-            $moduleObject->dropTables($moduleId); //deletes tables associated with the module
-        } else {
-            $moduleObject->deleteDataRows($courseId);
         }
 
     } else if (!$moduleEnabled && $toEnable) { //enabling module
         foreach ($module['dependencies'] as $dependency) {
-            // FIXME: BUG - can enable module without dependencies enabled
-            if ($dependency['mode'] != 'optional' && ModuleLoader::getModules($dependency['id']) == null)
-                API::error('Must enable all dependencies first.');
+            if ($dependency['mode'] != 'optional' && !empty(Core::$systemDB->select("course_module", ["course" => $courseId, "moduleId" => $dependency['id'], "isEnabled" => 0])))
+                API::error('Must enable all dependencies first: module \'' . $dependency['id'] . '\' is disabled.');
         }
     }
 
     if ($moduleEnabled != $toEnable) {
         $course->setModuleEnabled($moduleId, !$moduleEnabled);
     }
+});
+
+
+
+/*** --------------------------------------------- ***/
+/*** -------------- Import / Export -------------- ***/
+/*** --------------------------------------------- ***/
+
+/**
+ * Import modules into the system.
+ * FIXME: check if working
+ *
+ * @param $file
+ * @param string $fileName
+ */
+API::registerFunction($MODULE, 'importModule', function () {
+    API::requireAdminPermission();
+    API::requireValues('file');
+    API::requireValues('fileName');
+
+    $file = explode(",", API::getValue('file'));
+    $fileContents = base64_decode($file[1]);
+    Module::importModules($fileContents, API::getValue("fileName"));
+    API::response(array());
+});
+
+/**
+ * Export modules of the system.
+ * FIXME: not working.
+ */
+API::registerFunction($MODULE, 'exportModule', function () {
+    API::requireAdminPermission();
+    $zipFile = Module::exportModules();
+    API::response(array("file"=> $zipFile));
+    unlink($zipFile);
 });
 
 
@@ -99,7 +157,6 @@ API::registerFunction($MODULE, 'getModuleConfigInfo', function () {
         'generalInputs' => $module->has_general_inputs() ? $module->get_general_inputs($courseId) : null,
         'listingItems' => $module->has_listing_items() ? $module->get_listing_items($courseId) : null,
         'personalizedConfig' => $module->has_personalized_config() ? $module->get_personalized_function() : null,
-        'tiers' => $moduleId === "skills" ? $module->get_tiers_items($courseId) : null,
         'module' => $moduleInfo,
         'courseFolder' => Course::getCourseDataFolder($courseId)
     ]);
@@ -160,6 +217,29 @@ API::registerFunction($MODULE, 'toggleItemParam', function () {
     $module = API::verifyModuleExists($moduleId, $courseId);
 
     $module->toggleItemParam(API::getValue('itemId'), API::getValue('param'));
+});
+
+/**
+ * Change item order sequence.
+ *
+ * @param int $courseId
+ * @param string $moduleId
+ * @param int $itemId
+ * @param int $oldSeq
+ * @param int $newSeq
+ * @param string $table
+ */
+API::registerFunction($MODULE, 'changeItemSequence', function () {
+    API::requireCourseAdminPermission();
+    API::requireValues('courseId', 'moduleId', 'itemId', 'oldSeq', 'newSeq', 'table');
+
+    $courseId = API::getValue('courseId');
+    $course = API::verifyCourseExists($courseId);
+
+    $moduleId = API::getValue('moduleId');
+    $module = API::verifyModuleExists($moduleId, $courseId);
+
+    $module->changeItemSequence($courseId, API::getValue('itemId'), API::getValue('oldSeq'), API::getValue('newSeq'), API::getValue('table'));
 });
 
 /**

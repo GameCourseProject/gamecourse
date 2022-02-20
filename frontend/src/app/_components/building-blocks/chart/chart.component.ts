@@ -19,7 +19,7 @@ export class ChartComponent implements OnInit {
   edit: boolean;
 
   // FIXME: should be made general
-  chartType: 'xpEvolution' | 'leaderboardEvolution' | 'xpWorld' | 'badgeWorld';
+  chartType: 'starPlot' | 'xpEvolution' | 'leaderboardEvolution' | 'xpWorld' | 'badgeWorld';
 
   readonly DEFAULT = 'Chart';
 
@@ -36,9 +36,11 @@ export class ChartComponent implements OnInit {
       if (this.view.info['labelX'] === 'Time (Days)' && this.view.info['labelY'] === 'Position') this.chartType = 'leaderboardEvolution';
       if (this.view.info['labelX'] === 'XP' && this.view.info['labelY'] === '# Players') this.chartType = 'xpWorld';
       if (this.view.info['labelX'] === 'Badges' && this.view.info['labelY'] === '# Players') this.chartType = 'badgeWorld';
+      if (!this.chartType) this.chartType = 'starPlot';
 
-      if (this.chartType)
+      if (this.chartType !== 'starPlot')
         this.view.info['values'] = this.parseValues(this.view.info['values']);
+
       else {
         const parsed = this.parseRadarValues(this.view.info['user'], this.view.info['average'], this.view.info['params']);
         this.view.info['user'] = parsed.user;

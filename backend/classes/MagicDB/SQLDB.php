@@ -16,7 +16,7 @@ class SQLDB
             $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             //echo $e->getMessage();
-            echo ("Could not connect to database.\n");
+            echo ("Could not connect to database '" . $dsn . "'.\n");
         }
     }
 

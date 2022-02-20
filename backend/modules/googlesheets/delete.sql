@@ -1,1 +1,1 @@
-drop table if exists config_google_sheets;
+drop table if exists googlesheets_config;

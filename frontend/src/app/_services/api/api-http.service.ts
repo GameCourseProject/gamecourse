@@ -24,14 +24,12 @@ import {Template} from "../../_domain/pages & templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
 import {View} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
-import {ViewTextDatabase} from "../../_domain/views/view-text";
-import {ViewImageDatabase} from "../../_domain/views/view-image";
-import {ViewHeaderDatabase} from "../../_domain/views/view-header";
-import {ViewTableDatabase} from "../../_domain/views/view-table";
-import {ViewBlockDatabase} from "../../_domain/views/view-block";
-import {ViewRowDatabase} from "../../_domain/views/view-row";
 import {dateFromDatabase, exists, objectMap} from "../../_utils/misc/misc";
 import {GeneralInput, ListingItems} from "../../_views/courses/course/settings/modules/config/config/config.component";
+import {Tier} from "../../_domain/skills/tier";
+import {SkillData, TierData} from "../../_views/courses/course/settings/modules/config/skills/skills.component";
+import {Skill} from "../../_domain/skills/skill";
+import {ContentItem} from "../../_components/modals/image-picker-modal/image-picker-modal.component";
 
 @Injectable({
   providedIn: 'root'
@@ -46,8 +44,18 @@ export class ApiHttpService {
   static readonly CORE: string = 'core';
   static readonly COURSE: string = 'course';
   static readonly MODULE: string = 'module';
+  static readonly THEMES: string = 'themes';
   static readonly USER: string = 'user';
   static readonly VIEWS: string = 'views';
+
+  static readonly CLASSCHECK: string = 'classcheck';
+  static readonly FENIX: string = 'fenix';
+  static readonly GOOGLESHEETS: string = 'googlesheets';
+  static readonly MOODLE: string = 'moodle';
+  static readonly PROFILING: string = 'profiling';
+  static readonly QR: string = 'qr';
+  static readonly QUEST: string = 'quest';
+  static readonly SKILLS: string = 'skills';
 
 
   constructor(
@@ -126,61 +134,24 @@ export class ApiHttpService {
 
 
   /*** --------------------------------------------- ***/
-  /*** -------------------- Core ------------------- ***/
+  /*** ------------------ Course ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  // Themes
-  public getThemeSettings(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'getThemeSettings');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-
-  // Modules
-  public getModulesAvailable(): Observable<Module[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'getModules');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
-  }
-
-  public importModule(importData: ImportModulesData): Observable<void> {
+  public uploadImage(image: string | ArrayBuffer, folder: string, name: string): Observable<string> {
     const data = {
-      file: importData.file,
-      fileName: importData.fileName
+      image,
+      folder,
+      name
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'importModule');
+      qs.push('request', 'uploadImage');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
-  }
-
-  public exportModules(): Observable<string> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.CORE);
-      qs.push('request', 'exportModule');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, null, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['file']) );
+      .pipe( map((res: any) => res['data']['path']) );
   }
 
 
@@ -265,36 +236,17 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']['resources']));
   }
 
-  public importCourses(importData: ImportCoursesData): Observable<number> {
-    const data = {
-      file: importData.file,
-      replace: importData.replace
-    }
-
+  public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'importCourses');
+      qs.push('request', 'getCourseDataFolderContents');
+      qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
-  }
 
-  public exportCourses(courseID: number = null, options = null): Observable<string> {
-    const data = {
-      courseId: courseID,
-      options: options
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.COURSE);
-      qs.push('request', 'exportCourses');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']['courses']) );
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['contents']) );
   }
 
 
@@ -391,6 +343,40 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+
+  // Import / Export
+  public importCourses(importData: ImportCoursesData): Observable<number> {
+    const data = {
+      file: importData.file,
+      replace: importData.replace
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'importCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => parseInt(res['data']['nrCourses'])) );
+  }
+
+  public exportCourses(courseID: number = null, options = null): Observable<string> {
+    const data = {
+      courseId: courseID,
+      options: options
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'exportCourses');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['courses']) );
   }
 
 
@@ -551,7 +537,7 @@ export class ApiHttpService {
   }
 
 
-  // Modules
+  // Course Modules
   public getCourseModules(courseID: number): Observable<Module[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
@@ -688,7 +674,21 @@ export class ApiHttpService {
   /*** --------------------------------------------- ***/
 
   // General
-  public setModuleEnabled(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
+  public getModulesAvailable(): Observable<Module[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'getModules');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(module => Module.fromDatabase(module))) );
+  }
+
+
+  // Module Manipulation
+  public setModuleState(courseID: number, moduleID: string, isEnabled: boolean): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
@@ -706,10 +706,39 @@ export class ApiHttpService {
   }
 
 
+  // Import / Export
+  public importModule(importData: ImportModulesData): Observable<void> {
+    const data = {
+      file: importData.file,
+      fileName: importData.fileName
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'importModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public exportModules(): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'exportModule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, null, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['file']) );
+  }
+
+
   // Configuration
   public getModuleConfigInfo(courseID: number, moduleID: string):
     Observable<{module: Module, courseFolder: string, generalInputs?: GeneralInput[], listingItems?: ListingItems,
-      personalizedConfig?: string, tiers?: ListingItems}> {
+      personalizedConfig?: string}> {
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -728,23 +757,23 @@ export class ApiHttpService {
             courseFolder: res['data']['courseFolder'],
             generalInputs: res['data']['generalInputs'],
             listingItems: res['data']['listingItems'],
-            personalizedConfig: res['data']['personalizedConfig'],
-            tiers: res['data']['tiers'],
+            personalizedConfig: res['data']['personalizedConfig']
           }
         }) );
   }
 
   public saveModuleConfigInfo(courseID: number, moduleID: string, generalInputs?: {[key: string]: any}, listingItem?: any,
-                              tiersItem?: any, actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
+                              actionType?: 'new' | 'edit' | 'delete' | 'duplicate'): Observable<void> {
     const data = {
       "courseId": courseID,
       "moduleId": moduleID,
     }
 
     if (generalInputs) data['generalInputs'] = generalInputs;
-    if (listingItem) data['listingItem'] = listingItem;
-    if (tiersItem) data['tiersItem'] = tiersItem;
-    if (listingItem || tiersItem) data['actionType'] = actionType;
+    if (listingItem) {
+      data['listingItem'] = listingItem;
+      data['actionType'] = actionType;
+    }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
@@ -768,6 +797,26 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
       qs.push('request', 'toggleItemParam');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public changeItemSequence(courseID: number, moduleID: string, itemID: number, oldSeq: number, newSeq: number, table: string): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID,
+      "itemId": itemID,
+      oldSeq,
+      newSeq,
+      table
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'changeItemSequence');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
@@ -815,21 +864,217 @@ export class ApiHttpService {
       }) );
   }
 
-  public courseFenix(courseID: number, file: string | ArrayBuffer): Observable<number> {
+
+  // Fenix
+  public importFenixStudents(courseID: number, file: string | ArrayBuffer): Observable<number> {
     const data = {
       courseId: courseID,
-      fenix: file,
+      file,
     }
 
     const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.MODULE);
-      qs.push('request', 'courseFenix');
+      qs.push('module', ApiHttpService.FENIX);
+      qs.push('request', 'importFenixStudents');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => parseInt(res['data']['nrStudents'])) );
   }
+
+
+  // ClassCheck
+  public getClassCheckVars(courseID: number): Observable<{tsvCode: string, periodicityNumber: number, periodicityTime: string, isEnabled: boolean}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CLASSCHECK);
+      qs.push('request', 'getClassCheckVars');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']['classCheckVars']) );
+  }
+
+  public setClassCheckVars(courseID: number, tsvCode: string, periodicityNr: number, periodicityTime: string, isEnabled: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      classCheck: {
+        tsvCode,
+        periodicityNumber: periodicityNr,
+        periodicityTime,
+        isEnabled
+      }
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.CLASSCHECK);
+      qs.push('request', 'setClassCheckVars');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Skills
+  public getTiers(courseID: number): Observable<Tier[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getTiers');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['tiers']).map(obj => Tier.fromDatabase(obj))) );
+  }
+
+  public createTier(courseID: number, tier: TierData): Observable<Tier> {
+    const data = {
+      courseId: courseID,
+      tier
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'createTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Tier.fromDatabase(res['data']['tier'])) );
+  }
+
+  public editTier(courseID: number, tier: TierData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      tier
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'editTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteTier(courseID: number, tier: TierData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      tier
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'deleteTier');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public getSkills(courseID: number): Observable<Skill[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getSkills');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => (res['data']['skills']).map(obj => Skill.fromDatabase(obj))) );
+  }
+
+  public createSkill(courseID: number, skill: SkillData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      skill
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'createSkill');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editSkill(courseID: number, skill: SkillData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      skill
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'editSkill');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteSkill(courseID: number, skill: SkillData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      skill
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'deleteSkill');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public renderSkillPage(courseID: number, skillID: number): Observable<Skill> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'renderSkillPage');
+      qs.push('courseId', courseID);
+      qs.push('skillId', skillID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Skill.fromDatabase(res['data']['skill'])) );
+  }
+
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Themes ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  // General
+  public getThemeSettings(): Observable<{theme: string, themes: {name: string, preview: boolean}[]}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.THEMES);
+      qs.push('request', 'getThemeSettings');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
 
 
   /*** --------------------------------------------- ***/
@@ -1076,95 +1321,6 @@ export class ApiHttpService {
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('info.php', params);
-
-    // FIXME: remove (only for dev)
-    const text: ViewTextDatabase = {
-      "id": "825",
-      "viewId": "825",
-      "parentId": "806",
-      "type": "text",
-      "role": "role.Default",
-      "value": "Joana Sesinando",
-    };
-    const text2: ViewTextDatabase = {
-      "id": "826",
-      "viewId": "826",
-      "parentId": "806",
-      "type": "text",
-      "role": "role.Default",
-      "edit": true,
-      "value": "Show"
-    };
-    const image: ViewImageDatabase = {
-      "id": "818",
-      "viewId": "818",
-      "parentId": "816",
-      "type": "image",
-      "role": "role.Default",
-      "edit": true,
-      "src": "photos/ist181583.png",
-    };
-    const header: ViewHeaderDatabase = {
-      "id": "818",
-      "viewId": "818",
-      "parentId": "816",
-      "type": "header",
-      "role": "role.Default",
-      "edit": true,
-      "image": image,
-      "title": text
-    };
-    const headerRow : ViewRowDatabase = {
-      "id": "818",
-      "viewId": "818",
-      "parentId": "816",
-      "type": "row",
-      "role": "role.Default",
-      "edit": true,
-      "children": [
-        text,
-        image,
-        text
-      ]
-    }
-    const row : ViewRowDatabase = {
-      "id": "818",
-      "viewId": "818",
-      "parentId": "816",
-      "type": "row",
-      "role": "role.Default",
-      "edit": true,
-      "children": [
-        text,
-        image,
-        header
-      ]
-    }
-    const table: ViewTableDatabase = {
-      "id": "807",
-      "viewId": "807",
-      "parentId": "806",
-      "type": "table",
-      "role": "role.Default",
-      "edit": true,
-      "headerRows": [
-        headerRow
-      ],
-      "rows": [
-        row,
-        row,
-      ]
-    };
-    const block: ViewBlockDatabase = {
-      id: "806",
-      viewId: "806",
-      parentId: null,
-      type: "block",
-      role: "role.Default",
-      events: {click: "goToPage(2)"}
-    };
-
-    // return of(buildView(block));
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => buildView(res['data']['view'])));
@@ -1418,6 +1574,7 @@ export class ApiHttpService {
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
   }
+
 
 
   /*** --------------------------------------------- ***/

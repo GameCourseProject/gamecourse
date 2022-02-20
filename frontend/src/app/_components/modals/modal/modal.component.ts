@@ -15,6 +15,7 @@ export class ModalComponent implements OnInit {
   @Input() innerClickEvents: boolean = true;    // Whether to close the modal when clicking outside
 
   @Input() templateRef: TemplateRef<any>;       // Custom template for modal
+  @Input() width?: string;                      // Custom modal width
 
   @Output() closeBtnClicked: EventEmitter<void> = new EventEmitter();
 

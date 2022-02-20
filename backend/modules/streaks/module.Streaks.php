@@ -5,11 +5,9 @@ namespace Streaks;
 use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
-use Modules\Views\Expression\ValueNode;
+use GameCourse\Views\Expression\ValueNode;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
-
-use GameCourse\API;
 use GameCourse\Course;
 
 class Streaks extends Module
@@ -18,6 +16,8 @@ class Streaks extends Module
     const ID = 'streaks';
 
     const TABLE = 'streak';
+    const TABLE_LEVEL = self::ID . '_level';
+    const TABLE_CONFIG = self::ID . '_config';
 
     const STREAKS_TEMPLATE_NAME = 'Streaks block - by streaks';
 
@@ -36,13 +36,13 @@ class Streaks extends Module
 
         /*** ------------ Libraries ------------ ***/
 
-        Dictionary::registerLibrary("streaks", "streaks", "This library provides information regarding Streaks. It is provided by the streaks module.");
+        Dictionary::registerLibrary(self::ID, self::ID, "This library provides information regarding Streaks. It is provided by the streaks module.");
 
 
         /*** ------------ Functions ------------ ***/
         // streaks.getAllStreaks(isActive)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'getAllStreaks',
             function (bool $isActive = true) {
                 $where = [];
@@ -59,7 +59,7 @@ class Streaks extends Module
 
         //streaks.getStreak(name)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'getStreak',
             function (string $name = null) {
                 return $this->getStreak(false, ["name" => $name]);
@@ -74,10 +74,10 @@ class Streaks extends Module
 
         //%streak.description
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'description',
             function ($arg) {
-                return $this->basicGetterFunction($arg, "description");
+                return Dictionary::basicGetterFunction($arg, "description");
             },
             "Returns a string with information regarding the name of the streak, the goal to obtain it and the reward associated to it.",
             'string',
@@ -89,10 +89,10 @@ class Streaks extends Module
 
         //%streak.name
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'name',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "name");
+                return Dictionary::basicGetterFunction($streak, "name");
             },
             "Returns a string with the name of the streak.",
             'string',
@@ -104,10 +104,10 @@ class Streaks extends Module
 
         //%streak.color
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'color',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "color");
+                return Dictionary::basicGetterFunction($streak, "color");
             },
             "Returns a string with the reference of the color in hexadecimal of the streak.",
             'string',
@@ -119,10 +119,10 @@ class Streaks extends Module
 
         //%streak.reward
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'reward',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "reward");
+                return Dictionary::basicGetterFunction($streak, "reward");
             },
             "Returns a string with the reward of completing a streak.",
             'string',
@@ -134,10 +134,10 @@ class Streaks extends Module
 
         //%streak.periodicity
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'periodicity',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "periodicity");
+                return Dictionary::basicGetterFunction($streak, "periodicity");
             },
             "Returns a string with periodicity to respect.",
             'string',
@@ -149,10 +149,10 @@ class Streaks extends Module
 
         //%streak.periodicityTime
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'periodicityTime',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "periodicityTime");
+                return Dictionary::basicGetterFunction($streak, "periodicityTime");
             },
             "Returns a string with periodicity's time.",
             'string',
@@ -164,10 +164,10 @@ class Streaks extends Module
 
         //%streak.isRepeatable
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isRepeatable',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "isRepeatable");
+                return Dictionary::basicGetterFunction($streak, "isRepeatable");
             },
             "Returns a boolean regarding whether the steak is repeatable.",
             'boolean',
@@ -179,10 +179,10 @@ class Streaks extends Module
 
         //%streak.isCount
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isCount',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "isCount");
+                return Dictionary::basicGetterFunction($streak, "isCount");
             },
             "Returns a boolean regarding whether the steak is count.",
             'boolean',
@@ -194,10 +194,10 @@ class Streaks extends Module
 
         //%streak.isPeriodic
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isPeriodic',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "isPeriodic");
+                return Dictionary::basicGetterFunction($streak, "isPeriodic");
             },
             "Returns a boolean regarding whether the steak is periodic.",
             'boolean',
@@ -209,10 +209,10 @@ class Streaks extends Module
 
         //%streak.isActive
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'isActive',
             function ($streak) {
-                return $this->basicGetterFunction($streak, "isActive");
+                return Dictionary::basicGetterFunction($streak, "isActive");
             },
             "Returns a boolean regarding whether the steak is active.",
             'boolean',
@@ -224,12 +224,12 @@ class Streaks extends Module
 
         //streaks.streakProgression(streak,user)
         Dictionary::registerFunction(
-            'streaks',
+            self::ID,
             'streakProgression',
 
             function ($streak, int $user) {
                 $streakParticipation = $this->getStreakProgression($streak, $user);
-                return Dictionary::createNode($streakParticipation, 'streaks', 'collection');
+                return Dictionary::createNode($streakParticipation, self::ID, 'collection');
             },
             'Returns a collection object corresponding to the intermediate progress of a GameCourseUser identified by user for that streak.',
             'collection',
@@ -260,13 +260,13 @@ class Streaks extends Module
 
     public function setupData(int $courseId)
     {
-        if ($this->addTables("streaks", "streak") || empty(Core::$systemDB->select("streaks_config", ["course" => $courseId]))) {
-            Core::$systemDB->insert("streaks_config", ["maxBonusReward" => MAX_BONUS_STREAKS, "course" => $courseId]);
+        if ($this->addTables(self::ID, self::TABLE) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId]))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, ["maxBonusReward" => MAX_BONUS_STREAKS, "course" => $courseId]);
         }
 
         $folder = Course::getCourseDataFolder($courseId, Course::getCourse($courseId, false)->getName());
-        if (!file_exists($folder . "/streaks"))
-            mkdir($folder . "/streaks");
+        if (!file_exists($folder . "/" . self::ID))
+            mkdir($folder . "/" . self::ID);
     }
 
     public function update_module($compatibleVersions)
@@ -296,21 +296,21 @@ class Streaks extends Module
         $streaksLevelArray = array();
 
         $streaksArr = array();
-        if (Core::$systemDB->tableExists("streaks_config")) {
-            $streaksConfigVarDB = Core::$systemDB->select("streaks_config", ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists(self::TABLE_CONFIG)) {
+            $streaksConfigVarDB = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
             if ($streaksConfigVarDB) {
                 unset($streaksConfigVarDB["course"]);
                 array_push($streaksConfigArray, $streaksConfigVarDB);
             }
         }
-        if (Core::$systemDB->tableExists("streak")) {
-            $streaksVarDB = Core::$systemDB->selectMultiple("streak", ["course" => $courseId], "*");
+        if (Core::$systemDB->tableExists(self::TABLE)) {
+            $streaksVarDB = Core::$systemDB->selectMultiple(self::TABLE, ["course" => $courseId], "*");
             if ($streaksVarDB) {
                 unset($streaksConfigVarDB["course"]);
                 foreach (streakssVarDB as $streak) {
                     array_push($streaksArray, $streak);
 
-                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple("streak_level", ["streakId" => $streak["id"]], "*");
+                    $streaksLevelVarDB_ = Core::$systemDB->selectMultiple(self::TABLE_LEVEL, ["streakId" => $streak["id"]], "*");
                     foreach ($streaksLevelVarDB_ as $streaksLevelVarDB) {
                         array_push($streaksLevelArray, $streaksLevelVarDB);
                     }
@@ -318,9 +318,9 @@ class Streaks extends Module
             }
         }
 
-        $streaksArr["streaks_config"] = $streaksConfigArray;
-        $streaksArr["streak"] = $streaksArray;
-        $streaksArr["streak_level"] = $streaksLevelArray;
+        $streaksArr[self::TABLE_CONFIG] = $streaksConfigArray;
+        $streaksArr[self::TABLE] = $streaksArray;
+        $streaksArr[self::TABLE_LEVEL] = $streaksLevelArray;
 
         if ($streaksConfigArray || $streaksArray || $streaksLevelArray) {
             return $streaksArr;
@@ -337,14 +337,14 @@ class Streaks extends Module
         $existingCourse = Core::$systemDB->select($tableName[$i], ["course" => $courseId], "course");
         foreach ($tables as $table) {
             foreach ($table as $entry) {
-                if ($tableName[$i] == "streaks_config") {
+                if ($tableName[$i] == self::TABLE_CONFIG) {
                     if ($update && $existingCourse) {
                         Core::$systemDB->update($tableName[$i], $entry, ["course" => $courseId]);
                     } else {
                         $entry["course"] = $courseId;
                         Core::$systemDB->insert($tableName[$i], $entry);
                     }
-                } else  if ($tableName[$i] == "streak") {
+                } else  if ($tableName[$i] == self::TABLE) {
                     $importId = $entry["id"];
                     unset($entry["id"]);
                     if ($update && $existingCourse) {
@@ -426,7 +426,7 @@ class Streaks extends Module
 
     public function deleteDataRows(int $courseId)
     {
-        Core::$systemDB->delete("streak", ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE, ["course" => $courseId]);
     }
 
 
@@ -463,15 +463,15 @@ class Streaks extends Module
     {
         $where["course"] = $this->getCourseId();
         if ($selectMultiple) {
-            $streakArray = Core::$systemDB->selectMultiple("streak", $where);
+            $streakArray = Core::$systemDB->selectMultiple(self::TABLE, $where);
             $type = "collection";
         } else {
-            $streakArray = Core::$systemDB->select("streak", $where);
+            $streakArray = Core::$systemDB->select(self::TABLE, $where);
             if (empty($streakArray))
                 throw new \Exception("In function streaks.getStreak(name): couldn't find streak with name '" . $where["name"] . "'.");
             $type = "object";
         }
-        return Dictionary::createNode($streakArray, 'streaks', $type);
+        return Dictionary::createNode($streakArray, self::ID, $type);
 
     }
               
@@ -486,12 +486,12 @@ class Streaks extends Module
 
     public function saveMaxReward($max, $courseId)
     {
-        Core::$systemDB->update("streaks_config", ["maxBonusReward" => $max], ["course" => $courseId]);
+        Core::$systemDB->update(self::TABLE_CONFIG, ["maxBonusReward" => $max], ["course" => $courseId]);
     }
 
     public function getMaxReward($courseId)
     {
-        return Core::$systemDB->select("streaks_config", ["course" => $courseId], "maxBonusReward");
+        return Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "maxBonusReward");
     }
 
     public static function newStreak($achievement, $courseId)
@@ -542,9 +542,9 @@ class Streaks extends Module
 
     public function activeItem($itemId)
     {
-        $active = Core::$systemDB->select("streak", ["id" => $itemId], "isActive");
+        $active = Core::$systemDB->select(self::TABLE, ["id" => $itemId], "isActive");
         if(!is_null($active)){
-            Core::$systemDB->update("streak", ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
+            Core::$systemDB->update(self::TABLE, ["isActive" => $active ? 0 : 1], ["id" => $itemId]);
             //ToDo: ADD RULE MANIPULATION HERE
         }
     }
@@ -563,7 +563,7 @@ class Streaks extends Module
 
 
 ModuleLoader::registerModule(array(
-    'id' => 'streaks',
+    'id' => Streaks::ID,
     'name' => 'Streaks',
     'description' => 'Enables Streaks and xp points that can be atributed to a student in certain conditions.',
     'type' => 'GameElement',

@@ -13,11 +13,12 @@ export class Course {
   private _isVisible: boolean;
   private _roleHierarchy: string; // FIXME: create class
   private _theme: string;
+  private _folder: string;
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, defaultLandingPage: string,
               lastUpdate: Moment, isActive: boolean, isVisible: boolean, roleHierarchy: string, theme: string,
-              nrStudents?: number) {
+              folder: string, nrStudents?: number) {
 
     this._id = id;
     this._name = name;
@@ -30,6 +31,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
+    this._folder = folder;
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
 
@@ -121,6 +123,14 @@ export class Course {
     this._theme = value;
   }
 
+  get folder(): string {
+    return this._folder;
+  }
+
+  set folder(value: string) {
+    this._folder = value;
+  }
+
   get nrStudents(): number {
     return this._nrStudents;
   }
@@ -142,6 +152,7 @@ export class Course {
       !!parseInt(obj.isVisible),
       obj.roleHierarchy,
       obj.theme,
+      obj.folder,
       obj.nrStudents != undefined ? parseInt(obj.nrStudents) : undefined
     );
   }
@@ -159,5 +170,6 @@ export interface CourseDatabase {
   "isVisible": string,
   "roleHierarchy": string,
   "theme": string,
+  "folder": string,
   "nrStudents"?: string,
 }

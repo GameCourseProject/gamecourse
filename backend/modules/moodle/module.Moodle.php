@@ -23,7 +23,6 @@ class MoodleModule extends Module
 
     public function init(){
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
@@ -76,7 +75,7 @@ class MoodleModule extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG, "ConfigMoodle");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
         $this->moodle = new Moodle($courseId);
     }
 
@@ -89,6 +88,11 @@ class MoodleModule extends Module
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
+    }
+
+    public function disable(int $courseId)
+    {
+        new CronJob("Moodle", $courseId, null, null, true);
     }
 
 
@@ -147,20 +151,13 @@ class MoodleModule extends Module
 
     public function get_personalized_function(): string
     {
-        return "moodlePersonalizedConfig";
+        return self::ID;
     }
 
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
-
-    public function dropTables(string $moduleId)
-    {
-        $courseId = $this->getCourseId();
-        new CronJob("Moodle", $courseId, null, null, true);
-        parent::dropTables($moduleId);
-    }
 
     public function deleteDataRows(int $courseId)
     {
@@ -304,7 +301,7 @@ class MoodleModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'moodle',
+    'id' => MoodleModule::ID,
     'name' => 'Moodle',
     'description' => 'Allows Moodle to be automaticaly included on gamecourse.',
     'type' => 'DataSource',

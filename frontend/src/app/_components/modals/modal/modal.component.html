@@ -1,5 +1,6 @@
 <div *ngIf="isModalOpen" class="modal" [id]="id" style="display: block;">
-  <div class="modal_content {{classList}}" clickedOutside (clickedOutside)="clickedOutside()">
+  <div class="modal_content {{classList}}" clickedOutside (clickedOutside)="clickedOutside()"
+    [ngStyle]="{'width': width ? width : '530px'}">
 
     <!-- Close btn -->
     <button class="close_btn icon" (click)="closeBtnClicked.emit()"></button>
@@ -9,7 +10,7 @@
 
     <!-- Loader -->
     <div *ngIf="actionInProgress" id="page-loading">
-      <img src="../../../../assets/loader/loader.gif" alt="loader">
+      <img src="assets/loader/loader.gif" alt="loader">
     </div>
 
   </div>

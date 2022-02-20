@@ -5,7 +5,6 @@ require_once 'classes/ClassLoader.class.php';
 
 
 use GameCourse\Core;
-use GameCourse\Course;
 use Modules\Badges\Badges;
 
 use PHPUnit\Framework\TestCase;
@@ -44,13 +43,13 @@ class ModuleBadgesSetupTest extends TestCase
     public function testAddTablesSuccess(){
 
         //When
-        $result = $this->badges->addTables("badges", "badge");
+        $result = $this->badges->addTables(Badges::ID, Badges::TABLE);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertTrue($result);
         $this->assertCount(1, $table1);
@@ -115,10 +114,10 @@ class ModuleBadgesSetupTest extends TestCase
         $result = $this->badges->addTables("badges", "badge");
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertFalse($result);
         $this->assertCount(1, $table1);
@@ -140,17 +139,17 @@ class ModuleBadgesSetupTest extends TestCase
         $this->badges->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertCount(1, $table4);
 
-        $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+        $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
         $expectedBadgesConfig = array(
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => "")
         );
@@ -180,17 +179,17 @@ class ModuleBadgesSetupTest extends TestCase
         $this->badges->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertCount(1, $table4);
 
-        $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+        $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
         $expectedBadgesConfig = array(
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => "")
         );
@@ -270,17 +269,17 @@ class ModuleBadgesSetupTest extends TestCase
         $this->badges->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertCount(1, $table4);
 
-        $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+        $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
         $expectedBadgesConfig = array(
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => "")
         );
@@ -316,17 +315,17 @@ class ModuleBadgesSetupTest extends TestCase
         $this->badges->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
         $this->assertCount(1, $table3);
         $this->assertCount(1, $table4);
 
-        $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+        $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
         $expectedBadgesConfig = array(
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => "")
         );
@@ -362,10 +361,10 @@ class ModuleBadgesSetupTest extends TestCase
         $this->badges->setupData($courseId2);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
         
         $this->assertCount(1, $table1);
         $this->assertCount(1, $table2);
@@ -373,7 +372,7 @@ class ModuleBadgesSetupTest extends TestCase
         $this->assertCount(1, $table4);
 
         
-        $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+        $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
         $expectedBadgesConfig = array(
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => ""),
             array("maxBonusReward" => MAX_BONUS_BADGES, "course" => $courseId2, "imageExtra" => "", "imageBragging" => "" , "imageLevel2" => "", "imageLevel3" => "")
@@ -416,17 +415,17 @@ class ModuleBadgesSetupTest extends TestCase
             $this->fail("PDOException should have been thrown for invalid argument on setupData.");
 
         } catch (\PDOException $e) {
-            $table1 = Core::$systemDB->executeQuery("show tables like 'badges_config';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table2 = Core::$systemDB->executeQuery("show tables like 'badge';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table3 = Core::$systemDB->executeQuery("show tables like 'badge_level';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table4 = Core::$systemDB->executeQuery("show tables like 'badge_progression';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table1 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_CONFIG . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table2 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table3 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_LEVEL . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table4 = Core::$systemDB->executeQuery("show tables like '" . Badges::TABLE_PROGRESSION . "';")->fetchAll(\PDO::FETCH_ASSOC);
             
             $this->assertCount(1, $table1);
             $this->assertCount(1, $table2);
             $this->assertCount(1, $table3);
             $this->assertCount(1, $table4);
 
-            $badgesConfig = Core::$systemDB->selectMultiple("badges_config");
+            $badgesConfig = Core::$systemDB->selectMultiple(Badges::TABLE_CONFIG);
             $this->assertEmpty($badgesConfig);
         }
 

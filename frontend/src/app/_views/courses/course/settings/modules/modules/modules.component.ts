@@ -66,7 +66,7 @@ export class ModulesComponent implements OnInit {
     this.api.getCourseModules(courseID)
       .pipe( finalize(() => this.loading = false) )
       .subscribe(modules => {
-        this.allModules = modules;
+        this.allModules = modules.sort((a, b) => a.name.localeCompare(b.name));
         this.reduceList();
       },
       error => ErrorService.set(error)
@@ -95,7 +95,7 @@ export class ModulesComponent implements OnInit {
     this.saving = true;
     const isEnabled = !module.enabled;
 
-    this.api.setModuleEnabled(this.courseID, module.id, isEnabled)
+    this.api.setModuleState(this.courseID, module.id, isEnabled)
       .pipe( finalize(() => this.saving = false) )
       .subscribe(
         res => {

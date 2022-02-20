@@ -2,21 +2,25 @@
 
 namespace GameCourse;
 
+use Modules\ClassCheck\ClassCheckModule;
+use Modules\GoogleSheets\GoogleSheetsModule;
+use Modules\Moodle\MoodleModule;
+use Modules\QR\QR;
+
 class CronJob
 {
     public function __construct($script, $course, $number, $time, $remove = false)
     {
-        $cronFile = "/var/www/html/gamecourse/crontab.txt";
+        $cronFile = API_URL . "/crontab.txt";
         $path = null;
         if ($script == "Moodle") {
-            $path = "/var/www/html/gamecourse/modules/moodle/MoodleScript.php";
+            $path = API_URL . "/modules/" . MoodleModule::ID. "/MoodleScript.php";
         } else if ($script == "ClassCheck") {
-            $path = "/var/www/html/gamecourse/modules/classcheck/ClassCheckScript.php";
+            $path = API_URL . "/modules/" . ClassCheckModule::ID. "/ClassCheckScript.php";
         } else if ($script == "GoogleSheets") {
-            $path = "/var/www/html/gamecourse/modules/googlesheets/GoogleSheetsScript.php";
+            $path = API_URL . "/modules/" . GoogleSheetsModule::ID. "/GoogleSheetsScript.php";
         }else if ($script == "QR"){
-            $path = "/var/www/html/gamecourse/modules/qr/QRScript.php";
-
+            $path = API_URL . "/modules/" . QR::ID. "/QRScript.php";
         }
         $output = shell_exec('crontab -l');
         if ($path) {
@@ -45,10 +49,9 @@ class CronJob
                 }
                 $toWrite .= $periodStr . " /usr/bin/php " . $path . " " . $course . "\n";
             }
-            if(file_exists($cronFile)){ // FIXME: remove
-                file_put_contents($cronFile, $toWrite);
-                echo exec('crontab /var/www/html/gamecourse/crontab.txt');
-            }
+
+            file_put_contents($cronFile, $toWrite);
+            echo exec('crontab ' . $cronFile);
         }
     }
 }

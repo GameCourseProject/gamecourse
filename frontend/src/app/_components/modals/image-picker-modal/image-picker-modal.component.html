@@ -1,0 +1,63 @@
+<app-modal
+  [isModalOpen]="isModalOpen"
+  [id]="id"
+  [classList]="'image-picker ' + classList"
+  [templateRef]="imagePickerModal"
+  (closeBtnClicked)="isModalOpen = false; closeBtnClicked.emit()"
+  [actionInProgress]="actionInProgress"
+  [innerClickEvents]="innerClickEvents">
+</app-modal>
+
+<ng-template #imagePickerModal>
+  <div class="wrapper">
+    <div class="tab">
+      <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
+      <button class="tablinks" [ngClass]="{'active': mode === 'browse'}" (click)="mode = 'browse'">Browse file</button>
+    </div>
+
+    <div class="tabcontent">
+      <ng-container *ngIf="mode === 'upload'">
+        <div class="full" style="margin-top: 20px">
+          <app-input-file
+            [id]="'input-image'"
+            [accept]="'image/*'"
+            (valueChange)="onFileSelected($event)">
+          </app-input-file>
+
+          <div class="name full">
+            <input type="text" id="name" placeholder="Image name *" class="form__input" required [(ngModel)]="imageToUploadName">
+              <label for="name" class="form__label">Name</label>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="mode === 'browse'">
+        <div class="top_browser">
+          <div id="back" (click)="goOutside()"></div>
+          <div class="path">
+            <span id="browse-path">{{path}}</span>
+          </div>
+        </div>
+
+        <div class="grid">
+          <ng-container *ngFor="let item of getFolderContents(contents, path)">
+            <div class="square" [ngClass]="{'folder': item.filetype === ContentType.FOLDER, 'image': item.filetype === ContentType.FILE}"
+              (click)="goInside(item)">
+              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.image}"
+                   [src]="(item.filetype === ContentType.FOLDER ? 'assets/icons/folder.svg' : ApiEndpointsService.API_ENDPOINT + '/' + path + '/' + item.name)">
+              <span>{{item.name}}</span>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <button class="cancel_btn" (click)="isModalOpen = false; negativeBtnClicked.emit()">Cancel</button>
+  <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="isModalOpen = false; submit()">Select</button>
+
+  <!-- Loader -->
+  <div *ngIf="loading" id="page-loading">
+    <img src="assets/loader/loader.gif" alt="loader">
+  </div>
+</ng-template>

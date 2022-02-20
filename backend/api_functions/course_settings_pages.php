@@ -9,29 +9,6 @@ use GameCourse\Course;
 
 // TODO: either refactor if being used or remove from api
 
-API::registerFunction('settings', 'saveNewSequence', function () {
-    API::requireCourseAdminPermission();
-    $course = Course::getCourse(API::getValue('course'), false);
-    if ($course != null) {
-        $module = $course->getModule(API::getValue('module'));
-
-        if ($module != null) {
-            if (API::hasKey('oldSeq') && API::hasKey('nextSeq') && API::hasKey('itemId') && API::hasKey('table')) {
-                $oldSeq = API::getValue('oldSeq');
-                $nextSeq = API::getValue('nextSeq');
-                $itemId = API::getValue('itemId');
-                $table =  API::getValue('table');
-                $courseId = API::getValue('course');
-                $module->changeSeqId($courseId, $itemId, $oldSeq, $nextSeq, $table);
-            }
-        } else {
-            API::error("There is no module with that id: " . API::getValue('module'));
-        }
-    } else {
-        API::error("There is no course with that id: " . API::getValue('course'));
-    }
-});
-
 API::registerFunction('settings', 'saveNewNavigationOrder', function () {
     API::requireCourseAdminPermission();
     $courseId = API::getValue('course');

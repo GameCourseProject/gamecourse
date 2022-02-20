@@ -4,6 +4,10 @@
   padding: 20px;
 }
 
+.profile .skill-tree {
+  margin-top: 20px;
+}
+
 /*** ------------ Tiers ------------ ***/
 
 .skill-tree .skill-tiers {
@@ -62,6 +66,10 @@
   padding: 5px;
   margin: auto;
   word-break: break-word;
+}
+
+.skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-name {
+  color: white;
 }
 
 .skill-tree .skill-tiers .skill-tier .skill-container .skill .skill-post {

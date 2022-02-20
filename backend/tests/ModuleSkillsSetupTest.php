@@ -46,14 +46,14 @@ class ModuleSkillsSetupTest extends TestCase
     public function testAddTablesSuccess(){
 
         //When
-        $result = $this->skills->addTables("skills", "skill");
+        $result = $this->skills->addTables(Skills::ID, Skills::TABLE);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertTrue($result);
@@ -98,14 +98,14 @@ class ModuleSkillsSetupTest extends TestCase
         );
         
         //When
-        $result = $this->skills->addTables("skills", "skill");
+        $result = $this->skills->addTables(Skills::ID, Skills::TABLE);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertFalse($result);
@@ -128,11 +128,11 @@ class ModuleSkillsSetupTest extends TestCase
         $this->skills->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
@@ -142,7 +142,7 @@ class ModuleSkillsSetupTest extends TestCase
         $this->assertCount(1, $table5);
         $this->assertCount(1, $table6);
 
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree");
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
         $expectedSkillTrees = array(
             array("id" => $skillTrees[0]["id"], "course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP)
         );
@@ -165,11 +165,11 @@ class ModuleSkillsSetupTest extends TestCase
         $this->skills->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
@@ -179,7 +179,7 @@ class ModuleSkillsSetupTest extends TestCase
         $this->assertCount(1, $table5);
         $this->assertCount(1, $table6);
 
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree");
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
         $expectedSkillTrees = array(
             array("id" => $skillTrees[0]["id"], "course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP)
         );
@@ -249,11 +249,11 @@ class ModuleSkillsSetupTest extends TestCase
         $this->skills->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
@@ -263,7 +263,7 @@ class ModuleSkillsSetupTest extends TestCase
         $this->assertCount(1, $table5);
         $this->assertCount(1, $table6);
 
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree");
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
         $expectedSkillTrees = array(
             array("id" => $skillTrees[0]["id"], "course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP)
         );
@@ -286,11 +286,11 @@ class ModuleSkillsSetupTest extends TestCase
         $this->skills->setupData($courseId);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
@@ -300,7 +300,7 @@ class ModuleSkillsSetupTest extends TestCase
         $this->assertCount(1, $table5);
         $this->assertCount(1, $table6);
 
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree");
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
         $expectedSkillTrees = array(
             array("id" => $skillTrees[0]["id"], "course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP)
         );
@@ -328,11 +328,11 @@ class ModuleSkillsSetupTest extends TestCase
         $this->skills->setupData($courseId2);
 
         //Then
-        $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-        $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+        $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
         $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->assertCount(1, $table1);
@@ -342,7 +342,7 @@ class ModuleSkillsSetupTest extends TestCase
         $this->assertCount(1, $table5);
         $this->assertCount(1, $table6);
         
-        $skillTrees = Core::$systemDB->selectMultiple("skill_tree");
+        $skillTrees = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
         $expectedSkillTrees = array(
             array("id" => $skillTrees[0]["id"], "course" => $courseId, "maxReward" => DEFAULT_MAX_TREE_XP),
             array("id" => $skillTrees[1]["id"], "course" => $courseId2, "maxReward" => DEFAULT_MAX_TREE_XP)
@@ -368,11 +368,11 @@ class ModuleSkillsSetupTest extends TestCase
             $this->fail("PDOException should have been thrown for invalid argument on setupData.");
 
         } catch (\PDOException $e) {
-            $table1 = Core::$systemDB->executeQuery("show tables like 'skill_tree';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table2 = Core::$systemDB->executeQuery("show tables like 'skill_tier';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table3 = Core::$systemDB->executeQuery("show tables like 'skill';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table4 = Core::$systemDB->executeQuery("show tables like 'dependency';")->fetchAll(\PDO::FETCH_ASSOC);
-            $table5 = Core::$systemDB->executeQuery("show tables like 'skill_dependency';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table1 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TREES . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table2 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_TIERS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table3 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table4 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_SUPER_SKILLS . "';")->fetchAll(\PDO::FETCH_ASSOC);
+            $table5 = Core::$systemDB->executeQuery("show tables like '" . Skills::TABLE_DEPENDENCIES . "';")->fetchAll(\PDO::FETCH_ASSOC);
             $table6 = Core::$systemDB->executeQuery("show tables like 'award_wildcard';")->fetchAll(\PDO::FETCH_ASSOC);
     
             $this->assertCount(1, $table1);
@@ -382,7 +382,7 @@ class ModuleSkillsSetupTest extends TestCase
             $this->assertCount(1, $table5);
             $this->assertCount(1, $table6);
 
-            $skillTree = Core::$systemDB->selectMultiple("skill_tree");
+            $skillTree = Core::$systemDB->selectMultiple(Skills::TABLE_TREES);
             $this->assertEmpty($skillTree);
 
         }

@@ -6,14 +6,20 @@ use GameCourse\Core;
 use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
+use Modules\Badges\Badges;
+use Modules\XP\XPLevels;
 
 class Profiling extends Module
 {
     const ID = 'profiling';
 
-    private $scriptPath = API_URL . "/" . MODULES_FOLDER . "/profiling/profiler.py";
-    private $logPath = API_URL . "/" . MODULES_FOLDER . "/profiling/";
-    private $predictorPath = API_URL . "/" . MODULES_FOLDER . "/profiling/predictor.py";
+    const TABLE_CONFIG = "profiling_config";
+    const TABLE_USER_PROFILE = "user_profile";
+    const TABLE_SAVED_USER_PROFILE = "saved_user_profile";
+
+    private $scriptPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/profiler.py";
+    private $logPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/";
+    private $predictorPath = API_URL . "/" . MODULES_FOLDER . "/" . self::ID . "/predictor.py";
     
     // cluster names
     private $baseNames = ["Achiever", "Regular", "Halfhearted", "Underachiever"];
@@ -27,31 +33,30 @@ class Profiling extends Module
 
     public function init() {
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
     {
-        API::registerFunction('settings', 'getTime', function () {
+        API::registerFunction(self::ID, 'getTime', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            $time = Core::$systemDB->select("profiling_config", ["course" => $courseId], "lastRun");
+            $time = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "lastRun");
             API::response(array('time' => $time));
         });
-        API::registerFunction('settings', 'runPredictor', function () {
+        API::registerFunction(self::ID, 'runPredictor', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $method = API::getValue('method');
             $clusters = $this->runPredictor($courseId, $method);
         });
-        API::registerFunction('settings', 'runProfiler', function () {
+        API::registerFunction(self::ID, 'runProfiler', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $nClusters = API::getValue('nClusters');
             $minSize = API::getValue('minSize');
             $clusters = $this->runProfiler($courseId, $nClusters, $minSize);
         });
-        API::registerFunction('settings', 'checkRunningStatus', function () {
+        API::registerFunction(self::ID, 'checkRunningStatus', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             if(file_exists($this->getLogPath($courseId))){
@@ -74,7 +79,7 @@ class Profiling extends Module
                 API::response(array('running' => false));
             }
         });
-        API::registerFunction('settings', 'checkPredictorStatus', function () {
+        API::registerFunction(self::ID, 'checkPredictorStatus', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             if(file_exists($this->getPredictorPath($courseId))){
@@ -96,7 +101,7 @@ class Profiling extends Module
                 API::response(array('predicting' => false));
             }
         });
-        API::registerFunction('settings', 'commitClusters', function () {
+        API::registerFunction(self::ID, 'commitClusters', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = API::getValue('clusters');
@@ -106,14 +111,14 @@ class Profiling extends Module
             $this->processClusterRoles($courseId, $clusters);
             $this->deleteSaved($courseId);
         });
-        API::registerFunction('settings', 'saveClusters', function () {
+        API::registerFunction(self::ID, 'saveClusters', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $clusters = API::getValue('clusters');
 
             $this->saveClusters($courseId, $clusters);
         });
-        API::registerFunction('settings', 'deleteSaved', function () {
+        API::registerFunction(self::ID, 'deleteSaved', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             if (file_exists($this->getLogPath($courseId))){
@@ -121,14 +126,14 @@ class Profiling extends Module
             }
             $this->deleteSaved($courseId);
         });
-        API::registerFunction('settings', 'getHistory', function () {
+        API::registerFunction(self::ID, 'getHistory', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $history = $this->getClusterHistory($courseId);
             $evolution = $this->getClusterEvolution($courseId, $history[1], $history[0]);
             API::response(array('days' => $history[0],'history' => $history[1], 'nodes' => $evolution[0], 'data' => $evolution[1]));
         });
-        API::registerFunction('settings', 'getSaved', function () {
+        API::registerFunction(self::ID, 'getSaved', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
             $saved = $this->getSavedClusters($courseId);
@@ -144,8 +149,8 @@ class Profiling extends Module
 
     public function setupData($courseId){
 
-        if ($this->addTables("profiling", "profiling_config") || empty(Core::$systemDB->select("profiling_config", ["course" => $courseId])))
-            Core::$systemDB->insert("profiling_config", ["course" => $courseId]);
+        if ($this->addTables(self::ID, self::TABLE_CONFIG) || empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId])))
+            Core::$systemDB->insert(self::TABLE_CONFIG, ["course" => $courseId]);
 
         $course = Course::getCourse($courseId, false);
         $role = $course->getRoleByName("Profiling");
@@ -175,6 +180,11 @@ class Profiling extends Module
         //verificar compatibilidade
     }
 
+    public function disable(int $courseId)
+    {
+        $this->deleteClusterRoles($courseId);
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ---------------- Module Config ---------------- ***/
@@ -202,14 +212,8 @@ class Profiling extends Module
 
     public function deleteDataRows($courseId){
         $this->deleteClusterRoles($courseId);
-        Core::$systemDB->delete("profiling_config", ["course" => $courseId]);
-        Core::$systemDB->delete("saved_user_profile", ["course" => $courseId]);
-    }
-
-    public function dropTables($moduleId) {
-        $courseId = API::getValue('course');
-        $this->deleteClusterRoles($courseId);
-        parent::dropTables($moduleId);
+        Core::$systemDB->delete(self::TABLE_CONFIG, ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_SAVED_USER_PROFILE, ["course" => $courseId]);
     }
 
 
@@ -238,12 +242,12 @@ class Profiling extends Module
                             for($i = 1; $i < count($item); $i++){
                                 $roleId = Core::$systemDB->select("role", ["course" => $courseId, "name" => $item[$i]], "id");
                                 if($roleId){
-                                    $record = Core::$systemDB->select("user_profile", ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i]]);
+                                    $record = Core::$systemDB->select(self::TABLE_USER_PROFILE, ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i]]);
                                     if ($record and $replace){
-                                        Core::$systemDB->update("user_profile", ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i], "cluster" => $roleId], ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i]]);
+                                        Core::$systemDB->update(self::TABLE_USER_PROFILE, ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i], "cluster" => $roleId], ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i]]);
                                     }
                                     else {
-                                        Core::$systemDB->insert("user_profile", ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i], "cluster" => $roleId]);
+                                        Core::$systemDB->insert(self::TABLE_USER_PROFILE, ["course" => $courseId, "user" => $studentId, "date" => $firstLine[$i], "cluster" => $roleId]);
                                     }
 
                                     if($i == count($item)){
@@ -264,8 +268,8 @@ class Profiling extends Module
         $courseId = $this->getCourseId();
         $course = Course::getCourse($courseId, false);
 
-        $profileList = Core::$systemDB->selectMultiple("user_profile p left join role r on cluster = r.id and p.course = r.course left join auth a on p.user = a.game_course_user_id", ["p.course" => $courseId], "name, username, date", "user, date");
-        $days = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
+        $profileList = Core::$systemDB->selectMultiple(self::TABLE_USER_PROFILE . " p left join role r on cluster = r.id and p.course = r.course left join auth a on p.user = a.game_course_user_id", ["p.course" => $courseId], "name, username, date", "user, date");
+        $days = Core::$systemDB->selectMultiple(self::TABLE_USER_PROFILE, ["course" => $courseId], "distinct date");
         $nDays = count($days);
         $data = [];
 
@@ -304,18 +308,18 @@ class Profiling extends Module
     }
 
     public function deleteSaved($courseId){
-        Core::$systemDB->delete("saved_user_profile", ["course" => $courseId]);
+        Core::$systemDB->delete(self::TABLE_SAVED_USER_PROFILE, ["course" => $courseId]);
     }
 
     public function saveClusters($courseId, $clusters){
         if(!is_null($clusters)){
             foreach($clusters as $key => $value){
-                $entry = Core::$systemDB->select("saved_user_profile", ["course" => $courseId, "user" => $key]);
+                $entry = Core::$systemDB->select(self::TABLE_SAVED_USER_PROFILE, ["course" => $courseId, "user" => $key]);
                 if (!$entry){
-                    Core::$systemDB->insert("saved_user_profile", ["cluster" => $value, "course" => $courseId, "user" => $key]);
+                    Core::$systemDB->insert(self::TABLE_SAVED_USER_PROFILE, ["cluster" => $value, "course" => $courseId, "user" => $key]);
                 }
                 else {
-                    Core::$systemDB->update("saved_user_profile", ["cluster" => $value], ["course" => $courseId, "user" => $key]);
+                    Core::$systemDB->update(self::TABLE_SAVED_USER_PROFILE, ["cluster" => $value], ["course" => $courseId, "user" => $key]);
                 }
             }
         }
@@ -323,7 +327,7 @@ class Profiling extends Module
 
     public function getSavedClusters($courseId): array
     {
-        $saved = Core::$systemDB->selectMultiple("saved_user_profile", ["course" => $courseId]);
+        $saved = Core::$systemDB->selectMultiple(self::TABLE_SAVED_USER_PROFILE, ["course" => $courseId]);
         $result = [];
         foreach ($saved as $s){
             $result[$s['user']] = $s['cluster'];
@@ -382,7 +386,7 @@ class Profiling extends Module
     }
     
     public function removeClusterRoles($courseId){
-        $roleIds = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct cluster");
+        $roleIds = Core::$systemDB->selectMultiple(self::TABLE_USER_PROFILE, ["course" => $courseId], "distinct cluster");
         foreach($roleIds as $id){
             Core::$systemDB->delete("user_role", ["course" => $courseId, "role" => $id["cluster"]]);
         }
@@ -469,7 +473,7 @@ class Profiling extends Module
             
             foreach ($students as $student){
                 Core::$systemDB->insert("user_role", ["course" => $courseId, "id" => $student["id"], "role" => $currentNames[$clusters[$student["id"]]]]);
-                Core::$systemDB->insert("user_profile", ["course" => $courseId, "user" => $student["id"], "date" => $date, "cluster" => $currentNames[$clusters[$student["id"]]]]);
+                Core::$systemDB->insert(self::TABLE_USER_PROFILE, ["course" => $courseId, "user" => $student["id"], "date" => $date, "cluster" => $currentNames[$clusters[$student["id"]]]]);
             }
         }
     }
@@ -559,7 +563,7 @@ class Profiling extends Module
 
     public function getClusterHistory($courseId): array
     {
-        $days = Core::$systemDB->selectMultiple("user_profile", ["course" => $courseId], "distinct date");
+        $days = Core::$systemDB->selectMultiple(self::TABLE_USER_PROFILE, ["course" => $courseId], "distinct date");
         $clusters = [];
         
         if(!$days){
@@ -578,7 +582,7 @@ class Profiling extends Module
         else {
             $daysArray = [];
             foreach ($days as $day){
-                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from user_profile p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
+                $records = Core::$systemDB->selectMultiple("(SELECT u.name as name, cu.id as id FROM course_user cu join game_course_user u on cu.id=u.id join user_role ur on ur.id=u.id join role r on ur.role = r.id where r.name = \"Student\" and cu.course =" . $courseId . " and cu.isActive=true) a left join (select p.user as user, r1.name as cluster from " . self::TABLE_USER_PROFILE . " p left join role r1 on p.cluster = r1.id where p.course = " . $courseId . " and r1.course = " . $courseId . " and date = \"" . $day["date"] . "\") b on a.id=b.user", [], "a.name, a.id, b.cluster");
                 foreach ($records as $record){
                     $exploded =  explode(' ', $record["name"]);
                     $nickname = $exploded[0] . ' ' . end($exploded);
@@ -664,7 +668,7 @@ class Profiling extends Module
                         }
                     }
                     // update time of the last run on bd
-                    Core::$systemDB->update("profiling_config", ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
+                    Core::$systemDB->update(self::TABLE_CONFIG, ["lastRun" => date('Y-m-d H:i:s')], ["course" => $courseId]);
 
                     return $this->createClusterList($courseId, $namedClusters, $assignedClusters);     
                 }
@@ -696,16 +700,16 @@ class Profiling extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'profiling',
+    'id' => Profiling::ID,
     'name' => 'Profiling',
     'description' => 'Assigns students to clusters according to their profile.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'badges', 'mode' => 'hard'),
-        array('id' => 'xp', 'mode' => 'hard'),
-        array('id' => 'plugin', 'mode' => 'hard')
+        array('id' => Badges::ID, 'mode' => 'hard'),
+        array('id' => XPLevels::ID, 'mode' => 'hard'),
+        array('id' => 'plugin', 'mode' => 'hard') // FIXME: which data source?
     ),
     'factory' => function() {
         return new Profiling();

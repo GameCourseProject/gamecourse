@@ -3,6 +3,7 @@ namespace GameCourse;
 
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
+use Modules\AwardList\AwardList;
 use Utils;
 
 abstract class Module
@@ -159,7 +160,14 @@ abstract class Module
      */
     public function initAPIEndpoints()
     {
+    }
 
+    /**
+     * Extra actions to do when disabling a module,
+     * apart from cleaning database.
+     */
+    public function disable(int $courseId)
+    {
     }
 
     public static function deleteModule(string $moduleId)
@@ -184,6 +192,10 @@ abstract class Module
      */
     public function cleanUp(string $moduleId, int $courseId)
     {
+        $moduleInfo = ModuleLoader::getModule($moduleId);
+        $module = $moduleInfo['factory']();
+        $module->disable($courseId);
+
         // Delete module templates in course
         $templates = array_map(function ($item) {
             return $item['templateId'];
@@ -194,9 +206,15 @@ abstract class Module
             Views::deleteTemplate($courseId, $templateId);
         }
 
-        // Drop module tables if not enabled in any course
-        if (empty(Core::$systemDB->select("course_module", ["moduleId" => $moduleId])))
-            self::dropTables($moduleId);
+        // Delete module data
+        if (empty(Core::$systemDB->select("course_module", ["moduleId" => $moduleId, "isEnabled" => 1]))) {
+            // Drop module tables if not enabled in any course
+            $module->dropTables($moduleId);
+
+        } else {
+            // Delete module entries
+            $module->deleteDataRows($courseId);
+        }
     }
 
 
@@ -252,11 +270,11 @@ abstract class Module
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
 
-    public function addTables(string $moduleName, string $tableName, string $children = null): bool
+    public function addTables(string $moduleName, string $tableName): bool
     {
         $table = Core::$systemDB->executeQuery("show tables like '" . $tableName . "';")->fetchAll(\PDO::FETCH_ASSOC);
         if (empty($table)) {
-            Core::$systemDB->executeQuery(file_get_contents(MODULES_FOLDER . "/" . $moduleName . "/create" . $children . ".sql"));
+            Core::$systemDB->executeQuery(file_get_contents(MODULES_FOLDER . "/" . $moduleName . "/create.sql"));
             return true;
         }
         return false;
@@ -379,7 +397,7 @@ abstract class Module
         $module = ModuleLoader::getModule($name);
         $handler = $module["factory"]();
         foreach ($courses as $course) {
-            if ($handler->is_configurable() && ($name != "awardlist")) {
+            if ($handler->is_configurable() && ($name != AwardList::ID)) {
                 $moduleArray = $handler->moduleConfigJson($course["id"]);
                 if ($moduleArray) {
                     if (array_key_exists($name, $moduleArr)) {

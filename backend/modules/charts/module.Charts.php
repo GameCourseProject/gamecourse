@@ -11,6 +11,10 @@ use GameCourse\Core;
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Expression\EvaluateVisitor;
 use GameCourse\Views\ViewHandler;
+use Modules\AwardList\AwardList;
+use Modules\Badges\Badges;
+use Modules\Skills\Skills;
+use Modules\XP\XPLevels;
 
 class Charts extends Module
 {
@@ -107,7 +111,7 @@ class Charts extends Module
                 return;
             }
 
-            $awards = Core::$systemDB->selectMultiple("award",["user"=>$userID,"course"=>$course->getId()],"*","date");
+            $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,["user"=>$userID,"course"=>$course->getId()],"*","date");
 
             if (array_key_exists(0, $awards)){
                 $currentDay = new DateTime(date('Y-m-d', strtotime($awards[0]['date'])));
@@ -180,7 +184,7 @@ class Charts extends Module
             $firstDayStudent = array();
             // calc xp for each student, each day
             foreach ($students as $student) {
-                $awards = Core::$systemDB->selectMultiple("award",['user'=>$student['id'],'course'=>$params['course']],"*","date");
+                $awards = Core::$systemDB->selectMultiple(AwardList::TABLE,['user'=>$student['id'],'course'=>$params['course']],"*","date");
 
                 if (count($awards) == 0) {
                     $firstDayStudent[$student['id']] = PHP_INT_MAX;
@@ -405,9 +409,10 @@ class Charts extends Module
         });
     }
 
-    public function setupResources() {
+    public function setupResources()
+    {
         parent::addResources('css/charts.css');
-        parent::addResources('imgs');
+        parent::addResources('imgs/');
     }
 
     public function update_module($module)
@@ -426,16 +431,16 @@ class Charts extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'charts',
+    'id' => Charts::ID,
     'name' => 'Charts',
     'description' => 'Enables charts on views: star plot, xp evolution, xp world, leaderboard evolution and badge world.',
     'type' => 'GameElement',
     'version' => '0.1',
     'compatibleVersions' => array(),
     'dependencies' => array(
-        array('id' => 'skills', 'mode' => 'optional'),
-        array('id' => 'badges', 'mode' => 'optional'),
-        array('id' => 'xp', 'mode' => 'optional')
+        array('id' => Skills::ID, 'mode' => 'optional'),
+        array('id' => Badges::ID, 'mode' => 'optional'),
+        array('id' => XPLevels::ID, 'mode' => 'optional')
     ),
     'factory' => function() {
         return new Charts();

@@ -63,6 +63,14 @@ const routes: Routes = [
   {
     path: 'pages/:id/user/:userId',
     component: PageComponent
+  },
+  {
+    path: 'skills/:id',
+    component: PageComponent
+  },
+  {
+    path: 'skills/:id/:preview',
+    component: PageComponent
   }
 ];
 

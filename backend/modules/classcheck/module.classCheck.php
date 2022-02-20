@@ -1,20 +1,18 @@
 <?php
 namespace Modules\ClassCheck;
 
-use GameCourse\Course;
 use GameCourse\Module;
 use GameCourse\ModuleLoader;
 
 use GameCourse\API;
 use GameCourse\Core;
 use GameCourse\CronJob;
-use Modules\Plugin\ClassCheck;
 
 class ClassCheckModule extends Module
 {
     const ID = 'classcheck';
 
-    const TABLE_CONFIG = 'config_class_check';
+    const TABLE_CONFIG = self::ID . '_config';
 
     private $classCheck;
 
@@ -25,56 +23,40 @@ class ClassCheckModule extends Module
 
     public function init(){
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
     {
         /**
-         * TODO: what does this function do?
+         * Gets classcheck variables.
          *
          * @param int $courseId
-         * @param $periodicity (optional) // TODO: type?
-         * @param $disablePeriodicity (optional) // TODO: type?
-         * @param $classCheck (optional) // TODO: type?
          */
-        API::registerFunction(self::ID, 'courseClassCheck', function () {
+        API::registerFunction(self::ID, 'getClassCheckVars', function () {
             API::requireCourseAdminPermission();
             API:: requireValues('courseId');
 
             $courseId = API::getValue('courseId');
-            $course = Course::getCourse($courseId, false);
+            $course = API::verifyCourseExists($courseId);
 
-            if (!$course->exists())
-                API::error('There is no course with id = ' . $courseId);
+            API::response(array('classCheckVars' => $this->getClassCheckVars($courseId)));
+        });
 
-            if (API::hasKey('periodicity')) {
-                $periodicity = API::getValue('periodicity');
-                $response = $this->setCronJob($courseId, $periodicity);
+        /**
+         * Sets classcheck variables.
+         *
+         * @param int $courseId
+         * @param $classCheck
+         */
+        API::registerFunction(self::ID, 'setClassCheckVars', function () {
+            API::requireCourseAdminPermission();
+            API:: requireValues('courseId', 'classCheck');
 
-                if ($response["result"]) API::response(["updatedData" => ["Class Check enabled"]]);
-                else API::error($response["errorMessage"]);
-                return;
-            }
+            $courseId = API::getValue('courseId');
+            $course = API::verifyCourseExists($courseId);
 
-            if (API::hasKey('disablePeriodicity')) {
-                $response = $this->removeCronJob($courseId);
-
-                if ($response["result"]) API::response(["updatedData" => ["Class Check disabled"]]);
-                else API::error([$response["errorMessage"]]);
-                return;
-            }
-
-            if (API::hasKey('classCheck')) {
-                $classCheck = API::getValue('classCheck');
-
-                if ($this->setClassCheckVars($courseId, $classCheck)) API::response(["updatedData" => ["Variables for Class check saved"]]);
-                else API::error("Please fill the mandatory fields");
-                return;
-            }
-
-            $classCheckVars = $this->getClassCheckVars($courseId);
-            API::response(array('classCheckVars' => $classCheckVars));
+            $classCheck = API::getValue('classCheck');
+            $this->setClassCheckVars($courseId, $classCheck);
         });
     }
 
@@ -86,13 +68,18 @@ class ClassCheckModule extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG, "ConfigClassCheck");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
         $this->classCheck = new ClassCheck($courseId);
     }
 
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
+    }
+
+    public function disable(int $courseId)
+    {
+        new CronJob("ClassCheck", $courseId, null, null, true);
     }
 
 
@@ -147,20 +134,13 @@ class ClassCheckModule extends Module
     }
 
     public function get_personalized_function(): string {
-        return "classCheckPersonalizedConfig";
+        return self::ID;
     }
 
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
-
-    public function dropTables(string $moduleId)
-    {
-        $courseId = $this->getCourseId();
-        new CronJob("ClassCheck", $courseId, null, null, true);
-        parent::dropTables($moduleId);
-    }
 
     public function deleteDataRows(int $courseId)
     {
@@ -181,7 +161,8 @@ class ClassCheckModule extends Module
             $classCheckVars = [
                 "tsvCode" => "",
                 "periodicityNumber" => 0,
-                "periodicityTime" => 'Minutes'
+                "periodicityTime" => 'Minutes',
+                "isEnabled" => false
             ];
         } else {
             if (!$classCheckDB["periodicityNumber"]) {
@@ -193,65 +174,62 @@ class ClassCheckModule extends Module
             $classCheckVars = [
                 "tsvCode" => $classCheckDB["tsvCode"],
                 "periodicityNumber" => intval($classCheckDB["periodicityNumber"]),
-                "periodicityTime" => $classCheckDB["periodicityTime"]
+                "periodicityTime" => $classCheckDB["periodicityTime"],
+                "isEnabled" => filter_var($classCheckDB["isEnabled"], FILTER_VALIDATE_BOOLEAN)
             ];
         }
 
         return  $classCheckVars;
     }
 
-    private function setClassCheckVars($courseId, $classCheck): bool
+    private function setClassCheckVars($courseId, $classCheck)
     {
+        $arrayToDb = [
+            "course" => $courseId,
+            "tsvCode" => $classCheck['tsvCode'],
+            "periodicityNumber" => $classCheck['periodicityNumber'],
+            "periodicityTime" => $classCheck['periodicityTime'],
+            "isEnabled" => $classCheck['isEnabled']
+        ];
+
+        if (empty(Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*"))) {
+            Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
+        } else {
+            Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId] );
+        }
+
+        if (!$classCheck['isEnabled']) { // disable classcheck
+            $this->removeCronJob($courseId);
+
+        } else { // enable classcheck
+            $this->setCronJob($courseId, $classCheck['periodicityNumber'], $classCheck['periodicityTime']);
+        }
+    }
+
+    // periodicity time: Minutes | Hours | Days
+    private function setCronJob(int $courseId, int $periodicityNumber, string $periodicityTime)
+    {
+        API::verifyCourseIsActive($courseId);
+
         $classCheckVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-
-        $arrayToDb = ["course" => $courseId, "tsvCode" => $classCheck['tsvCode']];
-
-        if (empty($classCheck["tsvCode"])) {
-            return false;
-        } else {
-            if (empty($classCheckVars)) {
-                Core::$systemDB->insert(self::TABLE_CONFIG, $arrayToDb);
+        if ($classCheckVars){
+            $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
+            if ($result){
+                new CronJob("ClassCheck", $courseId, $periodicityNumber, $periodicityTime);
+                Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" => $periodicityNumber, 'periodicityTime' => $periodicityTime], ["course" => $courseId]);
             } else {
-                Core::$systemDB->update(self::TABLE_CONFIG, $arrayToDb, ["course" => $courseId] );
+                API::error("Connection failed");
             }
-            return true;
+
+        } else {
+            API::error("Please set the class check variables");
         }
     }
 
-    private function setCronJob($courseId, $vars): array
+    private function removeCronJob($courseId)
     {
-        if(!Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])){
-            return array("result" => false, "errorMessage" => "Course must be active to enable ClassCheck");
-        }
-        if (empty($vars['number']) || empty($vars['time'])) {
-            return array("result" => false, "errorMessage" => "Select a periodicity");
-        } else {
-
-            $classCheckVars = Core::$systemDB->select(self::TABLE_CONFIG, ["course" => $courseId], "*");
-            if ($classCheckVars){
-                $result = ClassCheck::checkConnection($classCheckVars["tsvCode"]);
-                if ($result){
-                    new CronJob("ClassCheck", $courseId, $vars['number'], $vars['time']['name']);
-                    Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 1, "periodicityNumber" =>$vars['number'], 'periodicityTime' => $vars['time']['name']], ["course" => $courseId]);
-                    return array("result" => true);
-                } else {
-                    return array("result" => false, "errorMessage" => "Connection failed");
-                }
-            } else {
-                return array("result" => false, "errorMessage" => "Please set the class check variables");
-            }
-        }
-    }
-
-    private function removeCronJob($courseId): array
-    {
-        if (self::TABLE_CONFIG) {
-            Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
-            new CronJob( "ClassCheck", $courseId, null, null, true);
-            return array("result" => true);
-        }else{
-            return array("result" => false, "errorMessage" => "Could not find a table in DB for that "."Moodle". " plugin");
-        }
+        Core::$systemDB->update(self::TABLE_CONFIG, ["isEnabled" => 0, "tsvCode" => "", "periodicityNumber" => 0, 'periodicityTime' => NULL], ["course" => $courseId]);
+        new CronJob( "ClassCheck", $courseId, null, null, true);
     }
 
     public function setCourseCronJobs($courseId, $active)
@@ -274,9 +252,9 @@ class ClassCheckModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'classcheck',
+    'id' => ClassCheckModule::ID,
     'name' => 'ClassCheck',
-    'description' => 'Allows ClassCheck to be automaticaly included on gamecourse.',
+    'description' => 'Allows ClassCheck to be automaticaly included on GameCourse.',
     'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),

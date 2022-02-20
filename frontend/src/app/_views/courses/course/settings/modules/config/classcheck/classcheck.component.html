@@ -1,0 +1,40 @@
+<div class="section">
+  <div class="divider">
+    <div class="title"><span>ClassCheck Variables</span></div>
+  </div>
+
+  <div class="content">
+    <div class="on_off">
+      <span>Enabled</span>
+      <label class="switch"><input id="enabled" type="checkbox" [(ngModel)]="isEnabled" (ngModelChange)="hasUnsavedChanges = true"><span class="slider round"></span></label>
+    </div>
+
+    <div class="input-wrapper" style="width: 100%; margin-right: 60px; margin-left: 20px">
+      <span class="label">TSV Code</span>
+      <input type="text" id="tsv-code" name="tsv-code" class="input" [(ngModel)]="TSVCode" (ngModelChange)="hasUnsavedChanges = true">
+    </div>
+
+    <div class="input-wrapper" style="width: 100%;">
+      <span class="label">Periodicity</span>
+      <input type="number" min="0" max="59" id="periodicity-nr" name="periodicity-nr" class="input" [(ngModel)]="periodicity.nr" (ngModelChange)="hasUnsavedChanges = true">
+      <select id="periodicity-time" class="input" [(ngModel)]="periodicity.time" (ngModelChange)="hasUnsavedChanges = true">
+        <option [ngValue]="'Minutes'">Minutes</option>
+        <option [ngValue]="'Hours'">Hours</option>
+        <option [ngValue]="'Days'">Days</option>
+      </select>
+    </div>
+
+    <div class="action-buttons">
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges || (isEnabled && TSVCode.isEmpty())" (click)="saveClassCheck()">Save</button>
+    </div>
+  </div>
+
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>

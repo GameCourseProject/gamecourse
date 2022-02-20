@@ -5,11 +5,11 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
-  selector: 'app-config-fenix',
+  selector: 'app-fenix',
   templateUrl: './fenix.component.html',
   styleUrls: ['./fenix.component.scss']
 })
-export class FenixConfigComponent implements OnInit {
+export class FenixComponent implements OnInit {
 
   loading: boolean;
   hasUnsavedChanges: boolean;
@@ -27,19 +27,25 @@ export class FenixConfigComponent implements OnInit {
     this.loading = true;
     this.route.parent.params.subscribe(params => {
       this.courseID = parseInt(params.id);
+      this.loading = false;
     });
   }
 
-  saveFenixVars() {
+  importFenixStudents() {
     this.loading = true;
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const students = reader.result;
-      this.api.courseFenix(this.courseID, students)
+      this.api.importFenixStudents(this.courseID, students)
         .pipe( finalize(() => this.loading = false) )
         .subscribe(
-          nrStudents => console.log("nrStudents", nrStudents),
+          nrStudents => {
+            const successBox = $('#action_completed');
+            successBox.empty();
+            successBox.append(nrStudents + " Student" + (nrStudents > 1 ? 's' : '') + " Imported");
+            successBox.show().delay(3000).fadeOut();
+          },
           error => ErrorService.set(error)
         )
     }

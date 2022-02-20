@@ -14,7 +14,7 @@ class GoogleSheetsModule extends Module
 {
     const ID = 'googlesheets';
 
-    const TABLE_CONFIG = 'config_google_sheets';
+    const TABLE_CONFIG = self::ID . '_config';
 
     private $googleSheets;
 
@@ -24,7 +24,6 @@ class GoogleSheetsModule extends Module
 
     public function init(){
         $this->setupData($this->getCourseId());
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
@@ -88,13 +87,18 @@ class GoogleSheetsModule extends Module
 
     public function setupData(int $courseId)
     {
-        $this->addTables(self::ID, self::TABLE_CONFIG, "ConfigGoogleSheets");
+        $this->addTables(self::ID, self::TABLE_CONFIG);
         $this->googleSheets = new GoogleSheets($courseId);
     }
 
     public function update_module($compatibleVersions)
     {
         //verificar compatibilidade
+    }
+
+    public function disable(int $courseId)
+    {
+        new CronJob("GoogleSheets", $courseId, null, null, true);
     }
 
 
@@ -151,20 +155,13 @@ class GoogleSheetsModule extends Module
 
     public function get_personalized_function(): string
     {
-        return "googleSheetsPersonalizedConfig";
+        return self::ID;
     }
 
 
     /*** ----------------------------------------------- ***/
     /*** ------------ Database Manipulation ------------ ***/
     /*** ----------------------------------------------- ***/
-
-    public function dropTables(string $moduleId)
-    {
-        $courseId = $this->getCourseId();
-        new CronJob("GoogleSheets", $courseId, null, null, true);
-        parent::dropTables($moduleId);
-    }
 
     public function deleteDataRows(int $courseId)
     {
@@ -349,7 +346,7 @@ class GoogleSheetsModule extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'googlesheets',
+    'id' => GoogleSheetsModule::ID,
     'name' => 'GoogleSheets',
     'description' => 'Allows GoogleSheets to be automaticaly included on gamecourse.',
     'type' => 'DataSource',

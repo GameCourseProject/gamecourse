@@ -10,21 +10,23 @@ class QR extends Module
 {
     const ID = 'qr';
 
+    const TABLE = 'qr_code';
+    const TABLE_ERROR = 'qr_error';
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
     public function init() {
         $this->setupData();
-        $this->initAPIEndpoints();
     }
 
     public function initAPIEndpoints()
     {
-        API::registerFunction('settings', 'qrError', function () {
+        API::registerFunction(self::ID, 'qrError', function () {
             API::requireCourseAdminPermission();
             $courseId = API::getValue('course');
-            $errors = Core::$systemDB->selectMultiple("qr_error q left join game_course_user u on q.user = u.id",
+            $errors = Core::$systemDB->selectMultiple(QR::TABLE_ERROR . " q left join game_course_user u on q.user = u.id",
                 ["course" => $courseId],
                 "date, studentNumber, msg, qrkey",
                 "date DESC");
@@ -38,7 +40,7 @@ class QR extends Module
     }
 
     public function setupData(){
-        $this->addTables("qr", "qr_code");
+        $this->addTables(self::ID, self::TABLE);
     }
 
     public function update_module($compatibleVersions)
@@ -71,7 +73,7 @@ class QR extends Module
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'qr',
+    'id' => QR::ID,
     'name' => 'QR',
     'description' => 'Generates a QR code to be used for student participation in class.',
     'type' => 'GameElement',

@@ -11,44 +11,37 @@ const routes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./_views/login/login.module').then(mod => mod.LoginModule),
-    canLoad: [RedirectIfLoggedInGuard],
-    canActivate: [RedirectIfLoggedInGuard]
+    canLoad: [RedirectIfLoggedInGuard]
   },
   {
     path: 'setup',
     loadChildren: () => import('./_views/setup/setup.module').then(mod => mod.SetupModule),
-    canLoad: [RedirectIfSetupDoneGuard],
-    canActivate: [RedirectIfSetupDoneGuard]
+    canLoad: [RedirectIfSetupDoneGuard]
   },
   {
     path: 'main',
     loadChildren: () => import('./_views/main/main.module').then(mod => mod.MainModule),
-    canLoad: [LoginGuard],
-    canActivate: [LoginGuard]
+    canLoad: [LoginGuard]
   },
   {
     path: 'my-info',
     loadChildren: () => import('./_views/my-info/my-info.module').then(mod => mod.MyInfoModule),
-    canLoad: [LoginGuard],
-    canActivate: [LoginGuard]
+    canLoad: [LoginGuard]
   },
   {
     path: 'courses',
     loadChildren: () => import('./_views/courses/courses.module').then(mod => mod.CoursesModule),
-    canLoad: [LoginGuard],
-    canActivate: [LoginGuard]
+    canLoad: [LoginGuard]
   },
   {
     path: 'users',
     loadChildren: () => import('./_views/users/users.module').then(mod => mod.UsersModule),
-    canLoad: [LoginGuard, AdminGuard],
-    canActivate: [LoginGuard, AdminGuard]
+    canLoad: [LoginGuard, AdminGuard]
   },
   {
     path: 'settings',
     loadChildren: () => import('./_views/settings/settings.module').then(mod => mod.SettingsModule),
-    canLoad: [LoginGuard, AdminGuard],
-    canActivate: [LoginGuard, AdminGuard]
+    canLoad: [LoginGuard, AdminGuard]
   },
   {
     path: 'docs',
@@ -61,7 +54,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, {useHash: true})],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

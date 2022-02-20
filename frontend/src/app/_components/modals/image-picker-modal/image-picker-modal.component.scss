@@ -1,0 +1,133 @@
+.wrapper {
+  display: flex;
+}
+
+.tab {
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  width: 25%;
+  height: 300px;
+
+  button {
+    display: block;
+    background-color: inherit;
+    color: black;
+    padding: 22px 12px;
+    width: 100%;
+    border: none;
+    outline: none;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 17px;
+    text-transform: none;
+    border-radius: 0;
+
+    &:hover {
+      background-color: #ddd;
+    }
+
+    &.active {
+      background-color: #ccc;
+    }
+  }
+}
+
+.tabcontent {
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  width: 70%;
+  border-left: none;
+  height: 300px;
+}
+
+.picker {
+  margin-top: 20px;
+}
+
+#img-upload-picker {
+  cursor: pointer;
+  height: 100px;
+  width: 100px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 32% 32% 32%;
+  padding: 20px 0;
+  overflow-y: auto;
+  height: 70%;
+  grid-row-gap: 15px;
+  grid-column-gap: 5px;
+}
+
+.top_browser {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 15px;
+}
+
+#delete {
+  position: absolute;
+}
+
+#back {
+  background-image: url("~src/assets/icons/arrow_back.svg");
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+.square {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image {
+  border: 2px solid;
+  border-color: white;
+
+  img {
+    object-fit: cover;
+  }
+
+  .selected {
+    border: 2px solid #a8a8a8;
+    border-radius: 5px;
+    padding: 5px;
+  }
+}
+.folder {
+  cursor: pointer;
+}
+.square span {
+  padding-top: 5px;
+  font-size: 12px;
+}
+
+.path {
+  width: 90%;
+  border: 2px solid lightgray;
+  border-radius: 5px;
+}
+
+#browse-path {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.cancel_btn {
+  position: absolute;
+  right: 105px;
+  bottom: 10px;
+  background-color: tomato;
+}
+
+.save_btn {
+  position: absolute;
+  right: 15px;
+  bottom: 10px;
+}

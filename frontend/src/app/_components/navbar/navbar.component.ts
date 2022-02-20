@@ -36,7 +36,7 @@ export class NavbarComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private updateManager: UpdateService,
+    private updateManager: UpdateService
   ) {
     this.photo = new ImageManager(sanitizer);
   }

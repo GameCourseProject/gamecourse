@@ -15,7 +15,7 @@ use GameCourse\User;
 Core::init();
 $course = $argv[1];
 $inserted = 0;
-$qr_codes = Core::$systemDB->selectMultiple("qr_code", ["course" => $course]);
+$qr_codes = Core::$systemDB->selectMultiple(QR::TABLE, ["course" => $course]);
 foreach ($qr_codes as $row) {
     $type = "";
     if ($row["classType"] == "Lecture") {
@@ -38,7 +38,7 @@ foreach ($qr_codes as $row) {
             ]);
             $inserted++;
         } else {
-            $qr_repetidos_qr_code = Core::$systemDB->selectMultiple("qr_code", [
+            $qr_repetidos_qr_code = Core::$systemDB->selectMultiple(QR::TABLE, [
                 "studentNumber" => $row["studentNumber"],
                 "course" => $course,
                 "classNumber" => $row["classNumber"],

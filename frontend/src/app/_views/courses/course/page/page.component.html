@@ -1,3 +1,19 @@
 <div *ngIf="pageView" class="page">
   <bb-any [view]="pageView"></bb-any>
 </div>
+
+<div *ngIf="skill" class="page skill-page">
+  <button *ngIf="isPreview" (click)="goBack()" style="float: right">Close<br> Preview</button>
+
+  <div class="header">
+    <img [src]="ApiEndpointsService.API_ENDPOINT + '/modules/skills/imgs/skills.svg'">
+    <span class="ng-binding">Skill - {{skill.name}}</span>
+  </div>
+
+  <div [innerHTML]="skill.description"></div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
+</div>

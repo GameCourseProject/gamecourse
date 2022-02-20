@@ -541,7 +541,7 @@
                             "visibilityType": "visible",
                             "chartType": "bar",
                             "info": {
-                              "provider": ""
+                              "provider": "badgeWorld"
                             }
                           }
                         ]

@@ -7,6 +7,10 @@ include 'GameRules.php';
 use GameRules;
 use GameCourse\Views\Views;
 use GameCourse\Views\ViewHandler;
+use Modules\AwardList\AwardList;
+use Modules\ClassCheck\ClassCheckModule;
+use Modules\GoogleSheets\GoogleSheetsModule;
+use Modules\Moodle\MoodleModule;
 use Utils;
 
 class Course
@@ -32,7 +36,9 @@ class Course
 
     public function getData($field = '*')
     {
-        return Core::$systemDB->select("course", ["id" => $this->cid], $field);
+        $data = Core::$systemDB->select("course", ["id" => $this->cid], $field);
+        if ($field == '*') $data["folder"] = Course::getCourseDataFolder($this->cid);
+        return $data;
     }
     public function getName()
     {
@@ -59,15 +65,15 @@ class Course
     {
         $this->setData("isActive", $active);
 
-        $module = ModuleLoader::getModule("googlesheets");
+        $module = ModuleLoader::getModule(GoogleSheetsModule::ID);
         $handler = $module["factory"]();
         $handler->setCourseCronJobs($this->cid, $active);
 
-        $module2 = ModuleLoader::getModule("classcheck");
+        $module2 = ModuleLoader::getModule(ClassCheckModule::ID);
         $handler2 = $module2["factory"]();
         $handler2->setCourseCronJobs($this->cid, $active);
 
-        $module3 = ModuleLoader::getModule("moodle");
+        $module3 = ModuleLoader::getModule(MoodleModule::ID);
         $handler3 = $module3["factory"]();
         $handler3->setCourseCronJobs($this->cid, $active);
     }
@@ -253,7 +259,7 @@ class Course
     //returns number of awards
     public function getNumAwards()
     {
-        return Core::$systemDB->select("award", ["course" => $this->cid], "count(*)");
+        return Core::$systemDB->select(AwardList::TABLE, ["course" => $this->cid], "count(*)");
     }
 
     //returns number of awards
@@ -314,13 +320,12 @@ class Course
 
     public function setModuleEnabled($moduleId, $enabled)
     {
-        $enabled = $enabled ? 1 : 0;
-        Core::$systemDB->update("course_module", ["isEnabled" => $enabled], ["course" => $this->cid, "moduleId" => $moduleId]);
+        Core::$systemDB->update("course_module", ["isEnabled" => $enabled ? 1 : 0], ["course" => $this->cid, "moduleId" => $moduleId]);
 
-        if ($enabled) {
+        if ($enabled) { // enable module
             ModuleLoader::initModules($this);
 
-        } else {
+        } else { // disable module
             $moduleInfo = ModuleLoader::getModule($moduleId);
             $module = $moduleInfo['factory']();
             $module->cleanUp($moduleId, $this->cid);
@@ -389,7 +394,7 @@ class Course
     public static function getCourseDataFolder($courseId, $courseName = null)
     {
         if ($courseName === null) {
-            $courseName = Course::getCourse($courseId, false)->getName();
+            $courseName = Core::$systemDB->select("course", ["id" => $courseId], "name");
         }
         $courseName = preg_replace("/[^a-zA-Z0-9_ ]/", "", $courseName);
         $folder = COURSE_DATA_FOLDER . '/' . $courseId . '-' . $courseName;
@@ -631,7 +636,7 @@ class Course
                 foreach ($tempModulesEnabled as $mod) {
                     $module = ModuleLoader::getModule($mod["moduleId"]);
                     $handler = $module["factory"]();
-                    if ($handler->is_configurable() && $mod["moduleId"] != "awardlist") {
+                    if ($handler->is_configurable() && $mod["moduleId"] != AwardList::ID) {
                         $moduleArray = $handler->moduleConfigJson($course["id"]);
                         if ($moduleArray) {
                             if (array_key_exists($mod["moduleId"], $modulesArr)) {
@@ -691,7 +696,7 @@ class Course
                 $participations = Core::$systemDB->selectMultiple("participation", ["course" => $course["id"]]);
                 $tempArr["participations"] = $participations;
 
-                $awards = Core::$systemDB->selectMultiple("award", ["course" => $course["id"]]);
+                $awards = Core::$systemDB->selectMultiple(AwardList::TABLE, ["course" => $course["id"]]);
                 $tempArr["awards"] = $awards;
             }
             array_push($jsonArr, $tempArr);
@@ -821,7 +826,7 @@ class Course
                         $award["moduleInstance"] = $newModuleInstances["badges"][$award["moduleInstance"]];
                     else if ($award["type"] == "skill")
                         $award["moduleInstance"] = $newModuleInstances["skills"][$award["moduleInstance"]];
-                    Core::$systemDB->insert("award", $award);
+                    Core::$systemDB->insert(AwardList::TABLE, $award);
                 }
             } else {
                 if ($replace) {
@@ -1103,7 +1108,7 @@ class Course
         return $response;
     }
 
-    public static function getDataFolders($dir)
+    public static function getDataFoldersContents($dir): array
     {
         $results = [];
         $files = scandir($dir);
@@ -1117,8 +1122,8 @@ class Course
                 $file = array('name' => $value, 'filetype' => 'file', 'extension' => $extension);
                 array_push($results, $file);
             } else if ($value != "." && $value != "..") {
-                $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFolders($path));
-                $results[$value] = $folder;
+                $folder = array('name' => $value, 'filetype' => 'folder', 'files' => Course::getDataFoldersContents($path));
+                $results[] = $folder;
             }
         }
         return $results;

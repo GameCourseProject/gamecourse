@@ -86,7 +86,7 @@
 
   <!-- Loader -->
   <div *ngIf="loading || loadingAction" id="page-loading">
-    <img src="../../../../assets/loader/loader.gif" alt="loader">
+    <img src="assets/loader/loader.gif" alt="loader">
   </div>
 </div>
 
@@ -123,7 +123,7 @@
           <app-input-file
             [id]="'profile_image'"
             [accept]="'image/*'"
-            [classList]="'form__input'"
+            [classList]="'form__input border-none'"
             (valueChange)="onFileSelected($event, 'image')">
           </app-input-file>
         </div>

@@ -1,6 +1,6 @@
 <div class="section">
   <div class="divider">
-    <div class="title"><span>Fenix Variables</span></div>
+    <div class="title"><span>Import Students</span></div>
   </div>
 
   <div class="content">
@@ -8,19 +8,23 @@
       <app-input-file
         [id]="'fenix-vars'"
         [accept]="'.csv, .txt'"
-        [label]="'Fenix Course ID'"
+        [label]="'Students File'"
         [classList]="'config_input'"
         (valueChange)="onFileSelected($event)">
       </app-input-file>
     </div>
 
     <div class="action-buttons">
-      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="saveFenixVars()">Save Fenix Vars</button>
+      <button id="save-button" class="button" [disabled]="!hasUnsavedChanges" (click)="importFenixStudents()">Import</button>
     </div>
+  </div>
+
+  <div class="success_box">
+    <div id="action_completed" class="success_msg"></div>
   </div>
 </div>
 
 <!-- Loader -->
 <div *ngIf="loading" id="page-loading">
-  <img src="../../../../../../../../assets/loader/loader.gif" alt="loader">
+  <img src="assets/loader/loader.gif" alt="loader">
 </div>

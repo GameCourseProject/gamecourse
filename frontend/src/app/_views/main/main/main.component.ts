@@ -22,14 +22,15 @@ export class MainComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loading = false;
+    this.loading = true;
     this.getUserActiveCourses();
   }
 
   getUserActiveCourses(): void {
     this.api.getUserActiveCourses()
       .pipe( finalize(() => this.loading = false) )
-      .subscribe(courses => this.activeCourses = courses,
+      .subscribe(
+        courses => this.activeCourses = courses,
         error => ErrorService.set(error));
   }
 

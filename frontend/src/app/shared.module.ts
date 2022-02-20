@@ -31,6 +31,8 @@ import {LineChartComponent} from "./_components/charts/line-chart/line-chart.com
 import {BarChartComponent} from "./_components/charts/bar-chart/bar-chart.component";
 import {ProgressChartComponent} from "./_components/charts/progress-chart/progress-chart.component";
 import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.component";
+import {InputRichTextComponent} from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
+import {ImagePickerModalComponent} from "./_components/modals/image-picker-modal/image-picker-modal.component";
 
 
 @NgModule({
@@ -62,26 +64,29 @@ import {RadarChartComponent} from "./_components/charts/radar-chart/radar-chart.
     LineChartComponent,
     BarChartComponent,
     ProgressChartComponent,
-    RadarChartComponent
+    RadarChartComponent,
+    InputRichTextComponent,
+    ImagePickerModalComponent
   ],
-    exports: [
-        NavbarComponent,
-        SidebarComponent,
-        ModalComponent,
-        VerificationModalComponent,
-        InputFileComponent,
-        ErrorModalComponent,
-        FooterComponent,
-        InputCodeComponent,
-        TextComponent,
-        ImageComponent,
-        HeaderComponent,
-        BlockComponent,
-        AnyComponent,
-        TableComponent,
-        AsPipe,
-        ClickedOutsideDirective
-    ],
+  exports: [
+    NavbarComponent,
+    SidebarComponent,
+    ModalComponent,
+    VerificationModalComponent,
+    InputFileComponent,
+    ErrorModalComponent,
+    FooterComponent,
+    InputCodeComponent,
+    TextComponent,
+    ImageComponent,
+    HeaderComponent,
+    BlockComponent,
+    AnyComponent,
+    TableComponent,
+    AsPipe,
+    ClickedOutsideDirective,
+    InputRichTextComponent
+  ],
     imports: [
         CommonModule,
         RouterModule,

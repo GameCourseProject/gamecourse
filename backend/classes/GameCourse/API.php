@@ -3,6 +3,7 @@ namespace GameCourse;
 
 use GameCourse\Views\Dictionary;
 use GameCourse\Views\Views;
+use Modules\Skills\Skills;
 
 class API {
     private static $functions = array();
@@ -185,7 +186,7 @@ class API {
         return $module;
     }
 
-    public static function verifyPageExists(int $courseId, int $pageId): array // TODO: create class for pages
+    public static function verifyPageExists(int $courseId, int $pageId): array
     {
         $course = self::verifyCourseExists($courseId);
         $page = Views::getPage($courseId, $pageId);
@@ -194,11 +195,24 @@ class API {
         return $page;
     }
 
-    public static function verifyTemplateExists(int $courseId, int $templateId): array // TODO: create class for templates
+    public static function verifyTemplateExists(int $courseId, int $templateId): array
     {
         $course = self::verifyCourseExists($courseId);
         if (!Views::templateExists($courseId, null, $templateId))
             API::error('There is no template with id = ' . $templateId . ' in course \'' . $course->getName() . '\'');
         return Views::getTemplate($templateId);
+    }
+
+    public static function verifySkillExists(int $courseId, int $skillId)
+    {
+        $course = self::verifyCourseExists($courseId);
+        if (empty(Core::$systemDB->select(Skills::TABLE, ["id" => $skillId])))
+            API::error('There is no skill with id = ' . $skillId . ' in course \'' . $course->getName() . '\'');
+    }
+
+    public static function verifyCourseIsActive(int $courseId) {
+        self::verifyCourseExists($courseId);
+        if (empty(Core::$systemDB->select("course", ["id" => $courseId, "isActive" => true])))
+            API::error('Course with id = ' . $courseId . ' is not active.');
     }
 }

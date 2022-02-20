@@ -1,21 +1,19 @@
 <?php
 namespace GameCourse;
 
+use GameCourse\Views\Dictionary;
+
 class ModuleLoader {
-    
-    private static $loadingModuleDir = null;
+
     private static $modules = array();
     private static $firstScan = false;
     
     private static function requireProp($module, $prop) {
         if (!array_key_exists($prop, $module))
-            die('Missing ' . $prop . ' in module' . (array_key_exists('id', $module) ? ' ' . $module['id'] : ' from directory ' . static::$loadingModuleDir));
+            die('Missing ' . $prop . ' in module ' . $module['id']);
     }
 
     public static function registerModule($module) {
-        /*if (static::$loadingModuleDir == null)
-            die('Not expecting to load a module.');*/
-
         static::requireProp($module, 'id');
         static::requireProp($module, 'name');
         static::requireProp($module, 'description');
@@ -25,12 +23,11 @@ class ModuleLoader {
         if (!array_key_exists('dependencies', $module))
             $module['dependencies'] = array();
         static::requireProp($module, 'factory');
-        $module['dir'] = static::$loadingModuleDir;
+        $module['dir'] = "modules/" . $module['id'] . "/";
         
         if (array_key_exists($module['id'], static::$modules))
             die('Module conflict, two modules with same id: ' . $module['id'] . ' at ' . $module['dir'] . ' and ' . static::$modules[$module['id']]['dir']);
         static::$modules[$module['id']] = $module;
-        static::$loadingModuleDir = null;
 
         //update do module
         if(Core::$systemDB->select("module", ["moduleId"=>$module["id"]])){
@@ -56,10 +53,8 @@ class ModuleLoader {
             $file = $moduleDir . '/' . $file_name;
             if ($file_name == '..' || $file_name == '.' || filetype($file) != 'file')
                 continue;
-            if (strpos($file_name, 'module.') === 0) {
-                static::$loadingModuleDir = $moduleDir . '/' ;
+            if (strpos($file_name, 'module.') === 0)
                 require_once($file);
-            }
         }
         $moduleDirHandle->close();
     }
@@ -180,5 +175,19 @@ class ModuleLoader {
 
     public static function getModules() {
         return static::$modules;
+    }
+
+    /**
+     * Initializes API endpoints in enabled modules that have them.
+     * Makes API endpoints available in the system.
+     */
+    public static function initAPIEndpoints()
+    {
+        $courseId = Dictionary::$courseId;
+        foreach (ModuleLoader::getModules() as $moduleInfo) {
+            $module = $moduleInfo['factory']();
+            ModuleLoader::setModuleInfo($module, $moduleInfo, Course::getCourse($courseId, false));
+            $module->initAPIEndpoints();
+        }
     }
 }

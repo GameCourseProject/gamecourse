@@ -26,6 +26,7 @@ npm-debug.log
 yarn-error.log
 logs/
 config.php
+config.production.php
 
 # System Files
 .DS_Store
@@ -35,6 +36,7 @@ Thumbs.db
 !/course_data/
 /course_data/**
 !/course_data/defaultData/
+!/course_data/defaultData/**
 
 autogame/imported-functions/*/
 

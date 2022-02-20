@@ -20,45 +20,23 @@ class Fenix extends Module
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    public function init()
-    {
-        $this->initAPIEndpoints();
-    }
-
     public function initAPIEndpoints()
     {
         /**
-         * TODO: what does this function do?
+         * Import students from Fenix into the course.
          *
          * @param int $courseId
-         * @param $fenix (optional) // TODO: type?
+         * @param $file
          */
-        API::registerFunction('module', 'courseFenix', function () {
+        API::registerFunction(self::ID, 'importFenixStudents', function () {
             API::requireCourseAdminPermission();
-            API:: requireValues('courseId');
+            API:: requireValues('courseId', 'file');
 
             $courseId = API::getValue('courseId');
             $course = API::verifyCourseExists($courseId);
 
-            if (API::hasKey('fenix')) {
-                $fenix = API::getValue('fenix');
-                $lastFileUploaded = count($fenix) - 1;
-                if (count($fenix) == 0)
-                    API::error("Please fill the mandatory fields");
-
-                $resultFenix = $this->setFenixVars($courseId, $fenix[$lastFileUploaded]);
-                if (!$resultFenix) API::response(["updatedData" => ["Variables for fenix saved"]]);
-                else API::error($resultFenix);
-            }
-
-            API::response(['nrStudents' => 0]); // TODO: return nr. students imported
+            API::response(['nrStudents' => $this->importFenixStudents($course, API::getValue('file'))]);
         });
-    }
-
-    public function setupResources()
-    {
-        parent::addResources('js/');
-        parent::addResources('css/');
     }
 
     public function update_module($compatibleVersions)
@@ -91,93 +69,62 @@ class Fenix extends Module
     /*** -------------------- Utils -------------------- ***/
     /*** ----------------------------------------------- ***/
 
-    private function setFenixVars(int $courseId, $fenix): string
+    private function importFenixStudents(Course $course, $file): int
     {
-        $course = Course::getCourse($courseId, false);
-        $year = $course->getData("year");
-        for ($line = 1; $line < sizeof($fenix) - 1; $line++) {
-            $fields = explode(";", $fenix[$line]);
-            if(count($fields) < 10){
-                return "The number of columns is incorrect, please check the template";
-            }
+        $nrStudentsImported = 0;
+        $separator = ",";
+        $headers = ["Username", "Número", "Nome", "Email", "Agrupamento PCM Labs", "Turno Teórica", "Turno Laboratorial",
+                    "Total de Inscrições", "Tipo de Inscrição", "Estado Matrícula", "Curso"];
+        $lines = array_filter(explode("\n", $file), function ($line) { return !empty($line); });
 
-            $username = $fields[0];
-            $studentNumber = $fields[1];
-            $studentName = $fields[2];
-            $email = $fields[3];
-            $courseName = $fields[10];
-            $major = "";
-
-            if (strpos($courseName, 'Alameda')) {
-                $major = "MEIC-A";
-            } else if (strpos($courseName, 'Taguspark')) {
-                $major = "MEIC-T";
-            } else {
-                $endpoint = "degrees";
-                if($year){
-                    $year = str_replace("-", "/", $year);
-                    $endpoint = "degrees?academicTerm=".$year;
-                }
-                $listOfCourses = Core::getFenixInfo($endpoint);
-                $courseFound = false;
-                if($listOfCourses){
-                    foreach ($listOfCourses as $courseFenix) {
-                        if ($courseFound) {
-                            break;
-                        } else {
-                            if (strpos($courseName, $courseFenix->name)) {
-                                $courseFound = true;
-                                foreach ($courseFenix->campus as $campusfenix) {
-                                    $major = $campusfenix->name[0];
-                                }
-                            }
-                        }
-                    }
-                }
+        if (count($lines) > 0) {
+            // Check if has header to ignore it
+            $firstLine = array_map('trim', explode($separator, trim($lines[0])));
+            $hasHeaders = true;
+            foreach ($headers as $header) {
+                if (!in_array($header, $firstLine)) $hasHeaders = false;
             }
-            $roleId = Core::$systemDB->select("role", ["name"=>"Student", "course"=>$courseId], "id");
-            if($studentNumber){
-                if (!User::getUserByStudentNumber($studentNumber)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
-                    $user = User::getUserByStudentNumber($studentNumber);
-                    $courseUser = new CourseUser($user->getId(), $course);
+            if ($hasHeaders) array_shift($lines);
+
+            // Import each student
+            foreach ($lines as $line) {
+                $student = array_map('trim', explode($separator, trim($line)));
+
+                $name = $student[array_search("Nome", $headers)];
+                $username = $student[array_search("Username", $headers)];
+                $studentNumber = $student[array_search("Número", $headers)];
+                $email = $student[array_search("Email", $headers)];
+
+                // Find major
+                $parts = explode(" - ", $student[array_search("Curso", $headers)]);
+                $major = explode(" ", array_pop($parts))[0];
+
+                // Add student to system and course
+                $roleId = Core::$systemDB->select("role", ["name" => "Student", "course" => $course->getId()], "id");
+                $user = User::getUserByStudentNumber($studentNumber) ?? User::getUserByUsername($username);
+                if (!$user) { // create user
+                    $userId = User::addUserToDB($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
+                    $courseUser = new CourseUser($userId, $course);
                     $courseUser->addCourseUserToDB($roleId);
-                } else {
-                    $existentUser = User::getUserByStudentNumber($studentNumber);
-                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", 0, 1);
-                    $courseUser = new CourseUser($existentUser->getId(), $course);
-                    if(!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])){
-                        $courseUser->addCourseUserToDB($roleId);
-                    }else{
-                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $major, null);
-                    }
-                }
-            }else{
-                if (!User::getUserByUsername($username)) {
-                    User::addUserToDB($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
-                    $user = User::getUserByUsername($username);
+                    $nrStudentsImported++;
+
+                } else { // edit user
+                    $user->editUser($name, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
                     $courseUser = new CourseUser($user->getId(), $course);
-                    $courseUser->addCourseUserToDB($roleId);
-                } else {
-                    $existentUser = User::getUserByUsername($username);
-                    $existentUser->editUser($studentName, $username, "fenix", $email, $studentNumber, "", $major, 0, 1);
-                    $courseUser = new CourseUser($existentUser->getId(), $course);
-                    if (!Core::$systemDB->select("course_user", ["id" => $existentUser->getId(), "course" => $courseId])) {
-                        $courseUser->addCourseUserToDB($roleId);
-                    } else {
-                        $courseUser->editCourseUser($existentUser->getId(), $course->getId(), $major, null);
-                    }
+                    if (!CourseUser::userExists($course->getId(), $user->getId())) $courseUser->addCourseUserToDB($roleId);
+                    else $courseUser->editCourseUser($user->getId(), $course->getId(), $major);
                 }
             }
         }
-        return ""; // TODO: return nr. students imported
+
+        return $nrStudentsImported;
     }
 }
 
 ModuleLoader::registerModule(array(
-    'id' => 'fenix',
+    'id' => Fenix::ID,
     'name' => 'Fenix',
-    'description' => 'Allows Fenix to be automaticaly included on gamecourse.',
+    'description' => 'Allows Fenix students to be imported into GameCourse.',
     'type' => 'DataSource',
     'version' => '0.1',
     'compatibleVersions' => array(),
