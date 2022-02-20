@@ -5,10 +5,11 @@ import {
   HttpEvent,
   HttpInterceptor, HttpResponse
 } from '@angular/common/http';
-import {EMPTY, NEVER, Observable, of} from 'rxjs';
-import {share, tap} from "rxjs/operators";
+import {EMPTY, NEVER, Observable, of, Subject} from 'rxjs';
+import {share, take, tap} from "rxjs/operators";
 import {ApiHttpService} from "../_services/api/api-http.service";
 import {exists} from "../_utils/misc/misc";
+import {keyframes} from "@angular/animations";
 
 /**
  * This class is responsible for intercepting HTTP requests and caching them.
@@ -18,6 +19,7 @@ import {exists} from "../_utils/misc/misc";
  * - POST requests are never cached, because they update information;
  * - GET requests are cached, because they only retrieve information without changes,
  *   and return the cached value if exists; otherwise makes the request and caches the value.
+ * - If same GET request is done in a row, it waits for 1st response and returns it.
  * - Each request module has dependencies associated that tell which requests to delete from
  *   cache once changes are made.
  */
@@ -26,6 +28,7 @@ export class CacheInterceptor implements HttpInterceptor {
 
   private cache: Map<HttpRequest<any>['url'], HttpResponse<any>> = new Map<HttpRequest<any>['url'], HttpResponse<any>>();
   private lastRequest: HttpRequest<any>['url'];
+  private lastRequestSubject: {[url: string]: Subject<HttpResponse<any>> } = {};
 
   private readonly dependencies: {[key: string]: string[]} = {};
 
@@ -53,26 +56,29 @@ export class CacheInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.method !== 'GET') {
       this.resetCache(request);
-      this.lastRequest = request.url;
       return next.handle(request);
     }
 
     const cachedResponse: HttpResponse<any> = this.cache.get(request.url);
     if (cachedResponse) {
       // Has request cached
-      this.lastRequest = request.url;
       return of(cachedResponse.clone());
 
-    } else if (exists(this.lastRequest) && this.lastRequest === request.url) {
-      // Same request made in a row, don't make the call
-      return NEVER;
+    } else if (this.lastRequest === request.url){
+      // Same request in a row, answer w/ 1st response
+      return this.lastRequestSubject[request.url].pipe( take(1) )
 
     } else {
+      // Actually make the request
       this.lastRequest = request.url;
+      this.lastRequestSubject[request.url] = new Subject<HttpResponse<any>>();
+
       return next.handle(request).pipe(
         tap(stateEvent => {
-          if (stateEvent instanceof HttpResponse)
-            this.cache.set(request.url, stateEvent.clone())
+          if (stateEvent instanceof HttpResponse) {
+            this.cache.set(request.url, stateEvent.clone());
+            this.lastRequestSubject[request.url].next(stateEvent.clone());
+          }
         }),
         share()
       )
